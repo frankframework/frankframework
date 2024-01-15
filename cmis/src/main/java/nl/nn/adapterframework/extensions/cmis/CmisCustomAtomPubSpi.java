@@ -15,8 +15,6 @@
  */
 package nl.nn.adapterframework.extensions.cmis;
 
-import static org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHelper.HTTP_INVOKER_OBJECT;
-
 import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
 import org.apache.chemistry.opencmis.client.bindings.spi.atompub.CmisAtomPubSpi;
 
@@ -33,21 +31,13 @@ public class CmisCustomAtomPubSpi extends CmisAtomPubSpi {
 	 */
 	public CmisCustomAtomPubSpi(BindingSession session) {
 		super(session);
-		log.warn("Creating instance of [{}]", getClass().getSimpleName());
+		log.debug("Creating instance of [{}]", getClass().getSimpleName());
 		this.bindingSession = session;
 	}
 
 	@Override
 	public void close() {
-		log.warn("Closing {}", getClass().getSimpleName());
-		Object invoker = bindingSession.get(HTTP_INVOKER_OBJECT);
-		if (invoker instanceof CmisHttpInvoker) {
-			CmisHttpInvoker cmisHttpInvoker = (CmisHttpInvoker) invoker;
-			log.warn("Closing CMIS Invoker {}", cmisHttpInvoker);
-			cmisHttpInvoker.close();
-		} else {
-			log.warn("{} does not have instance of CmisHttpInvoker: {}", getClass().getSimpleName(), invoker);
-		}
+		CmisUtils.closeBindingSession(this, bindingSession);
 		super.close();
 	}
 }

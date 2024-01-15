@@ -15,6 +15,8 @@
  */
 package nl.nn.adapterframework.extensions.cmis;
 
+import static org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHelper.HTTP_INVOKER_OBJECT;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
@@ -43,6 +45,8 @@ import org.apache.chemistry.opencmis.client.api.ObjectType;
 import org.apache.chemistry.opencmis.client.api.Property;
 import org.apache.chemistry.opencmis.client.api.Relationship;
 import org.apache.chemistry.opencmis.client.api.Tree;
+import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
+import org.apache.chemistry.opencmis.client.bindings.spi.CmisSpi;
 import org.apache.chemistry.opencmis.commons.data.AclCapabilities;
 import org.apache.chemistry.opencmis.commons.data.CreatablePropertyTypes;
 import org.apache.chemistry.opencmis.commons.data.NewTypeSettableAttributes;
@@ -142,8 +146,8 @@ public class CmisUtils {
 	public static final String CMIS_BINDING_KEY = "cmisBinding";
 	public static final String CMIS_CALLCONTEXT_KEY = "cmisCallContext";
 
-	private static Logger log = LogUtil.getLogger(CmisUtils.class);
-	private static String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
+	private static final Logger log = LogUtil.getLogger(CmisUtils.class);
+	private static final String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
 
 	public static void populateCmisAttributes(PipeLineSession session) {
 		CallContext callContext = (CallContext) session.get(CMIS_CALLCONTEXT_KEY);
@@ -160,6 +164,18 @@ public class CmisUtils {
 		}
 	}
 
+	public static void closeBindingSession(CmisSpi owner, BindingSession bindingSession) {
+		log.warn("Closing {}", owner.getClass().getSimpleName());
+		Object invoker = bindingSession.get(HTTP_INVOKER_OBJECT);
+		if (invoker instanceof CmisHttpInvoker) {
+			CmisHttpInvoker cmisHttpInvoker = (CmisHttpInvoker) invoker;
+			log.debug("Closing CMIS Invoker {}", cmisHttpInvoker);
+			cmisHttpInvoker.close();
+		} else {
+			log.debug("BindingSession for {} does not have instance of CmisHttpInvoker: {}", owner.getClass().getSimpleName(), invoker);
+		}
+
+	}
 
 	public static XmlBuilder buildXml(String name, Object value) {
 		XmlBuilder filterXml = new XmlBuilder(name);
@@ -224,7 +240,7 @@ public class CmisUtils {
 				SimpleDateFormat sdf = new SimpleDateFormat(FORMATSTRING_BY_DEFAULT);
 				propertyXml.setValue(sdf.format(gc.getTime()));
 				break;
-	
+
 			default: // String/ID/HTML/URI
 				propertyXml.setValue((String) value);
 				break;
@@ -593,7 +609,7 @@ public class CmisUtils {
 		}
 		return null;
 	}
-	
+
 
 	public static XmlBuilder repositoryInfo2xml(RepositoryInfo repository) {
 		XmlBuilder repositoryXml = new XmlBuilder("repository");
@@ -783,7 +799,7 @@ public class CmisUtils {
 
 	private static AclCapabilities xml2aclCapabilities(Element cmisResult) {
 		AclCapabilitiesDataImpl aclCapabilities = new AclCapabilitiesDataImpl();
-		
+
 		Element aclCapabilitiesXml = XmlUtils.getFirstChildTag(cmisResult, "aclCapabilities");
 
 		aclCapabilities.setAclPropagation(AclPropagation.valueOf(aclCapabilitiesXml.getAttribute("aclPropagation")));
