@@ -25,13 +25,13 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.ResourceNotFoundException;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
-
-import org.frankframework.management.bus.BusException;
 
 /**
  * Catch Spring Channel exceptions. Some Exceptions may be thrown direct, see {@link ManagedException}.
@@ -49,7 +49,8 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 		AUTHORIZATION(AccessDeniedException.class, Status.FORBIDDEN), // Authorization exception
 		BUS_EXCEPTION(BusException.class, Status.BAD_REQUEST), // Managed BUS exception
 		BACKEND_UNAVAILABLE(ResourceAccessException.class, Status.SERVICE_UNAVAILABLE), // Server doesn't exist
-		REQUEST_EXCEPTION(HttpClientErrorException.class, ManagedException::convertHttpClientError); // Server refused connection
+		REQUEST_EXCEPTION(HttpClientErrorException.class, ManagedException::convertHttpClientError), // Server refused connection
+		RESOURCE_NOT_FOUND_EXCEPTION(ResourceNotFoundException.class, Status.NOT_FOUND);
 
 		private final Class<? extends Throwable> exceptionClass;
 		private final Function<Throwable, Response> messageConverter;
