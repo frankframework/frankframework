@@ -14,10 +14,6 @@ public class ResourceNotFoundExceptionTest {
 
 	private static final String RESOURCE_NOT_FOUND_EXCEPTION_MESSAGE = "outer exception";
 
-	public String expectedLogMessage;
-	public Level expectedLogLevel;
-	public Exception innerException;
-
 	public static List<?> data() {
 		return Arrays.asList(new Object[][]{
 				{"", Level.WARN, null},
