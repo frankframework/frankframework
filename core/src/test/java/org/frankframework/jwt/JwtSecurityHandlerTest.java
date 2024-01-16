@@ -34,6 +34,7 @@ class JwtSecurityHandlerTest {
 	private final String ROLE_CLAIM = "roles";
 
 	private final String NO_MATCH = "NO_MATCH";
+	private HashMap<String, Object> claims;
 
 	private String claim(String key, String value){
 		return key+"="+value;
@@ -41,7 +42,6 @@ class JwtSecurityHandlerTest {
 	private String claims(String... claims){
 		return String.join(",", claims);
 	}
-	private HashMap<String, Object> claims;
 
 	@BeforeEach
 	void beforeEach(){
