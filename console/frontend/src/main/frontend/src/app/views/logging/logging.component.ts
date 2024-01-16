@@ -98,7 +98,7 @@ export class LoggingComponent implements OnInit {
           this.alert = "Total number of items [" + data.count + "] exceeded maximum number, only showing first [" + (data.list.length - 1) + "] items!";
         }
       }, error: (data) => {
-        this.alert = (data.error) ? data.error.error : "An unknown error occured!";
+        this.alert = data.error?.error || "An unknown error occured!";
       }
     });
   };
