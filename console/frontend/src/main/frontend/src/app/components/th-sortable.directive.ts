@@ -14,7 +14,6 @@ export function updateSortableHeaders(headers: QueryList<ThSortableDirective>, c
   }
 }
 
-
 const compare = (v1: string | number, v2: string | number) => (v1 < v2 ? -1 : v1 > v2 ? 1 : 0);
 export function basicTableSort<T extends Record<string, any>>(arr: T[], headers: QueryList<ThSortableDirective>, { column, direction }: SortEvent): T[] {
   updateSortableHeaders(headers, column);
@@ -31,8 +30,6 @@ export function basicTableSort<T extends Record<string, any>>(arr: T[], headers:
 @Directive({
   selector: 'th[sortable]',
   host: {
-    // '[class.asc]': 'direction === "asc"',
-    // '[class.desc]': 'direction === "desc"',
     '(click)': 'nextSort()',
   }
 })

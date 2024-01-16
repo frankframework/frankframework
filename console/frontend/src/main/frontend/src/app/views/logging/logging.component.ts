@@ -90,7 +90,6 @@ export class LoggingComponent implements OnInit {
     this.loggingService.getLogging(directory).subscribe({
       next: (data) => {
         this.alert = false;
-        // Object.assign(this, data);
         this.originalList = data.list;
         this.sortedlist = data.list;
         this.directory = data.directory;

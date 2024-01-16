@@ -27,19 +27,17 @@ import org.apache.commons.io.FilenameUtils;
 public class Dir2Map {
 	private File directory;
 	private String wildcard = "*.*";
-	private boolean sizeFormat = true;
 	private boolean showDirectories = false;
 	private int maxItems = -1;
 	private int fileListSize = 0;
 	private List<Map<String, Object>> fileInfoList = new ArrayList<>();
 
-	public Dir2Map(String directory, boolean sizeFormat, String wildcard, boolean showDirectories, int maxItems) {
-		this(new File(directory), sizeFormat, wildcard, showDirectories, maxItems);
+	public Dir2Map(String directory, String wildcard, boolean showDirectories, int maxItems) {
+		this(new File(directory), wildcard, showDirectories, maxItems);
 	}
 
-	public Dir2Map(File directory, boolean sizeFormat, String wildcard, boolean showDirectories, int maxItems) {
+	public Dir2Map(File directory, String wildcard, boolean showDirectories, int maxItems) {
 		this.directory = directory;
-		this.sizeFormat = sizeFormat;
 		this.wildcard = wildcard;
 		this.showDirectories = showDirectories;
 		this.maxItems = maxItems;
@@ -93,13 +91,14 @@ public class Dir2Map {
 	}
 
 	private Map<String, Object> FileInfo(File file, String displayName) {
-		Map<String, Object> fileInfo = new HashMap<>(5);
+		Map<String, Object> fileInfo = new HashMap<>(6);
 
 		fileInfo.put("name", displayName);
 		fileInfo.put("path", normalizePath(file));
 		fileInfo.put("lastModified", file.lastModified());
 		fileInfo.put("type", file.isDirectory() ? "directory" : "file");
-		fileInfo.put("size", (sizeFormat) ? Misc.toFileSize(file.length(), true) : file.length());
+		fileInfo.put("size", file.length());
+		fileInfo.put("sizeDisplay", Misc.toFileSize(file.length(), true));
 
 		return fileInfo;
 	}
