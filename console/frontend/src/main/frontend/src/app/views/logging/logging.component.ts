@@ -95,7 +95,7 @@ export class LoggingComponent implements OnInit {
         this.directory = data.directory;
         this.path = data.directory;
         if (data.count > data.list.length) {
-          this.alert = "Total number of items [" + data.count + "] exceeded maximum number, only showing first [" + (data.list.length - 1) + "] items!";
+          this.alert = `Total number of items [${data.count}] exceeded maximum number, only showing first [${data.list.length - 1}] items!`;
         }
       }, error: (data) => {
         this.alert = data.error?.error || "An unknown error occured!";
