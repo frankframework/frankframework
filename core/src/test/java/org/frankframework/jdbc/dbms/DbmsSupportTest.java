@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -325,13 +326,16 @@ public class DbmsSupportTest {
 		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			stmt.setDouble(1, Double.parseDouble(number));
 			stmt.execute();
+			connection.close();
 		}
 
 		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TNUMBER FROM " + TABLE_NAME + " WHERE TKEY=3", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(resultSet.getString(1), StringStartsWith.startsWith(number));
+				connection.close();
 			}
+			connection.close();
 		}
 		connection.close();
 	}
@@ -510,7 +514,7 @@ public class DbmsSupportTest {
 				resultSet.next();
 				Object blobHandle = databaseTestEnvironment.getDbmsSupport().getBlobHandle(resultSet, 1);
 				try (OutputStream out = databaseTestEnvironment.getDbmsSupport().getBlobOutputStream(resultSet, 1, blobHandle)) {
-					out.write(blobContents.getBytes("UTF-8"));
+					out.write(blobContents.getBytes(StandardCharsets.UTF_8));
 				}
 				databaseTestEnvironment.getDbmsSupport().updateBlob(resultSet, 1, blobHandle);
 				resultSet.updateRow();
