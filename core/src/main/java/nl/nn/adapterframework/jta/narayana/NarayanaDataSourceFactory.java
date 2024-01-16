@@ -45,12 +45,14 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	private @Getter @Setter int minPoolSize = 0;
 	private @Getter @Setter int maxPoolSize = 20;
 	private @Getter @Setter int maxLifeTime = 0;
+	private @Getter @Setter int maxIdle = 1;
 
 	public NarayanaDataSourceFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
 		minPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.minPoolSize", minPoolSize);
 		maxPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", maxPoolSize);
 		maxLifeTime = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxLifeTime", maxLifeTime);
+		maxIdle = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxIdle", maxIdle);
 	}
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
@@ -105,6 +107,9 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
 		connectionPool.setMinIdle(minPoolSize);
 		connectionPool.setMaxTotal(maxPoolSize);
+		connectionPool.setMaxIdle(maxIdle);
+		connectionPool.setTestOnBorrow(true);
+		connectionPool.setTestWhileIdle(true);
 		connectionPool.setBlockWhenExhausted(true);
 		poolableConnectionFactory.setPool(connectionPool);
 		return connectionPool;

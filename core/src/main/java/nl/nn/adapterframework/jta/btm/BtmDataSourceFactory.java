@@ -41,6 +41,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 	private @Getter @Setter int minPoolSize = 0;
 	private @Getter @Setter int maxPoolSize = 20;
 	private @Getter @Setter int maxIdleTime = 60;
+	private @Getter @Setter int maxIdle = 1;
 	private @Getter @Setter int maxLifeTime = 0;
 	private @Getter @Setter String testQuery = null;
 
@@ -48,6 +49,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 		AppConstants appConstants = AppConstants.getInstance();
 		minPoolSize = appConstants.getInt("transactionmanager.btm.jdbc.connection.minPoolSize", minPoolSize);
 		maxPoolSize = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxPoolSize", maxPoolSize);
+		maxIdle = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxIdle", maxIdle);
 		maxIdleTime = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxIdleTime", maxIdleTime);
 		maxLifeTime = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxLifeTime", maxLifeTime);
 		testQuery = appConstants.getString("transactionmanager.btm.jdbc.connection.testQuery", testQuery);
@@ -77,6 +79,9 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
 		connectionPool.setMinIdle(minPoolSize);
 		connectionPool.setMaxTotal(maxPoolSize);
+		connectionPool.setMaxIdle(maxIdle);
+		connectionPool.setTestOnBorrow(true);
+		connectionPool.setTestWhileIdle(true);
 		connectionPool.setBlockWhenExhausted(true);
 		poolableConnectionFactory.setPool(connectionPool);
 
