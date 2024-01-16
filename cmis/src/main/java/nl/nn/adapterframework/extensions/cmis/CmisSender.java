@@ -270,7 +270,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 
 		if (runtimeSession) {
-			log.warn("{} using runtime session", getLogPrefix());
+			log.info("{} using runtime session", getLogPrefix());
 		}
 	}
 
@@ -339,21 +339,21 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	@Override
 	public void close() {
 		if (globalSession != null) {
-			log.warn("{} Closing global CMIS session", getLogPrefix());
+			log.debug("{} Closing global CMIS session", getLogPrefix());
 			closeCmisSession(globalSession);
 			globalSession = null;
 		}
 	}
 
 	private void closeCmisSession(Session session) {
-		log.warn("{} CMIS Session Close, SPI Binding class name: [{}]", getLogPrefix(), session.getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
+		log.debug("{} CMIS Session Close, SPI Binding class name: [{}]", getLogPrefix(), session.getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
 		session.clear();
 		CmisBinding binding = session.getBinding();
 		if (binding != null) {
-			log.warn("{} Closing CMIS Bindings instance [{}:{}]", getLogPrefix(), binding.getClass().getSimpleName(), binding);
+			log.debug("{} Closing CMIS Bindings instance [{}:{}]", getLogPrefix(), binding.getClass().getSimpleName(), binding);
 			binding.close();
 		} else {
-			log.warn("{} Session has no CMIS Bindings", getLogPrefix());
+			log.debug("{} Session has no CMIS Bindings", getLogPrefix());
 		}
 	}
 
@@ -397,7 +397,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 		} finally {
 			if (cmisSession != null && runtimeSession) {
-				log.warn("{} Closing CMIS runtime session", getLogPrefix());
+				log.debug("{} Closing CMIS runtime session", getLogPrefix());
 				closeCmisSession(cmisSession);
 				cmisSession = null;
 			}
@@ -409,7 +409,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
 
-		CmisObject object = null;
+		CmisObject object;
 		try {
 			object = getCmisObject(cmisSession, message);
 		} catch (CmisObjectNotFoundException e) {
@@ -503,7 +503,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
-		String fileName = null;
+		String fileName;
 		try {
 			fileName = session.getMessage( getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()) ).asString();
 		} catch (IOException e) {
