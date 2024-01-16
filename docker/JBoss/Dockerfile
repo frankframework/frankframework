@@ -24,7 +24,7 @@ COPY src/scripts/ /scripts/
 RUN python3 /scripts/configureModules.py
 
 COPY target/dependencies/frank/ /opt/frank/
-COPY target/dependencies/ibis-adapterframework-test.war $JBOSS_HOME/standalone/deployments/iaf-test.war
+COPY target/dependencies/frankframework-test.war $JBOSS_HOME/standalone/deployments/iaf-test.war
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]
 CMD ["/opt/eap/bin/openshift-launch.sh"]

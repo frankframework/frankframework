@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2021-2022 WeAreFrank!
+   Copyright 2017, 2021-2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,8 +51,7 @@ public class ApiCacheManager {
 		return instanceName + "_" + dtapStage.toUpperCase() + "_" + uriPattern;
 	}
 
-	public static String getParentCacheKey(ApiListener listener, String uri) {
-		HttpMethod method = listener.getMethod();
+	public static String getParentCacheKey(ApiListener listener, String uri, HttpMethod method) {
 		String pattern = listener.getCleanPattern();
 		// Not only remove the eTag for the selected resources but also the collection
 		if((method == HttpMethod.PUT || method == HttpMethod.PATCH || method == HttpMethod.DELETE) && pattern != null && pattern.endsWith("/*")) {

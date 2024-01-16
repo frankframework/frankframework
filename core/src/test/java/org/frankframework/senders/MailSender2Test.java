@@ -75,6 +75,17 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 	}
 
 	@Test
+	void testGetPropertyWhenSslEnabled() throws Exception {
+		sender.setUseSsl(true);
+
+		sender.configure();
+		sender.open();
+
+		assertTrue(Boolean.parseBoolean(sender.getProperties().getProperty("mail.smtp.starttls.enable")));
+
+	}
+
+	@Test
 	void testSendMessageWithBounceAddress() throws Exception {
 		// For this test disable the whitelist to verify that the empty value lets through all recipients
 		sender.setDomainWhitelist("");

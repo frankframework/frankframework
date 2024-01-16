@@ -3,17 +3,17 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-idin</artifactId>
-	<name>Ibis AdapterFramework support for iDIN</name>
+	<artifactId>frankframework-idin</artifactId>
+	<name>Frank!Framework support for iDIN</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.bankid.merchant</groupId>

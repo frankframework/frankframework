@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-wildfly</artifactId>
+	<artifactId>frankframework-docker-wildfly</artifactId>
 	<name>Frank!Framework - Docker > WildFly</name>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-docker</artifactId>
+		<artifactId>frankframework-docker</artifactId>
 		<version>${revision}</version>
 	</parent>
 
@@ -21,13 +21,13 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
+			<artifactId>frankframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>scenarios</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
+			<artifactId>frankframework-test</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -113,7 +113,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.frankframework</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
+									<artifactId>frankframework-test</artifactId>
 									<classifier>scenarios</classifier>
 								</artifactItem>
 							</artifactItems>
@@ -131,7 +131,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.frankframework</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
+									<artifactId>frankframework-test</artifactId>
 									<classifier>secrets</classifier>
 									<excludes>META-INF/</excludes>
 								</artifactItem>

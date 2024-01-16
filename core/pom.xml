@@ -3,12 +3,12 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-core</artifactId>
-	<name>Ibis AdapterFramework core</name>
+	<artifactId>frankframework-core</artifactId>
+	<name>Frank!Framework core</name>
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
@@ -18,15 +18,15 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-dbms</artifactId>
+			<artifactId>frankframework-dbms</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-security</artifactId>
+			<artifactId>frankframework-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -34,12 +34,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>iaf-management-gateway</artifactId>
+			<artifactId>frankframework-management-gateway</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.30.1-GA</version>
+			<version>3.30.2-GA</version>
 		</dependency>
 
 		<dependency>
@@ -391,7 +391,7 @@
 		<dependency>
 			<groupId>com.github.mwiede</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.2.15</version>
+			<version>0.2.16</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
@@ -563,7 +563,7 @@
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>2.12.5</version>
+			<version>2.12.6</version>
 		</dependency>
 		<dependency>
 			<groupId>net.spy</groupId>

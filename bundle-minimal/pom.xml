@@ -3,11 +3,11 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>bundle-minimal</artifactId>
+	<artifactId>frankframework-bundle-minimal</artifactId>
 	<name>Frank!Framework minimal bundle</name>
 	<description>The minimum dependencies required to run as a monolithic application</description>
 	<packaging>pom</packaging>
@@ -15,23 +15,23 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-larva</artifactId>
+			<artifactId>frankframework-larva</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-ladybug</artifactId>
+			<artifactId>frankframework-ladybug</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-console-frontend</artifactId>
+			<artifactId>frankframework-console-frontend</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-console-backend</artifactId>
+			<artifactId>frankframework-console-backend</artifactId>
 		</dependency>
 
 		<!-- jboss-logging is required for Narayana -->

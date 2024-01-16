@@ -3,12 +3,12 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-test</artifactId>
-	<name>Ibis AdapterFramework Test</name>
+	<artifactId>frankframework-test</artifactId>
+	<name>Frank!Framework Test</name>
 	<packaging>war</packaging>
 
 	<properties>
@@ -28,15 +28,15 @@
 		<!-- This dependency is here because of the IbisMetricsPipe -->
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>nn-specials</artifactId>
+			<artifactId>frankframework-nn-specials</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-webapp</artifactId>
+			<artifactId>frankframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>
 		<dependency>
@@ -239,12 +239,12 @@
 			<dependencies>
 				<dependency>
 					<groupId>org.frankframework</groupId>
-					<artifactId>ibis-adapterframework-larva</artifactId>
+					<artifactId>frankframework-larva</artifactId>
 					<scope>runtime</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.frankframework</groupId>
-					<artifactId>ibis-adapterframework-ladybug</artifactId>
+					<artifactId>frankframework-ladybug</artifactId>
 					<scope>runtime</scope>
 				</dependency>
 			</dependencies>

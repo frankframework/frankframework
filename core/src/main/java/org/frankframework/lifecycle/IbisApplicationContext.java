@@ -242,24 +242,24 @@ public class IbisApplicationContext implements Closeable {
 
 		List<String> modulesToScanFor = new ArrayList<>();
 
-		modulesToScanFor.add("ibis-adapterframework-akamai");
-		modulesToScanFor.add("ibis-adapterframework-aspose");
-		modulesToScanFor.add("ibis-adapterframework-aws");
-		modulesToScanFor.add("ibis-adapterframework-batch");
-		modulesToScanFor.add("ibis-adapterframework-cmis");
-		modulesToScanFor.add("ibis-adapterframework-commons");
-		modulesToScanFor.add("ibis-adapterframework-console-backend");
-		modulesToScanFor.add("ibis-adapterframework-core");
-		modulesToScanFor.add("nn-specials");
+		modulesToScanFor.add("frankframework-akamai");
+		modulesToScanFor.add("frankframework-aspose");
+		modulesToScanFor.add("frankframework-aws");
+		modulesToScanFor.add("frankframework-batch");
+		modulesToScanFor.add("frankframework-cmis");
+		modulesToScanFor.add("frankframework-commons");
+		modulesToScanFor.add("frankframework-console-backend");
+		modulesToScanFor.add("frankframework-core");
+		modulesToScanFor.add("frankframework-nn-specials");
 		modulesToScanFor.add("credentialprovider");
-		modulesToScanFor.add("ibis-adapterframework-messaging");
-		modulesToScanFor.add("ibis-adapterframework-idin");
-		modulesToScanFor.add("ibis-adapterframework-ladybug");
-		modulesToScanFor.add("ibis-adapterframework-larva");
-		modulesToScanFor.add("iaf-management-gateway");
-		modulesToScanFor.add("ibis-adapterframework-sap");
-		modulesToScanFor.add("ibis-adapterframework-tibco");
-		modulesToScanFor.add("ibis-adapterframework-webapp");
+		modulesToScanFor.add("frankframework-messaging");
+		modulesToScanFor.add("frankframework-idin");
+		modulesToScanFor.add("frankframework-ladybug");
+		modulesToScanFor.add("frankframework-larva");
+		modulesToScanFor.add("frankframework-management-gateway");
+		modulesToScanFor.add("frankframework-sap");
+		modulesToScanFor.add("frankframework-tibco");
+		modulesToScanFor.add("frankframework-webapp");
 
 		registerApplicationModules(modulesToScanFor);
 	}

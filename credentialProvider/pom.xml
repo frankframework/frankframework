@@ -3,7 +3,7 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
@@ -12,14 +12,14 @@
 	<description>Framework to provide credentials from various secret stores</description>
 
 	<properties>
-		<apache.tomcat.version>9.0.84</apache.tomcat.version>
+		<apache.tomcat.version>9.0.85</apache.tomcat.version>
 		<apache-directory-server.version>2.0.0.AM26</apache-directory-server.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>

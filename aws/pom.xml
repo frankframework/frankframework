@@ -3,21 +3,21 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-aws</artifactId>
-	<name>Ibis AdapterFramework support for AWS</name>
+	<artifactId>frankframework-aws</artifactId>
+	<name>Frank!Framework support for AWS</name>
 
 	<properties>
-		<software.amazon.awssdk.version>2.22.3</software.amazon.awssdk.version>
+		<software.amazon.awssdk.version>2.23.3</software.amazon.awssdk.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -54,7 +54,7 @@
 
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 			<classifier>tests</classifier>
 			<type>test-jar</type>
 			<version>${project.version}</version>

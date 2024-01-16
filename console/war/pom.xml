@@ -3,11 +3,11 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-console</artifactId>
+		<artifactId>frankframework-console</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-console-webapp</artifactId>
+	<artifactId>frankframework-console-webapp</artifactId>
 	<name>Frank Console Webapp</name>
 
 	<packaging>war</packaging>
@@ -20,23 +20,23 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-security</artifactId>
+			<artifactId>frankframework-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>iaf-management-gateway</artifactId>
+			<artifactId>frankframework-management-gateway</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-console-frontend</artifactId>
+			<artifactId>frankframework-console-frontend</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-console-backend</artifactId>
+			<artifactId>frankframework-console-backend</artifactId>
 		</dependency>
 
 		<dependency>
