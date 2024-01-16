@@ -481,6 +481,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		try {
 			//Close the HttpClient and ConnectionManager to release resources and potential open connections
 			if(httpClient != null) {
+				log.debug("Close HTTP Client (should close down background threads)");
 				httpClient.close();
 			}
 		} catch (IOException e) {
@@ -711,7 +712,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			// Only give warnings for 4xx (client errors) and 5xx (server errors)
 			if (statusCode >= 400 && statusCode < 600) {
-				log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
+				log.warn(getLogPrefix()+"status ["+ statusline +"]");
 			} else {
 				log.debug(getLogPrefix()+"status ["+statusCode+"]");
 			}

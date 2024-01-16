@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,26 +33,41 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
-import org.apache.logging.log4j.Logger;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
-public class CmisHttpInvoker implements HttpInvoker {
-
-	private Logger log = LogUtil.getLogger(CmisHttpInvoker.class);
+@Log4j2
+public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 	private CmisHttpSender sender = null;
 
 	//To stub during testing
 	protected CmisHttpSender createSender() {
-		return new CmisHttpSender() {};
+		CmisHttpSender cmisHttpSender = new CmisHttpSender() {};
+		log.debug("CmisHttpInvoker [{}] created new CmisHttpSender [{}]", this, cmisHttpSender);
+		return cmisHttpSender;
+	}
+
+	@Override
+	public void close() {
+		if (sender != null) {
+			log.debug("Closing CmisHttpSender [{}] from CmisHttpInvoker [{}]", sender, this);
+			try {
+				sender.close();
+			} catch (SenderException e) {
+				log.warn("Unexpected exception closing CmisHttpSender", e);
+			}
+			sender = null;
+		} else {
+			log.debug("Closing CmisHttpInvoker [{}] but does not have a sender to close", this);
+		}
 	}
 
 	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
@@ -177,7 +192,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 		if(url.toString().equals(CmisSessionBuilder.OVERRIDE_WSDL_URL)) {
 			try {
-				Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+				Map<String, List<String>> headerFields = new HashMap<>();
 				String wsdl = (String) session.get(CmisSessionBuilder.OVERRIDE_WSDL_KEY);
 				InputStream inputStream = new ByteArrayInputStream(wsdl.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 				return new Response(200, "ok", headerFields, inputStream, null);
@@ -187,7 +202,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			}
 		}
 
-		Response response = null;
+		Response response;
 
 		try {
 			sender = getInstance(session);
@@ -196,7 +211,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 			// init headers if not exist
 			if(headers == null)
-				headers = new HashMap<String, String>();
+				headers = new HashMap<>();
 
 			if (contentType != null)
 				headers.put("Content-Type", contentType);
@@ -211,11 +226,11 @@ public class CmisHttpInvoker implements HttpInvoker {
 					offset = BigInteger.ZERO;
 				}
 
-				sb.append(offset.toString());
+				sb.append(offset);
 				sb.append('-');
 
 				if (length != null && length.signum() == 1) {
-					sb.append(offset.add(length.subtract(BigInteger.ONE)).toString());
+					sb.append(offset.add(length.subtract(BigInteger.ONE)));
 				}
 
 				headers.put("Range", sb.toString());
@@ -254,7 +269,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 				}
 			}
 
-			log.trace("invoking CmisHttpSender: content-type["+contentType+"] headers["+headers.toString()+"]");
+			log.trace("invoking CmisHttpSender: content-type[{}] headers[{}]", contentType, headers);
 
 			response = sender.invoke(method, url.toString(), headers, writer, session);
 		} catch (Exception e) {
@@ -262,7 +277,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			throw new CmisConnectionException(url.toString(), -1, e);
 		}
 
-		log.trace("received result code["+response.getResponseCode()+"] headers["+response.getHeaders().toString()+"]");
+		log.trace("received result code[{}] headers[{}]", response::getResponseCode, response::getHeaders);
 		return response;
 	}
 }
