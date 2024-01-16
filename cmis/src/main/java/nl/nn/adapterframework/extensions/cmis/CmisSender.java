@@ -233,7 +233,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	private Session globalSession;
 
-	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
+	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
 	//TODO remove this when fileContentSessionKey gets removed
 	private boolean convert2Base64 = false;

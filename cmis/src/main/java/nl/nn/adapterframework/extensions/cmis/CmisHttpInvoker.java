@@ -192,7 +192,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 		if(url.toString().equals(CmisSessionBuilder.OVERRIDE_WSDL_URL)) {
 			try {
-				Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
+				Map<String, List<String>> headerFields = new HashMap<>();
 				String wsdl = (String) session.get(CmisSessionBuilder.OVERRIDE_WSDL_KEY);
 				InputStream inputStream = new ByteArrayInputStream(wsdl.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 				return new Response(200, "ok", headerFields, inputStream, null);
