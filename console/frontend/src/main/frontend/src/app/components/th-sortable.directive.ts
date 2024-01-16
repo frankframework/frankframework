@@ -9,7 +9,7 @@ export type SortEvent = {
 export function updateSortableHeaders(headers: QueryList<ThSortableDirective>, column: string) {
   for (const header of headers) {
     if (header.sortable !== column) {
-      header.direction = null;
+      header.updateDirection(null);
     }
   }
 }
@@ -51,19 +51,25 @@ export class ThSortableDirective implements OnInit {
     this.headerText = this.elementRef.nativeElement.innerHTML;
   }
 
-  nextSort() {
-    this.direction = this.nextSortOption[this.direction ?? ''];
-
+  updateIcon(direction: SortDirection) {
     let updateColumnName = "";
-    if (this.direction == null)
+    if (direction == null)
       updateColumnName = this.headerText;
     else {
       updateColumnName = this.headerText + (
-        this.direction == 'asc' ? ' <i class="fa fa-arrow-up"></i>' : ' <i class="fa fa-arrow-down"></i>'
+        direction == 'asc' ? ' <i class="fa fa-arrow-up"></i>' : ' <i class="fa fa-arrow-down"></i>'
       );
     }
     this.elementRef.nativeElement.innerHTML = updateColumnName;
+  }
 
+  updateDirection(newDirection: SortDirection){
+    this.direction = newDirection;
+    this.updateIcon(this.direction);
+  }
+
+  nextSort() {
+    this.updateDirection(this.nextSortOption[this.direction ?? '']);
     this.onSort.emit({ column: this.sortable, direction: this.direction });
   }
 
