@@ -76,7 +76,7 @@ public class DbmsSupportTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		//databaseTestEnvironment.getConnection().setAutoCommit(true);
+		databaseTestEnvironment.getConnection().setAutoCommit(true);
 	}
 
 	@AfterEach

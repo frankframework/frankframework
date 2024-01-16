@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 
 import java.io.StringWriter;
@@ -13,11 +15,15 @@ import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IMessageBrowsingIterator;
+import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.receivers.MessageWrapper;
+import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.junit.DatabaseTest;
@@ -41,7 +47,6 @@ public class MessageStoreListenerTest {
 
 	private MessageStoreListener listener;
 	protected static final String TABLE_NAME = "MSLT_TABLE";
-	private boolean dropAllAfterEachTest = true;
 	protected Liquibase liquibase;
 	protected static Logger log = LogUtil.getLogger(MessageStoreListenerTest.class);
 	private JdbcTransactionalStorage<String> storage;
@@ -63,19 +68,21 @@ public class MessageStoreListenerTest {
 		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2)); // tests are based on H2 syntax queries
 		listener = new MessageStoreListener();
 		listener = getConfiguration().createBean(MessageStoreListener.class);
+		autowire(listener);
 		listener.setTableName(TABLE_NAME);
 		listener.setMessageIdField(messageIdField);
 		listener.setSlotId(slotId);
-		autowire(listener);
 		getConfiguration().getIbisManager();
 		getConfiguration().autowireByName(listener);
 
 		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
+		autowire(storage);
 		storage.setTableName(TABLE_NAME);
 		storage.setIdField(messageIdField);
 		storage.setSlotId(slotId);
 		System.setProperty("tableName", TABLE_NAME);
-		autowire(storage);
+
+		databaseTestEnvironment.getConnection().setAutoCommit(true);
 
 		runMigrator("Migrator/ChangelogBlobTests.xml", databaseTestEnvironment);
 	}
@@ -86,31 +93,21 @@ public class MessageStoreListenerTest {
 		if(listener != null) {
 			listener.close();
 		}
+//
+//		if (liquibase != null) {
+//			if (dropAllAfterEachTest) {
+//				try {
+//					liquibase.dropAll();
+//				} catch (Exception e) {
+//					log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
+//					liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+//				}
+//			}
+//			liquibase.close();
+//			liquibase = null;
+//		}
 
-		if (liquibase != null) {
-			if (dropAllAfterEachTest) {
-				try {
-					liquibase.dropAll();
-				} catch (Exception e) {
-					log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
-					liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
-				}
-			}
-			liquibase.close();
-			liquibase = null;
-		}
-
-		Connection connection = databaseTestEnvironment.getConnection();
-		if (connection != null && !connection.isClosed()) {
-			try (connection) {
-				dropTableIfPresentt(databaseTestEnvironment, TABLE_NAME);
-				connection.close();
-			}
-			connection.close();
-		}
-		assert connection != null;
-		connection.close();
-		databaseTestEnvironment.close();
+		databaseTestEnvironment.getConnection().close();
 
 //		if (failed) {
 //			transactionManagerType.closeConfigurationContext();
@@ -119,33 +116,37 @@ public class MessageStoreListenerTest {
 	}
 
 	public void dropTableIfPresentt(DatabaseTestEnvironment databaseTestEnvironment, String tableName) throws Throwable {
-		if (databaseTestEnvironment.getConnection() != null && !databaseTestEnvironment.getConnection().isClosed()) {
+		Connection connection = databaseTestEnvironment.getConnection();
+		if (connection != null && !connection.isClosed()) {
 			dropTableIfPresent(databaseTestEnvironment, tableName);
-			databaseTestEnvironment.close();
+			connection.close();
 		} else {
 			log.warn("connection is null or closed, cannot drop table [" + tableName + "]");
-			databaseTestEnvironment.close();
+			connection.close();
 		}
-		databaseTestEnvironment.close();
+		connection.close();
 	}
 
 	public static void dropTableIfPresent(DatabaseTestEnvironment databaseTestEnvironment, String tableName) throws Throwable {
-		if (databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), tableName)) {
-			JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "DROP TABLE " + tableName);
-			SQLWarning warnings = databaseTestEnvironment.getConnection().getWarnings();
-			databaseTestEnvironment.close();
+		Connection connection = databaseTestEnvironment.getConnection();
+		if (databaseTestEnvironment.getDbmsSupport().isTablePresent(connection, tableName)) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE " + tableName);
+			SQLWarning warnings = connection.getWarnings();
+			connection.close();
 			if (warnings != null) {
 				log.warn(JdbcUtil.warningsToString(warnings));
-				databaseTestEnvironment.close();
+				connection.close();
 			}
+			connection.close();
 		}
-		databaseTestEnvironment.close();
-		assertFalse(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), tableName), "table [" + tableName + "] should not exist");
+		connection.close();
+		assertFalse(databaseTestEnvironment.getDbmsSupport().isTablePresent(connection, tableName), "table [" + tableName + "] should not exist");
 	}
 
 	//IBISSTORE_CHANGESET_PATH
 	protected void runMigrator(String changeLogFile, DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
-		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(databaseTestEnvironment.getConnection()));
+		Connection connection = databaseTestEnvironment.getConnection();
+		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
 		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
 		liquibase.forceReleaseLocks();
 		StringWriter out = new StringWriter(2048);
@@ -155,8 +156,7 @@ public class MessageStoreListenerTest {
 		log.info("Liquibase changeset status:");
 		log.info(out.toString());
 		liquibase.update(new Contexts());
-		databaseTestEnvironment.close();
-		db.close();
+		connection.close();
 	}
 
 	protected void autowire(JdbcFacade jdbcFacade) {
@@ -222,171 +222,171 @@ public class MessageStoreListenerTest {
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
-//	@DatabaseTest
-//	public void testUpdateStatusQueryDone() throws ConfigurationException {
-//		listener.configure();
-//
-//		String expected = "UPDATE "+tableName+" SET TYPE='A',MESSAGEDATE=NOW(),COMMENTS=?,EXPIRYDATE = NOW() + 30 WHERE TYPE!='A' AND MESSAGEKEY=?";
-//
-//		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
-//	}
-//
-//	@DatabaseTest
-//	public void testUpdateStatusQueryDoneNoMoveToMessageLog() throws ConfigurationException {
-//		listener.setMoveToMessageLog(false);
-//		listener.configure();
-//
-//		String expected = "DELETE FROM "+tableName+" WHERE MESSAGEKEY = ?";
-//
-//		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
-//	}
-//
-//	@DatabaseTest
-//	public void testUpdateStatusQueryError() throws ConfigurationException {
-//		listener.configure();
-//
-//		String expected = "UPDATE "+tableName+" SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
-//
-//		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
-//	}
-//
-//	@DatabaseTest
-//	public void testUpdateStatusQueryWithSelectCondition() throws ConfigurationException {
-//		listener.setSelectCondition("1=1");
-//		listener.configure();
-//
-//		String expected = "UPDATE "+tableName+" SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
-//
-//		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
-//	}
-//
-//	@DatabaseTest
-//	public void testGetMessageCountQueryAvailable(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-//		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
-//		listener.configure();
-//
-//		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
-//
-//		String expected = "SELECT COUNT(*) FROM "+tableName+" t WHERE (TYPE='M' AND (SLOTID='slot'))";
-//
-//		assertEquals(expected, browser.getMessageCountQuery);
-//	}
-//
-//	@DatabaseTest
-//	public void testGetMessageCountQueryError(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-//		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
-//		listener.configure();
-//
-//		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
-//
-//		String expected = "SELECT COUNT(*) FROM "+tableName+" t WHERE (TYPE='E' AND (SLOTID='slot'))";
-//
-//		assertEquals(expected, browser.getMessageCountQuery);
-//	}
-//
-//	@DatabaseTest
-//	public void testGetMessageCountQueryAvailableWithSelectCondition(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-//		listener.setSelectCondition("t.VARCHAR='A'");
-//		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
-//		listener.configure();
-//
-//		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
-//
-//		String expected = "SELECT COUNT(*) FROM "+tableName+" t WHERE (TYPE='M' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
-//
-//		assertEquals(expected, browser.getMessageCountQuery);
-//	}
-//
-//	@DatabaseTest
-//	public void testGetMessageCountQueryErrorSelectCondition(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-//		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
-//		listener.setSelectCondition("t.VARCHAR='A'");
-//		listener.configure();
-//
-//		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
-//
-//		String expected = "SELECT COUNT(*) FROM "+tableName+" t WHERE (TYPE='E' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
-//
-//		assertEquals(expected, browser.getMessageCountQuery);
-//	}
-//
-//	@DatabaseTest
-//	public void testMessageBrowserContainsMessageId() throws Exception {
-//		listener.configure();
-//		listener.open();
-//
-//		String message ="fakeMessage";
-//		insertARecord(message, 'M');
-//
-//		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
-//
-//		assertTrue(browser.containsMessageId("fakeMid"));
-//	}
-//
-//	@DatabaseTest
-//	public void testMessageBrowserContainsCorrelationId() throws Exception {
-//		listener.configure();
-//		listener.open();
-//
-//		String message ="fakeMessage";
-//		insertARecord(message, 'M');
-//
-//		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
-//
-//		assertTrue(browser.containsCorrelationId("fakeCid"));
-//	}
-//
-//	@DatabaseTest
-//	public void testMessageBrowserBrowseMessage() throws Exception {
-//		listener.configure();
-//		listener.open();
-//
-//		String message ="fakeMessage";
-//		String storageKey = insertARecord(message, 'M');
-//		if (storageKey.startsWith("<id>")) {
-//			storageKey = storageKey.substring(4, storageKey.length()-5);
-//		}
-//
-//		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
-//
-//		RawMessageWrapper<?> ro = browser.browseMessage(storageKey);
-//		assertEquals(storageKey, ro.getId());
-//		Object o = ro.getRawMessage();
-//		if (o instanceof MessageWrapper) {
-//			MessageWrapper mw = (MessageWrapper)o;
-//			assertEquals(message, mw.getMessage().asString());
-//		} else {
-//			assertEquals(message, o);
-//		}
-//	}
-//
-//	@DatabaseTest
-//	public void testMessageBrowserIterator() throws Exception {
-//		listener.configure();
-//		listener.open();
-//
-//		String message ="fakeMessage";
-//		String storageKey = insertARecord(message, 'M');
-//		if (storageKey.startsWith("<id>")) {
-//			storageKey = storageKey.substring(4, storageKey.length()-5);
-//		}
-//
-//		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
-//
-//		IMessageBrowsingIterator iterator = browser.getIterator();
-//		assertTrue(iterator.hasNext());
-//
-//		IMessageBrowsingIteratorItem item = iterator.next();
-//		assertNotNull(item);
-//
-//		assertEquals(storageKey, item.getId());
-//		assertEquals("fakeMid", item.getOriginalId());
-//		assertEquals("fakeCid", item.getCorrelationId());
-//		assertEquals("fakeComments", item.getCommentString());
-//	}
+	@DatabaseTest
+	public void testUpdateStatusQueryDone() throws ConfigurationException {
+		listener.configure();
 
-	private String insertARecord(String message, char type) throws SenderException, ConfigurationException {
-		storage.setType(type+"");
+		String expected = "UPDATE " + TABLE_NAME + " SET TYPE='A',MESSAGEDATE=NOW(),COMMENTS=?,EXPIRYDATE = NOW() + 30 WHERE TYPE!='A' AND MESSAGEKEY=?";
+
+		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
+	}
+
+	@DatabaseTest
+	public void testUpdateStatusQueryDoneNoMoveToMessageLog() throws ConfigurationException {
+		listener.setMoveToMessageLog(false);
+		listener.configure();
+
+		String expected = "DELETE FROM " + TABLE_NAME + " WHERE MESSAGEKEY = ?";
+
+		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
+	}
+
+	@DatabaseTest
+	public void testUpdateStatusQueryError() throws ConfigurationException {
+		listener.configure();
+
+		String expected = "UPDATE " + TABLE_NAME + " SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
+
+		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
+	}
+
+	@DatabaseTest
+	public void testUpdateStatusQueryWithSelectCondition() throws ConfigurationException {
+		listener.setSelectCondition("1=1");
+		listener.configure();
+
+		String expected = "UPDATE " + TABLE_NAME + " SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
+
+		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
+	}
+
+	@DatabaseTest
+	public void testGetMessageCountQueryAvailable(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		String expected = "SELECT COUNT(*) FROM " + TABLE_NAME + " t WHERE (TYPE='M' AND (SLOTID='slot'))";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
+	@DatabaseTest
+	public void testGetMessageCountQueryError(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+
+		String expected = "SELECT COUNT(*) FROM " + TABLE_NAME + " t WHERE (TYPE='E' AND (SLOTID='slot'))";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
+	@DatabaseTest
+	public void testGetMessageCountQueryAvailableWithSelectCondition(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		listener.setSelectCondition("t.VARCHAR='A'");
+		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		String expected = "SELECT COUNT(*) FROM " + TABLE_NAME + " t WHERE (TYPE='M' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
+	@DatabaseTest
+	public void testGetMessageCountQueryErrorSelectCondition(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
+		listener.setSelectCondition("t.VARCHAR='A'");
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+
+		String expected = "SELECT COUNT(*) FROM " + TABLE_NAME + " t WHERE (TYPE='E' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
+	@DatabaseTest
+	public void testMessageBrowserContainsMessageId() throws Exception {
+		listener.configure();
+		listener.open();
+
+		String message = "fakeMessage";
+		insertARecord(message);
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		assertTrue(browser.containsMessageId("fakeMid"));
+	}
+
+	@DatabaseTest
+	public void testMessageBrowserContainsCorrelationId() throws Exception {
+		listener.configure();
+		listener.open();
+
+		String message = "fakeMessage";
+		insertARecord(message);
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		assertTrue(browser.containsCorrelationId("fakeCid"));
+	}
+
+	@DatabaseTest
+	public void testMessageBrowserBrowseMessage() throws Exception {
+		listener.configure();
+		listener.open();
+
+		String message = "fakeMessage";
+		String storageKey = insertARecord(message);
+		if (storageKey.startsWith("<id>")) {
+			storageKey = storageKey.substring(4, storageKey.length() - 5);
+		}
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		RawMessageWrapper<?> ro = browser.browseMessage(storageKey);
+		assertEquals(storageKey, ro.getId());
+		Object o = ro.getRawMessage();
+		if (o instanceof MessageWrapper) {
+			MessageWrapper mw = (MessageWrapper) o;
+			assertEquals(message, mw.getMessage().asString());
+		} else {
+			assertEquals(message, o);
+		}
+	}
+
+	@DatabaseTest
+	public void testMessageBrowserIterator() throws Exception {
+		listener.configure();
+		listener.open();
+
+		String message = "fakeMessage";
+		String storageKey = insertARecord(message);
+		if (storageKey.startsWith("<id>")) {
+			storageKey = storageKey.substring(4, storageKey.length() - 5);
+		}
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		IMessageBrowsingIterator iterator = browser.getIterator();
+		assertTrue(iterator.hasNext());
+
+		IMessageBrowsingIteratorItem item = iterator.next();
+		assertNotNull(item);
+
+		assertEquals(storageKey, item.getId());
+		assertEquals("fakeMid", item.getOriginalId());
+		assertEquals("fakeCid", item.getCorrelationId());
+		assertEquals("fakeComments", item.getCommentString());
+	}
+
+	private String insertARecord(String message) throws SenderException, ConfigurationException {
+		storage.setType('M' + "");
 		storage.configure();
 		storage.open();
 		try {

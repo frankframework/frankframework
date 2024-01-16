@@ -16,6 +16,16 @@
 			<column name="tDATETIME" type="DATETIME"/>
 			<column name="tTIMESTAMP" type="TIMESTAMP"/>
 			<column name="tBOOLEAN" type="java.sql.Types.BOOLEAN"/>
+			<column name="SLOTID" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="TYPE" type="java.sql.Types.CHAR(1)"/>
+			<column name="HOST" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="MESSAGEID" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="CORRELATIONID" type="java.sql.Types.VARCHAR(256)"/>
+			<column name="MESSAGEDATE" type="DATETIME"/>
+			<column name="COMMENTS" type="java.sql.Types.VARCHAR(1000)"/>
+			<column name="MESSAGE" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
+			<column name="EXPIRYDATE" type="DATETIME"/>
+			<column name="LABEL" type="java.sql.Types.VARCHAR(100)"/>
 			<column name="tCLOB" type="CLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
 			<column name="tBLOB" type="LONGBLOB"/>
 		</createTable>
