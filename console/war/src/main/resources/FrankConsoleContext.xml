@@ -11,10 +11,10 @@
 
 	<context:property-placeholder location="classpath:application.properties"/>
 
-	<context:component-scan base-package="nl.nn.adapterframework.web" />
+	<context:component-scan base-package="org.frankframework.web" />
 
 	<!-- Messaging Gateway -->
-	<bean id="outboundGateway" class="nl.nn.adapterframework.management.bus.OutboundGatewayFactory">
+	<bean id="outboundGateway" class="org.frankframework.management.bus.OutboundGatewayFactory">
 		<property name="gatewayClassname" value="${management.gateway.outbound.class}" />
 	</bean>
 
@@ -23,7 +23,7 @@
 		<property name="allowUrlEncodedPercent" value="true"/>
 	</bean>
 
-	<bean id="JwtKeyGenerator" class="nl.nn.adapterframework.management.security.JwtKeyGenerator"/>
+	<bean id="JwtKeyGenerator" class="org.frankframework.management.security.JwtKeyGenerator"/>
 
 	<bean id="messageBuilderFactory" class="org.springframework.integration.support.DefaultMessageBuilderFactory" />
 </beans>

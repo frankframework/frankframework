@@ -147,4 +147,17 @@ TagDatabase
 		</addColumn>
 	</changeSet>
 
+	<changeSet id="FF_Util:8" author="Yannick van Leeuwen">
+		<comment>Allow 120 chars for version field</comment>
+		<modifyDataType
+				columnName="VERSION"
+				newDataType="java.sql.Types.VARCHAR(120)"
+				tableName="IBISCONFIG"/>
+		<rollback>
+			<modifyDataType
+					columnName="VERSION"
+					newDataType="java.sql.Types.VARCHAR(50)"
+					tableName="IBISCONFIG"/>
+		</rollback>
+	</changeSet>
 </databaseChangeLog>

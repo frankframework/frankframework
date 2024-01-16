@@ -1,13 +1,13 @@
 <configuration>
 	<adapter name="Samba2Pipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="Samba2Pipe" />
+			<listener className="org.frankframework.receivers.JavaListener" name="Samba2Pipe" />
 		</receiver>
 		<pipeline firstPipe="Samba2Pipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Samba2Pipe" className="nl.nn.adapterframework.pipes.Samba2Pipe" 
+			<pipe name="Samba2Pipe" className="org.frankframework.pipes.Samba2Pipe"
 				action="write"
                 authType="NTLM"
                 username="test"

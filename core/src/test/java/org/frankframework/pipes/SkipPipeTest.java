@@ -1,0 +1,57 @@
+package org.frankframework.pipes;
+
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
+import org.frankframework.core.PipeRunResult;
+import org.junit.jupiter.api.Test;
+
+
+/**
+ * SkipPipe Tester.
+ *
+ * @author <Sina Sen>
+ */
+public class SkipPipeTest extends PipeTestBase<SkipPipe>{
+
+
+
+	@Override
+	public SkipPipe createPipe() {
+		return new SkipPipe();
+	}
+
+	/**
+	 * Method: setSkip(int skip)
+	 */
+	@Test
+	void testDoPipeSkip3Read2WithString() throws Exception {
+		pipe.setSkip(3); pipe.setLength(2);
+		PipeRunResult res = doPipe(pipe, "0123456", session);
+		assertEquals("34", res.getResult().asString());
+	}
+
+	@Test
+	void testSkip3() throws Exception {
+		pipe.setSkip(3);
+		PipeRunResult res = doPipe(pipe, "0123456", session);
+		assertEquals( "3456", res.getResult().asString());
+	}
+
+	@Test
+	void testRead2WithString() throws Exception {
+		pipe.setLength(2);
+		PipeRunResult res = doPipe(pipe, "0123456", session);
+		assertEquals( "01", res.getResult().asString());
+	}
+
+	@Test
+	void testDoPipeWithByteArray() throws Exception {
+		byte[] myvar = "Any String you want".getBytes(); pipe.setSkip(2);
+		PipeRunResult res = doPipe(pipe, myvar, session);
+		assertNotEquals( "", res.getResult().asString());
+	}
+
+
+}

@@ -1,9 +1,4 @@
-<result>
-    <fielddefinition>IGNORE</fielddefinition>
-    <rowset>
-        <row number="0">
-            <field name="R1">MESSAGE-CONTENTS</field>
-            <field name="R2">E</field>
-        </row>
-    </rowset>
-</result>
+<resultset>
+	<result param="r1" type="STRING">MESSAGE-CONTENTS</result>
+	<result param="r2" type="STRING">E</result>
+</resultset>

@@ -22,7 +22,7 @@
     <row number="0">
       <field name="MESSAGEKEY">13481</field>
       <field name="TYPE">L</field>
-      <field name="SLOTID">IFSA://NLIBIS4TEST/EsbJmsFFSenderWithRead</field>
+      <field name="SLOTID">FF4TEST/EsbJmsFFSenderWithRead</field>
       <field name="HOST">LPAB00000018345</field>
       <field name="MESSAGEID">ID:LPAB00000018345-49375-1531481506023-3:14:93:1:1</field>
       <field name="CORRELATIONID">Test Tool correlation id</field>

@@ -3,22 +3,22 @@
 		<receiver>
 			<listener
 				name="TestSendMail"
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 			/>
 		</receiver>
 		<receiver>
 			<listener
 				name="TestSendMail"
-				className="nl.nn.adapterframework.http.RestListener"
+				className="org.frankframework.http.RestListener"
 				uriPattern="TestSendMail"
 				method="GET"
 			/>
 		</receiver>
 		<pipeline firstPipe="CreateMail">
-		
+
 			<pipe
 				name="CreateMail"
-				className="nl.nn.adapterframework.pipes.XsltPipe"
+				className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="/Larva/xsl/CreateMail.xsl"
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				>
@@ -30,10 +30,10 @@
 			</pipe>
 			<pipe
 				name="SendMail"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.MailSender"
+					className="org.frankframework.senders.MailSender"
 					smtpHost="${smtp.host}"
 				/>
 				<forward name="success" path="EXIT" />

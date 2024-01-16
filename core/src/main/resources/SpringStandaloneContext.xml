@@ -14,9 +14,9 @@
 	<integration:publish-subscribe-channel id="frank-management-bus" />
 
 	<!-- MessageKeepers for the Application and Configurations -->
-	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
+	<bean id="MessageEventListener" class="org.frankframework.lifecycle.MessageEventListener" scope="singleton" />
 
-	<bean name="meterRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistryFactoryBean" autowire="byName" lazy-init="true" />
+	<bean name="meterRegistry" class="org.frankframework.metrics.MetricsRegistryFactoryBean" autowire="byName" lazy-init="true" />
 
 	<!-- Used by WebServiceListeners to register on a local bus -->
 	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">

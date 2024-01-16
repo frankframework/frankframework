@@ -1,41 +1,41 @@
 <adapter name="HelloLines" description="Call http://localhost/api/hello-lines to see &lt;results&gt; ... Hello World One ... Two ... Three ... Four ... Five ... &lt;/results&gt;">
 	<receiver name="testtool-HelloLines">
-		<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloLines"/>
+		<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-HelloLines"/>
 	</receiver>
 	<receiver name="ApiListener">
-		<listener name="HelloLines" uriPattern="hello-lines" className="nl.nn.adapterframework.http.rest.ApiListener"/>
+		<listener name="HelloLines" uriPattern="hello-lines" className="org.frankframework.http.rest.ApiListener"/>
 	</receiver>
 	<receiver name="testtool-HelloLines-1">
-		<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloLines-1"/>
+		<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-HelloLines-1"/>
 	</receiver>
 	<receiver name="WebServiceListener">
-		<listener name="HelloLines" serviceNamespaceURI="urn:hello-lines" soap="false" className="nl.nn.adapterframework.http.WebServiceListener"/>
+		<listener name="HelloLines" serviceNamespaceURI="urn:hello-lines" soap="false" className="org.frankframework.http.WebServiceListener"/>
 	</receiver>
 	<receiver name="testtool-HelloLines-2">
-		<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloLines-2"/>
+		<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-HelloLines-2"/>
 	</receiver>
 	<pipeline firstPipe="Remove namespaces">
 		<exit path="READY" state="SUCCESS"/>
-		<pipe name="Remove namespaces" removeNamespaces="true" xpathExpression="/" outputType="XML" className="nl.nn.adapterframework.pipes.XsltPipe">
+		<pipe name="Remove namespaces" removeNamespaces="true" xpathExpression="/" outputType="XML" className="org.frankframework.pipes.XsltPipe">
 			<forward name="success" path="Only one line?"/>
 		</pipe>
-		<pipe name="Only one line?" xpathExpression="count(/lines/*) = 1" className="nl.nn.adapterframework.pipes.XmlSwitch">
+		<pipe name="Only one line?" xpathExpression="count(/lines/*) = 1" className="org.frankframework.pipes.XmlSwitch">
 			<forward name="true" path="Call HelloWorld"/>
 			<forward name="false" path="Call HelloWorld for every line"/>
 		</pipe>
-		<pipe name="Call HelloWorld" className="nl.nn.adapterframework.pipes.SenderPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
-			<sender javaListener="HelloWorld" className="nl.nn.adapterframework.senders.IbisLocalSender"/>
+		<pipe name="Call HelloWorld" className="org.frankframework.pipes.SenderPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
+			<sender javaListener="HelloWorld" className="org.frankframework.senders.IbisLocalSender"/>
 			<forward name="success" path="Transform result to XML"/>
 		</pipe>
-		<pipe name="Transform result to XML" xmlTag="result" className="nl.nn.adapterframework.pipes.Text2XmlPipe">
+		<pipe name="Transform result to XML" xmlTag="result" className="org.frankframework.pipes.Text2XmlPipe">
 			<forward name="success" path="Add documentation"/>
 		</pipe>
-		<pipe name="Call HelloWorld for every line" blockSize="2" blockPrefix="&lt;batch&gt;" blockSuffix="&lt;/batch&gt;" elementXPathExpression="/lines/*" className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
-			<sender javaListener="HelloWorld" className="nl.nn.adapterframework.senders.IbisLocalSender"/>
+		<pipe name="Call HelloWorld for every line" blockSize="2" blockPrefix="&lt;batch&gt;" blockSuffix="&lt;/batch&gt;" elementXPathExpression="/lines/*" className="org.frankframework.pipes.ForEachChildElementPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
+			<sender javaListener="HelloWorld" className="org.frankframework.senders.IbisLocalSender"/>
 			<param name="message"/>
 			<forward name="success" path="Add documentation"/>
 		</pipe>
-		<pipe name="Add documentation" styleSheetName="HelloLines/xsl/AddDocumentation.xsl" className="nl.nn.adapterframework.pipes.XsltPipe">
+		<pipe name="Add documentation" styleSheetName="HelloLines/xsl/AddDocumentation.xsl" className="org.frankframework.pipes.XsltPipe">
 			<param name="originalMessage" sessionKey="originalMessage"/>
 			<param name="validatorMessage" sessionKey="validatorMessage"/>
 			<param name="exampleMessage" sessionKey="exampleMessage"/>
@@ -43,18 +43,18 @@
 			<param name="exampleMessageAsJson" sessionKey="exampleMessageAsJson"/>
 			<forward name="success" path="READY"/>
 		</pipe>
-		<pipe name="Create example plain text message" returnString="Line One&#10;Line Two&#10;Line Three&#10;Line Four&#10;Line Five" storeResultInSessionKey="exampleMessage" className="nl.nn.adapterframework.pipes.FixedResultPipe">
+		<pipe name="Create example plain text message" returnString="Line One&#10;Line Two&#10;Line Three&#10;Line Four&#10;Line Five" storeResultInSessionKey="exampleMessage" className="org.frankframework.pipes.FixedResultPipe">
 			<forward name="success" path="Transform plain text message to XML"/>
 		</pipe>
-		<pipe name="Transform plain text message to XML" xmlTag="lines" splitLines="true" className="nl.nn.adapterframework.pipes.Text2XmlPipe">
+		<pipe name="Transform plain text message to XML" xmlTag="lines" splitLines="true" className="org.frankframework.pipes.Text2XmlPipe">
 			<forward name="success" path="Add position to elements"/>
 		</pipe>
-		<pipe name="Add position to elements" styleSheetName="HelloLines/xsl/AddPositionToElements.xsl" storeResultInSessionKey="exampleMessageAsXml" className="nl.nn.adapterframework.pipes.XsltPipe">
+		<pipe name="Add position to elements" styleSheetName="HelloLines/xsl/AddPositionToElements.xsl" storeResultInSessionKey="exampleMessageAsXml" className="org.frankframework.pipes.XsltPipe">
 			<forward name="success" path="Transform XML message to JSON message"/>
 		</pipe>
-		<pipe name="Transform XML message to JSON message" noNamespaceSchemaLocation="HelloLines/xsd/Lines.xsd" root="lines" outputFormat="JSON" preserveInput="true" storeResultInSessionKey="exampleMessageAsJson" throwException="true" className="nl.nn.adapterframework.pipes.Json2XmlValidator">
+		<pipe name="Transform XML message to JSON message" noNamespaceSchemaLocation="HelloLines/xsd/Lines.xsd" root="lines" outputFormat="JSON" preserveInput="true" storeResultInSessionKey="exampleMessageAsJson" throwException="true" className="org.frankframework.pipes.Json2XmlValidator">
 			<forward name="success" path="Remove namespaces"/>
 		</pipe>
-		<pipe name="resolveFailure" className="nl.nn.adapterframework.pipes.XsltPipe"/>
+		<pipe name="resolveFailure" className="org.frankframework.pipes.XsltPipe"/>
 	</pipeline>
 </adapter>

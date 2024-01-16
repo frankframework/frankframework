@@ -2,7 +2,7 @@
 	<adapter name="XmlQuerySender">
 		<receiver name="XmlQuerySender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="XmlQuerySender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.jdbc.XmlQuerySender"
+					className="org.frankframework.jdbc.XmlQuerySender"
 					queryType="select"
 				/>
 				<forward name="success" path="READY"/>

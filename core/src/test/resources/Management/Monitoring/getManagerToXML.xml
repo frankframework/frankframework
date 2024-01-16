@@ -1,7 +1,7 @@
 <monitoring>
 	<destination/>
 	<monitor type="TECHNICAL" destinations="dummy destination">
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" severity="CRITICAL">
+		<trigger className="org.frankframework.monitoring.Alarm" severity="CRITICAL">
 			<event>dummy code</event>
 		</trigger>
 	</monitor>

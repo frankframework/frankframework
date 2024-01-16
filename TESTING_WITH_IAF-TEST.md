@@ -31,7 +31,7 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 
    - `log.dir=c:/temp` (lower case 'c' is mandatory)
    - `dtap.stage=LOC`.
-   - `credentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory`
+   - `credentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory`
    - `credentialFactory.filesystem.root=<path to your sources root>/test/src/main/secrets`
    - `authAliases.expansion.allowed=testalias`
 2. In the Tomcat Overview window, set the port number for HTTP/1.1 to 80. If you wish to use another port, please set the property `web.port` accordingly in catalina.properties.
@@ -61,11 +61,11 @@ parallel, so you can for instance run multiple debug sessions side by side to co
    - `-Ddtap.stage=LOC`
    - `-DauthAliases.expansion.allowed=testalias`
    - `-Dlog.dir=c:/temp` (lower case 'c' is mandatory) (or whatever works for your system, drive letters on Windows must be lowercase).
-   - `-DcredentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory`
+   - `-DcredentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory`
    - `-DcredentialFactory.filesystem.root=<path to your sources root>/test/src/main/secrets`
 3. Set the Tomcat HTTP port to `80`
 NB: If you want to run on a different port, you also need to add to your VM options the option `-Dweb.port=8080` (or whatever port you chose).
-4. In the tab "Deployments", select the module `ibis-adapterframework-test: war exploded` and the application context-path `/iaf-test`.
+4. In the tab "Deployments", select the module `frankframework-test: war exploded` and the application context-path `/iaf-test`.
 5. Other settings as you find appropriate
 
 ### Note about the log dir:
@@ -73,20 +73,20 @@ See the Eclipse instructions for an important note about the `log.dir` setting.
 
 ## 4. Select database
 
-The ibis-adapterframeworkt-test project supports multiple databases. By default, an H2 local database is used.
-Docker projects for a number of other DMBSes are provided in GitHub project https://github.com/frankframework/ci-images. To use one of the provided databases, run the `rebuild.bat` script in the corresponding directory. (requires Docker to be installed on your machine). To configure the ibis-adapterframeworkt-test application, set in the catalina.properties or the VM Options the property `jdbc.dbms.default` to `oracle`, `mssql`, `mysql`, `mariadb` or `postgres`.
+The frankframework-test project supports multiple databases. By default, an H2 local database is used.
+Docker projects for a number of other DMBSes are provided in GitHub project https://github.com/frankframework/ci-images. To use one of the provided databases, run the `rebuild.bat` script in the corresponding directory. (requires Docker to be installed on your machine). To configure the frankframework-test application, set in the catalina.properties or the VM Options the property `jdbc.dbms.default` to `oracle`, `mssql`, `mysql`, `mariadb` or `postgres`.
 
 ## 5. Running the test scenarios
 
 ### Eclipse
-Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Ibis console by browsing to http://localhost/iaf-test/.
+Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Frank!Framework console by browsing to http://localhost/iaf-test/.
 
 ### IntelliJ
 Start your IAF-Test Run Configuration from the "Run Configurations" menu or from the "Services" tool panel, either in "Run" or in "Debug" mode.
 Depending on how you configured it when the system is ready it will either open a browser window automatically, or you can manually navigate to http://localhost/iaf-test/ in your browser of choice.
 
 ### Starting the Tests
-Once the Ibis console is loaded, go to the Larva testtool in the sidebar. Specify which scenarios to run and under which conditions - the default settings should be good for checking if everything works.
+Once the Frank!Framework console is loaded, go to the Larva testtool in the sidebar. Specify which scenarios to run and under which conditions - the default settings should be good for checking if everything works.
 
 Press [ Start ], sit back, relax, do some stretches, and let's hope for the best. :)
 
@@ -96,4 +96,4 @@ Press [ Start ], sit back, relax, do some stretches, and let's hope for the best
 
 * Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/(your name)/.m2/_ and create a _settings.xml_ file. Edit the file by adding your own repository or the [frankframework nexus repository](https://nexus.frankframework.org/content/groups/private/) as [mirror](https://maven.apache.org/guides/mini/guide-mirror-settings.html).
 * When your IP-address is dynamically generated, you may have problems connecting to your database that runs in a docker image. The Larva tests reference the database host by a DNS name, `host.docker.internal`. Docker may not automatically update the IP address to which this name refers when your computer is assigned a new IP address. To see whether you have this issue, do `ping host.docker.internal` in a command prompt. If you cannot reach this address, refresh your docker network. You can do that using docker desktop. Press the settings icon (cogwheel) to the top. In the left-hand menu, choose Resources | Network. Update the docker subnet.
-* If you are using an Oracle database, mind the version of the driver you download. For each combination of a JDK version and an Oracle database version, the driver is different. The filename on the Oracle download page depends only on the JDK version though. You can find the Oracle version we use in `ibis-adapterframework-docker/pom.xml`.
+* If you are using an Oracle database, mind the version of the driver you download. For each combination of a JDK version and an Oracle database version, the driver is different. The filename on the Oracle download page depends only on the JDK version though. You can find the Oracle version we use in `frankframework-docker/pom.xml`.

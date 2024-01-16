@@ -5,7 +5,7 @@
                 maxRetries="4"
                 pollInterval="1"
                 transactionTimeout="30">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-JdbcTableListener"/>
       </receiver>
 		    <receiver name="JdbcTableListener"
@@ -14,7 +14,7 @@
                 pollInterval="1"
                 transactionTimeout="30">
 			      <listener name="JdbcTableListener for ibis4test"
-                   className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+                   className="org.frankframework.jdbc.JdbcTableListener"
                    tableName="IBISTEMP"
                    statusField="TCHAR"
                    timestampField="TTIMESTAMP"
@@ -33,14 +33,14 @@
                 maxRetries="4"
                 pollInterval="1"
                 transactionTimeout="30">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-JdbcTableListener-1"/>
       </receiver>
 		    <pipeline firstPipe="EchoPipe">
 			      <exits>
 				        <exit path="EXIT" state="success"/>
 			      </exits>
-			      <pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+			      <pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				        <forward name="success" path="EXIT"/>
 			      </pipe>
 		    </pipeline>

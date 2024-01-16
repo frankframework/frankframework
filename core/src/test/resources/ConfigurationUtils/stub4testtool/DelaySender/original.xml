@@ -2,7 +2,7 @@
 	<adapter name="DelaySender">
 		<receiver name="DelaySender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="DelaySender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.DelaySender"
+					className="org.frankframework.senders.DelaySender"
 					delayTime="5"
 				/>
 				<forward name="success" path="READY"/>

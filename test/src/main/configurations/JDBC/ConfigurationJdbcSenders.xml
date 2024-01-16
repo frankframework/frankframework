@@ -2,7 +2,7 @@
 	<adapter name="JdbcSenders" description="Test the functioning of the DirectQuerySender">
 		<receiver>
 			<listener name="JdbcQuerySenderTest"
-						className="nl.nn.adapterframework.receivers.JavaListener"
+						className="org.frankframework.receivers.JavaListener"
 						serviceName="ibis4test-JdbcSenders"
 			/>
 		</receiver>
@@ -10,19 +10,19 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ExctractQuery" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="ExctractQuery" className="org.frankframework.pipes.XsltPipe"
 				xpathExpression="/request/@query" storeResultInSessionKey="query"
 			/>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="/request/@action" getInputFromSessionKey="originalMessage"
 			/>
 
 			<pipe name="DirectQuerySender" getInputFromSessionKey="query">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true"/>
+				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="select" scalar="true"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="DirectQuerySender-TwoParam" getInputFromSessionKey="query">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true" >
+				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="select" scalar="true" >
 					<param name="param1" value="1" type="integer" />
 					<param name="param2" value="10" type="integer" />
 				</sender>
@@ -31,11 +31,11 @@
 			<pipe name="DirectQuerySender-TwoPipeParam" getInputFromSessionKey="query">
 				<param name="param1" value="1" type="integer" />
 				<param name="param2" value="10" type="integer" />
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true" />
+				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="select" scalar="true" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="DirectQuerySender-TwoParamNamed" getInputFromSessionKey="query">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true" useNamedParams="true">
+				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="select" scalar="true" useNamedParams="true">
 					<param name="param1" value="1" type="integer" />
 					<param name="param2" value="10" type="integer" />
 				</sender>
@@ -44,7 +44,7 @@
 			<pipe name="DirectQuerySender-TwoPipeParamNamed" getInputFromSessionKey="query">
 				<param name="param1" value="1" type="integer" />
 				<param name="param2" value="10" type="integer" />
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true" useNamedParams="true" />
+				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="select" scalar="true" useNamedParams="true" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

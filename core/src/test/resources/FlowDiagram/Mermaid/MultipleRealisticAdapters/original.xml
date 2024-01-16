@@ -3,18 +3,18 @@
 		<receiver name="Document_GET">
 			<!-- GUID is passed over query param-->
 			<listener
-				className="nl.nn.adapterframework.http.rest.ApiListener"
+				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="test"
 				method="GET"
 				produces="JSON"
 			/>
 		</receiver>
 		<pipeline firstPipe="Select_Document">
-			<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator" schema="test.xsd" root="manageDatabaseREQ">
+			<inputValidator className="org.frankframework.pipes.XmlValidator" schema="test.xsd" root="manageDatabaseREQ">
 				<forward name="failure" path="Create_Response_Busy" />
 				<forward name="parserError" path="error2json" />
 			</inputValidator>
-			<outputValidator className="nl.nn.adapterframework.pipes.XmlValidator" schema="test.xsd" root="manageDatabaseRLY">
+			<outputValidator className="org.frankframework.pipes.XmlValidator" schema="test.xsd" root="manageDatabaseRLY">
 				<forward name="failure" path="Create_Response_Busy" />
 				<forward name="parserError" path="Create_Response_Busy" />
 			</outputValidator>
@@ -27,8 +27,8 @@
 				<exit path="ServerError" state="error" code="500" />
 			</exits>
 
-			<pipe name="Select_Document" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="documentInformation">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+			<pipe name="Select_Document" className="org.frankframework.pipes.SenderPipe" storeResultInSessionKey="documentInformation">
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 						queryType="select"
 						jmsRealm="test"
 						query="test"
@@ -40,15 +40,15 @@
 				<forward name="exception"   path="ServerError" />
 			</pipe>
 
-			<pipe name="Is_Target_MetaData_Schema_Empty" className="nl.nn.adapterframework.pipes.XmlIf"
+			<pipe name="Is_Target_MetaData_Schema_Empty" className="org.frankframework.pipes.XmlIf"
 				  xpathExpression="test"
 			>
 				<forward name="then" path="Get_Principal" />
 				<forward name="else" path="Magdat" />
 			</pipe>
 
-			<pipe name="Magdat" className="nl.nn.adapterframework.pipes.SenderPipe" getInputFromSessionKey="documentInformation" storeResultInSessionKey="Magdat">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="test" returnedSessionKeys="test">
+			<pipe name="Magdat" className="org.frankframework.pipes.SenderPipe" getInputFromSessionKey="documentInformation" storeResultInSessionKey="Magdat">
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="test" returnedSessionKeys="test">
 					<param name="test" xpathExpression="test"/>
 					<param name="test" sessionKey="securityHandler" />
 				</sender>
@@ -56,29 +56,29 @@
 				<forward name="success" path="Magdat_Result_Check" />
 			</pipe>
 
-			<pipe name="Magdat_Result_Check" className="nl.nn.adapterframework.pipes.XmlIf"
+			<pipe name="Magdat_Result_Check" className="org.frankframework.pipes.XmlIf"
 				  xpathExpression="test" preserveInput="true"
 			>
 				<forward name="then" path="Has_Security_Rules" />
 				<forward name="else" path="NotAllowed" />
 			</pipe>
 
-			<pipe name="Has_Security_Rules" className="nl.nn.adapterframework.pipes.XmlIf"
+			<pipe name="Has_Security_Rules" className="org.frankframework.pipes.XmlIf"
 				  xpathExpression="count(test) &gt; 0"
 			>
 				<forward name="then" path="Extract_Security_Class_From_Metadata" />
 				<forward name="else" path="Check_If_Conversion_Finished" />
 			</pipe>
 
-			<pipe name="Extract_Security_Class_From_Metadata" className="nl.nn.adapterframework.pipes.XsltPipe" storeResultInSessionKey="securityClassDocument"
-				  styleSheetName="test.xsl" getInputFromSessionKey="documentInformation">
+			<pipe name="Extract_Security_Class_From_Metadata" className="org.frankframework.pipes.XsltPipe" storeResultInSessionKey="securityClassDocument"
+                  styleSheetName="test.xsl" getInputFromSessionKey="documentInformation">
 
 				<forward name="exception" path="error2json" />
 				<forward name="success" path="Check_Security_Class_Against_Rules" />
 			</pipe>
 
-			<pipe name="Check_Security_Class_Against_Rules" className="nl.nn.adapterframework.pipes.XsltPipe" getInputFromFixedValue="&lt;dummy/&gt;"
-				  styleSheetName="test.xsl"
+			<pipe name="Check_Security_Class_Against_Rules" className="org.frankframework.pipes.XsltPipe" getInputFromFixedValue="&lt;dummy/&gt;"
+                  styleSheetName="test.xsl"
 			>
 				<param name="securityClassDocument" sessionKey="securityClassDocument" type="domdoc"/>
 				<param name="Magdat" 	sessionKey="Magdat" type="domdoc"/>
@@ -88,30 +88,30 @@
 				<forward name="success" path="Check_Security_Class_Against_Rules_Result" />
 			</pipe>
 
-			<pipe name="Check_Security_Class_Against_Rules_Result" className="nl.nn.adapterframework.pipes.XmlIf"
+			<pipe name="Check_Security_Class_Against_Rules_Result" className="org.frankframework.pipes.XmlIf"
 				  xpathExpression="test"
 			>
 				<forward name="then" path="Check_If_Conversion_Finished" />
 				<forward name="else" path="NotAllowed" />
 			</pipe>
 
-			<pipe name="Get_Principal" className="nl.nn.adapterframework.pipes.GetPrincipalPipe"
+			<pipe name="Get_Principal" className="org.frankframework.pipes.GetPrincipalPipe"
 				  storeResultInSessionKey="principal"
 			>
 				<forward name="success" path="Check_If_Conversion_Finished" />
 			</pipe>
 
-			<pipe name="Check_If_Conversion_Finished" className="nl.nn.adapterframework.pipes.XmlIf"
+			<pipe name="Check_If_Conversion_Finished" className="org.frankframework.pipes.XmlIf"
 				  xpathExpression="string-length(test) &gt; 0" getInputFromSessionKey="documentInformation"
 			>
 				<forward name="then" path="Find_Nested_Attachments" />
 				<forward name="else" path="Create_Response_Busy" />
 			</pipe>
 
-			<pipe name="Find_Nested_Attachments" className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+			<pipe name="Find_Nested_Attachments" className="org.frankframework.pipes.ForEachChildElementPipe"
 				  storeResultInSessionKey="attachmentsResult" elementXPathExpression="test" getInputFromSessionKey="documentInformation">
 
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="Select_Attachments">
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="Select_Attachments">
 					<param name="PARENT_CONVERSION_ID" xpathExpression="test"/>
 				</sender>
 
@@ -119,8 +119,8 @@
 				<forward name="exception" path="READY" />
 			</pipe>
 
-			<pipe name="Find_Retry_Actions" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="retryActions">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+			<pipe name="Find_Retry_Actions" className="org.frankframework.pipes.SenderPipe" storeResultInSessionKey="retryActions">
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 						queryType="select"
 						jmsRealm="test"
 						query="test"
@@ -133,8 +133,8 @@
 				<forward name="exception"   path="ServerError" />
 			</pipe>
 
-			<pipe name="Call_DPDH" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="test">
+			<pipe name="Call_DPDH" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="test">
 					<param name="test" sessionKey="test" xpathExpression="test"/>
 					<param name="test" sessionKey="test" xpathExpression="test"/>
 					<param name="test" value="test"/>
@@ -149,7 +149,7 @@
 				<forward name="exception" path="ServerError" />
 			</pipe>
 
-			<pipe name="Create_Response" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="Create_Response" className="org.frankframework.pipes.XsltPipe"
 				  styleSheetName="Document_GET/xsl/CreateResponse.xsl" getInputFromSessionKey="documentInformation">
 
 				<param name="test" sessionKey="test" type="domdoc" defaultValue="&lt;dummy/&gt;"/>
@@ -159,14 +159,14 @@
 				<forward name="success" path="xml2json" />
 			</pipe>
 
-			<pipe name="xml2json" className="nl.nn.adapterframework.pipes.Json2XmlValidator"
+			<pipe name="xml2json" className="org.frankframework.pipes.Json2XmlValidator"
 				  outputFormat="json" warn="false" schema="test.xsd" root="root"
 			>
 				<forward name="success" path="READY" />
 				<forward name="failure" path="error2json"/>
 			</pipe>
 
-			<pipe name="Create_Response_Busy" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="Create_Response_Busy" className="org.frankframework.pipes.XsltPipe"
 				  styleSheetName="test.xsl" getInputFromSessionKey="documentInformation"
 			>
 
@@ -174,14 +174,14 @@
 				<forward name="success" path="xml2json_busy" />
 			</pipe>
 
-			<pipe name="xml2json_busy" className="nl.nn.adapterframework.pipes.Json2XmlValidator"
+			<pipe name="xml2json_busy" className="org.frankframework.pipes.Json2XmlValidator"
 				  outputFormat="json" warn="false" schema="test.xsd" root="root"
 			>
 				<forward name="success" path="READY" />
 				<forward name="failure" path="error2json"/>
 			</pipe>
 
-			<pipe name="error2json" className="nl.nn.adapterframework.pipes.JsonPipe"
+			<pipe name="error2json" className="org.frankframework.pipes.JsonPipe"
 				  direction="xml2json"
 			>
 				<forward name="success" path="ServerError" />
@@ -192,8 +192,8 @@
 	</adapter>
 	<adapter name="Select_Attachments" description="test" active="${test}">
 
-		<receiver name="Select_Attachments" className="nl.nn.adapterframework.receivers.SenderPipe">
-			<listener name="Select_Attachments" className="nl.nn.adapterframework.receivers.JavaListener"/>
+		<receiver name="Select_Attachments" className="org.frankframework.receivers.SenderPipe">
+			<listener name="Select_Attachments" className="org.frankframework.receivers.JavaListener"/>
 		</receiver>
 
 		<pipeline firstPipe="Select_Attachments">
@@ -201,8 +201,8 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="Select_Attachments" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="documentInformation">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+			<pipe name="Select_Attachments" className="org.frankframework.pipes.SenderPipe" storeResultInSessionKey="documentInformation">
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 						queryType="select"
 						jmsRealm="test"
 						query="test"
@@ -214,10 +214,10 @@
 				<forward name="exception" path="EXIT" />
 			</pipe>
 
-			<pipe name="Find_Nested_Attachments" className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+			<pipe name="Find_Nested_Attachments" className="org.frankframework.pipes.ForEachChildElementPipe"
 				  storeResultInSessionKey="attachmentsResult" elementXPathExpression="test" preserveInput="true">
 
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="Select_Attachments">
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="Select_Attachments">
 					<param name="test" xpathExpression="test"/>
 				</sender>
 
@@ -225,7 +225,7 @@
 				<forward name="exception" path="EXIT" />
 			</pipe>
 
-			<pipe name="Map_Attachment" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="Map_Attachment" className="org.frankframework.pipes.XsltPipe"
 				  styleSheetName="test.xsl"
 			>
 				<param name="test" sessionKey="test" type="domdoc" defaultValue="&lt;dummy/&gt;"/>

@@ -1,7 +1,7 @@
 <module>
 	<adapter name="FxF3In">
 		<receiver name="FxF3In">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-FxF3In" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
@@ -9,17 +9,17 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<inputValidator
-				className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator"
+				className="org.frankframework.extensions.fxf.FxfXmlValidator"
 				direction="receive" />
-			<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
+			<inputWrapper className="org.frankframework.extensions.fxf.FxfWrapperPipe"
 				direction="unwrap" createFolder="true"/>
-			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe" />
+			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe" />
 		</pipeline>
 	</adapter>
 
 	<adapter name="FxF3Out">
 		<receiver name="FxF3Out">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-FxF3Out" />
 		</receiver>
 		<pipeline firstPipe="EchoSender">
@@ -27,12 +27,12 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="EchoSender"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
+				className="org.frankframework.pipes.SenderPipe">
+				<inputWrapper className="org.frankframework.extensions.fxf.FxfWrapperPipe"
 					flowId="NNX01234" createFolder="true"/>
 				<inputValidator
-					className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator" />
-				<sender className="nl.nn.adapterframework.senders.EchoSender" />
+					className="org.frankframework.extensions.fxf.FxfXmlValidator" />
+				<sender className="org.frankframework.senders.EchoSender" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -40,7 +40,7 @@
 
 	<adapter name="FxF3v2Out">
 		<receiver name="FxF3v2Out">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-FxF3v2Out" />
 		</receiver>
 		<pipeline firstPipe="EchoSender">
@@ -48,13 +48,13 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="EchoSender"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
+				className="org.frankframework.pipes.SenderPipe">
+				<inputWrapper className="org.frankframework.extensions.fxf.FxfWrapperPipe"
 					flowId="NNX01234" fxfVersion="3.2" cmhVersion="2" createFolder="true"/>
 				<inputValidator
-					className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator"
+					className="org.frankframework.extensions.fxf.FxfXmlValidator"
 					fxfVersion="3.2" />
-				<sender className="nl.nn.adapterframework.senders.EchoSender" />
+				<sender className="org.frankframework.senders.EchoSender" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

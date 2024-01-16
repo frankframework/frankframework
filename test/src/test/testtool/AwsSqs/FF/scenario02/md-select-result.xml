@@ -22,7 +22,7 @@
 					<row number="0">
 						<field name="MESSAGEKEY">8</field>
 						<field name="TYPE">A</field>
-						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFListener</field>
+						<field name="SLOTID">FF4TEST/AwsSqsJmsFFListener</field>
 						<field name="HOST">LPZWNL000040524</field>
 						<field name="MESSAGEID">ID:d78a3b61-332c-4d5d-b651-4f5ce5c6f756</field>
 						<field name="CORRELATIONID">Test Tool correlation id(4)</field>

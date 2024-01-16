@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="ParallelSenders">
       <receiver name="testtool-ParallelSenders">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-ParallelSenders"/>
       </receiver>
 		    <receiver name="ParallelSenders">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="ParallelSenders"/>
 		    </receiver>
       <receiver name="testtool-ParallelSenders-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-ParallelSenders-1"/>
       </receiver>
 
@@ -18,12 +18,12 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
-					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
+				        <sender className="org.frankframework.senders.ParallelSenders">
+					          <sender className="org.frankframework.senders.EchoSender"/>
+					          <sender className="org.frankframework.senders.EchoSender"/>
 				        </sender>
 				        <forward name="success" path="READY"/>
 			      </pipe>

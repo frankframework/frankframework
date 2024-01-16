@@ -1,5 +1,5 @@
 <throwable>
-  <class>nl.nn.adapterframework.core.SenderException</class>
+  <class>org.frankframework.core.SenderException</class>
   <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-WebServiceSenderErrorServiceNamespaceURI]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderErrorServiceNamespaceURI] caught exception: Pipe [Send2WS] caught exception: SOAP fault [soap:Server]: Could not process SOAP message: &lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error:serviceNamespaceURI&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&gt;</message>
   <cause>
     <throwable>
@@ -7,15 +7,15 @@
       <message>RequestProcessor [ibis4test-WebServiceSenderErrorServiceNamespaceURI] caught exception</message>
       <cause>
         <throwable>
-          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <class>org.frankframework.core.ListenerException</class>
           <message>Pipe [Send2WS] caught exception: SOAP fault [soap:Server]: Could not process SOAP message: &lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error:serviceNamespaceURI&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&gt;</message>
           <cause>
             <throwable>
-              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <class>org.frankframework.core.PipeRunException</class>
               <message>Pipe [Send2WS] caught exception: SOAP fault [soap:Server]: Could not process SOAP message: &lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error:serviceNamespaceURI&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&gt;</message>
               <cause>
                 <throwable>
-                  <class>nl.nn.adapterframework.core.SenderException</class>
+                  <class>org.frankframework.core.SenderException</class>
                   <message>SOAP fault [soap:Server]: Could not process SOAP message: &lt;WebServiceListerSenderREQ xmlns=&quot;urn:ws_error:serviceNamespaceURI&quot; xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;/&gt;</message>
                 </throwable>
               </cause>

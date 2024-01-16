@@ -249,7 +249,7 @@
 		<xsl:copy>
 			<xsl:call-template name="defaultPipeCopyActions"/>
 
-			<xsl:for-each select="descendant::sender[@className='nl.nn.adapterframework.senders.IbisLocalSender']">
+			<xsl:for-each select="descendant::sender[@className='org.frankframework.senders.IbisLocalSender']">
 				<xsl:call-template name="IbisLocalSender"/>
 			</xsl:for-each>
 			<!-- Add success forward if not present -->
@@ -262,15 +262,15 @@
 	</xsl:template>
 
 	<!-- The following pipes do not have a success forward, so it should not be added by default -->
-	<xsl:template match="pipe[@className=('nl.nn.adapterframework.pipes.CompareStringPipe',
-										 'nl.nn.adapterframework.pipes.CompareIntegerPipe')]" mode="preprocess">
+	<xsl:template match="pipe[@className=('org.frankframework.pipes.CompareStringPipe',
+										 'org.frankframework.pipes.CompareIntegerPipe')]" mode="preprocess">
 		<xsl:copy>
 			<xsl:call-template name="defaultPipeCopyActions"/>
 		</xsl:copy>
 	</xsl:template>
 
 	<!-- The XmlIf can have different forward names which then might directly point to a next pipe/exit -->
-	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.XmlIf']" mode="preprocess">
+	<xsl:template match="pipe[@className='org.frankframework.pipes.XmlIf']" mode="preprocess">
 		<xsl:copy>
 			<xsl:call-template name="switchPipeCopyActions"/>
 
@@ -298,7 +298,7 @@
 	</xsl:template>
 
 	<!-- The XmlSwitchPipe can have no forwards, in that case do nothing. Users shouldn't let this happen -->
-	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.XmlSwitch']" mode="preprocess">
+	<xsl:template match="pipe[@className='org.frankframework.pipes.XmlSwitch']" mode="preprocess">
 		<xsl:copy>
 			<xsl:call-template name="switchPipeCopyActions"/>
 
@@ -328,7 +328,7 @@
 			<xsl:call-template name="defaultCopyActions"/>
 		</xsl:copy>
 
-		<xsl:variable name="targetReceiver" select="ancestor::*/adapter/receiver[listener[@className='nl.nn.adapterframework.receivers.JavaListener' and @name=current()/@javaListener]]"/>
+		<xsl:variable name="targetReceiver" select="ancestor::*/adapter/receiver[listener[@className='org.frankframework.receivers.JavaListener' and @name=current()/@javaListener]]"/>
 		<xsl:if test="exists($targetReceiver)">
 			<xsl:element name="forward">
 				<xsl:attribute name="name" select="'differentAdapter'"/>

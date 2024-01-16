@@ -15,17 +15,17 @@
 
 	<context:property-placeholder />
 
-	<bean name="AppConstantsPropertySource" class="nl.nn.adapterframework.testutil.AppConstantsPropertySource" />
+	<bean name="AppConstantsPropertySource" class="org.frankframework.testutil.AppConstantsPropertySource" />
 
 	<import resource="testConfigurationContext.xml"/>
 
-	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
+	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 	<bean id="dataSourceFactory" class="${URLDataSourceFactory}" />
-	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.dbms.DbmsSupportFactory" />
+	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory" />
 
 	<bean
 		id="txManagerProxy"
-		class="nl.nn.adapterframework.jta.SpringTxManagerProxy"
+		class="org.frankframework.jta.SpringTxManagerProxy"
 		>
 		<property name="realTxManager">
 			<ref bean="txManagerReal"/>

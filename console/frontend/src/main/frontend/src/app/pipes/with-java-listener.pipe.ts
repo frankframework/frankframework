@@ -1,0 +1,24 @@
+import { Pipe, PipeTransform } from '@angular/core';
+import { Adapter } from '../app.service';
+
+@Pipe({
+  name: 'withJavaListener'
+})
+export class WithJavaListenerPipe implements PipeTransform {
+
+  transform(adapters: Record<string, Adapter>): Adapter[] {
+    if (!adapters) return [];
+    // let schedulerEligibleAdapters: Record<string, Adapter> = {};
+    const schedulerEligibleAdapters: Adapter[] = [];
+    for (const adapter in adapters) {
+      const receivers = adapters[adapter].receivers ?? [];
+      for (const receiver of receivers) {
+        if (receiver.listener.class.startsWith('JavaListener')) {
+          schedulerEligibleAdapters.push(adapters[adapter]);
+        }
+      }
+    }
+    return schedulerEligibleAdapters;
+  }
+
+}

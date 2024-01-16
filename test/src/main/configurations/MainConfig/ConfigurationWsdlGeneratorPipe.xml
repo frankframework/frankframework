@@ -1,7 +1,7 @@
 <module>
 	<adapter name="WsdlGeneratorPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlGeneratorPipe" />
 		</receiver>
 
@@ -10,34 +10,34 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="getFileInfo" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+			<pipe name="getFileInfo" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="info">
 				<forward name="success" path="getFileName" />
 			</pipe>
 
-			<pipe name="getFileName" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="getFileName" className="org.frankframework.pipes.XsltPipe"
 				xpathExpression="file/@name" storeResultInSessionKey="fileName">
 				<forward name="success" path="readFile" />
 			</pipe>
 
-			<pipe name="readFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+			<pipe name="readFile" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="read" getInputFromSessionKey="originalMessage"
 				storeResultInSessionKey="file">
 				<forward name="success" path="generateWsdl" />
 			</pipe>
 
 			<pipe name="generateWsdl"
-				className="nl.nn.adapterframework.extensions.esb.WsdlGeneratorPipe"
+				className="org.frankframework.extensions.esb.WsdlGeneratorPipe"
 				getInputFromSessionKey="originalMessage">
 				<forward name="success" path="getWsdlFullFileName" />
 			</pipe>
 
-			<pipe name="getWsdlFullFileName" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="getWsdlFullFileName" className="org.frankframework.pipes.XsltPipe"
 				xpathExpression="directory/file[ends-with(@name,'.wsdl')]/@canonicalName">
 				<forward name="success" path="readWsdlFile" />
 			</pipe>
 
-			<pipe name="readWsdlFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+			<pipe name="readWsdlFile" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="read">
 				<forward name="success" path="EXIT" />
 			</pipe>

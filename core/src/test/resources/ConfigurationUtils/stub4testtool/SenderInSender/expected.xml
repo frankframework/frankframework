@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="SenderSeries">
       <receiver name="testtool-SenderSeries">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-SenderSeries"/>
       </receiver>
 		    <receiver name="SenderSeries">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="SenderSeries"/>
 		    </receiver>
       <receiver name="testtool-SenderSeries-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-SenderSeries-1"/>
       </receiver>
 
@@ -18,34 +18,34 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.SenderSeries">
-					<!--<sender className="nl.nn.adapterframework.jms.JmsSender"
+				        <sender className="org.frankframework.senders.SenderSeries">
+					<!--<sender className="org.frankframework.jms.JmsSender"
                        destinationName="Test1"
-                       lookupDestination="false"/>--><sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+                       lookupDestination="false"/>--><sender className="org.frankframework.senders.IbisJavaSender"
                        serviceName="testtool-Call Sender-SenderSeries-1-JmsSender-1"/>
 					<!--<sender name="JmsSender-L1"
-                       className="nl.nn.adapterframework.jms.JmsSender"
+                       className="org.frankframework.jms.JmsSender"
                        destinationName="Test2"
                        lookupDestination="false"/>--><sender name="JmsSender-L1"
-                       className="nl.nn.adapterframework.senders.IbisJavaSender"
+                       className="org.frankframework.senders.IbisJavaSender"
                        serviceName="testtool-JmsSender-L1"/>
-					          <sender className="nl.nn.adapterframework.senders.ParallelSenders">
-						            <sender className="nl.nn.adapterframework.senders.EchoSender"/>
-						<!--<sender className="nl.nn.adapterframework.jms.JmsSender"
+					          <sender className="org.frankframework.senders.ParallelSenders">
+						            <sender className="org.frankframework.senders.EchoSender"/>
+						<!--<sender className="org.frankframework.jms.JmsSender"
                           destinationName="Test3"
-                          lookupDestination="false"/>--><sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+                          lookupDestination="false"/>--><sender className="org.frankframework.senders.IbisJavaSender"
                           serviceName="testtool-Call Sender-SenderSeries-1-ParallelSenders-3-JmsSender-2"/>
 						<!--<sender name="JmsSender-L2"
-                          className="nl.nn.adapterframework.jms.JmsSender"
+                          className="org.frankframework.jms.JmsSender"
                           destinationName="Test4"
                           lookupDestination="false"/>--><sender name="JmsSender-L2"
-                          className="nl.nn.adapterframework.senders.IbisJavaSender"
+                          className="org.frankframework.senders.IbisJavaSender"
                           serviceName="testtool-JmsSender-L2"/>
 					          </sender>
-					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
+					          <sender className="org.frankframework.senders.EchoSender"/>
 				        </sender>
 				        <forward name="success" path="READY"/>
 			      </pipe>

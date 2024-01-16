@@ -2,12 +2,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-console</artifactId>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-console</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-console-webapp</artifactId>
+	<artifactId>frankframework-console-webapp</artifactId>
 	<name>Frank Console Webapp</name>
 
 	<packaging>war</packaging>
@@ -19,24 +19,24 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-security</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-security</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>iaf-management-gateway</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-management-gateway</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-console-frontend</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-frontend</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-console-backend</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-backend</artifactId>
 		</dependency>
 
 		<dependency>
@@ -109,7 +109,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>2.7.18</version>
 				<configuration>
-					<mainClass>nl.nn.adapterframework.runner.StandaloneInitializer</mainClass>
+					<mainClass>org.frankframework.runner.StandaloneInitializer</mainClass>
 					<layout>WAR</layout>
 				</configuration>
 				<executions>

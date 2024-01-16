@@ -2,7 +2,7 @@
 	<adapter name="ReloadSender">
 		<receiver name="ReloadSender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="ReloadSender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.ReloadSender"
+					className="org.frankframework.senders.ReloadSender"
 				/>
 				<forward name="success" path="READY"/>
 			</pipe>

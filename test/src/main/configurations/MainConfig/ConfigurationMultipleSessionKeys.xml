@@ -1,14 +1,14 @@
 <module>
 	<adapter name="MultipleSessionKeys_Child">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				name="MultipleSessionKeys_Child" />
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="echo" className="org.frankframework.pipes.XsltPipe"
 				xpathExpression="concat($sk, '_', $sk2, '_', $sk3, '_', $sk4, '_', $sk5)"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="sk" sessionKey="sessionkey" defaultValue="[NA]" />
@@ -18,7 +18,7 @@
 				<param name="sk5" sessionKey="sessionkey5" defaultValue="[NA]" />
 				<forward name="success" path="text2xml" />
 			</pipe>
-			<pipe name="text2xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+			<pipe name="text2xml" className="org.frankframework.pipes.Text2XmlPipe"
 				xmlTag="xml">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -26,36 +26,36 @@
 	</adapter>
 	<adapter name="MultipleSessionKeys">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-MultipleSessionKeys" />
 		</receiver>
 		<pipeline firstPipe="put">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="put" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="put" className="org.frankframework.pipes.PutInSession"
 				sessionKey="sessionkey" value="hallo">
 				<forward name="success" path="put2" />
 			</pipe>
-			<pipe name="put2" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="put2" className="org.frankframework.pipes.PutInSession"
 				sessionKey="sessionkey2" value="goodbye">
 				<forward name="success" path="put3" />
 			</pipe>
-			<pipe name="put3" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="put3" className="org.frankframework.pipes.PutInSession"
 				sessionKey="sessionkie3" value="morning">
 				<forward name="success" path="put4" />
 			</pipe>
-			<pipe name="put4" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="put4" className="org.frankframework.pipes.PutInSession"
 				sessionKey="sessionkey4" value="bientot">
 				<forward name="success" path="put5" />
 			</pipe>
-			<pipe name="put5" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="put5" className="org.frankframework.pipes.PutInSession"
 				sessionKey="sessionkey5" value="hello">
 				<forward name="success" path="child" />
 			</pipe>
 			<pipe name="child"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.IbisLocalSender"
 					javaListener="MultipleSessionKeys_Child">
 					<param name="sessionkey" sessionKey="*" />
 				</sender>

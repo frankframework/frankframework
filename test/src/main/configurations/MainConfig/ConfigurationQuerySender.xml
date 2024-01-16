@@ -1,55 +1,55 @@
 <module>
 	<adapter name="QuerySender" description="Test the functioning of the FixedQuerySender and DirectQuerySender">
 		<receiver name="QuerySender">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-QuerySender" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-QuerySender" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action"></pipe>
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action"></pipe>
 			<!-- fixedSelect -->
 			<pipe name="fixedSelect">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT * FROM IBISPROP WHERE VALUE = ?" queryType="select">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT * FROM IBISPROP WHERE VALUE = ?" queryType="select">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="fixedSelectScalar">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT NAME FROM IBISPROP WHERE VALUE = ?" queryType="select" scalar="true">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT NAME FROM IBISPROP WHERE VALUE = ?" queryType="select" scalar="true">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- directSelect -->
-			<pipe name="directSelect" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="/QuerySender/MakeSelectQuery.xsl">
+			<pipe name="directSelect" className="org.frankframework.pipes.XsltPipe" styleSheetName="/QuerySender/MakeSelectQuery.xsl">
 				<forward name="success" path="doDirectSelect" />
 			</pipe>
 			<pipe name="doDirectSelect">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" includeFieldDefinition="false" queryType="select"/>
+				<sender className="org.frankframework.jdbc.DirectQuerySender" includeFieldDefinition="false" queryType="select"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- fixedInsert -->
 			<pipe name="fixedInsert">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- directInsert -->
-			<pipe name="directInsert" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="/QuerySender/MakeInsertQuery.xsl">
+			<pipe name="directInsert" className="org.frankframework.pipes.XsltPipe" styleSheetName="/QuerySender/MakeInsertQuery.xsl">
 				<forward name="success" path="doDirectInsert" />
 			</pipe>
 			<pipe name="doDirectInsert">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="insert" />
+				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="insert" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- directInsertWithNamedParams -->
-			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="directInsertWithNamedParams" returnString="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES (?{name},?{value},NULL,?{lastmodby})">
+			<pipe className="org.frankframework.pipes.FixedResultPipe" name="directInsertWithNamedParams" returnString="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES (?{name},?{value},NULL,?{lastmodby})">
 				<forward name="success" path="doDirectInsertWithNamedParams" />
 			</pipe>
 			<pipe name="doDirectInsertWithNamedParams">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="insert" useNamedParams="true">
+				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="insert" useNamedParams="true">
 					<param name="dummy1" value="value1" />
 					<param name="value" sessionKey="originalMessage" xpathExpression="request/value" />
 					<param name="lastmodby" sessionKey="originalMessage" xpathExpression="request/lastmodby" />
@@ -60,29 +60,29 @@
 			</pipe>
 			<!-- fixedInsertRollback -->
 			<pipe name="fixedInsertRollback">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="fixedInsertRollback2" />
 			</pipe>
 			<pipe name="fixedInsertRollback2">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME','Peter',NULL,NULL)" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME','Peter',NULL,NULL)" queryType="insert" />
 				<forward name="success" path="fixedInsertRollback3" />
 			</pipe>
 			<pipe name="fixedInsertRollback3">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" />
 				<forward name="success" path="generateException" />
 			</pipe>
-			<pipe name="generateException" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+			<pipe name="generateException" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<pipe name="FixedQuerySenderWithTransform1" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" queryType="select" query="SELECT * FROM IBISPROP" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" queryType="select" query="SELECT * FROM IBISPROP" />
 				<forward name="success" path="MapResults" />
 			</pipe>
 			<pipe name="FixedQuerySenderWithTransform2" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" queryType="select" outputFormat="XML" query="SELECT * FROM IBISPROP" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" queryType="select" outputFormat="XML" query="SELECT * FROM IBISPROP" />
 			</pipe>
 			<XsltPipe name="MapResults" xpathExpression="/result/rowset/row[1]" outputType="XML" >
 				<Forward name="success" path="EXIT"/>
@@ -91,14 +91,14 @@
 	</adapter>
 	<adapter name="XmlQuerySender" description="Test the functioning of the XmlQuerySender">
 		<receiver name="XmlQuerySender">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-XmlQuerySender" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-XmlQuerySender" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="root/*">
-				<sender className="nl.nn.adapterframework.jdbc.XmlQuerySender" />
+			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="Query" elementXPathExpression="root/*">
+				<sender className="org.frankframework.jdbc.XmlQuerySender" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

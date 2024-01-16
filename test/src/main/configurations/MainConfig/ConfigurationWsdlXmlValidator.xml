@@ -1,56 +1,56 @@
 <module>
 	<adapter name="WsdlXmlValidator" description="Test the functioning of the WsdlXmlValidator">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlXmlValidator" />
 		</receiver>
 		<pipeline firstPipe="Switch">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="Switch" className="org.frankframework.pipes.XmlSwitch"
 				forwardNameSessionKey="switch" />
 			<!-- gpbdb -->
-			<pipe name="gpbdb" className="nl.nn.adapterframework.pipes.WsdlXmlValidator"
+			<pipe name="gpbdb" className="org.frankframework.pipes.WsdlXmlValidator"
 				soapBody="GetPartyBasicDataBanking_Request" soapHeader="MessageHeader"
 				wsdl="/WsdlXmlValidator/GetPartyBasicDataBanking/Customer_BankSavingsCustomer_1.wsdl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- sivtp -->
-			<pipe name="sivtp" className="nl.nn.adapterframework.pipes.WsdlXmlValidator"
+			<pipe name="sivtp" className="org.frankframework.pipes.WsdlXmlValidator"
 				soapBody="StartIncomingValueTransferRequest" soapHeader="MessageHeader"
 				wsdl="/WsdlXmlValidator/StartIncomingValueTransferProcess/PensionsSMB_ValueTransfer_ValueTransferLegacy_1_StartIncomingValueTransferProcess_1.wsdl"
 				importedNamespacesToIgnore="http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- sivtpx -->
-			<pipe name="sivtpx" className="nl.nn.adapterframework.pipes.WsdlXmlValidator"
+			<pipe name="sivtpx" className="org.frankframework.pipes.WsdlXmlValidator"
 				soapBody="StartIncomingValueTransferRequest" soapHeader="MessageHeader"
 				wsdl="/WsdlXmlValidator/StartIncomingValueTransferProcess/PensionsSMB_ValueTransfer_ValueTransferLegacy_1_StartIncomingValueTransferProcess_1x.wsdl"
 				importedSchemaLocationsToIgnore="schema1.xsd">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ndn (NoDefaultNamespace) -->
-			<pipe name="ndn" className="nl.nn.adapterframework.pipes.WsdlXmlValidator"
+			<pipe name="ndn" className="org.frankframework.pipes.WsdlXmlValidator"
 				soapBody="Request"
 				wsdl="/WsdlXmlValidator/NoDefaultNamespace/NoDefaultNamespace.wsdl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ERRORS -->
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="failure"
-				styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="failure"
+                  styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="errorCode" value="FAILURE" />
 				<param name="failureReason" sessionKey="failureReason" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="parserError"
-				styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="parserError"
+                  styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="errorCode" value="PARSER_ERROR" />
 				<param name="failureReason" sessionKey="failureReason" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="illegalRoot"
-				styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="illegalRoot"
+                  styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="errorCode" value="ILLEGAL_ROOT" />
 				<param name="failureReason" sessionKey="failureReason" />
 				<forward name="success" path="EXIT" />

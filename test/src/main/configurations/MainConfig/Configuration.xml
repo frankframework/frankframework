@@ -19,14 +19,11 @@
 	<Include ref="ConfigurationBigClobAndBlob.xml"/>
 	<Include ref="ConfigurationMongoDbSender.xml"/>
 	<Include ref="ConfigurationBatchFileTransformerPipe.xml"/>
-	<Include ref="ConfigurationIfsaRequesterSender.xml"/>
-	<Include ref="ConfigurationLinkMethodMessageId.xml"/>
 	<Include ref="ConfigurationReturnedSessionKeys.xml"/>
 	<Include ref="ConfigurationXsltPipe.xml"/>
 	<Include ref="ConfigurationRemoveFromSession.xml"/>
 	<Include ref="ConfigurationSenders.xml"/>
 	<Include ref="ConfigurationBase64Pipe.xml"/>
-	<Include ref="ConfigurationIfsaProviderListener.xml"/>
 	<Include ref="ConfigurationFilePipe.xml"/>
 	<Include ref="ConfigurationMoveFilePipe.xml"/>
 	<Include ref="ConfigurationStringResolver.xml"/>

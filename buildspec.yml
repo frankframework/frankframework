@@ -7,4 +7,4 @@ phases:
 artifacts:
   files:
     - '**/*'
-  base-directory: example/target/ibis-adapterframework-example-*
+  base-directory: example/target/frankframework-example-*

@@ -4,7 +4,7 @@
 			<!-- This listener is used when the API is called as specified in OpenAPI 3.0 at the Webservices page -->
 			<listener
 				name="HelloWorlds"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
+				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="hello-worlds"
 			/>
 		</receiver>
@@ -12,7 +12,7 @@
 			<!-- This listener is used by the scheduler -->
 			<listener
 				name="HelloWorlds"
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 			/>
 		</receiver>
 		<pipeline firstPipe="CheckInputIsXml">
@@ -21,7 +21,7 @@
 			</exits>
 			<pipe
 				name="CheckInputIsXml"
-				className="nl.nn.adapterframework.pipes.XmlWellFormedChecker"
+				className="org.frankframework.pipes.XmlWellFormedChecker"
 				>
 				<forward name="success" path="CallHelloWorld"/>
 				<forward name="failure" path="ConvertEmptyMessageToDummyMessage"/>
@@ -29,23 +29,23 @@
 			<!-- Input will be null when called using the ApiListener and empty string when called by scheduler -->
 			<pipe
 				name="ConvertEmptyMessageToDummyMessage"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="org.frankframework.pipes.EchoPipe"
 				emptyInputReplacement="Dummy"
 			/>
 			<pipe
 				name="Text2Xml"
-				className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+				className="org.frankframework.pipes.Text2XmlPipe"
 				xmlTag="tests"
 				splitLines="true"
 			/>
 			<pipe
 				name="RenameElementLineToTest"
-				className="nl.nn.adapterframework.pipes.XsltPipe"
+				className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="HelloWorlds/xsl/RenameElementLineToTest.xsl"
 			/>
 			<pipe
 				name="CheckDummyMessage"
-				className="nl.nn.adapterframework.pipes.XmlSwitch"
+				className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="/tests/test = 'Dummy'"
 				>
 				<forward name="true" path="CreateExampleMessage"/>
@@ -53,7 +53,7 @@
 			</pipe>
 			<pipe
 				name="CreateExampleMessage"
-				className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				className="org.frankframework.pipes.FixedResultPipe"
 				returnString="
 						First line
 						&#10;
@@ -68,14 +68,14 @@
 			</pipe>
 			<pipe
 				name="CallHelloWorld"
-				className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+				className="org.frankframework.pipes.ForEachChildElementPipe"
 				blockSize="3"
 				blockPrefix="&lt;batch>"
 				blockSuffix="&lt;/batch>"
 				elementXPathExpression="/tests/test"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="HelloWorld"
 				/>
 				<forward name="success" path="EXIT"/>

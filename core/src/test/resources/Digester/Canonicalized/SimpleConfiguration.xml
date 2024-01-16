@@ -1,37 +1,37 @@
 <configuration name="SimpleConfiguration">
 	<adapter name="HelloWorld" active="${HelloWorld.active}">
 		<receiver name="HelloWorld">
-			<listener name="HelloWorld" className="nl.nn.adapterframework.testdummies.TestDummyListener"/>
+			<listener name="HelloWorld" className="org.frankframework.testdummies.TestDummyListener"/>
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
 			<exit path="EXIT" state="success"/>
-			<pipe name="HelloWorld" className="nl.nn.adapterframework.testdummies.TestDummyPipe" returnString="Hello World">
+			<pipe name="HelloWorld" className="org.frankframework.testdummies.TestDummyPipe" returnString="Hello World">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
 	</adapter>
-	<job name="HelloWorld" adapterName="HelloWorld" receiverName="HelloWorld" interval="0" function="sendMessage" active="${HelloWorld.job.active}" className="nl.nn.adapterframework.scheduler.job.Job"/>
+	<job name="HelloWorld" adapterName="HelloWorld" receiverName="HelloWorld" interval="0" function="sendMessage" active="${HelloWorld.job.active}" className="org.frankframework.scheduler.job.Job"/>
 	<adapter name="HelloUniverse" active="${junit.active}">
 		<receiver name="HelloUniverse">
-			<listener name="HelloUniverse" className="nl.nn.adapterframework.testdummies.TestDummyListener"/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_In"/>
+			<listener name="HelloUniverse" className="org.frankframework.testdummies.TestDummyListener"/>
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_In"/>
 		</receiver>
 		<pipeline firstPipe="HelloUniverse">
 			<exit path="EXIT" state="success"/>
-			<pipe name="HelloUniverse" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.senders.FixedResultSender" returnString="Hello, Universe! ${digester.property} [${secret}] &lt;@quot;&gt;"/>
-				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_Out"/>
+			<pipe name="HelloUniverse" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.FixedResultSender" returnString="Hello, Universe! ${digester.property} [${secret}] &lt;@quot;&gt;"/>
+				<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_Out"/>
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="HelloBeautifulWorld" active="${HelloBeautifulWorld.active}">
 		<receiver name="HelloBeautifulWorld">
-			<listener name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
+			<listener name="HelloBeautifulWorld" className="org.frankframework.receivers.JavaListener"/>
 		</receiver>
 		<pipeline firstPipe="HelloBeautifulWorld">
 			<exit name="EXIT" state="success"/>
-			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World ${digester.property} [${secret}] &lt;@quot;&gt;" className="nl.nn.adapterframework.pipes.FixedResultPipe">
+			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World ${digester.property} [${secret}] &lt;@quot;&gt;" className="org.frankframework.pipes.FixedResultPipe">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

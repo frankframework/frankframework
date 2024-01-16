@@ -1,33 +1,33 @@
 <module>
 	<adapter name="ReplaceInputAndPreserve" description="Test the functioning of the attributes getInputFromSessionKey, getInputFromFixedValue, preserveInput and storeResultInSessionKey">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReplaceInputAndPreserve" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ReplaceInputAndPreserve" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action" />
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" />
 			<!-- getFromPreserveAndStore-Pipe -->
-			<pipe name="getFromPreserveAndStore-Pipe"  className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="requestKey" value="&lt;abc/&gt;" />
-			<pipe name="getFromPreserveAndStore-Pipe2" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="/Parameters/WrapInput.xslt" 
-					preserveInput="true" getInputFromSessionKey="requestKey" storeResultInSessionKey="storedResultKey" /> <!-- preserve input to restore it later, replace original input with fixed value, store wrapped result, return original input -->
-			<pipe name="getFromPreserveAndStore-Pipe4" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="/Parameters/ShowParam.xslt" >
+			<pipe name="getFromPreserveAndStore-Pipe" className="org.frankframework.pipes.PutInSession" sessionKey="requestKey" value="&lt;abc/&gt;" />
+			<pipe name="getFromPreserveAndStore-Pipe2" className="org.frankframework.pipes.XsltPipe" styleSheetName="/Parameters/WrapInput.xslt"
+                  preserveInput="true" getInputFromSessionKey="requestKey" storeResultInSessionKey="storedResultKey" /> <!-- preserve input to restore it later, replace original input with fixed value, store wrapped result, return original input -->
+			<pipe name="getFromPreserveAndStore-Pipe4" className="org.frankframework.pipes.XsltPipe" styleSheetName="/Parameters/ShowParam.xslt" >
 				<param name="param1" sessionKey="requestKey" />      <!--  fixed value -->
 				<param name="param2" sessionKey="storedResultKey" /> <!--  wrapped fixed value -->
 				<param name="param3" />                              <!--  result of pipe, that is preserved original message -->
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<!-- getFromPreserveAndStore-SenderWrapper -->
-			<pipe name="getFromPreserveAndStore-SenderWrapper" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="requestKey" value="&lt;abc/&gt;" />
+			<pipe name="getFromPreserveAndStore-SenderWrapper" className="org.frankframework.pipes.PutInSession" sessionKey="requestKey" value="&lt;abc/&gt;" />
 			<pipe name="getFromPreserveAndStore-SenderWrapper2">
 				 <!-- preserve input to restore it later, replace original input with fixed value, store wrapped result, return original input -->
-				<sender className="nl.nn.adapterframework.senders.SenderSeries" getInputFromSessionKey="requestKey" preserveInput="true" storeResultInSessionKey="storedResultKey">
-					<sender className="nl.nn.adapterframework.senders.XsltSender" styleSheetName="/Parameters/WrapInput.xslt" />
+				<sender className="org.frankframework.senders.SenderSeries" getInputFromSessionKey="requestKey" preserveInput="true" storeResultInSessionKey="storedResultKey">
+					<sender className="org.frankframework.senders.XsltSender" styleSheetName="/Parameters/WrapInput.xslt" />
 				</sender>
 			</pipe>
-			<pipe name="getFromPreserveAndStore-SenderWrapper4" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="/Parameters/ShowParam.xslt" >
+			<pipe name="getFromPreserveAndStore-SenderWrapper4" className="org.frankframework.pipes.XsltPipe" styleSheetName="/Parameters/ShowParam.xslt" >
 				<param name="param1" sessionKey="requestKey" />      <!--  fixed value -->
 				<param name="param2" sessionKey="storedResultKey" /> <!--  wrapped fixed value -->
 				<param name="param3" />                              <!--  result of pipe, that is preserved original message -->

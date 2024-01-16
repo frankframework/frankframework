@@ -4,7 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>iaf-core</project>
-		<project>iaf-ifsa</project>
 		<project>iaf-tibco</project>
 		<project>iaf-sap</project>
 	</projects>

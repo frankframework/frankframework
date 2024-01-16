@@ -2,17 +2,17 @@
 	<adapter name="Samba2Pipe">
 		<receiver name="testtool-Samba2Pipe">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="testtool-Samba2Pipe" />
 		</receiver>
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="Samba2Pipe" />
 		</receiver>
 		<receiver name="testtool-Samba2Pipe-1">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="testtool-Samba2Pipe-1" />
 		</receiver>
 		<pipeline firstPipe="Samba2Pipe">
@@ -20,7 +20,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Samba2Pipe" action="write"
-				className="nl.nn.adapterframework.pipes.LocalFileSystemPipe">
+				className="org.frankframework.pipes.LocalFileSystemPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

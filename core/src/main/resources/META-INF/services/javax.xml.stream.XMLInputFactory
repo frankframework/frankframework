@@ -1,1 +1,1 @@
-nl.nn.adapterframework.xml.StaxParserFactory
+org.frankframework.xml.StaxParserFactory

@@ -1,26 +1,26 @@
 <module name="exits">
 	<adapter name="exit tests">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-exittests" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-exittests" throwException="false" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<!-- First test config to use name attribute instead of path attribute for Exit. Keep path attribute in other configs for now so backports to 7.7 for issues that need it are easier -->
 				<exit name="EXIT" state="success" code="200"/>
 			</exits>
-	
-			<pipe name="XmlSwitch1" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@channel" />
+
+			<pipe name="XmlSwitch1" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@channel" />
 			<pipe name="local">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="local-exits" />
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="local-exits" />
 				<forward name="success" path="EXIT"/>
 			</pipe>
 			<pipe name="java" getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-exits" />
+				<sender className="org.frankframework.senders.IbisJavaSender" serviceName="ibis4test-exits" />
 				<forward name="success" path="EXIT"/>
 			</pipe>
 			<pipe name="api">
-				<sender className="nl.nn.adapterframework.http.HttpSender"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exits/" 
+				<sender className="org.frankframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exits/"
 					methodType="POST" resultStatusCodeSessionKey="statuscode"
 					allowSelfSignedCertificates="true" verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -28,29 +28,29 @@
 				<forward name="success" path="EXIT"/>
 			</pipe>
 			<pipe name="soap">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" 
+				<sender className="org.frankframework.http.WebServiceSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					serviceNamespace="urn:exits-soap"
 					allowSelfSignedCertificates="true" verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			
+
 			<XmlIfPipe name="XmlIfPipe" thenForwardName="EXIT" elseForwardName="EXIT" /> <!-- do not specify forwards, to test implicit  -->
-			
+
 			<FixedResultPipe name="FallThrougGuard" returnString="Unexpected Fall Through" />
 		</pipeline>
 	</adapter>
 	<adapter name="exits local, java, api, soap">
 		<receiver >
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="local-exits" serviceName="ibis4test-exits" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" name="local-exits" serviceName="ibis4test-exits" throwException="false" />
 		</receiver>
 		<receiver maxRetries="-1" processResultCacheSize="0"> <!-- running larva scenarios multiple times result in errors therefore removing cache -->
-			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="exits" method="POST" />
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="exits" method="POST" />
 		</receiver>
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.WebServiceListener" serviceNamespaceURI="urn:exits-soap"/>
+			<listener className="org.frankframework.http.WebServiceListener" serviceNamespaceURI="urn:exits-soap"/>
 		</receiver>
 		<pipeline>
 			<exits>
@@ -62,19 +62,19 @@
 				<exit path="NotAllowed" state="error" code="403" empty="true" />
 				<exit path="ServerError" state="error" code="500" />
 			</exits>
-	
-			<pipe name="XmlSwitch2" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@path" >
+
+			<pipe name="XmlSwitch2" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@path" >
 				<forward name="forwardToExit" path="EXIT"/>
 				<forward name="forwardToNotModified" path="NotModified"/>
 				<forward name="forwardToBadRequest" path="BadRequest"/>
 			</pipe>
-			<pipe name="toExit" className="nl.nn.adapterframework.pipes.EchoPipe" >
+			<pipe name="toExit" className="org.frankframework.pipes.EchoPipe" >
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			<pipe name="toNotModified" className="nl.nn.adapterframework.pipes.EchoPipe" >
+			<pipe name="toNotModified" className="org.frankframework.pipes.EchoPipe" >
 				<forward name="success" path="NotModified"/>
 			</pipe>
-			<pipe name="toServerError" className="nl.nn.adapterframework.pipes.EchoPipe" >
+			<pipe name="toServerError" className="org.frankframework.pipes.EchoPipe" >
 				<forward name="success" path="ServerError"/>
 			</pipe>
 		</pipeline>

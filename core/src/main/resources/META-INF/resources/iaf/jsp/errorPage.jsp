@@ -1,5 +1,5 @@
 <%@ page language="java" import="java.io.*" isErrorPage="true"%>
-<%@ page import="nl.nn.adapterframework.util.AppConstants"%>
+<%@ page import="org.frankframework.util.AppConstants"%>
 <html>
 	<head>
 		<title>Server Error: <%= exception.getMessage() %></title>

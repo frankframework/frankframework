@@ -1,27 +1,27 @@
 <configuration>
 	  <adapter name="ForEachChildElementPipe">
       <receiver name="testtool-ForEachChildElementPipe">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-ForEachChildElementPipe"/>
       </receiver>
 		    <receiver>
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="ibis4test-ForEachChildElementPipe"/>
 		    </receiver>
       <receiver name="testtool-ForEachChildElementPipe-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-ForEachChildElementPipe-1"/>
       </receiver>
 		    <pipeline firstPipe="ForEachChildElementPipe_Record">
 			      <exits>
 				        <exit path="EXIT" state="success"/>
 			      </exits>
-			      <pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+			      <pipe className="org.frankframework.pipes.ForEachChildElementPipe"
                name="ForEachChildElementPipe_Record"
                elementXPathExpression="requests/request"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+				        <sender className="org.frankframework.senders.IbisLocalSender"
                     javaListener="ForEachChildElementPipe_Record"/>
 				        <forward name="success" path="echo"/>
 			      </pipe>

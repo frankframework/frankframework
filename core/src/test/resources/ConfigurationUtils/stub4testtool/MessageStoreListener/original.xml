@@ -1,13 +1,13 @@
 <configuration>
 	<adapter name="MessageStoreListener">
 		<receiver transactionAttribute="Required" pollInterval="1">
-			<listener className="nl.nn.adapterframework.jdbc.MessageStoreListener" name="MessageStoreListener" slotId="${applicationId}/MessageStoreListener" peekUntransacted="true" />
+			<listener className="org.frankframework.jdbc.MessageStoreListener" name="MessageStoreListener" slotId="${applicationId}/MessageStoreListener" peekUntransacted="true" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -3,13 +3,13 @@
 		<receiver>
 			<listener
 				name="Larva"
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 			/>
 		</receiver>
 		<receiver>
 			<listener
 				name="Larva"
-				className="nl.nn.adapterframework.http.RestListener"
+				className="org.frankframework.http.RestListener"
 				uriPattern="larva"
 				method="GET"
 			/>
@@ -17,7 +17,7 @@
 		<pipeline firstPipe="Larva">
 			<pipe
 				name="Larva"
-				className="nl.nn.adapterframework.pipes.LarvaPipe"
+				className="org.frankframework.pipes.LarvaPipe"
 				writeToLog="${larva.adapter.writeToLog}"
 				writeToSystemOut="${larva.adapter.writeToSystemOut}"
 				execute="${larva.adapter.execute}"
@@ -27,17 +27,17 @@
 				<forward name="success" path="StoreSuccessState" />
 				<forward name="failure" path="StoreFailState" />
 			</pipe>
-			<pipe 
+			<pipe
 				name="StoreSuccessState"
-				className="nl.nn.adapterframework.pipes.PutParametersInSession"
+				className="org.frankframework.pipes.PutParametersInSession"
 				>
 				<param name="result" value="SUCCESS"/>
 				<param name="mailaddresses" value="${errorreport.mailaddresses.pass}" />
 				<forward name="success" path="SwitchMethod" />
 			</pipe>
-			<pipe 
+			<pipe
 				name="StoreFailState"
-				className="nl.nn.adapterframework.pipes.PutParametersInSession"
+				className="org.frankframework.pipes.PutParametersInSession"
 				>
 				<param name="result" value="FAILED"/>
 				<param name="mailaddresses" value="${errorreport.mailaddresses.fail}" />
@@ -45,7 +45,7 @@
 			</pipe>
 			<pipe
 				name="SwitchMethod"
-				className="nl.nn.adapterframework.pipes.XmlSwitch"
+				className="org.frankframework.pipes.XmlSwitch"
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				preserveInput="true"
 				notFoundForwardName="CreateMail"
@@ -55,7 +55,7 @@
 			</pipe>
 			<pipe
 				name="SetContentType"
-				className="nl.nn.adapterframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSession"
 				sessionKey="contentType"
 				value="text/plain"
 				>
@@ -63,7 +63,7 @@
 			</pipe>
 			<pipe
 				name="CreateMail"
-				className="nl.nn.adapterframework.pipes.XsltPipe"
+				className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="/Larva/xsl/CreateMail.xsl"
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				>
@@ -76,18 +76,18 @@
 			</pipe>
 			<pipe
 				name="SendMail"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="org.frankframework.pipes.EchoPipe"
 				active="!${larva.adapter.mail.active}"
 				>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe
 				name="SendMail"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				active="${larva.adapter.mail.active}"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.MailSender"
+					className="org.frankframework.senders.MailSender"
 					smtpHost="${smtp.host}"
 				/>
 				<forward name="success" path="EXIT" />
@@ -107,9 +107,9 @@
 		<Pipeline>
 			<Exit path="EXIT" state="success" />
 			<DelayPipe name="delay" delayTime="30000"/>
-			<SenderPipe 
+			<SenderPipe
 				name="callLarva">
-				<IbisLocalSender 
+				<IbisLocalSender
 					name="callLarva"
 					javaListener="Larva"/>
 				<Forward name="success" path="EXIT" />

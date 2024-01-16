@@ -11,8 +11,8 @@ Frank!Framework
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/99f16cffc31a422589303aed68e7cf98)](https://app.codacy.com/gh/frankframework/frankframework/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/frankframework/frankframework/badge)](https://www.codefactor.io/repository/github/frankframework/frankframework)
 [![total GitHub contributors](https://img.shields.io/github/contributors-anon/frankframework/frankframework.svg)](https://github.com/frankframework/frankframework/graphs/contributors)
-[![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://central.sonatype.com/search?namespace=org.ibissource&q=adapterframework)
-[![Latest Snapshot](https://img.shields.io/nexus/public/org.ibissource/ibis-adapterframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.frankframework.org%2F)](https://nexus.frankframework.org/#browse/browse)
+[![Maven Central](https://img.shields.io/maven-central/v/org.frankframework/frankframework-parent.svg?label=Maven%20Central)](https://central.sonatype.com/namespace/org.frankframework)
+[![Latest Snapshot](https://img.shields.io/nexus/public/org.frankframework/frankframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.frankframework.org%2F)](https://nexus.frankframework.org/#browse/browse)
 [![Public Vulnerabilities](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DVulnerabilities%26pid%3D68wlxudjy%26packageVersion%3Dlatest-alpha)](https://app.soos.io/research/packages/Java/org.ibissource/ibis-adapterframework-parent)
 
 
@@ -47,7 +47,7 @@ For general questions feel free to post them on our [discussions forum](https://
 If you would like to report a vulnerability, or have security concerns regarding the Frank!Framework, please email security@frankframework.org and include the word "SECURITY" in the subject line.
 
 ## Frank!Manual
-In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/frankframework/frankframework/discussions). If you want to contribute to our manual, the sources can be found [here](https://github.com/ibissource/frank-manual).
+In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/frankframework/frankframework/discussions). If you want to contribute to our manual, the sources can be found [here](https://github.com/frankframework/frank-manual).
 
 ## Contributing
 Eager to help us expand or enhance our framework? 

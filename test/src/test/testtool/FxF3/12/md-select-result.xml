@@ -22,7 +22,7 @@
     <row number="0">
       <field name="MESSAGEKEY">13500</field>
       <field name="TYPE">L</field>
-      <field name="SLOTID">IFSA://NLIBIS4TEST/FxF3InSender</field>
+      <field name="SLOTID">FF4TEST/FxF3InSender</field>
       <field name="HOST">LPAB00000018345</field>
       <field name="MESSAGEID">ID:LPAB00000018345-49524-1531481830794-3:14:7:1:1</field>
       <field name="CORRELATIONID">Test Tool correlation id</field>
@@ -35,7 +35,7 @@
     <row number="1">
       <field name="MESSAGEKEY">13501</field>
       <field name="TYPE">E</field>
-      <field name="SLOTID">IFSA://NLIBIS4TEST/FxF3InListener</field>
+      <field name="SLOTID">FF4TEST/FxF3InListener</field>
       <field name="HOST">LPAB00000018345</field>
       <field name="MESSAGEID">ID:LPAB00000018345-49524-1531481830794-3:14:7:1:1</field>
       <field name="CORRELATIONID">Test Tool correlation id</field>
@@ -49,9 +49,9 @@
 	at org.glassfish.json.JsonParserImpl.next(JsonParserImpl.java:149)
 	at org.glassfish.json.JsonReaderImpl.readArray(JsonReaderImpl.java:136)
 	at org.glassfish.json.JsonReaderImpl.read(JsonReaderImpl.java:86)
-	at nl.nn.adapterframework.pipes.Json2XmlValidator.alignJson(Json2XmlValidator.java:250)
-	at nl.nn.adapterframework.pipes.Json2XmlValidator.doPipe(Json2XmlValidator.java:199)
-	at nl.nn.adapterframework.pipes.XmlValidato</field>
+	at org.frankframework.pipes.Json2XmlValidator.alignJson(Json2XmlValidator.java:250)
+	at org.frankframework.pipes.Json2XmlValidator.doPipe(Json2XmlValidator.java:199)
+	at org.frankframework.pipes.XmlValidato</field>
       <field name="MESSAGE">[NO_XML]</field>
       <field name="EXPIRYDATE" null="true"/>
       <field name="LABEL" null="true"/>

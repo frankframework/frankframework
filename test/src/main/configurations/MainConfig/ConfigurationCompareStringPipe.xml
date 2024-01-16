@@ -1,29 +1,29 @@
 <module>
 	<adapter name="CompareStringPipe" description="Test the functioning of the CompareStringPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="CompareStringPipe" serviceName="ibis4test-CompareStringPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" name="CompareStringPipe" serviceName="ibis4test-CompareStringPipe" />
 		</receiver>
 		<pipeline firstPipe="FillSessionKey2">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="FillSessionKey2" returnString="leeuw" storeResultInSessionKey="sessionKey2">
+			<pipe className="org.frankframework.pipes.FixedResultPipe" name="FillSessionKey2" returnString="leeuw" storeResultInSessionKey="sessionKey2">
 				<forward name="success" path="Compare"/>
 			</pipe>
-			<pipe name="Compare" className="nl.nn.adapterframework.pipes.CompareStringPipe">
+			<pipe name="Compare" className="org.frankframework.pipes.CompareStringPipe">
 				<param name="operand1" sessionKey="originalMessage" />
 				<param name="operand2" sessionKey="sessionKey2" />
 				<forward name="lessthan" path="lessthanPipe"/>
 				<forward name="greaterthan" path="greaterthanPipe"/>
 				<forward name="equals" path="equalsPipe"/>
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="lessthanPipe" returnString="[LESS_THAN]">
+			<pipe className="org.frankframework.pipes.FixedResultPipe" name="lessthanPipe" returnString="[LESS_THAN]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="greaterthanPipe" returnString="[GREATER_THAN]">
+			<pipe className="org.frankframework.pipes.FixedResultPipe" name="greaterthanPipe" returnString="[GREATER_THAN]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="equalsPipe" returnString="[EQUALS]">
+			<pipe className="org.frankframework.pipes.FixedResultPipe" name="equalsPipe" returnString="[EQUALS]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

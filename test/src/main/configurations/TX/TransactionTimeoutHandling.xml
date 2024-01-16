@@ -11,12 +11,12 @@
 			transactionAttribute="Required"
 		>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionTimeoutHandlingTransacted"
 				serviceName="ibis4test-TransactionTimeoutHandlingTransacted"
 			/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/GenericReceiverTransactionTimeoutHandlingTransacted"
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
+				slotId="${applicationId}/ReceiverTransactionTimeoutHandlingTransacted"
 			/>
 		</receiver>
 
@@ -26,7 +26,7 @@
 			</exits>
 
 			<pipe name="set start index"
-				className="nl.nn.adapterframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSession"
 				sessionKey="index"
 				getInputFromFixedValue="1"
 			>
@@ -34,23 +34,23 @@
 			</pipe>
 
 			<pipe name="set endIndex"
-				className="nl.nn.adapterframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSession"
 				sessionKey="endIndex"
 				getInputFromFixedValue="3"
 			>
 				<forward name="success" path="delay"/>
 			</pipe>
-			
+
 			<!-- put dummy looping and waiting code here... -->
 			<pipe name="delay"
-				className="nl.nn.adapterframework.pipes.DelayPipe"
+				className="org.frankframework.pipes.DelayPipe"
 				delayTime="3000"
 			>
 				<forward name="success" path="increment index"/>
-			</pipe>			
+			</pipe>
 
 			<pipe name="increment index"
-				className="nl.nn.adapterframework.pipes.IncreaseIntegerPipe"
+				className="org.frankframework.pipes.IncreaseIntegerPipe"
 				sessionKey="index"
 			>
 				<forward name="success" path="compare values"/>
@@ -58,11 +58,11 @@
 			<!-- /put dummy looping and waiting code here... -->
 
 			<pipe name="compare values"
-				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
+				className="org.frankframework.pipes.CompareIntegerPipe"
 			>
 				<param name="operand1" sessionKey="index"/>
 				<param name="operand2" sessionKey="endIndex"/>
-				
+
 				<forward name="lessthan" path="delay"/>
 				<forward name="equals" path="READY"/>
 				<forward name="greaterthan" path="READY"/>
@@ -79,7 +79,7 @@
 			transactionTimeout="2"
 		>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionTimeoutHandlingNonTransacted"
 				serviceName="ibis4test-TransactionTimeoutHandlingNonTransacted"
 			/>
@@ -91,7 +91,7 @@
 			</exits>
 
 			<pipe name="set start index"
-				className="nl.nn.adapterframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSession"
 				sessionKey="index"
 				getInputFromFixedValue="1"
 			>
@@ -99,35 +99,35 @@
 			</pipe>
 
 			<pipe name="set endIndex"
-				className="nl.nn.adapterframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSession"
 				sessionKey="endIndex"
 				getInputFromFixedValue="3"
 			>
 				<forward name="success" path="delay"/>
 			</pipe>
-			
+
 			<!-- put dummy looping and waiting code here... -->
 			<pipe name="delay"
-				className="nl.nn.adapterframework.pipes.DelayPipe"
+				className="org.frankframework.pipes.DelayPipe"
 				delayTime="3000"
 			>
 				<forward name="success" path="increment index"/>
 			</pipe>
 
 			<pipe name="increment index"
-				className="nl.nn.adapterframework.pipes.IncreaseIntegerPipe"
+				className="org.frankframework.pipes.IncreaseIntegerPipe"
 				sessionKey="index"
 			>
 				<forward name="success" path="compare values"/>
 			</pipe>
 			<!-- /put dummy looping and waiting code here... -->
-			
+
 			<pipe name="compare values"
-				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
+				className="org.frankframework.pipes.CompareIntegerPipe"
 			>
 				<param name="operand1" sessionKey="index"/>
 				<param name="operand2" sessionKey="endIndex"/>
-				
+
 				<forward name="lessthan" path="delay"/>
 				<forward name="equals" path="READY"/>
 				<forward name="greaterthan" path="READY"/>

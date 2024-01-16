@@ -2,36 +2,36 @@
 	<adapter name="AWS SQS JmsFFSender" description="Test the functioning of the JmsSender (FF)"
 		active="${active.aws.sqs}">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-AwsSqsFFSender" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="make unique message" 
-				className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;msg mid=&quot;MID&quot; action=&quot;ACTION&quot; /&gt;" replaceFixedParams="true">
+			<pipe name="make unique message"
+                  className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;msg mid=&quot;MID&quot; action=&quot;ACTION&quot; /&gt;" replaceFixedParams="true">
 				<param name="MID" sessionKey="mid" />
 				<param name="ACTION" xpathExpression="request/@action" />
 			</pipe>
-			
+
 			<!-- although the pipeline has transactionAttribute="Required", sending a message to AWS SQS is not  -->
 			<pipe name="send2sqs"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jms.JmsSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jms.JmsSender"
 					queueConnectionFactoryName="jms/qcf-aws_sqs" destinationName="i4testiaf_ff">
 					<param name="SOURCE" value="${hostname}_FF" />
 				</sender>
-				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/AwsSqsJmsFFSender" />
 			</pipe>
-			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
-				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" 
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+				xpathExpression="request/@action" getInputFromSessionKey="originalMessage"
 				>
 				<forward name="echo" path="EXIT" />
 				<forward name="listenerException" path="EXIT" />
 			</pipe>
-			<pipe name="senderException" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+			<pipe name="senderException" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
  		</pipeline>
@@ -39,13 +39,13 @@
 
 	<adapter name="AWS SQS JmsFFListener" active="${active.aws.sqs}">
 		<receiver name="JmsFFListener" maxRetries="1">
-			<listener className="nl.nn.adapterframework.jms.JmsListener" acknowledgeMode="client"
-				queueConnectionFactoryName="jms/qcf-aws_sqs" cacheMode="CACHE_CONSUMER"
-				destinationName="i4testiaf_ff" 
-				useReplyTo="false" pollGuardInterval="-1" />
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			<listener className="org.frankframework.jms.JmsListener" acknowledgeMode="client"
+                      queueConnectionFactoryName="jms/qcf-aws_sqs" cacheMode="CACHE_CONSUMER"
+                      destinationName="i4testiaf_ff"
+                      useReplyTo="false" pollGuardInterval="-1" />
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/AwsSqsJmsFFListener" />
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/AwsSqsJmsFFListener" />
 		</receiver>
 		<pipeline>
@@ -54,7 +54,7 @@
 				<exit path="ERROR" state="error" />
 			</exits>
 			<EchoPipe name="echo message" />
-			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="msg/@action" >
 				<forward name="echo" path="EXIT" />
 				<forward name="senderException" path="EXIT" />

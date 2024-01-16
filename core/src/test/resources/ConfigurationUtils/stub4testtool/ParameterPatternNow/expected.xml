@@ -1,19 +1,19 @@
 <configuration>
 	<adapter name="ParameterPatternNow">
 		<receiver name="testtool-ParameterPatternNow">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-ParameterPatternNow"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-ParameterPatternNow"/>
 		</receiver>
 		<receiver name="ParameterPatternNow">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ParameterPatternNow"/>
+			<listener className="org.frankframework.receivers.JavaListener" name="ParameterPatternNow"/>
 		</receiver>
 		<receiver name="testtool-ParameterPatternNow-1">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-ParameterPatternNow-1"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-ParameterPatternNow-1"/>
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
-			<pipe name="PutParametersInSession" className="nl.nn.adapterframework.pipes.PutParametersInSession">
+			<pipe name="PutParametersInSession" className="org.frankframework.pipes.PutParametersInSession">
 				<param name="date" type="datetime" pattern="{fixedDate,date,yyyy-MM-dd HH:mm:ss}"/>
 				<param name="date" type="datetime" pattern="{fixedDate}"/>
 				<param name="date" type="datetime" pattern="{nowadays}"/>

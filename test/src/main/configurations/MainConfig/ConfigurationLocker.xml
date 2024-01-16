@@ -1,7 +1,7 @@
 <module>
 	<adapter name="Locker" description="Test the functioning of the Locker">
 		<receiver name="Locker">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				name="Locker" />
 		</receiver>
 		<pipeline firstPipe="Delay">
@@ -9,7 +9,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Delay" className="nl.nn.adapterframework.pipes.DelayPipe"
+			<pipe name="Delay" className="org.frankframework.pipes.DelayPipe"
 				delayTime="3000">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -17,20 +17,20 @@
 	</adapter>
 	<adapter name="Locker2" description="Test the functioning of the Locker">
 		<receiver name="Locker2">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				name="Locker2" />
 		</receiver>
 		<pipeline firstPipe="Delay">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Delay" className="nl.nn.adapterframework.pipes.DelayPipe"
+			<pipe name="Delay" className="org.frankframework.pipes.DelayPipe"
 				delayTime="4000">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
-<!-- 
+<!--
 	<scheduler>
 		<job name="jobLocker" function="sendMessage" adapterName="Locker"
 			receiverName="Locker" cronExpression="0 0/2 * * * ?" description="call Locker every 2 minutes">

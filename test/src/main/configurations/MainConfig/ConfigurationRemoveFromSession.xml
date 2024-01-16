@@ -1,37 +1,37 @@
 <module>
 	<adapter name="RemoveFromSession" description="Test the functioning of the RemoveFromSession">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-RemoveFromSession" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-RemoveFromSession" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action" />
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" />
 			<!-- putAndRemoveOneKey -->
-			<pipe name="putAndRemoveOneKey" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="request">
+			<pipe name="putAndRemoveOneKey" className="org.frankframework.pipes.PutInSession" sessionKey="request">
 				<forward name="success" path="removeOneKey" />
 			</pipe>
 			<!-- removeOneKey -->
-			<pipe name="removeOneKey" className="nl.nn.adapterframework.pipes.RemoveFromSession" sessionKey="request" preserveInput="false">
+			<pipe name="removeOneKey" className="org.frankframework.pipes.RemoveFromSession" sessionKey="request" preserveInput="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- putAndRemoveMultipleKeys -->
-			<pipe name="putAndRemoveMultipleKeys" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="request1">
+			<pipe name="putAndRemoveMultipleKeys" className="org.frankframework.pipes.PutInSession" sessionKey="request1">
 				<forward name="success" path="putAndRemoveMultipleKeys2" />
 			</pipe>
-			<pipe name="putAndRemoveMultipleKeys2" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="request3">
+			<pipe name="putAndRemoveMultipleKeys2" className="org.frankframework.pipes.PutInSession" sessionKey="request3">
 				<forward name="success" path="removeMultipleKeys" />
 			</pipe>
 			<!-- removeMultipleKeys -->
-			<pipe name="removeMultipleKeys" className="nl.nn.adapterframework.pipes.RemoveFromSession" sessionKey="request1,request2,request3" preserveInput="false">
+			<pipe name="removeMultipleKeys" className="org.frankframework.pipes.RemoveFromSession" sessionKey="request1,request2,request3" preserveInput="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- removeFromInput -->
-			<pipe name="removeFromInput" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="request">
+			<pipe name="removeFromInput" className="org.frankframework.pipes.XsltPipe" xpathExpression="request">
 				<forward name="success" path="removeFromInput2" />
 			</pipe>
-			<pipe name="removeFromInput2" className="nl.nn.adapterframework.pipes.RemoveFromSession">
+			<pipe name="removeFromInput2" className="org.frankframework.pipes.RemoveFromSession">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="FixedResultSender">
       <receiver name="testtool-FixedResultSender">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-FixedResultSender"/>
       </receiver>
 		    <receiver name="FixedResultSender">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="FixedResultSender"/>
 		    </receiver>
       <receiver name="testtool-FixedResultSender-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-FixedResultSender-1"/>
       </receiver>
 
@@ -18,10 +18,10 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.FixedResultSender"
+				        <sender className="org.frankframework.senders.FixedResultSender"
                     returnString="TEST"/>
 				        <forward name="success" path="READY"/>
 			      </pipe>

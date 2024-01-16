@@ -1,7 +1,7 @@
 <configuration>
 	<adapter name="GetPrincipalPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="GetPrincipalPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" name="GetPrincipalPipe" />
 		</receiver>
 		<pipeline firstPipe="GetPrincipalPipe">
 			<exits>
@@ -9,7 +9,7 @@
 			</exits>
 			<pipe
 				name="GetPrincipalPipe"
-				className="nl.nn.adapterframework.pipes.GetPrincipalPipe">
+				className="org.frankframework.pipes.GetPrincipalPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -3,22 +3,22 @@
 		description="gets the start time stamp">
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-GetStartTimeStamp" />
 		</receiver>
 		<pipeline firstPipe="getStartTime">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<!-- Puts the time stamp in milliseconds in timeStampInMillis session 
+			<!-- Puts the time stamp in milliseconds in timeStampInMillis session
 				Key -->
 			<pipe name="getStartTime"
-				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				className="org.frankframework.pipes.PutSystemDateInSession"
 				getCurrentTimeStampInMillis="true">
 				<forward name="success" path="writeStartTime" />
 			</pipe>
 			<pipe name="writeStartTime" actions="write"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				directory="${testdata.dir}/MemoryLeak"
 				createDirectory="true"
 				filename="startTimeStamp.txt"
@@ -26,7 +26,7 @@
 				<forward name="success" path="Echo" />
 			</pipe>
 			<pipe name="Echo"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="success">
 				<forward name="success" path="READY" />
 			</pipe>
@@ -37,16 +37,16 @@
 		<receiver>
 			<listener name="MemoryLeakAdapterListener"
 				serviceName="ibis4test-MemoryLeak"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener1"
-					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					className="org.frankframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
 				</sender>
 				<forward name="success" path="READY" />
@@ -58,7 +58,7 @@
 		description="Passes throug a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener1"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 
 		<pipeline firstPipe="Pass through">
@@ -66,9 +66,9 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener2"
-					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					className="org.frankframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
 				</sender>
 				<forward name="success" path="READY" />
@@ -80,16 +80,16 @@
 		description="Passes throug a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener2"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener3"
-					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					className="org.frankframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
 				</sender>
 				<forward name="success" path="READY" />
@@ -101,16 +101,16 @@
 		description="Passes throug a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener3"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener4"
-					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					className="org.frankframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
 				</sender>
 				<forward name="success" path="READY" />
@@ -122,16 +122,16 @@
 		description="Passes throug a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener4"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener5"
-					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					className="org.frankframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
 				</sender>
 				<forward name="success" path="READY" />
@@ -143,16 +143,16 @@
 		description="Passes throug a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener5"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener6"
-					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					className="org.frankframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
 				</sender>
 				<forward name="success" path="READY" />
@@ -164,16 +164,16 @@
 		description="Passes throug a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener6"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener7"
-					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					className="org.frankframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
 				</sender>
 				<forward name="success" path="READY" />
@@ -185,16 +185,16 @@
 		description="Passes throug a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener7"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener8"
-					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					className="org.frankframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
 				</sender>
 				<forward name="success" path="READY" />
@@ -206,16 +206,16 @@
 		description="Passes throug a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener8"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener9"
-					className="nl.nn.adapterframework.senders.IbisLocalSender">
+					className="org.frankframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
 				</sender>
 				<forward name="success" path="READY" />
@@ -227,15 +227,15 @@
 		description="Passes throug a message with a wildcard">
 		<receiver>
 			<listener name="MemoryLeakSubAdapterListener9"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="Pass through">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.senders.EchoSender">
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.EchoSender">
 				</sender>
 				<forward name="success" path="READY" />
 			</pipe>
@@ -245,29 +245,29 @@
 		description="gets the end time stamp">
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-GetEndTimeStamp" />
 		</receiver>
 		<pipeline firstPipe="getEndTime">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<!-- Puts the time stamp in milliseconds in systemDate session 
+			<!-- Puts the time stamp in milliseconds in systemDate session
 				Key -->
 			<pipe name="getEndTime"
-				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				className="org.frankframework.pipes.PutSystemDateInSession"
 				getCurrentTimeStampInMillis="true">
 				<forward name="success" path="writeEndTime" />
 			</pipe>
 			<pipe name="writeEndTime" actions="write"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				getInputFromSessionKey="systemDate"
 				directory="${testdata.dir}/MemoryLeak"
 				filename="endTimeStamp.txt">
 				<forward name="success" path="Echo" />
 			</pipe>
 			<pipe name="Echo"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="success">
 				<forward name="success" path="READY" />
 			</pipe>
@@ -277,29 +277,29 @@
 		description="compares the actual duration with the expected duration if actual is longer than expected fails">
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-CompareDuration" />
 		</receiver>
 		<pipeline firstPipe="getStartTime">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<pipe name="getStartTime" actions="read" 
-				className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="getStartTime" actions="read"
+				className="org.frankframework.pipes.FilePipe"
 				directory="${testdata.dir}/MemoryLeak"
 				filename="startTimeStamp.txt"
 				storeResultInSessionKey="startTime">
 				<forward name="success" path="getEndTime" />
 			</pipe>
 			<pipe name="getEndTime" actions="read"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				directory="${testdata.dir}/MemoryLeak"
 				filename="endTimeStamp.txt"
 				storeResultInSessionKey="endTime">
 				<forward name="success" path="StoreValues" />
 			</pipe>
 			<pipe name="StoreValues"
-				className="nl.nn.adapterframework.pipes.XsltPipe"
+				className="org.frankframework.pipes.XsltPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				styleSheetName="MemoryLeak/calculateDuration.xsl"
 				storeResultInSessionKey="actualDuration">
@@ -308,29 +308,29 @@
 				<forward name="success" path="GetHeapSize" />
 			</pipe>
 			<pipe name="GetHeapSize"
-				className="nl.nn.adapterframework.pipes.IbisMetricsPipe">
+				className="org.frankframework.pipes.IbisMetricsPipe">
 				<forward name="success" path="CalculateExpectedDuration" />
 			</pipe>
 			<pipe name="CalculateExpectedDuration"
-				className="nl.nn.adapterframework.pipes.XsltPipe"
+				className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="MemoryLeak/metrics.xsl"
 				sessionKey="expectedDuration">
 				<forward name="success"
 					path="compareDurationWithExpectedDuration" />
 			</pipe>
 			<pipe name="compareDurationWithExpectedDuration"
-				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
+				className="org.frankframework.pipes.CompareIntegerPipe"
 				sessionKey1="actualDuration" sessionKey2="expectedDuration">
 				<forward name="lessthan" path="Echo" />
 				<forward name="equals" path="Echo" />
 				<forward name="greaterthan" path="failWithException" />
 			</pipe>
 			<pipe name="Echo"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="success">
 				<forward name="success" path="READY" />
 			</pipe>
-			<pipe name="failWithException" className="nl.nn.adapterframework.pipes.ExceptionPipe" 
+			<pipe name="failWithException" className="org.frankframework.pipes.ExceptionPipe"
 				getInputFromFixedValue="Processing Memory Leak Test Scenario took longer than expected. Scenario has failed.">
 				<forward name="success" path="READY" />
 			</pipe>

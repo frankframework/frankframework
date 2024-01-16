@@ -2,22 +2,22 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-console</artifactId>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-console</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-console-backend</artifactId>
+	<artifactId>frankframework-console-backend</artifactId>
 	<name>Frank Console Backend</name>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>iaf-management-gateway</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-management-gateway</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 
 		<dependency>

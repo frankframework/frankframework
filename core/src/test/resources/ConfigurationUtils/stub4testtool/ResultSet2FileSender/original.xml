@@ -2,7 +2,7 @@
 	<adapter name="ResultSet2FileSender">
 		<receiver name="ResultSet2FileSender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="ResultSet2FileSender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nnl.nn.adapterframework.jdbc.ResultSet2FileSender"
+					className="org.frankframework.jdbc.ResultSet2FileSender"
 					append="true"
 				/>
 				<forward name="success" path="READY"/>

@@ -146,7 +146,7 @@
 	<!-- Tibco credentials can be set here via 'userName' and 'userPassword' attributes, or in the jmsRealm via authAlias (not via username and password) -->
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
-		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
+		factory="org.frankframework.jndi.TomcatJndiProxy"
 
 		delegate_name="SLXHP_Queue_ConnectionFactory"
 		delegate_jndiProperties="TibcoJndi.properties"
@@ -158,7 +158,7 @@
 	/>
 	<Resource
 		name="jms/qcf_tibco_esb_rr"
-		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
+		factory="org.frankframework.jndi.TomcatJndiProxy"
 
 		delegate_name="SLNHN_Queue_ConnectionFactory"
 		delegate_jndiProperties="TibcoJndi.properties"
@@ -171,7 +171,7 @@
 
 	<Resource
 		name="jms/GetMessageRequest"
-		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
+		factory="org.frankframework.jndi.TomcatJndiProxy"
 
 		delegate_name="ESB.Infrastructure.TS.Test.TestIAF.1.GetMessage.1.Request"
 		delegate_jndiProperties="TibcoJndi.properties"
@@ -180,7 +180,7 @@
 
 	<Resource
 		name="jms/UpdateMessageAction"
-		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
+		factory="org.frankframework.jndi.TomcatJndiProxy"
 
 		delegate_name="ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action"
 		delegate_jndiProperties="TibcoJndi.properties"
@@ -203,7 +203,7 @@
 	<!-- AWS SQS resource configuration -->
 	<!-- The queues configured in the queues attribute will be created if they do not exist -->
 	<Resource name="jms/qcf-aws_sqs"
-		factory="nl.nn.adapterframework.jms.AmazonSqsFactory"
+		factory="org.frankframework.jms.AmazonSqsFactory"
 		type="javax.jms.ConnectionFactory"
 
 		region="eu-west-1"

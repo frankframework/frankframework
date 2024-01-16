@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-	Beans defined in this file are unique for every configuration. If you want 
+<!--
+	Beans defined in this file are unique for every configuration. If you want
 	to reuse a bean over multiple configurations, add it to the SpringApplicationContext.xml
 	Singleton beans are managed by Spring and will be closed upon configuration unload.
  -->
@@ -16,23 +16,23 @@
 	<!-- AOP has to be enabled explicitly on a per Context basis -->
 	<aop:config proxy-target-class="true" />
 
-	<bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester" scope="singleton" />
+	<bean name="configurationDigester" class="org.frankframework.configuration.ConfigurationDigester" scope="singleton" />
 
-	<bean name="lifecycleProcessor" class="nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor" />
+	<bean name="lifecycleProcessor" class="org.frankframework.lifecycle.ConfiguringLifecycleProcessor" />
 
-	<bean name="configurationMetrics" class="nl.nn.adapterframework.statistics.MetricsInitializer" />
+	<bean name="configurationMetrics" class="org.frankframework.statistics.MetricsInitializer" />
 
-	<bean name="sharedWsdlDefinitions" class="nl.nn.adapterframework.core.SharedWsdlDefinitions" scope="singleton"/>
+	<bean name="sharedWsdlDefinitions" class="org.frankframework.core.SharedWsdlDefinitions" scope="singleton"/>
 
-	<bean name="adapterManager" class="nl.nn.adapterframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
-	<bean name="scheduleManager" class="nl.nn.adapterframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
+	<bean name="adapterManager" class="org.frankframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
+	<bean name="scheduleManager" class="org.frankframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
 
-	<bean name="jdbcMigrator" class="nl.nn.adapterframework.jdbc.migration.LiquibaseMigrator" scope="prototype" lazy-init="true" />
+	<bean name="jdbcMigrator" class="org.frankframework.jdbc.migration.LiquibaseMigrator" scope="prototype" lazy-init="true" />
 
-	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
-	<bean name="eventPublisher" class="nl.nn.adapterframework.monitoring.EventPublisher" />
+	<bean name="configurationWarnings" class="org.frankframework.configuration.ConfigurationWarnings" />
+	<bean name="eventPublisher" class="org.frankframework.monitoring.EventPublisher" />
 
-	<bean name="monitorManager" class="nl.nn.adapterframework.monitoring.MonitorManager" />
-<!-- 	<bean name="applicationEventMulticaster" class="nl.nn.adapterframework.lifecycle.FrankEventMulticaster" /> -->
+	<bean name="monitorManager" class="org.frankframework.monitoring.MonitorManager" />
+<!-- 	<bean name="applicationEventMulticaster" class="org.frankframework.lifecycle.FrankEventMulticaster" /> -->
 
 </beans>

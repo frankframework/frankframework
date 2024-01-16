@@ -2,14 +2,14 @@
 	<adapter name="Ladybug" description="Runs reports saved in Ladybug's Test tab periodically through a CRON-job"
 	active="${ladybug.adapter.active}">
 		<receiver>
-			<listener name="Ladybug" className="nl.nn.adapterframework.receivers.JavaListener" />
+			<listener name="Ladybug" className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 
 		<pipeline firstPipe="RunTestReports">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="RunTestReports" className="nl.nn.ibistesttool.LadybugPipe"
+			<pipe name="RunTestReports" className="org.frankframework.ibistesttool.LadybugPipe"
 				writeToLog="true" enableReportGenerator="true" exclude="${ladybug.adapter.excludeRegex}">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -21,4 +21,4 @@
 			cronExpression="${ladybug.adapter.scheduler.cron}" function="sendMessage"
 			active="${ladybug.adapter.scheduler.active}" />
 	</scheduler>
-</module> 
+</module>

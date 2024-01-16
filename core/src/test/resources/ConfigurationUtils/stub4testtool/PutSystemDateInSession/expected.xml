@@ -1,15 +1,15 @@
 <module>
 	  <adapter name="PutSystemDateInSession">
       <receiver name="testtool-PutSystemDateInSession">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-PutSystemDateInSession"/>
       </receiver>
 		    <receiver>
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="PutSystemDateInSession"/>
 		    </receiver>
       <receiver name="testtool-PutSystemDateInSession-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-PutSystemDateInSession-1"/>
       </receiver>
 		    <pipeline firstPipe="Generate timestamp">
@@ -17,7 +17,7 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Generate timestamp"
-               className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+               className="org.frankframework.pipes.PutSystemDateInSession"
                sessionKey="timestamp"
                dateFormat="yyyyMMdd HH:mm:ss"
                returnFixedDate="true">

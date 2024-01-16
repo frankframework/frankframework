@@ -2,14 +2,14 @@
 
 	<adapter name="ForwardNameSelectable" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ForwardNameSelectable" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ForwardNameSelectable" />
 		</receiver>
 		<pipeline>
 			<XmlSwitchPipe name="SenderSelector" xpathExpression="*/@sender" >
 				<forward name="IbisLocalSender" path="Call ForwardNameSelectable Child Adapter via IbisLocalSender" />
 				<forward name="HttpSender"      path="Call ForwardNameSelectable Child Adapter via HttpSender" />
 			</XmlSwitchPipe>
-			
+
 			<SenderPipe name="Call ForwardNameSelectable Child Adapter via IbisLocalSender">
 				<IbisLocalSender javaListener="ibis4test-ForwardNameSelectable-Child"/>
 				<forward name="200" path="fwd200" />
@@ -19,7 +19,7 @@
 
 			<FixedResultPipe name="fall through IbisLocal" returnString="fall through IbisLocal: [result]" replaceFixedParams="true" >
 				<param name="result" />
-				<forward name="success" path="READY" /> 
+				<forward name="success" path="READY" />
 			</FixedResultPipe>
 
 			<SenderPipe name="Call ForwardNameSelectable Child Adapter via HttpSender">
@@ -30,23 +30,23 @@
 				<Forward name="400" path="fwd400"/>
 				<Forward name="exception" path="FwdException"/>
 			</SenderPipe>
-			
+
 			<FixedResultPipe name="fall through Http" returnString="fall through Http: [result]" replaceFixedParams="true" >
 				<param name="result" />
-				<forward name="success" path="READY" /> 
+				<forward name="success" path="READY" />
 			</FixedResultPipe>
 
 			<FixedResultPipe name="fwd200" returnString="fwd200: [result]" replaceFixedParams="true" >
 				<param name="result" />
-				<forward name="success" path="READY" /> 
+				<forward name="success" path="READY" />
 			</FixedResultPipe>
 			<FixedResultPipe name="fwd400" returnString="fwd400: [result]" replaceFixedParams="true" >
 				<param name="result" />
-				<forward name="success" path="READY" /> 
+				<forward name="success" path="READY" />
 			</FixedResultPipe>
 			<FixedResultPipe name="FwdException" returnString="FwdException: [result]" replaceFixedParams="true" >
 				<param name="result" />
-				<forward name="success" path="READY" /> 
+				<forward name="success" path="READY" />
 			</FixedResultPipe>
 		</pipeline>
 	</adapter>
@@ -85,5 +85,5 @@
 			</FixedResultPipe>
 			<XmlSwitchPipe name="ExitSelector" sessionKey="exit" />
 		</Pipeline>
-	</Adapter>	
+	</Adapter>
 </module>

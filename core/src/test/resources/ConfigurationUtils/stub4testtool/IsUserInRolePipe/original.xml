@@ -1,7 +1,7 @@
 <configuration>
 	<adapter name="IsUserInRolePipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="IsUserInRolePipe" />
+			<listener className="org.frankframework.receivers.JavaListener" name="IsUserInRolePipe" />
 		</receiver>
 		<pipeline firstPipe="IsUserInRolePipe">
 			<exits>
@@ -9,7 +9,7 @@
 			</exits>
 			<pipe
 				name="IsUserInRolePipe"
-				className="nl.nn.adapterframework.pipes.IsUserInRolePipe">
+				className="org.frankframework.pipes.IsUserInRolePipe">
 				<forward name="success" path="EXIT" />
 				<forward name="notInRole" path="EXIT" />
 			</pipe>

@@ -2,7 +2,7 @@
 	<adapter name="EchoSender">
 		<receiver name="EchoSender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="EchoSender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.EchoSender"
+					className="org.frankframework.senders.EchoSender"
 					javaListener="TEST"
 				/>
 				<forward name="success" path="READY"/>

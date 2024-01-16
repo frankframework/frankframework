@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="SenderWrapper">
       <receiver name="testtool-SenderWrapper">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-SenderWrapper"/>
       </receiver>
 		    <receiver name="SenderWrapper">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="SenderWrapper"/>
 		    </receiver>
       <receiver name="testtool-SenderWrapper-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-SenderWrapper-1"/>
       </receiver>
 
@@ -18,9 +18,9 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.senders.SenderWrapper">
-				        <sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
+               className="org.frankframework.senders.SenderWrapper">
+				        <sender className="org.frankframework.senders.ParallelSenders">
+					          <sender className="org.frankframework.senders.EchoSender"/>
 				        </sender>
 				        <forward name="success" path="READY"/>
 			      </pipe>

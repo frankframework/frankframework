@@ -1,13 +1,13 @@
 <configuration>
 	<adapter name="SendTibcoMessage">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="SendTibcoMessage" />
+			<listener className="org.frankframework.receivers.JavaListener" name="SendTibcoMessage" />
 		</receiver>
 		<pipeline firstPipe="SendTibcoMessage">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="sendTibcoMessage" className="nl.nn.adapterframework.extensions.tibco.SendTibcoMessage">
+			<pipe name="sendTibcoMessage" className="org.frankframework.extensions.tibco.SendTibcoMessage">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

@@ -2,14 +2,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
-		<artifactId>bundle-minimal</artifactId>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-bundle-minimal</artifactId>
 		<version>${revision}</version>
 		<relativePath>../bundle-minimal/pom.xml</relativePath>
 	</parent>
 
-	<artifactId>ibis-adapterframework-example</artifactId>
-	<name>Ibis AdapterFramework example</name>
+	<artifactId>frankframework-example</artifactId>
+	<name>Frank!Framework example</name>
 	<packaging>war</packaging>
 
 	<properties>
@@ -48,7 +48,7 @@
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>10.0.18</version>
+				<version>10.0.19</version>
 				<configuration>
 					<systemProperties>
 						<systemProperty>
@@ -65,7 +65,7 @@
 						</systemProperty>
 					</systemProperties>
 					<webAppConfig>
-						<webInfIncludeJarPattern>./WEB-INF/lib/ibis-adapterframework-[^/]*\.jar|./WEB-INF/lib/spring-[^/]*\.jar</webInfIncludeJarPattern>
+						<webInfIncludeJarPattern>./WEB-INF/lib/frankframework-[^/]*\.jar|./WEB-INF/lib/spring-[^/]*\.jar</webInfIncludeJarPattern>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					</webAppConfig>
 					<loginServices>

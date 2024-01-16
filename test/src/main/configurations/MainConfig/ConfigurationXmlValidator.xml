@@ -1,104 +1,104 @@
 <module>
 	<adapter name="XmlValidator" description="Test the functioning of the XmlValidator">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-XmlValidator" />
 		</receiver>
 		<pipeline firstPipe="Switch">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="Switch" className="org.frankframework.pipes.XmlSwitch"
 				forwardNameSessionKey="switch" />
 			<!-- schema -->
-			<pipe name="schema" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="schema" className="org.frankframework.pipes.XmlValidator"
 				schema="/XmlValidator/HandleCollectionDisbursementAccount/HandleCollectionDisbursementAccount3_v3.0.xsd"
 				root="HandleCollectionDisbursementAccount">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- schema (redefine) -->
-			<pipe name="schema_redefine" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="schema_redefine" className="org.frankframework.pipes.XmlValidator"
 				schema="/XmlValidator/REQ1000/REQ1000.xsd" root="ServiceRequest">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- schema (overwrite) -->
-			<!--pipe name="schema_overwrite" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<!--pipe name="schema_overwrite" className="org.frankframework.pipes.XmlValidator"
 				schema="/XmlValidator/REQ1000x/REQ1000.xsd" root="ServiceRequest">
 				<forward name="success" path="EXIT" />
 			</pipe-->
 			<!-- schemaLocation -->
-			<pipe name="schemaLocation" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="schemaLocation" className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://www.frankframework.org/bik /XmlValidator/GetData/XSD_GetData_v1.1_r1.1.xsd"
 				root="GetDataREQ">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- schemaLocation2 -->
-			<pipe name="schemaLocation2" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="schemaLocation2" className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://www.frankframework.org/tom /XmlValidator/FindParty/xsd/V1.20_FindParty.xsd"
 				root="FindPartyREQ">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- soap_schemaLocation -->
-			<pipe name="soap_schemaLocation" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="soap_schemaLocation" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="name(Envelope/Body/*[name()!='MessageHeader'])" />
-			<pipe name="LogPolicyRequest" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="LogPolicyRequest" className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ /XmlValidator/soap/envelope.xsd http://www.ing.com/CSP/XSD/General/Message_2 /XmlValidator/bis/Message_2.xsd http://www.ing.com/nl/pcretail/ts/migrationauditdata_01 /XmlValidator/AuditDataLogPolicy/migrationauditdata_01.xsd"
 				root="Envelope">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="SetRequest" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="SetRequest" className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ /XmlValidator/soap/envelope.xsd http://www.ing.com/CSP/XSD/General/Message_2 /XmlValidator/bis/Message_2.xsd http://www.ing.com/nl/pcretail/ts/migrationcasedata_01 /XmlValidator/CaseDataSetCase/migrationcasedata_01.xsd"
 				root="Envelope">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- soap_schema -->
-			<pipe name="soap_schema" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="soap_schema" className="org.frankframework.pipes.XmlValidator"
 				schema="/XmlValidator/GetVehicleTypeDetails/XSD_GetVehicleTypeDetails_Request.xsd"
 				soapNamespace="http://www.w3.org/2003/05/soap-envelope" root="GetVehicleTypeDetailsREQ">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- gpoai -->
-			<pipe name="gpoai" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="gpoai" className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://www.frankframework.org/tom /XmlValidator/GPOAI/GetPartiesOnAgreementInsurance/xsd/GetPartiesOnAgreementInsurance_v1.xsd"
 				root="GetPartiesOnAgreementInsuranceREQ" addNamespaceToSchema="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- sivtp -->
-			<!--pipe name="sivtp" className="nl.nn.adapterframework.pipes.XmlValidator" 
-				schemaLocation="http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1 
-				/XmlValidator/StartIncomingValueTransferProcess/StartIncomingValueTransferRequest.xsd"> 
+			<!--pipe name="sivtp" className="org.frankframework.pipes.XmlValidator"
+				schemaLocation="http://nn.nl/XSD/PensionsSMB/ValueTransfer/ValueTransferLegacy/1/StartIncomingValueTransferProcess/1
+				/XmlValidator/StartIncomingValueTransferProcess/StartIncomingValueTransferRequest.xsd">
 				<forward name="success" path="EXIT" /> </pipe -->
 			<!-- root -->
-			<pipe name="root" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="root" className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://nn.nl/root /XmlValidator/import_include/root.xsd"
 				root="root">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- root2 -->
-			<!--pipe name="root2" className="nl.nn.adapterframework.pipes.XmlValidator" 
-				schemaLocation="http://nn.nl/root /XmlValidator/import_include/root2.xsd" 
+			<!--pipe name="root2" className="org.frankframework.pipes.XmlValidator"
+				schemaLocation="http://nn.nl/root /XmlValidator/import_include/root2.xsd"
 				root="root"> <forward name="success" path="EXIT" /> </pipe -->
 			<!-- root3 -->
-			<pipe name="root3" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="root3" className="org.frankframework.pipes.XmlValidator"
 				schema="/XmlValidator/import_include/root3.xsd" root="root">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- root4 -->
-			<pipe name="root4" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="root4" className="org.frankframework.pipes.XmlValidator"
 				schema="/XmlValidator/import_include/root4.xsd" root="root">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- hpdd -->
-			<pipe name="hpdd" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="hpdd" className="org.frankframework.pipes.XmlValidator"
 				schema="/XmlValidator/handlepremiumduedetails/HandlePremiumDueDetails.xsd"
 				root="HandlePremiumDueDetailsREQ">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- IncludeWithoutNamespace -->
-			<pipe name="IncludeWithoutNamespace" className="nl.nn.adapterframework.pipes.Json2XmlValidator" getInputFromFixedValue="{}"
-				schema="/XmlValidator/IncludeWithoutNamespace/main.xsd"
-				root="GetDocument_Error"
-				deepSearch="true">
+			<pipe name="IncludeWithoutNamespace" className="org.frankframework.pipes.Json2XmlValidator" getInputFromFixedValue="{}"
+                  schema="/XmlValidator/IncludeWithoutNamespace/main.xsd"
+                  root="GetDocument_Error"
+                  deepSearch="true">
 				<param name="type" value="aaa" />
 				<param name="title" value="bbb" />
 				<param name="status" value="ccc" />
@@ -107,29 +107,29 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- schemaSessionKey -->
-			<pipe name="schemaSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="schemaSessionKey" className="org.frankframework.pipes.PutInSession"
 				sessionKey="xsdLocation" value="/XmlValidator/schemaSessionKey/ING_REQ1041.xsd">
 				<forward name="success" path="schemaSessionKeyValidate" />
 			</pipe>
-			<pipe name="schemaSessionKeyValidate" className="nl.nn.adapterframework.pipes.XmlValidator"
+			<pipe name="schemaSessionKeyValidate" className="org.frankframework.pipes.XmlValidator"
 				schemaSessionKey="xsdLocation" root="ServiceRequest">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ERRORS -->
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="failure"
-				styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="failure"
+                  styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="errorCode" value="FAILURE" />
 				<param name="failureReason" sessionKey="failureReason" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="parserError"
-				styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="parserError"
+                  styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="errorCode" value="PARSER_ERROR" />
 				<param name="failureReason" sessionKey="failureReason" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="illegalRoot"
-				styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="illegalRoot"
+                  styleSheetName="/xsl/ErrorMessage.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="errorCode" value="ILLEGAL_ROOT" />
 				<param name="failureReason" sessionKey="failureReason" />
 				<forward name="success" path="EXIT" />

@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="LogSender">
       <receiver name="testtool-LogSender">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-LogSender"/>
       </receiver>
 		    <receiver name="LogSender">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="LogSender"/>
 		    </receiver>
       <receiver name="testtool-LogSender-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-LogSender-1"/>
       </receiver>
 
@@ -18,10 +18,10 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.LogSender" logLevel="warn"/>
+				        <sender className="org.frankframework.senders.LogSender" logLevel="warn"/>
 				        <forward name="success" path="READY"/>
 			      </pipe>
 		    </pipeline>

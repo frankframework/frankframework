@@ -11,7 +11,7 @@
 		<constructor-arg value="Ibis Test Tool Tibet 2"/>
 	</bean>
 
-	<bean name="debugger,ibisDebugger" class="nl.nn.ibistesttool.tibet2.Debugger" autowire="byName"/>
+	<bean name="debugger,ibisDebugger" class="org.frankframework.ibistesttool.tibet2.Debugger" autowire="byName"/>
 
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
@@ -100,13 +100,13 @@
 		</property>
 	</bean>
 
-	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory"/>
+	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jndi.JndiDataSourceFactory"/>
+	<bean id="dataSourceFactory" class="org.frankframework.jndi.JndiDataSourceFactory"/>
 
-	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.dbms.DbmsSupportFactory"/>
+	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory"/>
 
-	<bean name="auditLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName">
+	<bean name="auditLogStorage" class="org.frankframework.ibistesttool.tibet2.Storage" autowire="byName">
 		<property name="name" value="Logging"/>
 		<property name="datasourceName" value="jdbc/${instance.name.lc}"/>
 		<property name="table" value="AUDITLOG"/>
@@ -181,7 +181,7 @@
 		</property>
 	</bean>
 
-	<bean name="auditLogView" class="nl.nn.ibistesttool.filter.TibetView" scope="prototype">
+	<bean name="auditLogView" class="org.frankframework.ibistesttool.filter.TibetView" scope="prototype">
 		<property name="name" value="Audit log"/>
 		<property name="debugStorage">
 			<ref bean="auditLogStorage"/>
@@ -207,7 +207,7 @@
 		</property>
 	</bean>
 
-	<bean name="exceptionLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName">
+	<bean name="exceptionLogStorage" class="org.frankframework.ibistesttool.tibet2.Storage" autowire="byName">
 		<property name="name" value="Logging"/>
 		<property name="datasourceName" value="jdbc/${instance.name.lc}"/>
 		<property name="table" value="EXCEPTIONLOG"/>
@@ -279,7 +279,7 @@
 		</property>
 	</bean>
 
-	<bean name="exceptionLogView" class="nl.nn.ibistesttool.filter.TibetView" scope="prototype">
+	<bean name="exceptionLogView" class="org.frankframework.ibistesttool.filter.TibetView" scope="prototype">
 		<property name="name" value="Exception log"/>
 		<property name="debugStorage">
 			<ref bean="exceptionLogStorage"/>

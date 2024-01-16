@@ -1,9 +1,9 @@
 <module>
 	<adapter name="Cache-Pipeline" >
-		<receiver 
+		<receiver
 			name="Cache-Pipeline-Java">
             <listener
-	            className="nl.nn.adapterframework.receivers.JavaListener"
+	            className="org.frankframework.receivers.JavaListener"
 	            serviceName="ibis4test-cache-pipeline"
 	        />
 		</receiver>
@@ -16,12 +16,12 @@
 
 			<pipe
 				name="Delay"
-				className="nl.nn.adapterframework.pipes.DelayPipe" >
+				className="org.frankframework.pipes.DelayPipe" >
 				<forward name="success" path="fixedresult"/>
 			</pipe>
-            <pipe 
-                className="nl.nn.adapterframework.pipes.FixedResultPipe"
-                name="fixedresult" 
+            <pipe
+                className="org.frankframework.pipes.FixedResultPipe"
+                name="fixedresult"
                 filename="cache/resultTemplate.xml"
             >
 				<param name="input" />
@@ -31,10 +31,10 @@
 		</pipeline>
 	</adapter>
 	<adapter name="Cache-Internal Helper" >
-		<receiver 
+		<receiver
 			name="Cache-Sender-Java">
             <listener
-	            className="nl.nn.adapterframework.receivers.JavaListener"
+	            className="org.frankframework.receivers.JavaListener"
 	            name="ibis4test-cache-helper"
 	        />
 		</receiver>
@@ -46,12 +46,12 @@
 
 			<pipe
 				name="Delay"
-				className="nl.nn.adapterframework.pipes.DelayPipe" >
+				className="org.frankframework.pipes.DelayPipe" >
 				<forward name="success" path="fixedresult"/>
 			</pipe>
-            <pipe 
-                className="nl.nn.adapterframework.pipes.FixedResultPipe"
-                name="fixedresult" 
+            <pipe
+                className="org.frankframework.pipes.FixedResultPipe"
+                name="fixedresult"
                 filename="cache/resultTemplate.xml"
             >
 				<param name="input" />
@@ -61,10 +61,10 @@
 		</pipeline>
 	</adapter>
 	<adapter name="Cache-Sender" >
-		<receiver 
+		<receiver
 			name="Cache-Sender-Java">
             <listener
-	            className="nl.nn.adapterframework.receivers.JavaListener"
+	            className="org.frankframework.receivers.JavaListener"
 	            serviceName="ibis4test-cache-sender"
 	        />
 		</receiver>
@@ -76,63 +76,63 @@
 
 			<pipe
 				name="selectSenderBasedOnRootNode"
-				className="nl.nn.adapterframework.pipes.XmlSwitch" >
+				className="org.frankframework.pipes.XmlSwitch" >
 			</pipe>
 
 			<pipe name="Basic" >
-				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+				<sender className="org.frankframework.senders.SenderWrapper" >
 					<cache />
-					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
 			<pipe name="SmallMemory" >
-				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+				<sender className="org.frankframework.senders.SenderWrapper" >
 					<cache maxElementsInMemory="2"/>
-					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
 			<pipe name="SmallMemoryXPath" >
-				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+				<sender className="org.frankframework.senders.SenderWrapper" >
 					<cache maxElementsInMemory="2" keyXPath="*/@tag" />
-					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
 			<pipe name="OverflowToDisk" >
-				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+				<sender className="org.frankframework.senders.SenderWrapper" >
 					<cache maxElementsInMemory="2" overflowToDisk="true" keyXPath="*/@tag" />
-					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
 			<pipe name="PersistentOverflowToDisk" >
-				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+				<sender className="org.frankframework.senders.SenderWrapper" >
 					<cache maxElementsInMemory="2" overflowToDisk="true" diskPersistent="true" keyXPath="*/@tag" />
-					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
 			<pipe name="XPath" >
-				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+				<sender className="org.frankframework.senders.SenderWrapper" >
 					<cache keyXPath="*/key" valueXPath="*/value[text()]" />
-					<sender className="nl.nn.adapterframework.senders.EchoSender" />
+					<sender className="org.frankframework.senders.EchoSender" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
 			<pipe name="XPath-storeEmtpy" >
-				<sender className="nl.nn.adapterframework.senders.SenderWrapper" >
+				<sender className="org.frankframework.senders.SenderWrapper" >
 					<cache keyXPath="*/key" valueXPath="*/value[text()]" cacheEmptyKeys="true" cacheEmptyValues="true" />
-					<sender className="nl.nn.adapterframework.senders.EchoSender" />
+					<sender className="org.frankframework.senders.EchoSender" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
 			<pipe name="Delay" >
-				<sender className="nl.nn.adapterframework.senders.DelaySender" delayTime="500" />
+				<sender className="org.frankframework.senders.DelaySender" delayTime="500" />
 				<forward name="success" path="READY"/>
 			</pipe>
 		</pipeline>
 	</adapter>
-	
+
 </module>

@@ -2,7 +2,7 @@
 	<adapter name="PutSystemDateInSession">
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="PutSystemDateInSession"
 			/>
 		</receiver>
@@ -12,7 +12,7 @@
 			</exits>
 			<pipe
 				name="Generate timestamp"
-				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				className="org.frankframework.pipes.PutSystemDateInSession"
 				sessionKey="timestamp"
 				dateFormat="yyyyMMdd HH:mm:ss"
 				>

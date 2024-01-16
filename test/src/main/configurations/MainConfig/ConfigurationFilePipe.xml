@@ -1,42 +1,42 @@
 <module>
 	<adapter name="FilePipe" description="Test the functioning of the FilePipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-FilePipe" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-FilePipe" />
 		</receiver>
 		<pipeline firstPipe="setFilename">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-						
+
 			<!-- Set FileName -->
-			<pipe name="setFilename" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/test.txt" >
- 			 <forward name="success" path="setFileData"/> 			 
+			<pipe name="setFilename" className="org.frankframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/test.txt" >
+ 			 <forward name="success" path="setFileData"/>
 			</pipe>
-			
+
 			<!-- get file text from sample file -->
-			<pipe name="setFileData" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="/FilePipe/sample.txt">
+			<pipe name="setFileData" className="org.frankframework.pipes.FixedResultPipe" filename="/FilePipe/sample.txt">
 			  <forward name="success" path="write file"/>
 			</pipe>
-			
+
 			<!-- Write file -->
 			<pipe
 				name="write file"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="write"
 	        	filenameSessionKey="filename"
 	        	createDirectory="true">
 	        	<forward name="success" path="switchAction"/>
 	        </pipe>
-	        
+
 			<!-- choose which action should be done -->
-			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action" getInputFromSessionKey="originalMessage"/>
-						
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" getInputFromSessionKey="originalMessage"/>
+
 			<!-- Read file / getInputFromSessionKey -->
 			<pipe
 				name="read file via getInputFromSessionKey"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="read"
-	        	getInputFromSessionKey="filename"	        
+	        	getInputFromSessionKey="filename"
 	        	>
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
@@ -44,7 +44,7 @@
 			<!-- Read file / filenameSessionKey -->
 			<pipe
 				name="read file via filenameSessionKey"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="read"
 	        	filenameSessionKey="filename">
 	        	<forward name="success" path="EXIT"/>
@@ -53,7 +53,7 @@
 			<!-- Read file at classpath -->
 			<pipe
 				name="read file at classpath"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="read"
 	        	getInputFromFixedValue="FilePipe/sample.txt"
 	        	fileSource="classpath">
@@ -63,33 +63,33 @@
 			<!-- Read binary file as bytes -->
 			<pipe
 				name="read binary file as bytes"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				actions="read"
 				outputType="bytes"
 				getInputFromFixedValue="FilePipe/file.pdf"
 				fileSource="classpath">
 			</pipe>
-			<pipe name="encode binary file bytes" className="nl.nn.adapterframework.pipes.Base64Pipe">
+			<pipe name="encode binary file bytes" className="org.frankframework.pipes.Base64Pipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
 			<!-- Read binary file as stream -->
 			<pipe
 				name="read binary file as stream"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				actions="read"
 				outputType="stream"
 				getInputFromFixedValue="FilePipe/file.pdf"
 				fileSource="classpath">
 			</pipe>
-			<pipe name="encode binary file stream" className="nl.nn.adapterframework.pipes.Base64Pipe">
+			<pipe name="encode binary file stream" className="org.frankframework.pipes.Base64Pipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
 			<!-- Read binary file as base64 -->
 			<pipe
 				name="read binary file as base64"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				actions="read"
 				outputType="base64"
 				getInputFromFixedValue="FilePipe/file.pdf"
@@ -100,7 +100,7 @@
 			<!-- Delete file with use of directory and fileNam e-->
 			<pipe
 				name="delete file"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="delete"
 	        	filename="test.txt"
 	        	directory="${testdata.dir}"
@@ -113,38 +113,38 @@
 			<!-- Delete file without use of directory and filename (filenameSessionKey) -->
 			<pipe
 				name="delete file no directory specified"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="delete"
 	        	filenameSessionKey="filename"
 	        >
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
-	        
+
 	        <!-- Delete file no directory no filename (input) -->
 			<pipe
 				name="delete file no directory no filename"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="delete"
 	        	getInputFromFixedValue="${testdata.dir}/test.txt">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
-	        
+
 
 			<!-- Delete file that does not exist with use of directory -->
 			<pipe
 				name="delete file that does not exists"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="delete"
 	        	filename="none_existing_file.txt"
 	        	testExists="false"
 	        	directory="${testdata.dir}">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
-	    	        	       
+
 			<!-- List files -->
 			<pipe
 				name="list files"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="list"
 	        	filename="dummy*.txt"
 	        	testExists="false"
@@ -155,20 +155,20 @@
 			<!-- List files without use of directory -->
 			<pipe
 				name="list files no directory specified"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="list"
 	        	filename="${testdata.dir}/dummy*.txt">
 	        	<forward name="success" path="EXIT"/>
 	        </pipe>
 
 			<!-- Create file and info -->
-			<pipe name="create file" className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="create file" className="org.frankframework.pipes.FilePipe"
 				actions="create" directory="${testdata.dir}" writeSuffix=".abc">
 				<param name="writeSuffix" value=".txt" />
 				<forward name="success" path="info file" />
 			</pipe>
-		
-			<pipe name="info file" className="nl.nn.adapterframework.pipes.FilePipe"
+
+			<pipe name="info file" className="org.frankframework.pipes.FilePipe"
 				actions="info">
 				<forward name="success" path="EXIT" />
 			</pipe>

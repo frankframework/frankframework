@@ -1,7 +1,7 @@
 <module>
 	<adapter name="BigClobAndBlob">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				name="BigClobAndBlob" serviceName="ibis4test-BigClobAndBlob" />
 		</receiver>
 		<pipeline firstPipe="switchAction" transactionAttribute="Required">
@@ -9,25 +9,25 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 
 			<!-- insertBigClob -->
-			<pipe name="insertBigClob" className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="insertBigClob" className="org.frankframework.pipes.FilePipe"
 				actions="read" getInputFromFixedValue="BigClobAndBlob/file.pdf"
 				fileSource="classpath" outputType="bytes">
 				<forward name="success" path="encodeBigClobPdf" />
 			</pipe>
 
-			<pipe name="encodeBigClobPdf" className="nl.nn.adapterframework.pipes.Base64Pipe"
+			<pipe name="encodeBigClobPdf" className="org.frankframework.pipes.Base64Pipe"
 				storeResultInSessionKey="base64">
 				<forward name="success" path="insertBigClob1" />
 			</pipe>
 
 			<pipe name="insertBigClob1"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TCLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_CLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
 					queryType="insert" />
@@ -35,9 +35,9 @@
 			</pipe>
 
 			<pipe name="insertBigClob2"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				getInputFromSessionKey="base64">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TCLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
 					queryType="updateClob">
 					<param name="tKey" sessionKey="tKey" />
@@ -46,7 +46,7 @@
 			</pipe>
 
 			<pipe name="readBigClob">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TCLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					scalar="true">
 					<param name="tKey" sessionKey="tKey" />
@@ -55,21 +55,21 @@
 			</pipe>
 
 			<!-- insertBigBlobText -->
-			<pipe name="insertBigBlobText" className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="insertBigBlobText" className="org.frankframework.pipes.FilePipe"
 				actions="read" getInputFromFixedValue="BigClobAndBlob/file.pdf"
 				fileSource="classpath" outputType="bytes">
 				<forward name="success" path="encodeBigBlobPdf" />
 			</pipe>
 
-			<pipe name="encodeBigBlobPdf" className="nl.nn.adapterframework.pipes.Base64Pipe"
+			<pipe name="encodeBigBlobPdf" className="org.frankframework.pipes.Base64Pipe"
 				storeResultInSessionKey="base64">
 				<forward name="success" path="insertBigBlobText1" />
 			</pipe>
 
 			<pipe name="insertBigBlobText1"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
 					queryType="insert" />
@@ -77,9 +77,9 @@
 			</pipe>
 
 			<pipe name="insertBigBlobText2"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				getInputFromSessionKey="base64">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
 					queryType="updateBlob">
 					<param name="tKey" sessionKey="tKey" />
@@ -88,7 +88,7 @@
 			</pipe>
 
 			<pipe name="readBigBlobText">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					scalar="true">
 					<param name="tKey" sessionKey="tKey" />
@@ -97,16 +97,16 @@
 			</pipe>
 
 			<!-- insertBigBlobBinary -->
-			<pipe name="insertBigBlobBinary" className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="insertBigBlobBinary" className="org.frankframework.pipes.FilePipe"
 				actions="read" getInputFromFixedValue="BigClobAndBlob/file.pdf"
 				fileSource="classpath" outputType="stream" storeResultInSessionKey="fileContent">
 				<forward name="success" path="insertBigBlobBinary1" />
 			</pipe>
 
 			<pipe name="insertBigBlobBinary1"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
 					queryType="insert" />
@@ -114,8 +114,8 @@
 			</pipe>
 
 			<pipe name="insertBigBlobBinary2"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
 					queryType="updateBlob" blobSessionKey="fileContent">
 					<param name="tKey" sessionKey="tKey" />
@@ -124,7 +124,7 @@
 			</pipe>
 
 			<pipe name="readBigBlobBinary">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					scalar="true" blobBase64Direction="encode">
 					<param name="tKey" sessionKey="tKey" />

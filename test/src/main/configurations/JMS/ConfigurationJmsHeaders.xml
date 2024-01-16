@@ -3,7 +3,7 @@
 		<receiver>
 			<listener
 				name="test_esb_listener"
-				className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
+				className="org.frankframework.extensions.esb.EsbJmsListener"
 				destinationName="${tibco.rr_queue}"
 				jmsRealm="qcf_tibco_esb_rr"
 				messageProtocol="RR"
@@ -23,7 +23,7 @@
 
 			<pipe name="SendMessage"
 				getInputFromFixedValue="Yaay I'm working!!!"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="org.frankframework.pipes.EchoPipe"
 				storeResultInSessionKey="mySessKey"
 				preserveInput="true"
 			>
@@ -35,8 +35,8 @@
 		<receiver>
 			<listener
 				name="Queue"
-				className="nl.nn.adapterframework.receivers.JavaListener"
-				serviceName="ibis4test-EsbJmsRRHeaderSender" 
+				className="org.frankframework.receivers.JavaListener"
+				serviceName="ibis4test-EsbJmsRRHeaderSender"
 			/>
 		</receiver>
 
@@ -46,10 +46,10 @@
 			</exits>
 
 			<pipe name="SendMessage"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
+					className="org.frankframework.extensions.esb.EsbJmsSender"
 					destinationName="${tibco.rr_queue}"
 					jmsRealm="qcf_tibco_esb_rr"
 					messageProtocol="RR"
@@ -59,7 +59,7 @@
 				<forward name="success" path="makeReply"/>
 			</pipe>
 
-			<pipe name="makeReply" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="makeReply" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="JmsHeader/xsl/consolidateSessionKeys.xsl"
 				>
 				<param name="value" sessionKey="value" />

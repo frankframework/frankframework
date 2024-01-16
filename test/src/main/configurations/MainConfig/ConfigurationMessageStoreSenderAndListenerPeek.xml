@@ -1,35 +1,35 @@
 <module>
 	<adapter name="MessageStoreListener">
 		<receiver transactionAttribute="Required" pollInterval="1">
-			<listener className="nl.nn.adapterframework.jdbc.MessageStoreListener" name="MessageStoreListener" slotId="${applicationId}/MessageStoreListener" />
+			<listener className="org.frankframework.jdbc.MessageStoreListener" name="MessageStoreListener" slotId="${applicationId}/MessageStoreListener" />
 		</receiver>
 		<pipeline firstPipe="echoPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="echoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="echoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="MessageStoreSender">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-MessageStoreSender" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-MessageStoreSender" />
 		</receiver>
 		<pipeline firstPipe="switchAction">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action"></pipe>
-			<pipe name="store" className="nl.nn.adapterframework.pipes.SenderPipe"> <!-- this message will be picked up by MessageStoreListener, and then turned into an 'A' record -->
-				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener" />
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action"></pipe>
+			<pipe name="store" className="org.frankframework.pipes.SenderPipe"> <!-- this message will be picked up by MessageStoreListener, and then turned into an 'A' record -->
+				<sender className="org.frankframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="store2" className="nl.nn.adapterframework.pipes.SenderPipe"> <!-- this message will remain on this table -->
-				<sender className="nl.nn.adapterframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener2" />
+			<pipe name="store2" className="org.frankframework.pipes.SenderPipe"> <!-- this message will remain on this table -->
+				<sender className="org.frankframework.jdbc.MessageStoreSender" slotId="${applicationId}/MessageStoreListener2" />
 				<forward name="success" path="okReply" />
 			</pipe>
-			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="okReply" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -1,16 +1,16 @@
 <module>
     <!-- serviceNamespaceURI listeners -->
-	<adapter name="WebServiceListenerServiceNamespaceURI" 
+	<adapter name="WebServiceListenerServiceNamespaceURI"
 		description="Test the functioning of the WebServiceListener with the attribute serviceNamespaceURI">
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.WebServiceListener"
+			<listener className="org.frankframework.http.WebServiceListener"
 				serviceNamespaceURI="urn:ws:serviceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -18,14 +18,14 @@
 	<adapter name="WebServiceListenerErrorServiceNamespaceURI"
 		description="Test the functioning of the WebServiceListener with the attribute serviceNamespaceURI (error)">
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.WebServiceListener"
+			<listener className="org.frankframework.http.WebServiceListener"
 				serviceNamespaceURI="urn:ws_error:serviceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="ExceptionPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ExceptionPipe" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+			<pipe name="ExceptionPipe" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -33,14 +33,14 @@
 	<adapter name="WebServiceListenerTimeoutServiceNamespaceURI"
 		description="Test the functioning of the WebServiceListener with the attribute serviceNamespaceURI (timeout)">
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.WebServiceListener"
+			<listener className="org.frankframework.http.WebServiceListener"
 				serviceNamespaceURI="urn:ws_timeout:serviceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="DelayPipe" className="nl.nn.adapterframework.pipes.DelayPipe"
+			<pipe name="DelayPipe" className="org.frankframework.pipes.DelayPipe"
 				delayTime="2000">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -48,19 +48,19 @@
 	</adapter>
 
 	<!--serviceNamespaceURI senders -->
-	<adapter name="WebServiceSenderServiceNamespaceURI" 
+	<adapter name="WebServiceSenderServiceNamespaceURI"
 		description="Test the functioning of the WebServiceSender sending to a listener with serviceNamespaceURI">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderServiceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					namespaceDefs="ns1=${web.protocol}://www.ing.com/namespace1 ns2=${web.protocol}://www.ing.com/namespace2"
@@ -73,18 +73,18 @@
 	<adapter name="WebServiceSenderErrorServiceNamespaceURI"
 		description="Test the functioning of the WebServiceSender sending to a listener with serviceNamespaceURI (error)">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderErrorServiceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_error:serviceNamespaceURI"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" 
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
@@ -96,7 +96,7 @@
 	<adapter name="WebServiceSenderTimeoutGlobalForwardServiceNamespaceURI"
 		description="Test the functioning of the WebServiceSender in combination with global-forward sending to a listener with serviceNamespaceURI">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeoutGlobalForwardServiceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
@@ -106,12 +106,12 @@
 			<global-forwards>
 				<forward name="exception" path="error_exception2" />
 			</global-forwards>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 			<!-- send2ws_no_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_no_forwards">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -119,9 +119,9 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_forward_timeout">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -130,18 +130,18 @@
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="error_timeout"
-				styleSheetName="WebServiceListenerSender/copy.xsl">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="error_timeout"
+                  styleSheetName="WebServiceListenerSender/copy.xsl">
 				<param name="root" value="TIMEOUT" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="error_exception"
-				styleSheetName="WebServiceListenerSender/copy.xsl">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="error_exception"
+                  styleSheetName="WebServiceListenerSender/copy.xsl">
 				<param name="root" value="EXCEPTION" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="error_exception2"
-				styleSheetName="WebServiceListenerSender/copy.xsl">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="error_exception2"
+                  styleSheetName="WebServiceListenerSender/copy.xsl">
 				<param name="root" value="EXCEPTION2" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -150,19 +150,19 @@
 	<adapter name="WebServiceSenderTimeoutServiceNamespaceURI"
 		description="Test the functioning of the WebServiceSender sending to a listener with serviceNamespaceURI (timeout)">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderTimeoutServiceNamespaceURI" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 			<!-- send2ws_no_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_no_forwards">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -170,9 +170,9 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_forward_timeout">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -181,9 +181,9 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_exception -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_forward_exception">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -192,9 +192,9 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_with_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_with_forwards">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -204,9 +204,9 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_multiple_with_forwards -->
-			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+			<pipe className="org.frankframework.pipes.ForEachChildElementPipe"
 				name="send2ws_multiple_with_forwards" removeXmlDeclarationInResults="true">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -216,9 +216,9 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_no_forwards_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_no_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -226,9 +226,9 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_forward_timeout_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -237,9 +237,9 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_exception_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_forward_exception_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -248,9 +248,9 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_with_forwards_resultOnTimeOut -->
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="send2ws_with_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					sharedResourceRef="SharedHttpSession"
@@ -259,13 +259,13 @@
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="error_timeout"
-				styleSheetName="WebServiceListenerSender/copy.xsl">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="error_timeout"
+                  styleSheetName="WebServiceListenerSender/copy.xsl">
 				<param name="root" value="TIMEOUT" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="error_exception"
-				styleSheetName="WebServiceListenerSender/copy.xsl">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="error_exception"
+                  styleSheetName="WebServiceListenerSender/copy.xsl">
 				<param name="root" value="EXCEPTION" />
 				<forward name="success" path="EXIT" />
 			</pipe>

@@ -1,0 +1,2 @@
+org.frankframework.util.testresolvers.NullResolver
+org.frankframework.util.testresolvers.ReversiResolver

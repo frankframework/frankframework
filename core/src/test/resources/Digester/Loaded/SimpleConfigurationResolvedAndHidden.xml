@@ -1,11 +1,11 @@
 <configuration name="SimpleConfiguration">
 	<adapter name="HelloBeautifulWorld">
 		<receiver name="HelloBeautifulWorld">
-			<listener name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
+			<listener name="HelloBeautifulWorld" className="org.frankframework.receivers.JavaListener"/>
 		</receiver>
 		<pipeline firstPipe="HelloBeautifulWorld">
 			<exit name="EXIT" state="success"/>
-			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World [ &gt;&quot;&lt; ] [******] &lt;@quot;&gt;" className="nl.nn.adapterframework.pipes.FixedResultPipe">
+			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World [ &gt;&quot;&lt; ] [******] &lt;@quot;&gt;" className="org.frankframework.pipes.FixedResultPipe">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

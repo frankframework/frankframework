@@ -22,7 +22,7 @@
           <row number="0">
             <field name="MESSAGEKEY">6</field>
             <field name="TYPE">L</field>
-            <field name="SLOTID">IFSA://NLIBIS4TEST/EsbJmsFFSenderWithRead</field>
+            <field name="SLOTID">FF4TEST/EsbJmsFFSenderWithRead</field>
             <field name="HOST">LPZWNL000040524</field>
             <field name="MESSAGEID">ID:EMS_DEV_ESB_P2P_LARGE.2A22636BE02F3A7D5895:10</field>
             <field name="CORRELATIONID">Test Tool correlation id(7)</field>
@@ -60,7 +60,7 @@
           <row number="1">
             <field name="MESSAGEKEY">7</field>
             <field name="TYPE">E</field>
-            <field name="SLOTID">IFSA://NLIBIS4TEST/EsbJmsFFListener</field>
+            <field name="SLOTID">FF4TEST/EsbJmsFFListener</field>
             <field name="HOST">LPZWNL000040524</field>
             <field name="MESSAGEID">ID:EMS_DEV_ESB_P2P_LARGE.2A22636BE02F3A7D5895:10</field>
             <field name="CORRELATIONID">Test Tool correlation id(7)</field>

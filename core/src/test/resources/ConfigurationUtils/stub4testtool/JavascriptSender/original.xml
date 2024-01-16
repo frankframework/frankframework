@@ -2,7 +2,7 @@
 	<adapter name="JavascriptSender">
 		<receiver name="JavascriptSender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="JavascriptSender"
 			/>
 		</receiver>
@@ -13,9 +13,9 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
-				<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+				<sender className="org.frankframework.senders.JavascriptSender"
 					jsFileName="JavaScript/JavascriptTest.js"
 					jsFunctionName="f2"
 					engineName="J2V8"/>

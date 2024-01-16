@@ -1,24 +1,24 @@
 <module>
 	<adapter name="HighDeliveryCount_EsbJmsListener" description="Reads messages with (mocked) a high delivery-count" active="${active.jms.highDeliveryCountTest}">
 		<receiver transactionAttribute="Required" maxRetries="2">
-			<listener className="nl.nn.adapterframework.listeners.CustomHighDeliveryCountEsbJmsListener"
+			<listener className="org.frankframework.listeners.CustomHighDeliveryCountEsbJmsListener"
 				destinationName="${tibco.ff_queue}" jmsRealm="qcf"
 				messageProtocol="FF" messageSelector="SOURCE='${hostname}_HDC'" />
 
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/HighDeliveryCount_EsbJmsListener" />
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/HighDeliveryCount_EsbJmsListener" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="reply/@action" />
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="reply/@action" />
 
-			<pipe name="ok" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="ok" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe" getInputFromFixedValue="ERROR">
+			<pipe name="exception" className="org.frankframework.pipes.ExceptionPipe" getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -26,20 +26,20 @@
 
 	<adapter name="HighDeliveryCount_EsbJmsFFSender" active="${active.jms.highDeliveryCountTest}" description="Adapter to put messages on a queue with the matching selector">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-EsbJmsFFSender_HighDeliveryCount" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-EsbJmsFFSender_HighDeliveryCount" />
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms" transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="Send2EsbJms" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender" destinationName="${tibco.ff_queue}" jmsRealm="qcf" messageProtocol="FF">
+			<pipe name="Send2EsbJms" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.extensions.esb.EsbJmsSender" destinationName="${tibco.ff_queue}" jmsRealm="qcf" messageProtocol="FF">
 					<param name="SOURCE" value="${hostname}_HDC" />
 				</sender>
 			</pipe>
 
-			<pipe name="okReply" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
+			<pipe name="okReply" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ok&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

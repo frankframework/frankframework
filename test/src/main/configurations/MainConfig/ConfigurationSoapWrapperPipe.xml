@@ -1,77 +1,77 @@
 <module>
 	<adapter name="SoapWrapperPipe" description="Test the functioning of the SoapWrapperPipe">
-		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessageFormatter" />
+		<errorMessageFormatter className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-SoapWrapperPipe" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-SoapWrapperPipe" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
+			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
 <!-- unwrap -->
-			<pipe name="unwrap" className="nl.nn.adapterframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader">
+			<pipe name="unwrap" className="org.frankframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- wrap -->
-			<pipe name="wrap" className="nl.nn.adapterframework.soap.SoapWrapperPipe" soapHeaderSessionKey="soapHeader">
+			<pipe name="wrap" className="org.frankframework.soap.SoapWrapperPipe" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- unwrap & wrap -->
-			<pipe name="unwrap_wrap" className="nl.nn.adapterframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader">
+			<pipe name="unwrap_wrap" className="org.frankframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="unwrap_wrap2" />
 			</pipe>
-			<pipe name="unwrap_wrap2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" soapHeaderSessionKey="soapHeader" soapNamespace="http://www.w3.org/2003/05/soap-envelope" root="wrappedRoot">
+			<pipe name="unwrap_wrap2" className="org.frankframework.soap.SoapWrapperPipe" soapHeaderSessionKey="soapHeader" soapNamespace="http://www.w3.org/2003/05/soap-envelope" root="wrappedRoot">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- wrap & unwrap -->
-			<pipe name="wrap_unwrap" className="nl.nn.adapterframework.soap.SoapWrapperPipe" soapHeaderSessionKey="soapHeader">
+			<pipe name="wrap_unwrap" className="org.frankframework.soap.SoapWrapperPipe" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="wrap_unwrap2" />
 			</pipe>
-			<pipe name="wrap_unwrap2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader" root="unwrappedRoot">
+			<pipe name="wrap_unwrap2" className="org.frankframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader" root="unwrappedRoot">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- unwrap_replace -->
-			<pipe name="unwrap_replace" className="nl.nn.adapterframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader">
+			<pipe name="unwrap_replace" className="org.frankframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="unwrap_replace2" />
 			</pipe>
-			<pipe name="unwrap_replace2" className="nl.nn.adapterframework.pipes.ReplacerPipe" find="  " replace="_">
+			<pipe name="unwrap_replace2" className="org.frankframework.pipes.ReplacerPipe" find="  " replace="_">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- unwrap 1.2 -->
-			<pipe name="unwrap_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
+			<pipe name="unwrap_1_2" className="org.frankframework.soap.SoapWrapperPipe"
 			direction="unwrap" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- wrap 1.2 -->
-			<pipe name="wrap_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe"
+			<pipe name="wrap_1_2" className="org.frankframework.soap.SoapWrapperPipe"
  			soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- unwrap & wrap 1.2 -->
-			<pipe name="unwrap_wrap_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
+			<pipe name="unwrap_wrap_1_2" className="org.frankframework.soap.SoapWrapperPipe"
 			direction="unwrap"  soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="unwrap_wrap2_1.2" />
 			</pipe>
-			<pipe name="unwrap_wrap2_1.2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
+			<pipe name="unwrap_wrap2_1.2" className="org.frankframework.soap.SoapWrapperPipe"
 			soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap & unwrap 1.2 -->
-			<pipe name="wrap_unwrap_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
+			<pipe name="wrap_unwrap_1_2" className="org.frankframework.soap.SoapWrapperPipe"
  			soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="wrap_unwrap2_1.2" />
 			</pipe>
-			<pipe name="wrap_unwrap2_1.2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" direction="unwrap" 
-			soapHeaderSessionKey="soapHeader" root="unwrappedRoot">
+			<pipe name="wrap_unwrap2_1.2" className="org.frankframework.soap.SoapWrapperPipe" direction="unwrap"
+				  soapHeaderSessionKey="soapHeader" root="unwrappedRoot">
 				<forward name="success" path="EXIT" />
 			</pipe>
 <!-- unwrap_replace 1.2 -->
-			<pipe name="unwrap_replace_1_2" className="nl.nn.adapterframework.soap.SoapWrapperPipe" 
+			<pipe name="unwrap_replace_1_2" className="org.frankframework.soap.SoapWrapperPipe"
 			direction="unwrap" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="unwrap_replace2_1.2" />
 			</pipe>
-			<pipe name="unwrap_replace2_1.2" className="nl.nn.adapterframework.pipes.ReplacerPipe" find="  " replace="_">
+			<pipe name="unwrap_replace2_1.2" className="org.frankframework.pipes.ReplacerPipe" find="  " replace="_">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

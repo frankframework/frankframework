@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-jboss</artifactId>
+	<artifactId>frankframework-docker-jboss</artifactId>
 	<name>Frank!Framework - Docker > JBoss</name>
 	<packaging>pom</packaging>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-docker</artifactId>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-docker</artifactId>
 		<version>${revision}</version>
 	</parent>
 
@@ -19,14 +19,14 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>scenarios</classifier>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-test</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -110,8 +110,8 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
+									<groupId>org.frankframework</groupId>
+									<artifactId>frankframework-test</artifactId>
 									<classifier>scenarios</classifier>
 								</artifactItem>
 							</artifactItems>
@@ -128,8 +128,8 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
+									<groupId>org.frankframework</groupId>
+									<artifactId>frankframework-test</artifactId>
 									<classifier>secrets</classifier>
 									<excludes>META-INF/</excludes>
 								</artifactItem>

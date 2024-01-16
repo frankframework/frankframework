@@ -1,7 +1,7 @@
 <module>
 	<adapter name="ResultSet2FileSender">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-ResultSet2FileSender" />
 		</receiver>
 		<pipeline firstPipe="setFileName">
@@ -9,19 +9,19 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="setFileName" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="setFileName" className="org.frankframework.pipes.PutInSession"
 				sessionKey="fileName" value="${testdata.dir}/rs2fs/file.txt">
 				<forward name="success" path="setMaxRecords" />
 			</pipe>
 
-			<pipe name="setMaxRecords" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="setMaxRecords" className="org.frankframework.pipes.PutInSession"
 				sessionKey="maxRecords" value="7">
 				<forward name="success" path="selectRecordIds" />
 			</pipe>
 
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="selectRecordIds">
-				<sender className="nl.nn.adapterframework.jdbc.ResultSet2FileSender"
+				<sender className="org.frankframework.jdbc.ResultSet2FileSender"
 					filenameSessionKey="fileName" lockRows="true"
 					maxRecordsSessionKey="maxRecords"
 					query="SELECT TCLOB, TTIMESTAMP, TCHAR, TKEY FROM IBISTEMP WHERE TTIMESTAMP IS NULL ORDER BY TCHAR, TKEY"
@@ -29,7 +29,7 @@
 				<forward name="success" path="readFile" />
 			</pipe>
 
-			<pipe name="readFile" className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="readFile" className="org.frankframework.pipes.FilePipe"
 				actions="read" filenameSessionKey="fileName">
 				<forward name="success" path="EXIT" />
 			</pipe>

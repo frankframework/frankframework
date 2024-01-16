@@ -2,41 +2,41 @@
   <modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-test-integration</artifactId>
-	<name>Ibis AdapterFramework Integration Tests for various databases, messaging and mail systems</name>
+	<artifactId>frankframework-test-integration</artifactId>
+	<name>Frank!Framework Integration Tests for various databases, messaging and mail systems</name>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-core</artifactId>
 			<classifier>tests</classifier>
 			<type>test-jar</type>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-aws</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-aws</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-cmis</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-cmis</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-sap</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-sap</artifactId>
 			<scope>test</scope>
 		</dependency>
 

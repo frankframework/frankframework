@@ -7,7 +7,7 @@
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="JdbcQueryListener for ibis4test"
-						className="nl.nn.adapterframework.jdbc.JdbcQueryListener"
+						className="org.frankframework.jdbc.JdbcQueryListener"
 						selectQuery="SELECT TKEY, TCLOB
 										FROM IBISTEMP
 										WHERE TCHAR = '1'
@@ -16,14 +16,14 @@
 						updateStatusToErrorQuery="UPDATE IBISTEMP SET TCHAR='3' WHERE TKEY=?"
 						keyField="tkey"
 						messageField="TCLOB"/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" />
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" retention="-1" />
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" />
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" retention="-1" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

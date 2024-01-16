@@ -1,63 +1,63 @@
 <configuration xmlns:stub="http://frankframework.org/stub">
 	<adapter stub:disableStub="true" name="DisableStubTrue">
 		<receiver name="DisableStubTrue" transactionAttribute="Required">
-			<listener className="nl.nn.adapterframework.jms.JmsListener" lookupDestination="false" name="DisableStubTrue"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="DisableStubTrue"/>
+			<listener className="org.frankframework.jms.JmsListener" lookupDestination="false" name="DisableStubTrue"/>
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="DisableStubTrue"/>
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="CreateResponse" returnString="Success ">
+			<pipe className="org.frankframework.pipes.FixedResult" name="CreateResponse" returnString="Success ">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter stub:disableStub="!FALSE" name="DisableStub!false">
 		<receiver name="DisableStub!false" transactionAttribute="Required">
-			<listener className="nl.nn.adapterframework.jms.JmsListener" lookupDestination="false" name="FullAdapter"/>
+			<listener className="org.frankframework.jms.JmsListener" lookupDestination="false" name="FullAdapter"/>
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="CreateResponse" returnString="Success ">
+			<pipe className="org.frankframework.pipes.FixedResult" name="CreateResponse" returnString="Success ">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter stub:disableStub="false" name="DisableStubListenerTrue">
 		<receiver name="testtool-DisableStubListenerTrue" transactionAttribute="Required">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-DisableStubListenerTrue"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="stubbed-DisableStubTrue"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-DisableStubListenerTrue"/>
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="stubbed-DisableStubTrue"/>
 		</receiver>
 		<receiver name="DisableStubTrue" transactionAttribute="Required">
-			<listener className="nl.nn.adapterframework.jms.JmsListener" stub:disableStub="true" lookupDestination="false" name="DisableStubTrue"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="DisableStubTrue"/>
+			<listener className="org.frankframework.jms.JmsListener" stub:disableStub="true" lookupDestination="false" name="DisableStubTrue"/>
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="DisableStubTrue"/>
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="CreateResponse" returnString="Success ">
+			<pipe className="org.frankframework.pipes.FixedResult" name="CreateResponse" returnString="Success ">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="DisableStubListenerNotTrue">
 		<receiver name="testtool-DisableStubListenerNotTrue" transactionAttribute="Required">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-DisableStubListenerNotTrue"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="stubbed-DisableStubTrue"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-DisableStubListenerNotTrue"/>
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="stubbed-DisableStubTrue"/>
 		</receiver>
 		<receiver name="testtool-DisableStubListenerNotTrue-1" transactionAttribute="Required">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-DisableStubListenerNotTrue-1"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="stubbed-DisableStubTrue"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-DisableStubListenerNotTrue-1"/>
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" retention="7" slotId="stubbed-DisableStubTrue"/>
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="CreateResponse" returnString="Success ">
+			<pipe className="org.frankframework.pipes.FixedResult" name="CreateResponse" returnString="Success ">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
