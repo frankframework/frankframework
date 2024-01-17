@@ -120,7 +120,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		Adapter adapter = config.getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
-			throw new BusException("adapter ["+adapterName+"] does not exist");
+			throw new ResourceNotFoundException("adapter [" + adapterName + "] does not exist");
 		}
 
 		return adapter;
@@ -130,7 +130,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	protected Receiver<?> getReceiverByName(Adapter adapter, String receiverName) {
 		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
-			throw new BusException("receiver ["+receiverName+"] does not exist");
+			throw new ResourceNotFoundException("receiver [" + receiverName + "] does not exist");
 		}
 		return receiver;
 	}
@@ -139,7 +139,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	protected IPipe getPipeByName(Adapter adapter, String pipeName) {
 		IPipe pipe = adapter.getPipeLine().getPipe(pipeName);
 		if(pipe == null) {
-			throw new BusException("pipe ["+pipeName+"] does not exist");
+			throw new ResourceNotFoundException("pipe [" + pipeName + "] does not exist");
 		}
 		return pipe;
 	}

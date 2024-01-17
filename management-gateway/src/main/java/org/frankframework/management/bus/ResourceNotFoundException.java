@@ -15,18 +15,15 @@
 */
 package org.frankframework.management.bus;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class ResourceNotFoundException extends RuntimeException {
-	private static final Logger LOG = LogManager.getLogger(ResourceNotFoundException.class);
 
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Seen as WARNING
-	 */
 	public ResourceNotFoundException(String message) {
 		this(message, null);
 	}
@@ -38,9 +35,9 @@ public class ResourceNotFoundException extends RuntimeException {
 	public ResourceNotFoundException(String message, Throwable exception) {
 		super(new IbisException(message, exception).getMessage());
 		if (exception == null) {
-			LOG.warn(super.getMessage()); // expanded message is logged directly
+			log.warn(super.getMessage()); // expanded message is logged directly
 		} else {
-			LOG.error(message, exception); // normal message, expanded by printing the stacktrace
+			log.error(message, exception); // normal message, expanded by printing the stacktrace
 		}
 	}
 }
