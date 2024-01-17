@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2021 WeAreFrank!
+Copyright 2017-2021, 2024 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ limitations under the License.
 package org.frankframework.http.rest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -91,7 +90,7 @@ public class ApiServiceDispatcher {
 
 		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
 			String uriPattern = it.next();
-			if(log.isTraceEnabled()) log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
+			if(log.isTraceEnabled()) log.trace("comparing uri [{}] to pattern [{}]", uri, uriPattern);
 
 			String[] patternSegments = uriPattern.split("/");
 			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
@@ -120,40 +119,40 @@ public class ApiServiceDispatcher {
 		if(uriPattern == null)
 			throw new ListenerException("uriPattern cannot be null or empty");
 
-		ApiListener.HttpMethod method = listener.getMethod();
-
 		synchronized(patternClients) {
-			patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
+			for(ApiListener.HttpMethod method : listener.getAllMethods()){
+				patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
+				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}}]", uriPattern, method);
+			}
 		}
-
-		if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
 
 	public void unregisterServiceClient(ApiListener listener) {
-		ApiListener.HttpMethod method = listener.getMethod();
 		String uriPattern = listener.getCleanPattern();
 		if(uriPattern == null) {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
 		}
 		else {
-			boolean success = false;
-			synchronized (patternClients) {
-				ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
-				if(dispatchConfig != null) {
-					if(dispatchConfig.getMethods().size() == 1) {
-						patternClients.remove(uriPattern); //Remove the entire config if there's only 1 ServiceClient registered
-					} else {
-						dispatchConfig.remove(method); //Only remove the ServiceClient as there are multiple registered
+			for(ApiListener.HttpMethod method : listener.getAllMethods()){
+				boolean success = false;
+				synchronized (patternClients) {
+					ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
+					if(dispatchConfig != null) {
+						if(dispatchConfig.getMethods().size() == 1) {
+							patternClients.remove(uriPattern); //Remove the entire config if there's only 1 ServiceClient registered
+						} else {
+							dispatchConfig.remove(method); //Only remove the ServiceClient as there are multiple registered
+						}
+						success = true;
 					}
-					success = true;
 				}
-			}
 
-			//keep log statements out of synchronized block
-			if(success) {
-				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
-			} else {
-				log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
+				//keep log statements out of synchronized block
+				if(success) {
+					if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern [{}] method [{}}]", uriPattern, method);
+				} else {
+					log.warn("unable to find DispatchConfig for uriPattern [{}]", uriPattern);
+				}
 			}
 		}
 	}
@@ -167,7 +166,7 @@ public class ApiServiceDispatcher {
 	}
 
 	public JsonObject generateOpenApiJsonSchema(ApiDispatchConfig client, String endpoint) {
-		List<ApiDispatchConfig> clientList = Arrays.asList(client);
+		List<ApiDispatchConfig> clientList = List.of(client);
 		return generateOpenApiJsonSchema(clientList, endpoint);
 	}
 
@@ -369,7 +368,7 @@ public class ApiServiceDispatcher {
 					if(StringUtils.isNotEmpty(ple.getResponseRoot()) && outputValidator == null) {
 						reference = ple.getResponseRoot();
 					} else {
-						List<String> references = Arrays.asList(schemaReferenceElement.split(","));
+						List<String> references = List.of(schemaReferenceElement.split(","));
 						if(ple.isSuccessExit()) {
 							reference = references.get(0);
 						} else {
@@ -405,7 +404,7 @@ public class ApiServiceDispatcher {
 			if(config != null) config.clear();
 		}
 		if(!patternClients.isEmpty()) {
-			log.warn("unable to gracefully unregister "+patternClients.size()+" DispatchConfigs");
+			log.warn("unable to gracefully unregister [{}] DispatchConfigs", patternClients.size());
 			patternClients.clear();
 		}
 	}

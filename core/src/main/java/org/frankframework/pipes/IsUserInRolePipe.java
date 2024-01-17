@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -29,6 +29,9 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
+import org.frankframework.util.StringUtil;
+
+import lombok.Getter;
 
 /**
  * Pipe that checks if the calling user has a specified role.
@@ -58,39 +61,49 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getNotInRoleForwardName())) {
 			notInRoleForward = findForward(getNotInRoleForwardName());
 			if (notInRoleForward==null) {
-				throw new ConfigurationException("notInRoleForwardName ["+getNotInRoleForwardName()+"] not found");
+				throw new ConfigurationException("could not find forward for notInRoleForwardName ["+ getNotInRoleForwardName()+"]");
 			}
 		}
 	}
 
-	protected void assertUserIsInRole(PipeLineSession session, String role) throws SecurityException {
-		if (!session.isUserInRole(role)) {
-			throw new SecurityException("user is not in role ["+role+"]");
+	protected String getFirstMatchingUserRole(PipeLineSession session, List<String> roles) {
+		ISecurityHandler securityHandler = session.getSecurityHandler();
+		return roles.stream()
+				.filter(securityHandler::isUserInRole)
+				.findFirst().orElse(null);
+	}
+
+	protected List<String> getRolesToCheck(Message message) throws PipeRunException {
+		String roles = getRole();
+		if (StringUtils.isEmpty(roles)) {
+			try {
+				roles = message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, "cannot open stream", e);
+			}
 		}
+		return StringUtil.split(roles);
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			if (StringUtils.isEmpty(getRole())) {
-				String inputString;
-				try {
-					inputString = message.asString();
-				} catch (IOException e) {
-					throw new PipeRunException(this, "cannot open stream", e);
-				}
-				if (StringUtils.isEmpty(inputString)) {
-					throw new PipeRunException(this, "role cannot be empty");
-				}
-				assertUserIsInRole(session, inputString);
-			} else {
-				assertUserIsInRole(session, getRole());
+			List<String> rolesToCheck = getRolesToCheck(message);
+			if (rolesToCheck.isEmpty()) {
+				throw new PipeRunException(this, "role cannot be empty");
+			}
+
+			String userRole = getFirstMatchingUserRole(session, rolesToCheck);
+			if (userRole == null) {
+				throw new SecurityException("user is not in role(s) [" + rolesToCheck + "]");
+			}
+
+			PipeForward relatedForward = findForward(userRole);
+			if (relatedForward != null) {
+				return new PipeRunResult(relatedForward, message);
 			}
 		} catch (SecurityException e) {
-			if (notInRoleForward!=null) {
-				return new PipeRunResult(notInRoleForward, message);
-			}
-			throw new PipeRunException(this,"",e);
+			return new PipeRunResult(notInRoleForward, message);
 		}
 		return new PipeRunResult(getSuccessForward(),message);
 	}
@@ -99,7 +112,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return role;
 	}
 
-	/** the j2ee role to check.  */
+	/** the j2ee role(s) to check, if the user in multiple roles, the first specified role will be matched. */
 	public void setRole(String string) {
 		role = string;
 	}

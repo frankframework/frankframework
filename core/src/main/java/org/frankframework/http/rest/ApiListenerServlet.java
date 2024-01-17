@@ -19,12 +19,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
@@ -81,7 +81,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	public static final String AUTHENTICATION_COOKIE_NAME = "authenticationToken";
 
-	private static final List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
+	private static final List<String> IGNORE_HEADERS = List.of("connection", "transfer-encoding", "content-type", "authorization");
 
 	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private final String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
@@ -210,10 +210,10 @@ public class ApiListenerServlet extends HttpServletBase {
 		 * Initiate and populate messageContext
 		 */
 		try (PipeLineSession messageContext = new PipeLineSession()) {
+			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, method);
 			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-			messageContext.put("HttpMethod", method);
 			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
@@ -236,11 +236,10 @@ public class ApiListenerServlet extends HttpServletBase {
 						response.setHeader("Access-Control-Allow-Headers", headers);
 					response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
 
-					StringBuilder methods = new StringBuilder();
-					for (ApiListener.HttpMethod mtd : config.getMethods()) {
-						methods.append(", ").append(mtd);
-					}
-					response.setHeader("Access-Control-Allow-Methods", methods.toString());
+					String methods = config.getMethods().stream()
+						.map(ApiListener.HttpMethod::name)
+						.collect(Collectors.joining(", "));
+					response.setHeader("Access-Control-Allow-Methods", methods);
 
 					//Only cut off OPTIONS (aka preflight) requests
 					if (method == ApiListener.HttpMethod.OPTIONS) {
@@ -316,7 +315,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
 								List<String> authRoles = listener.getAuthenticationRoleList();
 								if(authRoles != null) {
-									boolean userIsInRole = authRoles.stream().anyMatch(role -> handler.isUserInRole(role, messageContext));
+									boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
 									if(userIsInRole) {
 										userPrincipal = new ApiPrincipal();
 									}
@@ -543,7 +542,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						cache.remove(etagCacheKey);
 
 						// Not only remove the eTag for the selected resources but also the collection
-						String key = ApiCacheManager.getParentCacheKey(listener, uri);
+						String key = ApiCacheManager.getParentCacheKey(listener, uri, method);
 						if(key != null) {
 							LOG.debug("removing parent etag with key[{}]", key);
 							cache.remove(key);
@@ -641,7 +640,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			String paramName = paramNames.nextElement();
 			String[] paramList = request.getParameterValues(paramName);
 			if(paramList.length > 1) { // contains multiple items
-				List<String> valueList = Arrays.asList(paramList);
+				List<String> valueList = List.of(paramList);
 				if(LOG.isTraceEnabled()) LOG.trace("setting queryParameter [{}] to {}", paramName, valueList);
 				params.put(paramName, valueList);
 			}
