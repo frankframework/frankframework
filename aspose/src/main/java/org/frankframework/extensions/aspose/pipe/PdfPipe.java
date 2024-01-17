@@ -307,7 +307,7 @@ public class PdfPipe extends FixedForwardPipe {
 	 * indicates how many threads are used for conversion of discovered attachments, 0 means no limit
 	 * @ff.default 1
 	 */
-	public void setMaxThreads(boolean loadExternalResources) {
-		this.loadExternalResources = loadExternalResources;
+	public void setMaxThreads(int maxThreads) {
+		this.maxThreads = maxThreads;
 	}
 }
