@@ -23,15 +23,16 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import lombok.extern.log4j.Log4j2;
-
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * DataSource that is aware of the database metadata.
  * Fetches the metadata once and caches them.
  */
-
 @Log4j2
 public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwareDataSourceProxy {
 	private Map<String, String> metadata;
@@ -42,7 +43,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	}
 
 	public Map<String, String> getMetaData() throws SQLException {
-		if(metadata == null) {
+		if (metadata == null) {
 			log.debug("populating metadata from getMetaData");
 			try (Connection connection = getConnection()) {
 				populateMetadata(connection);
@@ -70,12 +71,12 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	}
 
 	public String getDestinationName() throws SQLException {
-		if(destinationName == null) {
+		if (destinationName == null) {
 			StringBuilder builder = new StringBuilder();
 			builder.append(getMetaData().get("url"));
 
 			String catalog = getMetaData().get("catalog");
-			if(catalog != null) builder.append("/"+catalog);
+			if (catalog != null) builder.append("/").append(catalog);
 
 			destinationName = builder.toString();
 		}
@@ -85,7 +86,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	@Override
 	public Connection getConnection() throws SQLException {
 		Connection conn = super.getConnection();
-		if(metadata == null) {
+		if (metadata == null) {
 			log.debug("populating metadata from getConnection");
 			populateMetadata(conn);
 		}
@@ -95,25 +96,48 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	@Override
 	public String toString() {
-		if(metadata != null && log.isInfoEnabled()) {
+		if (metadata != null && log.isInfoEnabled()) {
 			return getInfo();
 		}
 		return obtainTargetDataSource().toString();
 	}
 
 	public String getInfo() {
-		StringBuilder builder = new StringBuilder();
-
-		if(metadata != null) {
-			builder.append("user ["+metadata.get("user")+"]");
-			builder.append(" url ["+metadata.get("url")+"]");
-			builder.append(" product ["+metadata.get("product")+"]");
-			builder.append(" product version ["+metadata.get("product-version")+"]");
-			builder.append(" driver ["+metadata.get("driver")+"]");
-			builder.append(" driver version ["+metadata.get("driver-version")+"]");
+		StringBuilder info = new StringBuilder();
+		if (metadata != null) {
+			info.append("user [").append(metadata.get("user")).append("], ");
+			info.append("url [").append(metadata.get("url")).append("], ");
+			info.append("product [").append(metadata.get("product")).append("], ");
+			info.append("product version [").append(metadata.get("product-version")).append("], ");
+			info.append("driver [").append(metadata.get("driver")).append("], ");
+			info.append("driver version [").append(metadata.get("driver-version")).append("], ");
 		}
-		builder.append(" datasource ["+obtainTargetDataSource().toString()+"]");
 
-		return builder.toString();
+		if (getTargetDataSource() instanceof OpenManagedDataSource) {
+			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) getTargetDataSource();
+			GenericObjectPool pool = targetDataSource.getPool();
+			if (pool != null) {
+				info.append("Pool Info: ");
+				info.append("maxIdle [").append(pool.getMaxIdle()).append("], ");
+				info.append("minIdle [").append(pool.getMinIdle()).append("], ");
+				info.append("maxTotal [").append(pool.getMaxTotal()).append("], ");
+				info.append("numActive [").append(pool.getNumActive()).append("], ");
+				info.append("numIdle [").append(pool.getNumIdle()).append("], ");
+			}
+		} else if (getTargetDataSource() instanceof BasicDataSource) { // Tomcat instance
+			BasicDataSource dataSource = (BasicDataSource) getTargetDataSource();
+			info.append("Pool Info: ");
+			if (dataSource != null) {
+				info.append("maxIdle [").append(dataSource.getMaxIdle()).append("], ");
+				info.append("minIdle [").append(dataSource.getMinIdle()).append("], ");
+				info.append("maxTotal [").append(dataSource.getMaxTotal()).append("], ");
+				info.append("numActive [").append(dataSource.getNumActive()).append("], ");
+				info.append("numIdle [").append(dataSource.getNumIdle()).append("], ");
+			}
+		}
+
+		info.append(" datasource [").append(obtainTargetDataSource().getClass().getName()).append("]");
+		return info.toString();
 	}
+
 }

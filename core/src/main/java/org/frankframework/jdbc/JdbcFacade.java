@@ -22,31 +22,28 @@ import java.sql.SQLException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.frankframework.dbms.DbmsSupportFactory;
-import org.frankframework.dbms.JdbcException;
-
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-
+import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jndi.JndiBase;
 import org.frankframework.jndi.JndiDataSourceFactory;
-
-import org.frankframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Provides functions for JDBC connections.
@@ -119,30 +116,30 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			}
 
 			String dsinfo = datasource.toString();
-			log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
+			log.info("{}looked up Datasource [{}]: [{}]", getLogPrefix(), dsName, dsinfo);
 		}
 		return datasource;
 	}
 
 	public String getDatasourceInfo() throws JdbcException {
-		String dsinfo=null;
 		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-			// TODO let TransactionalDbmsSupportAwareDataSourceProxy.getInfo() use the same code as used here
 			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
 		}
-		try (Connection conn=getConnection()) {
-			DatabaseMetaData md=conn.getMetaData();
-			String product=md.getDatabaseProductName();
-			String productVersion=md.getDatabaseProductVersion();
-			String driver=md.getDriverName();
-			String driverVersion=md.getDriverVersion();
-			String url=md.getURL();
-			String user=md.getUserName();
-			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"] datasource ["+getDatasource().toString()+"]";
+		StringBuilder info = new StringBuilder();
+		try (Connection conn = getConnection()) {
+			DatabaseMetaData md = conn.getMetaData();
+			info.append("user [").append(md.getUserName()).append("], ");
+			info.append("url [").append(md.getURL()).append("], ");
+			info.append("product [").append(md.getDatabaseProductName()).append("], ");
+			info.append("product version [").append(md.getDatabaseProductVersion()).append("], ");
+			info.append("driver [").append(md.getDriverName()).append("], ");
+			info.append("driver version [").append(md.getDriverVersion()).append("], ");
+			info.append("maxConnections [").append(md.getMaxConnections()).append("], ");
+			info.append("datasource [").append(getDatasource().toString()).append("]");
 		} catch (SQLException e) {
-			log.warn("Exception determining databaseinfo", e);
+			log.warn("Exception determining databaseInfo", e);
 		}
-		return dsinfo;
+		return info.toString();
 	}
 
 	public void setDbmsSupportFactory(DbmsSupportFactory dbmsSupportFactory) {
