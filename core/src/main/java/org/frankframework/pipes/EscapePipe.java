@@ -55,7 +55,7 @@ public class EscapePipe extends FixedForwardPipe {
 		if (getDirection() == null) {
 			throw new ConfigurationException("direction must be set");
 		}
-		if ((substringStart != null && substringEnd == null) || (substringStart == null && substringEnd != null)) {
+		if ((StringUtils.isNotBlank(substringStart) && StringUtils.isBlank(substringEnd)) || (StringUtils.isBlank(substringStart) && StringUtils.isNotBlank(substringEnd))) {
 			throw new ConfigurationException("cannot have only one of substringStart or substringEnd");
 		}
 		if (isEncodeSubstring()) {

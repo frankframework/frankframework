@@ -66,22 +66,16 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 	public void nothingGetsEscapedWhenNoSubstringEndConfigured() throws Exception {
 		pipe.setSubstringStart("<message>");
 		pipe.setSubstringEnd("");
-		configureAndStartPipe();
 
-		PipeRunResult result = doPipe(getResource("no-substring-configured.xml"));
-		String expected = getResource("no-substring-configured.result").asString();
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+		assertThrows(ConfigurationException.class, pipe::configure);
 	}
 
 	@Test
 	public void nothingGetsEscapedWhenNoSubstringStartConfigured() throws Exception {
 		pipe.setSubstringStart("");
 		pipe.setSubstringEnd("</message>");
-		configureAndStartPipe();
 
-		PipeRunResult result = doPipe(getResource("no-substring-configured.xml"));
-		String expected = getResource("no-substring-configured.result").asString();
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+		assertThrows(ConfigurationException.class, pipe::configure);
 	}
 
 	@Test
