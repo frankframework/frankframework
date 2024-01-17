@@ -731,7 +731,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>6.5.1</version>
+			<version>6.6.0</version>
 		</dependency>
 		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>
