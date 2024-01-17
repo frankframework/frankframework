@@ -92,13 +92,14 @@ public class Dir2Map {
 
 	private Map<String, Object> FileInfo(File file, String displayName) {
 		Map<String, Object> fileInfo = new HashMap<>(6);
+		long fileSize = file.length();
 
 		fileInfo.put("name", displayName);
 		fileInfo.put("path", normalizePath(file));
 		fileInfo.put("lastModified", file.lastModified());
 		fileInfo.put("type", file.isDirectory() ? "directory" : "file");
-		fileInfo.put("size", file.length());
-		fileInfo.put("sizeDisplay", Misc.toFileSize(file.length(), true));
+		fileInfo.put("size", fileSize);
+		fileInfo.put("sizeDisplay", Misc.toFileSize(fileSize, true));
 
 		return fileInfo;
 	}
