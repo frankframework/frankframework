@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.Level;
 import org.frankframework.core.IbisException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -16,15 +15,15 @@ public class ResourceNotFoundExceptionTest {
 
 	public static Stream<Arguments> data() {
 		return Stream.of(
-				Arguments.arguments("", Level.WARN, null),
-				Arguments.arguments(": cannot configure", Level.ERROR, new IbisException("cannot configure")),
-				Arguments.arguments(": cannot configure: (IllegalStateException) something is wrong", Level.ERROR, new IbisException("cannot configure", new IllegalStateException("something is wrong")))
+				Arguments.arguments("", null),
+				Arguments.arguments(": cannot configure", new IbisException("cannot configure")),
+				Arguments.arguments(": cannot configure: (IllegalStateException) something is wrong", new IbisException("cannot configure", new IllegalStateException("something is wrong")))
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("data")
-	public void testExceptionMessage(String expectedLogMessage, Level expectedLogLevel, Exception innerException) {
+	public void testExceptionMessage(String expectedLogMessage, Exception innerException) {
 		Exception ex = new ResourceNotFoundException(RESOURCE_NOT_FOUND_EXCEPTION_MESSAGE, innerException);
 		assertEquals(RESOURCE_NOT_FOUND_EXCEPTION_MESSAGE + expectedLogMessage, ex.getMessage());
 	}
