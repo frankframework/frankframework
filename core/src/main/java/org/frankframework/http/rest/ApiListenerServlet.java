@@ -520,9 +520,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Do the actual request processing by the ApiListener
 				 */
-				//@SuppressWarnings("java:S2583") // Suppress Sonar warning for setting result to null
-				Message result = listener.getMethod().equals(ApiListener.HttpMethod.HEAD) ? null : listener.processRequest(body, messageContext);
-
+				Message result = listener.processRequest(body, messageContext);
 
 				/*
 				 * Calculate an eTag over the processed result and store in cache
@@ -584,6 +582,11 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				if (!Message.isEmpty(result)) {
 					MimeType contentType = determineContentType(messageContext, listener, result);
+					response.setContentType(contentType.toString());
+				}
+
+				if (result == null && method == ApiListener.HttpMethod.HEAD) {
+					MimeType contentType = determineContentType(messageContext, listener, null);
 					response.setContentType(contentType.toString());
 				}
 

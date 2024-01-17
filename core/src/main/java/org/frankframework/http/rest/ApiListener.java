@@ -169,10 +169,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@Override
 	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
-		if (getMethod() == HttpMethod.HEAD) {
-			return new Message("");
-		}
-
 		Message result = super.processRequest(message, session);
 
 		//Return null when super.processRequest() returns an empty string
