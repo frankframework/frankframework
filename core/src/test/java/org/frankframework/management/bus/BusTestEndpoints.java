@@ -25,7 +25,7 @@ import org.springframework.messaging.support.GenericMessage;
 @BusAware("frank-management-bus")
 public class BusTestEndpoints {
 	public enum ExceptionTestTypes {
-		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE
+		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, NOT_FOUND
 	}
 
 	//Test authorization
@@ -46,6 +46,8 @@ public class BusTestEndpoints {
 			new ConfigurationException("cannot configure",
 				new IllegalStateException("something is wrong")));
 		switch (type) {
+			case NOT_FOUND:
+				throw new ResourceNotFoundException("Resource not found");
 		case MESSAGE:
 			throw new BusException("message without cause");
 		case CAUSE:

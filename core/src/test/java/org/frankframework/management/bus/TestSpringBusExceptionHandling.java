@@ -37,6 +37,20 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 	}
 
 	@Test
+	public void testEndpointNotFoundException() {
+		// Arrange
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.WARNINGS);
+		request.setHeader("type", ExceptionTestTypes.NOT_FOUND.name());
+
+		// Act
+		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+
+		// Assert
+		assertTrue(e.getCause() instanceof ResourceNotFoundException);
+		assertEquals("Resource not found", e.getCause().getMessage());
+	}
+
+	@Test
 	public void testEndpointMessageWithCauseException() {
 		// Arrange
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.WARNINGS);
