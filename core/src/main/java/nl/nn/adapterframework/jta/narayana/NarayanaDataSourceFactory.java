@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jta.narayana;
 
 import java.sql.Connection;
+import java.time.Duration;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -30,6 +31,7 @@ import org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory;
 import org.apache.commons.dbcp2.managed.ManagedDataSource;
 import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.commons.dbcp2.managed.XAConnectionFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
@@ -44,15 +46,17 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 
 	private @Getter @Setter int minPoolSize = 0;
 	private @Getter @Setter int maxPoolSize = 20;
-	private @Getter @Setter int maxLifeTime = 0;
 	private @Getter @Setter int maxIdle = 1;
+	private @Getter @Setter int maxLifeTime = 0;
+	private @Getter @Setter String testQuery = null;
 
 	public NarayanaDataSourceFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
 		minPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.minPoolSize", minPoolSize);
 		maxPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", maxPoolSize);
-		maxLifeTime = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxLifeTime", maxLifeTime);
 		maxIdle = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxIdle", maxIdle);
+		maxLifeTime = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxLifeTime", maxLifeTime);
+		testQuery = appConstants.getString("transactionmanager.narayana.jdbc.connection.testQuery", testQuery);
 	}
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
@@ -102,8 +106,15 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	private ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		poolableConnectionFactory.setMaxConnLifetimeMillis((maxLifeTime > 0) ? maxLifeTime * 1000L : -1L);
+		if (maxLifeTime > 0) {
+			poolableConnectionFactory.setMaxConn(Duration.ofSeconds(maxLifeTime));
+		}
 		poolableConnectionFactory.setRollbackOnReturn(true);
+		if (StringUtils.isNotBlank(testQuery)) {
+			poolableConnectionFactory.setValidationQuery(testQuery);
+			poolableConnectionFactory.setValidationQueryTimeout(Duration.ofSeconds(5));
+		}
+		poolableConnectionFactory.setFastFailValidation(true);
 		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
 		connectionPool.setMinIdle(minPoolSize);
 		connectionPool.setMaxTotal(maxPoolSize);

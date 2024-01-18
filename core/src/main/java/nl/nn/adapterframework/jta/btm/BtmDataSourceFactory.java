@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jta.btm;
 
 import java.sql.Connection;
+import java.time.Duration;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -74,8 +75,15 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		poolableConnectionFactory.setMaxConnLifetimeMillis((maxLifeTime > 0) ? maxLifeTime * 1000 : -1);
+		if (maxLifeTime > 0) {
+			poolableConnectionFactory.setMaxConn(Duration.ofSeconds(maxLifeTime));
+		}
 		poolableConnectionFactory.setRollbackOnReturn(true);
+		if (StringUtils.isNotBlank(testQuery)) {
+			poolableConnectionFactory.setValidationQuery(testQuery);
+			poolableConnectionFactory.setValidationQueryTimeout(Duration.ofSeconds(5));
+		}
+		poolableConnectionFactory.setFastFailValidation(true);
 		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
 		connectionPool.setMinIdle(minPoolSize);
 		connectionPool.setMaxTotal(maxPoolSize);
