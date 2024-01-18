@@ -38,10 +38,17 @@ export class ThSortableDirective implements OnInit {
   @Input() direction: SortDirection = null;
   @Output() onSort = new EventEmitter<SortEvent>();
 
-  private nextSortOption: Record<string, SortDirection> = {
-    '': 'asc',
-    asc: 'desc',
-    desc: null
+  private nextSortOption(sortOption: SortDirection): SortDirection {
+    switch (sortOption) {
+      case null:
+        return 'asc';
+      case 'asc':
+        return 'desc';
+      case 'desc':
+        return null;
+      default:
+        return sortOption as never;
+    }
   }
   private headerText = "";
 
