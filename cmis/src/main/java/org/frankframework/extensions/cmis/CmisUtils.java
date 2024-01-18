@@ -15,6 +15,8 @@
  */
 package org.frankframework.extensions.cmis;
 
+import static org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHelper.HTTP_INVOKER_OBJECT;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
@@ -42,6 +44,8 @@ import org.apache.chemistry.opencmis.client.api.ObjectType;
 import org.apache.chemistry.opencmis.client.api.Property;
 import org.apache.chemistry.opencmis.client.api.Relationship;
 import org.apache.chemistry.opencmis.client.api.Tree;
+import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
+import org.apache.chemistry.opencmis.client.bindings.spi.CmisSpi;
 import org.apache.chemistry.opencmis.commons.data.AclCapabilities;
 import org.apache.chemistry.opencmis.commons.data.CreatablePropertyTypes;
 import org.apache.chemistry.opencmis.commons.data.NewTypeSettableAttributes;
@@ -161,6 +165,18 @@ public class CmisUtils {
 		}
 	}
 
+	public static void closeBindingSession(CmisSpi owner, BindingSession bindingSession) {
+		log.debug("Closing {}", owner.getClass().getSimpleName());
+		Object invoker = bindingSession.get(HTTP_INVOKER_OBJECT);
+		if (invoker instanceof CmisHttpInvoker) {
+			CmisHttpInvoker cmisHttpInvoker = (CmisHttpInvoker) invoker;
+			log.debug("Closing CMIS Invoker {}", cmisHttpInvoker);
+			cmisHttpInvoker.close();
+		} else {
+			log.debug("BindingSession for {} does not have instance of CmisHttpInvoker: {}", owner.getClass().getSimpleName(), invoker);
+		}
+
+	}
 
 	public static XmlBuilder buildXml(String name, Object value) {
 		XmlBuilder filterXml = new XmlBuilder(name);
