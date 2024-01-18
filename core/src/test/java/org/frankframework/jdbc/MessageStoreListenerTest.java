@@ -42,7 +42,7 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
-@WithLiquibase(tableName = MessageStoreListenerTest.TABLE_NAME, file = "Migrator/ChangelogBlobTests.xml")
+@WithLiquibase(tableName = MessageStoreListenerTest.TABLE_NAME, file = "Migrator/Ibisstore_4_unittests_changeset.xml")
 public class MessageStoreListenerTest {
 
 	private MessageStoreListener listener;
@@ -84,7 +84,7 @@ public class MessageStoreListenerTest {
 
 		databaseTestEnvironment.getConnection().setAutoCommit(true);
 
-		runMigrator("Migrator/ChangelogBlobTests.xml", databaseTestEnvironment);
+		runMigrator("Migrator/Ibisstore_4_unittests_changeset.xml", databaseTestEnvironment);
 	}
 
 	@AfterEach

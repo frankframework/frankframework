@@ -326,16 +326,13 @@ public class DbmsSupportTest {
 		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			stmt.setDouble(1, Double.parseDouble(number));
 			stmt.execute();
-			connection.close();
 		}
 
 		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TNUMBER FROM " + TABLE_NAME + " WHERE TKEY=3", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(resultSet.getString(1), StringStartsWith.startsWith(number));
-				connection.close();
 			}
-			connection.close();
 		}
 		connection.close();
 	}
@@ -509,21 +506,22 @@ public class DbmsSupportTest {
 	public void testWriteAndReadBlob(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String blobContents = "Dit is de content van de blob";
 		executeTranslatedQuery(databaseTestEnvironment, "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (20,EMPTY_BLOB())", QueryType.OTHER);
+		IDbmsSupport dbmsSupport = databaseTestEnvironment.getDbmsSupport();
 		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=20 FOR UPDATE", QueryType.SELECT, true)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				Object blobHandle = databaseTestEnvironment.getDbmsSupport().getBlobHandle(resultSet, 1);
-				try (OutputStream out = databaseTestEnvironment.getDbmsSupport().getBlobOutputStream(resultSet, 1, blobHandle)) {
+				Object blobHandle = dbmsSupport.getBlobHandle(resultSet, 1);
+				try (OutputStream out = dbmsSupport.getBlobOutputStream(resultSet, 1, blobHandle)) {
 					out.write(blobContents.getBytes(StandardCharsets.UTF_8));
 				}
-				databaseTestEnvironment.getDbmsSupport().updateBlob(resultSet, 1, blobHandle);
+				dbmsSupport.updateBlob(resultSet, 1, blobHandle);
 				resultSet.updateRow();
 			}
 		}
 		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=20", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				InputStream blobStream = databaseTestEnvironment.getDbmsSupport().getBlobInputStream(resultSet, 1);
+				InputStream blobStream = dbmsSupport.getBlobInputStream(resultSet, 1);
 				String actual = StreamUtil.streamToString(blobStream, null, "UTF-8");
 				assertEquals(blobContents, actual);
 			}
