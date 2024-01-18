@@ -27,14 +27,15 @@ import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.frankframework.jdbc.dbms.OpenPoolingDataSource;
+import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.util.AppConstants;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.jndi.JndiDataSourceFactory;
-import org.frankframework.util.AppConstants;
 
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
@@ -72,7 +73,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		poolableConnectionFactory.setMaxConnLifetimeMillis((maxLifeTime > 0) ? maxLifeTime * 1000 : -1);
+		poolableConnectionFactory.setMaxConnLifetimeMillis((maxLifeTime > 0) ? maxLifeTime * 1000L : -1);
 		poolableConnectionFactory.setRollbackOnReturn(true);
 		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
 		connectionPool.setMinIdle(minPoolSize);
@@ -80,7 +81,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 		connectionPool.setBlockWhenExhausted(true);
 		poolableConnectionFactory.setPool(connectionPool);
 
-		org.apache.commons.dbcp2.PoolingDataSource<PoolableConnection> ds = new org.apache.commons.dbcp2.PoolingDataSource<>(connectionPool);
+		OpenPoolingDataSource<PoolableConnection> ds = new OpenPoolingDataSource<>(connectionPool);
 		log.info("registered PoolingDataSource [{}]", ds);
 		return ds;
 	}

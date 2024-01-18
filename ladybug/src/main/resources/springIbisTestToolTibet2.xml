@@ -104,7 +104,7 @@
 
 	<bean id="dataSourceFactory" class="org.frankframework.jndi.JndiDataSourceFactory"/>
 
-	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory"/>
+	<bean name="dbmsSupportFactory" class="org.frankframework.jdbc.dbms.DbmsSupportFactory"/>
 
 	<bean name="auditLogStorage" class="org.frankframework.ibistesttool.tibet2.Storage" autowire="byName">
 		<property name="name" value="Logging"/>

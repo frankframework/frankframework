@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.dbms;
+package org.frankframework.jdbc.dbms;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -27,6 +27,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
+import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -35,6 +36,8 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwareDataSourceProxy {
+	private static final String CLOSE = "], ";
+
 	private Map<String, String> metadata;
 	private String destinationName = null;
 
@@ -105,39 +108,57 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	public String getInfo() {
 		StringBuilder info = new StringBuilder();
 		if (metadata != null) {
-			info.append("user [").append(metadata.get("user")).append("], ");
-			info.append("url [").append(metadata.get("url")).append("], ");
-			info.append("product [").append(metadata.get("product")).append("], ");
-			info.append("product version [").append(metadata.get("product-version")).append("], ");
-			info.append("driver [").append(metadata.get("driver")).append("], ");
-			info.append("driver version [").append(metadata.get("driver-version")).append("], ");
+			info.append("user [").append(metadata.get("user")).append(CLOSE);
+			info.append("url [").append(metadata.get("url")).append(CLOSE);
+			info.append("product [").append(metadata.get("product")).append(CLOSE);
+			info.append("product version [").append(metadata.get("product-version")).append(CLOSE);
+			info.append("driver [").append(metadata.get("driver")).append(CLOSE);
+			info.append("driver version [").append(metadata.get("driver-version")).append(CLOSE);
 		}
 
 		if (getTargetDataSource() instanceof OpenManagedDataSource) {
 			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) getTargetDataSource();
 			GenericObjectPool pool = targetDataSource.getPool();
-			if (pool != null) {
-				info.append("Pool Info: ");
-				info.append("maxIdle [").append(pool.getMaxIdle()).append("], ");
-				info.append("minIdle [").append(pool.getMinIdle()).append("], ");
-				info.append("maxTotal [").append(pool.getMaxTotal()).append("], ");
-				info.append("numActive [").append(pool.getNumActive()).append("], ");
-				info.append("numIdle [").append(pool.getNumIdle()).append("], ");
-			}
+			getGenericObjectPoolInfo(pool, info);
+		} else if (getTargetDataSource() instanceof org.apache.commons.dbcp2.PoolingDataSource) {
+			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) getTargetDataSource();
+			GenericObjectPool pool = dataSource.getPool();
+			getGenericObjectPoolInfo(pool, info);
 		} else if (getTargetDataSource() instanceof BasicDataSource) { // Tomcat instance
 			BasicDataSource dataSource = (BasicDataSource) getTargetDataSource();
-			info.append("Pool Info: ");
+			info.append("Tomcat Pool Info: ");
 			if (dataSource != null) {
-				info.append("maxIdle [").append(dataSource.getMaxIdle()).append("], ");
-				info.append("minIdle [").append(dataSource.getMinIdle()).append("], ");
-				info.append("maxTotal [").append(dataSource.getMaxTotal()).append("], ");
-				info.append("numActive [").append(dataSource.getNumActive()).append("], ");
-				info.append("numIdle [").append(dataSource.getNumIdle()).append("], ");
+				info.append("maxIdle [").append(dataSource.getMaxIdle()).append(CLOSE);
+				info.append("minIdle [").append(dataSource.getMinIdle()).append(CLOSE);
+				info.append("maxTotal [").append(dataSource.getMaxTotal()).append(CLOSE);
+				info.append("numActive [").append(dataSource.getNumActive()).append(CLOSE);
+				info.append("numIdle [").append(dataSource.getNumIdle()).append(CLOSE);
+			}
+		} else if (getTargetDataSource() instanceof PoolingDataSource) { // BTM instance
+			PoolingDataSource dataSource = (PoolingDataSource) getTargetDataSource();
+			info.append("BTM Pool Info: ");
+			if (dataSource != null) {
+				info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
+				info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
+				info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
+				info.append("inPoolSize [").append(dataSource.getInPoolSize()).append(CLOSE);
 			}
 		}
 
 		info.append(" datasource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 		return info.toString();
+	}
+
+	private static void getGenericObjectPoolInfo(GenericObjectPool pool, StringBuilder info) {
+		if (pool == null) {
+			return;
+		}
+		info.append("DBCP2 Pool Info: ");
+		info.append("maxIdle [").append(pool.getMaxIdle()).append(CLOSE);
+		info.append("minIdle [").append(pool.getMinIdle()).append(CLOSE);
+		info.append("maxTotal [").append(pool.getMaxTotal()).append(CLOSE);
+		info.append("numActive [").append(pool.getNumActive()).append(CLOSE);
+		info.append("numIdle [").append(pool.getNumIdle()).append(CLOSE);
 	}
 
 }

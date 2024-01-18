@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package org.frankframework.dbms;
+package org.frankframework.jdbc.dbms;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -25,12 +25,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.dbms.Dbms;
+import org.frankframework.dbms.DbmsException;
+import org.frankframework.dbms.GenericDbmsSupport;
+import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.util.ClassUtils;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.util.ClassUtils;
 
 
 /**
@@ -38,7 +41,7 @@ import org.frankframework.util.ClassUtils;
  */
 @Log4j2
 public class DbmsSupportFactory {
-	private Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
+	private final Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
 
 	private @Getter Properties dbmsSupportMap;
 

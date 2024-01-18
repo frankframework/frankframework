@@ -31,24 +31,6 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jdbc</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-dbcp2</artifactId>
-			<version>2.11.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>jakarta.transaction</groupId>
-					<artifactId>jakarta.transaction-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tomcat</groupId>
-			<artifactId>tomcat-dbcp</artifactId>
-			<version>9.0.85</version>
-			<scope>provided</scope>
-		</dependency>
-
 
 		<dependency> <!-- for version number compare -->
 			<groupId>org.apache.maven</groupId>

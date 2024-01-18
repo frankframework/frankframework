@@ -260,7 +260,7 @@
 
 	<bean
 		name="dbmsSupportFactory"
-		class="org.frankframework.dbms.DbmsSupportFactory"
+		class="org.frankframework.jdbc.dbms.DbmsSupportFactory"
 		scope="singleton"
 		>
 		<property name="dbmsSupportMap">

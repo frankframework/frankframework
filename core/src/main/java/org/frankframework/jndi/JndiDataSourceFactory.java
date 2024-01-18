@@ -25,7 +25,7 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
-import org.frankframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
+import org.frankframework.jdbc.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.util.AppConstants;
 
