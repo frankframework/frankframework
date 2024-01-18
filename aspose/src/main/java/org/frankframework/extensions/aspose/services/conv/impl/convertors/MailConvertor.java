@@ -151,34 +151,33 @@ class MailConvertor extends AbstractConvertor {
 		}
 
 		List<Future<CisConversionResult>> futures = new ArrayList<>();
-
-		// Submit tasks to the ExecutorService
 		for (Attachment attachment : attachments) {
-			// Submit a task to the executor and store the Future object
-			futures.add(attachmentConversionExecutor.submit(() ->  {
-				// Convert the attachment.
-				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
-				// If it is a singlepdf add the file to the current pdf.
-				if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
-					try {
-						PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
-						pdfAttachmentUtil.addAttachmentInSinglePdf();
-					} finally {
-						deleteFile(cisConversionResultAttachment.getPdfResultFile());
-						// Clear the file because it is now incorporated in the file itself.
-						cisConversionResultAttachment.setPdfResultFile(null);
-						cisConversionResultAttachment.setResultFilePath(null);
-					}
-
-				}
-				return cisConversionResultAttachment;
-			}));
+			futures.add(attachmentConversionExecutor.submit(() -> convertAttachment(attachment, result)));
 		}
 
 		for (Future<CisConversionResult> future : futures) {
 			CisConversionResult cisConversionResultAttachment = future.get();
 			result.addAttachment(cisConversionResultAttachment);
 		}
+	}
+
+	private CisConversionResult convertAttachment(Attachment attachment, CisConversionResult parentResult) throws IOException {
+		// Convert the attachment.
+		CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, parentResult.getConversionOption());
+		// If it is a singlepdf add the file to the current pdf.
+		if (ConversionOption.SINGLEPDF.equals(parentResult.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
+			try {
+				PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, parentResult.getPdfResultFile());
+				pdfAttachmentUtil.addAttachmentInSinglePdf();
+			} finally {
+				deleteFile(cisConversionResultAttachment.getPdfResultFile());
+				// Clear the file because it is now incorporated in the file itself.
+				cisConversionResultAttachment.setPdfResultFile(null);
+				cisConversionResultAttachment.setResultFilePath(null);
+			}
+
+		}
+		return cisConversionResultAttachment;
 	}
 
 	private void resizeInlineImages(Document doc) throws Exception {
