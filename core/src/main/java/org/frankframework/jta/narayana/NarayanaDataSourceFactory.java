@@ -103,7 +103,9 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	private ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		poolableConnectionFactory.setMaxConn(Duration.ofSeconds((maxLifeTimeSeconds > 0) ? maxLifeTimeSeconds : -1L));
+		if (maxLifeTimeSeconds > 0) {
+			poolableConnectionFactory.setMaxConn(Duration.ofSeconds(maxLifeTimeSeconds));
+		}
 		poolableConnectionFactory.setRollbackOnReturn(true);
 		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
 		connectionPool.setMinIdle(minPoolSize);
