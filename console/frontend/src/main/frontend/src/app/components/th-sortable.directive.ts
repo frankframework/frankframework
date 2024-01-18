@@ -76,7 +76,7 @@ export class ThSortableDirective implements OnInit {
   }
 
   nextSort() {
-    this.updateDirection(this.nextSortOption[this.direction ?? '']);
+    this.updateDirection(this.nextSortOption(this.direction));
     this.onSort.emit({ column: this.sortable, direction: this.direction });
   }
 
