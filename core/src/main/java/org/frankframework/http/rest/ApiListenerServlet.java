@@ -579,14 +579,11 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				if (!Message.isEmpty(result)) {
+				if (!Message.isEmpty(result) && result.size() != -1) {
 					MimeType contentType = determineContentType(messageContext, listener, result);
 					response.setContentType(contentType.toString());
-				}
-
-				if (result == null && method == ApiListener.HttpMethod.HEAD) {
-					MimeType contentType = determineContentType(messageContext, listener, null);
-					response.setContentType(contentType.toString());
+					response.setContentLength(Math.toIntExact(result.size()));
+					response.addHeader("content-length", String.valueOf(Math.toIntExact(result.size())));
 				}
 
 				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
@@ -605,16 +602,20 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.setStatus(statusCode);
 				}
 
-				/*
-				 * Finalize the pipeline and write the result to the response
-				 */
-				final boolean outputWritten = writeToResponseStream(response, result);
-				if (!outputWritten) {
-					LOG.debug("No output written, set content-type header to null");
-					response.resetBuffer();
-					response.setContentType(null);
+				if (method != ApiListener.HttpMethod.HEAD) {
+					/*
+					 * Finalize the pipeline and write the result to the response
+					 */
+					final boolean outputWritten = writeToResponseStream(response, result);
+					if (!outputWritten) {
+						LOG.debug("No output written, set content-type header to null");
+						response.resetBuffer();
+						response.setContentType(null);
+					}
+				} else {
+					response.setContentLength(0);
+					response.addHeader("content-length", "0");
 				}
-
 				LOG.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
 			}
 			catch (Exception e) {

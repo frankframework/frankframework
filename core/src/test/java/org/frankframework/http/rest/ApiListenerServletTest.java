@@ -408,20 +408,6 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void apiListenerThatProducesJSONForMethodHead() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "/ApiListenerThatProducesJSON/";
-		new ApiListenerBuilder(uri, List.of(Methods.HEAD), null, MediaTypes.JSON).build();
-
-		Response result = service(createRequest(uri, Methods.HEAD, (String) null));
-
-		assertEquals(200, result.getStatus());
-		assertEquals("", result.getContentAsString());
-		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
-		assertEquals("application/json;charset=UTF-8", result.getHeader("Content-Type"));
-		assertNull(result.getErrorMessage());
-	}
-
-	@Test
 	public void apiListenerThatProducesJSONReturnsNoOutput() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
@@ -936,6 +922,33 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 		assertFalse(result.containsHeader("etag"));
+		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
+		assertTrue(result.containsHeader("pragma"));
+	}
+
+	@Test
+	public void apiListenerWithHeadMethodCall() throws Exception {
+		// Arrange
+		String uri = "/apiListenerWithHeadMethodCall";
+		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
+		new ApiListenerBuilder(uri, List.of(Methods.HEAD))
+				.withResponseContent(repeatableMessage)
+				.build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Accept", "application/json");
+		headers.put("content-type", "application/json");
+
+		// Act
+		Response result = service(createRequest(uri, Methods.HEAD, null, headers));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+		assertFalse(result.containsHeader("etag"));
+		assertEquals("0", result.getHeader("content-length"));
+		assertEquals("*/*", result.getHeader("content-type"));
 		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
 		assertTrue(result.containsHeader("pragma"));
 	}
@@ -1767,7 +1780,7 @@ public class ApiListenerServletTest extends Mockito {
 			String methods = method.stream()
 					.map(m -> EnumUtils.parse(HttpMethod.class, m.name()).name())
 					.collect(Collectors.joining(","));
-			listener.setMethod(methods);
+			listener.setMethods(methods);
 
 			handler = new MessageHandler();
 			listener.setHandler(handler);
@@ -1783,7 +1796,6 @@ public class ApiListenerServletTest extends Mockito {
 				listener.setAuthenticationMethod(EnumUtils.parse(AuthenticationMethods.class, authMethod.name()));
 				listener.setAuthenticationRoles("IbisObserver,TestRole");
 			}
-
 		}
 
 		public ApiListenerBuilder setUpdateEtag(boolean roles) {
