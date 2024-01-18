@@ -4,9 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
 
-interface TransitionObject {
+type TransitionObject = {
   name?: string
   loaded?: boolean
+  adapter?: string
 }
 
 @Component({
@@ -20,6 +21,8 @@ export class ConfigurationsShowComponent implements OnInit {
   selectedConfiguration: string = "All"
   loadedConfiguration: boolean = false;
   anchor = "";
+
+  private selectedAdapter?: string;
 
   constructor(
     private router: Router,
@@ -39,8 +42,9 @@ export class ConfigurationsShowComponent implements OnInit {
 
     this.route.queryParamMap.subscribe(params => {
       this.selectedConfiguration = params.has('name') && params.get('name') != '' ? params.get('name')! : "All";
-      // this.loadedConfiguration = true; // used to be always "" but `"" == false` returns true so idk why this even exists
       this.loadedConfiguration = !(params.has('loaded') && params.get('loaded') == "false");
+      if(params.has('adapter'))
+        this.selectedAdapter = params.get('adapter')!;
 
       this.getConfiguration();
     });
@@ -54,6 +58,7 @@ export class ConfigurationsShowComponent implements OnInit {
 
   changeConfiguration(name: string) {
     this.selectedConfiguration = name;
+    this.selectedAdapter = undefined;
     this.router.navigate([], { relativeTo: this.route, fragment: "" });
     this.anchor = ""; //unset hash anchor
     this.getConfiguration();
@@ -65,6 +70,8 @@ export class ConfigurationsShowComponent implements OnInit {
       transitionObj.name = this.selectedConfiguration;
     if (!this.loadedConfiguration)
       transitionObj.loaded = this.loadedConfiguration;
+    if(this.selectedAdapter)
+      transitionObj.adapter = this.selectedAdapter;
 
     const fragment = this.anchor != "" ? this.anchor : undefined;
 
@@ -85,7 +92,6 @@ export class ConfigurationsShowComponent implements OnInit {
       this.configuration = data;
 
       if (this.anchor) {
-        // this.router.navigate([], { relativeTo: this.route, fragment: this.anchor });
         this.viewportScroller.scrollToAnchor(this.anchor);
       }
     });
