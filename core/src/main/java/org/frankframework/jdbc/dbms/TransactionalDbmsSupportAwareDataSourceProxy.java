@@ -70,7 +70,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		databaseMetadata.put("driver", md.getDriverName());
 		databaseMetadata.put("driver-version", md.getDriverVersion());
 
-		this.metadata = databaseMetadata;
+		metadata = databaseMetadata;
 	}
 
 	public String getDestinationName() throws SQLException {
@@ -93,7 +93,6 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 			log.debug("populating metadata from getConnection");
 			populateMetadata(conn);
 		}
-
 		return conn;
 	}
 
@@ -133,6 +132,9 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 				info.append("maxTotal [").append(dataSource.getMaxTotal()).append(CLOSE);
 				info.append("numActive [").append(dataSource.getNumActive()).append(CLOSE);
 				info.append("numIdle [").append(dataSource.getNumIdle()).append(CLOSE);
+				info.append("testOnBorrow [").append(dataSource.getTestOnBorrow()).append(CLOSE);
+				info.append("testOnCreate [").append(dataSource.getTestOnCreate()).append(CLOSE);
+				info.append("testOnReturn [").append(dataSource.getTestOnReturn()).append(CLOSE);
 			}
 		} else if (getTargetDataSource() instanceof PoolingDataSource) { // BTM instance
 			PoolingDataSource dataSource = (PoolingDataSource) getTargetDataSource();
@@ -159,6 +161,13 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		info.append("maxTotal [").append(pool.getMaxTotal()).append(CLOSE);
 		info.append("numActive [").append(pool.getNumActive()).append(CLOSE);
 		info.append("numIdle [").append(pool.getNumIdle()).append(CLOSE);
+		info.append("testOnBorrow [").append(pool.getTestOnBorrow()).append(CLOSE);
+		info.append("testOnCreate [").append(pool.getTestOnCreate()).append(CLOSE);
+		info.append("testOnReturn [").append(pool.getTestOnReturn()).append(CLOSE);
+		info.append("testWhileIdle [").append(pool.getTestWhileIdle()).append(CLOSE);
+		info.append("removeAbOnBorrow [").append(pool.getRemoveAbandonedOnBorrow()).append(CLOSE);
+		info.append("removeAbOnMaint [").append(pool.getRemoveAbandonedOnMaintenance()).append(CLOSE);
+		info.append("removeAbOnTimeoutDur [").append(pool.getRemoveAbandonedTimeoutDuration()).append(CLOSE);
 	}
 
 }
