@@ -9,15 +9,24 @@ app-pages-navigation {
 
 .navbar-static-side {
   position: sticky !important;
-  top: 0;
+  top: -60px;
   max-height: 100vh;
   overflow: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  /* -ms-overflow-style: thin; */
+  scrollbar-width: thin;
 }
 
 .navbar-static-side::-webkit-scrollbar {
-  display: none;
+  /* display: none; */
+  width: 8px;
+}
+
+.navbar-static-side::-webkit-scrollbar-track {
+  background-color: #293846;
+}
+
+.navbar-static-side::-webkit-scrollbar-thumb {
+  background-color: #a7b1c2;
 }
 
 #page-wrapper {
