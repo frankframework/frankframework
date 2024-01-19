@@ -18,7 +18,6 @@ package org.frankframework.management.gateway;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.BusException;
-import org.frankframework.management.bus.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
@@ -45,10 +44,6 @@ public class ErrorMessageConverter extends AbstractReplyProducingMessageHandler 
 
 			if(e instanceof MessageDeliveryException) { //hide timeouts
 				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-			}
-
-			if (e.getCause() instanceof ResourceNotFoundException) {
-				return new ResponseEntity<>(e.getCause().getMessage(), HttpStatus.NOT_FOUND);
 			}
 
 			// For the correct mapping the status code should match SpringBusExceptionHandler.BusException
