@@ -38,6 +38,7 @@ public class BytesMessageInputStream extends InputStream {
 			if (len == -1) {
 				return -1;
 			}
+			// Make the return-value an unsigned byte to honour the contract of InputStream#read()
 			return data[0] & 0xFF;
 		} catch (JMSException e) {
 			throw new IOException("Cannot read JMS message", e);

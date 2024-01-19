@@ -137,38 +137,44 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 
 		if (!getxPathLogMap().isEmpty()) {
-			try {
-				String soapMessage;
-				if (rawMessage instanceof TextMessage) {
-					TextMessage textMessage = (TextMessage) rawMessage;
-					soapMessage = textMessage.getText();
-				} else if (rawMessage instanceof BytesMessage) {
-					BytesMessage bytesMessage = (BytesMessage) rawMessage;
-					InputStream input = new BytesMessageInputStream(bytesMessage);
-					soapMessage = StreamUtil.streamToString(input);
-					bytesMessage.reset();
-				} else {
-					soapMessage = null;
-				}
-
-				if(soapMessage != null) {
-					StringBuilder xPathLogKeys = new StringBuilder();
-					for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
-						String sessionKey = pair.getKey();
-						String xPath = pair.getValue();
-						String result = getResultFromxPath(soapMessage, xPath);
-						if (!result.isEmpty()) {
-							messageProperties.put(sessionKey, result);
-							xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
-						}
-					}
-					messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
-				}
-			} catch (JMSException | IOException e) {
-				log.debug("ignoring Exception", e);
-			}
+			extractXpathLogProperties(rawMessage, messageProperties);
 		}
 		return messageProperties;
+	}
+
+	private void extractXpathLogProperties(Message rawMessage, Map<String, Object> messageProperties) {
+		try {
+			String soapMessage;
+			if (rawMessage instanceof TextMessage) {
+				TextMessage textMessage = (TextMessage) rawMessage;
+				soapMessage = textMessage.getText();
+			} else if (rawMessage instanceof BytesMessage) {
+				BytesMessage bytesMessage = (BytesMessage) rawMessage;
+				InputStream input = new BytesMessageInputStream(bytesMessage);
+				soapMessage = StreamUtil.streamToString(input);
+				bytesMessage.reset();
+			} else {
+				log.debug("Can only extract data from TextMessage or BytesMessage, not from [{}]", rawMessage.getClass().getName());
+				soapMessage = null;
+			}
+			if (soapMessage == null) {
+				return;
+			}
+
+			StringBuilder xPathLogKeys = new StringBuilder();
+			for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
+				String sessionKey = pair.getKey();
+				String xPath = pair.getValue();
+				String result = getResultFromxPath(soapMessage, xPath);
+				if (!result.isEmpty()) {
+					messageProperties.put(sessionKey, result);
+					xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
+				}
+			}
+			messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
+		} catch (JMSException | IOException e) {
+			log.debug("ignoring Exception", e);
+		}
 	}
 
 	protected String getResultFromxPath(String message, String xPathExpression) {
