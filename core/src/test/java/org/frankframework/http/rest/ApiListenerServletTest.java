@@ -931,7 +931,7 @@ public class ApiListenerServletTest extends Mockito {
 		// Arrange
 		String uri = "/apiListenerWithHeadMethodCall";
 		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
-		new ApiListenerBuilder(uri, List.of(Methods.HEAD))
+		new ApiListenerBuilder(uri, List.of(Methods.HEAD), MediaTypes.JSON, MediaTypes.JSON)
 				.withResponseContent(repeatableMessage)
 				.build();
 
@@ -947,8 +947,39 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 		assertFalse(result.containsHeader("etag"));
-		assertEquals("0", result.getHeader("content-length"));
-		assertEquals("*/*", result.getHeader("content-type"));
+		assertEquals("23", result.getHeader("content-length"));
+		assertEquals("application/json;charset=UTF-8", result.getHeader("content-type"));
+		assertEquals("", result.getContentAsString());
+		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
+		assertTrue(result.containsHeader("pragma"));
+	}
+
+	@Test
+	public void apiListenerWithHeadMethodCallAndEmptyMessage() throws Exception {
+		// Arrange
+		String uri = "/apiListenerWithHeadMethodCall";
+		Message repeatableMessage = Message.asMessage(new Message("").asByteArray());
+		new ApiListenerBuilder(uri, List.of(Methods.HEAD), MediaTypes.JSON, MediaTypes.JSON)
+				.withResponseContent(repeatableMessage)
+				.build();
+
+		repeatableMessage.getContext().withSize(20);
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Accept", "application/json");
+		headers.put("content-type", "application/json");
+
+		// Act
+		Response result = service(createRequest(uri, Methods.HEAD, null, headers));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+		assertFalse(result.containsHeader("etag"));
+		assertEquals("20", result.getHeader("content-length"));
+		assertEquals("application/json;charset=UTF-8", result.getHeader("content-type"));
+		assertEquals("", result.getContentAsString());
 		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
 		assertTrue(result.containsHeader("pragma"));
 	}
