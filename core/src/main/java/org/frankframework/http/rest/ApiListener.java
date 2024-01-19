@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Default;
 import org.frankframework.http.HttpSenderBase;
 import org.frankframework.http.PushingListenerAdapter;
@@ -34,7 +33,6 @@ import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
-import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
@@ -167,18 +165,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	public void close() {
 		super.close();
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
-	}
-
-	@Override
-	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
-		Message result = super.processRequest(message, session);
-
-		//Return null when super.processRequest() returns an empty string
-		if(Message.isEmpty(result)) {
-			return null;
-		}
-
-		return result;
 	}
 
 	private void buildPhysicalDestinationName() {
