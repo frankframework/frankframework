@@ -28,12 +28,11 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
 import org.frankframework.core.ISecurityHandler;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
+
+import lombok.Getter;
 
 public class JwtSecurityHandler implements ISecurityHandler {
 	protected Logger log = LogUtil.getLogger(this);
@@ -50,7 +49,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	//JWTClaimNames#AUDIENCE claim may be a String or List<String>. Others are either a String or Long (epoch date)
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) {
+	public boolean isUserInRole(String role) {
 		Object claim = claimsSet.get(roleClaim);
 		if(claim instanceof String) {
 			return role.equals(claim);
@@ -62,7 +61,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session) {
+	public Principal getPrincipal() {
 		return () -> (String) claimsSet.get(principalNameClaim);
 	}
 

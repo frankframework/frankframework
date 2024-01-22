@@ -37,10 +37,10 @@ export class AppComponent implements OnInit, OnDestroy {
   userName?: string;
   appConstants: AppConstants;
   routeData: Data = {};
+  routeQueryParams: ParamMap = convertToParamMap({});
   isLoginView: boolean = false;
 
   private urlHash$!: Observable<string | null>;
-  private routeQueryParams: ParamMap = convertToParamMap({});
   private _subscriptions = new Subscription();
 
   constructor(

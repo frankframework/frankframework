@@ -39,9 +39,6 @@ public class ApiDispatchConfig {
 	}
 
 	public ApiListener getApiListener(ApiListener.HttpMethod method) {
-		if(!methods.containsKey(method))
-			return null;
-
 		return methods.get(method);
 	}
 

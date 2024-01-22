@@ -11,12 +11,12 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>11</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
-		<log4j2.version>2.22.0</log4j2.version>
+		<log4j2.version>2.22.1</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
-		<jackson.version>2.16.0</jackson.version>
+		<jackson.version>2.16.1</jackson.version>
 		<cxf.version>3.6.2</cxf.version>
 		<spring.version>5.3.31</spring.version>
 		<spring-security.version>5.8.9</spring-security.version>
@@ -25,7 +25,7 @@
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.13.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
-		<micrometer.version>1.12.1</micrometer.version>
+		<micrometer.version>1.12.2</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>2.0-SNAPSHOT</frankdoc.version>
@@ -48,6 +48,9 @@
 		<artemis.driver.version>2.31.2</artemis.driver.version>
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
+
+		<!-- Some test dependency versions -->
+		<mockito.version>5.9.0</mockito.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -126,12 +129,12 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>3.25.1</version>
+				<version>3.25.2</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport-native-epoll</artifactId>
-				<version>4.1.104.Final</version>
+				<version>4.1.105.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -550,13 +553,13 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>5.8.0</version>
+				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-junit-jupiter</artifactId>
-				<version>5.8.0</version>
+				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -689,7 +692,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.11.0</version>
+					<version>3.12.1</version>
 					<configuration>
 						<release>${maven.compiler.target}</release>
 						<source>${maven.compiler.source}</source>
@@ -921,7 +924,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.5.0</version>
+					<version>1.6.0</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>resolveCiFriendliesOnly</flattenMode>

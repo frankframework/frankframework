@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2023 WeAreFrank!
+   Copyright 2017-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.util.EnumUtils;
 import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.proc.SecurityContext;
@@ -64,7 +65,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", false);
 	private @Getter String operationId;
 
-	private @Getter HttpMethod method = HttpMethod.GET;
+	private List<HttpMethod> methods = List.of(HttpMethod.GET);
 	public enum HttpMethod {
 		GET,PUT,POST,PATCH,DELETE,OPTIONS;
 	}
@@ -113,9 +114,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			throw new ConfigurationException("uriPattern cannot be empty");
 
 		if(getConsumes() != MediaTypes.ANY) {
-			if(getMethod() == HttpMethod.GET)
+			if(hasMethod(HttpMethod.GET))
 				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
-			if(getMethod() == HttpMethod.DELETE)
+			if(hasMethod(HttpMethod.DELETE))
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
 
@@ -141,7 +142,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 					.collect(Collectors.toList());
 
 			if(!invalidClaims.isEmpty()){
-				throw new ConfigurationException("[" + invalidClaims + "] are not a valid key/value pairs for [" + claimAttributeName + "].");
+				String partialMessage = invalidClaims.size() == 1 ? "is not a valid key/value pair" : "are not valid key/value pairs";
+				throw new ConfigurationException("[" + String.join(",", invalidClaims) + "] "+partialMessage+" for [" + claimAttributeName + "].");
 			}
 		}
 	}
@@ -192,7 +194,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			}
 		}
 		builder.append(getUriPattern());
-		builder.append("; method: ").append(getMethod());
+		builder.append("; method: ").append(getMethods());
 
 		if(MediaTypes.ANY != consumes) {
 			builder.append("; consumes: ").append(getConsumes());
@@ -202,6 +204,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 
 		this.physicalDestinationName = builder.toString();
+	}
+
+	private boolean hasMethod(HttpMethod method){
+		return this.methods.contains(method);
 	}
 
 	/**
@@ -231,14 +237,34 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * HTTP method to listen to
+	 * @deprecated The 'method' attribute has been renamed to 'methods'
+	 */
+	public void setMethod(String method){
+		setMethods(method);
+	}
+
+	/**
+	 * HTTP method(s) to listen to, separated by comma
 	 * @ff.default GET
 	 */
-	public void setMethod(HttpMethod method) {
-		this.method = method;
-		if(this.method == HttpMethod.OPTIONS) {
+	public void setMethods(String methods) {
+		this.methods = StringUtil.splitToStream(methods)
+				.map(s -> EnumUtils.parse(HttpMethod.class, s))
+				.collect(Collectors.toList());
+
+		if(hasMethod(HttpMethod.OPTIONS)) {
 			throw new IllegalArgumentException("method OPTIONS should not be added manually");
 		}
+	}
+
+	public String getMethods(){
+		return methods.stream()
+				.map(HttpMethod::name)
+				.collect(Collectors.joining(","));
+	}
+
+	public List<HttpMethod> getAllMethods(){
+		return methods;
 	}
 
 	/**
