@@ -10,10 +10,19 @@ app-pages-navigation {
 .navbar-static-side {
   position: sticky !important;
   top: -60px;
+  /* top: -103px; */
   max-height: 100vh;
+  /* max-height: calc(100vh + 43px); */
   overflow: auto;
   /* -ms-overflow-style: thin; */
   scrollbar-width: thin;
+}
+
+body.mini-navbar .navbar-static-side {
+  position: relative !important;
+  top: 0;
+  max-height: initial;
+  overflow: initial;
 }
 
 .navbar-static-side::-webkit-scrollbar {
@@ -31,7 +40,7 @@ app-pages-navigation {
 
 #page-wrapper {
   margin: 0 !important;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
 }
 
 .fade {
