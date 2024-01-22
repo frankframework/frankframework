@@ -63,6 +63,17 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 	}
 
 	@Test
+	public void testPartialEscapedMultiLineXmlInputMultiOccurencesMissingClosingTag() throws Exception {
+		pipe.setSubstringStart("<message>");
+		pipe.setSubstringEnd("</message>");
+		configureAndStartPipe();
+
+		PipeRunResult result = doPipe(getResource("no-closing-tag-configured.xml"));
+		String expected = getResource("no-closing-tag-configured.result").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
+
+	@Test
 	public void nothingGetsEscapedWhenNoSubstringEndConfigured() throws Exception {
 		pipe.setSubstringStart("<message>");
 		pipe.setSubstringEnd("");
