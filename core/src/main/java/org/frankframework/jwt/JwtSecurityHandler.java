@@ -82,7 +82,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	public void validateRequiredClaims(@Nonnull String requiredClaims) throws AuthorizationException {
+	void validateRequiredClaims(@Nonnull String requiredClaims) throws AuthorizationException {
 		List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
 				.filter(claim -> !claimsSet.containsKey(claim))
 				.collect(Collectors.toList());
@@ -92,7 +92,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	public void validateExactMatchClaims(@Nonnull String exactMatchClaims) throws AuthorizationException {
+	void validateExactMatchClaims(@Nonnull String exactMatchClaims) throws AuthorizationException {
 		Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
 				.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
 				.findFirst();
@@ -104,7 +104,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	public void validateAnyMatchClaims(@Nonnull String anyMatchClaims) throws AuthorizationException {
+	void validateAnyMatchClaims(@Nonnull String anyMatchClaims) throws AuthorizationException {
 		Map<String, Set<String>> allowedValuesByClaim = splitClaims(anyMatchClaims)
 				.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
 		boolean matchesOneOf = allowedValuesByClaim
