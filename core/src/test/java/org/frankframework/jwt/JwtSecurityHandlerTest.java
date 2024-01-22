@@ -57,7 +57,7 @@ class JwtSecurityHandlerTest {
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, null, PRINCIPAL_CLAIM);
 
 		// Expect
-		String principal = securityHandler.getPrincipal(null).getName();
+		String principal = securityHandler.getPrincipal().getName();
 		assertEquals(PRINCIPAL, principal);
 	}
 
@@ -70,7 +70,7 @@ class JwtSecurityHandlerTest {
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
 		// Expect
-		boolean isUserInRole = securityHandler.isUserInRole(ROLE, null);
+		boolean isUserInRole = securityHandler.isUserInRole(ROLE);
 		assertTrue(isUserInRole);
 	}
 
@@ -83,7 +83,7 @@ class JwtSecurityHandlerTest {
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
 		// Expect
-		boolean isUserInRole = securityHandler.isUserInRole(ROLE, null);
+		boolean isUserInRole = securityHandler.isUserInRole(ROLE);
 		assertTrue(isUserInRole);
 	}
 
