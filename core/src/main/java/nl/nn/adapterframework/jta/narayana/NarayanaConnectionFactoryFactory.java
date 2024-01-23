@@ -38,7 +38,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 
 	private @Getter @Setter int maxIdleTime = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdleTime", 60);
 	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 20);
-	private @Getter @Setter int connectionCheckInterval = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.checkInterval", -1);
+	private @Getter @Setter int connectionCheckInterval = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.checkInterval", 30);
 	private @Getter @Setter int maxSessions = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxSessions", 500);
 
 	@Override
@@ -79,7 +79,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 	private ConnectionFactory augmentPool(JmsPoolConnectionFactory pooledConnectionFactory) {
 		pooledConnectionFactory.setMaxConnections(maxPoolSize);
 		pooledConnectionFactory.setConnectionIdleTimeout(getMaxIdleTime() * 1000);
-		pooledConnectionFactory.setConnectionCheckInterval(connectionCheckInterval);
+		pooledConnectionFactory.setConnectionCheckInterval(connectionCheckInterval * 1000);
 		pooledConnectionFactory.setUseProviderJMSContext(false); // indicates whether the pool should include JMSContext in the pooling, when set to true, it disables connection pooling
 
 		pooledConnectionFactory.setMaxSessionsPerConnection(maxSessions);
