@@ -18,6 +18,7 @@ package org.frankframework.jdbc;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Map;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -29,7 +30,7 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.jdbc.dbms.DbmsSupportFactory;
+import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
@@ -64,8 +65,8 @@ import lombok.Setter;
 public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
 	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
 	private String datasourceName = null;
-	private String authAlias = null;
-	private String username = null;
+	@Getter private String authAlias = null;
+	@Getter private String username = null;
 	private String password = null;
 
 	private boolean transacted = false;
@@ -147,12 +148,19 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	}
 
 	public IDbmsSupport getDbmsSupport() {
-		if (dbmsSupport==null) {
-			try {
-				dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
-			} catch (JdbcException e) {
-				throw new IllegalStateException("cannot obtain connection to determine dbmssupport", e);
+		if (dbmsSupport != null) {
+			return dbmsSupport;
+		}
+		try {
+			if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
+				dbmsSupport = dbmsSupportFactory.getDbmsSupport(md.get("product"), md.get("product-version"));
 			}
+			if (dbmsSupport == null) {
+				dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
+			}
+		} catch (JdbcException | SQLException e) {
+			throw new IllegalStateException("cannot obtain connection to determine dbmsSupport", e);
 		}
 		return dbmsSupport;
 	}
@@ -260,16 +268,10 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
 
 	/** User name for authentication when connecting to database, when none found from <code>authAlias</code> */
 	public void setUsername(String username) {
 		this.username = username;
-	}
-	public String getUsername() {
-		return username;
 	}
 
 	/** Password for authentication when connecting to database, when none found from <code>authAlias</code> */

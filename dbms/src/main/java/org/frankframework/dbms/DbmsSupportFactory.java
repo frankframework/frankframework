@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package org.frankframework.jdbc.dbms;
+package org.frankframework.dbms;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -26,10 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.dbms.Dbms;
-import org.frankframework.dbms.DbmsException;
-import org.frankframework.dbms.GenericDbmsSupport;
-import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.util.ClassUtils;
 
 import lombok.Getter;
@@ -50,15 +46,9 @@ public class DbmsSupportFactory {
 	}
 
 	private IDbmsSupport compute(DataSource datasource) {
-		try {
-			if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
-				return getDbmsSupport(md.get("product"), md.get("product-version"));
-			}
-			try (Connection connection = datasource.getConnection()) {
-				return getDbmsSupport(connection);
-			}
-		} catch (SQLException | DbmsException e) {
+		try (Connection connection = datasource.getConnection()) {
+			return getDbmsSupport(connection);
+		} catch (SQLException e) {
 			log.warn("SQL exception while trying to get a connection from datasource [{}]", datasource, e);
 			return new GenericDbmsSupport();
 		}
@@ -75,7 +65,7 @@ public class DbmsSupportFactory {
 		}
 	}
 
-	private IDbmsSupport getDbmsSupport(String product, String productVersion) throws DbmsException {
+	public IDbmsSupport getDbmsSupport(String product, String productVersion) throws DbmsException {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {

@@ -118,40 +118,51 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		if (getTargetDataSource() instanceof OpenManagedDataSource) {
 			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) getTargetDataSource();
 			GenericObjectPool pool = targetDataSource.getPool();
-			getGenericObjectPoolInfo(pool, info);
+			addGenericObjectPoolInfo(pool, info);
 		} else if (getTargetDataSource() instanceof org.apache.commons.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) getTargetDataSource();
 			GenericObjectPool pool = dataSource.getPool();
-			getGenericObjectPoolInfo(pool, info);
+			addGenericObjectPoolInfo(pool, info);
 		} else if (getTargetDataSource() instanceof BasicDataSource) { // Tomcat instance
-			BasicDataSource dataSource = (BasicDataSource) getTargetDataSource();
-			info.append("Tomcat Pool Info: ");
-			if (dataSource != null) {
-				info.append("maxIdle [").append(dataSource.getMaxIdle()).append(CLOSE);
-				info.append("minIdle [").append(dataSource.getMinIdle()).append(CLOSE);
-				info.append("maxTotal [").append(dataSource.getMaxTotal()).append(CLOSE);
-				info.append("numActive [").append(dataSource.getNumActive()).append(CLOSE);
-				info.append("numIdle [").append(dataSource.getNumIdle()).append(CLOSE);
-				info.append("testOnBorrow [").append(dataSource.getTestOnBorrow()).append(CLOSE);
-				info.append("testOnCreate [").append(dataSource.getTestOnCreate()).append(CLOSE);
-				info.append("testOnReturn [").append(dataSource.getTestOnReturn()).append(CLOSE);
-			}
+			addTomcatDatasourceInfo(info);
 		} else if (getTargetDataSource() instanceof PoolingDataSource) { // BTM instance
-			PoolingDataSource dataSource = (PoolingDataSource) getTargetDataSource();
-			info.append("BTM Pool Info: ");
-			if (dataSource != null) {
-				info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
-				info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
-				info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
-				info.append("inPoolSize [").append(dataSource.getInPoolSize()).append(CLOSE);
-			}
+			addBTMDatasourceInfo(info);
 		}
 
 		info.append(" datasource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 		return info.toString();
 	}
 
-	private static void getGenericObjectPoolInfo(GenericObjectPool pool, StringBuilder info) {
+	private void addBTMDatasourceInfo(StringBuilder info) {
+		PoolingDataSource dataSource = (PoolingDataSource) getTargetDataSource();
+		info.append("BTM Pool Info: ");
+		if (dataSource == null) {
+			return;
+		}
+		info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
+		info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
+		info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
+		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append(CLOSE);
+	}
+
+	private void addTomcatDatasourceInfo(StringBuilder info) {
+		BasicDataSource dataSource = (BasicDataSource) getTargetDataSource();
+		info.append("Tomcat Pool Info: ");
+		if (dataSource == null) {
+			return;
+		}
+		info.append("maxIdle [").append(dataSource.getMaxIdle()).append(CLOSE);
+		info.append("minIdle [").append(dataSource.getMinIdle()).append(CLOSE);
+		info.append("maxTotal [").append(dataSource.getMaxTotal()).append(CLOSE);
+		info.append("numActive [").append(dataSource.getNumActive()).append(CLOSE);
+		info.append("numIdle [").append(dataSource.getNumIdle()).append(CLOSE);
+		info.append("testOnBorrow [").append(dataSource.getTestOnBorrow()).append(CLOSE);
+		info.append("testOnCreate [").append(dataSource.getTestOnCreate()).append(CLOSE);
+		info.append("testOnReturn [").append(dataSource.getTestOnReturn()).append(CLOSE);
+
+	}
+
+	private static void addGenericObjectPoolInfo(GenericObjectPool pool, StringBuilder info) {
 		if (pool == null) {
 			return;
 		}

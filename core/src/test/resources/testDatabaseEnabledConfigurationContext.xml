@@ -21,7 +21,7 @@
 
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 	<bean id="dataSourceFactory" class="${URLDataSourceFactory}" />
-	<bean name="dbmsSupportFactory" class="org.frankframework.jdbc.dbms.DbmsSupportFactory" />
+	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory" />
 
 	<bean
 		id="txManagerProxy"

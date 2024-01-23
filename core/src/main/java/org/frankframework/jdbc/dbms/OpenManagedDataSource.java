@@ -23,7 +23,7 @@ import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
- * Extension of {@link ManagedDataSource} that exposes the underlying {@link GenericObjectPool}.
+ * Extension of {@link ManagedDataSource} that exposes the underlying {@link GenericObjectPool}, so it's possible to fetch more statistics out.
  * @param <C>
  */
 public class OpenManagedDataSource<C extends Connection> extends ManagedDataSource<C> {
@@ -32,6 +32,9 @@ public class OpenManagedDataSource<C extends Connection> extends ManagedDataSour
 		super(pool, transactionRegistry);
 	}
 
+	/**
+	 * Only available to gather statistics. Don't use this to get a connection.
+	 */
 	public GenericObjectPool<C> getPool() {
 		ObjectPool<C> objectPool = super.getPool();
 		if (objectPool instanceof GenericObjectPool) {

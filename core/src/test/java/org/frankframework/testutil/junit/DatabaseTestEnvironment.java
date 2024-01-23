@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
-import org.frankframework.jdbc.dbms.DbmsSupportFactory;
+import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.testutil.TestConfiguration;

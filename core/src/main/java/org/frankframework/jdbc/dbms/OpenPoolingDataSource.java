@@ -19,11 +19,18 @@ import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
+/**
+ * Extension of {@link PoolingDataSource} that exposes the underlying {@link GenericObjectPool}, so it's possible to fetch more statistics out.
+ * @param <C>
+ */
 public class OpenPoolingDataSource<C> extends PoolingDataSource {
 	public OpenPoolingDataSource(final ObjectPool<C> pool) {
 		super(pool);
 	}
 
+	/**
+	 * Only available to gather statistics. Don't use this to get a connection.
+	 */
 	public GenericObjectPool<C> getPool() {
 		ObjectPool<C> objectPool = super.getPool();
 		if (objectPool instanceof GenericObjectPool) {
