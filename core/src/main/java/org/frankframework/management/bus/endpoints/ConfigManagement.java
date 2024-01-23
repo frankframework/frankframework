@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -240,7 +240,7 @@ public class ConfigManagement extends BusEndpointBase {
 							String user = rs.getString(4);
 							boolean active = rs.getBoolean(5);
 							boolean autoreload = rs.getBoolean(6);
-							Date creationDate = rs.getDate(7);
+							Instant creationDate = rs.getTimestamp(7).toInstant();
 
 							configDoa.setDatabaseAttributes(filename, creationDate, user, active, autoreload);
 							configurations.add(configDoa);
