@@ -70,7 +70,7 @@ public class ApiServiceDispatcherTest {
 			}
 			ApiListener listener = new ApiListener();
 			listener.setName(name);
-			listener.setMethod(HttpMethod.GET.name());
+			listener.setMethod(HttpMethod.GET);
 			listener.setUriPattern(name);
 
 			try {
@@ -93,7 +93,7 @@ public class ApiServiceDispatcherTest {
 				.map(m -> EnumUtils.parse(HttpMethod.class, m.name()).name())
 				.collect(Collectors.joining(","));
 
-		listener.setMethod(methods);
+		listener.setMethods(methods);
 		listener.setUriPattern(uri);
 		return listener;
 	}
