@@ -23,7 +23,6 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
@@ -120,8 +119,6 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		} else if (getTargetDataSource() instanceof org.apache.commons.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) getTargetDataSource();
 			dataSource.addPoolMetadata(info);
-		} else if (getTargetDataSource() instanceof BasicDataSource) { // Tomcat instance
-			addTomcatDatasourceInfo(info);
 		} else if (getTargetDataSource() instanceof PoolingDataSource) { // BTM instance
 			addBTMDatasourceInfo(info);
 		}
@@ -140,22 +137,6 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
 		info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
 		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append(CLOSE);
-	}
-
-	private void addTomcatDatasourceInfo(StringBuilder info) {
-		BasicDataSource dataSource = (BasicDataSource) getTargetDataSource();
-		info.append("Tomcat Pool Info: ");
-		if (dataSource == null) {
-			return;
-		}
-		info.append("maxIdle [").append(dataSource.getMaxIdle()).append(CLOSE);
-		info.append("minIdle [").append(dataSource.getMinIdle()).append(CLOSE);
-		info.append("maxTotal [").append(dataSource.getMaxTotal()).append(CLOSE);
-		info.append("numActive [").append(dataSource.getNumActive()).append(CLOSE);
-		info.append("numIdle [").append(dataSource.getNumIdle()).append(CLOSE);
-		info.append("testOnBorrow [").append(dataSource.getTestOnBorrow()).append(CLOSE);
-		info.append("testOnCreate [").append(dataSource.getTestOnCreate()).append(CLOSE);
-		info.append("testOnReturn [").append(dataSource.getTestOnReturn()).append(CLOSE);
 	}
 
 }
