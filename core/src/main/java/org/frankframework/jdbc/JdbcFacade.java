@@ -126,21 +126,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
 			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
 		}
-		StringBuilder info = new StringBuilder();
-		try (Connection conn = getConnection()) {
-			DatabaseMetaData md = conn.getMetaData();
-			info.append("user [").append(md.getUserName()).append("], ");
-			info.append("url [").append(md.getURL()).append("], ");
-			info.append("product [").append(md.getDatabaseProductName()).append("], ");
-			info.append("product version [").append(md.getDatabaseProductVersion()).append("], ");
-			info.append("driver [").append(md.getDriverName()).append("], ");
-			info.append("driver version [").append(md.getDriverVersion()).append("], ");
-			info.append("maxConnections [").append(md.getMaxConnections()).append("], ");
-			info.append("datasource [").append(getDatasource().toString()).append("]");
-		} catch (SQLException e) {
-			log.warn("Exception determining databaseInfo", e);
-		}
-		return info.toString();
+		throw new IllegalStateException("Datasource should always be of type TransactionalDbmsSupportAwareDataSourceProxy, found: " + getDatasource().getClass().getName());
 	}
 
 	public void setDbmsSupportFactory(DbmsSupportFactory dbmsSupportFactory) {

@@ -20,7 +20,8 @@ import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
- * Extension of {@link PoolingDataSource} that exposes the underlying {@link GenericObjectPool}, so it's possible to fetch more statistics out.
+ * Extension of {@link PoolingDataSource} that exposes an extra method to fetch pool statistics.
+ *
  * @param <C>
  */
 public class OpenPoolingDataSource<C> extends PoolingDataSource {
@@ -28,14 +29,10 @@ public class OpenPoolingDataSource<C> extends PoolingDataSource {
 		super(pool);
 	}
 
-	/**
-	 * Only available to gather statistics. Don't use this to get a connection.
-	 */
-	public GenericObjectPool<C> getPool() {
+	public void addPoolMetadata(StringBuilder info) {
 		ObjectPool<C> objectPool = super.getPool();
 		if (objectPool instanceof GenericObjectPool) {
-			return (GenericObjectPool<C>) objectPool;
+			GenericObjectPoolUtil.addPoolMetadata((GenericObjectPool<C>) objectPool, info);
 		}
-		return null;
 	}
 }

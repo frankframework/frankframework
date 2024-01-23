@@ -23,7 +23,6 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
@@ -117,12 +116,10 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 		if (getTargetDataSource() instanceof OpenManagedDataSource) {
 			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) getTargetDataSource();
-			GenericObjectPool pool = targetDataSource.getPool();
-			addGenericObjectPoolInfo(pool, info);
+			targetDataSource.addPoolMetadata(info);
 		} else if (getTargetDataSource() instanceof org.apache.commons.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) getTargetDataSource();
-			GenericObjectPool pool = dataSource.getPool();
-			addGenericObjectPoolInfo(pool, info);
+			dataSource.addPoolMetadata(info);
 		} else if (getTargetDataSource() instanceof BasicDataSource) { // Tomcat instance
 			addTomcatDatasourceInfo(info);
 		} else if (getTargetDataSource() instanceof PoolingDataSource) { // BTM instance
@@ -159,26 +156,6 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		info.append("testOnBorrow [").append(dataSource.getTestOnBorrow()).append(CLOSE);
 		info.append("testOnCreate [").append(dataSource.getTestOnCreate()).append(CLOSE);
 		info.append("testOnReturn [").append(dataSource.getTestOnReturn()).append(CLOSE);
-
-	}
-
-	private static void addGenericObjectPoolInfo(GenericObjectPool pool, StringBuilder info) {
-		if (pool == null) {
-			return;
-		}
-		info.append("DBCP2 Pool Info: ");
-		info.append("maxIdle [").append(pool.getMaxIdle()).append(CLOSE);
-		info.append("minIdle [").append(pool.getMinIdle()).append(CLOSE);
-		info.append("maxTotal [").append(pool.getMaxTotal()).append(CLOSE);
-		info.append("numActive [").append(pool.getNumActive()).append(CLOSE);
-		info.append("numIdle [").append(pool.getNumIdle()).append(CLOSE);
-		info.append("testOnBorrow [").append(pool.getTestOnBorrow()).append(CLOSE);
-		info.append("testOnCreate [").append(pool.getTestOnCreate()).append(CLOSE);
-		info.append("testOnReturn [").append(pool.getTestOnReturn()).append(CLOSE);
-		info.append("testWhileIdle [").append(pool.getTestWhileIdle()).append(CLOSE);
-		info.append("removeAbOnBorrow [").append(pool.getRemoveAbandonedOnBorrow()).append(CLOSE);
-		info.append("removeAbOnMaint [").append(pool.getRemoveAbandonedOnMaintenance()).append(CLOSE);
-		info.append("removeAbOnTimeoutDur [").append(pool.getRemoveAbandonedTimeoutDuration()).append(CLOSE);
 	}
 
 }
