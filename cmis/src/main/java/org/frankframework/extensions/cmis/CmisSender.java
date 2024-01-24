@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2016-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.apache.chemistry.opencmis.client.api.QueryResult;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
@@ -50,11 +51,8 @@ import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -67,7 +65,6 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
-
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
@@ -82,6 +79,10 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
@@ -261,6 +262,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if(!isKeepSession()) {
 			runtimeSession = true;
 		}
+
+		if (runtimeSession) {
+			log.info("{} using runtime session", getLogPrefix());
+		}
 	}
 
 	/**
@@ -324,8 +329,21 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	@Override
 	public void close() {
 		if (globalSession != null) {
-			globalSession.clear();
+			log.debug("{} Closing global CMIS session", getLogPrefix());
+			closeCmisSession(globalSession);
 			globalSession = null;
+		}
+	}
+
+	private void closeCmisSession(Session session) {
+		log.debug("{} CMIS Session Close, SPI Binding class name: [{}]", getLogPrefix(), session.getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
+		session.clear();
+		CmisBinding binding = session.getBinding();
+		if (binding != null) {
+			log.debug("{} Closing CMIS Bindings instance [{}:{}]", getLogPrefix(), binding.getClass().getSimpleName(), binding);
+			binding.close();
+		} else {
+			log.debug("{} Session has no CMIS Bindings", getLogPrefix());
 		}
 	}
 
@@ -369,7 +387,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 		} finally {
 			if (cmisSession != null && runtimeSession) {
-				cmisSession.clear();
+				log.debug("{} Closing CMIS runtime session", getLogPrefix());
+				closeCmisSession(cmisSession);
 				cmisSession = null;
 			}
 		}
@@ -380,7 +399,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
 
-		CmisObject object = null;
+		CmisObject object;
 		try {
 			object = getCmisObject(cmisSession, message);
 		} catch (CmisObjectNotFoundException e) {

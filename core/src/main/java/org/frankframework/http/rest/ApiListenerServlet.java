@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2023 WeAreFrank!
+   Copyright 2017-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -36,27 +35,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-import org.frankframework.http.mime.MultipartUtils;
-import org.springframework.util.InvalidMimeTypeException;
-import org.springframework.util.MimeType;
-
-import com.nimbusds.jose.util.JSONObjectUtils;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.http.HttpServletBase;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.PartMessage;
-
+import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.jwt.AuthorizationException;
 import org.frankframework.jwt.JwtSecurityHandler;
 import org.frankframework.lifecycle.IbisInitializer;
@@ -71,6 +55,19 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
+import org.springframework.util.InvalidMimeTypeException;
+import org.springframework.util.MimeType;
+
+import com.nimbusds.jose.util.JSONObjectUtils;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 
 /**
  *
@@ -84,7 +81,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	public static final String AUTHENTICATION_COOKIE_NAME = "authenticationToken";
 
-	private static final List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
+	private static final List<String> IGNORE_HEADERS = List.of("connection", "transfer-encoding", "content-type", "authorization");
 
 	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private final String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
@@ -213,10 +210,10 @@ public class ApiListenerServlet extends HttpServletBase {
 		 * Initiate and populate messageContext
 		 */
 		try (PipeLineSession messageContext = new PipeLineSession()) {
+			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, method);
 			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-			messageContext.put("HttpMethod", method);
 			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
@@ -318,7 +315,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
 								List<String> authRoles = listener.getAuthenticationRoleList();
 								if(authRoles != null) {
-									boolean userIsInRole = authRoles.stream().anyMatch(role -> handler.isUserInRole(role, messageContext));
+									boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
 									if(userIsInRole) {
 										userPrincipal = new ApiPrincipal();
 									}
@@ -545,7 +542,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						cache.remove(etagCacheKey);
 
 						// Not only remove the eTag for the selected resources but also the collection
-						String key = ApiCacheManager.getParentCacheKey(listener, uri);
+						String key = ApiCacheManager.getParentCacheKey(listener, uri, method);
 						if(key != null) {
 							LOG.debug("removing parent etag with key[{}]", key);
 							cache.remove(key);
@@ -638,7 +635,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			String paramName = paramNames.nextElement();
 			String[] paramList = request.getParameterValues(paramName);
 			if(paramList.length > 1) { // contains multiple items
-				List<String> valueList = Arrays.asList(paramList);
+				List<String> valueList = List.of(paramList);
 				if(LOG.isTraceEnabled()) LOG.trace("setting queryParameter [{}] to {}", paramName, valueList);
 				params.put(paramName, valueList);
 			}

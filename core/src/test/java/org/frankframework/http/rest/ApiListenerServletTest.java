@@ -37,12 +37,12 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.net.ssl.KeyManager;
@@ -234,7 +234,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void noUri() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
-		new ApiListenerBuilder("test", Methods.GET).build();
+		new ApiListenerBuilder("test", List.of(Methods.GET)).build();
 
 		// Act
 		Response result = service(createRequest(null, Methods.GET));
@@ -247,7 +247,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void uriNotFound() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
-		new ApiListenerBuilder("test", Methods.GET).build();
+		new ApiListenerBuilder("test", List.of(Methods.GET)).build();
 
 		// Act
 		Response result = service(createRequest("/not-test", Methods.GET));
@@ -260,7 +260,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void methodNotAllowed() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/test";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, List.of(Methods.GET)).build();
 
 		Response result = service(createRequest(uri, Methods.PUT));
 		assertEquals(405, result.getStatus());
@@ -270,11 +270,22 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void simpleGet() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/test1";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, List.of(Methods.GET)).build();
 
 		Response result = service(createRequest(uri, Methods.GET));
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void simpleGetMultiMethod() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/test1";
+		new ApiListenerBuilder(uri, List.of(Methods.GET, Methods.POST)).build();
+
+		Response result = service(createRequest(uri, Methods.GET));
+		assertEquals(200, result.getStatus());
+		assertEquals("OPTIONS, GET, POST", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -295,7 +306,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void simpleGetWithSlashes() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/test2";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, List.of(Methods.GET)).build();
 
 		Response result = service(createRequest(uri, Methods.GET));
 		assertEquals(200, result.getStatus());
@@ -306,7 +317,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void preFlightRequest() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/preflight/";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, List.of(Methods.GET)).build();
 
 		Response result = service(createRequest(uri, Methods.OPTIONS));
 		assertEquals(200, result.getStatus());
@@ -321,7 +332,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void preFlightRequestWithRequestHeader() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/preflight/";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, List.of(Methods.GET)).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Access-Control-Request-Headers", "Message-Id,CustomHeader");
@@ -339,7 +350,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void corsGetRequest() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/not-preflight/";
-		new ApiListenerBuilder(uri, Methods.POST).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST)).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("origin", "https://frankframework.org");
@@ -359,7 +370,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void apiListenerThatProducesXML() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/ApiListenerThatProducesXML/";
-		new ApiListenerBuilder(uri, Methods.PUT, null, MediaTypes.XML).build();
+		new ApiListenerBuilder(uri, List.of(Methods.PUT), null, MediaTypes.XML).build();
 
 		Response result = service(createRequest(uri, Methods.PUT, "<xml>data</xml>"));
 		assertEquals(200, result.getStatus());
@@ -372,7 +383,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void apiListenerThatProducesJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/ApiListenerThatProducesJSON/";
-		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), null, MediaTypes.JSON).build();
 
 		Response result = service(createRequest(uri, Methods.POST, "{}"));
 		assertEquals(200, result.getStatus());
@@ -386,7 +397,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerThatProducesJSONReturnsNoOutput() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
-		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON)
+		new ApiListenerBuilder(uri, List.of(Methods.POST), null, MediaTypes.JSON)
 			.withResponseContent("")
 			.build();
 		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
@@ -409,7 +420,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerThatProducesJSONReturnsNoOutputEmptyStream() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
-		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON)
+		new ApiListenerBuilder(uri, List.of(Methods.POST), null, MediaTypes.JSON)
 			.withResponseContent(new ByteArrayInputStream(new byte[0]))
 			.build();
 		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
@@ -432,7 +443,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerThatProducesJSONReturnsNoOutputEmptyReader() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
-		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON)
+		new ApiListenerBuilder(uri, List.of(Methods.POST), null, MediaTypes.JSON)
 			.withResponseContent(new StringReader(""))
 			.build();
 		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
@@ -455,7 +466,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerThatProducesXMLReturnsNoOutputNonStringResultMessage() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerThatProducesXMLReturnsNoOutputNonStringResultMessage/";
-		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.XML).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), null, MediaTypes.XML).build();
 		Map<String, String> headers = new HashMap<>();
 
 		HttpServletRequest request = createRequest(uri, Methods.POST, null, headers);
@@ -478,7 +489,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void clientAcceptHeaderDoesNotLikeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri="/ApiListenerAllow/";
-		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON)
+		new ApiListenerBuilder(uri, List.of(Methods.POST), null, MediaTypes.JSON)
 			.build();
 
 		Map<String, String> headers = new HashMap<>();
@@ -496,7 +507,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void clientAcceptHeaderLovesJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/ApiListenerAllow/";
-		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), null, MediaTypes.JSON).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -511,7 +522,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerDoesNotLikeContentTypeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerDoesNotAcceptContentType";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.XML, null).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.XML, null).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -524,7 +535,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerLovesContentTypeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerLovesContentTypeJSON";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.JSON, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.JSON, MediaTypes.JSON).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -541,7 +552,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void listenerRejectsRequestWithoutContentTypeHeaderWhenConsumesAttributeSet() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri="/listenerDoesNotAcceptRequestWithoutContentTypeHeader";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.XML, null).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.XML, null).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -559,7 +570,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void listenerAcceptsRequestWithoutContentTypeHeaderWhenConsumesAttributeNotSet() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri="/listenerAcceptsContentTypeJSON";
-		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), null, MediaTypes.JSON).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -579,7 +590,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerDetectContentTypeAndCharsetISO8859() throws Exception {
 		String uri="/listenerDetectMimeType";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.TEXT, MediaTypes.DETECT).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.TEXT, MediaTypes.DETECT).build();
 
 		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
@@ -597,7 +608,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerMultipartContentDetectContentTypeAndCharsetISO8859() throws Exception {
 		String uri="/listenerMultipartContent_DETECT";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.DETECT).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.MULTIPART, MediaTypes.DETECT).build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
@@ -621,7 +632,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerMultipartContentISO8859_JSON() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerMultipartContent_JSON";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.MULTIPART, MediaTypes.JSON).build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
@@ -645,7 +656,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerMultipartContentISO8859_ANY() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerMultipartContent_ANY";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.ANY).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.MULTIPART, MediaTypes.ANY).build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
@@ -669,7 +680,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerMultipartContentUTF8() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerMultipartContentCharset";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON, null, "string2").build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.MULTIPART, MediaTypes.JSON, null, "string2").build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody("string1", "<hallo>€ è</hallo>", ContentType.create("text/plain"));
@@ -701,7 +712,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerMtomContent() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerMtomContent";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART_RELATED, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.MULTIPART_RELATED, MediaTypes.JSON).build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setMtomMultipart();
@@ -732,7 +743,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerMultipartContentNoContentType() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerMultipartContentNoContentType";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.MULTIPART, MediaTypes.JSON).build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody("string1", "<request/>", ContentType.create("text/xml"));//explicitly sent as UTF-8
@@ -751,7 +762,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		// Arrange
 		String uri="/listenerMultipartContentNoContent";
-		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), MediaTypes.MULTIPART, MediaTypes.JSON).build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		HttpServletRequest request = createRequest(uri, Methods.POST, builder.build());
@@ -768,7 +779,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void getRequestWithQueryParameters() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/queryParamTest";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, List.of(Methods.GET)).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -785,7 +796,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void getRequestWithQueryListParameters() throws Exception {
 		String uri="/queryParamTestWithListsItems";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, List.of(Methods.GET)).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -794,7 +805,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		assertEquals(200, result.getStatus());
 		assertEquals("60", session.get("maxSpeed"));
-		List<String> transportList = Arrays.asList("car","bike","moped");
+		List<String> transportList = List.of("car","bike","moped");
 		assertEquals(transportList, session.get("transport"));
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -803,7 +814,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void getRequestWithDynamicPath() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/dynamic/";
-		new ApiListenerBuilder(uri+"{poef}", Methods.GET).build();
+		new ApiListenerBuilder(uri+"{poef}", List.of(Methods.GET)).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -819,7 +830,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void getRequestWithAsteriskPath() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/dynamic/";
-		new ApiListenerBuilder(uri+"*", Methods.GET).build();
+		new ApiListenerBuilder(uri+"*", List.of(Methods.GET)).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -835,7 +846,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void customExitCode() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/exitcode";
-		new ApiListenerBuilder(uri, Methods.GET)
+		new ApiListenerBuilder(uri, List.of(Methods.GET))
 			.withExitCode(234)
 			.build();
 
@@ -854,7 +865,7 @@ public class ApiListenerServletTest extends Mockito {
 		// Arrange
 		String uri="/etag1";
 		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime(DateFormatUtils.parseToInstant("2023-01-13 14:02:00", DateFormatUtils.GENERIC_DATETIME_FORMATTER)));
-		new ApiListenerBuilder(uri, Methods.GET)
+		new ApiListenerBuilder(uri, List.of(Methods.GET))
 			.withResponseContent(repeatableMessage)
 			.setUpdateEtag(true)
 			.build();
@@ -881,7 +892,7 @@ public class ApiListenerServletTest extends Mockito {
 		// Arrange
 		String uri="/etag2";
 		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
-		new ApiListenerBuilder(uri, Methods.GET)
+		new ApiListenerBuilder(uri, List.of(Methods.GET))
 			.withResponseContent(repeatableMessage)
 			.build();
 
@@ -905,7 +916,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void eTagGetEtagMatches() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri = "/etag31";
-		new ApiListenerBuilder(uri, Methods.GET)
+		new ApiListenerBuilder(uri, List.of(Methods.GET))
 			.withExitCode(201)
 			.withResponseContent("{\"tralalalallala\":true}")
 			.build();
@@ -929,7 +940,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void eTagGetEtagDoesNotMatch() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri = "/etag32";
-		new ApiListenerBuilder(uri, Methods.GET)
+		new ApiListenerBuilder(uri, List.of(Methods.GET))
 			.withResponseContent("{\"tralalalallala\":true}")
 			.build();
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
@@ -951,7 +962,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void eTagPostEtagIfMatches() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "/etag45";
-		new ApiListenerBuilder(uri, Methods.POST).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST)).build();
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
 
@@ -968,7 +979,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void eTagPostEtagDoesNotMatch() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "/etag46";
-		new ApiListenerBuilder(uri, Methods.POST).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST)).build();
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
 
@@ -985,7 +996,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void cookieAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "/cookie";
-		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.COOKIE).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), AuthMethods.COOKIE).build();
 
 		Map<String, String> headers = new HashMap<>();
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
@@ -999,7 +1010,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void cookieNotFoundInCache401() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "/cookie";
-		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.COOKIE).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), AuthMethods.COOKIE).build();
 
 		Map<String, String> headers = new HashMap<>();
 		MockHttpServletRequest request = createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers);
@@ -1016,7 +1027,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void cookieAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "/cookie";
-		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.COOKIE).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), AuthMethods.COOKIE).build();
 		String authToken = "random-token_thing";
 
 		ApiPrincipal principal = new ApiPrincipal();
@@ -1042,7 +1053,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void headerAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "/cookie";
-		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.HEADER).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), AuthMethods.HEADER).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Authorization", "blalablaaaa");
@@ -1057,7 +1068,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void headerAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "/header";
-		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.HEADER).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), AuthMethods.HEADER).build();
 		String authToken = "random-token_thing";
 
 		ApiPrincipal principal = new ApiPrincipal();
@@ -1080,7 +1091,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void authRoleAuthentication401() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "/authRole2";
-		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.AUTHROLE).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), AuthMethods.AUTHROLE).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Authorization", "am9objpkb2U=");
@@ -1100,7 +1111,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void authRoleAuthentication200() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri = "/authRole2";
-		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.AUTHROLE).build();
+		new ApiListenerBuilder(uri, List.of(Methods.POST), AuthMethods.AUTHROLE).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Authorization", "am9objpkb2U=");
@@ -1120,7 +1131,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void testRequestWithMessageId() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri = "/messageIdTest1";
-		new ApiListenerBuilder(uri, Methods.POST)
+		new ApiListenerBuilder(uri, List.of(Methods.POST))
 			.setMessageIdHeader("X-Message-ID")
 			.setCorrelationIdHeader("X-Correlation-ID")
 			.build();
@@ -1145,7 +1156,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void testRequestWithMessageIdAndCorrelationId() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri = "/messageIdTest2";
-		new ApiListenerBuilder(uri, Methods.POST)
+		new ApiListenerBuilder(uri, List.of(Methods.POST))
 			.setMessageIdHeader("X-Message-ID")
 			.setCorrelationIdHeader("X-Correlation-ID")
 			.build();
@@ -1175,7 +1186,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		// Arrange
 		String uri = "/messageWithJson2XmlValidator";
-		new ApiListenerBuilder(uri, method, null, MediaTypes.XML).build();
+		new ApiListenerBuilder(uri, List.of(method), null, MediaTypes.XML).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("accept", "application/xml");
@@ -1208,7 +1219,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void setupParseAcceptHeaderAndValidateProduces(String acceptHeaderValue, MediaTypes produces) throws Exception {
 		// Arrange
 		String uri = "/messageWithAcceptHeaderAndProduces"+produces;
-		new ApiListenerBuilder(uri, Methods.GET, null, produces).build();
+		new ApiListenerBuilder(uri, List.of(Methods.GET), null, produces).build();
 
 		Map<String, String> headers = new HashMap<>();
 		if(acceptHeaderValue != null) {
@@ -1229,7 +1240,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void testEndpointDoesNotAcceptHeader(String acceptHeaderValue) throws Exception {
 		// Arrange
 		String uri = "/messageThatDoesNotAcceptAcceptHeader";
-		new ApiListenerBuilder(uri, Methods.GET, null, MediaTypes.JSON)
+		new ApiListenerBuilder(uri, List.of(Methods.GET), null, MediaTypes.JSON)
 			.build();
 
 		Map<String, String> headers = new HashMap<>();
@@ -1249,7 +1260,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void testRequestExceptionHandling() throws Exception {
 		// Arrange
 		String uri = "/testThrowsError";
-		new ApiListenerBuilder(uri, Methods.GET, null, null)
+		new ApiListenerBuilder(uri, List.of(Methods.GET), null, null)
 			.withShouldThrow(true)
 			.build();
 
@@ -1265,7 +1276,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenParsingWithRequiredIssuer() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setAuthenticationMethod(AuthenticationMethods.JWT)
@@ -1281,7 +1292,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenParsingWithoutRequiredIssuer() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setAuthenticationMethod(AuthenticationMethods.JWT)
 			.build();
@@ -1296,7 +1307,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenParsingWithIllegalRequiredIssuer() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setAuthenticationMethod(AuthenticationMethods.JWT)
 			.setRequiredIssuer("test")
@@ -1312,7 +1323,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void testJwtTokenParsingWithJwtHeader() throws Exception {
 		final String JWT_HEADER = "X-JWT-Assertion";
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 				.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 				.setRequiredIssuer("JWTPipeTest")
 				.setAuthenticationMethod(AuthenticationMethods.JWT)
@@ -1332,7 +1343,7 @@ public class ApiListenerServletTest extends Mockito {
 		String token="eyJhbGciOiJSUzI1NiJ9."
 				+ "eyJpc3MiOiJKV1RQaXBlVGVHzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9."
 				+ "U1VsMoITf5kUEHtzfgJTyRWEDZ2gjtTuQI3DVRrJcpden2pjCsAWwl4VOr6McmQkcndZj0GPvN4w3NkJR712ltlsIXw1zMm67vuFY0_id7TP2zIJh3jMkKrTuSPE-SBXZyVnIq22Q54R1VMnOTjO6spbrbYowIzyyeAC7U1RzyB3aKxTgeYJS6auLBaiR3-SWoXs_hBnbIIgYT7AC2e76ICpMlFPQS_e2bcqe1B-yz69se8ZlJgwWK-YhqHMoOCA9oQy3t_cObQI0KSzg7cYDkkQ17cWF3SoyTSTs6Cek_Y97Z17lJX2RVBayPc2uI_oWWuaIUbukxAOIUkgpgtf6g";
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 		.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 		.setAuthenticationMethod(AuthenticationMethods.JWT)
 		.build();
@@ -1350,7 +1361,7 @@ public class ApiListenerServletTest extends Mockito {
 		String token="eyJhbGciOiJSUzI1NiJ9."
 				+ "eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9."
 				+ "U1VsMoITf5kUEHtzfgJTyRWKEDZ2gjtTuQI3DVRrJcpden2pjCsAWwl4VOr6McmQkcndZj0GPvN4w3NkJR712ltlsIXw1zMm67vuFY0_id7TP2zIJh3jMkKrTuSPE-SBXZyVnIq22Q54R1VMnOTjO6spbrbYowIzyyeAC7U1RzyB3aKxTgeYJS6auLBaiR3-SWoXs_hBnbIIgYT7AC2e76ICpMlFPQS_e2bcqe1B-yz69se8ZlJgwWK-YhqHMoOCA9oQy3t_cObQI0KSzg7cYDkkQ17cWF3SoyTSTs6Cek_Y97Z17lJX2RVBayPc2uI_oWWuaIUbukxAOIUkgpgtf6g";
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setAuthenticationMethod(AuthenticationMethods.JWT)
 			.build();
@@ -1365,7 +1376,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenParsingWithRequiredClaims() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setRequiredClaims("sub, aud")
@@ -1382,7 +1393,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenParsingWithExactMatchClaims() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setExactMatchClaims("sub=UnitTest, aud=Framework")
@@ -1399,7 +1410,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenParsingWithAnyMatchClaims() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setAnyMatchClaims("aud=nomatch, sub=UnitTest")
@@ -1416,7 +1427,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenParsingWithExactAndAnyMatchClaims() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setExactMatchClaims("sub=UnitTest")
@@ -1434,7 +1445,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenMissingRequiredClaims() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setRequiredClaims("sub, aud, kid")
@@ -1450,7 +1461,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenUnexpectedValueForExactMatchClaim() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setExactMatchClaims("sub=UnitTest, aud=test")
@@ -1466,7 +1477,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenNoMatchForAnyMatchClaim() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setAnyMatchClaims("sub=test, aud=test")
@@ -1482,7 +1493,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenWithRoleClaim() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setRoleClaim("sub")
@@ -1498,7 +1509,7 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenWithRoleClaimAndEmptyAuthRoles() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
 			.setRoleClaim("sub")
@@ -1706,22 +1717,26 @@ public class ApiListenerServletTest extends Mockito {
 		private final ApiListener listener;
 		private MessageHandler handler;
 
-		public ApiListenerBuilder(String uri, Methods method) throws ListenerException, ConfigurationException {
+		public ApiListenerBuilder(String uri, List<Methods> method) throws ListenerException, ConfigurationException {
 			this(uri, method, null, null);
 		}
 
-		public ApiListenerBuilder(String uri, Methods method, AuthMethods authMethod) throws ListenerException, ConfigurationException {
+		public ApiListenerBuilder(String uri, List<Methods> method, AuthMethods authMethod) throws ListenerException, ConfigurationException {
 			this(uri, method, null, null, authMethod,null);
 		}
 
-		public ApiListenerBuilder(String uri, Methods method, MediaTypes consumes, MediaTypes produces) throws ListenerException, ConfigurationException {
+		public ApiListenerBuilder(String uri, List<Methods> method, MediaTypes consumes, MediaTypes produces) throws ListenerException, ConfigurationException {
 			this(uri, method, consumes, produces, null, null);
 		}
 
-		public ApiListenerBuilder(String uri, Methods method, MediaTypes consumes, MediaTypes produces, AuthMethods authMethod, String multipartBodyName) {
+		public ApiListenerBuilder(String uri, List<Methods> method, MediaTypes consumes, MediaTypes produces, AuthMethods authMethod, String multipartBodyName) {
 			listener = spy(ApiListener.class);
 			listener.setUriPattern(uri);
-			listener.setMethod(EnumUtils.parse(HttpMethod.class, method.name()));
+
+			String methods = method.stream()
+					.map(m -> EnumUtils.parse(HttpMethod.class, m.name()).name())
+					.collect(Collectors.joining(","));
+			listener.setMethods(methods);
 
 			handler = new MessageHandler();
 			listener.setHandler(handler);

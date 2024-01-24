@@ -356,6 +356,14 @@
                     <td>Configuration</td>
                     <td>{{adapter.configuration}}</td>
                   </tr>
+                  <tr>
+                    <td></td>
+                    <td>
+                      <a routerLink="/configurations" [queryParams]="{ name: adapter.configuration, adapter: adapter.name }">
+                        View adapter configuration XML
+                      </a>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>

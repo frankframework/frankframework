@@ -11,7 +11,7 @@
 	<name>Frank!Framework support for AWS</name>
 
 	<properties>
-		<software.amazon.awssdk.version>2.22.3</software.amazon.awssdk.version>
+		<software.amazon.awssdk.version>2.23.5</software.amazon.awssdk.version>
 	</properties>
 
 	<dependencies>
