@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.SequenceInputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.NoSuchFileException;
@@ -341,10 +340,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.CREATE);
 						file = fileSystem.toFile(fileSystem.getCanonicalName(file)); // reobtain the file, as the object itself may have changed because of the rollover
 					}
-					//noinspection EmptyTryBlock
-					try (OutputStream ignored = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
-						// nothing to write
-					}
+
+					((IWritableFileSystem<F>)fileSystem).createFile(file, null);
 					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case DELETE: {
@@ -543,12 +540,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			message = input;
 		}
 
-		try(InputStream is = message.asInputStream(charset)) {
-			if(isWriteLineSeparator()) {
-				return new SequenceInputStream(is, new ByteArrayInputStream(eolArray));
-			}
-			return is;
+		InputStream is = message.asInputStream(charset);
+		if(isWriteLineSeparator()) {
+			return new SequenceInputStream(is, new ByteArrayInputStream(eolArray));
 		}
+		return is;
 	}
 
 	private void deleteEmptyFolder(F f) throws FileSystemException, IOException {

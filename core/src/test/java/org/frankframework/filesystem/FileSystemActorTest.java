@@ -24,6 +24,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
+import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
@@ -664,7 +665,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		PipeLineSession session = new PipeLineSession();
-		session.put("writeLineSeparator", contents);
+		Message sessionMessage = Message.asMessage(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
+		session.put("writeLineSeparator", sessionMessage);
 
 		ParameterList params = new ParameterList();
 		params.add(ParameterBuilder.create().withName("contents").withSessionKey("writeLineSeparator"));
@@ -703,8 +705,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		PipeLineSession session = new PipeLineSession();
-		session.put("writeLineSeparator", contents);
-
 		ParameterList params = new ParameterList();
 
 		actor.setWriteLineSeparator(true);
@@ -714,7 +714,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
-		Message message = new Message(contents);
+		Message message = Message.asMessage(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
 		ParameterValueList pvl = params.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
@@ -775,7 +775,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(null, filename);
 		}
 
-		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
+		InputStream stream = new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes("UTF-8")));
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
@@ -892,7 +892,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		for(int i=0; i<numOfWrites; i++) {
-			session.put("appendWriteLineSeparatorTest", contents+i);
+			Message sessionMessage = Message.asMessage(new ThrowingAfterCloseInputStream(new ByteArrayInputStream((contents+i).getBytes())));
+			session.put("appendWriteLineSeparatorTest", sessionMessage);
 			ParameterValueList pvl = params.getValues(message, session);
 			Message result = actor.doAction(message, pvl, session);
 			String resultStr = result.asString();
