@@ -15,12 +15,12 @@
 */
 package org.frankframework.management.bus;
 
-import javax.annotation.security.RolesAllowed;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.StreamingException;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
+
+import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 public class BusTestEndpoints {
@@ -48,13 +48,13 @@ public class BusTestEndpoints {
 		switch (type) {
 			case NOT_FOUND:
 				throw new ResourceNotFoundException("Resource not found");
-		case MESSAGE:
-			throw new BusException("message without cause");
-		case CAUSE:
-			throw new IllegalStateException("uncaught exception", cause);
-		case MESSAGE_WITH_CAUSE:
-		default:
-			throw new BusException("message with a cause", cause);
+			case MESSAGE:
+				throw new BusException("message without cause");
+			case CAUSE:
+				throw new IllegalStateException("uncaught exception", cause);
+			case MESSAGE_WITH_CAUSE:
+			default:
+				throw new BusException("message with a cause", cause);
 		}
 	}
 }
