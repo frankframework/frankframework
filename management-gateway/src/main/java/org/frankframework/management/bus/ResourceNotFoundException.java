@@ -27,17 +27,13 @@ public class ResourceNotFoundException extends RuntimeException {
 	public ResourceNotFoundException(String message) {
 		this(message, null);
 	}
-
-	/**
-	 * Seen as ERROR
-	 * Stacktrace information is logged but not passed to the parent to limit sensitive information being sent over the 'bus'.
-	 */
+	
 	public ResourceNotFoundException(String message, Throwable exception) {
 		super(new IbisException(message, exception).getMessage());
 		if (exception == null) {
-			log.warn(super.getMessage()); // expanded message is logged directly
+			log.warn(message, (Throwable) null);
 		} else {
-			log.error(message, exception); // normal message, expanded by printing the stacktrace
+			log.error(message, exception);
 		}
 	}
 }
