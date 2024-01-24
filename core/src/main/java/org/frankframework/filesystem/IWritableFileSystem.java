@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 package org.frankframework.filesystem;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.frankframework.util.StreamUtil;
 
 /**
  * Extension to {@link IBasicFileSystem} that can be implemented to allow creation of files and folders.
@@ -34,7 +37,20 @@ import java.io.OutputStream;
 public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 
 	public OutputStream createFile(F f) throws FileSystemException, IOException;
+
+	default void createFile(F f, InputStream content) throws FileSystemException, IOException {
+		try (OutputStream out = createFile(f)) {
+			StreamUtil.streamToStream(content, out);
+		}
+	}
+
 	public OutputStream appendFile(F f) throws FileSystemException, IOException;
+
+	default void appendFile(F f, InputStream content) throws FileSystemException, IOException {
+		try (OutputStream out = appendFile(f)) {
+			StreamUtil.streamToStream(content, out);
+		}
+	}
 
 	/**
 	 * Renames the file to a new name, possibly in a another folder.

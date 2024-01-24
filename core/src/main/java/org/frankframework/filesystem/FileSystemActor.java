@@ -15,11 +15,12 @@
 */
 package org.frankframework.filesystem;
 
+import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SequenceInputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
@@ -34,25 +35,16 @@ import javax.annotation.Nonnull;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IConfigurable;
-import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.INamedObject;
-import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.IOutputStreamingSupport;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageOutputStream;
-import org.frankframework.stream.StreamingException;
 import org.frankframework.stream.document.ArrayBuilder;
 import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.DocumentFormat;
@@ -61,6 +53,9 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 /**
  * Worker class for {@link FileSystemPipe} and {@link FileSystemSender}.
@@ -73,7 +68,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel
  */
-public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutputStreamingSupport {
+public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
@@ -427,9 +422,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
 						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 					}
-					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
-						writeContentsToFile(out, input, pvl);
-					}
+
+					((IWritableFileSystem<F>)fileSystem).createFile(file, getContents(input, pvl, charset));
 					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case APPEND: {
@@ -442,9 +436,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 						FileSystemUtils.rolloverBySize((IWritableFileSystem<F>)fileSystem, file, getRotateSize(), getNumberOfBackups());
 						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 					}
-					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).appendFile(file)) {
-						writeContentsToFile(out, input, pvl);
-					}
+
+					((IWritableFileSystem<F>)fileSystem).appendFile(file, getContents(input, pvl, charset));
 					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case MKDIR: {
@@ -542,26 +535,20 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		return determinedFolderName;
 	}
 
-	private void writeContentsToFile(OutputStream out, Message input, ParameterValueList pvl) throws IOException, FileSystemException {
-		Object contents;
-		if (pvl!=null && pvl.contains(PARAMETER_CONTENTS1)) {
-			contents=pvl.get(PARAMETER_CONTENTS1).getValue();
+	private InputStream getContents(Message input, ParameterValueList pvl, String charset) throws IOException {
+		final Message message;
+		if (pvl != null && pvl.contains(PARAMETER_CONTENTS1)) {
+			message = pvl.get(PARAMETER_CONTENTS1).asMessage();
 		} else {
-			contents=input;
+			message = input;
 		}
-		out = augmentOutputStream(out);
-		if (contents instanceof Message) {
-			StreamUtil.streamToStream(((Message)contents).asInputStream(), out);
-		} else if (contents instanceof InputStream) {
-			StreamUtil.streamToStream((InputStream)contents, out);
-		} else if (contents instanceof byte[]) {
-			out.write((byte[])contents);
-		} else if (contents instanceof String) {
-			out.write(((String) contents).getBytes(StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
-		} else {
-			throw new FileSystemException("expected Message, InputStream, ByteArray or String but got [" + contents.getClass().getName() + "] instead");
+
+		try(InputStream is = message.asInputStream(charset)) {
+			if(isWriteLineSeparator()) {
+				return new SequenceInputStream(is, new ByteArrayInputStream(eolArray));
+			}
+			return is;
 		}
-		out.close();
 	}
 
 	private void deleteEmptyFolder(F f) throws FileSystemException, IOException {
@@ -582,81 +569,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					fileSystem.removeFolder(folder, false);
 				}
 			}
-		}
-	}
-
-	protected boolean canProvideOutputStream() {
-		return (parameterList.findParameter(PARAMETER_ACTION)==null && (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND))
-				&& parameterList.findParameter(PARAMETER_CONTENTS1)==null
-				&& (StringUtils.isNotEmpty(getFilename()) || parameterList.findParameter(PARAMETER_FILENAME)!=null)
-				&& !parameterList.isInputValueOrContextRequiredForResolution();
-	}
-
-	@Override
-	public boolean supportsOutputStreamPassThrough() {
-		return false;
-	}
-
-	protected OutputStream augmentOutputStream(OutputStream out) {
-		if(isWriteLineSeparator()) {
-			out = new FilterOutputStream(out) {
-				boolean closed=false;
-				@Override
-				public void close() throws IOException {
-					try {
-						if (!closed) {
-							out.write(eolArray);
-							closed=true;
-						}
-					} finally {
-						super.close();
-					}
-				}
-			};
-		}
-		return out;
-	}
-
-	@SuppressWarnings("resource")
-	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
-		if (!canProvideOutputStream()) {
-			return null;
-		}
-		ParameterValueList pvl=null;
-
-		try {
-			if (parameterList != null) {
-				pvl = parameterList.getValues(null, session);
-			}
-		} catch (ParameterException e) {
-			throw new StreamingException("caught exception evaluating parameters", e);
-		}
-		try {
-			F file=getFile(null, pvl);
-			OutputStream out;
-			if (getAction() == FileSystemAction.APPEND) {
-				out = ((IWritableFileSystem<F>)fileSystem).appendFile(file);
-			} else {
-				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
-			}
-			out = augmentOutputStream(out);
-			MessageOutputStream stream = new MessageOutputStream(owner, out, next) {
-
-				@Override
-				public Message getResponse() {
-					try {
-						return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
-					} catch (FileSystemException e) {
-						log.warn("cannot get file information", e);
-						return null;
-					}
-				}
-
-			};
-			return stream;
-		} catch (FileSystemException | IOException e) {
-			throw new StreamingException("cannot obtain OutputStream", e);
 		}
 	}
 

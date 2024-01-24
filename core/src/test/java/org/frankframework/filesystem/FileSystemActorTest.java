@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.util.Date;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -23,10 +22,8 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageOutputStream;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
-import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
@@ -60,21 +57,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		result = null;
 	}
 
+	@Override
 	@AfterEach
 	public void tearDown() throws Exception {
 		if (result != null) {
 			result.close();
 		}
+		super.tearDown();
 	}
-
-//	@Override
-//	@AfterEach
-//	public void tearDown() throws Exception {
-//		if (actor!=null) {
-//			actor.close();
-//		};
-//		super.tearDown();
-//	}
 
 	@Test
 	public void fileSystemActorTestConfigureBasic() throws Exception {
@@ -663,20 +653,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(contents.trim(), actualContents.trim());
 	}
 
-	protected Message doAction(Message message, ParameterValueList pvl, PipeLineSession session, boolean viaOutputStream, boolean expectStreamable) throws Exception {
-		boolean streamable = actor.canProvideOutputStream();
-		assertEquals(expectStreamable, streamable, "streamability");
-		if (viaOutputStream && streamable) {
-			MessageOutputStream mos = actor.provideOutputStream(session, null);
-			StreamUtil.copyStream(message.asInputStream(), mos.asStream(), 1000);
-			mos.close();
-			mos.close(); // must be possible to close AutoCloseable multiple times
-			return mos.getResponse();
-		}
-		return actor.doAction(message, pvl, session);
-	}
-
-	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents(boolean viaOutputStream, boolean expectStreamable) throws Exception {
+	@Test
+	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents() throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
 		String expectedFSize="1 kB";
@@ -700,7 +678,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message("fakeInputMessage");
 		ParameterValueList pvl = params.getValues(message, session);
-		result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
+		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
 		String stringResult=Message.asString(result);
@@ -715,16 +693,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
-	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents() throws Exception {
-		fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents(false, false);
-	}
-
-	@Test
-	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContentsStreamingNotPossible() throws Exception {
-		fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents(true, false);
-	}
-
-	public void fileSystemActorWriteActionWriteLineSeparatorMessageContents(boolean viaOutputStream, boolean expectStreamable) throws Exception {
+	public void fileSystemActorWriteActionWriteLineSeparatorMessageContents() throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
 		String expectedFSize="1 kB";
@@ -747,7 +716,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(contents);
 		ParameterValueList pvl = params.getValues(message, session);
-		result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
+		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
 		String stringResult=Message.asString(result);
@@ -759,16 +728,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String expected = contents + lineSeparator;
 
 		assertEquals(expected, actualContents);
-	}
-
-	@Test
-	public void fileSystemActorWriteActionWriteLineSeparatorMessageContents() throws Exception {
-		fileSystemActorWriteActionWriteLineSeparatorMessageContents(false, true);
-	}
-
-	@Test
-	public void fileSystemActorWriteActionWriteLineSeparatorMessageContentsStreaming() throws Exception {
-		fileSystemActorWriteActionWriteLineSeparatorMessageContents(true, true);
 	}
 
 	@Test
@@ -842,45 +801,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// TODO: evaluate 'result'
 		//assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
-	}
-
-	@Test
-	public void fileSystemActorWriteActionTestWithOutputStream() throws Exception {
-		String filename = "uploadedwithOutputStream" + FILE1;
-		String contents = "Some text content to test upload action\n";
-
-		if (_fileExists(filename)) {
-			_deleteFile(null, filename);
-		}
-
-//		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSession session = new PipeLineSession();
-
-		ParameterList paramlist = new ParameterList();
-		paramlist.add(new Parameter("filename", filename));
-		paramlist.configure();
-
-		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem,paramlist,owner);
-		actor.open();
-
-		assertTrue(actor.canProvideOutputStream());
-
-		MessageOutputStream target = actor.provideOutputStream(session, null);
-
-		// stream the contents
-		try (Writer writer = target.asWriter()) {
-			writer.write(contents);
-		}
-
-		// verify the filename is properly returned
-		String stringResult=target.getPipeRunResult().getResult().asString();
-		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-
-		// verify the file contents
-		waitForActionToFinish();
-		String actualContents = readFile(null, filename);
-		assertEquals(contents,actualContents);
 	}
 
 	@Test
