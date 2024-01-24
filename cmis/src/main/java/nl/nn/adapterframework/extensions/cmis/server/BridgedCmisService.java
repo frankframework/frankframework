@@ -96,7 +96,7 @@ public class BridgedCmisService extends FilterCmisService {
 		}
 
 		try {
-			Session session = sessionBuilder.build();
+			Session session = sessionBuilder.build().getCmisSession();
 			return session.getBinding();
 		}
 		catch (CmisSessionException e) {

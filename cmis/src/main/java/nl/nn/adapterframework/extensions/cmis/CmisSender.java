@@ -43,7 +43,6 @@ import org.apache.chemistry.opencmis.client.api.QueryResult;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
@@ -54,7 +53,6 @@ import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
@@ -231,7 +229,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private boolean runtimeSession = false;
 	private boolean keepSession = true;
 
-	private Session globalSession;
+	private CmisSessionWrapper globalSession;
 
 	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
@@ -277,7 +275,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	/**
 	 * Creates a session during JMV runtime, tries to retrieve parameters and falls back on the defaults when they can't be found
 	 */
-	public Session createCmisSession(ParameterValueList pvl) throws SenderException {
+	public CmisSessionWrapper createCmisSession(ParameterValueList pvl) throws SenderException {
 		String authAlias_work = null;
 		String username_work = null;
 		String password_work = null;
@@ -340,26 +338,14 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	public void close() {
 		if (globalSession != null) {
 			log.debug("{} Closing global CMIS session", getLogPrefix());
-			closeCmisSession(globalSession);
+			globalSession.close();
 			globalSession = null;
-		}
-	}
-
-	private void closeCmisSession(Session session) {
-		log.debug("{} CMIS Session Close, SPI Binding class name: [{}]", getLogPrefix(), session.getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
-		session.clear();
-		CmisBinding binding = session.getBinding();
-		if (binding != null) {
-			log.debug("{} Closing CMIS Bindings instance [{}:{}]", getLogPrefix(), binding.getClass().getSimpleName(), binding);
-			binding.close();
-		} else {
-			log.debug("{} Session has no CMIS Bindings", getLogPrefix());
 		}
 	}
 
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		Session cmisSession = null;
+		CmisSessionWrapper cmisSession = null;
 		try {
 			ParameterValueList pvl=null;
 			if (getParameterList() != null) {
@@ -378,19 +364,19 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 			switch (getActionEnum()) {
 				case GET:
-					return sendMessageForActionGet(cmisSession, message, session, pvl);
+					return sendMessageForActionGet(cmisSession.getCmisSession(), message, session, pvl);
 				case CREATE:
-					return sendMessageForActionCreate(cmisSession, message, session, pvl);
+					return sendMessageForActionCreate(cmisSession.getCmisSession(), message, session, pvl);
 				case DELETE:
-					return sendMessageForActionDelete(cmisSession, message, session);
+					return sendMessageForActionDelete(cmisSession.getCmisSession(), message, session);
 				case FIND:
-					return sendMessageForActionFind(cmisSession, message);
+					return sendMessageForActionFind(cmisSession.getCmisSession(), message);
 				case UPDATE:
-					return sendMessageForActionUpdate(cmisSession, message);
+					return sendMessageForActionUpdate(cmisSession.getCmisSession(), message);
 				case FETCH:
-					return sendMessageForDynamicActions(cmisSession, message, session);
+					return sendMessageForDynamicActions(cmisSession.getCmisSession(), message, session);
 				case DYNAMIC:
-					return sendMessageForDynamicActions(cmisSession, message, session);
+					return sendMessageForDynamicActions(cmisSession.getCmisSession(), message, session);
 
 				default:
 					throw new SenderException(getLogPrefix() + "unknown action [" + getAction() + "]");
@@ -398,7 +384,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} finally {
 			if (cmisSession != null && runtimeSession) {
 				log.debug("{} Closing CMIS runtime session", getLogPrefix());
-				closeCmisSession(cmisSession);
+				session.unscheduleCloseOnSessionExit(cmisSession);
 				cmisSession = null;
 			}
 		}
