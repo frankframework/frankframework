@@ -63,7 +63,7 @@ public class TestWebServices extends BusTestBase {
 		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
 		adapter.setName("ApiTestAdapter");
 		ApiListener listener = new ApiListener();
-		listener.setMethod(HttpMethod.POST.name());
+		listener.setMethod(HttpMethod.POST);
 		listener.setUriPattern(API_LISTENER_ENDPOINT);
 		Receiver receiver = new Receiver();
 		receiver.setName("ReceiverName2");

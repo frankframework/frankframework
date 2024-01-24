@@ -37,7 +37,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -1737,7 +1736,7 @@ public class ApiListenerServletTest extends Mockito {
 			String methods = method.stream()
 					.map(m -> EnumUtils.parse(HttpMethod.class, m.name()).name())
 					.collect(Collectors.joining(","));
-			listener.setMethod(methods);
+			listener.setMethods(methods);
 
 			handler = new MessageHandler();
 			listener.setHandler(handler);
