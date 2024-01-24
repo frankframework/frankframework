@@ -115,7 +115,8 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 		doReturn(new ContentStreamMock()).when(cmisSession).getContentStream(any(), any(), any(), any());
 
-		doReturn(cmisSession).when(sender).createCmisSession(any());
+		CmisSessionWrapper cmisSessionWrapper = new CmisSessionWrapper(cmisSession);
+		doReturn(cmisSessionWrapper).when(sender).createCmisSession(any());
 
 		return sender;
 	}
