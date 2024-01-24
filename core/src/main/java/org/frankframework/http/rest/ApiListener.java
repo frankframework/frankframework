@@ -226,7 +226,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * HTTP method to listen to
 	 * @ff.default GET
 	 */
-	@Deprecated
 	public void setMethod(HttpMethod method) {
 		setMethods(method.name());
 	}
