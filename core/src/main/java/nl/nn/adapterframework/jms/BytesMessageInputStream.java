@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jms;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.annotation.Nonnull;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 
@@ -32,14 +33,20 @@ public class BytesMessageInputStream extends InputStream {
 	@Override
 	public int read() throws IOException {
 		try {
-			return bytesMsg.readByte();
+			byte[] data = new byte[1];
+			int len = bytesMsg.readBytes(data);
+			if (len == -1) {
+				return -1;
+			}
+			// Make the return-value an unsigned byte to honour the contract of InputStream#read()
+			return data[0] & 0xFF;
 		} catch (JMSException e) {
 			throw new IOException("Cannot read JMS message", e);
 		}
 	}
 
 	@Override
-	public int read(byte[] b) throws IOException {
+	public int read(@Nonnull byte[] b) throws IOException {
 		try {
 			return bytesMsg.readBytes(b);
 		} catch (JMSException e) {
@@ -48,12 +55,17 @@ public class BytesMessageInputStream extends InputStream {
 	}
 
 	@Override
-	public int read(byte[] b, int off, int len) throws IOException {
+	public int read(@Nonnull byte[] b, int off, int len) throws IOException {
 		try {
-			byte[] readbuf = new byte[len];
-			int result = bytesMsg.readBytes(readbuf);
+			// If we try filling the whole array from start, then we do not need to read data into
+			// a temp array and copy it.
+			if (off == 0 && len == b.length) {
+				return read(b);
+			}
+			byte[] data = new byte[len];
+			int result = bytesMsg.readBytes(data);
 			if (result > 0) {
-				System.arraycopy(readbuf, 0, b, off, result);
+				System.arraycopy(data, 0, b, off, result);
 			}
 			return result;
 		} catch (JMSException e) {

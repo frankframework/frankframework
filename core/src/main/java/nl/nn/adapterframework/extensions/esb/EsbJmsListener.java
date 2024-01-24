@@ -136,6 +136,13 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			}
 		}
 
+		if (!getxPathLogMap().isEmpty()) {
+			extractXpathLogProperties(rawMessage, messageProperties);
+		}
+		return messageProperties;
+	}
+
+	private void extractXpathLogProperties(Message rawMessage, Map<String, Object> messageProperties) {
 		try {
 			String soapMessage;
 			if (rawMessage instanceof TextMessage) {
@@ -145,27 +152,29 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				BytesMessage bytesMessage = (BytesMessage) rawMessage;
 				InputStream input = new BytesMessageInputStream(bytesMessage);
 				soapMessage = StreamUtil.streamToString(input);
+				bytesMessage.reset();
 			} else {
+				log.debug("Can only extract data from TextMessage or BytesMessage, not from [{}]", rawMessage.getClass().getName());
 				soapMessage = null;
 			}
-
-			if(soapMessage != null && !getxPathLogMap().isEmpty()) {
-				StringBuilder xPathLogKeys = new StringBuilder();
-				for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
-					String sessionKey = pair.getKey();
-					String xPath = pair.getValue();
-					String result = getResultFromxPath(soapMessage, xPath);
-					if (!result.isEmpty()) {
-						messageProperties.put(sessionKey, result);
-						xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
-					}
-				}
-				messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
+			if (soapMessage == null) {
+				return;
 			}
+
+			StringBuilder xPathLogKeys = new StringBuilder();
+			for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
+				String sessionKey = pair.getKey();
+				String xPath = pair.getValue();
+				String result = getResultFromxPath(soapMessage, xPath);
+				if (!result.isEmpty()) {
+					messageProperties.put(sessionKey, result);
+					xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
+				}
+			}
+			messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
 		} catch (JMSException | IOException e) {
 			log.debug("ignoring Exception", e);
 		}
-		return messageProperties;
 	}
 
 	protected String getResultFromxPath(String message, String xPathExpression) {
