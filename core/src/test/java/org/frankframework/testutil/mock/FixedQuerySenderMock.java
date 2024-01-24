@@ -16,9 +16,9 @@ import javax.sql.DataSource;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jdbc.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.testutil.TestConfiguration;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /**
@@ -65,13 +65,13 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 	protected DataSource getDatasource() throws JdbcException {
 		ResultSet mock = mocks.get(getQuery());
 		if(mock != null) {
-			return Mockito.mock(DataSource.class);
+			return Mockito.mock(TransactionalDbmsSupportAwareDataSourceProxy.class);
 		}
 		return super.getDatasource();
 	}
 
 	public static class ResultSetBuilder {
-		private List<Map<String, Object>> rows = new ArrayList<>();
+		private final List<Map<String, Object>> rows = new ArrayList<>();
 		private Map<String, Object> row = new HashMap<>();
 		private final String INDEX_PREFIX = "index::";
 		private AtomicInteger index = new AtomicInteger(1);
@@ -104,27 +104,23 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 			rows.add(row); //Add the last row
 
 			ResultSet rs = Mockito.mock(ResultSet.class);
-			Mockito.doAnswer(new Answer<Boolean>() {
-				@Override
-				public Boolean answer(InvocationOnMock invocation) throws Throwable {
-					if(!rows.isEmpty()) {
-						row = rows.remove(0);
-						return true;
-					}
-					return false;
-				}}).when(rs).next();
-			Mockito.doAnswer(new Answer<String>() {
-				@Override
-				public String answer(InvocationOnMock invocation) throws Throwable {
-					String key = invocation.getArgument(0);
-					return (String) row.get(key);
-				}}).when(rs).getString(Mockito.anyString());
-			Mockito.doAnswer(new Answer<String>() {
-				@Override
-				public String answer(InvocationOnMock invocation) throws Throwable {
-					int index = invocation.getArgument(0);
-					return (String) row.get(INDEX_PREFIX+index);
-				}}).when(rs).getString(Mockito.anyInt());
+			Mockito.doAnswer((Answer<Boolean>) invocation -> {
+				if (!rows.isEmpty()) {
+					row = rows.remove(0);
+					return true;
+				}
+				return false;
+			}).when(rs).next();
+
+			Mockito.doAnswer((Answer<String>) invocation -> {
+				String key = invocation.getArgument(0);
+				return (String) row.get(key);
+			}).when(rs).getString(Mockito.anyString());
+
+			Mockito.doAnswer((Answer<String>) invocation -> {
+				int index = invocation.getArgument(0);
+				return (String) row.get(INDEX_PREFIX + index);
+			}).when(rs).getString(Mockito.anyInt());
 
 			return rs;
 		}
