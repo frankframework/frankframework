@@ -42,7 +42,10 @@
               <label class="col-sm-3 control-label">Select an adapter</label>
               <div class="col-sm-9">
                 <select class="form-control m-b" name="adapter" [(ngModel)]="form.adapter" [disabled]="selectedConfiguration == ''">
-                  <option *ngFor="let adapter of adapters | configurationFilter : selectedConfiguration | withJavaListener" [ngValue]="adapter">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
+                  <option
+                    *ngFor="let adapter of adapters | configurationFilter : selectedConfiguration | withJavaListener"
+                    [ngValue]="adapter"
+                  >{{adapter.name + (adapter.description != null? " - "+adapter.description:"") | truncate:150}}</option>
                 </select>
               </div>
             </div>
