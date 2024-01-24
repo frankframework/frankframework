@@ -105,7 +105,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		}
 		if (getDirection() == Direction.WRAP && PipeLine.INPUT_WRAPPER_NAME.equals(getName()) && soapVersion == SoapVersion.AUTO) {
 			ConfigurationWarnings.add(this, log, "SoapWrapperPipe should NOT be used to wrap a message in an InputWrapper, without a " +
-					"specified SoapVersion. Add a soapVersion property to the configuration. Now defaults to 1.1 without guarantees. ", SuppressKeys.CONFIGURATION_VALIDATION);
+					"specified SoapVersion. Add [soapVersion] attribute to the configuration. Now defaults to v1.1 without guarantees. ", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 		if (getSoapVersion() == null) {
 			soapVersion = SoapVersion.AUTO;
