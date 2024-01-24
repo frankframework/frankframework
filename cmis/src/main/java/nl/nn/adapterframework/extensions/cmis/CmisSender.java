@@ -384,7 +384,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} finally {
 			if (cmisSession != null && runtimeSession) {
 				log.debug("{} Closing CMIS runtime session", getLogPrefix());
-				session.unscheduleCloseOnSessionExit(cmisSession);
+				session.scheduleCloseOnSessionExit(cmisSession, getLogPrefix());
 				cmisSession = null;
 			}
 		}
