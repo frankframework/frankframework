@@ -45,7 +45,9 @@
                   <option
                     *ngFor="let adapter of adapters | configurationFilter : selectedConfiguration | withJavaListener"
                     [ngValue]="adapter"
-                  >{{adapter.name + (adapter.description != null? " - "+adapter.description:"") | truncate:150}}</option>
+                  >{{adapter.name + (
+                      adapter.description != null ? (" - " + adapter.description) : ""
+                    ) | truncate:150}}</option>
                 </select>
               </div>
             </div>
