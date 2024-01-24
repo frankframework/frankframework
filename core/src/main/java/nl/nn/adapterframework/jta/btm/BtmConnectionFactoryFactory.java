@@ -44,7 +44,7 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
-		if (connectionFactory instanceof XAConnectionFactory) {
+		if (connectionFactory instanceof XAConnectionFactory && getMaxPoolSize() > 1) {
 			PoolingConnectionFactory result = new PoolingConnectionFactory();
 			result.setUniqueName(connectionFactoryName);
 			result.setMinPoolSize(getMinPoolSize());

@@ -52,8 +52,9 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
 	@Getter @Setter protected int minPoolSize = 0;
 	@Getter @Setter protected int maxPoolSize = 20;
-	@Getter @Setter protected int maxIdle = 1;
+	@Getter @Setter protected int maxIdle = 2;
 	@Getter @Setter protected int maxLifeTime = 0;
+	@Getter @Setter protected int connectionCheckInterval = 300;
 	@Getter @Setter protected String testQuery = null;
 
 	public JndiDataSourceFactory() {
@@ -63,6 +64,7 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 		maxPoolSize = appConstants.getInt("transactionmanager.jdbc.connection.maxPoolSize", maxPoolSize);
 		maxIdle = appConstants.getInt("transactionmanager.jdbc.connection.maxIdle", maxIdle);
 		maxLifeTime = appConstants.getInt("transactionmanager.jdbc.connection.maxLifeTime", maxLifeTime);
+		connectionCheckInterval = appConstants.getInt("transactionmanager.jdbc.connection.checkInterval", connectionCheckInterval);
 		testQuery = appConstants.getString("transactionmanager.jdbc.connection.testQuery", testQuery);
 	}
 
@@ -135,6 +137,9 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 		connectionPool.setMaxIdle(maxIdle);
 		connectionPool.setTestOnBorrow(true);
 		connectionPool.setTestWhileIdle(true);
+		if (connectionCheckInterval > 0) {
+			connectionPool.setDurationBetweenEvictionRuns(Duration.ofSeconds(connectionCheckInterval));
+		}
 		connectionPool.setBlockWhenExhausted(true);
 		poolableConnectionFactory.setPool(connectionPool);
 		return connectionPool;
