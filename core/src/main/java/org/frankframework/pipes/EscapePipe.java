@@ -18,8 +18,7 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.NotImplementedException;
-
-import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -29,6 +28,8 @@ import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Getter;
 
 /**
  * Pipe that performs translations between special characters and their xml equivalents.
@@ -54,7 +55,7 @@ public class EscapePipe extends FixedForwardPipe {
 		if (getDirection() == null) {
 			throw new ConfigurationException("direction must be set");
 		}
-		if ((substringStart != null && substringEnd == null) || (substringStart == null && substringEnd != null)) {
+		if ((StringUtils.isNotBlank(substringStart) && StringUtils.isBlank(substringEnd)) || (StringUtils.isBlank(substringStart) && StringUtils.isNotBlank(substringEnd))) {
 			throw new ConfigurationException("cannot have only one of substringStart or substringEnd");
 		}
 		if (isEncodeSubstring()) {
@@ -72,42 +73,67 @@ public class EscapePipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		String substring = null;
-		String result = input;
-		int i = -1;
-		int j = -1;
-		log.debug("substringStart [{}] substringEnd [{}] input [{}]", substringStart, substringEnd, input);
-		if (substringStart != null && substringEnd != null) {
-			i = input.indexOf(substringStart);
-			if (i != -1) {
-				j = input.indexOf(substringEnd, i);
-				if (j != -1) {
-					substring = input.substring(i + substringStart.length(), j);
-					substring = handle(substring);
-					result = input.substring(0, i + substringStart.length()) + substring + input.substring(j);
-				}
-			}
-		} else {
-			result = handle(input);
+		String result = handleSubstrings(input);
+		return new PipeRunResult(getSuccessForward(), result);
+	}
+
+	private String handleSubstrings(String input) {
+		if (StringUtils.isBlank(substringStart) || StringUtils.isBlank(substringEnd)) {
+			return handle(input);
 		}
 
-		return new PipeRunResult(getSuccessForward(), result);
+		StringBuilder result = new StringBuilder(input.length());
+		int startIndex = 0;
+
+		while (startIndex < input.length()) {
+			// Find the index of substringStart in the remaining part of the input
+			int start = input.indexOf(substringStart, startIndex);
+
+			// If substringStart is not found, append the remaining part and exit the loop
+			if (start == -1) {
+				result.append(input, startIndex, input.length());
+				break;
+			}
+
+			// Find the index of substringEnd after the current substringStart
+			int end = input.indexOf(substringEnd, start + substringStart.length());
+
+			// If substringEnd is not found, append the remaining part and exit the loop
+			if (end == -1) {
+				result.append(input, startIndex, input.length());
+				break;
+			}
+
+			// Append the part from the last startIndex to the current substringStart
+			result.append(input, startIndex, start + substringStart.length());
+
+			String content = input.substring(start + substringStart.length(), end);
+
+			String handledContent = handle(content);
+			handledContent = (handledContent == null) ? "null" : handledContent;
+
+			result.append(handledContent);
+
+			startIndex = end;
+		}
+		return result.toString();
 	}
 
 	private String handle(String input) {
 		switch (getDirection()) {
-		case ENCODE:
-			return XmlEncodingUtils.encodeChars(input);
-		case DECODE:
-			return XmlEncodingUtils.decodeChars(input);
-		case CDATA2TEXT:
-			return XmlUtils.cdataToText(input);
-		default:
-			throw new NotImplementedException("unknown direction ["+getDirection()+"]");
+			case ENCODE:
+				return XmlEncodingUtils.encodeChars(input);
+			case DECODE:
+				return XmlEncodingUtils.decodeChars(input);
+			case CDATA2TEXT:
+				return XmlUtils.cdataToText(input);
+			default:
+				throw new NotImplementedException("unknown direction [" + getDirection() + "]");
 		}
 	}
 
 	// ESCAPE BETWEEN
+
 	/** substring to start translation */
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
@@ -128,6 +154,7 @@ public class EscapePipe extends FixedForwardPipe {
 
 	/**
 	 * when set <code>true</code> special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their xml equivalents
+	 *
 	 * @ff.default false
 	 */
 	public void setEncodeSubstring(boolean b) {
