@@ -15,7 +15,7 @@
 */
 package org.frankframework.management.bus.dto;
 
-import java.util.Date;
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -89,7 +89,7 @@ public class ConfigurationDTO {
 		this.user = classLoader.getUser();
 	}
 
-	public void setDatabaseAttributes(String filename, Date creationDate, String user, Boolean active, Boolean autoreload) {
+	public void setDatabaseAttributes(String filename, Instant creationDate, String user, Boolean active, Boolean autoreload) {
 		this.filename = filename;
 		this.created = DateFormatUtils.format(creationDate, DateFormatUtils.GENERIC_DATETIME_FORMATTER);
 		this.user = user;
