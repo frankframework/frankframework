@@ -15,19 +15,15 @@
 */
 package org.frankframework.management.bus;
 
-import org.frankframework.core.IbisException;
-
 import lombok.extern.log4j.Log4j2;
+import org.frankframework.core.IbisException;
 
 @Log4j2
 public class ResourceNotFoundException extends RuntimeException {
-
 	private static final long serialVersionUID = 1L;
-
 	public ResourceNotFoundException(String message) {
 		this(message, null);
 	}
-	
 	public ResourceNotFoundException(String message, Throwable exception) {
 		super(new IbisException(message, exception).getMessage());
 		if (exception == null) {
