@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ import lombok.Getter;
  *
  * @author Gerrit van Brakel
  */
-public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
+public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
@@ -122,7 +122,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 	private final Set<FileSystemAction> actions = new LinkedHashSet<>(Arrays.asList(ACTIONS_BASIC));
 
 	private INamedObject owner;
-	private FS fileSystem;
+	private S fileSystem;
 	private ParameterList parameterList;
 
 	private byte[] eolArray=null;
@@ -168,7 +168,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> {
 
 	}
 
-	public void configure(FS fileSystem, ParameterList parameterList, IConfigurable owner) throws ConfigurationException {
+	public void configure(S fileSystem, ParameterList parameterList, IConfigurable owner) throws ConfigurationException {
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
