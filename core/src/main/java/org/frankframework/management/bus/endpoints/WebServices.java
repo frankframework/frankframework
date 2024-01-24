@@ -258,7 +258,7 @@ public class WebServices extends BusEndpointBase {
 
 		public ListenerDAO(ApiListener listener) {
 			this.name = listener.getName();
-			this.method = listener.getMethods();
+			this.method = listener.getMethods(); //TODO: method now glues all method names together
 			this.uriPattern = listener.getUriPattern();
 		}
 

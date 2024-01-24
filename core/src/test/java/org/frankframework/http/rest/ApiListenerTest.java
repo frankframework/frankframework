@@ -48,13 +48,13 @@ public class ApiListenerTest {
 	public void setUp() {
 		listener = new ApiListener();
 		listener.setName("my-api-listener");
-		listener.setMethod(HttpMethod.PUT.name());
+		listener.setMethod(HttpMethod.PUT);
 		listener.setUriPattern("dummy");
 	}
 
 	@Test
 	public void testOptionsMethod() {
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> listener.setMethod(HttpMethod.OPTIONS.name()));
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> listener.setMethod(HttpMethod.OPTIONS));
 		assertEquals("method OPTIONS should not be added manually", ex.getMessage());
 	}
 
@@ -268,7 +268,7 @@ public class ApiListenerTest {
 		listener.setUriPattern("");
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "uriPattern cannot be empty");
+		assertThrows(ConfigurationException.class, listener::configure, "uriPattern cannot be empty");
 	}
 
 	@Test
@@ -277,47 +277,47 @@ public class ApiListenerTest {
 		listener.setAuthenticationMethod(AuthenticationMethods.JWT);
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "jwksUrl cannot be empty");
+		assertThrows(ConfigurationException.class, listener::configure, "jwksUrl cannot be empty");
 	}
 
 	@Test
 	public void testCannotConsumeGET(){
 		// Given
-		listener.setMethod(HttpMethod.GET.name());
+		listener.setMethod(HttpMethod.GET);
 		listener.setConsumes(MediaTypes.JSON);
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "cannot set consumes attribute when using method [GET]");
+		assertThrows(ConfigurationException.class, listener::configure, "cannot set consumes attribute when using method [GET]");
 	}
 
 	@Test
 	public void testCannotConsumeGETMultiMethod(){
 		// Given
-		listener.setMethod(methodsAsString(HttpMethod.GET, HttpMethod.POST));
+		listener.setMethods(methodsAsString(HttpMethod.GET, HttpMethod.POST));
 		listener.setConsumes(MediaTypes.JSON);
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "cannot set consumes attribute when using method [GET]");
+		assertThrows(ConfigurationException.class, listener::configure, "cannot set consumes attribute when using method [GET]");
 	}
 
 	@Test
 	public void testCannotConsumeDELETE(){
 		// Given
-		listener.setMethod(HttpMethod.DELETE.name());
+		listener.setMethod(HttpMethod.DELETE);
 		listener.setConsumes(MediaTypes.JSON);
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "cannot set consumes attribute when using method [DELETE]");
+		assertThrows(ConfigurationException.class, listener::configure, "cannot set consumes attribute when using method [DELETE]");
 	}
 
 	@Test
 	public void testCannotConsumeDELETEMultiMethod(){
 		// Given
-		listener.setMethod(methodsAsString(HttpMethod.DELETE, HttpMethod.POST));
+		listener.setMethods(methodsAsString(HttpMethod.DELETE, HttpMethod.POST));
 		listener.setConsumes(MediaTypes.JSON);
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "cannot set consumes attribute when using method [DELETE]");
+		assertThrows(ConfigurationException.class, listener::configure, "cannot set consumes attribute when using method [DELETE]");
 	}
 
 	@Test
@@ -328,7 +328,7 @@ public class ApiListenerTest {
 		listener.setAnyMatchClaims("claim=value,claim2=value2");
 
 		// Expect/When
-		assertDoesNotThrow(() -> listener.configure());
+		assertDoesNotThrow(listener::configure);
 	}
 
 	@Test
@@ -339,7 +339,7 @@ public class ApiListenerTest {
 		listener.setAnyMatchClaims("claim=value,claim2,claim3=value=too_long");
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "[claim2,claim3=value=too_long] are not valid key/value pairs for [anyMatchClaims].");
+		assertThrows(ConfigurationException.class, listener::configure, "[claim2,claim3=value=too_long] are not valid key/value pairs for [anyMatchClaims].");
 	}
 
 	@Test
@@ -350,7 +350,7 @@ public class ApiListenerTest {
 		listener.setAnyMatchClaims("claim2");
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "[claim2] is not a valid key/value pair for [anyMatchClaims].");
+		assertThrows(ConfigurationException.class, listener::configure, "[claim2] is not a valid key/value pair for [anyMatchClaims].");
 	}
 
 	@Test
@@ -361,7 +361,7 @@ public class ApiListenerTest {
 		listener.setExactMatchClaims("claim=value,claim2=value2");
 
 		// Expect/When
-		assertDoesNotThrow(() -> listener.configure());
+		assertDoesNotThrow(listener::configure);
 	}
 
 	@Test
@@ -372,7 +372,7 @@ public class ApiListenerTest {
 		listener.setExactMatchClaims("claim=value,claim2,claim3=value=too_long");
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "[claim2,claim3=value=too_long] are not valid key/value pairs for [exactMatchClaims].");
+		assertThrows(ConfigurationException.class, listener::configure, "[claim2,claim3=value=too_long] are not valid key/value pairs for [exactMatchClaims].");
 	}
 
 	@Test
@@ -383,7 +383,7 @@ public class ApiListenerTest {
 		listener.setExactMatchClaims("claim2");
 
 		// Expect/When
-		assertThrows(ConfigurationException.class, () -> listener.configure(), "[claim2] is not a valid key/value pair for [exactMatchClaims].");
+		assertThrows(ConfigurationException.class, listener::configure, "[claim2] is not a valid key/value pair for [exactMatchClaims].");
 	}
 
 

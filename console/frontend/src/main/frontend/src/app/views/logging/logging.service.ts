@@ -7,11 +7,12 @@ export const errorLevelsConst = ["DEBUG", "INFO", "WARN", "ERROR"] as const;
 export type ErrorLevels = typeof errorLevelsConst;
 
 export type LoggingFile = {
-  name: string
-  type: string
-  path: string
-  size: string
-  lastModified: number
+  name: string;
+  type: string;
+  path: string;
+  size: number;
+  sizeDisplay: string;
+  lastModified: number;
 }
 
 export type LoggingSettings = {
@@ -32,7 +33,6 @@ export type LogInformation = {
 }
 
 type Logging = {
-  sizeFormat: boolean,
   count: number,
   list: LoggingFile[],
   directory: string,

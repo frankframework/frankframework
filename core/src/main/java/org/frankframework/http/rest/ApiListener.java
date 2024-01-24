@@ -223,18 +223,19 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * @deprecated The 'method' attribute has been renamed to 'methods'
+	 * HTTP method to listen to
+	 * @ff.default GET
 	 */
 	@Deprecated
-	public void setMethod(String method) {
-		setMethods(method);
+	public void setMethod(HttpMethod method) {
+		setMethods(method.name());
 	}
 
 	/**
 	 * HTTP method(s) to listen to, separated by comma
 	 * @ff.default GET
 	 */
-	public void setMethods(String methods) {
+	public void setMethods(String methods) { // Using an Enum array would be better (issue #6149).
 		this.methods = StringUtil.splitToStream(methods)
 				.map(s -> EnumUtils.parse(HttpMethod.class, s))
 				.collect(Collectors.toList());
