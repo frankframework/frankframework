@@ -248,7 +248,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * HTTP method(s) to listen to, separated by comma
 	 * @ff.default GET
 	 */
-	public void setMethods(String methods) { // Een Enum array zou hier handig zijn.. misschien eerst iets voor de Frank!Doc?
+	public void setMethods(String methods) { // Using an Enum array would be better (issue #6149).
 		this.methods = StringUtil.splitToStream(methods)
 				.map(s -> EnumUtils.parse(HttpMethod.class, s))
 				.collect(Collectors.toList());
