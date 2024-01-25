@@ -48,7 +48,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -83,7 +82,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.testtool.queues.Queue;
-import org.frankframework.testtool.queues.QueueCreator;
 import org.frankframework.testtool.queues.QueueWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CaseInsensitiveComparator;
@@ -106,10 +104,6 @@ import jakarta.json.JsonException;
 public class TestTool {
 	private static final Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
-	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
-	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
-	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 10000);
-	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	public static final Message TESTTOOL_DUMMY_MESSAGE = new Message("<TestTool>Dummy message</TestTool>");
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	public static final int RESULT_ERROR = 0;
@@ -119,14 +113,13 @@ public class TestTool {
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
-	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
 	private static final boolean allowReadlineSteps = false;
-	protected static int globalTimeout=DEFAULT_TIMEOUT;
+	protected static int globalTimeout=AppConstants.getInstance().getInt("larva.timeout", 10000);
 
 	private static final String TR_STARTING_TAG="<tr>";
 	private static final String TR_CLOSING_TAG="</tr>";
@@ -275,141 +268,32 @@ public class TestTool {
 				}
 				boolean evenStep = false;
 				debugMessage("Initialize statistics variables", writers);
-				int scenariosPassed = 0;
-				int scenariosAutosaved = 0;
 				long startTime = System.currentTimeMillis();
 				debugMessage("Execute scenario('s)", writers);
-				Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
-				while (scenarioFilesIterator.hasNext()) {
-					// increment suffix for each scenario
-					String correlationId = TESTTOOL_CORRELATIONID + "("+ correlationIdSuffixCounter.getAndIncrement() +")";
-					int scenarioPassed = RESULT_ERROR;
-					File scenarioFile = scenarioFilesIterator.next();
+				ScenarioRunner scenarioRunner = new ScenarioRunner();
+				scenarioRunner.runScenario(ibisContext, timeout, out, silent, scenarioFiles, currentScenariosRootDirectory, writers, appConstants, evenStep, waitBeforeCleanUp, logLevel);
+				scenariosFailed = scenarioRunner.getScenariosFailed();
 
-					String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
-					String longName = scenarioFile.getAbsolutePath();
-					String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
-
-					if (writers!=null) {
-						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							writeHtml("<br/>", writers, false);
-							writeHtml("<br/>", writers, false);
-							writeHtml("<div class='scenario'>", writers, false);
-						}
-					}
-					debugMessage("Read property file " + scenarioFile.getName(), writers);
-					Properties properties = readProperties(appConstants, scenarioFile, writers);
-					List<String> steps = null;
-
-					if (properties != null) {
-						debugMessage("Read steps from property file", writers);
-						steps = getSteps(properties, writers);
-						if (steps != null) {
-							synchronized(STEP_SYNCHRONIZER) {
-								debugMessage("Open queues", writers);
-								Map<String, Queue> queues = QueueCreator.openQueues(scenarioDirectory, properties, ibisContext, writers, timeout, correlationId);
-								if (queues != null) {
-									debugMessage("Execute steps", writers);
-									boolean allStepsPassed = true;
-									boolean autoSaved = false;
-									Iterator<String> iterator = steps.iterator();
-									while (allStepsPassed && iterator.hasNext()) {
-										if (evenStep) {
-											writeHtml("<div class='even'>", writers, false);
-											evenStep = false;
-										} else {
-											writeHtml("<div class='odd'>", writers, false);
-											evenStep = true;
-										}
-										String step = iterator.next();
-										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
-										debugMessage("Execute step '" + stepDisplayName + "'", writers);
-										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout, correlationId);
-										if (stepPassed==RESULT_OK) {
-											stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
-										} else if (stepPassed==RESULT_AUTOSAVED) {
-											stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave", writers);
-											autoSaved = true;
-										} else {
-											stepFailedMessage("Step '" + stepDisplayName + "' failed", writers);
-											allStepsPassed = false;
-										}
-										writeHtml("</div>", writers, false);
-									}
-									if (allStepsPassed) {
-										if (autoSaved) {
-											scenarioPassed = RESULT_AUTOSAVED;
-										} else {
-											scenarioPassed = RESULT_OK;
-										}
-									}
-									debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up", writers);
-									try {
-										Thread.sleep(waitBeforeCleanUp);
-									} catch(InterruptedException e) {
-									}
-									debugMessage("Close queues", writers);
-									boolean remainingMessagesFound = closeQueues(queues, properties, writers, correlationId);
-									if (remainingMessagesFound) {
-										stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
-										scenarioPassed = RESULT_ERROR;
-									}
-								}
-							}
-						}
-					}
-
-					if (scenarioPassed==RESULT_OK) {
-						scenariosPassed++;
-						scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-						if (silent && LOG_LEVEL_ORDER.indexOf("[" + logLevel + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							try {
-								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
-							} catch (IOException e) {
-							}
-						}
-					} else if (scenarioPassed==RESULT_AUTOSAVED) {
-						scenariosAutosaved++;
-						scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave", writers);
-						if (silent) {
-							try {
-								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
-							} catch (IOException e) {
-							}
-						}
-					} else {
-						scenariosFailed++;
-						scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-						if (silent) {
-							try {
-								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
-							} catch (IOException e) {
-							}
-						}
-					}
-
-					writeHtml("</div>", writers, false);
-				}
 				long executeTime = System.currentTimeMillis() - startTime;
 				debugMessage("Print statistics information", writers);
-				int scenariosTotal = scenariosPassed + scenariosAutosaved + scenariosFailed;
+				int scenariosTotal = scenarioRunner.getScenariosPassed() + scenarioRunner.getScenariosAutosaved() + scenarioRunner.getScenariosFailed();
 				if (scenariosTotal == 0) {
 					scenariosTotalMessage("No scenarios found", writers, out, silent);
 				} else {
 					if (writers!=null) {
-						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
+						if (LOG_LEVEL_ORDER.indexOf("[" + writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
 							writeHtml("<br/>", writers, false);
 							writeHtml("<br/>", writers, false);
 						}
 					}
 					debugMessage("Print statistics information", writers);
-					if (scenariosPassed == scenariosTotal) {
+					if (scenarioRunner.getScenariosPassed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
 							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
 						} else {
 							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
 						}
-					} else if (scenariosFailed == scenariosTotal) {
+					} else if (scenarioRunner.getScenariosFailed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
 							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
 						} else {
@@ -421,22 +305,22 @@ public class TestTool {
 						} else {
 							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + executeTime + " ms", writers, out, silent);
 						}
-						if (scenariosPassed == 1) {
+						if (scenarioRunner.getScenariosPassed() == 1) {
 							scenariosPassedTotalMessage("1 scenario passed", writers, out, silent);
 						} else {
-							scenariosPassedTotalMessage(scenariosPassed + " scenarios passed", writers, out, silent);
+							scenariosPassedTotalMessage(scenarioRunner.getScenariosPassed() + " scenarios passed", writers, out, silent);
 						}
 						if (autoSaveDiffs) {
-							if (scenariosAutosaved == 1) {
+							if (scenarioRunner.getScenariosAutosaved() == 1) {
 								scenariosAutosavedTotalMessage("1 scenario passed after autosave", writers, out, silent);
 							} else {
-								scenariosAutosavedTotalMessage(scenariosAutosaved + " scenarios passed after autosave", writers, out, silent);
+								scenariosAutosavedTotalMessage(scenarioRunner.getScenariosAutosaved() + " scenarios passed after autosave", writers, out, silent);
 							}
 						}
-						if (scenariosFailed == 1) {
+						if (scenarioRunner.getScenariosFailed() == 1) {
 							scenariosFailedTotalMessage("1 scenario failed", writers, out, silent);
 						} else {
-							scenariosFailedTotalMessage(scenariosFailed + " scenarios failed", writers, out, silent);
+							scenariosFailedTotalMessage(scenarioRunner.getScenariosFailed() + " scenarios failed", writers, out, silent);
 						}
 					}
 				}
