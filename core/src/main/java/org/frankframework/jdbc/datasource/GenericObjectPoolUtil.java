@@ -35,8 +35,8 @@ public class GenericObjectPoolUtil {
 		info.append("testOnCreate [").append(pool.getTestOnCreate()).append(CLOSE);
 		info.append("testOnReturn [").append(pool.getTestOnReturn()).append(CLOSE);
 		info.append("testWhileIdle [").append(pool.getTestWhileIdle()).append(CLOSE);
-		info.append("removeAbOnBorrow [").append(pool.getRemoveAbandonedOnBorrow()).append(CLOSE);
-		info.append("removeAbOnMaint [").append(pool.getRemoveAbandonedOnMaintenance()).append(CLOSE);
-		info.append("removeAbOnTimeoutDur [").append(pool.getRemoveAbandonedTimeoutDuration()).append(CLOSE);
+		info.append("removeAbandonedOnBorrow [").append(pool.getRemoveAbandonedOnBorrow()).append(CLOSE);
+		info.append("removeAbandonedOnMaintenance [").append(pool.getRemoveAbandonedOnMaintenance()).append(CLOSE);
+		info.append("removeAbandonedTimeoutDuration [").append(pool.getRemoveAbandonedTimeoutDuration()).append(CLOSE);
 	}
 }
