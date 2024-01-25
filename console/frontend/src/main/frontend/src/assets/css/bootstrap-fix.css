@@ -10,9 +10,7 @@ app-pages-navigation {
 .navbar-static-side {
   position: sticky !important;
   top: -60px;
-  /* top: -103px; */
   max-height: 100vh;
-  /* max-height: calc(100vh + 43px); */
   overflow: auto;
   /* -ms-overflow-style: thin; */
   scrollbar-width: thin;
