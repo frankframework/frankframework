@@ -2,6 +2,7 @@ package nl.nn.adapterframework.extensions.esb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -25,15 +26,17 @@ import com.mockrunner.mock.jms.MockTextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.testutil.mock.ConnectionFactoryFactoryMock;
 
 class EsbJmsListenerTest {
 
+	public static final String TEST_MESSAGE_DATA = "<test><value>someValue</value></test>";
 	private EsbJmsListener jmsListener;
 
 	public static Stream<Arguments> testExtractMessageProperties() throws JMSException {
 		TextMessage textMessage = new MockTextMessage();
-		textMessage.setText("<test><value>someValue</value></test>");
+		textMessage.setText(TEST_MESSAGE_DATA);
 		textMessage.setStringProperty("ae_testKeyValue", "testValue");
 
 		BytesMessage bytesMessage = new MockBytesMessage();
@@ -98,17 +101,22 @@ class EsbJmsListenerTest {
 
 	@ParameterizedTest
 	@MethodSource
-	public void testExtractMessageProperties(Message message) throws Exception {
+	public void testExtractMessageProperties(Message jmsMessage) throws Exception {
 		// Arrange
 		jmsListener.setCopyAEProperties(true);
 		jmsListener.setxPathLoggingKeys("value");
 		jmsListener.configure();
 
 		// Act
-		Map<String, Object> messageProperties = jmsListener.extractMessageProperties(message);
+		Map<String, Object> messageProperties = jmsListener.extractMessageProperties(jmsMessage);
 
 		// Assert
 		assertEquals("testValue", messageProperties.get("ae_testKeyValue"));
 		assertEquals("someValue", messageProperties.get("value"));
+
+		// Check that the message contents can still be read after the properties have been extracted.
+		nl.nn.adapterframework.stream.Message extractedMessage = jmsListener.extractMessage(jmsMessage, messageProperties, false, "soapHeader", SoapWrapper.getInstance());
+		assertNotNull(extractedMessage);
+		assertEquals(TEST_MESSAGE_DATA, extractedMessage.asString());
 	}
 }
