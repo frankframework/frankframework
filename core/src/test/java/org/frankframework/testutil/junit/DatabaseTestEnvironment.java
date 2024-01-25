@@ -12,7 +12,7 @@ import javax.sql.DataSource;
 
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.jdbc.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
+import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.URLDataSourceFactory;

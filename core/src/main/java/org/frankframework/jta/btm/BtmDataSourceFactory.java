@@ -28,7 +28,7 @@ import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.frankframework.jdbc.dbms.OpenPoolingDataSource;
+import org.frankframework.jdbc.datasource.OpenPoolingDataSource;
 import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.util.AppConstants;
 import org.springframework.beans.factory.DisposableBean;

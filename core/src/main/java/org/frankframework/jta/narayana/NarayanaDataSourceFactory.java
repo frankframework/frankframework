@@ -32,7 +32,7 @@ import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.commons.dbcp2.managed.XAConnectionFactory;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.frankframework.jdbc.dbms.OpenManagedDataSource;
+import org.frankframework.jdbc.datasource.OpenManagedDataSource;
 import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.util.AppConstants;
 
