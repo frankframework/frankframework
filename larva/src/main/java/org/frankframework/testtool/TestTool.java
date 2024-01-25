@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -120,7 +121,7 @@ public class TestTool {
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
 	private static final boolean allowReadlineSteps = false;
-	protected static int globalTimeout=AppConstants.getInstance().getInt("larva.timeout", 10000);
+	protected static int globalTimeout=AppConstants.getInstance().getInt("larva.timeout", 10_000);
 
 	private static final String TR_STARTING_TAG="<tr>";
 	private static final String TR_CLOSING_TAG="</tr>";
@@ -274,28 +275,29 @@ public class TestTool {
 				} else {
 					if (!config.isSilent()) {
 						if (LOG_LEVEL_ORDER.indexOf("[" + config.getLogLevel() + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							writeHtml("<br/>",  false);
-							writeHtml("<br/>",  false);
+							writeHtml("<br/><br/>",  false);
 						}
 					}
 					debugMessage("Print statistics information");
+					Duration duration = Duration.ofMillis(executeTime);
+					String timeInMMSSMS = String.format("%02d:%02d:%02d", duration.toMinutesPart(), duration.toSecondsPart(), duration.toMillisPart());
 					if (scenarioRunner.getScenariosPassed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + executeTime + " ms)");
+							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + timeInMMSSMS + " (m:s:ms))");
 						} else {
-							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)");
+							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + timeInMMSSMS + " (m:s:ms))");
 						}
 					} else if (scenarioRunner.getScenariosFailed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + executeTime + " ms)");
+							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + timeInMMSSMS + " ms)");
 						} else {
-							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)");
+							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + timeInMMSSMS + " (m:s:ms))");
 						}
 					} else {
 						if (scenariosTotal == 1) {
-							scenariosTotalMessage("1 scenario executed in " + executeTime + " ms");
+							scenariosTotalMessage("1 scenario executed in " + timeInMMSSMS + " (m:s:ms)");
 						} else {
-							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + executeTime + " ms");
+							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + timeInMMSSMS + " (m:s:ms)");
 						}
 						if (scenarioRunner.getScenariosPassed() == 1) {
 							scenariosPassedTotalMessage("1 scenario passed");
@@ -644,19 +646,13 @@ public class TestTool {
 		writeLog("</div>", method, false);
 
 		String scenarioPassedFailed = "scenario passed/failed";
-		if (LOG_LEVEL_ORDER.indexOf(
-				"[" + config.getLogLevel() + "]") == LOG_LEVEL_ORDER
-				.indexOf("[" + scenarioPassedFailed + "]")) {
-			writeLog("<h5 hidden='true'>Difference description:</h5>",
-					scenarioPassedFailed, false);
-			writeLog(
-					"<p class='diffMessage' hidden='true'>"
-							+ XmlEncodingUtils.encodeChars(message) + "</p>",
+		if (LOG_LEVEL_ORDER.indexOf("[" + config.getLogLevel() + "]") == LOG_LEVEL_ORDER.indexOf("[" + scenarioPassedFailed + "]")) {
+			writeLog("<h5 hidden='true'>Difference description:</h5>", scenarioPassedFailed, false);
+			writeLog("<p class='diffMessage' hidden='true'>" + XmlEncodingUtils.encodeChars(message) + "</p>",
 					scenarioPassedFailed, true);
 		} else {
 			writeLog("<h5>Difference description:</h5>", method, false);
-			writeLog("<p class='diffMessage'>" + XmlEncodingUtils.encodeChars(message)
-					+ "</p>", method, true);
+			writeLog("<p class='diffMessage'>" + XmlEncodingUtils.encodeChars(message)	+ "</p>", method, true);
 			writeLog("</form>", method, false);
 			writeLog("</div>", method, false);
 		}
@@ -887,7 +883,7 @@ public class TestTool {
 			treeSet.addAll(scenariosRoots.keySet());
 			Iterator<String> iterator = treeSet.iterator();
 			while (iterator.hasNext()) {
-				description = (String)iterator.next();
+				description = iterator.next();
 				scenariosRootDescriptions.add(description);
 				scenariosRootDirectories.add(scenariosRoots.get(description));
 			}
