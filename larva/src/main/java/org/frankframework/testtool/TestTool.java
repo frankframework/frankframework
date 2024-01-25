@@ -174,6 +174,7 @@ public class TestTool {
 			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
 		config = new TestConfig();
+		config.setTimeout(timeout);
 		config.setSilent(silent);
 		AppConstants appConstants = AppConstants.getInstance();
 		String logLevel = "wrong pipeline messages";
@@ -280,24 +281,24 @@ public class TestTool {
 					}
 					debugMessage("Print statistics information");
 					Duration duration = Duration.ofMillis(executeTime);
-					String timeInMMSSMS = String.format("%02d:%02d:%02d", duration.toMinutesPart(), duration.toSecondsPart(), duration.toMillisPart());
+					String timeInMMSSMS = String.format("%02dm %02ds %02dms", duration.toMinutesPart(), duration.toSecondsPart(), duration.toMillisPart());
 					if (scenarioRunner.getScenariosPassed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + timeInMMSSMS + " (m:s:ms))");
+							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + timeInMMSSMS + ")");
 						} else {
-							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + timeInMMSSMS + " (m:s:ms))");
+							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + timeInMMSSMS + ")");
 						}
 					} else if (scenarioRunner.getScenariosFailed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + timeInMMSSMS + " ms)");
+							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + timeInMMSSMS + ")");
 						} else {
-							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + timeInMMSSMS + " (m:s:ms))");
+							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + timeInMMSSMS + ")");
 						}
 					} else {
 						if (scenariosTotal == 1) {
-							scenariosTotalMessage("1 scenario executed in " + timeInMMSSMS + " (m:s:ms)");
+							scenariosTotalMessage("1 scenario executed in " + timeInMMSSMS);
 						} else {
-							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + timeInMMSSMS + " (m:s:ms)");
+							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + timeInMMSSMS);
 						}
 						if (scenarioRunner.getScenariosPassed() == 1) {
 							scenariosPassedTotalMessage("1 scenario passed");
