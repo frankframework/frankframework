@@ -26,7 +26,6 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testtool.TestTool;
@@ -81,7 +80,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 		String realPath = AppConstants.getInstance().getProperty("webapp.realpath") + "iaf/";
 		List<String> scenariosRootDirectories = new ArrayList<>();
@@ -89,9 +88,8 @@ public class LarvaPipe extends FixedForwardPipe {
 		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
 				realPath,
 				null, scenariosRootDirectories,
-				scenariosRootDescriptions, null);
-		String paramScenariosRootDirectory = currentScenariosRootDirectory;
-		String paramExecute = currentScenariosRootDirectory;
+				scenariosRootDescriptions);
+    	String paramExecute = currentScenariosRootDirectory;
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();
 		}
@@ -104,7 +102,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		int numScenariosFailed=TestTool.runScenarios(ibisContext, paramLogLevel,
 								paramAutoScroll, paramExecute,
 								paramWaitBeforeCleanUp, getTimeout(), realPath,
-								paramScenariosRootDirectory,
+        currentScenariosRootDirectory,
 								out, silent);
 		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, out.toString());

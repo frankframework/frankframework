@@ -34,7 +34,6 @@ import static org.frankframework.testtool.TestTool.writeHtml;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +56,9 @@ public class ScenarioRunner {
 
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
 	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
-	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
+	private static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 
-	public void runScenario(IbisContext ibisContext, int timeout, Writer out, boolean silent, List<File> scenarioFiles, String currentScenariosRootDirectory, Map<String, Object> writers, AppConstants appConstants, boolean evenStep, int waitBeforeCleanUp, String logLevel) {
+	public void runScenario(IbisContext ibisContext, TestConfig config, List<File> scenarioFiles, String currentScenariosRootDirectory, AppConstants appConstants, boolean evenStep, int waitBeforeCleanUp, String logLevel) {
 		for (File file : scenarioFiles) {
 			// increment suffix for each scenario
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
@@ -69,101 +68,97 @@ public class ScenarioRunner {
 			String longName = file.getAbsolutePath();
 			String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
 
-			if (writers != null && (LOG_LEVEL_ORDER.indexOf("[" + writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]"))) {
-					writeHtml("<br/>", writers, false);
-					writeHtml("<br/>", writers, false);
-					writeHtml("<div class='scenario'>", writers, false);
-
+			if (!config.isSilent() && (LOG_LEVEL_ORDER.indexOf("[" + config.getLogLevel() + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]"))) {
+				writeHtml("<br/><br/>", false);
+				writeHtml("<div class='scenario'>", false);
 			}
-			debugMessage("Read property file " + file.getName(), writers);
-			Properties properties = readProperties(appConstants, file, writers);
+			debugMessage("Read property file " + file.getName());
+			Properties properties = readProperties(appConstants, file);
 			List<String> steps;
 
 			if (properties != null) {
-				debugMessage("Read steps from property file", writers);
-				steps = getSteps(properties, writers);
-//				synchronized (STEP_SYNCHRONIZER) {
-					debugMessage("Open queues", writers);
-					Map<String, Queue> queues = QueueCreator.openQueues(scenarioDirectory, properties, ibisContext, writers, timeout, correlationId);
-					if (queues != null) {
-						debugMessage("Execute steps", writers);
-						boolean allStepsPassed = true;
-						boolean autoSaved = false;
-						Iterator<String> iterator = steps.iterator();
-						while (allStepsPassed && iterator.hasNext()) {
-							if (evenStep) {
-								writeHtml("<div class='even'>", writers, false);
-								evenStep = false;
-							} else {
-								writeHtml("<div class='odd'>", writers, false);
-								evenStep = true;
-							}
-							String step = iterator.next();
-							String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
-							debugMessage("Execute step '" + stepDisplayName + "'", writers);
-							int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout, correlationId);
-							if (stepPassed == RESULT_OK) {
-								stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
-							} else if (stepPassed == RESULT_AUTOSAVED) {
-								stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave", writers);
-								autoSaved = true;
-							} else {
-								stepFailedMessage("Step '" + stepDisplayName + "' failed", writers);
-								allStepsPassed = false;
-							}
-							writeHtml("</div>", writers, false);
+				debugMessage("Read steps from property file");
+				steps = getSteps(properties);
+				debugMessage("Open queues");
+				Map<String, Queue> queues = new QueueCreator(config).openQueues(scenarioDirectory, properties, ibisContext, correlationId);
+				if (queues != null) {
+					debugMessage("Execute steps");
+					boolean allStepsPassed = true;
+					boolean autoSaved = false;
+					Iterator<String> iterator = steps.iterator();
+					while (allStepsPassed && iterator.hasNext()) {
+						if (evenStep) {
+							writeHtml("<div class='even'>", false);
+							evenStep = false;
+						} else {
+							writeHtml("<div class='odd'>", false);
+							evenStep = true;
 						}
-						if (allStepsPassed) {
-							if (autoSaved) {
-								scenarioPassed = RESULT_AUTOSAVED;
-							} else {
-								scenarioPassed = RESULT_OK;
-							}
+						String step = iterator.next();
+						String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
+						debugMessage("Execute step '" + stepDisplayName + "'");
+						int stepPassed = executeStep(step, properties, stepDisplayName, queues, correlationId);
+						if (stepPassed == RESULT_OK) {
+							stepPassedMessage("Step '" + stepDisplayName + "' passed");
+						} else if (stepPassed == RESULT_AUTOSAVED) {
+							stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave");
+							autoSaved = true;
+						} else {
+							stepFailedMessage("Step '" + stepDisplayName + "' failed");
+							allStepsPassed = false;
 						}
-						debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up", writers);
-						try {
-							Thread.sleep(waitBeforeCleanUp);
-						} catch (InterruptedException e) {
-						}
-						debugMessage("Close queues", writers);
-						boolean remainingMessagesFound = closeQueues(queues, properties, writers, correlationId);
-						if (remainingMessagesFound) {
-							stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
-							scenarioPassed = RESULT_ERROR;
+						writeHtml("</div>", false);
+					}
+					if (allStepsPassed) {
+						if (autoSaved) {
+							scenarioPassed = RESULT_AUTOSAVED;
+						} else {
+							scenarioPassed = RESULT_OK;
 						}
 					}
-//				}
+					debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up");
+					try {
+						Thread.sleep(waitBeforeCleanUp);
+					} catch (InterruptedException e) {
+					}
+					debugMessage("Close queues");
+					boolean remainingMessagesFound = closeQueues(queues, properties, correlationId);
+					if (remainingMessagesFound) {
+						stepFailedMessage("Found one or more messages on queues or in database after scenario executed");
+						scenarioPassed = RESULT_ERROR;
+					}
+				}
 			}
 
 			if (scenarioPassed == RESULT_OK) {
 				scenariosPassed++;
-				scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-				if (silent && LOG_LEVEL_ORDER.indexOf("[" + logLevel + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
+				scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")");
+				if (config.isSilent() && LOG_LEVEL_ORDER.indexOf("[" + logLevel + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
 					try {
-						out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
+						config.getOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
 					} catch (IOException e) {
 					}
 				}
 			} else if (scenarioPassed == RESULT_AUTOSAVED) {
 				scenariosAutosaved++;
-				scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave", writers);
-				if (silent) {
+				scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
+				if (config.isSilent()) {
 					try {
-						out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
+						config.getOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
 					} catch (IOException e) {
 					}
 				}
 			} else {
 				scenariosFailed++;
-				scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-				if (silent) {
+				scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")");
+				if (config.isSilent()) {
 					try {
-						out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
+						config.getOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
 					} catch (IOException e) {
 					}
 				}
 			}
-			writeHtml("</div>", writers, false);
+			writeHtml("</div>",  false);
 		}
 	}
 

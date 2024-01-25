@@ -37,14 +37,21 @@ import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.jms.PullingJmsListener;
 import org.frankframework.stream.Message;
+import org.frankframework.testtool.TestConfig;
 import org.frankframework.testtool.TestTool;
 import org.frankframework.util.EnumUtils;
 
 public class QueueCreator {
 
-	public static Map<String, Queue> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, Map<String, Object> writers, int parameterTimeout, String correlationId) {
+	private final TestConfig config;
+
+	public QueueCreator(TestConfig config) {
+		this.config = config;
+	}
+
+	public Map<String, Queue> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, String correlationId) {
 		Map<String, Queue> queues = new HashMap<>();
-		debugMessage("Get all queue names", writers);
+		debugMessage("Get all queue names");
 
 		List<String> jmsSenders = new ArrayList<>();
 		List<String> jmsListeners = new ArrayList<>();
@@ -70,15 +77,15 @@ public class QueueCreator {
 						if(manuallyCreatedQueues.contains(queueName)) continue;
 						manuallyCreatedQueues.add(queueName);
 
-						debugMessage("queuename openqueue: " + queueName, writers);
+						debugMessage("queuename openqueue: " + queueName);
 						if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className")) && !jmsSenders.contains(queueName)) {
-							debugMessage("Adding jmsSender queue: " + queueName, writers);
+							debugMessage("Adding jmsSender queue: " + queueName);
 							jmsSenders.add(queueName);
 						} else if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + ".className")) && !jmsListeners.contains(queueName)) {
-							debugMessage("Adding jmsListener queue: " + queueName, writers);
+							debugMessage("Adding jmsListener queue: " + queueName);
 							jmsListeners.add(queueName);
 						} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className")) && !jdbcFixedQuerySenders.contains(queueName)) {
-							debugMessage("Adding jdbcFixedQuerySender queue: " + queueName, writers);
+							debugMessage("Adding jdbcFixedQuerySender queue: " + queueName);
 							jdbcFixedQuerySenders.add(queueName);
 						} else {
 							String className = properties.getProperty(queueName+".className");
@@ -87,43 +94,43 @@ public class QueueCreator {
 
 							//Deprecation warning
 							if(queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
-								errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout", writers);
+								errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout");
 							}
 
 							IConfigurable configurable = QueueUtils.createInstance(directoryClassLoader, className);
-							Queue queue = QueueWrapper.create(configurable, queueProperties, parameterTimeout, correlationId);
+							Queue queue = QueueWrapper.create(configurable, queueProperties, config.getTimeout(), correlationId);
 
 							queue.configure();
 							queue.open();
 							queues.put(queueName, queue);
-							debugMessage("Opened ["+className+"] '" + queueName + "'", writers);
+							debugMessage("Opened ["+className+"] '" + queueName + "'");
 						}
 					}
 				}
 			}
 
-			createJmsSenders(queues, jmsSenders, properties, writers, ibisContext, correlationId);
-			createJmsListeners(queues, jmsListeners, properties, writers, ibisContext, correlationId, parameterTimeout);
-			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, writers, ibisContext, correlationId);
+			createJmsSenders(queues, jmsSenders, properties, ibisContext, correlationId);
+			createJmsListeners(queues, jmsListeners, properties, ibisContext, correlationId, config.getTimeout());
+			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, ibisContext, correlationId);
 		} catch (Exception e) {
-			closeQueues(queues, properties, writers, null);
+			closeQueues(queues, properties, null);
 			queues = null;
-			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e, writers);
+			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 		}
 
 		return queues;
 	}
 
-	private static void createJmsSenders(Map<String, Queue> queues, List<String> jmsSenders, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId) throws ConfigurationException {
-		debugMessage("Initialize jms senders", writers);
+	private void createJmsSenders(Map<String, Queue> queues, List<String> jmsSenders, Properties properties, IbisContext ibisContext, String correlationId) throws ConfigurationException {
+		debugMessage("Initialize jms senders");
 		Iterator<String> iterator = jmsSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = iterator.next();
 			String queue = (String)properties.get(queueName + ".queue");
 			if (queue == null) {
-				closeQueues(queues, properties, writers, correlationId);
+				closeQueues(queues, properties, correlationId);
 				queues = null;
-				errorMessage("Could not find property '" + queueName + ".queue'", writers);
+				errorMessage("Could not find property '" + queueName + ".queue'");
 			} else {
 				JmsSender jmsSender = ibisContext.createBeanAutowireByName(JmsSender.class);
 				jmsSender.setName("Test Tool JmsSender");
@@ -137,39 +144,39 @@ public class QueueCreator {
 					jmsSender.setJmsRealm("default");
 				}
 				String deliveryMode = properties.getProperty(queueName + ".deliveryMode");
-				debugMessage("Property '" + queueName + ".deliveryMode': " + deliveryMode, writers);
+				debugMessage("Property '" + queueName + ".deliveryMode': " + deliveryMode);
 				String persistent = properties.getProperty(queueName + ".persistent");
-				debugMessage("Property '" + queueName + ".persistent': " + persistent, writers);
+				debugMessage("Property '" + queueName + ".persistent': " + persistent);
 				String useCorrelationIdFrom = properties.getProperty(queueName + ".useCorrelationIdFrom");
-				debugMessage("Property '" + queueName + ".useCorrelationIdFrom': " + useCorrelationIdFrom, writers);
+				debugMessage("Property '" + queueName + ".useCorrelationIdFrom': " + useCorrelationIdFrom);
 				String replyToName = properties.getProperty(queueName + ".replyToName");
-				debugMessage("Property '" + queueName + ".replyToName': " + replyToName, writers);
+				debugMessage("Property '" + queueName + ".replyToName': " + replyToName);
 				if (deliveryMode != null) {
-					debugMessage("Set deliveryMode to " + deliveryMode, writers);
+					debugMessage("Set deliveryMode to " + deliveryMode);
 					jmsSender.setDeliveryMode(EnumUtils.parse(DeliveryMode.class, deliveryMode));
 				}
 				if ("true".equals(persistent)) {
-					debugMessage("Set persistent to true", writers);
+					debugMessage("Set persistent to true");
 					jmsSender.setPersistent(true);
 				} else {
-					debugMessage("Set persistent to false", writers);
+					debugMessage("Set persistent to false");
 					jmsSender.setPersistent(false);
 				}
 				if (replyToName != null) {
-					debugMessage("Set replyToName to " + replyToName, writers);
+					debugMessage("Set replyToName to " + replyToName);
 					jmsSender.setReplyToName(replyToName);
 				}
 				Queue jmsSenderInfo = new JmsSenderQueue(jmsSender, useCorrelationIdFrom, properties.getProperty(queueName + ".jmsCorrelationId"));
 				jmsSenderInfo.configure();
 				//jmsSenderInfo.open(); // TODO: JmsSender was not opened here. Check if that should be done.
 				queues.put(queueName, jmsSenderInfo);
-				debugMessage("Opened jms sender '" + queueName + "'", writers);
+				debugMessage("Opened jms sender '" + queueName + "'");
 			}
 		}
 	}
 
-	private static void createJmsListeners(Map<String, Queue> queues, List<String> jmsListeners, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId, int defaultTimeout) throws ConfigurationException {
-		debugMessage("Initialize jms listeners", writers);
+	private void createJmsListeners(Map<String, Queue> queues, List<String> jmsListeners, Properties properties, IbisContext ibisContext, String correlationId, int defaultTimeout) throws ConfigurationException {
+		debugMessage("Initialize jms listeners");
 		Iterator<String> iterator = jmsListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = iterator.next();
@@ -177,15 +184,15 @@ public class QueueCreator {
 			String timeout = (String)properties.get(queueName + ".timeout");
 
 			int nTimeout = defaultTimeout;
-			if (timeout != null && timeout.length() > 0) {
+			if (timeout != null && !timeout.isEmpty()) {
 				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+defaultTimeout+" with "+ nTimeout, writers);
+				debugMessage("Overriding default timeout setting of "+defaultTimeout+" with "+ nTimeout);
 			}
 
 			if (queue == null) {
-				closeQueues(queues, properties, writers, correlationId);
+				closeQueues(queues, properties, correlationId);
 				queues = null;
-				errorMessage("Could not find property '" + queueName + ".queue'", writers);
+				errorMessage("Could not find property '" + queueName + ".queue'");
 			} else {
 				PullingJmsListener pullingJmsListener = ibisContext.createBeanAutowireByName(PullingJmsListener.class);
 				pullingJmsListener.setName("Test Tool JmsListener");
@@ -222,16 +229,16 @@ public class QueueCreator {
 				jmsListenerInfo.configure();
 				//jmsListenerInfo.open(); // TODO: jmsListener was not opened here. Check if that should be done.
 				queues.put(queueName, jmsListenerInfo);
-				debugMessage("Opened jms listener '" + queueName + "'", writers);
-				if (TestTool.jmsCleanUp(queueName, pullingJmsListener, writers)) {
-					errorMessage("Found one or more old messages on queue '" + queueName + "', you might want to run your tests with a higher 'wait before clean up' value", writers);
+				debugMessage("Opened jms listener '" + queueName + "'");
+				if (TestTool.jmsCleanUp(queueName, pullingJmsListener)) {
+					errorMessage("Found one or more old messages on queue '" + queueName + "', you might want to run your tests with a higher 'wait before clean up' value");
 				}
 			}
 		}
 	}
 
-	private static void createFixedQuerySenders(Map<String, Queue> queues, List<String> jdbcFixedQuerySenders, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId) {
-		debugMessage("Initialize jdbc fixed query senders", writers);
+	private void createFixedQuerySenders(Map<String, Queue> queues, List<String> jdbcFixedQuerySenders, Properties properties, IbisContext ibisContext, String correlationId) {
+		debugMessage("Initialize jdbc fixed query senders");
 		Iterator<String> iterator = jdbcFixedQuerySenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String name = iterator.next();
@@ -262,17 +269,17 @@ public class QueueCreator {
 						deleteQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, null).close();
 						deleteQuerySender.close();
 					} catch(ConfigurationException e) {
-						closeQueues(queues, properties, writers, correlationId);
+						closeQueues(queues, properties, correlationId);
 						queues = null;
-						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
 					} catch(TimeoutException e) {
-						closeQueues(queues, properties, writers, correlationId);
+						closeQueues(queues, properties, correlationId);
 						queues = null;
-						errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
+						errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e);
 					} catch(Exception e) {
-						closeQueues(queues, properties, writers, correlationId);
+						closeQueues(queues, properties, correlationId);
 						queues = null;
-						errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
+						errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e);
 					}
 					preDeleteIndex++;
 				} else {
@@ -290,17 +297,17 @@ public class QueueCreator {
 						prePostFixedQuerySender.setQueryType("select");
 						prePostFixedQuerySender.configure();
 					} catch(Exception e) {
-						closeQueues(queues, properties, writers, correlationId);
+						closeQueues(queues, properties, correlationId);
 						queues = null;
-						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
 					}
 					if (queues != null) {
 						try {
 							prePostFixedQuerySender.open();
 						} catch(SenderException e) {
-							closeQueues(queues, properties, writers, correlationId);
+							closeQueues(queues, properties, correlationId);
 							queues = null;
-							errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e, writers);
+							errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e);
 						}
 					}
 					if (queues != null) {
@@ -312,13 +319,13 @@ public class QueueCreator {
 							querySendersInfo.put("prePostQueryResult", result);
 							message.close();
 						} catch(TimeoutException e) {
-							closeQueues(queues, properties, writers, correlationId);
+							closeQueues(queues, properties, correlationId);
 							queues = null;
-							errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
+							errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
 						} catch(IOException | SenderException e) {
-							closeQueues(queues, properties, writers, correlationId);
+							closeQueues(queues, properties, correlationId);
 							queues = null;
-							errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
+							errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e);
 						}
 					}
 				}
@@ -335,18 +342,18 @@ public class QueueCreator {
 						readQueryFixedQuerySender.setQuery(readQuery);
 						readQueryFixedQuerySender.configure();
 					} catch(Exception e) {
-						closeQueues(queues, properties, writers, correlationId);
+						closeQueues(queues, properties, correlationId);
 						queues = null;
-						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
+						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
 					}
 					if (queues != null) {
 						try {
 							readQueryFixedQuerySender.open();
 							querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
 						} catch(SenderException e) {
-							closeQueues(queues, properties, writers, correlationId);
+							closeQueues(queues, properties, correlationId);
 							queues = null;
-							errorMessage("Could not open '" + name + "': " + e.getMessage(), e, writers);
+							errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
 						}
 					}
 				}
@@ -355,32 +362,32 @@ public class QueueCreator {
 				String waitBeforeRead = (String)properties.get(name + ".waitBeforeRead");
 				if (waitBeforeRead != null) {
 					try {
-						querySendersInfo.put("readQueryWaitBeforeRead", new Integer(waitBeforeRead));
+						querySendersInfo.put("readQueryWaitBeforeRead", Integer.valueOf(waitBeforeRead));
 					} catch(NumberFormatException e) {
-						errorMessage("Value of '" + name + ".waitBeforeRead' not a number: " + e.getMessage(), e, writers);
+						errorMessage("Value of '" + name + ".waitBeforeRead' not a number: " + e.getMessage(), e);
 					}
 				}
 				queues.put(name, querySendersInfo);
-				debugMessage("Opened jdbc connection '" + name + "'", writers);
+				debugMessage("Opened jdbc connection '" + name + "'");
 			}
 		}
 	}
 
 
 
-	private static void closeQueues(Map<String, Queue> queues, Properties properties, Map<String, Object> writers, String correlationId) {
-		TestTool.closeQueues(queues, properties, writers, correlationId);
+	private void closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
+		TestTool.closeQueues(queues, properties, correlationId);
 	}
 
-	private static void debugMessage(String message, Map<String, Object> writers) {
-		TestTool.debugMessage(message, writers);
+	private void debugMessage(String message) {
+		TestTool.debugMessage(message);
 	}
 
-	private static void errorMessage(String message, Map<String, Object> writers) {
-		TestTool.errorMessage(message, writers);
+	private void errorMessage(String message) {
+		TestTool.errorMessage(message);
 	}
 
-	private static void errorMessage(String message, Exception e, Map<String, Object> writers) {
-		TestTool.errorMessage(message, e, writers);
+	private void errorMessage(String message, Exception e) {
+		TestTool.errorMessage(message, e);
 	}
 }
