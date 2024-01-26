@@ -110,7 +110,7 @@ public class CmisSessionBuilder {
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
-	public Session build() throws CmisSessionException {
+	public CmisSessionWrapper build() throws CmisSessionException {
 		CredentialFactory cf = new CredentialFactory(authAlias, username, password);
 		return build(cf.getUsername(), cf.getPassword());
 	}
@@ -121,7 +121,7 @@ public class CmisSessionBuilder {
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
-	public Session build(String userName, String password) throws CmisSessionException {
+	public CmisSessionWrapper build(String userName, String password) throws CmisSessionException {
 		if (StringUtils.isEmpty(url) && overrideEntryPointWSDL == null) {
 			throw new CmisSessionException("no url configured");
 		}
@@ -267,7 +267,7 @@ public class CmisSessionBuilder {
 		Session session = sessionFactory.createSession(parameterMap);
 		log.debug("connected with repository [{}]", ()->getRepositoryInfo(session));
 
-		return session;
+		return new CmisSessionWrapper(session);
 	}
 
 	public static String getRepositoryInfo(Session cmisSession) {
