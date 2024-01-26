@@ -1,13 +1,5 @@
 package org.frankframework.http.rest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.frankframework.core.ListenerException;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.util.EnumUtils;
@@ -15,10 +7,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class ApiServiceDispatcherTest {
 
 	private ApiServiceDispatcher dispatcher = null;
 	private final int amount = 100;
+	private static final String PATH = "/test/config/all/to/test/wildcards";
 
 	@BeforeEach
 	public void setUp() {
@@ -111,6 +110,39 @@ public class ApiServiceDispatcherTest {
 		String uri = "testEndpoint1";
 		dispatcher.registerServiceClient(createServiceClient(List.of(ApiListenerServletTest.Methods.GET, ApiListenerServletTest.Methods.POST), uri));
 		testMultipleMethods(uri);
+	}
+
+	@Test
+	void testFindMatchDoubleAstrix() throws ListenerException {
+		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, "/customers/123/addresses/345");
+		dispatcher.registerServiceClient(listener);
+
+		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri("/customers/**");
+
+		assertEquals("/customers/123/addresses/345", matchingConfig.get(0).getUriPattern());
+		assertEquals(1, matchingConfig.size());
+	}
+
+	@Test
+	void testFindMatchDoubleAstrixLongUrl() throws ListenerException {
+		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, "/employees/123/departments/456/seats/52");
+		dispatcher.registerServiceClient(listener);
+
+		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri("/employees/**");
+
+		assertEquals("/employees/123/departments/456/seats/52", matchingConfig.get(0).getUriPattern());
+		assertEquals(1, matchingConfig.size());
+	}
+
+	@Test
+	void testFindMatchDoubleAstrixShortUrl() throws ListenerException {
+		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, "/customers/123/addresses/345");
+		dispatcher.registerServiceClient(listener);
+
+		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri("/customers/**");
+
+		assertEquals("/customers/123/addresses/345", matchingConfig.get(0).getUriPattern());
+		assertEquals(1, matchingConfig.size());
 	}
 
 	private void testMultipleMethods(String uri){

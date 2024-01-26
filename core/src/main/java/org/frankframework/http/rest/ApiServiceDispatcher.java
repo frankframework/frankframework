@@ -15,44 +15,26 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedMap;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.ws.rs.core.Response.Status;
-
+import jakarta.json.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
-import org.springframework.util.MimeType;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
 import org.frankframework.align.XmlTypeToJsonSchemaConverter;
-import org.frankframework.core.IAdapter;
-import org.frankframework.core.IPipe;
-import org.frankframework.core.ListenerException;
-import org.frankframework.core.PipeLine;
-import org.frankframework.core.PipeLineExit;
-
+import org.frankframework.core.*;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
+import org.springframework.util.MimeType;
+
+import javax.ws.rs.core.Response.Status;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class registers dispatches requests to the proper registered ApiListeners.
@@ -90,28 +72,50 @@ public class ApiServiceDispatcher {
 
 		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
 			String uriPattern = it.next();
-			if(log.isTraceEnabled()) log.trace("comparing uri [{}] to pattern [{}]", uri, uriPattern);
+
+			if (log.isTraceEnabled()) log.trace("comparing uri [{}] to pattern [{}]", uri, uriPattern);
 
 			String[] patternSegments = uriPattern.split("/");
+
 			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
 				continue;
 			}
 
 			int matches = 0;
 			for (int i = 0; i < uriSegments.length; i++) {
-				if(patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
+				if (patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
 					matches++;
 				}
 			}
-			if(matches == uriSegments.length) {
+			if (matches == uriSegments.length) {
 				ApiDispatchConfig result = patternClients.get(uriPattern);
 				results.add(result);
 				if (exactMatch) {
 					return results;
 				}
 			}
+
+			if (uri.contains("**")) {
+				ApiDispatchConfig result = new ApiDispatchConfig(matchUri(uriPattern, uri));
+				results.add(result);
+				return results;
+			}
 		}
 		return results;
+	}
+
+	public static String matchUri(String uri, String wildcard) {
+		String regexPattern = wildcard.replace("**", ".*");
+		// Create a Matcher object to perform matching on the uri
+		Matcher matcher = Pattern.compile(regexPattern).matcher(uri);
+
+		if (matcher.matches()) {
+			return uri;
+		} else if (matcher.find()) {
+			return matcher.group();
+		} else {
+			return null;
+		}
 	}
 
 	public void registerServiceClient(ApiListener listener) throws ListenerException {
