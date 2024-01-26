@@ -24,7 +24,7 @@
     "datasources": [
         {
             "datasourceName": "jdbc/testconfiguration",
-            "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
+			"info": null
         }
     ],
     "authEntries": [
@@ -48,7 +48,7 @@
         {
             "name": "dummyJmsRealm1",
             "datasourceName": "dummyDatasourceName",
-            "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
+			"info": null
         },
         {
             "queueConnectionFactoryName": "dummyQCF",

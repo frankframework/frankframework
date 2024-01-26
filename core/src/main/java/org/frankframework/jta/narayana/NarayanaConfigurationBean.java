@@ -23,7 +23,9 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+import org.frankframework.core.JndiContextPrefixFactory;
+import org.frankframework.jndi.ObjectLocator;
+import org.frankframework.util.AppConstants;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -37,13 +39,10 @@ import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.core.JndiContextPrefixFactory;
-import org.frankframework.jndi.ObjectLocator;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class NarayanaConfigurationBean implements InitializingBean, ApplicationContextAware {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter Properties properties;
 	private @Setter ApplicationContext applicationContext;
@@ -96,25 +95,21 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 	 */
 	private String getObjectStoreJndiName() throws ObjectStoreException {
 		String objectStoreDatasource = AppConstants.getInstance().getProperty("transactionmanager.narayana.objectStoreDatasource");
-		if(StringUtils.isBlank(objectStoreDatasource)) {
+		if (StringUtils.isBlank(objectStoreDatasource)) {
 			throw new ObjectStoreException("no datasource name provided, please set property [transactionmanager.narayana.objectStoreDatasource]");
 		}
 
-		if(applicationContext == null) {
+		if (applicationContext == null) {
 			throw new ObjectStoreException("no ApplicationContext to retrieve DataSource from");
 		}
 
 		JndiContextPrefixFactory jndiContextFactory = applicationContext.getBean("jndiContextPrefixFactory", JndiContextPrefixFactory.class);
 		String jndiPrefix = jndiContextFactory.getContextPrefix();
 		String fullJndiName = (StringUtils.isNotEmpty(jndiPrefix)) ? jndiPrefix + objectStoreDatasource : objectStoreDatasource;
-
 		try {
 			DataSource dataSource = ObjectLocator.lookup(fullJndiName, null, DataSource.class);
 			log.info("found Narayana ObjectStoreDatasource [{}]", dataSource);
-
-			StringBuilder builder = new StringBuilder(PoolingDataSourceJDBCAccess.class.getCanonicalName());
-			builder.append(';').append(fullJndiName);
-			return builder.toString();
+			return PoolingDataSourceJDBCAccess.class.getCanonicalName() + ';' + fullJndiName;
 		} catch (NamingException e) {
 			throw new ObjectStoreException("unable to find datasource", e);
 		}

@@ -16,6 +16,7 @@
 package org.frankframework.jta.narayana;
 
 import java.sql.Connection;
+import java.time.Duration;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -27,30 +28,32 @@ import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory;
-import org.apache.commons.dbcp2.managed.ManagedDataSource;
 import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.commons.dbcp2.managed.XAConnectionFactory;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.frankframework.jdbc.datasource.OpenManagedDataSource;
+import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.util.AppConstants;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.jndi.JndiDataSourceFactory;
-import org.frankframework.util.AppConstants;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 
 	private @Getter @Setter int minPoolSize = 0;
 	private @Getter @Setter int maxPoolSize = 20;
-	private @Getter @Setter int maxLifeTime = 0;
+	private @Getter @Setter int maxLifeTimeSeconds = 0;
 
 	public NarayanaDataSourceFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
 		minPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.minPoolSize", minPoolSize);
 		maxPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", maxPoolSize);
-		maxLifeTime = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxLifeTime", maxLifeTime);
+		maxLifeTimeSeconds = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxLifeTime", maxLifeTimeSeconds);
 	}
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
@@ -92,7 +95,7 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 
 		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
 
-		PoolingDataSource<PoolableConnection> ds = new ManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
+		OpenManagedDataSource<PoolableConnection> ds = new OpenManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
 		log.info("created XA-enabled PoolingDataSource [{}]", ds);
 		return ds;
 	}
@@ -100,13 +103,16 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	private ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-		poolableConnectionFactory.setMaxConnLifetimeMillis((maxLifeTime > 0) ? maxLifeTime * 1000L : -1L);
+		if (maxLifeTimeSeconds > 0) {
+			poolableConnectionFactory.setMaxConn(Duration.ofSeconds(maxLifeTimeSeconds));
+		}
 		poolableConnectionFactory.setRollbackOnReturn(true);
 		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
 		connectionPool.setMinIdle(minPoolSize);
 		connectionPool.setMaxTotal(maxPoolSize);
 		connectionPool.setBlockWhenExhausted(true);
 		poolableConnectionFactory.setPool(connectionPool);
+		log.info("created connectionPool [{}]", connectionPool);
 		return connectionPool;
 	}
 }
