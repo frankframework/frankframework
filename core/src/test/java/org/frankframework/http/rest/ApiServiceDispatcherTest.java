@@ -6,6 +6,8 @@ import org.frankframework.util.EnumUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,36 +114,19 @@ public class ApiServiceDispatcherTest {
 		testMultipleMethods(uri);
 	}
 
-	@Test
-	void testFindMatchDoubleAstrix() throws ListenerException {
-		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, "/customers/123/addresses/345");
+	@ParameterizedTest
+	@CsvSource({
+			"/customers/**, /customers/123/addresses/345",
+			"/employees/**, /employees/123/departments/456/seats/52",
+			"/customers/**, /customers/123/addresses/345"
+	})
+	void testFindMatchDoubleAsterisk(String uriPattern, String expectedUri) throws ListenerException {
+		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, expectedUri);
 		dispatcher.registerServiceClient(listener);
 
-		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri("/customers/**");
+		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri(uriPattern);
 
-		assertEquals("/customers/123/addresses/345", matchingConfig.get(0).getUriPattern());
-		assertEquals(1, matchingConfig.size());
-	}
-
-	@Test
-	void testFindMatchDoubleAstrixLongUrl() throws ListenerException {
-		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, "/employees/123/departments/456/seats/52");
-		dispatcher.registerServiceClient(listener);
-
-		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri("/employees/**");
-
-		assertEquals("/employees/123/departments/456/seats/52", matchingConfig.get(0).getUriPattern());
-		assertEquals(1, matchingConfig.size());
-	}
-
-	@Test
-	void testFindMatchDoubleAstrixShortUrl() throws ListenerException {
-		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, "/customers/123/addresses/345");
-		dispatcher.registerServiceClient(listener);
-
-		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri("/customers/**");
-
-		assertEquals("/customers/123/addresses/345", matchingConfig.get(0).getUriPattern());
+		assertEquals(expectedUri, matchingConfig.get(0).getUriPattern());
 		assertEquals(1, matchingConfig.size());
 	}
 

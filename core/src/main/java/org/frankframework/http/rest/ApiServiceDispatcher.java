@@ -105,9 +105,8 @@ public class ApiServiceDispatcher {
 	}
 
 	public static String matchUri(String uri, String wildcard) {
-		String regexPattern = wildcard.replace("**", ".*");
 		// Create a Matcher object to perform matching on the uri
-		Matcher matcher = Pattern.compile(regexPattern).matcher(uri);
+		Matcher matcher = Pattern.compile(wildcard.replace("**", ".*")).matcher(uri);
 
 		if (matcher.matches()) {
 			return uri;
