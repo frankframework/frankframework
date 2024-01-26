@@ -2,6 +2,7 @@ package org.frankframework.extensions.esb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -13,6 +14,10 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IListenerConnector;
+import org.frankframework.soap.SoapWrapper;
+import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,17 +28,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.mockrunner.mock.jms.MockBytesMessage;
 import com.mockrunner.mock.jms.MockTextMessage;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IListenerConnector;
-import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
-
 class EsbJmsListenerTest {
 
+	public static final String TEST_MESSAGE_DATA = "<test><value>someValue</value></test>";
 	private EsbJmsListener jmsListener;
 
 	public static Stream<Arguments> testExtractMessageProperties() throws JMSException {
 		TextMessage textMessage = new MockTextMessage();
-		textMessage.setText("<test><value>someValue</value></test>");
+		textMessage.setText(TEST_MESSAGE_DATA);
 		textMessage.setStringProperty("ae_testKeyValue", "testValue");
 
 		BytesMessage bytesMessage = new MockBytesMessage();
@@ -98,17 +100,22 @@ class EsbJmsListenerTest {
 
 	@ParameterizedTest
 	@MethodSource
-	public void testExtractMessageProperties(Message message) throws Exception {
+	public void testExtractMessageProperties(Message jmsMessage) throws Exception {
 		// Arrange
 		jmsListener.setCopyAEProperties(true);
 		jmsListener.setxPathLoggingKeys("value");
 		jmsListener.configure();
 
 		// Act
-		Map<String, Object> messageProperties = jmsListener.extractMessageProperties(message);
+		Map<String, Object> messageProperties = jmsListener.extractMessageProperties(jmsMessage);
 
 		// Assert
 		assertEquals("testValue", messageProperties.get("ae_testKeyValue"));
 		assertEquals("someValue", messageProperties.get("value"));
+
+		// Check that the message contents can still be read after the properties have been extracted.
+		org.frankframework.stream.Message extractedMessage = jmsListener.extractMessage(jmsMessage, messageProperties, false, "soapHeader", SoapWrapper.getInstance());
+		assertNotNull(extractedMessage);
+		assertEquals(TEST_MESSAGE_DATA, extractedMessage.asString());
 	}
 }
