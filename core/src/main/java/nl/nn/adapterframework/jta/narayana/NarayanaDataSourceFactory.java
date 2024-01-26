@@ -47,7 +47,7 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	}
 
 	@Override
-	protected DataSource createXAPool(XADataSource xaDataSource, String dataSourceName) {
+	protected DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName) {
 		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource);
 		this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 

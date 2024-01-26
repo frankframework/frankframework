@@ -44,7 +44,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 	}
 
 	@Override
-	protected DataSource createXAPool(XADataSource xaDataSource, String dataSourceName) {
+	protected DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName) {
 		PoolingDataSource result = new PoolingDataSource();
 		result.setUniqueName(dataSourceName);
 		result.setMinPoolSize(minPoolSize);

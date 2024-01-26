@@ -70,18 +70,20 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
-			return createXAPool((XADataSource) dataSource, dataSourceName);
+			log.info("DataSource [{}] is XA enabled, registering with a Transaction Manager", dataSourceName);
+			return createXADataSource((XADataSource) dataSource, dataSourceName);
 		}
 
-		log.info("DataSource [{}] is not XA enabled, unable to register with an Transaction Manager", dataSourceName);
 		if(maxPoolSize > 1) {
+			log.info("DataSource [{}] is not XA enabled, creating connection pool for the datasource", dataSourceName);
 			return createPool((DataSource)dataSource);
 		}
+		log.info("DataSource [{}] is not XA enabled and pooling not configured, used without augmentation", dataSourceName);
 		return (DataSource) dataSource;
 	}
 
-	protected DataSource createXAPool(XADataSource xaDataSource, String dataSourceName) {
-		throw new UnsupportedOperationException("non-XA DataSourcefactoryFactory [" + this.getClass().getName() + "] cannot create XA-DataSources");
+	protected DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName) {
+		throw new UnsupportedOperationException("non-XA DataSourceFactory [" + this.getClass().getName() + "] cannot create XA-DataSources");
 	}
 
 	protected DataSource createPool(DataSource dataSource) {
