@@ -363,12 +363,12 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (!folderExists(folder)) {
-			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+			throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory does not exist.");
 		}
 		try {
 			diskShare.rmdir(folder, removeNonEmptyFolder);
 		} catch(SMBApiException e) {
-			throw new FileSystemException("Remove directory for [" + folder + "] has failed.", e);
+			throw new FileSystemException("Cannot remove folder [" + folder + "]", e);
 		}
 	}
 

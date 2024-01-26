@@ -64,6 +64,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		if (result != null) {
 			result.close();
 		}
+		if (fileSystem != null) {
+			fileSystem.close();
+		}
+
 		super.tearDown();
 	}
 
@@ -847,6 +851,43 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
+	public void fileSystemActorWriteActionWithFolder() throws Exception {
+		String folderName = "path/to";
+		String filename = "file.txt";
+
+		if (_fileExists(folderName, filename)) {
+			_deleteFile(folderName, filename);
+		}
+
+		ParameterList params = new ParameterList();
+		params.add(ParameterBuilder.create().withName("contents").withValue("tralala"));
+		params.configure();
+
+		actor.setCreateFolder(true);
+		actor.setAction(FileSystemAction.WRITE);
+		actor.configure(fileSystem, params, owner);
+		actor.open();
+
+		Message message = new Message(folderName + "/" + filename); //Flat file structure, should create folder
+		ParameterValueList pvl= params.getValues(message, session);
+		Message result = actor.doAction(message, pvl, session);
+		TestAssertions.assertXpathValueEquals(filename, result.asString(), "file/@name");
+		result.close();
+
+		assertTrue(_fileExists(folderName, filename), "Expected the file ["+filename+"] to be present");
+		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen"); // we just checked the file, the folder should be there...
+
+		//Test if we can list items in the folder
+		actor.setAction(FileSystemAction.LIST);
+		actor.setInputFolder(folderName);
+		actor.configure(fileSystem, null, owner);
+		actor.open();
+		Message result2 = actor.doAction(new Message(folderName), null, session);
+		TestAssertions.assertXpathValueEquals(filename, result2.asString(), "directory/file/@name");
+		result2.close();
+	}
+
+	@Test
 	public void fileSystemActorAppendActionWriteLineSeparatorEnabled() throws Exception {
 		int numOfWrites = 5;
 		String filename = "AppendActionWriteLineSeparatorEnabled" + FILE1;
@@ -1377,6 +1418,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			createFile(innerFolder, filename, "is not empty");
 		}
 
+		assertTrue(_fileExists(innerFolder, "file0file1.txt"), "Expected file ["+innerFolder+"/file0file1.txt] to be present");
+
 		actor.setAction(FileSystemAction.RMDIR);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -1459,9 +1502,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		// test
-		assertFalse(_fileExists(filename), "Expected file [" + filename + "] " + "not to be present");
+		assertFalse(_fileExists(filename), "Expected file [" + filename + "] " + "not to be present in the root");
 		assertTrue(_folderExists(folder), "Expected parent folder to be present");
-		assertTrue(_folderExists(folder+"/innerFolder1"), "Expected parent folder to be present");
+		assertTrue(_folderExists(folder+"/innerFolder1"), "Expected file in parent folder to be present");
 	}
 
 	@Test

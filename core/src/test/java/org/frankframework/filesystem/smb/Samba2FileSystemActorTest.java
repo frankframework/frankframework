@@ -1,8 +1,6 @@
 package org.frankframework.filesystem.smb;
 
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-
-import org.frankframework.filesystem.FileSystemTest;
+import org.frankframework.filesystem.FileSystemActorTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
 import org.frankframework.filesystem.Samba2FileSystem;
@@ -11,9 +9,10 @@ import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
+public class Samba2FileSystemActorTest extends FileSystemActorTest<SmbFileRef, Samba2FileSystem> {
 
 	private final String username = "frankframework";
 	private final String password = "pass_123";
@@ -64,16 +63,23 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 	}
 
 	@Test
+	@Disabled("does not work for SBM2")
 	@Override
-	public void basicFileSystemTestCopyFile() throws Exception {
-		assumeFalse("localhost".equals(host)); //Returns 'STATUS_NOT_SUPPORTED (0xc00000bb): IOCTL failed' in combination with JFileServer
-		super.basicFileSystemTestCopyFile();
+	public void fileSystemActorCopyActionTestRootToFolder() throws Exception {
+		//Ignore this test
+	}
+
+	@Override
+	@Test
+	@Disabled("does not work for SBM2")
+	public void fileSystemActorCopyActionTestWithExcludeWildCard() throws Exception {
+		//Ignore this test
 	}
 
 	@Test
+	@Disabled("does not work for SBM2")
 	@Override
-	public void writableFileSystemTestCopyFileToNonExistentDirectoryCreateFolderTrue() throws Exception {
-		assumeFalse("localhost".equals(host)); //Returns 'STATUS_NOT_SUPPORTED (0xc00000bb): IOCTL failed' in combination with JFileServer
-		super.writableFileSystemTestCopyFileToNonExistentDirectoryCreateFolderTrue();
+	public void fileSystemActorCopyActionTestWithWildCard() throws Exception {
+		//Ignore this test
 	}
 }

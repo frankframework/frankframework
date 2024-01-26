@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.aws.AwsUtil;
@@ -341,7 +342,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		try {
-			ListObjectsV2Request request = createListRequestV2(folder);
+			final String absFolder = FilenameUtils.normalizeNoEndSeparator(folder, true); //Folder should not end with a slash
+			ListObjectsV2Request request = createListRequestV2(absFolder);
 			ListObjectsV2Result listing;
 			int iterations = 0;
 
@@ -376,10 +378,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (folderExists(folder)) {
-			folder = folder.endsWith("/") ? folder : folder + "/";
-			s3Client.deleteObject(bucketName, folder);
+			if(!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
+				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
+			}
+
+			final String absFolder = folder.endsWith("/") ? folder : folder + "/"; //Ensure it's a folder that's being removed
+			s3Client.deleteObject(bucketName, absFolder);
 		} else {
-			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+			throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory does not exist.");
 		}
 	}
 

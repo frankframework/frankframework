@@ -260,6 +260,22 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 
 	@Test
+	public void writableFileSystemTestFolderExistsWithSlash() throws Exception {
+		String folderName = "dummyFolder/";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (!_folderExists(folderName)) {
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue(_folderExists(folderName), "could not create folder before test");
+		}
+
+		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen");
+	}
+
+	@Test
 	public void writableFileSystemTestFolderDoesNotExist() throws Exception {
 		String folderName = "dummyFolder";
 

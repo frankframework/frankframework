@@ -29,6 +29,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.ftp.SftpFileRef;
+import org.frankframework.ftp.SftpSession;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.SerializableFileReference;
+import org.frankframework.util.LogUtil;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
@@ -36,11 +41,6 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
 import lombok.Getter;
-import org.frankframework.ftp.SftpFileRef;
-import org.frankframework.ftp.SftpSession;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.SerializableFileReference;
-import org.frankframework.util.LogUtil;
 
 /**
  * Implementation of SFTP FileSystem
@@ -191,9 +191,18 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		if(folderExists(folder)) {
 			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
+
 		try {
-			ftpClient.mkdir(folder);
-		} catch (SftpException e) {
+			String[] folders = folder.split("/");
+			for(int i = 1; i < folders.length; i++) {
+				folders[i] = folders[i - 1] + "/" + folders[i];
+			}
+			for(String f : folders) {
+				if(f.length() != 0 && !folderExists(f)) {
+					ftpClient.mkdir(f);
+				}
+			}
+		} catch (SftpException | ArrayIndexOutOfBoundsException e) {
 			throw new FileSystemException(e);
 		}
 	}
@@ -210,6 +219,9 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				ftpClient.rmdir(folder);
 			}
 		} catch (SftpException e) {
+			if(e.id == 18) { // Directory not empty
+				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
+			}
 			throw new FileSystemException(e);
 		}
 	}
