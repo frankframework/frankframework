@@ -105,16 +105,11 @@ public class ApiServiceDispatcher {
 	}
 
 	public static String matchUri(String uri, String wildcard) {
-		// Create a Matcher object to perform matching on the uri
-		Matcher matcher = Pattern.compile(wildcard.replace("**", ".*")).matcher(uri);
-
-		if (matcher.matches()) {
+		//Check if wildcard is present and if the uri contains the part of the uri in the wildcard
+		if (wildcard.contains("**") && uri.contains(wildcard.replace("*", ""))) {
 			return uri;
-		} else if (matcher.find()) {
-			return matcher.group();
-		} else {
-			return null;
 		}
+		return "";
 	}
 
 	public void registerServiceClient(ApiListener listener) throws ListenerException {
