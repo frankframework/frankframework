@@ -23,7 +23,7 @@ import org.apache.logging.log4j.ThreadContext;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.core.ParameterException;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -43,9 +43,10 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author Gerrit van Brakel
  */
 @ElementType(ElementTypes.SESSION)
+@Log4j2
 public class LogContextPipe extends FixedForwardPipe {
 
-	/** 
+	/**
 	 * If set <code>true</code> the ThreadContext parameters will be exported from the current PipeLine up in the call tree.
 	 * @ff.default false
 	 */
@@ -56,12 +57,15 @@ public class LogContextPipe extends FixedForwardPipe {
 		if (!getParameterList().isEmpty()) {
 			Map<String,String> values = new LinkedHashMap<>();
 			try {
+				if (!message.isRepeatable()) {
+					message.preserve();
+				}
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				for(ParameterValue pv : pvl) {
 					values.put(pv.getName(), pv.asStringValue());
 				}
-			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception extracting parameters", e);
+			} catch (Exception e) {
+				log.debug("Exception getting parameter values. Ignoring.", e);
 			}
 			if (isExport()) {
 				ThreadContext.putAll(values);
