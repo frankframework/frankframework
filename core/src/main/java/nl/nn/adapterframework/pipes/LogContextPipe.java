@@ -65,7 +65,7 @@ public class LogContextPipe extends FixedForwardPipe {
 					values.put(pv.getName(), pv.asStringValue());
 				}
 			} catch (Exception e) {
-				log.debug("Exception getting parameter values. Ignoring.", e);
+				log.warn("Exception getting parameter values. Ignoring.", e);
 			}
 			if (isExport()) {
 				ThreadContext.putAll(values);
