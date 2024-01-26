@@ -26,7 +26,6 @@ import org.apache.chemistry.opencmis.client.api.ObjectFactory;
 import org.apache.chemistry.opencmis.client.api.ObjectId;
 import org.apache.chemistry.opencmis.client.api.OperationContext;
 import org.apache.chemistry.opencmis.client.api.QueryResult;
-import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.runtime.FolderImpl;
 import org.apache.chemistry.opencmis.client.runtime.ObjectIdImpl;
 import org.apache.chemistry.opencmis.client.runtime.OperationContextImpl;
@@ -84,7 +83,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 		sender.setKeepSession(false);
 
-		Session cmisSession = mock(Session.class);
+		CloseableCmisSession cmisSession = mock(CloseableCmisSession.class);
 		ObjectFactory objectFactory = mock(ObjectFactoryImpl.class);
 		doAnswer(new ContentStreamMock()).when(objectFactory).createContentStream(anyString(), anyLong(), anyString(), any(InputStream.class));
 		doReturn(objectFactory).when(cmisSession).getObjectFactory();
