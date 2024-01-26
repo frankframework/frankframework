@@ -81,7 +81,7 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 	}
 
 	protected DataSource createXAPool(XADataSource xaDataSource, String dataSourceName) {
-		throw new UnsupportedOperationException("Creating XA DataSources not created by [" + this.getClass().getName() + "]");
+		throw new UnsupportedOperationException("non-XA DataSourcefactoryFactory [" + this.getClass().getName() + "] cannot create XA-DataSources");
 	}
 
 	protected DataSource createPool(DataSource dataSource) {
