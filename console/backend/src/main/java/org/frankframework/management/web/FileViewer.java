@@ -1,0 +1,28 @@
+package org.frankframework.management.web;
+
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTopic;
+
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+@Path("/")
+public class FileViewer extends FrankApiBase {
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/file-viewer")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getFileContent(@QueryParam("fileName") String fileName, @QueryParam("type") String type) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
+		builder.addHeader("fileName", fileName);
+		builder.addHeader("resultType", type);
+		return callSyncGateway(builder);
+	}
+
+}

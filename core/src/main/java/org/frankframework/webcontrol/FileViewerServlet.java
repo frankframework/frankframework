@@ -68,6 +68,7 @@ import org.frankframework.util.XmlEncodingUtils;
  	The last item specifies which stylesheet to use.
  * @author Johan Verrips
  */
+@Deprecated
 @IbisInitializer
 public class FileViewerServlet extends HttpServletBase {
 	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);

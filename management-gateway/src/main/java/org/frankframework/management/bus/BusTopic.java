@@ -40,7 +40,8 @@ public enum BusTopic {
 	SERVICE_LISTENER,
 	TEST_PIPELINE,
 	MESSAGE_BROWSER,
-	MONITORING;
+	MONITORING,
+	FILE_VIEWER;
 
 	public static final String TOPIC_HEADER_NAME = "topic";
 }
