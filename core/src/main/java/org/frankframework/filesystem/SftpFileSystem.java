@@ -203,7 +203,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				}
 			}
 		} catch (SftpException | ArrayIndexOutOfBoundsException e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Cannot create directory", e);
 		}
 	}
 

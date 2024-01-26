@@ -48,6 +48,7 @@ public class Samba1FileSystemActorTest extends FileSystemActorTest<SmbFile, Samb
 		result.setUsername(username);
 		result.setPassword(password);
 		result.setDomainName(domain);
+		result.setForce(true);
 		return result;
 	}
 
