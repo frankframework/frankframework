@@ -32,13 +32,13 @@ import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.commons.dbcp2.managed.XAConnectionFactory;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-import nl.nn.adapterframework.jdbc.datasource.OpenManagedDataSource;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.jdbc.datasource.OpenManagedDataSource;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 

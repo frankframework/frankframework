@@ -24,19 +24,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
-import nl.nn.adapterframework.util.ClassUtils;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.util.ClassUtils;
 
 
 /**
  * @author Gerrit van Brakel
  */
 @Log4j2
-public class DbmsSupportFactory {
+public class DbmsSupportFactory implements IDbmsSupportFactory {
 	private final Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
 
 	private @Getter Properties dbmsSupportMap;
@@ -65,7 +64,7 @@ public class DbmsSupportFactory {
 		}
 	}
 
-	public IDbmsSupport getDbmsSupport(String product, String productVersion) {
+	private IDbmsSupport getDbmsSupport(String product, String productVersion) {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {

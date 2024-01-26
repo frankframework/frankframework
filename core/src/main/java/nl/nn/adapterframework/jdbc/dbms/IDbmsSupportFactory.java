@@ -30,6 +30,5 @@ public interface IDbmsSupportFactory {
 	final int DBMS_MYSQL=5;
 
 	IDbmsSupport getDbmsSupport(DataSource datasource);
-	IDbmsSupport getDbmsSupport(String product, String productVersion);
 
 }

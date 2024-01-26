@@ -18,12 +18,9 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Map;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-
-import nl.nn.adapterframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,6 +32,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jndi.JndiBase;
@@ -138,14 +136,8 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			return dbmsSupport;
 		}
 		try {
-			if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
-				dbmsSupport = dbmsSupportFactory.getDbmsSupport(md.get("product"), md.get("product-version"));
-			}
-			if (dbmsSupport == null) {
-				dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
-			}
-		} catch (JdbcException | SQLException e) {
+			dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
+		} catch (JdbcException e) {
 			throw new IllegalStateException("cannot obtain connection to determine dbmsSupport", e);
 		}
 		return dbmsSupport;
