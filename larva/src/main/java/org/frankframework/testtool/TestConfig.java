@@ -48,4 +48,16 @@ public class TestConfig {
 		scenarioCounter++;
 	}
 
+	public void flushWriters() {
+		try {
+			if (out != null) {
+				out.flush();
+			}
+			if (silentOut != null) {
+				silentOut.flush();
+			}
+		} catch (Exception e) {
+		}
+	}
+
 }

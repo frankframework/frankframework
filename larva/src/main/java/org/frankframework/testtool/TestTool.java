@@ -266,6 +266,7 @@ public class TestTool {
 				debugMessage("Execute scenario('s)");
 				ScenarioRunner scenarioRunner = new ScenarioRunner();
 				scenarioRunner.runScenario(ibisContext, config, scenarioFiles, currentScenariosRootDirectory, appConstants, evenStep, waitBeforeCleanUp, logLevel);
+				config.flushWriters();
 				scenariosFailed = scenarioRunner.getScenariosFailed();
 
 				long executeTime = System.currentTimeMillis() - startTime;
@@ -330,6 +331,7 @@ public class TestTool {
 				writeHtml("",  true);
 			}
 		}
+		config.flushWriters();
 		return scenariosFailed;
 	}
 
@@ -506,14 +508,15 @@ public class TestTool {
 
 		writeHtml("</form>", false);
 		writeHtml("<br clear=\"all\"/>", false);
+		config.flushWriters();
 	}
 
-	public static void write(String html, String type, String method, boolean scroll) {
+	public static void write(String html, boolean isHtmlType, String method, boolean scroll) {
 		if (config.isSilent()) {
 			return;
 		}
 
-		if ("html".equals(type) && !config.isUseHtmlBuffer()) {
+		if (isHtmlType && !config.isUseHtmlBuffer()) {
 			try {
 				config.getOut().write(config.getHtmlBuffer().toString());
 			} catch (IOException ignored) {
@@ -529,9 +532,9 @@ public class TestTool {
 			config.setUseLogBuffer(false);
 		}
 		Writer writer = config.getOut();
-		if ("log".equals(type) && config.isUseLogBuffer()) {
+		if (!isHtmlType && config.isUseLogBuffer()) {
 			writer = config.getLogBuffer();
-		} else if ("html".equals(type) && config.isUseHtmlBuffer()) {
+		} else if (isHtmlType && config.isUseHtmlBuffer()) {
 			writer = config.getHtmlBuffer();
 		}
 		if (method == null || LOG_LEVEL_ORDER.indexOf("[" + config.getLogLevel() + "]") <= LOG_LEVEL_ORDER.indexOf("[" + method + "]")) {
@@ -542,18 +545,17 @@ public class TestTool {
 					writer.write("scrollToBottom();\n");
 					writer.write("--></script>\n");
 				}
-				writer.flush();
 			} catch (IOException e) {
 			}
 		}
 	}
 
 	public static void writeHtml(String html, boolean scroll) {
-		write(html, "html", null, scroll);
+		write(html, true, null, scroll);
 	}
 
 	public static void writeLog(String html, String method, boolean scroll) {
-		write(html, "log", method, scroll);
+		write(html, false, method, scroll);
 	}
 
 	public static void debugMessage(String message) {
@@ -2265,7 +2267,6 @@ public class TestTool {
 	 * param2, param3 etc.
 	 * @param properties
 	 * @param property
-	 * @param writers
 	 * @param session TODO
 	 *
 	 * @return A map with parameters
@@ -2391,7 +2392,7 @@ public class TestTool {
 		try {
 			Reader reader = new StringReader(string);
 			BufferedReader br = new BufferedReader(reader);
-			String l = null;
+			String l;
 			while ((l = br.readLine()) != null) {
 				if (sb.length()==0) {
 					sb.append(l);
@@ -2416,7 +2417,6 @@ public class TestTool {
 	 *
 	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'>
 	*/
-
 	public static HashMap<String, HashMap<String, HashMap<String, String>>> mapPropertiesToIgnores(Properties properties){
 		HashMap<String, HashMap<String, HashMap<String, String>>> returnMap = new HashMap<>();
 		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
@@ -2468,13 +2468,12 @@ public class TestTool {
 				}
 			}
 		}
-
 		return returnMap;
 	}
 
 	/**
 	 * This method is used to de-couple the need of providing a set of attributes when calling mapPropertiesByIdentifier().
-	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
+	 * Caller of mapPropertiesByIdentifier() should not necessarily know about all attributes related to an ignore.
 	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
 	*/

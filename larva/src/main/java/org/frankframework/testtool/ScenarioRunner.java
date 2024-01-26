@@ -108,6 +108,7 @@ public class ScenarioRunner {
 							allStepsPassed = false;
 						}
 						writeHtml("</div>", false);
+						config.flushWriters();
 					}
 					if (allStepsPassed) {
 						if (autoSaved) {
@@ -158,7 +159,7 @@ public class ScenarioRunner {
 					}
 				}
 			}
-			writeHtml("</div>",  false);
+			writeHtml("</div>", false);
 		}
 	}
 
