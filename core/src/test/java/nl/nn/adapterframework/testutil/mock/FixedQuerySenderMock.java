@@ -13,8 +13,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
+import nl.nn.adapterframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
+
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -25,9 +26,9 @@ import nl.nn.adapterframework.testutil.TestConfiguration;
 /**
  * Enables the ability to provide a mockable FixedQuerySender. In some places a new QuerySender is created to execute (custom) statements.
  * This allows the result to be mocked.
- * 
+ *
  * @See {@link TestConfiguration#mockQuery(String, ResultSet)}
- * 
+ *
  * @author Niels Meijer
  */
 public class FixedQuerySenderMock extends FixedQuerySender {
@@ -66,13 +67,13 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 	protected DataSource getDatasource() throws JdbcException {
 		ResultSet mock = mocks.get(getQuery());
 		if(mock != null) {
-			return Mockito.mock(DataSource.class);
+			return Mockito.mock(TransactionalDbmsSupportAwareDataSourceProxy.class);
 		}
 		return super.getDatasource();
 	}
 
 	public static class ResultSetBuilder {
-		private List<Map<String, Object>> rows = new ArrayList<>();
+		private final List<Map<String, Object>> rows = new ArrayList<>();
 		private Map<String, Object> row = new HashMap<>();
 		private final String INDEX_PREFIX = "index::";
 		private AtomicInteger index = new AtomicInteger(1);
@@ -105,27 +106,23 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 			rows.add(row); //Add the last row
 
 			ResultSet rs = Mockito.mock(ResultSet.class);
-			Mockito.doAnswer(new Answer<Boolean>() {
-				@Override
-				public Boolean answer(InvocationOnMock invocation) throws Throwable {
-					if(!rows.isEmpty()) {
-						row = rows.remove(0);
-						return true;
-					}
-					return false;
-				}}).when(rs).next();
-			Mockito.doAnswer(new Answer<String>() {
-				@Override
-				public String answer(InvocationOnMock invocation) throws Throwable {
-					String key = invocation.getArgument(0);
-					return (String) row.get(key);
-				}}).when(rs).getString(Mockito.anyString());
-			Mockito.doAnswer(new Answer<String>() {
-				@Override
-				public String answer(InvocationOnMock invocation) throws Throwable {
-					int index = invocation.getArgument(0);
-					return (String) row.get(INDEX_PREFIX+index);
-				}}).when(rs).getString(Mockito.anyInt());
+			Mockito.doAnswer((Answer<Boolean>) invocation -> {
+				if (!rows.isEmpty()) {
+					row = rows.remove(0);
+					return true;
+				}
+				return false;
+			}).when(rs).next();
+
+			Mockito.doAnswer((Answer<String>) invocation -> {
+				String key = invocation.getArgument(0);
+				return (String) row.get(key);
+			}).when(rs).getString(Mockito.anyString());
+
+			Mockito.doAnswer((Answer<String>) invocation -> {
+				int index = invocation.getArgument(0);
+				return (String) row.get(INDEX_PREFIX + index);
+			}).when(rs).getString(Mockito.anyInt());
 
 			return rs;
 		}
