@@ -281,25 +281,24 @@ public class TestTool {
 						}
 					}
 					debugMessage("Print statistics information");
-					Duration duration = Duration.ofMillis(executeTime);
-					String timeInMMSSMS = String.format("%02dm %02ds %02dms", duration.toMinutesPart(), duration.toSecondsPart(), duration.toMillisPart());
+					String formattedTime = getFormattedTime(executeTime);
 					if (scenarioRunner.getScenariosPassed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + timeInMMSSMS + ")");
+							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + formattedTime + ")");
 						} else {
-							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + timeInMMSSMS + ")");
+							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")");
 						}
 					} else if (scenarioRunner.getScenariosFailed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + timeInMMSSMS + ")");
+							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + formattedTime + ")");
 						} else {
-							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + timeInMMSSMS + ")");
+							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")");
 						}
 					} else {
 						if (scenariosTotal == 1) {
-							scenariosTotalMessage("1 scenario executed in " + timeInMMSSMS);
+							scenariosTotalMessage("1 scenario executed in " + formattedTime);
 						} else {
-							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + timeInMMSSMS);
+							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + formattedTime);
 						}
 						if (scenarioRunner.getScenariosPassed() == 1) {
 							scenariosPassedTotalMessage("1 scenario passed");
@@ -333,6 +332,20 @@ public class TestTool {
 		}
 		config.flushWriters();
 		return scenariosFailed;
+	}
+
+	private static String getFormattedTime(long executeTime) {
+		Duration duration = Duration.ofMillis(executeTime);
+		if (duration.toMinutesPart() == 0 && duration.toSecondsPart() == 0) {
+			// Only milliseconds (e.g. 123ms)
+			return duration.toMillisPart() + "ms";
+		} else if (duration.toMinutesPart() == 0) {
+			// Seconds and milliseconds (e.g. 1s 123ms)
+			return duration.toSecondsPart() + "s " + duration.toMillisPart() + "ms";
+		} else {
+			// Minutes, seconds and milliseconds (e.g. 1m 1s 123ms)
+			return duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s " + duration.toMillisPart() + "ms";
+		}
 	}
 
 	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute) {
@@ -524,13 +537,6 @@ public class TestTool {
 			config.setUseHtmlBuffer(false);
 		}
 
-		if ("log".equals(type) && !config.isUseLogBuffer()) {
-			try {
-				config.getOut().write(config.getLogBuffer().toString());
-			} catch (IOException ignored) {
-			}
-			config.setUseLogBuffer(false);
-		}
 		Writer writer = config.getOut();
 		if (!isHtmlType && config.isUseLogBuffer()) {
 			writer = config.getLogBuffer();
