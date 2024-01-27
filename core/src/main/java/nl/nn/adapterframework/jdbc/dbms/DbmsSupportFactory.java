@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.util.ClassUtils;
 
 
@@ -40,13 +41,21 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 
 	private @Getter Properties dbmsSupportMap;
 
+	@Override
 	public IDbmsSupport getDbmsSupport(DataSource datasource) {
 		return dbmsSupport.computeIfAbsent(datasource, this::compute);
 	}
 
 	private IDbmsSupport compute(DataSource datasource) {
-		try (Connection connection = datasource.getConnection()) {
-			return getDbmsSupport(connection);
+		try {
+			if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
+				return getDbmsSupport(md.get("product"), md.get("product-version"));
+			}
+
+			try (Connection connection = datasource.getConnection()) {
+				return getDbmsSupport(connection);
+			}
 		} catch (SQLException e) {
 			log.warn("SQL exception while trying to get a connection from datasource [{}]", datasource, e);
 			return new GenericDbmsSupport();
