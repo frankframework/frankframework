@@ -26,11 +26,12 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Factory through which (TX-enabled) DataSources can be retrieved.
- * 
+ *
  * Already created DataSources are stored in a ConcurrentHashMap.
  * Every DataSource can be augmented before it is added.
  */
