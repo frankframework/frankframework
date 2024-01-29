@@ -32,11 +32,11 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
-import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -63,8 +63,8 @@ import nl.nn.adapterframework.util.CredentialFactory;
 public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
 	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
 	private String datasourceName = null;
-	private String authAlias = null;
-	private String username = null;
+	@Getter private String authAlias = null;
+	@Getter private String username = null;
 	private String password = null;
 
 	private boolean transacted = false;
@@ -115,30 +115,16 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			}
 
 			String dsinfo = datasource.toString();
-			log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
+			log.info("{}looked up Datasource [{}]: [{}]", getLogPrefix(), dsName, dsinfo);
 		}
 		return datasource;
 	}
 
 	public String getDatasourceInfo() throws JdbcException {
-		String dsinfo=null;
 		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-			// TODO let TransactionalDbmsSupportAwareDataSourceProxy.getInfo() use the same code as used here
 			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
 		}
-		try (Connection conn=getConnection()) {
-			DatabaseMetaData md=conn.getMetaData();
-			String product=md.getDatabaseProductName();
-			String productVersion=md.getDatabaseProductVersion();
-			String driver=md.getDriverName();
-			String driverVersion=md.getDriverVersion();
-			String url=md.getURL();
-			String user=md.getUserName();
-			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"] datasource ["+getDatasource().toString()+"]";
-		} catch (SQLException e) {
-			log.warn("Exception determining databaseinfo", e);
-		}
-		return dsinfo;
+		throw new IllegalStateException("Datasource should always be of type TransactionalDbmsSupportAwareDataSourceProxy, found: " + getDatasource().getClass().getName());
 	}
 
 	public void setDbmsSupportFactory(IDbmsSupportFactory dbmsSupportFactory) {
@@ -146,12 +132,13 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	}
 
 	public IDbmsSupport getDbmsSupport() {
-		if (dbmsSupport==null) {
-			try {
-				dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
-			} catch (JdbcException e) {
-				throw new IllegalStateException("cannot obtain connection to determine dbmssupport", e);
-			}
+		if (dbmsSupport != null) {
+			return dbmsSupport;
+		}
+		try {
+			dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
+		} catch (JdbcException e) {
+			throw new IllegalStateException("cannot obtain connection to determine dbmsSupport", e);
 		}
 		return dbmsSupport;
 	}
@@ -259,16 +246,10 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
 
 	/** User name for authentication when connecting to database, when none found from <code>authAlias</code> */
 	public void setUsername(String username) {
 		this.username = username;
-	}
-	public String getUsername() {
-		return username;
 	}
 
 	/** Password for authentication when connecting to database, when none found from <code>authAlias</code> */

@@ -21,7 +21,6 @@ import javax.sql.XADataSource;
 import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory;
-import org.apache.commons.dbcp2.managed.ManagedDataSource;
 import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.commons.dbcp2.managed.XAConnectionFactory;
 import org.apache.commons.pool2.ObjectPool;
@@ -29,9 +28,12 @@ import org.apache.commons.pool2.ObjectPool;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.jdbc.datasource.OpenManagedDataSource;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
+@Log4j2
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
@@ -58,12 +60,12 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 
 			ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
 
-			ds = new ManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
+			ds = new OpenManagedDataSource<PoolableConnection>(connectionPool, cf.getTransactionRegistry());
 			log.info("created XA-enabled PoolingDataSource [{}]", ds);
 		} else {
 			ds = new NarayanaDataSource(xaDataSource, dataSourceName);
-			log.info("registered Narayana DataSource [{}] with Transaction Manager", ds);
 		}
+		log.info("registered Narayana DataSource [{}] with Transaction Manager", ds);
 		return ds;
 	}
 }

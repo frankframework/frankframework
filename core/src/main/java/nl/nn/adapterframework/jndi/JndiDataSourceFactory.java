@@ -38,6 +38,7 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
