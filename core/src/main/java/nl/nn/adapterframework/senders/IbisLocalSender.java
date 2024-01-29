@@ -266,7 +266,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						// We return same message as we send, so it should be preserved in case it's not repeatable
 						message.preserve();
 						log.debug("{} calling {} in asynchronously", this::getLogPrefix, () -> serviceIndication);
-						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message.copyMessage(), subAdapterSession, threadLifeCycleEventListener);
+						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
 						result = new SenderResult(message);
 					}
 				} else {
