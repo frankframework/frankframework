@@ -15,6 +15,7 @@
 */
 package org.frankframework.filesystem;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -206,7 +207,13 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public DirectoryStream<S3Object> listFiles(String folder) throws FileSystemException {
+		return listFiles(folder, false);
+	}
+
+	//Lists files, and optionally directories
+	private DirectoryStream<S3Object> listFiles(String folder, boolean includeDirectories) throws FileSystemException {
 		List<S3ObjectSummary> summaries = new ArrayList<>();
+		List<String> subFolders = new ArrayList<>();
 		try {
 			ListObjectsV2Request request = createListRequestV2(folder);
 			ListObjectsV2Result listing;
@@ -217,8 +224,13 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 					log.warn("unable to list all files in folder [{}]", folder);
 					break;
 				}
+
 				listing = s3Client.listObjectsV2(request);
-				summaries.addAll(listing.getObjectSummaries());
+				summaries.addAll(listing.getObjectSummaries()); //Files
+				if(includeDirectories) {
+					subFolders.addAll(listing.getCommonPrefixes()); //Folders
+				}
+
 				request.setContinuationToken(listing.getNextContinuationToken());
 				iterations++;
 			} while(listing.isTruncated());
@@ -228,14 +240,26 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 		List<S3Object> list = new ArrayList<>();
 		for (S3ObjectSummary summary : summaries) {
-			if(summary.getKey().endsWith("/")) { //Omit the root folder
+			if(summary.getKey().endsWith("/")) { //Omit the 'search' folder
 				continue;
 			}
-			S3Object object = extractS3ObjectFromSummary(summary);
-			list.add(object);
+			list.add(extractS3ObjectFromSummary(summary));
+		}
+		for(String folderName : subFolders) {
+			list.add(createS3FolderObject(bucketName, folderName));
 		}
 
 		return FileSystemUtils.getDirectoryStream(list.iterator());
+	}
+
+	private static S3Object createS3FolderObject(String bucketName, String folderName) {
+		S3Object object = new S3Object();
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setContentLength(0); //Does not trigger updateFileAttributes
+		object.setBucketName(bucketName);
+		object.setKey(folderName);
+		object.setObjectMetadata(metadata);
+		return object;
 	}
 
 	private static S3Object extractS3ObjectFromSummary(S3ObjectSummary summary) {
@@ -332,7 +356,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	private ListObjectsV2Request createListRequestV2(String folder) {
-		String prefix = folder != null ? folder + FILE_DELIMITER : null;
+		String prefix = folder != null ? FilenameUtils.normalizeNoEndSeparator(folder, true) + FILE_DELIMITER : null;
+
 		return new ListObjectsV2Request()
 				.withBucketName(bucketName)
 				.withDelimiter(FILE_DELIMITER)
@@ -342,8 +367,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		try {
-			final String absFolder = FilenameUtils.normalizeNoEndSeparator(folder, true); //Folder should not end with a slash
-			ListObjectsV2Request request = createListRequestV2(absFolder);
+			ListObjectsV2Request request = createListRequestV2(folder);
 			ListObjectsV2Result listing;
 			int iterations = 0;
 
@@ -368,8 +392,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		String folderName = folder.endsWith("/") ? folder : folder + "/";
-		if (!folderExists(folder)) {
-			s3Client.putObject(bucketName, folderName, "");
+		if(!folderExists(folder)) {
+			ObjectMetadata metadata = new ObjectMetadata();
+			metadata.setContentLength(0);
+			metadata.setContentType("binary/octet-stream");
+			InputStream emptyContent = new ByteArrayInputStream(new byte[0]);
+
+			PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, folderName, emptyContent, metadata);
+			s3Client.putObject(putObjectRequest);
 		} else {
 			throw new FileSystemException("Create directory for [" + folderName + "] has failed. Directory already exists.");
 		}
@@ -378,7 +408,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (folderExists(folder)) {
-			if(!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
+			if(!removeNonEmptyFolder && listFiles(folder, true).iterator().hasNext()) { //Check if there are files or folders
 				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
 			}
 

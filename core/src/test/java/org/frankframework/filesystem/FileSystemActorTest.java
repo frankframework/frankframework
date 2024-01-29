@@ -1480,7 +1480,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertFalse(_folderExists(folder), "Expected parent folder not to be present");
 	}
 
-	@Test
+	@Test //Should not be able to cleanup directory after removing 'filename' because there are still 2 empty folders on the same root. Tests if list detects DIRECTORIES
 	public void fileSystemActorDeleteActionWithDeleteEmptyFolderRootContainsEmptyFoldersTest() throws Exception {
 		String filename = "filetobedeleted" + FILE1;
 		String folder = "inner";
