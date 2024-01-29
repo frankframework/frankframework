@@ -21,9 +21,16 @@ public class ApiUriComparator implements Comparator<String> {
 
 	@Override
 	public int compare(String uri1, String uri2) {
-		String uri1c = uri1.replace("*", "");
-		String uri2c = uri2.replace("*", "");
-
+		String uri1c;
+		String uri2c;
+		if (!uri1.contains("**") && !uri2.contains("**")) {
+			uri1c = uri1.replace("*", "");
+			uri2c = uri2.replace("*", "");
+		} else {
+			// Does the rest of the url needs to be replaced with
+			uri1c = uri1.replace("**", "");
+			uri2c = uri2.replace("**", "");
+		}
 		return uri1c.compareTo(uri2c);
 	}
 }

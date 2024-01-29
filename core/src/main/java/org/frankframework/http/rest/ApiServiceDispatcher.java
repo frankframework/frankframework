@@ -15,12 +15,21 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
-import jakarta.json.*;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
 import org.frankframework.align.XmlTypeToJsonSchemaConverter;
-import org.frankframework.core.*;
+import org.frankframework.core.IAdapter;
+import org.frankframework.core.IPipe;
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLine;
+import org.frankframework.core.PipeLineExit;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.pipes.Json2XmlValidator;
@@ -30,8 +39,15 @@ import org.frankframework.util.LogUtil;
 import org.springframework.util.MimeType;
 
 import javax.ws.rs.core.Response.Status;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,16 +93,24 @@ public class ApiServiceDispatcher {
 
 			String[] patternSegments = uriPattern.split("/");
 
-			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
+			int matches = 0;
+
+			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length && !Arrays.asList(patternSegments).contains("**")) {
 				continue;
 			}
 
-			int matches = 0;
 			for (int i = 0; i < uriSegments.length; i++) {
 				if (patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
 					matches++;
 				}
+
+				if (patternSegments[i].equals("**")) {
+					ApiDispatchConfig result = patternClients.get(uriPattern);
+					results.add(result);
+					return results;
+				}
 			}
+
 			if (matches == uriSegments.length) {
 				ApiDispatchConfig result = patternClients.get(uriPattern);
 				results.add(result);
@@ -94,22 +118,8 @@ public class ApiServiceDispatcher {
 					return results;
 				}
 			}
-
-			if (uri.contains("**")) {
-				ApiDispatchConfig result = new ApiDispatchConfig(matchUri(uriPattern, uri));
-				results.add(result);
-				return results;
-			}
 		}
 		return results;
-	}
-
-	public static String matchUri(String uri, String wildcard) {
-		//Check if wildcard is present and if the uri contains the part of the uri in the wildcard
-		if (wildcard.contains("**") && uri.contains(wildcard.replace("*", ""))) {
-			return uri;
-		}
-		return "";
 	}
 
 	public void registerServiceClient(ApiListener listener) throws ListenerException {
@@ -119,7 +129,7 @@ public class ApiServiceDispatcher {
 
 		synchronized(patternClients) {
 			for(ApiListener.HttpMethod method : listener.getAllMethods()){
-				patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
+				patternClients.computeIfAbsent(uriPattern, ApiDispatchConfig::new).register(method, listener);
 				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}}]", uriPattern, method);
 			}
 		}

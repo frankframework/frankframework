@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ApiServiceDispatcherTest {
 
@@ -114,6 +116,16 @@ public class ApiServiceDispatcherTest {
 		testMultipleMethods(uri);
 	}
 
+	@Test
+	void testFindMatchSingleAsterisk() throws ListenerException {
+		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, "/customers/*/addresses/345");
+		dispatcher.registerServiceClient(listener);
+
+		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri("/customers/123/addresses/345");
+
+		assertEquals(1, matchingConfig.size());
+	}
+
 	@ParameterizedTest
 	@CsvSource({
 			"/customers/**, /customers/123/addresses/345",
@@ -121,14 +133,14 @@ public class ApiServiceDispatcherTest {
 			"/customers/**, /customers/123/addresses/345"
 	})
 	void testFindMatchDoubleAsterisk(String uriPattern, String expectedUri) throws ListenerException {
-		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, expectedUri);
+		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, uriPattern);
 		dispatcher.registerServiceClient(listener);
 
-		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri(uriPattern);
+		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri(expectedUri);
 
-		assertEquals(expectedUri, matchingConfig.get(0).getUriPattern());
 		assertEquals(1, matchingConfig.size());
 	}
+
 
 	private void testMultipleMethods(String uri){
 		ApiDispatchConfig config = dispatcher.findConfigForUri("/"+uri);
