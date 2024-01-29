@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import org.springframework.jdbc.datasource.DelegatingDataSource;
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.jndi.PoolingJndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
-public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
+public class BtmDataSourceFactory extends PoolingJndiDataSourceFactory implements DisposableBean {
 
 	private @Getter @Setter int maxIdleTime = 60;
 

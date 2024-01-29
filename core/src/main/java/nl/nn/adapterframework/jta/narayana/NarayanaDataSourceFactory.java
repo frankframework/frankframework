@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,11 +32,11 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.jdbc.datasource.OpenManagedDataSource;
-import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.jndi.PoolingJndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
 @Log4j2
-public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
+public class NarayanaDataSourceFactory extends PoolingJndiDataSourceFactory {
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
