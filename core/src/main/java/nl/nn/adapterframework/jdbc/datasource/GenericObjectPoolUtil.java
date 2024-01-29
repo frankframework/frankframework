@@ -15,16 +15,15 @@
 */
 package nl.nn.adapterframework.jdbc.datasource;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 public class GenericObjectPoolUtil {
 
 	private static final String CLOSE = "], ";
 
-	static void addPoolMetadata(GenericObjectPool<?> pool, StringBuilder info) {
-		if (pool == null || info == null) {
-			return;
-		}
+	static void addPoolMetadata(@Nonnull GenericObjectPool<?> pool, @Nonnull StringBuilder info) {
 		info.append("DBCP2 Pool Info: ");
 		info.append("maxIdle [").append(pool.getMaxIdle()).append(CLOSE);
 		info.append("minIdle [").append(pool.getMinIdle()).append(CLOSE);

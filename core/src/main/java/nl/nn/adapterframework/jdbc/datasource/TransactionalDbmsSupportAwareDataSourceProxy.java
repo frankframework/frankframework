@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
@@ -132,7 +133,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		return info.toString();
 	}
 
-	private void addBTMDatasourceInfo(PoolingDataSource dataSource, StringBuilder info) {
+	private void addBTMDatasourceInfo(@Nonnull PoolingDataSource dataSource, StringBuilder info) {
 		info.append("BTM Pool Info: ");
 		info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
 		info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
