@@ -173,7 +173,7 @@ class IbisLocalSenderTest {
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
 		message.closeOnCloseOf(session, ibisLocalSender);
-		SenderResult result = ibisLocalSender.sendMessage(message, session);
+		ibisLocalSender.sendMessage(message, session);
 
 		session.close();
 
