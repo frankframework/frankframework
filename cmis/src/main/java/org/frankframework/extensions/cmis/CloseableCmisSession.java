@@ -40,7 +40,7 @@ public class CloseableCmisSession extends SessionImpl implements AutoCloseable {
 
 	@Override
 	public void close() {
-		log.debug("CMIS Session Close, SPI Binding class name: [{}]", getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
+		log.debug("CMIS Session Close, SPI Binding class name: [{}]", ()->getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
 		clear();
 		CmisBinding binding = getBinding();
 		if (binding != null) {
