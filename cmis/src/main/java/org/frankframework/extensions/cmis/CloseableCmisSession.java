@@ -44,7 +44,7 @@ public class CloseableCmisSession extends SessionImpl implements AutoCloseable {
 		clear();
 		CmisBinding binding = getBinding();
 		if (binding != null) {
-			log.debug("Closing CMIS Bindings instance [{}:{}]", binding.getClass().getSimpleName(), binding);
+			log.debug("Closing CMIS Bindings instance [{}:{}]", ()->binding.getClass().getSimpleName(), ()->binding);
 			binding.close();
 		} else {
 			log.debug("Session has no CMIS Bindings");
