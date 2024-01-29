@@ -22,7 +22,7 @@
                 <select class="form-control" name="adapter" [(ngModel)]="form.adapter"
                   [disabled]="selectedConfiguration ==''">
                   <option *ngFor="let adapter of adapters | configurationFilter:selectedConfiguration | keyvalue" [value]="adapter.value.name">
-                    {{adapter.value.name + adapter.value.description != null ? (" - " + adapter.value.description) : "" | truncate:150}}</option>
+                    {{adapter.value.name + (adapter.value.description != null ? (" - " + adapter.value.description) : "") | truncate:150}}</option>
                 </select>
               </div>
             </div>
