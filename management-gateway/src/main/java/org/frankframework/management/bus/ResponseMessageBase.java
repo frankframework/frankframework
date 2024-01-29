@@ -52,7 +52,11 @@ public abstract class ResponseMessageBase<T> implements Message<T> {
 	}
 
 	public void setFilename(String filename) {
-		setHeader(CONTENT_DISPOSITION_KEY, "attachment; filename=\""+filename+"\"");
+		setFilename("attachment", filename);
+	}
+
+	public void setFilename(String disposition, String filename) {
+		setHeader(CONTENT_DISPOSITION_KEY, disposition + "; filename=\""+filename+"\"");
 	}
 
 	public void setHeader(String key, String value) {

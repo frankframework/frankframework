@@ -1,3 +1,18 @@
+/*
+   Copyright 2024 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package org.frankframework.management.bus.endpoints;
 
 
@@ -16,6 +31,7 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.XmlEncodingUtils;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import java.io.File;
@@ -44,26 +60,26 @@ public class FileViewer extends BusEndpointBase {
 			while ((line = lineNumber.readLine()) != null) {
 				htmlResponse.append(makeConfiguredReplacements(XmlEncodingUtils.encodeChars(line))).append("<br/>");
 			}
-
-			StringResponseMessage responseMessage = new StringResponseMessage(htmlResponse.toString());
-			responseMessage.setHeader("Content-Type", "text/html");
-			return responseMessage;
+            return new StringResponseMessage(htmlResponse.toString(), MediaType.TEXT_HTML);
 		}
 
 		String filename = FilenameUtils.getName(filepath);
 		File file = new File(filepath);
 		FileInputStream fileStream = new FileInputStream(file);
-		BinaryResponseMessage responseMessage = new BinaryResponseMessage(fileStream);
-//		StringResponseMessage responseMessage = new StringResponseMessage(fileStream);
+		BinaryResponseMessage responseMessage;
 
 		if (type.equalsIgnoreCase("text")) {
-			responseMessage.setHeader("Content-Type", "text/plain");
-			responseMessage.setHeader("Content-Disposition","attachment; filename=\""+filename+"\""); //download
+			responseMessage = new BinaryResponseMessage(fileStream, MediaType.TEXT_PLAIN);
+			responseMessage.setFilename(filename); // download
+			return responseMessage;
 		} else if (type.equalsIgnoreCase("xml")) {
-			responseMessage.setHeader("Content-Type", "application/xml");
-			responseMessage.setHeader("Content-Disposition","inline; filename=\""+filename+"\""); //show in browser
+			responseMessage = new BinaryResponseMessage(fileStream, MediaType.APPLICATION_XML);
+			responseMessage.setFilename("inline", filename); //show in browser
+			return responseMessage;
 		}
 
+		responseMessage = new BinaryResponseMessage(fileStream);
+		responseMessage.setFilename(filename);
 		return responseMessage;
 	}
 
