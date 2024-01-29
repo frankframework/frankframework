@@ -1,4 +1,4 @@
-ARG WILDFLY_VERSION=31.0.0.Final-jdk17
+ARG WILDFLY_VERSION=26.1.3.Final-jdk17
 FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION}
 
 USER root
