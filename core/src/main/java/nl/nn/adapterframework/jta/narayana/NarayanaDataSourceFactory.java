@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jta.narayana;
 
+import static java.util.Objects.requireNonNull;
+
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -23,7 +25,7 @@ import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory;
 import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.commons.dbcp2.managed.XAConnectionFactory;
-import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
@@ -55,10 +57,10 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 
 		DataSource ds;
 		if(maxPoolSize > 1) {
-			XAConnectionFactory cf = new DataSourceXAConnectionFactory(transactionManager.getTransactionManager(), xaDataSource);
+			XAConnectionFactory cf = new DataSourceXAConnectionFactory(requireNonNull(transactionManager.getTransactionManager()), xaDataSource);
 			PoolableConnectionFactory poolableConnectionFactory = new PoolableManagedConnectionFactory(cf, null);
 
-			ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
+			GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
 
 			ds = new OpenManagedDataSource<PoolableConnection>(connectionPool, cf.getTransactionRegistry());
 			log.info("created XA-enabled PoolingDataSource [{}]", ds);

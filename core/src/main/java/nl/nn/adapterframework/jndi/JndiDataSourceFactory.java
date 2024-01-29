@@ -31,13 +31,13 @@ import org.apache.commons.dbcp2.DataSourceConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jdbc.datasource.OpenPoolingDataSource;
 import nl.nn.adapterframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -91,8 +91,8 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
 
-		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
-		org.apache.commons.dbcp2.PoolingDataSource<PoolableConnection> ds = new org.apache.commons.dbcp2.PoolingDataSource<>(connectionPool);
+		GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
+		OpenPoolingDataSource<PoolableConnection> ds = new OpenPoolingDataSource<>(connectionPool);
 		log.info("registered PoolingDataSource [{}]", ds);
 		return ds;
 	}
@@ -122,7 +122,7 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 		return new ArrayList<>(objects.keySet());
 	}
 
-	protected ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
+	protected GenericObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		if (maxLifeTime > 0) {

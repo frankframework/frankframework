@@ -19,7 +19,6 @@ import java.sql.Connection;
 
 import org.apache.commons.dbcp2.managed.ManagedDataSource;
 import org.apache.commons.dbcp2.managed.TransactionRegistry;
-import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
@@ -29,14 +28,17 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
  */
 public class OpenManagedDataSource<C extends Connection> extends ManagedDataSource<C> {
 
-	public OpenManagedDataSource(ObjectPool pool, TransactionRegistry transactionRegistry) {
+	public OpenManagedDataSource(final GenericObjectPool<C> pool, TransactionRegistry transactionRegistry) {
 		super(pool, transactionRegistry);
 	}
 
-	public void addPoolMetadata(StringBuilder info) {
-		ObjectPool<C> objectPool = super.getPool();
-		if (objectPool instanceof GenericObjectPool) {
-			GenericObjectPoolUtil.addPoolMetadata((GenericObjectPool<C>) objectPool, info);
-		}
+	@Override
+	protected GenericObjectPool<C> getPool() {
+		return (GenericObjectPool<C>) super.getPool();
+	}
+
+	@Override
+	public String toString() {
+		return "ManagedDataSource [], DBCP2 Pool Info: " + super.getPool();
 	}
 }

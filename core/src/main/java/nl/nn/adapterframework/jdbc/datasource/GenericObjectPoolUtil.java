@@ -21,7 +21,7 @@ public class GenericObjectPoolUtil {
 
 	private static final String CLOSE = "], ";
 
-	static void addPoolMetadata(GenericObjectPool pool, StringBuilder info) {
+	static void addPoolMetadata(GenericObjectPool<?> pool, StringBuilder info) {
 		if (pool == null || info == null) {
 			return;
 		}
