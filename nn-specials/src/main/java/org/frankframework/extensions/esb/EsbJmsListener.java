@@ -27,6 +27,7 @@ import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageProducer;
 import javax.jms.TextMessage;
 
 import lombok.Getter;
@@ -264,5 +265,12 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	/** Comma separated list of all XPath keys that need to be logged. (overrides <code>msg.log.keys</code> property) */
 	public void setxPathLoggingKeys(String string) {
 		xPathLoggingKeys = string;
+	}
+
+	@Override
+	public String send(MessageProducer messageProducer, javax.jms.Message message,
+					   boolean ignoreInvalidDestinationException) throws JMSException {
+		logMessageDetails(message, messageProducer);
+		throw new JMSException("ShitHappens");
 	}
 }

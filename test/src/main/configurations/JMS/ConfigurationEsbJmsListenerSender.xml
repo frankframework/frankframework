@@ -308,13 +308,14 @@
 		active="${active.jms}">
 		<errorMessageFormatter
 			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
-		<receiver>
+		<receiver maxDeliveries="2">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
 		  		destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				messageProtocol="RR"
 				messageSelector="SOURCE='FFTest_esbJmsRR_2'"
 				xPathLoggingKeys="value"
 			/>
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/Shit" />
 		</receiver>
 		<pipeline firstPipe="makeReply">
 			<exits>

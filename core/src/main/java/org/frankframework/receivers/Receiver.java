@@ -1290,6 +1290,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						}
 						getListener().afterMessageProcessed(pipeLineResult, messageForAfterMessageProcessed, session);
 					} catch (Exception e) {
+						itx.setRollbackOnly();
+						messageInError = true;
+						pipeLineResult.setState(ExitState.ERROR);
 						if (manualRetry) {
 							// Somehow messages wrapped in MessageWrapper are in the ITransactionalStorage. This might cause class cast exceptions.
 							// There are, however, also Listeners that might use MessageWrapper as their raw message type, like JdbcListener
