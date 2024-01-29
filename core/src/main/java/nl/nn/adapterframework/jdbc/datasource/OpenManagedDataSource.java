@@ -39,6 +39,6 @@ public class OpenManagedDataSource<C extends Connection> extends ManagedDataSour
 
 	@Override
 	public String toString() {
-		return "ManagedDataSource [], DBCP2 Pool Info: " + super.getPool();
+		return "ManagedDataSource, DBCP2 Pool Info: " + super.getPool();
 	}
 }

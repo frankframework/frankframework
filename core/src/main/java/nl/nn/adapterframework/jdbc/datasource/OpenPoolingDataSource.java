@@ -37,6 +37,6 @@ public class OpenPoolingDataSource<C extends Connection> extends PoolingDataSour
 
 	@Override
 	public String toString() {
-		return "PoolingDataSource [], DBCP2 Pool Info: " + super.getPool();
+		return "PoolingDataSource, DBCP2 Pool Info: " + super.getPool();
 	}
 }
