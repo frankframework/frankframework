@@ -15,12 +15,15 @@
 */
 package nl.nn.adapterframework.jdbc.datasource;
 
+import static nl.nn.adapterframework.jdbc.datasource.GenericObjectPoolUtil.addPoolMetadata;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
@@ -113,30 +116,28 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 			info.append("driver version [").append(metadata.get("driver-version")).append(CLOSE);
 		}
 
-		if (getTargetDataSource() instanceof OpenManagedDataSource) {
-			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) getTargetDataSource();
-			targetDataSource.addPoolMetadata(info);
-		} else if (getTargetDataSource() instanceof org.apache.commons.dbcp2.PoolingDataSource) {
-			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) getTargetDataSource();
-			dataSource.addPoolMetadata(info);
-		} else if (getTargetDataSource() instanceof PoolingDataSource) { // BTM instance
-			addBTMDatasourceInfo(info);
+		// TODO: Clean up this code more.
+		DataSource targetDataSource = getTargetDataSource();
+		if (targetDataSource instanceof OpenManagedDataSource) {
+			OpenManagedDataSource<?> dataSource = (OpenManagedDataSource<?>) targetDataSource;
+			addPoolMetadata(dataSource.getPool(), info);
+		} else if (targetDataSource instanceof OpenPoolingDataSource) {
+			OpenPoolingDataSource<?> dataSource = (OpenPoolingDataSource<?>) targetDataSource;
+			addPoolMetadata(dataSource.getPool(), info);
+		} else if (targetDataSource instanceof PoolingDataSource) { // BTM instance
+			PoolingDataSource dataSource = (PoolingDataSource) targetDataSource;
+			addBTMDatasourceInfo(dataSource, info);
 		}
 
 		info.append(" datasource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 		return info.toString();
 	}
 
-	private void addBTMDatasourceInfo(StringBuilder info) {
-		PoolingDataSource dataSource = (PoolingDataSource) getTargetDataSource();
+	private void addBTMDatasourceInfo(@Nonnull PoolingDataSource dataSource, StringBuilder info) {
 		info.append("BTM Pool Info: ");
-		if (dataSource == null) {
-			return;
-		}
 		info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
 		info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
 		info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
 		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append(CLOSE);
 	}
-
 }

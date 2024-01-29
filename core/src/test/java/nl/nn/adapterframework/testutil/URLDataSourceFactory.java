@@ -84,14 +84,17 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		return false;
 	}
 
+	@Override
+	protected DataSource augmentDatasource(CommonDataSource dataSource, String product) {
+		// Just cast the datasource and do not wrap it in a pool for the benefit of the tests.
+		return (DataSource) dataSource;
+	}
+
 	private DataSource namedDataSource(DataSource ds, String name, boolean testPeek) {
 		return new DelegatingDataSource(ds) {
 			@Override
 			public String toString() {
-				StringBuilder builder = new StringBuilder();
-				builder.append(String.format("%s [%s]", PRODUCT_KEY, name));
-				builder.append(String.format(" %s [%s]", TEST_PEEK_KEY, testPeek));
-				return builder.toString();
+				return String.format("%s [%s] %s [%s]", PRODUCT_KEY, name, TEST_PEEK_KEY, testPeek);
 			}
 		};
 	}
