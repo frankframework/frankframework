@@ -33,9 +33,9 @@ public class FileViewer extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/file-viewer")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getFileContent(@QueryParam("fileName") String fileName, @QueryParam("type") String type) {
+	public Response getFileContent(@QueryParam("file") String file, @QueryParam("type") String type) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
-		builder.addHeader("fileName", fileName);
+		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", type);
 		return callSyncGateway(builder);
 	}
