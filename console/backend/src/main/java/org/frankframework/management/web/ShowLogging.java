@@ -41,10 +41,9 @@ public class ShowLogging extends FrankApiBase {
 	@Path("/logging")
 	@Relation("logging")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogDirectory(@QueryParam("directory") String directory, @QueryParam("sizeFormat") String sizeFormat, @QueryParam("wildcard") String wildcard) {
+	public Response getLogDirectory(@QueryParam("directory") String directory, @QueryParam("wildcard") String wildcard) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOGGING, BusAction.GET);
 		builder.addHeader("directory", directory);
-		builder.addHeader("sizeFormat", sizeFormat);
 		builder.addHeader("wildcard", wildcard);
 		return callSyncGateway(builder);
 	}

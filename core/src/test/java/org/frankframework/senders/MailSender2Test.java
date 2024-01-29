@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
+import com.icegreen.greenmail.util.ServerSetup;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
 import jakarta.mail.MessagingException;
@@ -22,9 +23,15 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 	private final String testUser="testUser";
 	private final String testPassword="testPassword";
 	private final String domainWhitelist="localhost,frankframework.org";
+	private static final ServerSetup serverSetup = ServerSetupTest.SMTP;
 
 	@RegisterExtension
-	static GreenMailExtension greenMail = new GreenMailExtension(ServerSetupTest.SMTP);
+	static GreenMailExtension greenMail = new GreenMailExtension(serverSetup);
+
+	static {
+		// Increase the timeout for the GreenMail server to start; default of 2000L fails on GitHub Actions
+		serverSetup.setServerStartupTimeout(4_000L);
+	}
 
 	@BeforeEach
 	public void setup() {
@@ -72,6 +79,17 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 
 		assertMailHeader(message, "From", "\"Me, Myself and I\" <me@address.org>");
 		assertMailHeader(message, "Return-Path", "<me@address.org>");
+	}
+
+	@Test
+	void testGetPropertyWhenSslEnabled() throws Exception {
+		sender.setUseSsl(true);
+
+		sender.configure();
+		sender.open();
+
+		assertTrue(Boolean.parseBoolean(sender.getProperties().getProperty("mail.smtp.starttls.enable")));
+
 	}
 
 	@Test

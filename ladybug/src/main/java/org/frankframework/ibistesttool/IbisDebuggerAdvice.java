@@ -15,7 +15,6 @@
 */
 package org.frankframework.ibistesttool;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -28,7 +27,6 @@ import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.ICorrelatedPullingListener;
 import org.frankframework.core.IExtendedPipe;
-import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
@@ -44,16 +42,13 @@ import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.processors.CacheSenderWrapperProcessor;
 import org.frankframework.processors.CheckSemaphorePipeProcessor;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.senders.SenderWrapperBase;
-import org.frankframework.stream.IOutputStreamingSupport;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageOutputStream;
 import org.frankframework.stream.ThreadConnector;
 import org.frankframework.stream.ThreadLifeCycleEventListener;
 import org.frankframework.stream.xml.XmlTee;
@@ -293,51 +288,6 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	 */
 	public SenderResult debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, PipeLineSession session) throws Throwable {
 		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 1, SenderReturnType.SENDERRESULT);
-	}
-
-	/**
-	 * Provides advice for {@link IOutputStreamingSupport#provideOutputStream(PipeLineSession session, IForwardTarget next)}
-	 */
-	public MessageOutputStream debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, PipeLineSession session) throws Throwable {
-		if (!isEnabled()) {
-			return (MessageOutputStream)proceedingJoinPoint.proceed();
-		}
-		String correlationId = getCorrelationId(session);
-		if (log.isDebugEnabled()) log.debug("debugProvideOutputStream thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] correlationId ["+correlationId+"]");
-		if (proceedingJoinPoint.getTarget() instanceof ISender) {
-			ISender sender = (ISender)proceedingJoinPoint.getTarget();
-			// Use WriterPlaceHolder to make the contents that is later written to the MessageOutputStream appear as input of the Sender
-			WriterPlaceHolder writerPlaceHolder = ibisDebugger.senderInput(sender, correlationId, new WriterPlaceHolder());
-			MessageOutputStream resultStream = (MessageOutputStream)proceedingJoinPoint.proceed();
-			String resultMessage = handleMessageOutputStream(writerPlaceHolder, resultStream);
-			ibisDebugger.senderOutput(sender, correlationId, resultMessage);
-			return resultStream;
-		}
-		if (proceedingJoinPoint.getTarget() instanceof IPipe) {
-			IPipe pipe = (IPipe)proceedingJoinPoint.getTarget();
-			PipeLine pipeLine = pipe instanceof AbstractPipe ? ((AbstractPipe)pipe).getPipeLine() : new PipeLine();
-			// Use WriterPlaceHolder to make the contents that is later written to the MessageOutputStream appear as input of the Pipe
-			WriterPlaceHolder writerPlaceHolder = ibisDebugger.pipeInput(pipeLine, pipe, correlationId, new WriterPlaceHolder());
-			MessageOutputStream resultStream = (MessageOutputStream)proceedingJoinPoint.proceed();
-			String resultMessage = handleMessageOutputStream(writerPlaceHolder, resultStream);
-			ibisDebugger.pipeOutput(pipeLine, pipe, correlationId, resultMessage);
-			return resultStream;
-		}
-		log.warn("Could not identify outputstream provider ["+proceedingJoinPoint.getTarget().getClass().getName()+"] as pipe or sender");
-		return (MessageOutputStream)proceedingJoinPoint.proceed();
-	}
-
-	private String handleMessageOutputStream(WriterPlaceHolder writerPlaceHolder, MessageOutputStream resultStream) throws IOException {
-		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
-			if (resultStream!=null) {
-				resultStream.captureCharacterStream(writerPlaceHolder.getWriter(), writerPlaceHolder.getSizeLimit());
-			} else {
-				try (Writer writer = writerPlaceHolder.getWriter()) {
-					writer.write("--> Requesting OutputStream from next pipe"); //We already know it failed, but it's a more user-friendly message..
-				}
-			}
-		}
-		return resultStream!=null ? "<-- OutputStream provided" : "<-- Request to provide OutputStream could not be honored, no outputstream provided";
 	}
 
 	@Override

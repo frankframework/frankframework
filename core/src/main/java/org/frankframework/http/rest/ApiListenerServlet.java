@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2023 WeAreFrank!
+   Copyright 2017-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
@@ -35,27 +35,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-import org.frankframework.http.mime.MultipartUtils;
-import org.springframework.util.InvalidMimeTypeException;
-import org.springframework.util.MimeType;
-
-import com.nimbusds.jose.util.JSONObjectUtils;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.http.HttpServletBase;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.PartMessage;
-
+import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.jwt.AuthorizationException;
 import org.frankframework.jwt.JwtSecurityHandler;
 import org.frankframework.lifecycle.IbisInitializer;
@@ -70,6 +55,19 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
+import org.springframework.util.InvalidMimeTypeException;
+import org.springframework.util.MimeType;
+
+import com.nimbusds.jose.util.JSONObjectUtils;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 
 /**
  *
@@ -83,7 +81,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	public static final String AUTHENTICATION_COOKIE_NAME = "authenticationToken";
 
-	private static final List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
+	private static final List<String> IGNORE_HEADERS = List.of("connection", "transfer-encoding", "content-type", "authorization");
 
 	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private final String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
@@ -211,12 +209,12 @@ public class ApiListenerServlet extends HttpServletBase {
 		/*
 		 * Initiate and populate messageContext
 		 */
-		try (PipeLineSession messageContext = new PipeLineSession()) {
-			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
-			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
-			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-			messageContext.put("HttpMethod", method);
-			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
+		try (PipeLineSession pipelineSession = new PipeLineSession()) {
+			pipelineSession.put(PipeLineSession.HTTP_METHOD_KEY, method);
+			pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, request);
+			pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
+			pipelineSession.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
+			pipelineSession.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
@@ -238,11 +236,10 @@ public class ApiListenerServlet extends HttpServletBase {
 						response.setHeader("Access-Control-Allow-Headers", headers);
 					response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
 
-					StringBuilder methods = new StringBuilder();
-					for (ApiListener.HttpMethod mtd : config.getMethods()) {
-						methods.append(", ").append(mtd);
-					}
-					response.setHeader("Access-Control-Allow-Methods", methods.toString());
+					String methods = config.getMethods().stream()
+						.map(ApiListener.HttpMethod::name)
+						.collect(Collectors.joining(", "));
+					response.setHeader("Access-Control-Allow-Methods", methods);
 
 					//Only cut off OPTIONS (aka preflight) requests
 					if (method == ApiListener.HttpMethod.OPTIONS) {
@@ -298,8 +295,8 @@ public class ApiListenerServlet extends HttpServletBase {
 						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
 							try {
 								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
-								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
-								messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
+								pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
+								pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
 							} catch(Exception e) {
 								LOG.warn("unable to validate jwt",e);
 								response.sendError(401, e.getMessage());
@@ -312,13 +309,13 @@ public class ApiListenerServlet extends HttpServletBase {
 						String requiredClaims = listener.getRequiredClaims();
 						String exactMatchClaims = listener.getExactMatchClaims();
 						String anyMatchClaims = listener.getAnyMatchClaims();
-						JwtSecurityHandler handler = (JwtSecurityHandler)messageContext.getSecurityHandler();
+						JwtSecurityHandler handler = (JwtSecurityHandler)pipelineSession.getSecurityHandler();
 						try {
 							handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
 							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
 								List<String> authRoles = listener.getAuthenticationRoleList();
 								if(authRoles != null) {
-									boolean userIsInRole = authRoles.stream().anyMatch(role -> handler.isUserInRole(role, messageContext));
+									boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
 									if(userIsInRole) {
 										userPrincipal = new ApiPrincipal();
 									}
@@ -360,14 +357,14 @@ public class ApiListenerServlet extends HttpServletBase {
 						userPrincipal.updateExpiry();
 						userPrincipal.setToken(authorizationToken);
 						cache.put(authorizationToken, userPrincipal, authTTL);
-						messageContext.put("authorizationToken", authorizationToken);
+						pipelineSession.put("authorizationToken", authorizationToken);
 					}
 				}
 				// Remove this? it's now available as header value
-				messageContext.put("remoteAddr", request.getRemoteAddr());
+				pipelineSession.put("remoteAddr", request.getRemoteAddr());
 				if(userPrincipal != null)
-					messageContext.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
-				messageContext.put("uri", uri);
+					pipelineSession.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
+				pipelineSession.put("uri", uri);
 
 				/*
 				 * Evaluate preconditions
@@ -408,7 +405,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
+				pipelineSession.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
 
 				/*
 				 * Check authorization
@@ -438,20 +435,20 @@ public class ApiListenerServlet extends HttpServletBase {
 					if(name != null) {
 						uriIdentifier++;
 						if(LOG.isTraceEnabled()) LOG.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
-						messageContext.put(name, uriSegments[i]);
+						pipelineSession.put(name, uriSegments[i]);
 					}
 				}
 
 				/*
 				 * Map queryParameters into messageContext
 				 */
-				messageContext.putAll(extractRequestParams(request));
+				pipelineSession.putAll(extractRequestParams(request));
 
 				/*
 				 * Map headers into messageContext
 				 */
 				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
-					messageContext.put("headers", extractHeaderParamsAsXml(request, listener));
+					pipelineSession.put("headers", extractHeaderParamsAsXml(request, listener));
 				}
 
 				/*
@@ -480,7 +477,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							if (!MultipartUtils.isBinary(bodyPart)) {
 								// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
 								LOG.trace("setting multipart formField [{}] to [{}]", fieldName, message);
-								messageContext.put(fieldName, message.asString());
+								pipelineSession.put(fieldName, message.asString());
 								attachment.addAttribute("type", "text");
 								attachment.addAttribute("value", message.asString());
 							} else {
@@ -488,9 +485,9 @@ public class ApiListenerServlet extends HttpServletBase {
 								final String fieldNameName = fieldName + "Name";
 								final String fileName = MultipartUtils.getFileName(bodyPart);
 								LOG.trace("setting multipart formFile [{}] to [{}]", fieldNameName, fileName);
-								messageContext.put(fieldNameName, fileName);
+								pipelineSession.put(fieldNameName, fileName);
 								LOG.trace("setting parameter [{}] to input stream of file [{}]", fieldName, fileName);
-								messageContext.put(fieldName, message);
+								pipelineSession.put(fieldName, message);
 
 								attachment.addAttribute("type", "file");
 								attachment.addAttribute("filename", fileName);
@@ -500,7 +497,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							}
 							attachments.addSubElement(attachment);
 						}
-						messageContext.put("multipartAttachments", attachments.toXML());
+						pipelineSession.put("multipartAttachments", attachments.toXML());
 					} catch(MessagingException e) {
 						response.sendError(400, "Could not read mime multipart request");
 						LOG.warn("{} Could not read mime multipart request", () -> createAbortMessage(remoteUser, 400));
@@ -513,21 +510,21 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Compile Allow header
 				 */
-				messageContext.put("allowedMethods", buildAllowedMethodsHeader(config.getMethods()));
+				pipelineSession.put("allowedMethods", buildAllowedMethodsHeader(config.getMethods()));
 
 				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
 				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
-				PipeLineSession.updateListenerParameters(messageContext, messageId, correlationId);
+				PipeLineSession.updateListenerParameters(pipelineSession, messageId, correlationId);
 
 				/*
 				 * Do the actual request processing by the ApiListener
 				 */
-				Message result = listener.processRequest(body, messageContext);
+				Message result = listener.processRequest(body, pipelineSession);
 
 				/*
 				 * Calculate an eTag over the processed result and store in cache
 				 */
-				if (Boolean.TRUE.equals(messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY))) {
+				if (Boolean.TRUE.equals(pipelineSession.getBoolean(UPDATE_ETAG_CONTEXT_KEY))) {
 					LOG.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
 					if (!Message.isEmpty(result) && method == ApiListener.HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
@@ -545,7 +542,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						cache.remove(etagCacheKey);
 
 						// Not only remove the eTag for the selected resources but also the collection
-						String key = ApiCacheManager.getParentCacheKey(listener, uri);
+						String key = ApiCacheManager.getParentCacheKey(listener, uri, method);
 						if(key != null) {
 							LOG.debug("removing parent etag with key[{}]", key);
 							cache.remove(key);
@@ -580,15 +577,18 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Add headers
 				 */
-				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
+				response.addHeader("Allow", (String) pipelineSession.get("allowedMethods"));
 
-				if (!Message.isEmpty(result)) {
-					MimeType contentType = determineContentType(messageContext, listener, result);
+				if (!Message.isEmpty(result) || method == ApiListener.HttpMethod.HEAD) {
+					MimeType contentType = determineContentType(pipelineSession, listener, result);
 					response.setContentType(contentType.toString());
+					if (result.size() != Message.MESSAGE_SIZE_UNKNOWN) {
+						response.setContentLength(Math.toIntExact(result.size()));
+					}
 				}
 
 				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
-					String contentDisposition = messageContext.getString(listener.getContentDispositionHeaderSessionKey());
+					String contentDisposition = pipelineSession.getString(listener.getContentDispositionHeaderSessionKey());
 					if(StringUtils.isNotEmpty(contentDisposition)) {
 						LOG.debug("Setting Content-Disposition header to [{}]", contentDisposition);
 						response.setHeader("Content-Disposition", contentDisposition);
@@ -598,21 +598,22 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
 				 */
-				int statusCode = messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
+				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
 				if(statusCode > 0) {
 					response.setStatus(statusCode);
 				}
 
-				/*
-				 * Finalize the pipeline and write the result to the response
-				 */
-				final boolean outputWritten = writeToResponseStream(response, result);
-				if (!outputWritten) {
-					LOG.debug("No output written, set content-type header to null");
-					response.resetBuffer();
-					response.setContentType(null);
+				if (method != ApiListener.HttpMethod.HEAD) {
+					/*
+					 * Finalize the pipeline and write the result to the response
+					 */
+					final boolean outputWritten = writeToResponseStream(response, result);
+					if (!outputWritten) {
+						LOG.debug("No output written, set content-type header to null");
+						response.resetBuffer();
+						response.setContentType(null);
+					}
 				}
-
 				LOG.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
 			}
 			catch (Exception e) {
@@ -638,7 +639,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			String paramName = paramNames.nextElement();
 			String[] paramList = request.getParameterValues(paramName);
 			if(paramList.length > 1) { // contains multiple items
-				List<String> valueList = Arrays.asList(paramList);
+				List<String> valueList = List.of(paramList);
 				if(LOG.isTraceEnabled()) LOG.trace("setting queryParameter [{}] to {}", paramName, valueList);
 				params.put(paramName, valueList);
 			}

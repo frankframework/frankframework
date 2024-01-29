@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023 WeAreFrank!
+   Copyright 2021, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,12 +28,11 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
 import org.frankframework.core.ISecurityHandler;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
+
+import lombok.Getter;
 
 public class JwtSecurityHandler implements ISecurityHandler {
 	protected Logger log = LogUtil.getLogger(this);
@@ -50,7 +49,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	//JWTClaimNames#AUDIENCE claim may be a String or List<String>. Others are either a String or Long (epoch date)
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) {
+	public boolean isUserInRole(String role) {
 		Object claim = claimsSet.get(roleClaim);
 		if(claim instanceof String) {
 			return role.equals(claim);
@@ -62,47 +61,59 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session) {
+	public Principal getPrincipal() {
 		return () -> (String) claimsSet.get(principalNameClaim);
 	}
 
 	public void validateClaims(String requiredClaims, String exactMatchClaims, String anyMatchClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
-					.filter(claim -> !claimsSet.containsKey(claim))
-					.collect(Collectors.toList());
-
-			if(!missingClaims.isEmpty()){
-				throw new AuthorizationException("JWT missing required claims: " + missingClaims);
-			}
+			validateRequiredClaims(requiredClaims);
 		}
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
-					.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
-					.findFirst();
-
-			if(nonMatchingClaim.isPresent()){
-				String key = nonMatchingClaim.get().getKey();
-				String expectedValue = nonMatchingClaim.get().getValue();
-				throw new AuthorizationException("JWT "+key+" claim has value ["+claimsSet.get(key)+"], must be ["+expectedValue+"]");
-			}
+			validateExactMatchClaims(exactMatchClaims);
 		}
 
 		// verify matchOneOf claims
 		if(StringUtils.isNotEmpty(anyMatchClaims)) {
-			Map<String, Set<String>> allowedValuesByClaim = splitClaims(anyMatchClaims)
-					.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
-			boolean matchesOneOf = allowedValuesByClaim
-					.entrySet()
-					.stream()
-					.anyMatch(entry -> entry.getValue().contains(getClaimAsString(entry.getKey())));
+			validateAnyMatchClaims(anyMatchClaims);
+		}
+	}
 
-			if(!matchesOneOf){
-				throw new AuthorizationException("JWT does not match one of: ["+ anyMatchClaims +"]");
-			}
+	void validateRequiredClaims(@Nonnull String requiredClaims) throws AuthorizationException {
+		List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
+				.filter(claim -> !claimsSet.containsKey(claim))
+				.collect(Collectors.toList());
+
+		if(!missingClaims.isEmpty()){
+			throw new AuthorizationException("JWT missing required claims: " + missingClaims);
+		}
+	}
+
+	void validateExactMatchClaims(@Nonnull String exactMatchClaims) throws AuthorizationException {
+		Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
+				.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
+				.findFirst();
+
+		if(nonMatchingClaim.isPresent()){
+			String key = nonMatchingClaim.get().getKey();
+			String expectedValue = nonMatchingClaim.get().getValue();
+			throw new AuthorizationException("JWT "+key+" claim has value ["+claimsSet.get(key)+"], must be ["+expectedValue+"]");
+		}
+	}
+
+	void validateAnyMatchClaims(@Nonnull String anyMatchClaims) throws AuthorizationException {
+		Map<String, Set<String>> allowedValuesByClaim = splitClaims(anyMatchClaims)
+				.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
+		boolean matchesOneOf = allowedValuesByClaim
+				.entrySet()
+				.stream()
+				.anyMatch(entry -> entry.getValue().contains(getClaimAsString(entry.getKey())));
+
+		if(!matchesOneOf){
+			throw new AuthorizationException("JWT does not match one of: ["+ anyMatchClaims +"]");
 		}
 	}
 

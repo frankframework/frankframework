@@ -1,9 +1,10 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { LoggingService, LoggingFile } from './logging.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SortEvent, ThSortableDirective, basicTableSort } from 'src/app/components/th-sortable.directive';
 
 @Component({
   selector: 'app-logging',
@@ -16,9 +17,11 @@ export class LoggingComponent implements OnInit {
   directory: string = "";
   path: string = "";
   fileName: string = "";
-  list: LoggingFile[] = [];
+  originalList: LoggingFile[] = [];
+  sortedlist: LoggingFile[] = [];
 
   @ViewChild('iframe') iframeRef!: ElementRef<HTMLIFrameElement>;
+  @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
 
   constructor(
     private route: ActivatedRoute,
@@ -51,7 +54,7 @@ export class LoggingComponent implements OnInit {
 
   closeFile() {
     this.viewFile = false;
-    this.router.navigate(['/logging'], { queryParams: { directory: this.directory }});
+    this.router.navigate(['/logging'], { queryParams: { directory: this.directory } });
   };
 
   download(file: LoggingFile) {
@@ -84,20 +87,28 @@ export class LoggingComponent implements OnInit {
   };
 
   openDirectory(directory: string) {
-    this.loggingService.getLogging(directory).subscribe({ next: (data) => {
-      this.alert = false;
-      Object.assign(this, data);
-      this.path = data.directory;
-      if (data.count > data.list.length) {
-        this.alert = "Total number of items [" + data.count + "] exceeded maximum number, only showing first [" + (data.list.length - 1) + "] items!";
+    this.loggingService.getLogging(directory).subscribe({
+      next: (data) => {
+        this.alert = false;
+        this.originalList = data.list;
+        this.sortedlist = data.list;
+        this.directory = data.directory;
+        this.path = data.directory;
+        if (data.count > data.list.length) {
+          this.alert = `Total number of items [${data.count}] exceeded maximum number, only showing first [${data.list.length - 1}] items!`;
+        }
+      }, error: (data) => {
+        this.alert = data.error?.error || "An unknown error occured!";
       }
-    }, error: (data) => {
-      this.alert = (data.error) ? data.error.error : "An unknown error occured!";
-    }});
+    });
   };
 
   copyToClipboard(path: string) {
     const textToCopy = path.trim();
     this.appService.copyToClipboard(textToCopy);
   };
+
+  onSort(event: SortEvent) {
+    this.sortedlist = basicTableSort(this.originalList, this.headers, event);
+  }
 }

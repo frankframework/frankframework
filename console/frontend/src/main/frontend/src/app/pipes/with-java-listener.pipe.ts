@@ -15,6 +15,7 @@ export class WithJavaListenerPipe implements PipeTransform {
       for (const receiver of receivers) {
         if (receiver.listener.class.startsWith('JavaListener')) {
           schedulerEligibleAdapters.push(adapters[adapter]);
+          break;
         }
       }
     }

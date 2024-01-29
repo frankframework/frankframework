@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2016-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,10 +51,6 @@ import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -67,7 +63,6 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
-
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
@@ -82,6 +77,10 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import lombok.Getter;
 
 /**
  * Sender to obtain information from and write to a CMIS application.
@@ -230,7 +229,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private boolean runtimeSession = false;
 	private @Getter boolean keepSession = true;
 
-	private Session globalSession;
+	private CloseableCmisSession globalSession;
 
 	private final @Getter CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
@@ -261,12 +260,16 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if(!isKeepSession()) {
 			runtimeSession = true;
 		}
+
+		if (runtimeSession) {
+			log.info("{} using runtime session", getLogPrefix());
+		}
 	}
 
 	/**
 	 * Creates a session during JMV runtime, tries to retrieve parameters and falls back on the defaults when they can't be found
 	 */
-	public Session createCmisSession(ParameterValueList pvl) throws SenderException {
+	public CloseableCmisSession createCmisSession(ParameterValueList pvl) throws SenderException {
 		String authAlias_work = null;
 		String username_work = null;
 		String password_work = null;
@@ -324,14 +327,15 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	@Override
 	public void close() {
 		if (globalSession != null) {
-			globalSession.clear();
+			log.debug("{} Closing global CMIS session", getLogPrefix());
+			globalSession.close();
 			globalSession = null;
 		}
 	}
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		Session cmisSession = null;
+		CloseableCmisSession cmisSession = null;
 		try {
 			ParameterValueList pvl=null;
 			if (getParameterList() != null) {
@@ -369,7 +373,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 		} finally {
 			if (cmisSession != null && runtimeSession) {
-				cmisSession.clear();
+				log.debug("{} Closing CMIS runtime session", getLogPrefix());
+				session.scheduleCloseOnSessionExit(cmisSession, getLogPrefix());
 				cmisSession = null;
 			}
 		}
@@ -380,7 +385,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
 
-		CmisObject object = null;
+		CmisObject object;
 		try {
 			object = getCmisObject(cmisSession, message);
 		} catch (CmisObjectNotFoundException e) {

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.dbms;
+package org.frankframework.jdbc.datasource;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -23,17 +23,19 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
+
+import bitronix.tm.resource.jdbc.PoolingDataSource;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * DataSource that is aware of the database metadata.
  * Fetches the metadata once and caches them.
  */
-
 @Log4j2
 public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwareDataSourceProxy {
+	private static final String CLOSE = "], ";
+
 	private Map<String, String> metadata;
 	private String destinationName = null;
 
@@ -42,7 +44,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	}
 
 	public Map<String, String> getMetaData() throws SQLException {
-		if(metadata == null) {
+		if (metadata == null) {
 			log.debug("populating metadata from getMetaData");
 			try (Connection connection = getConnection()) {
 				populateMetadata(connection);
@@ -66,16 +68,16 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		databaseMetadata.put("driver", md.getDriverName());
 		databaseMetadata.put("driver-version", md.getDriverVersion());
 
-		this.metadata = databaseMetadata;
+		metadata = databaseMetadata;
 	}
 
 	public String getDestinationName() throws SQLException {
-		if(destinationName == null) {
+		if (destinationName == null) {
 			StringBuilder builder = new StringBuilder();
 			builder.append(getMetaData().get("url"));
 
 			String catalog = getMetaData().get("catalog");
-			if(catalog != null) builder.append("/"+catalog);
+			if (catalog != null) builder.append("/").append(catalog);
 
 			destinationName = builder.toString();
 		}
@@ -85,35 +87,56 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	@Override
 	public Connection getConnection() throws SQLException {
 		Connection conn = super.getConnection();
-		if(metadata == null) {
+		if (metadata == null) {
 			log.debug("populating metadata from getConnection");
 			populateMetadata(conn);
 		}
-
 		return conn;
 	}
 
 	@Override
 	public String toString() {
-		if(metadata != null && log.isInfoEnabled()) {
+		if (metadata != null && log.isInfoEnabled()) {
 			return getInfo();
 		}
 		return obtainTargetDataSource().toString();
 	}
 
 	public String getInfo() {
-		StringBuilder builder = new StringBuilder();
-
-		if(metadata != null) {
-			builder.append("user ["+metadata.get("user")+"]");
-			builder.append(" url ["+metadata.get("url")+"]");
-			builder.append(" product ["+metadata.get("product")+"]");
-			builder.append(" product version ["+metadata.get("product-version")+"]");
-			builder.append(" driver ["+metadata.get("driver")+"]");
-			builder.append(" driver version ["+metadata.get("driver-version")+"]");
+		StringBuilder info = new StringBuilder();
+		if (metadata != null) {
+			info.append("user [").append(metadata.get("user")).append(CLOSE);
+			info.append("url [").append(metadata.get("url")).append(CLOSE);
+			info.append("product [").append(metadata.get("product")).append(CLOSE);
+			info.append("product version [").append(metadata.get("product-version")).append(CLOSE);
+			info.append("driver [").append(metadata.get("driver")).append(CLOSE);
+			info.append("driver version [").append(metadata.get("driver-version")).append(CLOSE);
 		}
-		builder.append(" datasource ["+obtainTargetDataSource().toString()+"]");
 
-		return builder.toString();
+		if (getTargetDataSource() instanceof OpenManagedDataSource) {
+			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) getTargetDataSource();
+			targetDataSource.addPoolMetadata(info);
+		} else if (getTargetDataSource() instanceof org.apache.commons.dbcp2.PoolingDataSource) {
+			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) getTargetDataSource();
+			dataSource.addPoolMetadata(info);
+		} else if (getTargetDataSource() instanceof PoolingDataSource) { // BTM instance
+			addBTMDatasourceInfo(info);
+		}
+
+		info.append(" datasource [").append(obtainTargetDataSource().getClass().getName()).append("]");
+		return info.toString();
 	}
+
+	private void addBTMDatasourceInfo(StringBuilder info) {
+		PoolingDataSource dataSource = (PoolingDataSource) getTargetDataSource();
+		info.append("BTM Pool Info: ");
+		if (dataSource == null) {
+			return;
+		}
+		info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
+		info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
+		info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
+		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append(CLOSE);
+	}
+
 }

@@ -1,6 +1,3 @@
-<!-- Angular ui-router hack-->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content">
   <ngb-alert *ngIf="alert" type="danger" [dismissible]="false">{{alert}}</ngb-alert>
   <div class="row">
@@ -26,16 +23,16 @@
             <table class="table table-striped">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Size</th>
-                  <th>Date</th>
+                  <th sortable="name" (onSort)="onSort($event)">Name</th>
+                  <th sortable="size" (onSort)="onSort($event)">Size</th>
+                  <th sortable="lastModified" (onSort)="onSort($event)">Date</th>
                   <th>&nbsp;</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let file of list | searchFilter: fileName">
-                  <td class="pointer" (click)=" open(file)">{{file.name}}</td>
-                  <td><span *ngIf="file.type == 'file'">{{file.size}}</span></td>
+                <tr *ngFor="let file of sortedlist | searchFilter: fileName">
+                  <td class="pointer" (click)="open(file)">{{file.name}}</td>
+                  <td><span *ngIf="file.type == 'file'">{{file.sizeDisplay}}</span></td>
                   <td appToDate [time]="file.lastModified"></td>
                   <td class="hideBtn1170" *ngIf="file.type == 'file'">
                     <button (click)="download(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i> <span> Download</span></button>

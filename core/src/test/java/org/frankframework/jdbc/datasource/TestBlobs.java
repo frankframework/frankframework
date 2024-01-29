@@ -1,4 +1,4 @@
-package org.frankframework.jdbc.dbms;
+package org.frankframework.jdbc.datasource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;

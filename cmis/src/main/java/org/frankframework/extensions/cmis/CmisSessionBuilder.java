@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import java.net.URL;
 
 import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.Session;
-import org.apache.chemistry.opencmis.client.api.SessionFactory;
-import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
+import org.apache.chemistry.opencmis.client.bindings.CmisBindingFactory;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
@@ -106,7 +105,7 @@ public class CmisSessionBuilder {
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
-	public Session build() throws CmisSessionException {
+	public CloseableCmisSession build() throws CmisSessionException {
 		CredentialFactory cf = new CredentialFactory(authAlias, username, password);
 		return build(cf.getUsername(), cf.getPassword());
 	}
@@ -117,7 +116,7 @@ public class CmisSessionBuilder {
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
-	public Session build(String userName, String password) throws CmisSessionException {
+	public CloseableCmisSession build(String userName, String password) throws CmisSessionException {
 		if (StringUtils.isEmpty(url) && overrideEntryPointWSDL == null) {
 			throw new CmisSessionException("no url configured");
 		}
@@ -131,7 +130,7 @@ public class CmisSessionBuilder {
 			throw new CmisSessionException("illegal value for bindingtype [" + getBindingType() + "], overrideEntryPointWSDL only supports webservices");
 		}
 
-		log.debug("connecting to url ["+ url +"] repository ["+ repository +"]");
+		log.debug("connecting to url [{}] repository [{}]", url, repository);
 
 		SessionParameterMap parameterMap = new SessionParameterMap();
 
@@ -141,13 +140,28 @@ public class CmisSessionBuilder {
 		if (getBindingType() == BindingTypes.ATOMPUB) {
 			parameterMap.setAtomPubBindingUrl(url);
 			parameterMap.setUsernameTokenAuthentication(false);
+			parameterMap.put(SessionParameter.BINDING_SPI_CLASS, CmisCustomAtomPubSpi.class.getName());
+			log.debug("Added custom BINDING_SPI_CLASS CmisCustomAtomPubSpi to new CmisSession");
+
+			// Apply defaults that should be set by CmisBindingFactory but are now skipped with custom binding type
+			parameterMap.put(SessionParameter.AUTH_SOAP_USERNAMETOKEN, "false");
 		} else if (getBindingType() == BindingTypes.BROWSER) {
 			parameterMap.setBrowserBindingUrl(url);
 			parameterMap.setBasicAuthentication();
 			//Add parameter dateTimeFormat to send dates in ISO format instead of milliseconds.
 			parameterMap.put(SessionParameter.BROWSER_DATETIME_FORMAT, DateTimeFormat.EXTENDED.value());
-		} else {
+			parameterMap.put(SessionParameter.BINDING_SPI_CLASS, CmisCustomBrowserBindingSpi.class.getName());
+			log.debug("Added custom BINDING_SPI_CLASS CmisCustomBrowserBindingSpi to new CmisSession");
+
+			// Apply defaults that should be set by CmisBindingFactory but are now skipped with custom binding type
+			parameterMap.put(SessionParameter.BROWSER_SUCCINCT, "true");
+			parameterMap.put(SessionParameter.AUTH_SOAP_USERNAMETOKEN, "false");
+
+		} else { // BindingTypes.WEBSERVICES
 			parameterMap.setUsernameTokenAuthentication(true);
+			parameterMap.put(SessionParameter.BINDING_SPI_CLASS, CmisCustomWebServicesSpi.class.getName());
+			log.debug("Added custom BINDING_SPI_CLASS CmisCustomWebServicesSpi to new CmisSession");
+
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,
 			// we can manually override this wsdl by reading it from the classpath.
 			//TODO: Does this work with any binding type?
@@ -164,15 +178,12 @@ public class CmisSessionBuilder {
 						//eg. if the named charset is not supported
 						throw new CmisSessionException("error reading overrideEntryPointWSDL["+overrideEntryPointWSDL+"]");
 					}
-				}
-				else {
+				} else {
 					throw new CmisSessionException("cannot find overrideEntryPointWSDL["+overrideEntryPointWSDL+"]");
 				}
-			}
-			else {
+			} else {
 				parameterMap.setWebServicesBindingUrl(url);
 
-				parameterMap.put(SessionParameter.BINDING_TYPE, BindingType.WEBSERVICES.value());
 				parameterMap.put(SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, url + "/RepositoryService.svc?wsdl");
 				parameterMap.put(SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, url + "/NavigationService.svc?wsdl");
 				parameterMap.put(SessionParameter.WEBSERVICES_OBJECT_SERVICE, url + "/ObjectService.svc?wsdl");
@@ -182,6 +193,9 @@ public class CmisSessionBuilder {
 				parameterMap.put(SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, url + "/MultiFilingService.svc?wsdl");
 				parameterMap.put(SessionParameter.WEBSERVICES_POLICY_SERVICE, url + "/PolicyService.svc?wsdl");
 				parameterMap.put(SessionParameter.WEBSERVICES_ACL_SERVICE, url + "/ACLService.svc?wsdl");
+			}
+			if (!parameterMap.containsKey(SessionParameter.AUTH_SOAP_USERNAMETOKEN)) {
+				parameterMap.put(SessionParameter.AUTH_SOAP_USERNAMETOKEN, "true");
 			}
 		}
 		parameterMap.setRepositoryId(repository);
@@ -226,12 +240,27 @@ public class CmisSessionBuilder {
 		if(timeout > 0)
 			parameterMap.put(SessionParameter.CONNECT_TIMEOUT, timeout);
 
-		// Custom IBIS HttpSender to support ssl connections and proxies
+		// Custom CMIS HttpSender to support ssl connections and proxies
 		parameterMap.setHttpInvoker(CmisHttpInvoker.class);
 
-		SessionFactory sessionFactory = SessionFactoryImpl.newInstance();
-		Session session = sessionFactory.createSession(parameterMap);
-		log.debug("connected with repository [" + getRepositoryInfo(session) + "]");
+		// Since we specify our own Binding SPI classes to fix a leak, we have to set binding-type for the binding factory to "CUSTOM".
+		parameterMap.put(SessionParameter.BINDING_TYPE, BindingType.CUSTOM.value());
+
+		// Set up session parameters that would normally be done by the CmisBindingFactory but have to be
+		// done here manually b/c of using "custom bindings".
+		if (!parameterMap.containsKey(SessionParameter.AUTHENTICATION_PROVIDER_CLASS)) {
+			parameterMap.put(SessionParameter.AUTHENTICATION_PROVIDER_CLASS, CmisBindingFactory.STANDARD_AUTHENTICATION_PROVIDER);
+		}
+		if (!parameterMap.containsKey(SessionParameter.TYPE_DEFINITION_CACHE_CLASS)) {
+			parameterMap.put(SessionParameter.TYPE_DEFINITION_CACHE_CLASS, CmisBindingFactory.DEFAULT_TYPE_DEFINITION_CACHE_CLASS);
+		}
+		if (!parameterMap.containsKey(SessionParameter.AUTH_HTTP_BASIC)) {
+			parameterMap.put(SessionParameter.AUTH_HTTP_BASIC, "true");
+		}
+
+		CloseableCmisSession session = new CloseableCmisSession(parameterMap, null, null, null, null);
+		session.connect();
+		log.debug("connected with repository [{}]", ()->getRepositoryInfo(session));
 
 		return session;
 	}

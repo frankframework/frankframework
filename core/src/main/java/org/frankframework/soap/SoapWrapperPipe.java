@@ -21,13 +21,9 @@ import java.util.Map;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.TransformerPool;
-import org.frankframework.util.XmlUtils;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IWrapperPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -37,6 +33,12 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.Default;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.TransformerPool;
+import org.frankframework.util.XmlUtils;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
@@ -84,6 +86,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		soapWrapper = SoapWrapper.getInstance();
+		if (getDirection() == Direction.UNWRAP && soapVersion != null && soapVersion != SoapVersion.AUTO) {
+			ConfigurationWarnings.add(this, log, "SoapWrapperPipe does NOT support unwrapping with a specified SoapVersion. " +
+					"It is auto-detected: remove soapVersion property from wrapper.", SuppressKeys.CONFIGURATION_VALIDATION);
+		}
 		if (getDirection() == Direction.UNWRAP && PipeLine.INPUT_WRAPPER_NAME.equals(getName())) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
@@ -96,6 +102,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			if (StringUtils.isEmpty(getSoapNamespaceSessionKey())) {
 				setSoapNamespaceSessionKey(DEFAULT_SOAP_NAMESPACE_SESSION_KEY);
 			}
+		}
+		if (getDirection() == Direction.WRAP && PipeLine.INPUT_WRAPPER_NAME.equals(getName()) && soapVersion == SoapVersion.AUTO) {
+			ConfigurationWarnings.add(this, log, "SoapWrapperPipe should NOT be used to wrap a message in an InputWrapper, without a " +
+					"specified SoapVersion. Add [soapVersion] attribute to the configuration. Now defaults to v1.1 without guarantees. ", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 		if (getSoapVersion() == null) {
 			soapVersion = SoapVersion.AUTO;
@@ -270,6 +280,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	protected Message wrapMessage(Message message, String soapHeader, PipeLineSession session) throws IOException {
 		String soapNamespace = determineSoapNamespace(session);
+		log.debug("Using SOAP namespace [{}] for Wrapping message", soapNamespace);
 		if (soapNamespace == null) {
 			return message;
 		}
