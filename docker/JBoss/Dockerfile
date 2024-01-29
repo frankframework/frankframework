@@ -1,7 +1,7 @@
 ARG REGISTRY=private.docker.nexus.frankframework.org
 ARG JBOSS_VARIANT=eap74-openjdk11-openshift-rhel8
 ARG JBOSS_BASE_VERSION=7.4.0
-ARG JBOSS_VERSION=7.4.13-7
+ARG JBOSS_VERSION=7.4.14-5
 FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_BASE_VERSION} AS jboss-base
 
 COPY src/scripts/createCredentialStore.sh /scripts/createCredentialStore.sh
