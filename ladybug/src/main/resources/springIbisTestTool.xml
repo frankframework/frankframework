@@ -66,11 +66,26 @@
 	<task:scheduler id="closeReportsScheduler"/>
 
 	<task:scheduled-tasks scheduler="closeReportsScheduler">
-		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000" />
+		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000"/>
 	</task:scheduled-tasks>
 
-	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
-		<property name="name" value="Logging"/>
+	<bean name="debugStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
+		<property name="name" value="Debug"/>
+		<property name="destination">
+			<ref bean="debugStorageDatabase"/>
+		</property>
+		<!-- When Ladybug table not available use file storage -->
+		<property name="alternativeDestination">
+			<ref bean="debugStorageFile"/>
+		</property>
+	</bean>
+	<bean name="debugStorageDatabase" class="nl.nn.testtool.storage.database.DatabaseStorage" autowire="byName"
+		depends-on="ladybugDatabaseChangelog"
+		>
+		<property name="name" value="DatabaseDebugStorage"/>
+	</bean>
+	<bean name="debugStorageFile" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
+		<property name="name" value="FileDebugStorage"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
 	</bean>
@@ -81,23 +96,34 @@
 				'${dtap.stage}' == 'xxx' ||
 				'${dtap.stage}' == ''
 				?
-				'testStorageXml' : 'testStorageFile'
+				'testStorageXml' : 'testStorageDatabase'
 				}"
 		/>
 	</bean>
 	<!-- Ladybug API classes autowired by CXF Spring (see ladybug/cxf-beans.xml) expect a bean with name testStorage -->
 	<bean name="testStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
+		<property name="name" value="Test"/>
 		<property name="destination">
+			<!-- Switch between XML storage and Database storage depending on environment -->
 			<ref bean="#{testStorageActive}"/>
+		</property>
+		<!-- When using database storage but Ladybug table not available use file storage -->
+		<property name="alternativeDestination">
+			<ref bean="testStorageFile"/>
 		</property>
 	</bean>
 	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
-		<property name="name" value="Test"/>
+		<property name="name" value="XmlTestStorage"/>
 		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
 		<property name="reportsFolder" value="${ibistesttool.directory}"/>
 	</bean>
-	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
+	<bean name="testStorageDatabase" class="nl.nn.testtool.storage.database.DatabaseTestStorage" autowire="byName"
+		depends-on="ladybugTestDatabaseChangelog"
+		>
 		<property name="name" value="Test"/>
+	</bean>
+	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
+		<property name="name" value="FileTestStorage"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
 	</bean>
@@ -166,5 +192,27 @@
 	<bean name="messageCapturer" class="org.frankframework.ibistesttool.MessageCapturer" autowire="byName"/>
 
 	<bean name="messageTransformer" class="org.frankframework.ibistesttool.transform.HideRegexMessageTransformer"/>
+
+	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
+
+	<bean name="dataSourceFactory" class="org.frankframework.jndi.JndiDataSourceFactory"/>
+
+	<bean name="defaultDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
+		<constructor-arg value="${ladybug.jdbc.migrator.datasource:${jdbc.datasource.default}}"/>
+	</bean>
+
+	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="defaultDataSource"/>
+	</bean>
+
+	<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
+		<property name="dataSource" ref="defaultDataSource"/>
+		<property name="changeLog" value="classpath:ladybug/LadybugDatabaseChangelog.xml"/>
+	</bean>
+
+	<bean name="ladybugTestDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
+		<property name="dataSource" ref="defaultDataSource"/>
+		<property name="changeLog" value="classpath:ladybug/LadybugTestDatabaseChangelog.xml"/>
+	</bean>
 
 </beans>
