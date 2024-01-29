@@ -36,6 +36,12 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.smb.SambaFileSystemUtils;
+import org.frankframework.filesystem.smb.SmbFileRef;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
+import org.frankframework.util.CredentialFactory;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -64,12 +70,6 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import lombok.Getter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.filesystem.smb.SambaFileSystemUtils;
-import org.frankframework.filesystem.smb.SmbFileRef;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageContext;
-import org.frankframework.util.CredentialFactory;
 
 /**
  *
@@ -166,24 +166,22 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	@Override
 	public void close() throws FileSystemException {
-		super.close();
-		try {
-			if(diskShare != null) {
+		if (diskShare != null) {
+			try {
 				diskShare.close();
+			} catch (IOException e) {
+				log.warn("error closing diskShare: {}", diskShare, e);
 			}
-			if(session != null) {
-				session.close();
-			}
-			if(client != null) {
-				client.close();
-			}
-			diskShare = null;
-			session = null;
-			connection = null;
-			client = null;
-		} catch (IOException e) {
-			throw new FileSystemException(e);
 		}
+		if (client != null) {
+			client.close();
+		}
+		diskShare = null;
+		session = null;
+		connection = null;
+		client = null;
+		super.close();
+		log.debug("closed connection to [{}] for Samba2FS", hostname);
 	}
 
 	private @Nonnull AuthenticationContext createAuthenticationContext() throws FileSystemException {
