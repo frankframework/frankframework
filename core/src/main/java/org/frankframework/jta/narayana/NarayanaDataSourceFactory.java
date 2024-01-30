@@ -27,7 +27,7 @@ import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.commons.dbcp2.managed.XAConnectionFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.frankframework.jdbc.datasource.OpenManagedDataSource;
-import org.frankframework.jndi.PoolingJndiDataSourceFactory;
+import org.frankframework.jndi.AbstractXADataSourceFactory;
 import org.frankframework.util.AppConstants;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
@@ -36,7 +36,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class NarayanaDataSourceFactory extends PoolingJndiDataSourceFactory {
+public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
@@ -62,7 +62,7 @@ public class NarayanaDataSourceFactory extends PoolingJndiDataSourceFactory {
 
 			GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
 
-			ds = new OpenManagedDataSource<PoolableConnection>(connectionPool, cf.getTransactionRegistry());
+			ds = new OpenManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
 			log.info("created XA-enabled PoolingDataSource [{}]", ds);
 		} else {
 			ds = new NarayanaDataSource(xaDataSource, dataSourceName);

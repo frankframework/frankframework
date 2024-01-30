@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.jndi.PoolingJndiDataSourceFactory;
+import org.frankframework.jndi.AbstractXADataSourceFactory;
 import org.frankframework.util.AppConstants;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
@@ -28,7 +28,7 @@ import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.Getter;
 import lombok.Setter;
 
-public class BtmDataSourceFactory extends PoolingJndiDataSourceFactory implements DisposableBean {
+public class BtmDataSourceFactory extends AbstractXADataSourceFactory implements DisposableBean {
 
 	private @Getter @Setter int maxIdleTime = 60;
 

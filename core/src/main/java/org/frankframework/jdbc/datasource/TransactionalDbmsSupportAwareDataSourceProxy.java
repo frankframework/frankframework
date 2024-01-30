@@ -15,7 +15,7 @@
 */
 package org.frankframework.jdbc.datasource;
 
-import static nl.nn.adapterframework.jdbc.datasource.GenericObjectPoolUtil.addPoolMetadata;
+import static org.frankframework.jdbc.datasource.GenericObjectPoolUtil.addPoolMetadata;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
