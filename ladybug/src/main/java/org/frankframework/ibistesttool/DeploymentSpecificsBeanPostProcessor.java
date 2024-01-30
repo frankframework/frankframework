@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@ package org.frankframework.ibistesttool;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.util.OptionConverter;
-import org.frankframework.management.bus.DebuggerStatusChangedEvent;
-import org.frankframework.util.AppConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
-import liquibase.integration.spring.SpringLiquibase;
+import org.frankframework.management.bus.DebuggerStatusChangedEvent;
+import org.frankframework.util.AppConstants;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
@@ -91,14 +90,6 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 				if (view == null) {
 					throw new BeanCreationException("Default view '" + defaultView + "' not found");
 				}
-			}
-		}
-		if (bean instanceof SpringLiquibase) {
-			boolean active = APP_CONSTANTS.getBoolean("ladybug.jdbc.migrator.active",
-					APP_CONSTANTS.getBoolean("jdbc.migrator.active", false));
-			if (!active) {
-				SpringLiquibase springLiquibase = (SpringLiquibase)bean;
-				springLiquibase.setShouldRun(active);
 			}
 		}
 		return bean;
