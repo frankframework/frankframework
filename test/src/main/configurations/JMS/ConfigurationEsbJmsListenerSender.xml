@@ -1,9 +1,9 @@
 <module>
-	<adapter name="EsbJmsRRSender" description="Test the functioning of the EsbJmsSender (RR)"
+	<adapter name="EsbJmsRRSenderTibco" description="Test the functioning of the EsbJmsSender (RR) - Tibco"
 		active="${active.tibco}">
 		<receiver>
 			<listener className="org.frankframework.receivers.JavaListener"
-				serviceName="ibis4test-EsbJmsRRSender" />
+				serviceName="ibis4test-EsbJmsRRSenderTibco" />
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms">
 			<exits>
@@ -29,7 +29,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="EsbJmsRRListener" description="Test the functioning of the EsbJmsListener (RR)"
+	<adapter name="EsbJmsRRListenerTibco" description="Test the functioning of the EsbJmsListener (RR) - Tibco"
 		active="${active.tibco}">
 		<errorMessageFormatter
 			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
@@ -55,11 +55,11 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="EsbJmsFFSender" description="Test the functioning of the EsbJmsSender (FF)"
+	<adapter name="EsbJmsFFSenderTibco" description="Test the functioning of the EsbJmsSender (FF) - Tibco"
 		active="${active.tibco}">
 		<receiver>
 			<listener className="org.frankframework.receivers.JavaListener"
-				serviceName="ibis4test-EsbJmsFFSender" />
+				serviceName="ibis4test-EsbJmsFFSenderTibco" />
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms" transactionAttribute="Required">
 			<exits>
@@ -90,10 +90,10 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="EsbJmsFFSenderWithDatasource" active="${active.tibco}">
+	<adapter name="EsbJmsFFSenderWithDatasourceTibco" active="${active.tibco}">
 		<receiver>
 			<listener className="org.frankframework.receivers.JavaListener"
-				serviceName="ibis4test-EsbJmsFFSenderWithDatasource" />
+				serviceName="ibis4test-EsbJmsFFSenderWithDatasourceTibco" />
 		</receiver>
 		<pipeline firstPipe="send2EsbJms" transactionAttribute="Required">
 			<exits>
@@ -143,10 +143,10 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="EsbJmsFFSenderWithRead" active="${active.tibco}">
+	<adapter name="EsbJmsFFSenderWithReadTibco" active="${active.tibco}">
 		<receiver>
 			<listener className="org.frankframework.receivers.JavaListener"
-				serviceName="ibis4test-EsbJmsFFSenderWithRead" />
+				serviceName="ibis4test-EsbJmsFFSenderWithReadTibco" />
 		</receiver>
 		<pipeline firstPipe="Send2EsbJms" transactionAttribute="Required">
 			<exits>
@@ -172,7 +172,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="EsbJmsFFListener" description="Test the functioning of the EsbJmsListener (FF)"
+	<adapter name="EsbJmsFFListenerTibco" description="Test the functioning of the EsbJmsListener (FF) - Tibco"
 		active="${active.tibco}">
 		<receiver transactionAttribute="Required" maxRetries="0">
 			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
@@ -204,33 +204,33 @@
 			<pipe name="subcall_local_echo"
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.senders.IbisLocalSender"
-					javaListener="EsbJmsFFListener_subcall" />
+					javaListener="EsbJmsFFListenerTibco_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_local_exception"
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.senders.IbisLocalSender"
-					javaListener="EsbJmsFFListener_subcall" />
+					javaListener="EsbJmsFFListenerTibco_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_java_echo"
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.senders.IbisJavaSender"
-					serviceName="ibis4test-EsbJmsFFListener_subcall" />
+					serviceName="ibis4test-EsbJmsFFListenerTibco_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="subcall_java_exception"
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.senders.IbisJavaSender"
-					serviceName="ibis4test-EsbJmsFFListener_subcall" />
+					serviceName="ibis4test-EsbJmsFFListenerTibco_subcall" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="EsbJmsFFListener_subcall" active="${active.tibco}">
+	<adapter name="EsbJmsFFListenerTibco_subcall" active="${active.tibco}">
 		<receiver>
 			<listener className="org.frankframework.receivers.JavaListener"
-				name="EsbJmsFFListener_subcall" serviceName="ibis4test-EsbJmsFFListener_subcall" />
+				name="EsbJmsFFListenerTibco_subcall" serviceName="ibis4test-EsbJmsFFListener_subcall" />
 		</receiver>
 		<pipeline firstPipe="switchAction" transactionAttribute="Required">
 			<exits>
@@ -250,6 +250,83 @@
 			</pipe>
 			<pipe name="subcall_java_exception" className="org.frankframework.pipes.ExceptionPipe"
 				getInputFromFixedValue="ERROR">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="EsbJmsRRSender" description="Test the functioning of the EsbJmsSender (RR)"
+		active="${active.jms}">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-EsbJmsRRSender" />
+		</receiver>
+		<pipeline firstPipe="switchAction">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+				  xpathExpression="EsbJmsRRListenerSenderREQ" />
+			<pipe name="BYTES"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
+					destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
+					messageProtocol="RR" messageClass="BYTES">
+					<param name="SOURCE" value="FFTest_esbJmsRR_2" />
+					</sender>
+				<inputWrapper
+					className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+					mode="i2t" addOutputNamespace="true">
+					<param name="cpaId" value="cpa1509" />
+					<param name="conversationId" value="conv0807" />
+					<param name="externalRefToMessageId" value="ext2608" />
+				</inputWrapper>
+				<outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+					mode="i2t" direction="unwrap" removeOutputNamespaces="true" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="TEXT"
+				  className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
+						destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
+						messageProtocol="RR" messageClass="TEXT">
+					<param name="SOURCE" value="FFTest_esbJmsRR_2" />
+				</sender>
+				<inputWrapper
+						className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+						mode="i2t" addOutputNamespace="true">
+					<param name="cpaId" value="cpa1509" />
+					<param name="conversationId" value="conv0807" />
+					<param name="externalRefToMessageId" value="ext2608" />
+				</inputWrapper>
+				<outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+							   mode="i2t" direction="unwrap" removeOutputNamespaces="true" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="EsbJmsRRListener" description="Test the functioning of the EsbJmsListener (RR)"
+		active="${active.jms}">
+		<errorMessageFormatter
+			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+		<receiver>
+			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
+		  		destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
+				messageProtocol="RR"
+				messageSelector="SOURCE='FFTest_esbJmsRR_2'"
+				xPathLoggingKeys="value"
+			/>
+		</receiver>
+		<pipeline firstPipe="makeReply">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<inputWrapper
+				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				mode="i2t" direction="unwrap" />
+			<outputWrapper
+				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				mode="i2t" addOutputNamespace="true" />
+			<pipe name="makeReply" className="nl.nn.adapterframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

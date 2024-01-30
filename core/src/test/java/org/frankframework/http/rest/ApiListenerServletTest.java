@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+Copyright 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class ApiListenerServletTest extends Mockito {
 	private static final String PAYLOAD="{\"sub\":\"UnitTest\",\"aud\":\"Framework\",\"iss\":\"JWTPipeTest\",\"jti\":\"1234\"}";
 
 	enum Methods {
-		GET,POST,PUT,DELETE,OPTIONS
+		GET, POST, PUT, DELETE, OPTIONS, HEAD
 	}
 
 	enum AuthMethods {
@@ -218,6 +218,8 @@ public class ApiListenerServletTest extends Mockito {
 
 		if(method != Methods.GET) {
 			request.setContent(content);
+		} else {
+			request.setContent(null);
 		}
 
 		return request;
@@ -279,8 +281,20 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void simpleHead() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri = "/test1";
+		new ApiListenerBuilder(uri, List.of(Methods.HEAD)).build();
+
+		Response result = service(createRequest(uri, Methods.HEAD));
+		assertEquals(200, result.getStatus());
+		assertEquals("", result.getContentAsString());
+		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void simpleGetMultiMethod() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri="/test1";
+		String uri = "/test1";
 		new ApiListenerBuilder(uri, List.of(Methods.GET, Methods.POST)).build();
 
 		Response result = service(createRequest(uri, Methods.GET));
@@ -381,7 +395,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void apiListenerThatProducesJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesJSONForMethodPost() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/ApiListenerThatProducesJSON/";
 		new ApiListenerBuilder(uri, List.of(Methods.POST), null, MediaTypes.JSON).build();
 
@@ -805,7 +819,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		assertEquals(200, result.getStatus());
 		assertEquals("60", session.get("maxSpeed"));
-		List<String> transportList = List.of("car","bike","moped");
+		List<String> transportList = List.of("car", "bike", "moped");
 		assertEquals(transportList, session.get("transport"));
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -814,7 +828,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void getRequestWithDynamicPath() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/dynamic/";
-		new ApiListenerBuilder(uri+"{poef}", List.of(Methods.GET)).build();
+		new ApiListenerBuilder(uri + "{poef}", List.of(Methods.GET)).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -830,7 +844,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void getRequestWithAsteriskPath() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/dynamic/";
-		new ApiListenerBuilder(uri+"*", List.of(Methods.GET)).build();
+		new ApiListenerBuilder(uri + "*", List.of(Methods.GET)).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
@@ -908,6 +922,64 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 		assertFalse(result.containsHeader("etag"));
+		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
+		assertTrue(result.containsHeader("pragma"));
+	}
+
+	@Test
+	public void apiListenerWithHeadMethodCall() throws Exception {
+		// Arrange
+		String uri = "/apiListenerWithHeadMethodCall";
+		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
+		new ApiListenerBuilder(uri, List.of(Methods.HEAD), MediaTypes.JSON, MediaTypes.JSON)
+				.withResponseContent(repeatableMessage)
+				.build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Accept", "application/json");
+		headers.put("content-type", "application/json");
+
+		// Act
+		Response result = service(createRequest(uri, Methods.HEAD, null, headers));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+		assertFalse(result.containsHeader("etag"));
+		assertEquals("23", result.getHeader("content-length"));
+		assertEquals("application/json;charset=UTF-8", result.getHeader("content-type"));
+		assertEquals("", result.getContentAsString());
+		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
+		assertTrue(result.containsHeader("pragma"));
+	}
+
+	@Test
+	public void apiListenerWithHeadMethodCallAndEmptyMessage() throws Exception {
+		// Arrange
+		String uri = "/apiListenerWithHeadMethodCall";
+		Message repeatableMessage = Message.asMessage(new Message("").asByteArray());
+		new ApiListenerBuilder(uri, List.of(Methods.HEAD), MediaTypes.JSON, MediaTypes.JSON)
+				.withResponseContent(repeatableMessage)
+				.build();
+
+		repeatableMessage.getContext().withSize(20);
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Accept", "application/json");
+		headers.put("content-type", "application/json");
+
+		// Act
+		Response result = service(createRequest(uri, Methods.HEAD, null, headers));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+		assertFalse(result.containsHeader("etag"));
+		assertEquals("20", result.getHeader("content-length"));
+		assertEquals("application/json;charset=UTF-8", result.getHeader("content-type"));
+		assertEquals("", result.getContentAsString());
 		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
 		assertTrue(result.containsHeader("pragma"));
 	}
@@ -1199,6 +1271,7 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals(200, result.getStatus());
 		Message input = requestMessage;
 		assertEquals("application/xml", input.getContext().get("Header.accept"));
+
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1752,7 +1825,6 @@ public class ApiListenerServletTest extends Mockito {
 				listener.setAuthenticationMethod(EnumUtils.parse(AuthenticationMethods.class, authMethod.name()));
 				listener.setAuthenticationRoles("IbisObserver,TestRole");
 			}
-
 		}
 
 		public ApiListenerBuilder setUpdateEtag(boolean roles) {

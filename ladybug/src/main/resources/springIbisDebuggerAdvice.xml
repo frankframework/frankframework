@@ -125,22 +125,6 @@
 			<aop:around
 				pointcut=
 					"
-	 				execution(
-	 					*
-	 					org.frankframework.stream.IOutputStreamingSupport.provideOutputStream(
-	 						org.frankframework.core.PipeLineSession,
-	 						org.frankframework.core.IForwardTarget
-	 					)
-	 				)
-	 				and
-	 				args(session, ..)
-	 				"
-				method="debugProvideOutputStream"
-				arg-names="session"
-			/>
-			<aop:around
-				pointcut=
-					"
 					execution(
 						*
 						org.frankframework.processors.CacheSenderWrapperProcessor.sendMessage(

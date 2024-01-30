@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import javax.xml.soap.SOAPConstants;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -213,6 +215,8 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	@Test
 	public void testWrap() throws Exception {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
+		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
+		pipeline.addPipe(pipe);
 		configureAndStartPipe();
 
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
@@ -223,12 +227,18 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		String actual = prr.getResult().asString();
 
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
+
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("should NOT be used to wrap a message in an InputWrapper"));
 	}
 
 	@Test
 	public void testWrapSoapVersionSoap12() throws Exception {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setSoapVersion(SoapVersion.SOAP12);
+		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
+		pipeline.addPipe(pipe);
 		configureAndStartPipe();
 
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
@@ -239,6 +249,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		String actual = prr.getResult().asString();
 
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
+		assertTrue(getConfigurationWarnings().getWarnings().isEmpty());
 	}
 
 	@Test
@@ -258,6 +269,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		String actual = prr.getResult().asString();
 
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
+		assertTrue(getConfigurationWarnings().getWarnings().isEmpty());
 	}
 
 	@Test

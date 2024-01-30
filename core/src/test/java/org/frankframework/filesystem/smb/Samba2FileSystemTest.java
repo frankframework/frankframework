@@ -1,5 +1,6 @@
 package org.frankframework.filesystem.smb;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import org.frankframework.filesystem.FileSystemTest;
@@ -66,6 +67,21 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 	@Test
 	@Override
 	public void basicFileSystemTestExists() throws Exception {
+		super.basicFileSystemTestExists();
+	}
+
+	@Test
+	void fileSystemTestAfterClosingAndOpening() throws Exception {
+		// Arrange & Assert 1
+		super.basicFileSystemTestExists();
+		fileSystem.deleteFile(fileSystem.toFile("testExists" + FILE1));
+		assertFalse(fileSystem.exists(fileSystem.toFile("testExists" + FILE1)));
+
+		// Close & Open Samba FS
+		fileSystem.close();
+		fileSystem.open();
+
+		// Arrange & Assert 2
 		super.basicFileSystemTestExists();
 	}
 

@@ -22,17 +22,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.EnumUtils;
-import org.springframework.util.MimeType;
-
-import com.nimbusds.jose.proc.SecurityContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Default;
 import org.frankframework.http.HttpSenderBase;
 import org.frankframework.http.PushingListenerAdapter;
@@ -41,9 +33,15 @@ import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
-import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
+import org.springframework.util.MimeType;
+
+import com.nimbusds.jose.proc.SecurityContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
@@ -67,7 +65,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private List<HttpMethod> methods = List.of(HttpMethod.GET);
 	public enum HttpMethod {
-		GET,PUT,POST,PATCH,DELETE,OPTIONS;
+		GET, PUT, POST, PATCH, DELETE, HEAD, OPTIONS;
 	}
 
 	private @Getter AuthenticationMethods authenticationMethod = AuthenticationMethods.NONE;
@@ -114,9 +112,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			throw new ConfigurationException("uriPattern cannot be empty");
 
 		if(getConsumes() != MediaTypes.ANY) {
-			if(hasMethod(HttpMethod.GET))
+			if (hasMethod(HttpMethod.GET))
 				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
-			if(hasMethod(HttpMethod.DELETE))
+			if (hasMethod(HttpMethod.DELETE))
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
 
@@ -143,7 +141,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 			if(!invalidClaims.isEmpty()){
 				String partialMessage = invalidClaims.size() == 1 ? "is not a valid key/value pair" : "are not valid key/value pairs";
-				throw new ConfigurationException("[" + String.join(",", invalidClaims) + "] "+partialMessage+" for [" + claimAttributeName + "].");
+				throw new ConfigurationException("[" + String.join(",", invalidClaims) + "] " + partialMessage + " for [" + claimAttributeName + "].");
 			}
 		}
 	}
@@ -167,18 +165,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	public void close() {
 		super.close();
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
-	}
-
-	@Override
-	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
-		Message result = super.processRequest(message, session);
-
-		//Return null when super.processRequest() returns an empty string
-		if(Message.isEmpty(result)) {
-			return null;
-		}
-
-		return result;
 	}
 
 	private void buildPhysicalDestinationName() {
@@ -206,7 +192,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.physicalDestinationName = builder.toString();
 	}
 
-	private boolean hasMethod(HttpMethod method){
+	private boolean hasMethod(HttpMethod method) {
 		return this.methods.contains(method);
 	}
 
@@ -253,7 +239,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 				.map(s -> EnumUtils.parse(HttpMethod.class, s))
 				.collect(Collectors.toList());
 
-		if(hasMethod(HttpMethod.OPTIONS)) {
+		if (hasMethod(HttpMethod.OPTIONS)) {
 			throw new IllegalArgumentException("method OPTIONS should not be added manually");
 		}
 	}

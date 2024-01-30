@@ -420,15 +420,6 @@ public class MessageOutputStream implements AutoCloseable {
 	 * Provides a non-null MessageOutputStream, that the caller can use to obtain a Writer, OutputStream or ContentHandler.
 	 */
 	public static MessageOutputStream getTargetStream(INamedObject owner, PipeLineSession session, IForwardTarget next) throws StreamingException {
-		IOutputStreamingSupport nextProvider=null;
-		if (next instanceof IOutputStreamingSupport) {
-			nextProvider = (IOutputStreamingSupport)next;
-		}
-		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, null);
-		if (target!=null) {
-			log.debug("OutputStream for {} is provided by {}", ()->ClassUtils.nameOf(owner), ()->ClassUtils.nameOf(next));
-			return target;
-		}
 		log.debug("providing MessageOutputStreamCap for {}", ()->ClassUtils.nameOf(owner));
 		return new MessageOutputStreamCap(owner, next);
 	}

@@ -209,12 +209,12 @@ public class ApiListenerServlet extends HttpServletBase {
 		/*
 		 * Initiate and populate messageContext
 		 */
-		try (PipeLineSession messageContext = new PipeLineSession()) {
-			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, method);
-			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
-			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
-			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
+		try (PipeLineSession pipelineSession = new PipeLineSession()) {
+			pipelineSession.put(PipeLineSession.HTTP_METHOD_KEY, method);
+			pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, request);
+			pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
+			pipelineSession.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
+			pipelineSession.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
@@ -295,8 +295,8 @@ public class ApiListenerServlet extends HttpServletBase {
 						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
 							try {
 								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
-								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
-								messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
+								pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
+								pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
 							} catch(Exception e) {
 								LOG.warn("unable to validate jwt",e);
 								response.sendError(401, e.getMessage());
@@ -309,7 +309,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						String requiredClaims = listener.getRequiredClaims();
 						String exactMatchClaims = listener.getExactMatchClaims();
 						String anyMatchClaims = listener.getAnyMatchClaims();
-						JwtSecurityHandler handler = (JwtSecurityHandler)messageContext.getSecurityHandler();
+						JwtSecurityHandler handler = (JwtSecurityHandler)pipelineSession.getSecurityHandler();
 						try {
 							handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
 							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
@@ -357,14 +357,14 @@ public class ApiListenerServlet extends HttpServletBase {
 						userPrincipal.updateExpiry();
 						userPrincipal.setToken(authorizationToken);
 						cache.put(authorizationToken, userPrincipal, authTTL);
-						messageContext.put("authorizationToken", authorizationToken);
+						pipelineSession.put("authorizationToken", authorizationToken);
 					}
 				}
 				// Remove this? it's now available as header value
-				messageContext.put("remoteAddr", request.getRemoteAddr());
+				pipelineSession.put("remoteAddr", request.getRemoteAddr());
 				if(userPrincipal != null)
-					messageContext.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
-				messageContext.put("uri", uri);
+					pipelineSession.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
+				pipelineSession.put("uri", uri);
 
 				/*
 				 * Evaluate preconditions
@@ -405,7 +405,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
+				pipelineSession.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
 
 				/*
 				 * Check authorization
@@ -435,20 +435,20 @@ public class ApiListenerServlet extends HttpServletBase {
 					if(name != null) {
 						uriIdentifier++;
 						if(LOG.isTraceEnabled()) LOG.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
-						messageContext.put(name, uriSegments[i]);
+						pipelineSession.put(name, uriSegments[i]);
 					}
 				}
 
 				/*
 				 * Map queryParameters into messageContext
 				 */
-				messageContext.putAll(extractRequestParams(request));
+				pipelineSession.putAll(extractRequestParams(request));
 
 				/*
 				 * Map headers into messageContext
 				 */
 				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
-					messageContext.put("headers", extractHeaderParamsAsXml(request, listener));
+					pipelineSession.put("headers", extractHeaderParamsAsXml(request, listener));
 				}
 
 				/*
@@ -477,7 +477,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							if (!MultipartUtils.isBinary(bodyPart)) {
 								// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
 								LOG.trace("setting multipart formField [{}] to [{}]", fieldName, message);
-								messageContext.put(fieldName, message.asString());
+								pipelineSession.put(fieldName, message.asString());
 								attachment.addAttribute("type", "text");
 								attachment.addAttribute("value", message.asString());
 							} else {
@@ -485,9 +485,9 @@ public class ApiListenerServlet extends HttpServletBase {
 								final String fieldNameName = fieldName + "Name";
 								final String fileName = MultipartUtils.getFileName(bodyPart);
 								LOG.trace("setting multipart formFile [{}] to [{}]", fieldNameName, fileName);
-								messageContext.put(fieldNameName, fileName);
+								pipelineSession.put(fieldNameName, fileName);
 								LOG.trace("setting parameter [{}] to input stream of file [{}]", fieldName, fileName);
-								messageContext.put(fieldName, message);
+								pipelineSession.put(fieldName, message);
 
 								attachment.addAttribute("type", "file");
 								attachment.addAttribute("filename", fileName);
@@ -497,7 +497,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							}
 							attachments.addSubElement(attachment);
 						}
-						messageContext.put("multipartAttachments", attachments.toXML());
+						pipelineSession.put("multipartAttachments", attachments.toXML());
 					} catch(MessagingException e) {
 						response.sendError(400, "Could not read mime multipart request");
 						LOG.warn("{} Could not read mime multipart request", () -> createAbortMessage(remoteUser, 400));
@@ -510,21 +510,21 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Compile Allow header
 				 */
-				messageContext.put("allowedMethods", buildAllowedMethodsHeader(config.getMethods()));
+				pipelineSession.put("allowedMethods", buildAllowedMethodsHeader(config.getMethods()));
 
 				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
 				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
-				PipeLineSession.updateListenerParameters(messageContext, messageId, correlationId);
+				PipeLineSession.updateListenerParameters(pipelineSession, messageId, correlationId);
 
 				/*
 				 * Do the actual request processing by the ApiListener
 				 */
-				Message result = listener.processRequest(body, messageContext);
+				Message result = listener.processRequest(body, pipelineSession);
 
 				/*
 				 * Calculate an eTag over the processed result and store in cache
 				 */
-				if (Boolean.TRUE.equals(messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY))) {
+				if (Boolean.TRUE.equals(pipelineSession.getBoolean(UPDATE_ETAG_CONTEXT_KEY))) {
 					LOG.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
 					if (!Message.isEmpty(result) && method == ApiListener.HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
@@ -577,15 +577,18 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Add headers
 				 */
-				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
+				response.addHeader("Allow", (String) pipelineSession.get("allowedMethods"));
 
-				if (!Message.isEmpty(result)) {
-					MimeType contentType = determineContentType(messageContext, listener, result);
+				if (!Message.isEmpty(result) || method == ApiListener.HttpMethod.HEAD) {
+					MimeType contentType = determineContentType(pipelineSession, listener, result);
 					response.setContentType(contentType.toString());
+					if (result.size() != Message.MESSAGE_SIZE_UNKNOWN) {
+						response.setContentLength(Math.toIntExact(result.size()));
+					}
 				}
 
 				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
-					String contentDisposition = messageContext.getString(listener.getContentDispositionHeaderSessionKey());
+					String contentDisposition = pipelineSession.getString(listener.getContentDispositionHeaderSessionKey());
 					if(StringUtils.isNotEmpty(contentDisposition)) {
 						LOG.debug("Setting Content-Disposition header to [{}]", contentDisposition);
 						response.setHeader("Content-Disposition", contentDisposition);
@@ -595,21 +598,22 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
 				 */
-				int statusCode = messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
+				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
 				if(statusCode > 0) {
 					response.setStatus(statusCode);
 				}
 
-				/*
-				 * Finalize the pipeline and write the result to the response
-				 */
-				final boolean outputWritten = writeToResponseStream(response, result);
-				if (!outputWritten) {
-					LOG.debug("No output written, set content-type header to null");
-					response.resetBuffer();
-					response.setContentType(null);
+				if (method != ApiListener.HttpMethod.HEAD) {
+					/*
+					 * Finalize the pipeline and write the result to the response
+					 */
+					final boolean outputWritten = writeToResponseStream(response, result);
+					if (!outputWritten) {
+						LOG.debug("No output written, set content-type header to null");
+						response.resetBuffer();
+						response.setContentType(null);
+					}
 				}
-
 				LOG.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
 			}
 			catch (Exception e) {

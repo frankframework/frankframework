@@ -15,11 +15,11 @@
 */
 package org.frankframework.filesystem;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.aws.AwsUtil;
 import org.frankframework.configuration.ConfigurationException;
@@ -36,6 +37,7 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.FileUtils;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 import com.amazonaws.AmazonServiceException;
@@ -253,36 +255,34 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
+	public void createFile(S3Object f, InputStream content) throws FileSystemException, IOException {
 		String folder = getParentFolder(f);
 		if (folder != null && !folderExists(folder)) { //AWS Supports the creation of folders, this check is purely here so all FileSystems have the same behavior
 			throw new FileSystemException("folder ["+folder+"] does not exist");
 		}
 
-		final File file = FileUtils.createTempFile(".s3-upload");
-		final FileOutputStream fos = new FileOutputStream(file);
-		return new BufferedOutputStream(fos) {
-			boolean isClosed = false;
-			@Override
-			public void close() throws IOException {
-				super.close();
-				if(!isClosed) {
-					try (FileInputStream fis = new FileInputStream(file)) {
-						ObjectMetadata metaData = new ObjectMetadata();
-						metaData.setContentLength(file.length());
+		final File file = FileUtils.createTempFile(".s3-upload"); //The lesser evil to allow streaming uploads
+		try(FileOutputStream fos = new FileOutputStream(file)) {
+			StreamUtil.streamToStream(content, fos);
+		}
 
-						try(S3Object file = f) {
-							PutObjectRequest por = new PutObjectRequest(bucketName, file.getKey(), fis, metaData);
-							por.setStorageClass(getStorageClass());
-							s3Client.putObject(por);
-						}
-					} finally {
-						isClosed = true;
-						Files.delete(file.toPath());
-					}
-				}
+		ObjectMetadata metaData = new ObjectMetadata();
+		metaData.setContentLength(file.length());
+
+		try (FileInputStream fis = new FileInputStream(file)) {
+			try(S3Object s3File = f) {
+				PutObjectRequest por = new PutObjectRequest(bucketName, s3File.getKey(), fis, metaData);
+				por.setStorageClass(getStorageClass());
+				s3Client.putObject(por);
 			}
-		};
+		} finally {
+			Files.delete(file.toPath());
+		}
+	}
+
+	@Override
+	public OutputStream createFile(S3Object f) throws FileSystemException, IOException {
+		throw new NotImplementedException();
 	}
 
 	@Override
