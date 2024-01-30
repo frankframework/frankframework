@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -403,23 +404,24 @@ public class TestTool {
 						}
 					}
 					debugMessage("Print statistics information", writers);
+					String formattedTime = getFormattedTime(executeTime);
 					if (scenariosPassed == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
+							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + formattedTime + ")", writers, out, silent);
 						} else {
-							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
+							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")", writers, out, silent);
 						}
 					} else if (scenariosFailed == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
+							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + formattedTime + ")", writers, out, silent);
 						} else {
-							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
+							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")", writers, out, silent);
 						}
 					} else {
 						if (scenariosTotal == 1) {
-							scenariosTotalMessage("1 scenario executed in " + executeTime + " ms", writers, out, silent);
+							scenariosTotalMessage("1 scenario executed in " + formattedTime, writers, out, silent);
 						} else {
-							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + executeTime + " ms", writers, out, silent);
+							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + formattedTime, writers, out, silent);
 						}
 						if (scenariosPassed == 1) {
 							scenariosPassedTotalMessage("1 scenario passed", writers, out, silent);
@@ -455,6 +457,20 @@ public class TestTool {
 			}
 		}
 		return scenariosFailed;
+	}
+
+	private static String getFormattedTime(long executeTime) {
+		Duration duration = Duration.ofMillis(executeTime);
+		if (duration.toMinutesPart() == 0 && duration.toSecondsPart() == 0) {
+			// Only milliseconds (e.g. 123ms)
+			return duration.toMillisPart() + "ms";
+		} else if (duration.toMinutesPart() == 0) {
+			// Seconds and milliseconds (e.g. 1s 123ms)
+			return duration.toSecondsPart() + "s " + duration.toMillisPart() + "ms";
+		} else {
+			// Minutes, seconds and milliseconds (e.g. 1m 1s 123ms)
+			return duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s " + duration.toMillisPart() + "ms";
+		}
 	}
 
 	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute, String autoScroll, Map<String, Object> writers) {
