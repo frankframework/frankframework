@@ -47,7 +47,7 @@ public class BusTestEndpoints {
 				new IllegalStateException("something is wrong")));
 		switch (type) {
 			case NOT_FOUND:
-				throw new ResourceNotFoundException("Resource not found");
+				throw new BusException("Resource not found", 404);
 			case MESSAGE:
 				throw new BusException("message without cause");
 			case CAUSE:

@@ -50,7 +50,8 @@ public class ErrorMessageConverter extends AbstractReplyProducingMessageHandler 
 			// For the correct mapping the status code should match SpringBusExceptionHandler.BusException
 			// And to make the Exception more readable, return the cause's message.
 			if(e.getCause() instanceof BusException) {
-				return new ResponseEntity<>(e.getCause().getMessage(), HttpStatus.BAD_REQUEST);
+				BusException ex = (BusException) e.getCause();
+				return new ResponseEntity<>(ex.getMessage(), HttpStatus.valueOf(ex.getStatusCode()));
 			}
 
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

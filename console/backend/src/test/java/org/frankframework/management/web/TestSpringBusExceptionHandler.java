@@ -1,8 +1,11 @@
 package org.frankframework.management.web;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import javax.ws.rs.core.Response;
+
 import org.frankframework.core.IbisException;
 import org.frankframework.management.bus.BusException;
-import org.frankframework.management.bus.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,10 +15,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.client.HttpClientErrorException;
-
-import javax.ws.rs.core.Response;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestSpringBusExceptionHandler {
 	private final SpringBusExceptionHandler handler = new SpringBusExceptionHandler();
@@ -37,7 +36,7 @@ public class TestSpringBusExceptionHandler {
 
 		switch (type) {
 			case NOT_FOUND:
-				return new ResourceNotFoundException("Resource not found");
+				return new BusException("resource not found", 404);
 			case MESSAGE:
 				return new BusException("message without cause");
 			case CAUSE:
