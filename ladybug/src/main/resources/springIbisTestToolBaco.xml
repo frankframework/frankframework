@@ -63,6 +63,7 @@
 					<property name="xpath" value="/*[local-name()='Envelope']/*[local-name()='Body']/*[local-name()='NotifyEmployeeBenefitsAgreementStatus_Action']/*[local-name()='Result']/*[local-name()='ErrorList']/*[local-name()='Error']/*[local-name()='DetailList']/*[local-name()='Detail'][4]/*[local-name()='Code']"/>
 					<property name="extractFrom" value="all"/>
 				</bean>
+				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
 			</list>
 		</property>
 	</bean>
