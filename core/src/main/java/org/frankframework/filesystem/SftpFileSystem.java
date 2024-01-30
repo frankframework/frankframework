@@ -202,7 +202,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 					ftpClient.mkdir(f);
 				}
 			}
-		} catch (SftpException | ArrayIndexOutOfBoundsException e) {
+		} catch (SftpException e) {
 			throw new FileSystemException("Cannot create directory", e);
 		}
 	}

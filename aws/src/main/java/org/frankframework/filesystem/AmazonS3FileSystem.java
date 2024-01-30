@@ -15,7 +15,6 @@
 */
 package org.frankframework.filesystem;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.aws.AwsUtil;
@@ -396,7 +396,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			ObjectMetadata metadata = new ObjectMetadata();
 			metadata.setContentLength(0);
 			metadata.setContentType("binary/octet-stream");
-			InputStream emptyContent = new ByteArrayInputStream(new byte[0]);
+			InputStream emptyContent = NullInputStream.nullInputStream();
 
 			PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, folderName, emptyContent, metadata);
 			s3Client.putObject(putObjectRequest);
