@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Implementation of SFTP FileSystem
- * 
+ *
  * @author Niels Meijer
  */
 public class SftpFileSystem extends SftpSession implements IWritableFileSystem<SftpFileRef> {
@@ -196,10 +196,19 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		if(folderExists(folder)) {
 			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
+
 		try {
-			ftpClient.mkdir(folder);
+			String[] folders = folder.split("/");
+			for(int i = 1; i < folders.length; i++) {
+				folders[i] = folders[i - 1] + "/" + folders[i];
+			}
+			for(String f : folders) {
+				if(f.length() != 0 && !folderExists(f)) {
+					ftpClient.mkdir(f);
+				}
+			}
 		} catch (SftpException e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Cannot create directory", e);
 		}
 	}
 
@@ -215,6 +224,9 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				ftpClient.rmdir(folder);
 			}
 		} catch (SftpException e) {
+			if(e.id == 18) { // Directory not empty
+				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
+			}
 			throw new FileSystemException(e);
 		}
 	}

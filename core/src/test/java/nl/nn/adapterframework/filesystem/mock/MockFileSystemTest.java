@@ -3,7 +3,7 @@ package nl.nn.adapterframework.filesystem.mock;
 import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 
-public class MockFileSystemTest extends FileSystemTest <MockFile,MockFileSystem<MockFile>>{
+public class MockFileSystemTest extends FileSystemTest<MockFile, MockFileSystem<MockFile>> {
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
@@ -12,7 +12,7 @@ public class MockFileSystemTest extends FileSystemTest <MockFile,MockFileSystem<
 
 	@Override
 	protected MockFileSystem<MockFile> createFileSystem() {
-		return ((MockFileSystemTestHelper<MockFile>)helper).getFileSystem();
+		return ((MockFileSystemTestHelper<MockFile>) helper).getFileSystem();
 	}
 
 }

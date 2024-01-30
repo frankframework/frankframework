@@ -62,6 +62,9 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 		}
 
 		s3Client = createS3Client();
+		if(!runLocalStub) {
+			cleanUpFolder(null);
+		}
 
 		if (!s3Client.doesBucketExistV2(bucketName)) {
 			s3Client.createBucket(bucketName);
@@ -69,7 +72,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	//For testing purposes
-	private AmazonS3 createS3Client() {
+	public AmazonS3 createS3Client() {
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(false)
 				.withForceGlobalBucketAccessEnabled(false)

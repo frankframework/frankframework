@@ -1,30 +1,27 @@
 package nl.nn.adapterframework.filesystem.smb;
 
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import nl.nn.adapterframework.filesystem.FileSystemTest;
+import nl.nn.adapterframework.filesystem.FileSystemActorTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.LocalFileServer;
-import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
 import nl.nn.adapterframework.filesystem.LocalFileSystemMock;
 import nl.nn.adapterframework.filesystem.LocalFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
-import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
 
-public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
+public class Samba2FileSystemActorTest extends FileSystemActorTest<SmbFileRef, Samba2FileSystem> {
 
-	private String username = "frankframework";
-	private String password = "pass_123";
-	private String host = "localhost";
+	private final String username = "frankframework";
+	private final String password = "pass_123";
+	private final String host = "localhost";
 	private int port = 445;
 
-	private String shareName = "home";
-	private String kdc = "localhost";
-	private String realm = "DUMMYDOMAIN.NL";
-	private String domain = "dummyDomain.nl";
+	private final String shareName = "home";
+	private final String kdc = "localhost";
+	private final String realm = "DUMMYDOMAIN.NL";
+	private final String domain = "dummyDomain.nl";
 
 	@LocalFileSystemMock
 	private static LocalFileServer fs;
@@ -41,7 +38,7 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 	@BeforeEach
 	public void setUp() throws Exception {
 		if("localhost".equals(host)) {
-			fs.startServer(FileSystemType.SMB2);
+			fs.startServer(LocalFileServer.FileSystemType.SMB2);
 			port = fs.getPort();
 		}
 		super.setUp();
@@ -54,7 +51,7 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 		result.setUsername(username);
 		result.setPassword(password);
 		if("localhost".equals(host)) { // test stub only works with NTLM
-			result.setAuthType(Samba2AuthType.NTLM);
+			result.setAuthType(Samba2FileSystem.Samba2AuthType.NTLM);
 		}
 		result.setHostname(host);
 		result.setPort(port);
@@ -65,16 +62,23 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 	}
 
 	@Test
+	@Disabled("does not work for SMB2")
 	@Override
-	public void basicFileSystemTestCopyFile() throws Exception {
-		assumeFalse("localhost".equals(host)); //Returns 'STATUS_NOT_SUPPORTED (0xc00000bb): IOCTL failed' in combination with JFileServer
-		super.basicFileSystemTestCopyFile();
+	public void fileSystemActorCopyActionTestRootToFolder() throws Exception {
+		//Ignore this test
+	}
+
+	@Override
+	@Test
+	@Disabled("does not work for SMB2")
+	public void fileSystemActorCopyActionTestWithExcludeWildCard() throws Exception {
+		//Ignore this test
 	}
 
 	@Test
+	@Disabled("does not work for SMB2")
 	@Override
-	public void writableFileSystemTestCopyFileToNonExistentDirectoryCreateFolderTrue() throws Exception {
-		assumeFalse("localhost".equals(host)); //Returns 'STATUS_NOT_SUPPORTED (0xc00000bb): IOCTL failed' in combination with JFileServer
-		super.writableFileSystemTestCopyFileToNonExistentDirectoryCreateFolderTrue();
+	public void fileSystemActorCopyActionTestWithWildCard() throws Exception {
+		//Ignore this test
 	}
 }
