@@ -25,6 +25,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
+import java.io.OutputStreamWriter;
 
 @Path("/")
 public class FileViewer extends FrankApiBase {
@@ -32,11 +35,20 @@ public class FileViewer extends FrankApiBase {
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/file-viewer")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces()
 	public Response getFileContent(@QueryParam("file") String file, @QueryParam("type") String type) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", type);
+		return processFileContents(builder, type);
+	}
+
+	// splitFileContents / streamFileContents?
+	private Response processFileContents(RequestMessageBuilder builder, String wantedType) {
+		if(wantedType.equalsIgnoreCase("html")){
+			// TODO retrieve from bus and write as OutputStream to JaxRs while modifying each line
+		}
+		// TODO Check if JaxRs can handle streaming to the client and not just creating an entity and then sending the full data at once
 		return callSyncGateway(builder);
 	}
 
