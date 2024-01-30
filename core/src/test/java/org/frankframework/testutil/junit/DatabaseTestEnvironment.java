@@ -8,14 +8,17 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.URLDataSourceFactory;
+import org.frankframework.util.SpringUtils;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.ExceptionUtils;
@@ -117,6 +120,22 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		}
 		return props;
 	}
+
+	/** Populates all database related fields that are normally wired through Spring */
+	public void autowire(@Nonnull JdbcFacade jdbcFacade) {
+		configuration.autowireByName(jdbcFacade);
+		jdbcFacade.setDatasourceName(getDataSourceName());
+	}
+
+	public <T> T createBean(Class<T> beanClass) {
+		T bean = SpringUtils.createBean(configuration, beanClass);
+		if(bean instanceof JdbcFacade) {
+			configuration.autowireByName(bean);
+			((JdbcFacade) bean).setDatasourceName(getDataSourceName());
+		}
+		return bean;
+	}
+
 
 	@Override
 	public String toString() {

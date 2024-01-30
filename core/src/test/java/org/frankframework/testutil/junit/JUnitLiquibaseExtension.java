@@ -62,8 +62,9 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 
 	private void validate(List<WithLiquibase> annotations) {
 		for(WithLiquibase liquibase : annotations) {
-			String file = liquibase.file();
-			URL url = JUnitLiquibaseExtension.class.getResource("/"+file);
+			String f = liquibase.file();
+			String file = f.startsWith("/") ? f : "/" + f;
+			URL url = JUnitLiquibaseExtension.class.getResource(file);
 			if(url == null) {
 				throw new JUnitException("file ["+file+"] not found");
 			}

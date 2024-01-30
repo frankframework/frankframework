@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
-import static org.mockito.Mockito.doAnswer;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.Date;
 
@@ -19,197 +19,184 @@ import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.WithLiquibase;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
-public class MessageStoreListenerTest extends JdbcTestBase {
+@WithLiquibase(tableName = MessageStoreListenerTest.TEST_TABLE_NAME)
+public class MessageStoreListenerTest {
 
 	private MessageStoreListener listener;
 	private JdbcTransactionalStorage<String> storage;
-	private final String tableName = "JDBCTRANSACTIONALSTORAGETEST";
+	static final String TEST_TABLE_NAME = "JDBCTRANSACTIONALSTORAGETEST";
 	private final String slotId = "slot";
 	private final String messageIdField = "MESSAGEID";
 
-
-	@Before
-	@Override
-	public void setup() throws Exception {
-		super.setup();
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2)); // tests are based on H2 syntax queries
-		listener = getConfiguration().createBean(MessageStoreListener.class);
-		autowire(listener);
-		listener.setTableName(tableName);
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) throws Exception {
+		assumeThat(env.getDbmsSupport().getDbms(),equalTo(Dbms.H2)); // tests are based on H2 syntax queries
+		listener = env.createBean(MessageStoreListener.class);
+		listener.setTableName(TEST_TABLE_NAME);
 		listener.setMessageIdField(messageIdField);
 		listener.setSlotId(slotId);
 
-		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
-		autowire(storage);
-		storage.setTableName(tableName);
+		storage = env.createBean(JdbcTransactionalStorage.class);
+		storage.setTableName(TEST_TABLE_NAME);
 		storage.setIdField(messageIdField);
 		storage.setSlotId(slotId);
-		System.setProperty("tableName", tableName);
-
-		runMigrator(TEST_CHANGESET_PATH);
 	}
 
-	@After
-	@Override
+	@AfterEach
 	public void teardown() throws Exception {
 		if(listener != null) {
-			listener.close();
+			listener.close(); //does this trigger an exception
 		}
-		super.teardown();
 	}
 
-
-	public JdbcTableMessageBrowser getMessageBrowser(ProcessState state) throws JdbcException, ConfigurationException {
-		JdbcTableMessageBrowser browser = Mockito.spy((JdbcTableMessageBrowser)listener.getMessageBrowser(state));
-		doAnswer(arg -> {
-			autowire(browser);
-			return null;
-		}).when(browser).copyFacadeSettings(listener);
+	private JdbcTableMessageBrowser getMessageBrowser(ProcessState state) throws JdbcException, ConfigurationException {
+		JdbcTableMessageBrowser browser = (JdbcTableMessageBrowser) listener.getMessageBrowser(state);
 		browser.configure();
 		return browser;
 	}
 
 
-	@Test
+	@DatabaseTest
 	public void testSetup() throws ConfigurationException, ListenerException {
 		listener.configure();
 		listener.open();
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSelectQuery() throws ConfigurationException {
 		listener.configure();
 
-		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+tableName+" t WHERE TYPE='M' AND (SLOTID='slot')";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M' AND (SLOTID='slot')";
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSelectQueryNoSlotId() throws ConfigurationException {
 		listener.setSlotId(null);
 		listener.configure();
 
-		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+tableName+" t WHERE TYPE='M'";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M'";
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSelectQueryWithSelectCondition() throws ConfigurationException {
 		listener.setSelectCondition("t.TVARCHAR='x'");
 		listener.configure();
 
-		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+tableName+" t WHERE TYPE='M' AND (SLOTID='slot' AND (t.TVARCHAR='x'))";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M' AND (SLOTID='slot' AND (t.TVARCHAR='x'))";
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSelectQueryWithSelectConditionNoSlotId() throws ConfigurationException {
 		listener.setSlotId(null);
 		listener.setSelectCondition("t.TVARCHAR='x'");
 		listener.configure();
 
-		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+tableName+" t WHERE TYPE='M' AND ((t.TVARCHAR='x'))";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M' AND ((t.TVARCHAR='x'))";
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUpdateStatusQueryDone() throws ConfigurationException {
 		listener.configure();
 
-		String expected = "UPDATE "+tableName+" SET TYPE='A',MESSAGEDATE=NOW(),COMMENTS=?,EXPIRYDATE = NOW() + 30 WHERE TYPE!='A' AND MESSAGEKEY=?";
+		String expected = "UPDATE "+TEST_TABLE_NAME+" SET TYPE='A',MESSAGEDATE=NOW(),COMMENTS=?,EXPIRYDATE = NOW() + 30 WHERE TYPE!='A' AND MESSAGEKEY=?";
 
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUpdateStatusQueryDoneNoMoveToMessageLog() throws ConfigurationException {
 		listener.setMoveToMessageLog(false);
 		listener.configure();
 
-		String expected = "DELETE FROM "+tableName+" WHERE MESSAGEKEY = ?";
+		String expected = "DELETE FROM "+TEST_TABLE_NAME+" WHERE MESSAGEKEY = ?";
 
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUpdateStatusQueryError() throws ConfigurationException {
 		listener.configure();
 
-		String expected = "UPDATE "+tableName+" SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
+		String expected = "UPDATE "+TEST_TABLE_NAME+" SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
 
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUpdateStatusQueryWithSelectCondition() throws ConfigurationException {
 		listener.setSelectCondition("1=1");
 		listener.configure();
 
-		String expected = "UPDATE "+tableName+" SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
+		String expected = "UPDATE "+TEST_TABLE_NAME+" SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
 
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
 	}
 
-	@Test
-	public void testGetMessageCountQueryAvailable() throws Exception {
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+	@DatabaseTest
+	public void testGetMessageCountQueryAvailable(DatabaseTestEnvironment env) throws Exception {
+		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms());
 		listener.configure();
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
 
-		String expected = "SELECT COUNT(*) FROM "+tableName+" t WHERE (TYPE='M' AND (SLOTID='slot'))";
+		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='M' AND (SLOTID='slot'))";
 
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	@Test
-	public void testGetMessageCountQueryError() throws Exception {
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+	@DatabaseTest
+	public void testGetMessageCountQueryError(DatabaseTestEnvironment env) throws Exception {
+		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms());
 		listener.configure();
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
 
-		String expected = "SELECT COUNT(*) FROM "+tableName+" t WHERE (TYPE='E' AND (SLOTID='slot'))";
+		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='E' AND (SLOTID='slot'))";
 
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	@Test
-	public void testGetMessageCountQueryAvailableWithSelectCondition() throws Exception {
+	@DatabaseTest
+	public void testGetMessageCountQueryAvailableWithSelectCondition(DatabaseTestEnvironment env) throws Exception {
+		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms());
 		listener.setSelectCondition("t.VARCHAR='A'");
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
 		listener.configure();
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
 
-		String expected = "SELECT COUNT(*) FROM "+tableName+" t WHERE (TYPE='M' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
+		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='M' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
 
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	@Test
-	public void testGetMessageCountQueryErrorSelectCondition() throws Exception {
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+	@DatabaseTest
+	public void testGetMessageCountQueryErrorSelectCondition(DatabaseTestEnvironment env) throws Exception {
+		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms());
 		listener.setSelectCondition("t.VARCHAR='A'");
 		listener.configure();
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
 
-		String expected = "SELECT COUNT(*) FROM "+tableName+" t WHERE (TYPE='E' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
+		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='E' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
 
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMessageBrowserContainsMessageId() throws Exception {
 		listener.configure();
 		listener.open();
@@ -222,7 +209,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertTrue(browser.containsMessageId("fakeMid"));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMessageBrowserContainsCorrelationId() throws Exception {
 		listener.configure();
 		listener.open();
@@ -235,7 +222,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertTrue(browser.containsCorrelationId("fakeCid"));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMessageBrowserBrowseMessage() throws Exception {
 		listener.configure();
 		listener.open();
@@ -259,7 +246,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		}
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMessageBrowserIterator() throws Exception {
 		listener.configure();
 		listener.open();
