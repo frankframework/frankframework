@@ -32,6 +32,21 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 
 	@Test
+	void fileSystemTestAfterClosingAndOpening() throws Exception {
+		// Arrange & Assert 1
+		super.basicFileSystemTestExists();
+		fileSystem.deleteFile(fileSystem.toFile("testExists" + FILE1));
+		assertFalse(fileSystem.exists(fileSystem.toFile("testExists" + FILE1)));
+
+		// Close & Open FS
+		fileSystem.close();
+		fileSystem.open();
+
+		// Arrange & Assert 2
+		super.basicFileSystemTestExists();
+	}
+
+	@Test
 	public void writableFileSystemTestCreateNewFile() throws Exception {
 		String filename = "create" + FILE1;
 		String contents = "regeltje tekst";
