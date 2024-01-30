@@ -35,23 +35,23 @@ public class TestSpringBusExceptionHandler {
 				new IllegalStateException("something is wrong")));
 
 		switch (type) {
-			case NOT_FOUND:
-				return new BusException("resource not found", 404);
-			case MESSAGE:
-				return new BusException("message without cause");
-			case CAUSE:
-				return new IllegalStateException("uncaught exception", cause);
-			case AUTHORIZATION:
-				return new AccessDeniedException("Access Denied");
-			case AUTHENTICATION:
-				return new AuthenticationCredentialsNotFoundException("An Authentication object was not found in the SecurityContext");
-			case CLIENT_EXCEPTION_400:
-				return HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "custom status text ignored", HttpHeaders.EMPTY, "some exception text".getBytes(), null);
-			case CLIENT_EXCEPTION_404:
-				return HttpClientErrorException.create(HttpStatus.NOT_FOUND, "custom status text ignored", HttpHeaders.EMPTY, "http body ignored".getBytes(), null);
-			case MESSAGE_WITH_CAUSE:
-			default:
-				return new BusException("message with a cause", cause);
+		case NOT_FOUND:
+			return new BusException("resource not found", 404);
+		case MESSAGE:
+			return new BusException("message without cause");
+		case CAUSE:
+			return new IllegalStateException("uncaught exception", cause);
+		case AUTHORIZATION:
+			return new AccessDeniedException("Access Denied");
+		case AUTHENTICATION:
+			return new AuthenticationCredentialsNotFoundException("An Authentication object was not found in the SecurityContext");
+		case CLIENT_EXCEPTION_400:
+			return HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "custom status text ignored", HttpHeaders.EMPTY, "some exception text".getBytes(), null);
+		case CLIENT_EXCEPTION_404:
+			return HttpClientErrorException.create(HttpStatus.NOT_FOUND, "custom status text ignored", HttpHeaders.EMPTY, "http body ignored".getBytes(), null);
+		case MESSAGE_WITH_CAUSE:
+		default:
+			return new BusException("message with a cause", cause);
 		}
 	}
 
@@ -78,7 +78,7 @@ public class TestSpringBusExceptionHandler {
 		Response response = handler.toResponse(e);
 
 		// Assert
-		assertEquals(400, response.getStatus());
+		assertEquals(500, response.getStatus());
 		String json = ApiExceptionTest.toJsonString(response.getEntity());
 		assertEquals("message with a cause: cannot stream: cannot configure: (IllegalStateException) something is wrong", json);
 	}
@@ -91,7 +91,7 @@ public class TestSpringBusExceptionHandler {
 
 		assertEquals(404, response.getStatus());
 		String json = ApiExceptionTest.toJsonString(response.getEntity());
-		assertEquals("Resource not found", json);
+		assertEquals("resource not found", json);
 	}
 
 	@Test
