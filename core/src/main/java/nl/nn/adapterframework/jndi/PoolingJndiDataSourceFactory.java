@@ -20,7 +20,6 @@ import java.time.Duration;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
-import javax.sql.XADataSource;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DataSourceConnectionFactory;
@@ -62,22 +61,14 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 		testQuery = appConstants.getString("transactionmanager.jdbc.connection.testQuery", testQuery);
 	}
 
+	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if (dataSource instanceof XADataSource) {
-			log.info("DataSource [{}] is XA enabled, registering with a Transaction Manager", dataSourceName);
-			return createXADataSource((XADataSource) dataSource, dataSourceName);
-		}
-
 		if(maxPoolSize > 1) {
-			log.info("DataSource [{}] is not XA enabled, creating connection pool for the datasource", dataSourceName);
+			log.info("Creating connection pool for datasource [{}]", dataSourceName);
 			return createPool((DataSource)dataSource);
 		}
-		log.info("DataSource [{}] is not XA enabled and pooling not configured, used without augmentation", dataSourceName);
+		log.info("Pooling not configured, using datasource [{}] without augmentation", dataSourceName);
 		return (DataSource) dataSource;
-	}
-
-	protected DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName) {
-		throw new UnsupportedOperationException("non-XA DataSourceFactory [" + this.getClass().getName() + "] cannot create XA-DataSources");
 	}
 
 	protected DataSource createPool(DataSource dataSource) {
