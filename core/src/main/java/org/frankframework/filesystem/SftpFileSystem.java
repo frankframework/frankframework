@@ -29,6 +29,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.ftp.SftpFileRef;
+import org.frankframework.ftp.SftpSession;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.SerializableFileReference;
+import org.frankframework.util.LogUtil;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
@@ -36,11 +41,6 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
 import lombok.Getter;
-import org.frankframework.ftp.SftpFileRef;
-import org.frankframework.ftp.SftpSession;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.SerializableFileReference;
-import org.frankframework.util.LogUtil;
 
 /**
  * Implementation of SFTP FileSystem
@@ -66,10 +66,31 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		ftpClient = null;
 	}
 
-
 	@Override
 	public boolean isOpen() {
-		return ftpClient != null && ftpClient.isConnected();
+		try {
+			if (ftpClient == null || ftpClient.getSession() == null) {
+				return false;
+			}
+			ftpClient.getSession().sendKeepAliveMsg(); // Send a keep-alive packet to validate a working connection
+		} catch (Exception ignored) {
+			return false;
+		}
+		return ftpClient.isConnected();
+	}
+
+	private void reconnectWhenNotConnected() {
+		if (!isOpen()) {
+			try {
+				log.info("Reconnecting to SFTP server, since connection was closed");
+				if (ftpClient == null) {
+					open();
+				}
+				getValidatedSession();
+			} catch (FileSystemException e) {
+				log.warn("error while getting sftp session", e);
+			}
+		}
 	}
 
 	@Override
@@ -125,6 +146,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	private LinkedList<LsEntry> list(String folder) throws SftpException {
+		reconnectWhenNotConnected();
 		String path = (folder == null) ? "*" : folder;
 		return new LinkedList<>(ftpClient.ls(path));
 	}

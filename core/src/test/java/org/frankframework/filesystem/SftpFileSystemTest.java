@@ -1,11 +1,14 @@
 package org.frankframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.util.Collections;
+import java.util.Iterator;
 
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
@@ -15,6 +18,7 @@ import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.frankframework.ftp.SftpFileRef;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,16 +41,18 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
+		startNewSshDaemon();
+		super.setUp();
+	}
+
+	private void startNewSshDaemon() throws IOException {
 		if("localhost".equals(host)) {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
 			sshd = createSshServer(username, password);
-
 			sshd.start();
 			port = sshd.getPort();
 		}
-
-		super.setUp();
 	}
 
 	static SshServer createSshServer(String username, String password) throws IOException {
@@ -127,5 +133,28 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 	void testSFTPFileRefWindowsSlash() {
 		SftpFileRef ref2 = new SftpFileRef("folder1\\test123", "folder2");
 		assertEquals("folder2/test123", ref2.getName());
+	}
+
+	@Test
+	void testFailingConnection() throws Exception {
+		// Test normal connection
+		super.writableFileSystemTestFileSize();
+		// Arrange: stop the SSH daemon directly
+		sshd.stop(true);
+
+		startNewSshDaemon();
+		helper = getFileSystemTestHelper(); // Needed to get the new dynamic SSH port number.
+		fileSystem = createFileSystem();
+
+		// Assert: do not explicitly connect, but let the test method do it.
+		try(DirectoryStream<SftpFileRef> ds = fileSystem.listFiles(null)) {
+			Iterator<SftpFileRef> files = ds.iterator();
+			if(files.hasNext()) {
+				assertNotNull(files.next());
+			}
+			else {
+				Assertions.fail("File not found");
+			}
+		}
 	}
 }
