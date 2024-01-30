@@ -80,7 +80,6 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 
 		// Close & Open Samba FS
 		fileSystem.close();
-		fileSystem.open();
 
 		// Arrange & Assert 2
 		super.basicFileSystemTestExists();
