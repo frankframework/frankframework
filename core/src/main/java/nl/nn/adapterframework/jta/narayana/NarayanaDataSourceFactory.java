@@ -32,11 +32,11 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.jdbc.datasource.OpenManagedDataSource;
-import nl.nn.adapterframework.jndi.PoolingJndiDataSourceFactory;
+import nl.nn.adapterframework.jndi.AbstractXADataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
 @Log4j2
-public class NarayanaDataSourceFactory extends PoolingJndiDataSourceFactory {
+public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
@@ -62,7 +62,7 @@ public class NarayanaDataSourceFactory extends PoolingJndiDataSourceFactory {
 
 			GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
 
-			ds = new OpenManagedDataSource<PoolableConnection>(connectionPool, cf.getTransactionRegistry());
+			ds = new OpenManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
 			log.info("created XA-enabled PoolingDataSource [{}]", ds);
 		} else {
 			ds = new NarayanaDataSource(xaDataSource, dataSourceName);

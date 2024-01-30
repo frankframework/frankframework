@@ -25,10 +25,10 @@ import org.springframework.jdbc.datasource.DelegatingDataSource;
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.jndi.PoolingJndiDataSourceFactory;
+import nl.nn.adapterframework.jndi.AbstractXADataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
-public class BtmDataSourceFactory extends PoolingJndiDataSourceFactory implements DisposableBean {
+public class BtmDataSourceFactory extends AbstractXADataSourceFactory implements DisposableBean {
 
 	private @Getter @Setter int maxIdleTime = 60;
 
