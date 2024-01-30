@@ -1,6 +1,7 @@
 package org.frankframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -10,6 +11,7 @@ import java.nio.file.DirectoryStream;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.apache.logging.log4j.Level;
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
@@ -17,6 +19,7 @@ import org.apache.sshd.server.auth.hostbased.StaticHostBasedAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.frankframework.ftp.SftpFileRef;
+import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +38,7 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 	private final String host = "localhost";
 	private int port = 22;
 	private String remoteDirectory = "/home/frankframework/sftp";
+	protected TestAppender testAppender;
 
 	private SshServer sshd;
 
@@ -137,16 +141,26 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 
 	@Test
 	void testFailingConnection() throws Exception {
-		// Test normal connection
+		// Arrange - Force reconfigure to clean list appender.
+		testAppender = TestAppender.newBuilder()
+				.useIbisPatternLayout("%level %m")
+				.minLogLevel(Level.DEBUG)
+				.build();
+		TestAppender.addToRootLogger(testAppender);
+
+		// pre-Assert: Test normal connection
 		super.writableFileSystemTestFileSize();
 		// Arrange: stop the SSH daemon directly
 		sshd.stop(true);
 
+		// Arrange
 		startNewSshDaemon();
 		helper = getFileSystemTestHelper(); // Needed to get the new dynamic SSH port number.
 		fileSystem = createFileSystem();
 
 		// Assert: do not explicitly connect, but let the test method do it.
+		assertFalse(fileSystem.folderExists("nonExistingFolder"));
+
 		try(DirectoryStream<SftpFileRef> ds = fileSystem.listFiles(null)) {
 			Iterator<SftpFileRef> files = ds.iterator();
 			if(files.hasNext()) {
@@ -156,5 +170,9 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 				Assertions.fail("File not found");
 			}
 		}
+		// Check that connection was checked only twice, even though 3 commands were executed.
+		long connectionChecksFoundInLogs = testAppender.getLogLines().stream().filter(line -> line.contains("checking if SFTP connection is open")).count();
+		assertEquals(2, connectionChecksFoundInLogs, "Expected 2 connection checks in the logs, since fileSystem was recreated");
+		TestAppender.removeAppender(testAppender);
 	}
 }
