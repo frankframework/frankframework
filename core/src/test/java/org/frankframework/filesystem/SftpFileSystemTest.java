@@ -172,7 +172,7 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 		}
 		// Check that connection was checked only twice, even though 3 commands were executed.
 		long connectionChecksFoundInLogs = testAppender.getLogLines().stream().filter(line -> line.contains("checking if SFTP connection is open")).count();
-		assertEquals(2, connectionChecksFoundInLogs, "Expected 2 connection checks in the logs, since fileSystem was recreated");
+		assertEquals(1, connectionChecksFoundInLogs, "Expected 1 connection check in the log");
 		TestAppender.removeAppender(testAppender);
 	}
 }
