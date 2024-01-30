@@ -157,10 +157,10 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public void close() throws FileSystemException {
-		super.close();
 		if(s3Client != null) {
 			s3Client.shutdown();
 		}
+		super.close();
 	}
 
 	/**
