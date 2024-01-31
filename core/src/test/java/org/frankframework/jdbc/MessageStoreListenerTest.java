@@ -21,7 +21,6 @@ import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
-import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
