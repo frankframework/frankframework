@@ -172,6 +172,7 @@ public class ShadowSender extends ParallelSenders {
 			try {
 				shadowGuard.waitForAllResources();
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				log.warn("{} result collection thread was interrupted", getLogPrefix(), e);
 			}
 			// Collect the results of the (Shadow)Sender and send them to the resultSender.
