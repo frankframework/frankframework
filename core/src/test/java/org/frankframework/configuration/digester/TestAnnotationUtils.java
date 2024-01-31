@@ -219,7 +219,10 @@ public class TestAnnotationUtils {
 		Set<Class<?>> interfazes = new HashSet<>();
 		String[] names = scanner.getRegistry().getBeanDefinitionNames();
 		for (String beanName : names) {
-			if(beanName.contains(this.getClass().getCanonicalName()) || beanName.startsWith("org.frankframework.credentialprovider")) continue; //Ignore this class
+			if(beanName.contains(this.getClass().getCanonicalName())
+					|| beanName.startsWith("org.frankframework.credentialprovider")
+					|| beanName.endsWith(".UnloadableClass")
+			) continue; //Ignore this class
 
 			List<Class<?>> interfaces = ClassUtils.getAllInterfaces(Class.forName(beanName));
 			interfazes.addAll(interfaces);

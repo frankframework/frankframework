@@ -100,7 +100,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 				Class<?> clazz;
 				try {
 					clazz = Class.forName(className);
-				} catch (Exception e) {
+				} catch (ExceptionInInitializerError | NoClassDefFoundError | Exception e) {
 					log.info("Found class [{}] on classpath which cannot be loaded due to exception", className, e);
 					continue;
 				}
@@ -169,7 +169,6 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AssignableTypeFilter(IConfigurable.class));
 		scanner.addIncludeFilter(new AnnotationTypeFilter(ElementType.class));
-		scanner.addExcludeFilter(this::matchesTestClassPath); //Exclude test classpath
 		scanner.addExcludeFilter((i,e) -> i.getClassMetadata().getClassName().contains("$")); //Exclude inner classes
 		scanner.addExcludeFilter(new AnnotationTypeFilter(Protected.class)); //Exclude protected FrankElements
 
