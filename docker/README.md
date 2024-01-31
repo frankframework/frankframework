@@ -47,7 +47,7 @@ work on fixes easily, without the whole Maven build and Docker compose cycle.
 - First, build the test image as described above with Maven.
 - Second, start the image with the following command, from the current 'docker' folder:
   ```shell
-  export VERSION=8.0-SNAPSHOT
+  export VERSION=8.1.0-SNAPSHOT
   docker compose -f tomcat-debug.yml up
   ```
 - Third, attach to your running process, inside your IDE. In IntelliJ, choose `Remote JVM Debug` and use port 8001 at
@@ -65,7 +65,7 @@ It is possible to run the test image using a different version.
 This can be done by exporting the `VERSION` property. For example:
 
 ```shell
-export VERSION=8.0-SNAPSHOT
+export VERSION=8.1.0-SNAPSHOT
 ```
 
 The `.env` file should contain the current version of the project, but it can be changed for a more permanent solution.

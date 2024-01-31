@@ -1,4 +1,4 @@
-<nav class="navbar-default navbar-static-side" role="navigation">
+<nav #navElem class="navbar-default navbar-static-side" role="navigation">
   <div class="sidebar-collapse">
     <ul appSideNavigation class="nav metismenu" id="side-menu">
       <li class="nav-header">
@@ -24,7 +24,10 @@
         <a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configurations</span> <span
             class="fa arrow"></span></a>
         <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'configuration')">
-          <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><a routerLink="/configurations">Show Configurations</a></li>
+          <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><a
+            routerLink="/configurations"
+            [queryParams]="{ name: getConfigurationsQueryParam() }"
+          >Show Configurations</a></li>
           <li routerLinkActive="active"><a routerLink="/configurations/manage">Manage Configurations</a></li>
         </ul>
       </li>
@@ -111,7 +114,7 @@
       </li>
 
       <li>
-        <app-scroll-to-top />
+        <app-scroll-to-top [navElem]="navElem" />
       </li>
       <app-minimaliza-sidebar />
     </ul>

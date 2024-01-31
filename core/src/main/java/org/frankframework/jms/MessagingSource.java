@@ -30,18 +30,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
-import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
-import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Counter;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
+import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
+import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
+import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Generic Source for JMS connection, to be shared for JMS Objects that can use the same.
@@ -49,6 +49,7 @@ import org.frankframework.util.LogUtil;
  * @author  Gerrit van Brakel
  */
 public class MessagingSource  {
+	public static final String CLOSE = "], ";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
@@ -170,44 +171,44 @@ public class MessagingSource  {
 	}
 
 	public String getPhysicalName() {
-		String result="";
+		StringBuilder result = new StringBuilder();
 
 		Object managedConnectionFactory=null;
 		try {
 			managedConnectionFactory = getManagedConnectionFactory();
 			if (managedConnectionFactory != null) {
-				result =ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
+				result.append(ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE));
 			}
 		} catch (Exception | NoClassDefFoundError e) {
-			result+= " "+ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+			result.append(" ").append(ClassUtils.nameOf(connectionFactory)).append(".getManagedConnectionFactory() (").append(ClassUtils.nameOf(e)).append("): ").append(e.getMessage());
 		}
 
 		try {
 			ConnectionFactory qcfd = getConnectionFactoryDelegate();
 			if (qcfd != managedConnectionFactory) {
-				result += getConnectionPoolInfo(qcfd);
+				result.append(getConnectionPoolInfo(qcfd));
 			}
 		} catch (Exception e) {
-			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+			result.append(ClassUtils.nameOf(connectionFactory)).append(".getConnectionFactoryDelegate() (").append(ClassUtils.nameOf(e)).append("): ").append(e.getMessage());
 		}
 
-		return result;
+		return result.toString();
 	}
 
 	/** Return pooling info if present */
-	private String getConnectionPoolInfo(ConnectionFactory qcfd) {
-		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append("] ");
+	private StringBuilder getConnectionPoolInfo(ConnectionFactory qcfd) {
+		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append(CLOSE);
 		if (qcfd instanceof JmsPoolConnectionFactory) {
 			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
-			result.append("idle connections [").append(poolcf.getNumConnections()).append("] ");
-			result.append("max connections [").append(poolcf.getMaxConnections()).append("] ");
-			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append("] ");
-			result.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append("] ");
-			result.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append("] ");
-			result.append("connection check interval [").append(poolcf.getConnectionCheckInterval()).append("] ");
-			result.append("connection idle timeout [").append(poolcf.getConnectionIdleTimeout()).append("] ");
+			result.append("idle connections [").append(poolcf.getNumConnections()).append(CLOSE);
+			result.append("max connections [").append(poolcf.getMaxConnections()).append(CLOSE);
+			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);
+			result.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append(CLOSE);
+			result.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append(CLOSE);
+			result.append("connection check interval (ms) [").append(poolcf.getConnectionCheckInterval()).append(CLOSE);
+			result.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append(CLOSE);
 		}
-		return result.toString();
+		return result;
 	}
 
 	protected Connection createConnection() throws JMSException {
@@ -244,8 +245,6 @@ public class MessagingSource  {
 	private void releaseConnection(Connection connection) {
 		if (connection != null && connectionsArePooled()) {
 			try {
-				// do not log, as this may happen very often
-//				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"closing Connection, openConnectionCount will become ["+(openConnectionCount.getValue()-1)+"]");
 				connection.close();
 				openConnectionCount.decrease();
 			} catch (JMSException e) {
@@ -276,25 +275,27 @@ public class MessagingSource  {
 	}
 
 	public void releaseSession(Session session) {
-		if (session != null) {
-			if (connectionsArePooled()) {
-				Connection connection = connectionTable.remove(session);
-				try {
-					session.close();
-					openSessionCount.decrease();
-				} catch (JMSException e) {
-					log.error(getLogPrefix()+"Exception closing Session", e);
-				} finally {
-					releaseConnection(connection);
-				}
-			} else {
-				try {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"closing Session");
-					session.close();
-				} catch (JMSException e) {
-					log.error(getLogPrefix()+"Exception closing Session", e);
-				}
+		if (session == null) {
+			return;
+		}
+		if (connectionsArePooled()) {
+			Connection connection = connectionTable.remove(session);
+			try {
+				session.close();
+				openSessionCount.decrease();
+			} catch (JMSException e) {
+				log.error(getLogPrefix() + "Exception closing Session", e);
+			} finally {
+				releaseConnection(connection);
 			}
+			return;
+		}
+
+		try {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "closing Session");
+			session.close();
+		} catch (JMSException e) {
+			log.error(getLogPrefix() + "Exception closing Session", e);
 		}
 	}
 
@@ -360,6 +361,6 @@ public class MessagingSource  {
 	}
 
 	protected String getLogPrefix() {
-		return "["+getId()+"] ";
+		return "["+getId()+ CLOSE;
 	}
 }

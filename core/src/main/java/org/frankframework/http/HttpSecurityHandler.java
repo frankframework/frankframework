@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.security.Principal;
 import javax.servlet.http.HttpServletRequest;
 
 import org.frankframework.core.ISecurityHandler;
-import org.frankframework.core.PipeLineSession;
 
 /**
  * SecurityHandler that delegates its implementation to the corresponding methods in the HttpServlet.
@@ -38,12 +37,12 @@ public class HttpSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) {
+	public boolean isUserInRole(String role) {
 		return request.isUserInRole(role);
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session){
+	public Principal getPrincipal(){
 		return request.getUserPrincipal();
 	}
 

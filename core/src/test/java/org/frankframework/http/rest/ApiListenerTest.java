@@ -15,6 +15,7 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,7 +27,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
@@ -257,5 +260,134 @@ public class ApiListenerTest {
 		listener.setProduces(MediaTypes.XML);
 		listener.configure();
 		assertEquals("uriPattern: [/aap, /noot]/dummy; method: PUT; consumes: JSON; produces: XML", listener.getPhysicalDestinationName());
+	}
+
+	@Test
+	public void testValidatingMissingUriPattern() {
+		// Given
+		listener.setUriPattern("");
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "uriPattern cannot be empty");
+	}
+
+	@Test
+	public void testValidatingMissingJwksURL() {
+		// Given
+		listener.setAuthenticationMethod(AuthenticationMethods.JWT);
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "jwksUrl cannot be empty");
+	}
+
+	@Test
+	public void testCannotConsumeGET(){
+		// Given
+		listener.setMethod(HttpMethod.GET);
+		listener.setConsumes(MediaTypes.JSON);
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "cannot set consumes attribute when using method [GET]");
+	}
+
+	@Test
+	public void testCannotConsumeGETMultiMethod(){
+		// Given
+		listener.setMethods(methodsAsString(HttpMethod.GET, HttpMethod.POST));
+		listener.setConsumes(MediaTypes.JSON);
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "cannot set consumes attribute when using method [GET]");
+	}
+
+	@Test
+	public void testCannotConsumeDELETE(){
+		// Given
+		listener.setMethod(HttpMethod.DELETE);
+		listener.setConsumes(MediaTypes.JSON);
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "cannot set consumes attribute when using method [DELETE]");
+	}
+
+	@Test
+	public void testCannotConsumeDELETEMultiMethod(){
+		// Given
+		listener.setMethods(methodsAsString(HttpMethod.DELETE, HttpMethod.POST));
+		listener.setConsumes(MediaTypes.JSON);
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "cannot set consumes attribute when using method [DELETE]");
+	}
+
+	@Test
+	public void testValidatingAnyMatchClaims() {
+		// Given
+		listener.setAuthenticationMethod(AuthenticationMethods.JWT);
+		listener.setJwksURL("dummy");
+		listener.setAnyMatchClaims("claim=value,claim2=value2");
+
+		// Expect/When
+		assertDoesNotThrow(listener::configure);
+	}
+
+	@Test
+	public void testValidatingAnyMatchClaimsInvalid() {
+		// Given
+		listener.setAuthenticationMethod(AuthenticationMethods.JWT);
+		listener.setJwksURL("dummy");
+		listener.setAnyMatchClaims("claim=value,claim2,claim3=value=too_long");
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "[claim2,claim3=value=too_long] are not valid key/value pairs for [anyMatchClaims].");
+	}
+
+	@Test
+	public void testValidatingAnyMatchClaimsOneInvalid() {
+		// Given
+		listener.setAuthenticationMethod(AuthenticationMethods.JWT);
+		listener.setJwksURL("dummy");
+		listener.setAnyMatchClaims("claim2");
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "[claim2] is not a valid key/value pair for [anyMatchClaims].");
+	}
+
+	@Test
+	public void testValidatingExactMatchClaims() {
+		// Given
+		listener.setAuthenticationMethod(AuthenticationMethods.JWT);
+		listener.setJwksURL("dummy");
+		listener.setExactMatchClaims("claim=value,claim2=value2");
+
+		// Expect/When
+		assertDoesNotThrow(listener::configure);
+	}
+
+	@Test
+	public void testValidatingExactMatchClaimsInvalid() {
+		// Given
+		listener.setAuthenticationMethod(AuthenticationMethods.JWT);
+		listener.setJwksURL("dummy");
+		listener.setExactMatchClaims("claim=value,claim2,claim3=value=too_long");
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "[claim2,claim3=value=too_long] are not valid key/value pairs for [exactMatchClaims].");
+	}
+
+	@Test
+	public void testValidatingExactMatchClaimsOneInvalid() {
+		// Given
+		listener.setAuthenticationMethod(AuthenticationMethods.JWT);
+		listener.setJwksURL("dummy");
+		listener.setExactMatchClaims("claim2");
+
+		// Expect/When
+		assertThrows(ConfigurationException.class, listener::configure, "[claim2] is not a valid key/value pair for [exactMatchClaims].");
+	}
+
+
+	private String methodsAsString(HttpMethod ...args){
+		return Arrays.stream(args).map(m -> m.name()).collect(Collectors.joining(","));
 	}
 }

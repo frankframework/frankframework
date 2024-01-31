@@ -65,12 +65,6 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 
 	@Test
 	@Override
-	public void basicFileSystemTestExists() throws Exception {
-		super.basicFileSystemTestExists();
-	}
-
-	@Test
-	@Override
 	public void basicFileSystemTestCopyFile() throws Exception {
 		assumeFalse("localhost".equals(host)); //Returns 'STATUS_NOT_SUPPORTED (0xc00000bb): IOCTL failed' in combination with JFileServer
 		super.basicFileSystemTestCopyFile();

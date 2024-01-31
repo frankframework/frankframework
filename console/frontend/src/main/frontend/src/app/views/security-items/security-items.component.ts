@@ -11,7 +11,7 @@ export class SecurityItemsComponent implements OnInit {
   sapSystems: SapSystem[] = [];
   authEntries: AuthEntry[] = [];
   jmsRealms: JmsRealm[] = [];
-  securityRoles: SecurityRole[] = [];
+  securityRoles: Record<string, SecurityRole> = {};
   certificates: CertificateList[] = [];
   xmlComponents: Record<string, string> = { };
   datasources: Datasource[] = [];

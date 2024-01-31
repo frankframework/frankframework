@@ -130,7 +130,7 @@ export class TestPipelineComponent implements OnInit {
         this.form.message = returnData.message;
       }
     }, error: (errorData) => {
-      let error = (errorData && errorData.error) ? errorData.error : "An error occured!";
+      const error =  errorData.error?.error ?? "An error occured!";
       this.result = "";
       this.addNote("warning", error);
       this.processingMessage = false;

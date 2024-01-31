@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,14 +26,13 @@ import org.apache.commons.lang3.NotImplementedException;
  * @since   4.3
  */
 public class AllowAllSecurityHandler implements ISecurityHandler {
-
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) {
+	public boolean isUserInRole(String role) {
 		return true;
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException {
+	public Principal getPrincipal() throws NotImplementedException {
 		throw new NotImplementedException("no default user available");
 	}
 

@@ -85,6 +85,7 @@ import { TestServiceListenerComponent } from './views/test-service-listener/test
 import { LoginComponent } from './views/login/login.component';
 import { httpInterceptorProviders } from './http-interceptors';
 import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
+import { ThSortableDirective } from './components/th-sortable.directive';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -170,6 +171,7 @@ const windowProvider: ValueProvider = {
     QuickSubmitFormDirective,
     FitHeightDirective,
     SideNavigationDirective,
+    ThSortableDirective,
   ],
   imports: [
     BrowserModule,

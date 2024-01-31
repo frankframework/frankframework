@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2021 WeAreFrank!
+   Copyright 2017-2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.frankframework.http.rest;
 import java.io.IOException;
 import java.rmi.server.UID;
 import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.annotation.ServletSecurity;
@@ -45,7 +44,7 @@ import org.frankframework.util.AppConstants;
 public class ApiPrincipalPipe extends FixedForwardPipe {
 
 	private String action = null;
-	List<String> allowedActions = Arrays.asList("get", "set", "create", "remove");
+	List<String> allowedActions = List.of("get", "set", "create", "remove");
 	private IApiCache cache = null;
 	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private String authenticationMethod = "header";

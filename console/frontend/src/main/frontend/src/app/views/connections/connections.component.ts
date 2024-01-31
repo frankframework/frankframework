@@ -23,6 +23,8 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
   @ViewChild(DataTableDirective, { static: false })
   datatableElement!: DataTableDirective;
   dtOptions: ADTSettings = {};
+  // truncateLengthOptions = [50, 100, 200];
+  minimalTruncateLength = 100;
 
   constructor(
     private http: HttpClient,
@@ -72,14 +74,36 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
             });
           });
         });
-      }
+      },
+      columnDefs: [{
+        targets: [0,1,3],
+        render: (data, type, row) => {
+          if (type === 'display') {
+            if (typeof data == 'string' && data.length > this.minimalTruncateLength) {
+              const title = data.replaceAll('"', '&quot;');
+              const leftTrancate = data.substring(0, 15);
+              const rightTrancate = data.slice(-15);
+              data = `<span title="${title}">${leftTrancate}&#8230;${rightTrancate}</span>`;
+            }
+          }
+          return data;
+        },
+      }],
     }
   };
 
   ngAfterViewInit(): void {
     this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+      const _this = this;
       dtInstance.columns([0, 1, 3]).every(function () {
         const column = this;
+
+        column.nodes().on('click', (event) => {
+          const target = event.target as HTMLElement;
+          if(target.title != ''){
+            _this.appService.copyToClipboard(target.title);
+          }
+        });
 
         $('input', this.header()).on('keyup change', function (event) {
           var input = event.target as HTMLInputElement
@@ -89,6 +113,14 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
               .draw();
           };
         });
+      });
+    });
+  }
+
+  updateTable(){
+    this.datatableElement.dtInstance.then(table => {
+      table.columns([0, 1, 3]).every(function () {
+        this.search('').draw();
       });
     });
   }

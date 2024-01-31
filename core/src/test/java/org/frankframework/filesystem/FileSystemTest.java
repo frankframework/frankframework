@@ -11,12 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +29,29 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	public void setUp() throws Exception {
 		super.setUp();
 		autowireByName(fileSystem);
+	}
+
+	@Test
+	void fileSystemTestAfterClosingAndOpening() throws Exception {
+		// Arrange
+		String filename = "create2" + FILE1;
+		createFile(null, filename, "tja");
+		waitForActionToFinish();
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		// Assert 1
+		assertTrue(fileSystem.exists(fileSystem.toFile(filename)), "Expected file[" + filename + "] to be present");
+
+		// Close & Open FS
+		fileSystem.close();
+		fileSystem.open();
+
+		// Assert 2
+		F f = fileSystem.toFile(filename);
+		fileSystem.deleteFile(f);
+		assertFalse(fileSystem.exists(f));
 	}
 
 	@Test
@@ -41,11 +66,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		OutputStream out = fileSystem.createFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(contents);
-		pw.close();
-		out.close();
+		fileSystem.createFile(file, new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -67,11 +88,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		String contents = "Tweede versie van de file";
 		F file = fileSystem.toFile(filename);
-		OutputStream out = fileSystem.createFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(contents);
-		pw.close();
-		out.close();
+		fileSystem.createFile(file, new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -93,8 +110,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		OutputStream out = fileSystem.createFile(file);
-		out.close();
+		fileSystem.createFile(file, null);
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -253,6 +269,22 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	@Test
 	public void writableFileSystemTestFolderExists() throws Exception {
 		String folderName = "dummyFolder";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (!_folderExists(folderName)) {
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue(_folderExists(folderName), "could not create folder before test");
+		}
+
+		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen");
+	}
+
+	@Test
+	public void writableFileSystemTestFolderExistsWithSlash() throws Exception {
+		String folderName = "dummyFolder/";
 
 		fileSystem.configure();
 		fileSystem.open();
@@ -460,10 +492,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.open();
 
 		F file = fileSystem.toFile(filename);
-
-		OutputStream out = fileSystem.createFile(file);
-		out.write(content.getBytes());
-		out.close();
+		fileSystem.createFile(file, new ThrowingAfterCloseInputStream(new ByteArrayInputStream(content.getBytes())));
 
 		assertTrue(_fileExists(filename), "Expected the file ["+filename+"] to be present");
 
@@ -531,8 +560,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.configure();
 		fileSystem.open();
 
-		try (OutputStream out1 = fileSystem.createFile(fileSystem.toFile(filename))) {
-		}
+		fileSystem.createFile(fileSystem.toFile(filename), null);
 		assertTrue(fileSystem.exists(fileSystem.toFile(filename)));
 
 	}

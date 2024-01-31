@@ -5,6 +5,12 @@
         <h4>Connections</h4>
       </div>
       <div class="ibox-content">
+        <!-- <label>
+          Min truncate length:
+          <select [(ngModel)]="minimalTruncateLength" name="minimalTruncateLength" (ngModelChange)="updateTable()">
+            <option *ngFor="let option of truncateLengthOptions" [ngValue]="option">{{option}}</option>
+          </select>
+        </label> -->
         <table id="datatable" style="width:100%" datatable class="table table-striped table-hover" [dtOptions]="dtOptions"> <!-- dt-disable-deep-watchers="true" !-->
           <thead>
             <tr>

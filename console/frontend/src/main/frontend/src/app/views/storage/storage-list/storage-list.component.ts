@@ -16,7 +16,7 @@ import { WebStorageService } from 'src/app/services/web-storage.service';
   styleUrls: ['./storage-list.component.scss']
 })
 export class StorageListComponent implements OnInit, AfterViewInit {
-  targetStates: { name: string; }[] = [];
+  targetStates: Record<string, { name: string; }> = {};
 
   truncated = false;
   truncateButtonText = "Truncate displayed data";
@@ -117,7 +117,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         }
         this.Session.set('search', searchSession);
         this.storageService.getStorageList(queryParams).subscribe({ next: (response) => {
-          this.targetStates = response.targetStates ?? [];
+          this.targetStates = response.targetStates ?? {};
           callback({
             draw: data["draw"],
             recordsTotal: response.totalMessages,

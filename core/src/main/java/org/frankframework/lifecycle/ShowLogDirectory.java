@@ -73,7 +73,6 @@ public class ShowLogDirectory {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getLogDirectory(Message<?> message) {
 		String directory = BusMessageUtils.getHeader(message, "directory", defaultLogDirectory);
-		boolean sizeFormat = BusMessageUtils.getBooleanHeader(message, "sizeFormat", true);
 		String wildcard = BusMessageUtils.getHeader(message, "wildcard", defaultLogWildcard);
 
 		if(StringUtils.isNotEmpty(directory) && !FileUtils.readAllowed(FileViewerServlet.permissionRules, directory, BusMessageUtils::hasAnyRole)) {
@@ -81,12 +80,11 @@ public class ShowLogDirectory {
 		}
 
 		Map<String, Object> returnMap = new HashMap<>();
-		Dir2Map dir = new Dir2Map(directory, sizeFormat, wildcard, showDirectories, maxItems);
+		Dir2Map dir = new Dir2Map(directory, wildcard, showDirectories, maxItems);
 
 		returnMap.put("list", dir.getList());
 		returnMap.put("count", dir.size());
 		returnMap.put("directory", dir.getDirectory());
-		returnMap.put("sizeFormat", sizeFormat);
 		returnMap.put("wildcard", wildcard);
 
 		return new JsonResponseMessage(returnMap);

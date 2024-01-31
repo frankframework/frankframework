@@ -11,11 +11,12 @@ export class FormatCodeDirective implements OnInit, OnChanges {
   private element = this.elementRef.nativeElement;
   private code = document.createElement('code');
   private initHash = "";
+  private initAdapter = "";
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private elementRef: ElementRef<HTMLElement>,
+    private elementRef: ElementRef<HTMLElement>
   ) { };
 
   ngOnInit(){
@@ -23,6 +24,7 @@ export class FormatCodeDirective implements OnInit, OnChanges {
     this.element.classList.add("language-markup");
     this.element.append(this.code);
     this.route.fragment.subscribe(hash => this.initHash = hash ?? "");
+    this.route.queryParamMap.subscribe(params => this.initAdapter = params.get("adapter") ?? "");
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -32,23 +34,37 @@ export class FormatCodeDirective implements OnInit, OnChanges {
 
       this.addOnClickEvent(this.code);
 
-      // $location.hash(this.initHash);
       if(this.initHash != ""){
-        let el = $("#" + this.initHash);
-        if (el) {
-          el.addClass("line-selected");
-          let lineNumber = Math.max(0, parseInt(this.initHash.substring(1)) - 15);
-          setTimeout(() => {
-            let lineElement = $("#L" + lineNumber)[0];
-            if (lineElement) {
-              lineElement.scrollIntoView();
-            }
-          }, 500)
-        }
+        this.scrollToLine();
+      } else if (this.initAdapter != "") {
+        this.scrollToAdapter();
       }
+
     } else if (this.text === '') {
       $(this.code).text(this.text);
     }
+  }
+
+  scrollToLine() {
+    let el = $("#" + this.initHash);
+    if (el) {
+      el.addClass("line-selected");
+      let lineNumber = Math.max(0, parseInt(this.initHash.substring(1)) - 15);
+      setTimeout(() => {
+        let lineElement = $("#L" + lineNumber)[0];
+        if (lineElement) {
+          lineElement.scrollIntoView();
+        }
+      }, 500);
+    }
+  }
+
+  scrollToAdapter() {
+    const element = document.querySelector(`.adapter-tag.${this.initAdapter}`);
+    setTimeout(() => {
+      element?.scrollIntoView();
+      this.element.scrollTo({ left: 0 });
+    }, 500);
   }
 
   addOnClickEvent(root: HTMLElement) {

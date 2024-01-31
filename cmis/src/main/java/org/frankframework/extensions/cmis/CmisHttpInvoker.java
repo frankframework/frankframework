@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,26 +33,37 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
-import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
-public class CmisHttpInvoker implements HttpInvoker {
+import lombok.extern.log4j.Log4j2;
 
-	private final Logger log = LogUtil.getLogger(CmisHttpInvoker.class);
+@Log4j2
+public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 	private CmisHttpSender sender = null;
 
 	//To stub during testing
 	protected CmisHttpSender createSender() {
-		return new CmisHttpSender() {};
+		CmisHttpSender cmisHttpSender = new CmisHttpSender() {};
+		log.debug("CmisHttpInvoker [{}] created new CmisHttpSender [{}]", this, cmisHttpSender);
+		return cmisHttpSender;
+	}
+
+	@Override
+	public void close() {
+		if (sender != null) {
+			log.debug("Closing CmisHttpSender [{}] from CmisHttpInvoker [{}]", sender, this);
+			sender.close();
+			sender = null;
+		} else {
+			log.debug("Closing CmisHttpInvoker [{}] but does not have a sender to close", this);
+		}
 	}
 
 	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
@@ -187,7 +198,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			}
 		}
 
-		Response response = null;
+		Response response;
 
 		try {
 			sender = getInstance(session);
@@ -211,11 +222,11 @@ public class CmisHttpInvoker implements HttpInvoker {
 					offset = BigInteger.ZERO;
 				}
 
-				sb.append(offset.toString());
+				sb.append(offset);
 				sb.append('-');
 
 				if (length != null && length.signum() == 1) {
-					sb.append(offset.add(length.subtract(BigInteger.ONE)).toString());
+					sb.append(offset.add(length.subtract(BigInteger.ONE)));
 				}
 
 				headers.put("Range", sb.toString());
@@ -254,7 +265,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 				}
 			}
 
-			log.trace("invoking CmisHttpSender: content-type["+contentType+"] headers["+headers.toString()+"]");
+			log.trace("invoking CmisHttpSender: content-type[{}] headers[{}]", contentType, headers);
 
 			response = sender.invoke(method, url.toString(), headers, writer, session);
 		} catch (Exception e) {
@@ -262,7 +273,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			throw new CmisConnectionException(url.toString(), -1, e);
 		}
 
-		log.trace("received result code["+response.getResponseCode()+"] headers["+response.getHeaders().toString()+"]");
+		log.trace("received result code[{}] headers[{}]", response::getResponseCode, response::getHeaders);
 		return response;
 	}
 }

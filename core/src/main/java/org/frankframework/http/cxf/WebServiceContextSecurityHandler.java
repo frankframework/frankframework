@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
    limitations under the License.
 */
 package org.frankframework.http.cxf;
+
 import java.security.Principal;
 
 import javax.xml.ws.WebServiceContext;
 
 import org.frankframework.core.ISecurityHandler;
-import org.frankframework.core.PipeLineSession;
 
 /**
  * Securityhandler that delegates its implementation to the corresponding
@@ -35,12 +35,12 @@ public class WebServiceContextSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) {
+	public boolean isUserInRole(String role) {
 		return webServiceContext.isUserInRole(role);
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session){
+	public Principal getPrincipal(){
 		return webServiceContext.getUserPrincipal();
 	}
 }

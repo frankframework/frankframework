@@ -1,3 +1,46 @@
+#wrapper {
+  display: flex;
+  overflow-x: initial;
+}
+
+app-pages-navigation {
+  flex: 0 0 auto;
+}
+
+.navbar-static-side {
+  position: sticky !important;
+  top: -60px;
+  max-height: 100vh;
+  overflow: auto;
+  /* -ms-overflow-style: thin; */
+  scrollbar-width: thin;
+}
+
+body.mini-navbar .navbar-static-side {
+  position: relative !important;
+  top: 0;
+  max-height: initial;
+  overflow: initial;
+}
+
+.navbar-static-side::-webkit-scrollbar {
+  /* display: none; */
+  width: 8px;
+}
+
+.navbar-static-side::-webkit-scrollbar-track {
+  background-color: #293846;
+}
+
+.navbar-static-side::-webkit-scrollbar-thumb {
+  background-color: #a7b1c2;
+}
+
+#page-wrapper {
+  margin: 0 !important;
+  flex: 1 1 auto;
+}
+
 .fade {
   opacity: 1;
 }
@@ -85,7 +128,7 @@ div.dataTables_wrapper div.dataTables_paginate {
   min-height: 1px;
 }
 
-div.dataTables_wrapper div.dataTables_info{
+div.dataTables_wrapper div.dataTables_info {
   width: 41.66666667%;
 }
 
@@ -96,7 +139,8 @@ div.dataTables_wrapper div.dataTables_paginate {
   text-align: right;
 }
 
-.dataTables_paginate .paginate_button, .dataTables_paginate .ellipsis {
+.dataTables_paginate .paginate_button,
+.dataTables_paginate .ellipsis {
   background-color: #FFFFFF;
   border: 1px solid #DDDDDD;
   color: inherit;
@@ -108,10 +152,10 @@ div.dataTables_wrapper div.dataTables_paginate {
 }
 
 .dataTables_paginate .paginate_button:focus,
-.dataTables_paginate .paginate_button:hover{
+.dataTables_paginate .paginate_button:hover {
   z-index: 2;
   color: #23527c !important;
-  background-color: #eee!important;
+  background-color: #eee !important;
   border: 1px solid #DDDDDD !important;
 }
 
