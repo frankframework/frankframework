@@ -1,11 +1,9 @@
 package org.frankframework.jdbc;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.Date;
 
@@ -36,7 +34,7 @@ public class MessageStoreListenerTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
-		assumeThat(env.getDbmsSupport().getDbms(),equalTo(Dbms.H2)); // tests are based on H2 syntax queries
+		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms()); // tests are based on H2 syntax queries
 		listener = env.createBean(MessageStoreListener.class);
 		listener.setTableName(TEST_TABLE_NAME);
 		listener.setMessageIdField(messageIdField);
@@ -147,8 +145,7 @@ public class MessageStoreListenerTest {
 	}
 
 	@DatabaseTest
-	public void testGetMessageCountQueryAvailable(DatabaseTestEnvironment env) throws Exception {
-		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms());
+	public void testGetMessageCountQueryAvailable() throws Exception {
 		listener.configure();
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
@@ -159,8 +156,7 @@ public class MessageStoreListenerTest {
 	}
 
 	@DatabaseTest
-	public void testGetMessageCountQueryError(DatabaseTestEnvironment env) throws Exception {
-		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms());
+	public void testGetMessageCountQueryError() throws Exception {
 		listener.configure();
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
@@ -171,8 +167,7 @@ public class MessageStoreListenerTest {
 	}
 
 	@DatabaseTest
-	public void testGetMessageCountQueryAvailableWithSelectCondition(DatabaseTestEnvironment env) throws Exception {
-		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms());
+	public void testGetMessageCountQueryAvailableWithSelectCondition() throws Exception {
 		listener.setSelectCondition("t.VARCHAR='A'");
 		listener.configure();
 
@@ -184,8 +179,7 @@ public class MessageStoreListenerTest {
 	}
 
 	@DatabaseTest
-	public void testGetMessageCountQueryErrorSelectCondition(DatabaseTestEnvironment env) throws Exception {
-		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms());
+	public void testGetMessageCountQueryErrorSelectCondition() throws Exception {
 		listener.setSelectCondition("t.VARCHAR='A'");
 		listener.configure();
 
