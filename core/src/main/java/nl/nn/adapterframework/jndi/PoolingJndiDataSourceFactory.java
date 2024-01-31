@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.time.Duration;
 
 import javax.sql.CommonDataSource;
+import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
@@ -65,13 +66,23 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if(maxPoolSize > 1) {
 			log.info("Creating connection pool for datasource [{}]", dataSourceName);
-			return createPool((DataSource)dataSource);
+			return createPool((DataSource)dataSource, dataSourceName);
 		}
 		log.info("Pooling not configured, using datasource [{}] without augmentation", dataSourceName);
 		return (DataSource) dataSource;
 	}
 
-	protected DataSource createPool(DataSource dataSource) {
+	private static boolean isPooledDataSource(CommonDataSource dataSource) {
+		return dataSource instanceof ConnectionPoolDataSource
+				|| dataSource.getClass().getName().startsWith("org.apache.tomcat")
+				;
+	}
+
+	protected DataSource createPool(DataSource dataSource, String dataSourceName) {
+		if (isPooledDataSource(dataSource)) {
+			log.warn("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
+			return dataSource;
+		}
 		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
 
