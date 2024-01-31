@@ -23,9 +23,8 @@ import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,18 +39,12 @@ public class FixedQuerySenderTest {
 
 	private PipeLineSession session;
 
-	@DatabaseTest.Parameter(0)
-	private TransactionManagerType transactionManagerType;
-
-	@DatabaseTest.Parameter(1)
 	private String dataSourceName;
-
-	private TestConfiguration getConfiguration() {
-		return transactionManagerType.getConfigurationContext(dataSourceName);
-	}
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		this.dataSourceName = databaseTestEnvironment.getDataSourceName();
+		TestConfiguration configuration = databaseTestEnvironment.getConfiguration();
 		session = new PipeLineSession();
 		session.put(PipeLineSession.MESSAGE_ID_KEY, ConfiguredTestBase.testMessageId);
 		session.put(PipeLineSession.CORRELATION_ID_KEY, ConfiguredTestBase.testCorrelationId);
@@ -60,10 +53,10 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setDatasourceName(dataSourceName);
 		fixedQuerySender.setName("FQS_TABLE");
 		fixedQuerySender.setIncludeFieldDefinition(false);
-		getConfiguration().autowireByName(fixedQuerySender);
+		configuration.autowireByName(fixedQuerySender);
 
-		getConfiguration().getIbisManager();
-		getConfiguration().autowireByName(fixedQuerySender);
+		configuration.getIbisManager();
+		configuration.autowireByName(fixedQuerySender);
 	}
 
 	@AfterEach
@@ -102,7 +95,7 @@ public class FixedQuerySenderTest {
 		assertEquals(resultColumnsReturned, result);
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testNamedParametersTrue() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{namedParam1})");
 		fixedQuerySender.addParameter(new Parameter("namedParam1", "value"));
@@ -115,7 +108,7 @@ public class FixedQuerySenderTest {
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testNamedParameters() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
 		fixedQuerySender.addParameter(new Parameter("param", "value"));
@@ -128,7 +121,7 @@ public class FixedQuerySenderTest {
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testUseNamedParametersStringValueContains_unp_start() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('3', '?{param}')");
 
@@ -147,7 +140,7 @@ public class FixedQuerySenderTest {
 		assertEquals("?{param}", result.asString());
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testUseNamedParametersStringValueContains_unp_start_resolveParam() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', '?{param}')");
 
@@ -159,7 +152,7 @@ public class FixedQuerySenderTest {
 		assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testUseNamedParametersWithoutNamedParam() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', 'text')");
 		fixedQuerySender.setUseNamedParams(true);
@@ -170,7 +163,7 @@ public class FixedQuerySenderTest {
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testUseNamedParametersWithoutParam(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
 		fixedQuerySender.setUseNamedParams(true);
@@ -182,7 +175,7 @@ public class FixedQuerySenderTest {
 		assertSenderException(databaseTestEnvironment.getDataSourceName(), ex);
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testNamedParamInQueryFlagFalse(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
 		fixedQuerySender.setUseNamedParams(false);
@@ -194,7 +187,7 @@ public class FixedQuerySenderTest {
 		assertSenderException(databaseTestEnvironment.getDataSourceName(), ex);
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testIncompleteNamedParamInQuery(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param)");
 		fixedQuerySender.configure();
@@ -205,7 +198,7 @@ public class FixedQuerySenderTest {
 		assertSenderException(databaseTestEnvironment.getDataSourceName(), ex);
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testMultipleColumnsReturnedWithSpaceBetween() throws Exception {
 		assumeTrue(dataSourceName.equals("H2") || dataSourceName.equals("Oracle"));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
@@ -220,7 +213,7 @@ public class FixedQuerySenderTest {
 		assertColumnsReturned(result);
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testMultipleColumnsReturnedWithDoubleSpace() throws Exception {
 		assumeTrue(dataSourceName.equals("H2") || dataSourceName.equals("Oracle"));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
@@ -235,7 +228,7 @@ public class FixedQuerySenderTest {
 		assertColumnsReturned(result);
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testMultipleColumnsReturned() throws Exception {
 		assumeTrue(dataSourceName.equals("H2") || dataSourceName.equals("Oracle"));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
@@ -249,7 +242,7 @@ public class FixedQuerySenderTest {
 		assertColumnsReturned(result);
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testAddMonth() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tDATE) VALUES ('1', ADD_MONTHS(SYSTIMESTAMP,?))");
 		fixedQuerySender.addParameter(ParameterBuilder.create("param", "7").withType(ParameterType.INTEGER));
@@ -275,37 +268,37 @@ public class FixedQuerySenderTest {
 		asserter.accept(result.asString());
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testOutputFormatDefault() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default.xml");
 		testOutputFormat(null, true, r-> assertXmlEquals(expected, r));
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testOutputFormatXml() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml.xml");
 		testOutputFormat(DocumentFormat.XML, true, r-> assertXmlEquals(expected, r));
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testOutputFormatJson() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json.json");
 		testOutputFormat(DocumentFormat.JSON, true, r-> assertJsonEquals(expected, r));
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testOutputFormatDefaultNoFieldDefinitions() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default-nofielddef.xml");
 		testOutputFormat(null, false, r-> assertXmlEquals(expected, r));
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testOutputFormatXmlNoFieldDefinitions() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml-nofielddef.xml");
 		testOutputFormat(DocumentFormat.XML, false, r -> assertXmlEquals(expected, r));
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testOutputFormatJsonNoFieldDefinitions() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json-nofielddef.json");
 		testOutputFormat(DocumentFormat.JSON, false, r-> assertJsonEquals(expected, r));
@@ -323,7 +316,7 @@ public class FixedQuerySenderTest {
 		return result.toString();
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testParameterTypeDefault() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob"));
@@ -339,7 +332,7 @@ public class FixedQuerySenderTest {
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testParameterTypeLobStream() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));
@@ -358,7 +351,7 @@ public class FixedQuerySenderTest {
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testParameterTypeLobArray() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));

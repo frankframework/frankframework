@@ -5,10 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.frankframework.scheduler.job.CheckReloadJob;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -17,33 +15,23 @@ public class CheckReloadJobTest {
 
 	private CheckReloadJob jobDef;
 
-	@DatabaseTest.Parameter(0)
-	private TransactionManagerType transactionManagerType;
-
-	@DatabaseTest.Parameter(1)
-	private String dataSourceName;
-
-	private TestConfiguration getConfiguration() {
-		return transactionManagerType.getConfigurationContext(dataSourceName);
-	}
-
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment databaseTestEnvironment) {
 
 		jobDef = new CheckReloadJob() {
 			@Override
 			protected String getDataSource() {
-				return dataSourceName;
+				return databaseTestEnvironment.getDataSourceName();
 			}
 		};
 
-		getConfiguration().getIbisManager(); //call once to ensure it exists.
+		databaseTestEnvironment.getConfiguration().getIbisManager(); //call once to ensure it exists.
 
 		jobDef.setName("CheckReloadJob");
-		getConfiguration().autowireByName(jobDef);
+		databaseTestEnvironment.autowire(jobDef);
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testWithEmptyTable() throws Exception {
 		jobDef.configure();
 
@@ -52,7 +40,7 @@ public class CheckReloadJobTest {
 		assertTrue(jobDef.getMessageKeeper().getMessage(0).getMessageText().contains("job successfully configured"));
 	}
 
-	@DatabaseTest
+	@TxManagerTest
 	public void testBeforeExecuteJobWithEmptyTable() throws Exception {
 		jobDef.configure();
 

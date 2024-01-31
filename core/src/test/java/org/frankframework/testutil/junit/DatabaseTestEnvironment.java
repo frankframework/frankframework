@@ -122,15 +122,14 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	}
 
 	/** Populates all database related fields that are normally wired through Spring */
-	public void autowire(@Nonnull JdbcFacade jdbcFacade) {
-		configuration.autowireByName(jdbcFacade);
-		jdbcFacade.setDatasourceName(getDataSourceName());
+	public void autowire(@Nonnull Object bean) {
+		configuration.autowireByName(bean);
 	}
 
 	public <T> T createBean(Class<T> beanClass) {
 		T bean = SpringUtils.createBean(configuration, beanClass);
+		autowire(bean);
 		if(bean instanceof JdbcFacade) {
-			configuration.autowireByName(bean);
 			((JdbcFacade) bean).setDatasourceName(getDataSourceName());
 		}
 		return bean;
