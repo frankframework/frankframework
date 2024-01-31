@@ -25,7 +25,6 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
-import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -119,24 +118,10 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		} else if (getTargetDataSource() instanceof org.apache.commons.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) getTargetDataSource();
 			dataSource.addPoolMetadata(info);
-		} else if (getTargetDataSource() instanceof PoolingDataSource) { // BTM instance
-			addBTMDatasourceInfo(info);
 		}
 
 		info.append(" datasource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 		return info.toString();
-	}
-
-	private void addBTMDatasourceInfo(StringBuilder info) {
-		PoolingDataSource dataSource = (PoolingDataSource) getTargetDataSource();
-		info.append("BTM Pool Info: ");
-		if (dataSource == null) {
-			return;
-		}
-		info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
-		info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
-		info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
-		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append(CLOSE);
 	}
 
 }
