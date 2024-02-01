@@ -13387,7 +13387,7 @@
         <xs:documentation>If set, the pipe returns a message from a file, instead of doing the regular process</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="timeOutOnResult" type="xs:string">
+    <xs:attribute name="timeoutOnResult" type="xs:string">
       <xs:annotation>
         <xs:documentation>If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only)</xs:documentation>
       </xs:annotation>

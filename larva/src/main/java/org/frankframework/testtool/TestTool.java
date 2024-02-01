@@ -1339,9 +1339,9 @@ public class TestTool {
 					if (senderException != null) {
 						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
 					}
-					TimeoutException timeOutException = senderThread.getTimeOutException();
-					if (timeOutException != null) {
-						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
+					TimeoutException timeoutexception = senderThread.getTimeoutException();
+					if (timeoutexception != null) {
+						errorMessage("Found remaining TimeOutException: " + timeoutexception.getMessage(), timeoutexception, writers);
 					}
 					String message = senderThread.getResponse();
 					if (message != null) {

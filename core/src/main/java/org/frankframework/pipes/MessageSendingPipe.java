@@ -256,7 +256,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
 				if (StringUtils.isNotEmpty(getTimeoutOnResult())) {
-					throw new ConfigurationException("timeOutOnResult only allowed in stub mode");
+					throw new ConfigurationException("timeoutOnResult only allowed in stub mode");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult())) {
 					throw new ConfigurationException("exceptionOnResult only allowed in stub mode");
@@ -756,7 +756,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				String result = (String)sendResultMessage.asObject();
 				if (StringUtils.isNotEmpty(getTimeoutOnResult()) && getTimeoutOnResult().equals(result)) {
 					exitState = TIMEOUT_FORWARD;
-					throw new TimeoutException("timeOutOnResult ["+ getTimeoutOnResult()+"]");
+					throw new TimeoutException("timeoutOnResult ["+ getTimeoutOnResult()+"]");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(result)) {
 					exitState = PipeForward.EXCEPTION_FORWARD_NAME;

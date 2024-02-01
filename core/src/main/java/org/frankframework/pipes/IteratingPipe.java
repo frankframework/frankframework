@@ -340,7 +340,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						}
 					}
 					if (StringUtils.isNotEmpty(getTimeoutOnResult()) && getTimeoutOnResult().equals(itemResult)) {
-						throw new TimeoutException("timeOutOnResult ["+ getTimeoutOnResult()+"]");
+						throw new TimeoutException("timeoutOnResult ["+ getTimeoutOnResult()+"]");
 					}
 					if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(itemResult)) {
 						throw new SenderException("exceptionOnResult ["+getExceptionOnResult()+"]");
