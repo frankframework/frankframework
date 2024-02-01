@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.http.HttpServletBase;
@@ -39,8 +40,6 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
-import static org.frankframework.management.bus.endpoints.FileViewer.fvConfigKey;
-import static org.frankframework.management.bus.endpoints.FileViewer.makeConfiguredReplacements;
 import static org.frankframework.management.bus.endpoints.FileViewer.permissionRules;
 
 /**
@@ -75,6 +74,17 @@ import static org.frankframework.management.bus.endpoints.FileViewer.permissionR
 @IbisInitializer
 public class FileViewerServlet extends HttpServletBase {
 	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);
+
+	private static final String fvConfigKey = "FileViewerServlet.signal";
+
+	public static String makeConfiguredReplacements(String input) {
+		for (final String signal : AppConstants.getInstance().getListProperty(fvConfigKey)) {
+			String pre = AppConstants.getInstance().getProperty(fvConfigKey + "." + signal + ".pre");
+			String post = AppConstants.getInstance().getProperty(fvConfigKey + "." + signal + ".post");
+			input = StringUtils.replace(input, signal, pre + signal + post);
+		}
+		return StringUtils.replace(input, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+	}
 
 	private static void showReaderContents(String filepath, String type, HttpServletResponse response) throws IOException {
 		PrintWriter out = response.getWriter();

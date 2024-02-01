@@ -17,17 +17,20 @@ package org.frankframework.management.web;
 
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.util.ResponseUtils;
+import org.springframework.messaging.Message;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import java.io.OutputStreamWriter;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 @Path("/")
 public class FileViewer extends FrankApiBase {
@@ -35,21 +38,33 @@ public class FileViewer extends FrankApiBase {
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/file-viewer")
-	@Produces()
+	@Produces({"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
 	public Response getFileContent(@QueryParam("file") String file, @QueryParam("type") String type) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", type);
-		return processFileContents(builder, type);
+
+		if (type.equalsIgnoreCase("html")) {
+			return processHtmlMessage(builder);
+		}
+		return callSyncGateway(builder);
 	}
 
-	// splitFileContents / streamFileContents?
-	private Response processFileContents(RequestMessageBuilder builder, String wantedType) {
-		if(wantedType.equalsIgnoreCase("html")){
-			// TODO retrieve from bus and write as OutputStream to JaxRs while modifying each line
-		}
-		// TODO Check if JaxRs can handle streaming to the client and not just creating an entity and then sending the full data at once
-		return callSyncGateway(builder);
+	private Response processHtmlMessage(RequestMessageBuilder builder) {
+		Message<?> fileContentsMessage = sendSyncMessage(builder);
+		StreamingOutput stream = outputStream -> {
+			try {
+				BufferedReader fileContentsReader = new BufferedReader(new InputStreamReader((InputStream) fileContentsMessage.getPayload()));
+				String line;
+				while ((line = fileContentsReader.readLine()) != null) {
+					outputStream.write((line + "<br>").getBytes());
+				}
+				outputStream.flush();
+			} catch (Exception e) {
+				throw new ApiException("Can't modify file content to be properly rendered as HTML");
+			}
+		};
+		return ResponseUtils.convertToJaxRsStreamingResponse(fileContentsMessage, stream).build();
 	}
 
 }

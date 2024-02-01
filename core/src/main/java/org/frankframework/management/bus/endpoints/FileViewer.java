@@ -17,7 +17,6 @@ package org.frankframework.management.bus.endpoints;
 
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BinaryResponseMessage;
 import org.frankframework.management.bus.BusAction;
@@ -29,16 +28,10 @@ import org.frankframework.management.bus.ResponseMessageBase;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
-import org.frankframework.util.XmlEncodingUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -46,17 +39,7 @@ import java.io.InputStream;
 @TopicSelector(BusTopic.FILE_VIEWER)
 public class FileViewer extends BusEndpointBase {
 
-	public static final String fvConfigKey = "FileViewerServlet.signal";
 	public static final String permissionRules = AppConstants.getInstance().getProperty("FileViewerServlet.permission.rules");
-
-	public static String makeConfiguredReplacements(String input) {
-		for (final String signal : AppConstants.getInstance().getListProperty(fvConfigKey)) {
-			String pre = AppConstants.getInstance().getProperty(fvConfigKey + "." + signal + ".pre");
-			String post = AppConstants.getInstance().getProperty(fvConfigKey + "." + signal + ".post");
-			input = StringUtils.replace(input, signal, pre + signal + post);
-		}
-		return StringUtils.replace(input, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-	}
 
 	@ActionSelector(BusAction.GET)
 	public Message<?> getFileContent(Message<?> message) {
@@ -82,71 +65,28 @@ public class FileViewer extends BusEndpointBase {
 		InputStream inputStream = new FileInputStream(filepath);
 		String filename = FilenameUtils.getName(filepath);
 
-		MediaType contentType;
+		BinaryResponseMessage response;
 		switch (type.toLowerCase()) {
 			case "html":
-				contentType = MediaType.TEXT_HTML;
+				response = new BinaryResponseMessage(inputStream, MediaType.TEXT_HTML);
+				response.setFilename("inline", filename);
 				break;
 			case "xml":
-				contentType = MediaType.APPLICATION_XML;
+				response = new BinaryResponseMessage(inputStream, MediaType.APPLICATION_XML);
+				response.setFilename("inline", filename);
 				break;
 			case "text":
-				contentType = MediaType.TEXT_PLAIN;
+				response = new BinaryResponseMessage(inputStream, MediaType.TEXT_PLAIN);
+				response.setFilename("inline", filename);
 				break;
 			case "zip":
-				contentType = MediaType.valueOf("application/zip");
+				response = new BinaryResponseMessage(inputStream, MediaType.valueOf("application/zip"));
+				response.setFilename(filename);
 				break;
 			default:
-				contentType = MediaType.APPLICATION_OCTET_STREAM;
+				response = new BinaryResponseMessage(inputStream, MediaType.APPLICATION_OCTET_STREAM);
+				response.setFilename(filename);
 		}
-		BinaryResponseMessage response = new BinaryResponseMessage(inputStream, contentType);
-
-		if(type.equalsIgnoreCase("xml")){
-			response.setFilename("inline", filename); // maybe better to handle this in the console backend?
-			return response;
-		}
-		response.setFilename(filename);
 		return response;
 	}
-
-	// TODO remove
-	private static ResponseMessageBase<?> getInlineContents(String filepath, String type) throws IOException {
-		if (type.equalsIgnoreCase("html")) {
-			FileReader reader = new FileReader(filepath);
-			BufferedReader bufferedReader = new BufferedReader(reader);
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-			String line;
-			while ((line = bufferedReader.readLine()) != null) {
-				String formattedLine = makeConfiguredReplacements(XmlEncodingUtils.encodeChars(line)) + "<br/>";
-				outputStream.write(formattedLine.getBytes());
-			}
-			InputStream byteArrayStream = new ByteArrayInputStream(outputStream.toByteArray());
-			return new BinaryResponseMessage(byteArrayStream, MediaType.TEXT_HTML);
-		}
-
-		String filename = FilenameUtils.getName(filepath);
-		File file = new File(filepath);
-		InputStream fileStream = new FileInputStream(file);
-		BinaryResponseMessage response = new BinaryResponseMessage(fileStream, MediaType.APPLICATION_XML);
-		response.setFilename("inline", filename);
-		return response;
-	}
-
-	// TODO remove
-	private static BinaryResponseMessage getInputStreamContents(String filepath, String type) throws IOException {
-		InputStream inputStream = new FileInputStream(filepath);
-		String filename = FilenameUtils.getName(filepath);
-		BinaryResponseMessage response;
-		if (type.equalsIgnoreCase("zip")) {
-			response = new BinaryResponseMessage(inputStream, MediaType.valueOf("application/zip"));
-		} else if (type.equalsIgnoreCase("text")) {
-			response = new BinaryResponseMessage(inputStream, MediaType.TEXT_PLAIN);
-		} else {
-			response = new BinaryResponseMessage(inputStream, MediaType.APPLICATION_OCTET_STREAM);
-		}
-		response.setFilename(filename);
-		return response;
-	}
-
 }
