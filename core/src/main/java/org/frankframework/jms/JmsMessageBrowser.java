@@ -47,7 +47,7 @@ import org.frankframework.util.StringUtil;
  */
 public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends JMSFacade implements IMessageBrowser<M> {
 
-	private @Getter long timeOut = 3000;
+	private @Getter long timeout = 3000;
 	private @Getter String selector=null;
 
 	private @Getter @Setter String hideRegex = null;
@@ -138,7 +138,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 		try {
 			session = createSession();
 			mc = getMessageConsumer(session, getDestination(), getCombinedSelector(messageId));
-			msg = (J)mc.receive(getTimeOut());
+			msg = (J)mc.receive(getTimeout());
 			return msg;
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -204,7 +204,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 			session = createSession();
 			log.debug("retrieving message ["+messageId+"] in order to delete it");
 			mc = getMessageConsumer(session, getDestination(), getCombinedSelector(messageId));
-			mc.receive(getTimeOut());
+			mc.receive(getTimeout());
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		} finally {
@@ -240,13 +240,22 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 		return result.toString();
 	}
 
+	/**
+	 * Timeout <i>in milliseconds</i> for receiving a message from the queue
+	 * @deprecated use {@link #setTimeout(long)} instead
+	 * @ff.default 3000
+	 */
+	@Deprecated(since = "8.1")
+	public void setTimeOut(long newTimeOut) {
+		timeout = newTimeOut;
+	}
 
 	/**
 	 * Timeout <i>in milliseconds</i> for receiving a message from the queue
 	 * @ff.default 3000
 	 */
-	public void setTimeOut(long newTimeOut) {
-		timeOut = newTimeOut;
+	public void setTimeout(long newTimeOut) {
+		timeout = newTimeOut;
 	}
 
 }

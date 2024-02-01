@@ -40,7 +40,7 @@ public class EsbJmsSender extends JmsSender {
 	}
 
 	private @Getter MessageProtocol messageProtocol = null;
-	private @Getter long timeOut = 20_000;
+	private @Getter long timeout = 20_000;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -49,8 +49,8 @@ public class EsbJmsSender extends JmsSender {
 		}
 		if (getMessageProtocol() == MessageProtocol.RR) {
 			setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-			setMessageTimeToLive(getTimeOut());
-			setReplyTimeout((int) getTimeOut());
+			setMessageTimeToLive(getTimeout());
+			setReplyTimeout((int) getTimeout());
 			setSynchronous(true);
 		} else {
 			if (getReplyToName() != null) {
@@ -77,10 +77,19 @@ public class EsbJmsSender extends JmsSender {
 	 * receiver timeout, in milliseconds
 	 * @ff.default 20000 (20s)
 	 */
-	public void setTimeOut(long l) {
-		timeOut = l;
+	public void setTimeout(long l) {
+		timeout = l;
 	}
 
+	/**
+	 * receiver timeout, in milliseconds.
+	 * @deprecated use {@link #setTimeout(long)} instead.
+	 * @ff.default 20000 (20s)
+	 */
+	@Deprecated(since = "8.1")
+	public void setTimeOut(long l) {
+		timeout = l;
+	}
 
 	/** if messageProtocol=<code>RR</code> then <code>deliveryMode</code> defaults to <code>NON_PERSISTENT</code> */
 	@Override
@@ -88,7 +97,7 @@ public class EsbJmsSender extends JmsSender {
 		super.setDeliveryMode(deliveryMode);
 	}
 
-	/** if messageProtocol=<code>RR</code> then <code>replyTimeout</code> defaults to <code>timeOut</code> */
+	/** if messageProtocol=<code>RR</code> then <code>replyTimeout</code> defaults to <code>timeout</code> */
 	@Override
 	public void setReplyTimeout(int replyTimeout) {
 		super.setReplyTimeout(replyTimeout);

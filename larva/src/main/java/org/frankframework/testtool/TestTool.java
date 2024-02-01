@@ -1381,8 +1381,8 @@ public class TestTool {
 	public static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener, Map<String, Object> writers) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
-		long oldTimeOut = pullingJmsListener.getTimeOut();
-		pullingJmsListener.setTimeOut(10);
+		long oldTimeOut = pullingJmsListener.getTimeout();
+		pullingJmsListener.setTimeout(10);
 		boolean empty = false;
 		while (!empty) {
 			RawMessageWrapper<javax.jms.Message> rawMessage = null;
@@ -1415,7 +1415,7 @@ public class TestTool {
 				empty = true;
 			}
 		}
-		pullingJmsListener.setTimeOut((int) oldTimeOut);
+		pullingJmsListener.setTimeout((int) oldTimeOut);
 		return remainingMessagesFound;
 	}
 
