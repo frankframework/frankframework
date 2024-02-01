@@ -130,7 +130,7 @@
 		</receiver>
 		<receiver name="JmsRRListener using isReplyTo, ignore inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1c'">
 			</listener>
 		</receiver>
@@ -142,7 +142,7 @@
 		</receiver>
 		<receiver name="JmsRRListener using dynamic reply queue, ignore inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1e'">
 			</listener>
 		</receiver>
@@ -169,7 +169,7 @@
 		</receiver>
 		<receiver name="JmsRRListener using isReplyTo, use inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1h'">
 			</listener>
 		</receiver>
@@ -181,7 +181,7 @@
 		</receiver>
 		<receiver name="JmsRRListener using dynamic reply queue, use inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1j'">
 			</listener>
 		</receiver>

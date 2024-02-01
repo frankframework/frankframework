@@ -11,3 +11,4 @@ services:
         image: private.docker.nexus.frankframework.org/ff-test/mq/activemq
         ports:
             - "61616:61616"
+            - "8161:8161"

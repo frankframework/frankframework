@@ -118,11 +118,11 @@
 			<inputValidator
 				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				schemaLocation="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1 /WsdlGenerator/xsd/CustomerAdministration_Party_Party_1_FindBPPensions_1.xsd"
-				soapBody="RequestFindBPPensionsREQ" mode="reg" cmhVersion="2" throwException="true" />
+				soapBody="RequestFindBPPensionsREQ" cmhVersion="2" throwException="true" />
 			<outputValidator
 				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				schemaLocation="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1 /WsdlGenerator/xsd/CustomerAdministration_Party_Party_1_FindBPPensions_1.xsd"
-				soapBody="ReplyFindBPPensionsRLY" mode="reg" cmhVersion="2" throwException="true" />
+				soapBody="ReplyFindBPPensionsRLY" cmhVersion="2" throwException="true" />
 
 			<inputWrapper
 				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
