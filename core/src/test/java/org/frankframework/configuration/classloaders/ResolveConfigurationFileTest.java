@@ -1,61 +1,50 @@
 package org.frankframework.configuration.classloaders;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.util.AppConstants;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
-public class ResolveConfigurationFileTest extends Mockito {
+public class ResolveConfigurationFileTest {
 	private String configurationName;
 	private String basePath;
 	private String configurationFile;
 	private ClassLoaderBase classLoader;
 	private AppConstants appConstants;
-	private IbisContext ibisContext = spy(new IbisContext());
 
-	@Parameters(name = "{0} - {1}") //Name - BasePath - ConfigurationFile
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-				{ "Config", null, "Config/Configuration.xml" }, //No basepath should be derived from configurationFile
-				{ "Config", null, "Configuration.xml" }, //No basepath should be derrived from configurationName
-				{ "Config", "Config/", "Configuration.xml" }, //setting both shouldn't matter
-				{ "Config", "Config/", "Config/Configuration.xml" }, //configurationFile with basepath should be stripped
+	private static Stream<Arguments> data() {
+		return Stream.of(
+			Arguments.of("Config", null, "Config/Configuration.xml"), //No basepath should be derived from configurationFile
+			Arguments.of("Config", null, "Configuration.xml"), //No basepath should be derrived from configurationName
+			Arguments.of("Config", "Config/", "Configuration.xml"), //setting both shouldn't matter
+			Arguments.of("Config", "Config/", "Config/Configuration.xml"), //configurationFile with basepath should be stripped
 
-				{ "Config", "Config/", null }, //no configurationFile should default to Configuration.xml
-				{ "Config", null, null }, //no basePath should use configurationName
+			Arguments.of("Config", "Config/", null), //no configurationFile should default to Configuration.xml
+			Arguments.of("Config", null, null), //no basePath should use configurationName
 
-				{ "Config", null, "Config/NonDefaultConfiguration.xml" },
-				{ "Config", null, "NonDefaultConfiguration.xml" },
-				{ "Config", "Config/", "NonDefaultConfiguration.xml" },
-				{ "Config", "Config/", "Config/NonDefaultConfiguration.xml" },
-		});
+			Arguments.of("Config", null, "Config/NonDefaultConfiguration.xml"),
+			Arguments.of("Config", null, "NonDefaultConfiguration.xml"),
+			Arguments.of("Config", "Config/", "NonDefaultConfiguration.xml"),
+			Arguments.of("Config", "Config/", "Config/NonDefaultConfiguration.xml")
+		);
 	}
 
-	public ResolveConfigurationFileTest(String configName, String basePath, String configFile) {
-		this.configurationName = configName;
-		this.basePath = basePath;
-		this.configurationFile = configFile;
-	}
-
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
-		createAndConfigure();
 	}
+
 	protected void createAndConfigure() throws Exception {
 		ClassLoader parent = new ClassLoaderMock();
 		classLoader = createClassLoader(parent);
@@ -71,6 +60,7 @@ public class ResolveConfigurationFileTest extends Mockito {
 		}
 
 		appConstants.put("configurations."+getConfigurationName()+".classLoaderType", classLoader.getClass().getSimpleName());
+		IbisContext ibisContext = mock(IbisContext.class);
 		classLoader.configure(ibisContext, getConfigurationName());
 	}
 	private String getConfigurationName() {
@@ -86,18 +76,23 @@ public class ResolveConfigurationFileTest extends Mockito {
 		return cl;
 	}
 
-	@Test
-	public void properBasePathAndConfigurationFile() {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void properBasePathAndConfigurationFile(String configName, String basePath, String configurationFile) throws Exception {
+		this.configurationName = configName;
+		this.basePath = basePath;
+		this.configurationFile = configurationFile;
+		createAndConfigure();
+
 		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
 
-		assertTrue("configurationFile should not contain a BasePath ["+configFile+"]", (configFile.indexOf('/') == -1));
+		assertTrue((configFile.indexOf('/') == -1), "configurationFile should not contain a BasePath ["+configFile+"]");
 
 		URL configurationFileURL = classLoader.getResource(configFile);
-		assertNotNull("configurationFile cannot be found", configurationFileURL);
+		assertNotNull(configurationFileURL, "configurationFile cannot be found");
 
 		String filePath = configurationFileURL.getPath();
 		String root = classLoader.getBasePath();
-		System.out.println(root);
-		assertTrue("filePath ["+filePath+"] should consists of basePath ["+root+"] and configFile ["+configFile+"]", filePath.endsWith(root+configFile));
+		assertTrue(filePath.endsWith(root+configFile), "filePath ["+filePath+"] should consists of basePath ["+root+"] and configFile ["+configFile+"]");
 	}
 }
