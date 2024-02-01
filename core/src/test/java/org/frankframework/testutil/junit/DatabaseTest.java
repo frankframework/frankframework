@@ -16,16 +16,17 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 /**
  * Run database enabled tests, allows the use of the {@link DatabaseTestEnvironment} object to be used in the test method.
+ * Includes the {@link DatasourceArgumentSource} by default.
  *
  * @author Niels Meijer
  */
 @Tag("database")
 @TestTemplate // Indicates it's not a test but provides the means to run a test
-@ArgumentsSource(JUnitDatabaseSource.class) // Creates all arguments
+@ArgumentsSource(DatasourceArgumentSource.class) // automatically uses default datasource arguments
 @ExtendWith(JUnitDatabaseExtension.class) // Turns it into a matrix test
 
 @Documented
-@Target(ElementType.METHOD)
+@Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @TestInstance(Lifecycle.PER_CLASS)
 public @interface DatabaseTest {

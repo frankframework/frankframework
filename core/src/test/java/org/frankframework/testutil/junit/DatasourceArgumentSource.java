@@ -15,19 +15,22 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
  *
  * @author Niels Meijer
  */
-public class JUnitDatabaseSource implements ArgumentsProvider {
+public class DatasourceArgumentSource implements ArgumentsProvider {
 
 	@Override
-	public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+	public final Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 		if(!context.getTestClass().isPresent()) {
 			throw new IllegalStateException("test class not found");
 		}
 
 		List<Arguments> args = new ArrayList<>();
-		for(TransactionManagerType type : TransactionManagerType.values()) {
-			List<String> availableDataSources = type.getAvailableDataSources();
-			args.addAll(availableDataSources.stream().map(dsName -> Arguments.of(type, dsName)).collect(Collectors.toList()));
-		}
+		TransactionManagerType type = getTransactionManagerType();
+		List<String> availableDataSources = type.getAvailableDataSources();
+		args.addAll(availableDataSources.stream().map(dsName -> Arguments.of(type, dsName)).collect(Collectors.toList()));
 		return args.stream();
+	}
+
+	protected TransactionManagerType getTransactionManagerType() {
+		return TransactionManagerType.DATASOURCE;
 	}
 }
