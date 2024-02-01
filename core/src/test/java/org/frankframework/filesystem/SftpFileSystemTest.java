@@ -23,6 +23,7 @@ import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -33,8 +34,8 @@ import org.junit.jupiter.api.Test;
  */
 class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 
-	private final String username = "frankframework";
-	private final String password = "pass_123";
+	private final String username = "demo";
+	private final String password = "demo";
 	private final String host = "localhost";
 	private int port = 22;
 	private String remoteDirectory = "/home/frankframework/sftp";
@@ -140,14 +141,21 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 	}
 
 	@Test
-	void testFailingConnection() throws Exception {
-		// Arrange - Force reconfigure to clean list appender.
-		testAppender = TestAppender.newBuilder()
-				.useIbisPatternLayout("%level %m")
-				.minLogLevel(Level.DEBUG)
-				.build();
-		TestAppender.addToRootLogger(testAppender);
+	void testRemoveMultipleFolders() throws Exception {
+		fileSystem.configure();
+		fileSystem.open();
+		fileSystem.createFolder("piet");
+		fileSystem.setRemoteDirectory("piet");
+		fileSystem.createFolder("1/2/3/4/5");
+		assertTrue(fileSystem.folderExists("1/2/3/4"));
+		assertTrue(fileSystem.folderExists("/piet/1/2/3/4"));
+		fileSystem.removeFolder("1/2/3", true);
+		assertFalse(fileSystem.folderExists("1/2/3"));
+		assertTrue(fileSystem.folderExists("1/2"));
+	}
 
+	@Test
+	void testFailingConnection() throws Exception {
 		// pre-Assert: Test normal connection
 		super.writableFileSystemTestFileSize();
 		// Arrange: stop the SSH daemon directly
@@ -157,22 +165,81 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 		startNewSshDaemon();
 		helper = getFileSystemTestHelper(); // Needed to get the new dynamic SSH port number.
 		fileSystem = createFileSystem();
+		fileSystem.configure();
+		fileSystem.open();
+		fileSystem.setLastCheck(0); // Should trigger recheck connection
 
 		// Assert: do not explicitly connect, but let the test method do it.
 		assertFalse(fileSystem.folderExists("nonExistingFolder"));
 
-		try(DirectoryStream<SftpFileRef> ds = fileSystem.listFiles(null)) {
+		try (DirectoryStream<SftpFileRef> ds = fileSystem.listFiles(null)) {
 			Iterator<SftpFileRef> files = ds.iterator();
-			if(files.hasNext()) {
+			if (files.hasNext()) {
 				assertNotNull(files.next());
+				return;
 			}
-			else {
-				Assertions.fail("File not found");
-			}
+			Assertions.fail("File not found");
 		}
-		// Check that connection was checked only twice, even though 3 commands were executed.
+	}
+
+	@Test
+	void testRecheckConnection() throws Exception {
+		// Arrange - Force reconfigure to clean log appender.
+		testAppender = TestAppender.newBuilder()
+				.useIbisPatternLayout("%level %m")
+				.minLogLevel(Level.DEBUG)
+				.build();
+		TestAppender.addToRootLogger(testAppender);
+
+		// Act: Test normal connection
+		super.writableFileSystemTestFileSize();
+		fileSystem.setLastCheck(0); // Should trigger recheck connection
+		assertFalse(fileSystem.folderExists("nonExistingFolder"));
+
+		// Assert that connection was checked
 		long connectionChecksFoundInLogs = testAppender.getLogLines().stream().filter(line -> line.contains("checking if SFTP connection is open")).count();
 		assertEquals(1, connectionChecksFoundInLogs, "Expected 1 connection check in the log");
+		TestAppender.removeAppender(testAppender);
+	}
+
+	@Test
+	@Disabled
+	void testWithLocalSFTPServer() throws Exception {
+		// Manual action: run on your machine `docker run -p 22:22 emberstack/sftp --name sftp`
+		// Arrange: stop the SSH daemon directly, because we want to use the real local SFTP server.
+		sshd.stop(true);
+		testAppender = TestAppender.newBuilder()
+				.useIbisPatternLayout("%level %m")
+				.minLogLevel(Level.DEBUG)
+				.build();
+		TestAppender.addToRootLogger(testAppender);
+
+		// Arrange
+		port = 22; // Was changed by setup() to the dynamic port number of the SSH daemon.
+		remoteDirectory = "/sftp";
+		helper = new SftpFileSystemTestHelper("demo", "demo", "localhost", remoteDirectory, port);
+		fileSystem = createFileSystem();
+		fileSystem.configure();
+		fileSystem.open();
+
+		fileSystem.createFolder("testFolder");
+		assertTrue(fileSystem.folderExists("testFolder"));
+		fileSystem.removeFolder("/sftp/testFolder", true);
+		assertFalse(fileSystem.folderExists("nonExistingFolder"));
+
+		fileSystem.setLastCheck(0); // Should trigger recheck connection
+		assertFalse(fileSystem.folderExists("nonExistingFolder"));
+
+		// Act
+		log.info("Now restart your local SFTP server (within 7 seconds)");
+		Thread.sleep(7000L);
+		fileSystem.setLastCheck(0); // Should trigger recheck connection
+
+		// Assert
+		assertTrue(fileSystem.folderExists("/sftp"));
+		// Check that connection was reopened
+		long openSftpConnection = testAppender.getLogLines().stream().filter(line -> line.contains("open sftp client")).count();
+		assertEquals(2, openSftpConnection, "Expected 2 connection reopens in the log. Did you really restart the SFTP server?");
 		TestAppender.removeAppender(testAppender);
 	}
 }

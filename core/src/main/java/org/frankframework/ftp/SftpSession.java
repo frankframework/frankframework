@@ -166,7 +166,7 @@ public class SftpSession implements IConfigurable {
 			if (!sftpSession.isConnected()) {
 				throw new FileSystemException("could not authenticate to sftp server");
 			}
-
+			log.debug("created new sftp session to host {}", sftpSession.getHost());
 			return sftpSession;
 		}
 		catch(JSchException e) {
@@ -174,19 +174,18 @@ public class SftpSession implements IConfigurable {
 		}
 	}
 
-	protected Session getValidatedSession() throws FileSystemException {
-		Session session;
+	protected boolean isSessionStillWorking() {
 		try {
-			session = sftpClient.getSession();
+			Session session = sftpClient.getSession();
 			ChannelExec testChannel = (ChannelExec) session.openChannel("exec");
 			testChannel.setCommand("true");
 			testChannel.connect();
 			testChannel.disconnect();
+			return true;
 		} catch (JSchException e) {
-			log.info("Session terminated. Create a new one.");
-			return createSftpSession(jsch);
+			log.info("SFTP session is not working anymore.");
 		}
-		return session;
+		return false;
 	}
 
 	private Proxy createProxy() {
