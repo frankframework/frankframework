@@ -48,6 +48,7 @@ import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Semaphore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -473,7 +474,7 @@ public class JdbcTableListenerTest {
 			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
 		}
 
-		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(() -> env.getConnection());
+		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(env::getConnection);
 		RawMessageWrapper rawMessage1;
 		Semaphore waitBeforeUpdate = new Semaphore();
 		Semaphore updateDone = new Semaphore();
@@ -521,6 +522,7 @@ public class JdbcTableListenerTest {
 
 //	Niels snapt deze tests niet helemaal... Dit kan niet, de tabel doet een rowlock, zoals het hoort.
 	@DatabaseTest
+	@Disabled("This test does not work and can never work")
 	public void testParallelChangeProcessStateMainThreadSecond() throws Exception {
 		testParallelChangeProcessState(false);
 	}
