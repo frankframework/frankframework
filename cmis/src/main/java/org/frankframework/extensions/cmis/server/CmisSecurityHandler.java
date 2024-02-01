@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import java.security.Principal;
 
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.commons.lang3.NotImplementedException;
-
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.util.CredentialFactory;
 
@@ -39,12 +37,12 @@ public class CmisSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException {
+	public boolean isUserInRole(String role) throws NotImplementedException {
 		return false;
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException {
+	public Principal getPrincipal() throws NotImplementedException {
 
 		return new Principal() {
 			@Override

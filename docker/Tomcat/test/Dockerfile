@@ -4,17 +4,17 @@ ARG REGISTRY=nexus.frankframework.org
 FROM ${REGISTRY}/frankframework:${FF_VERSION}
 
 # Copy additional environment configuration for iaf-test
-COPY --chown=tomcat src/scripts/catalinaAdditionalTest.properties /tmp
+COPY --chown=tomcat src/scripts/catalinaAdditionalTest.properties /tmp/
 RUN cat /tmp/catalinaAdditionalTest.properties >> /usr/local/tomcat/conf/catalina.properties  && rm -f /tmp/catalinaAdditionalTest.properties
 
 # Copy secrets
-COPY --chown=tomcat target/secrets /opt/frank/secrets
+COPY --chown=tomcat target/secrets/ /opt/frank/secrets/
 
 # Copy configurations
-COPY --chown=tomcat target/resources /opt/frank/resources
+COPY --chown=tomcat target/resources/ /opt/frank/resources/
 
 # Copy scenarios
-COPY --chown=tomcat target/scenarios /opt/frank/testtool
+COPY --chown=tomcat target/scenarios/ /opt/frank/testtool/
 
 # Copy context.xml
 COPY --chown=tomcat target/context.xml /usr/local/tomcat/conf/Catalina/localhost/iaf-test.xml

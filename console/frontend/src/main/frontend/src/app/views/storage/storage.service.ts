@@ -10,7 +10,7 @@ export type MessageStore = {
   messageCount: number;
   recordsFiltered: number;
   messages: Message[];
-  targetStates?: { name: string; }[];
+  targetStates?: Record<string, { name: string; }>;
 }
 
 export type Message = {

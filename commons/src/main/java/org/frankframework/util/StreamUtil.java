@@ -35,6 +35,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -244,7 +247,7 @@ public class StreamUtil {
 		streamToStream(Files.newInputStream(Paths.get(filename)), output);
 	}
 
-	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
+	public static void streamToStream(@Nullable InputStream input, @Nonnull OutputStream output) throws IOException {
 		streamToStream(input, output, null);
 	}
 

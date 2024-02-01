@@ -50,8 +50,21 @@ import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
 import org.frankframework.http.mime.MessageContentBody;
 import org.frankframework.http.mime.MultipartEntityBuilder;
+import org.frankframework.parameters.ParameterValue;
+import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.XmlBuilder;
+import org.frankframework.util.XmlUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
@@ -61,21 +74,6 @@ import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-
-import org.frankframework.parameters.ParameterValue;
-import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.DomBuilderException;
-import org.frankframework.util.StreamUtil;
-import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using {@link HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range

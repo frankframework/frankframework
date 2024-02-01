@@ -29,12 +29,13 @@ import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.frankframework.jndi.ObjectLocator;
 
 import com.arjuna.ats.arjuna.exceptions.FatalError;
 import com.arjuna.ats.arjuna.objectstore.jdbc.JDBCAccess;
 import com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;
 
-import org.frankframework.jndi.ObjectLocator;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Alternative to {@link DataSourceJDBCAccess} that adds connection pooling, instead of doing a JNDI lookup each time a connection is called.
@@ -42,6 +43,7 @@ import org.frankframework.jndi.ObjectLocator;
  *
  * @author Niels Meijer
  */
+@Log4j2
 public class PoolingDataSourceJDBCAccess implements JDBCAccess {
 	private DataSource datasource;
 
@@ -62,6 +64,7 @@ public class PoolingDataSourceJDBCAccess implements JDBCAccess {
 		connectionPool.setMaxTotal(10);
 		connectionPool.setBlockWhenExhausted(true);
 		poolableConnectionFactory.setPool(connectionPool);
+		log.info("created connection pool [{}]", connectionPool);
 		return connectionPool;
 	}
 

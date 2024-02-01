@@ -39,8 +39,13 @@ import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
 import org.apache.wss4j.dom.message.WSSecUsernameToken;
 import org.apache.xml.security.algorithms.JCEMapper;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Document;
@@ -48,12 +53,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import lombok.Setter;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.stream.Message;
-import org.frankframework.util.StreamUtil;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
@@ -168,6 +167,12 @@ public class SoapWrapper {
 		String extractedMessage;
 		if (soapVersion == SoapVersion.SOAP12) {
 			extractedMessage = transformerS12.transform(message.asSource());
+			// If session had the wrong SOAP version stored (e.g. multiple SoapWrappers), try SOAP 1.1 too. (#6032)
+			if (StringUtils.isEmpty(extractedMessage)) {
+				extractedMessage = transformerS11.transform(message.asSource());
+				// TODO: previous SoapWrapper configurations can write the wrong SOAP version to the session (using the same name).
+				// Consider a solution to match the right saved SOAP version with the right SoapWrapper: e.g. cache SoapVersion inside Message.context
+			}
 		} else if (soapVersion == SoapVersion.NONE) {
 			return null;
 		} else {
@@ -198,6 +203,7 @@ public class SoapWrapper {
 		if (session == null) return null;
 		Object soapVersionObject = session.getOrDefault(SoapWrapper.SOAP_VERSION_SESSION_KEY, null);
 		if (soapVersionObject instanceof SoapVersion) {
+			log.debug("Found SOAP version in session: {}", ((SoapVersion) soapVersionObject).name());
 			return (SoapVersion) soapVersionObject;
 		}
 		return null;
