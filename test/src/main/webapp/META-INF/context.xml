@@ -102,11 +102,13 @@
 
 	<!-- Postgres XA does not work without BTM/Narayana, gives ClassCastException casting the XA datasource to Java datasource, so add non-XA for those cases -->
 	<Resource name="jdbc/ibis4test-postgres" auth="Container"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="org.postgresql.ds.PGSimpleDataSource"
-		url="jdbc:postgresql://${jdbc.hostname:-localhost}:5432/testiaf"
-		user="${testiaf_user/username:-testiaf_user}"
-		password="${testiaf_user/password:-testiaf_user00}"
+			  type="javax.sql.DataSource"
+			  driverClassName="org.postgresql.Driver"
+			  url="jdbc:postgresql://${jdbc.hostname:-localhost}:5432/testiaf"
+			  username="${testiaf_user/username:-testiaf_user}"
+			  password="${testiaf_user/password:-testiaf_user00}"
+			  maxTotal="10"
+			  maxWaitMillis="5000"
 	/>
 
 	<Resource name="jdbc/ibis4test-db2-xa" auth="Container"
