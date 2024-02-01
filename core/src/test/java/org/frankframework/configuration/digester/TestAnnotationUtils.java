@@ -222,7 +222,7 @@ public class TestAnnotationUtils {
 			if(beanName.contains(this.getClass().getCanonicalName())
 					|| beanName.startsWith("org.frankframework.credentialprovider")
 					|| beanName.endsWith(".UnloadableClass")
-			) continue; //Ignore this class
+			) continue; //Ignore this class, the "unloadable" test-class, and also credential provider classes because they use optional dependencies not on our classpath.
 
 			List<Class<?>> interfaces = ClassUtils.getAllInterfaces(Class.forName(beanName));
 			interfazes.addAll(interfaces);
