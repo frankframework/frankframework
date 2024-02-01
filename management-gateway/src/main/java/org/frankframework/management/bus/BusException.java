@@ -25,7 +25,7 @@ import lombok.Getter;
  * Serialized and send as an ExceptionMessage over the Spring Bus
  */
 public class BusException extends RuntimeException {
-	private static final transient Logger LOG = LogManager.getLogger(BusException.class);
+	private static final Logger LOG = LogManager.getLogger(BusException.class);
 
 	private static final long serialVersionUID = 1L;
 
