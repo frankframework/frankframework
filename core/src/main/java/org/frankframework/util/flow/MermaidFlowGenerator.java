@@ -93,11 +93,17 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceConfig, 2);
 	}
 
-	private String compileFrankElementList() throws SAXException, ClassNotFoundException {
+	private String compileFrankElementList() throws SAXException {
 		try (SaxDocumentBuilder builder = new SaxDocumentBuilder("root")) {
 			List<String> classNames = findAllFrankElements();
 			for(String className : classNames) {
-				Class<?> clazz = Class.forName(className);
+				Class<?> clazz;
+				try {
+					clazz = Class.forName(className);
+				} catch (ExceptionInInitializerError | NoClassDefFoundError | Exception e) {
+					log.info("Found class [{}] on classpath which cannot be loaded due to exception", className, e);
+					continue;
+				}
 				ElementType type = AnnotationUtils.findAnnotation(clazz, ElementType.class);
 				if(type != null) {
 					try (SaxElementBuilder classElement = builder.startElement(className)) {
@@ -163,7 +169,6 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AssignableTypeFilter(IConfigurable.class));
 		scanner.addIncludeFilter(new AnnotationTypeFilter(ElementType.class));
-		scanner.addExcludeFilter(this::matchesTestClassPath); //Exclude test classpath
 		scanner.addExcludeFilter((i,e) -> i.getClassMetadata().getClassName().contains("$")); //Exclude inner classes
 		scanner.addExcludeFilter(new AnnotationTypeFilter(Protected.class)); //Exclude protected FrankElements
 
