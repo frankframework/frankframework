@@ -28,11 +28,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.task.TaskExecutor;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.IDataIterator;
@@ -58,6 +53,11 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
+import org.springframework.core.task.TaskExecutor;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
@@ -339,8 +339,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							endBlock();
 						}
 					}
-					if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
-						throw new TimeoutException("timeOutOnResult ["+getTimeOutOnResult()+"]");
+					if (StringUtils.isNotEmpty(getTimeoutOnResult()) && getTimeoutOnResult().equals(itemResult)) {
+						throw new TimeoutException("timeOutOnResult ["+ getTimeoutOnResult()+"]");
 					}
 					if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(itemResult)) {
 						throw new SenderException("exceptionOnResult ["+getExceptionOnResult()+"]");

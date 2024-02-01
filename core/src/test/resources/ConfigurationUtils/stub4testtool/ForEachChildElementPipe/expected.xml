@@ -19,7 +19,7 @@
 			      <pipe className="org.frankframework.pipes.ForEachChildElementPipe"
                name="ForEachChildElementPipe_Record"
                elementXPathExpression="requests/request"
-               timeOutOnResult="[timeout]"
+               timeoutOnResult="[timeout]"
                exceptionOnResult="[error]">
 				        <sender className="org.frankframework.senders.IbisLocalSender"
                     javaListener="ForEachChildElementPipe_Record"/>

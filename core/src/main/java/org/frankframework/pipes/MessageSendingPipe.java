@@ -148,7 +148,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private @Getter int presumedTimeOutInterval=0;
 
 	private @Getter String stubFilename;
-	private @Getter String timeOutOnResult;
+	private @Getter String timeoutOnResult;
 	private @Getter String exceptionOnResult;
 
 	private @Getter ISender sender = null;
@@ -255,7 +255,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					throw new ConfigurationException("has no forward with name [illegalResult]");
 			}
 			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
-				if (StringUtils.isNotEmpty(getTimeOutOnResult())) {
+				if (StringUtils.isNotEmpty(getTimeoutOnResult())) {
 					throw new ConfigurationException("timeOutOnResult only allowed in stub mode");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult())) {
@@ -754,9 +754,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			Message sendResultMessage = sendResult.getResult();
 			if (sendResultMessage.asObject() instanceof String) {
 				String result = (String)sendResultMessage.asObject();
-				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(result)) {
+				if (StringUtils.isNotEmpty(getTimeoutOnResult()) && getTimeoutOnResult().equals(result)) {
 					exitState = TIMEOUT_FORWARD;
-					throw new TimeoutException("timeOutOnResult ["+getTimeOutOnResult()+"]");
+					throw new TimeoutException("timeOutOnResult ["+ getTimeoutOnResult()+"]");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(result)) {
 					exitState = PipeForward.EXCEPTION_FORWARD_NAME;
@@ -1125,8 +1125,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 
 
-
-
 	/**
 	 * The message (e.g. 'receiver timed out') that is returned when the time listening for a reply message
 	 * exceeds the timeout, or in other situations no reply message is received.
@@ -1183,8 +1181,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	/** If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only) */
+	public void setTimeoutOnResult(String string) {
+		timeoutOnResult = string;
+	}
+
+	/** If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only)
+	 * @deprecated use {@link #setTimeoutOnResult(String)} instead
+	 */
+	@Deprecated(since = "8.1")
 	public void setTimeOutOnResult(String string) {
-		timeOutOnResult = string;
+		timeoutOnResult = string;
 	}
 
 	/** If not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only) */

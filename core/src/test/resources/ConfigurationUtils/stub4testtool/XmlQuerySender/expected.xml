@@ -19,7 +19,7 @@
 			      </exits>
 			      <pipe name="Call Sender"
                className="org.frankframework.pipes.SenderPipe"
-               timeOutOnResult="[timeout]"
+               timeoutOnResult="[timeout]"
                exceptionOnResult="[error]">
 				        <sender className="org.frankframework.jdbc.XmlQuerySender"
                     queryType="select"/>
