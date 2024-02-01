@@ -112,9 +112,6 @@ public class SftpSession implements IConfigurable {
 
 	private void openSftpClient(String remoteDirectory) throws FileSystemException {
 		try {
-			if (jsch == null) { // Needed when existing sessions/connections are dropped
-				configure();
-			}
 			Session sftpSession = createSftpSession(jsch);
 			ChannelSftp channel = (ChannelSftp) sftpSession.openChannel("sftp");
 			channel.connect();
@@ -124,7 +121,7 @@ public class SftpSession implements IConfigurable {
 			}
 
 			sftpClient = channel;
-		} catch (ConfigurationException | JSchException e) {
+		} catch (JSchException e) {
 			throw new FileSystemException("unable to open SFTP channel");
 		} catch (SftpException e) {
 			throw new FileSystemException("unable to enter remote directory ["+remoteDirectory+"]");
