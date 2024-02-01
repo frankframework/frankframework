@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,12 +20,6 @@ import javax.annotation.Nonnull;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -34,6 +28,11 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 public class BusEndpointBase implements ApplicationContextAware, InitializingBean {
 	protected Logger log = LogUtil.getLogger(this);
@@ -102,7 +101,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		}
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 		if(configuration == null) {
-			throw new BusException("configuration ["+configurationName+"] does not exists");
+			throw new BusException("configuration [" + configurationName + "] does not exists", 404);
 		}
 		return configuration;
 	}
@@ -120,7 +119,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		Adapter adapter = config.getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
-			throw new BusException("adapter ["+adapterName+"] does not exist");
+			throw new BusException("adapter [" + adapterName + "] does not exist", 404);
 		}
 
 		return adapter;
@@ -130,7 +129,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	protected Receiver<?> getReceiverByName(Adapter adapter, String receiverName) {
 		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
-			throw new BusException("receiver ["+receiverName+"] does not exist");
+			throw new BusException("receiver [" + receiverName + "] does not exist", 404);
 		}
 		return receiver;
 	}
@@ -139,7 +138,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	protected IPipe getPipeByName(Adapter adapter, String pipeName) {
 		IPipe pipe = adapter.getPipeLine().getPipe(pipeName);
 		if(pipe == null) {
-			throw new BusException("pipe ["+pipeName+"] does not exist");
+			throw new BusException("pipe [" + pipeName + "] does not exist", 404);
 		}
 		return pipe;
 	}
