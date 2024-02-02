@@ -12,7 +12,7 @@ import { SortEvent, ThSortableDirective, basicTableSort } from 'src/app/componen
   styleUrls: ['./logging.component.scss']
 })
 export class LoggingComponent implements OnInit {
-  viewFile: boolean | SafeResourceUrl = false;
+  viewFile: null | string = null;
   alert: boolean | string = false;
   directory: string = "";
   path: string = "";
@@ -20,7 +20,6 @@ export class LoggingComponent implements OnInit {
   originalList: LoggingFile[] = [];
   sortedlist: LoggingFile[] = [];
 
-  @ViewChild('iframe') iframeRef!: ElementRef<HTMLIFrameElement>;
   @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
 
   constructor(
@@ -44,7 +43,7 @@ export class LoggingComponent implements OnInit {
         let file = fileParam;
         this.directory = directory;
         this.path = directory + "/" + file;
-        this.openFile({ path: directory + "/" + file, name: file });
+        this.viewFile = this.path;
       }
       else {
         this.openDirectory(directory);
@@ -53,12 +52,12 @@ export class LoggingComponent implements OnInit {
   };
 
   closeFile() {
-    this.viewFile = false;
+    this.viewFile = null;
     this.router.navigate(['/logging'], { queryParams: { directory: this.directory } });
   };
 
   download(file: LoggingFile) {
-    let url = this.appService.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + this.miscService.escapeURL(file.path);
+    let url = this.appService.absoluteApiPath + "file-viewer?file=" + this.miscService.escapeURL(file.path);
     window.open(url, "_blank");
   };
 
@@ -69,22 +68,6 @@ export class LoggingComponent implements OnInit {
       this.router.navigate(['/logging'], { queryParams: { directory: this.directory, file: file.name } });
     };
   }
-
-  openFile(file: { name: string, path: string }) {
-    const URL = this.appService.getServerPath() + "FileViewerServlet?resultType=html&fileName=" + this.miscService.escapeURL(file.path);
-    this.viewFile = this.sanitizer.bypassSecurityTrustResourceUrl(URL);
-
-    setTimeout(() => {
-      let iframe = this.iframeRef.nativeElement;
-
-      if (iframe) {
-        iframe.onload = () => {
-          let iframeBody = $(iframe.contentWindow!.document.body);
-          $(iframe).css({ "height": iframeBody.height()! + 50 });
-        };
-      }
-    });
-  };
 
   openDirectory(directory: string) {
     this.loggingService.getLogging(directory).subscribe({

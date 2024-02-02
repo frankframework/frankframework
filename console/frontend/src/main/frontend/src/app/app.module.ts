@@ -86,6 +86,7 @@ import { LoginComponent } from './views/login/login.component';
 import { httpInterceptorProviders } from './http-interceptors';
 import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
 import { ThSortableDirective } from './components/th-sortable.directive';
+import { FileViewerComponent } from './components/file-viewer/file-viewer.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -172,6 +173,7 @@ const windowProvider: ValueProvider = {
     FitHeightDirective,
     SideNavigationDirective,
     ThSortableDirective,
+    FileViewerComponent,
   ],
   imports: [
     BrowserModule,
