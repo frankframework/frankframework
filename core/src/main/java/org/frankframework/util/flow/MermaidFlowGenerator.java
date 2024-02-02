@@ -114,13 +114,13 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 			clazz = Class.forName(className);
 			type = AnnotationUtils.findAnnotation(clazz, ElementType.class);
 			if (type == null) {
-				log.debug("skipping class [{}]", clazz);
+				log.debug("Skipping class [{}]", clazz);
 				return;
 			}
 			methods = clazz.getMethods();
 			modifier = deduceModifier(clazz);
 		} catch (ExceptionInInitializerError | NoClassDefFoundError | ClassNotFoundException e) {
-			log.debug("Found class [{}] on classpath which cannot be loaded due to exception: [{}]", className, e.getMessage());
+			log.debug("Skipping class [{}] which cannot be loaded due to: {}[{}]", className, e.getClass().getSimpleName(), e.getMessage());
 			return;
 		}
 
