@@ -39,7 +39,7 @@ import java.io.InputStream;
 @TopicSelector(BusTopic.FILE_VIEWER)
 public class FileViewer extends BusEndpointBase {
 
-	public static final String permissionRules = AppConstants.getInstance().getProperty("FileViewerServlet.permission.rules");
+	public static final String permissionRules = AppConstants.getInstance().getProperty("FileViewer.permission.rules");
 
 	@ActionSelector(BusAction.GET)
 	public Message<?> getFileContent(Message<?> message) {
