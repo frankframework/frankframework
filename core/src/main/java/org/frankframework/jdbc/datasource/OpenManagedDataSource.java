@@ -24,19 +24,17 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
  * Extension of {@link ManagedDataSource} that exposes an extra method to fetch pool statistics.
- *
- * @param <C>
  */
 public class OpenManagedDataSource<C extends Connection> extends ManagedDataSource<C> {
 
-	public OpenManagedDataSource(ObjectPool pool, TransactionRegistry transactionRegistry) {
+	public OpenManagedDataSource(ObjectPool<C> pool, TransactionRegistry transactionRegistry) {
 		super(pool, transactionRegistry);
 	}
 
 	public void addPoolMetadata(StringBuilder info) {
 		ObjectPool<C> objectPool = super.getPool();
 		if (objectPool instanceof GenericObjectPool) {
-			GenericObjectPoolUtil.addPoolMetadata((GenericObjectPool<C>) objectPool, info);
+			JdbcPoolUtil.addPoolMetadata((GenericObjectPool<C>) objectPool, info);
 		}
 	}
 }
