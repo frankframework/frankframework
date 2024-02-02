@@ -266,11 +266,4 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	public void setxPathLoggingKeys(String string) {
 		xPathLoggingKeys = string;
 	}
-
-	@Override
-	public String send(MessageProducer messageProducer, javax.jms.Message message,
-					   boolean ignoreInvalidDestinationException) throws JMSException {
-		logMessageDetails(message, messageProducer);
-		throw new JMSException("ShitHappens");
-	}
 }
