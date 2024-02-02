@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import java.sql.Connection;
 
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.util.DbmsUtil;
-import org.frankframework.util.JdbcUtil;
 import org.junit.Test;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -25,13 +25,13 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testCommit() throws Exception {
-		JdbcUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
+		JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
 
 		TransactionStatus txStatus = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
-			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
+			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
 		}
 
 		txManager.commit(txStatus);
@@ -41,13 +41,13 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testRollback() throws Exception {
-		JdbcUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
+		JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
 
 		TransactionStatus txStatus = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
-			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
+			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
 //			checkNumberOfLines(0);
 		}
 //		checkNumberOfLines(0);
@@ -59,27 +59,27 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testRequiresNew() throws Exception {
-		JdbcUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
+		JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
-			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
+			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
 		}
 
 		TransactionStatus txStatus1 = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(1);
-			JdbcUtil.executeStatement(txManagedConnection, "UPDATE " + TEST_TABLE + " SET TVARCHAR='tralala' WHERE tkey=1");
+			JdbcTestUtil.executeStatement(txManagedConnection, "UPDATE " + TEST_TABLE + " SET TVARCHAR='tralala' WHERE tkey=1");
 		}
 
 		try (Connection txManagedConnection = getConnection()) {
-			JdbcUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM " + TEST_TABLE + " WHERE tkey=1");
+			JdbcTestUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM " + TEST_TABLE + " WHERE tkey=1");
 		}
 		checkNumberOfLines(1);
 
 		TransactionStatus txStatus2 = startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		try (Connection txManagedConnection = getConnection()) {
-			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (2)");
+			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (2)");
 		}
 
 		txManager.commit(txStatus2);
@@ -97,12 +97,12 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 		TransactionStatus txStatusOuter = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 		try (Connection txManagedConnection = getConnection()) {
-			JdbcUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM " + TEST_TABLE + " WHERE tkey=1");
+			JdbcTestUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM " + TEST_TABLE + " WHERE tkey=1");
 		}
 
 		TransactionStatus txStatusInner = startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		try (Connection txManagedConnection = getConnection()) {
-			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (2)");
+			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (2)");
 		}
 
 		txManager.commit(txStatusInner);

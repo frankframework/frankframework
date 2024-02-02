@@ -21,10 +21,10 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -240,7 +240,7 @@ public class TestBlobs {
 			}
 			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}
-		JdbcUtil.executeStatement(connection, translatedQuery);
+		JdbcTestUtil.executeStatement(connection, translatedQuery);
 		return null;
 	}
 }

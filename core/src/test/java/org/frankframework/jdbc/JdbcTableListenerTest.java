@@ -40,11 +40,11 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DbmsUtil;
-import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Semaphore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -206,7 +206,7 @@ public class JdbcTableListenerTest {
 		listener.open();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
 		}
 
 		RawMessageWrapper<?> rawMessage = listener.getRawMessage(new HashMap<>());
@@ -332,7 +332,7 @@ public class JdbcTableListenerTest {
 		listener.open();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'A')", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'A')", null, new PipeLineSession());
 		}
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(state);
@@ -382,7 +382,7 @@ public class JdbcTableListenerTest {
 		listener.open();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
 		}
 
 		boolean actual = listener.hasRawMessageAvailable();
@@ -422,7 +422,7 @@ public class JdbcTableListenerTest {
 		listener.open();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null, new PipeLineSession());
 		}
 
 		RawMessageWrapper<?> rawMessage = listener.getRawMessage(new HashMap<>());
@@ -444,7 +444,7 @@ public class JdbcTableListenerTest {
 		listener.open();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
 		}
 
 		try (Connection connection1 = env.getConnection()) {
@@ -457,7 +457,7 @@ public class JdbcTableListenerTest {
 
 
 			try(Connection connection = env.getConnection()) {
-				JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
 			}
 			RawMessageWrapper<?> rawMessage2 = listener.getRawMessage(new HashMap<>());
 			assertEquals("11",rawMessage2.getRawMessage());
@@ -470,8 +470,8 @@ public class JdbcTableListenerTest {
 		listener.open();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "DELETE FROM " + TEST_TABLE + " WHERE TKEY=10", null, new PipeLineSession());
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "DELETE FROM " + TEST_TABLE + " WHERE TKEY=10", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
 		}
 
 		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(env::getConnection);
@@ -562,7 +562,7 @@ public class JdbcTableListenerTest {
 
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
@@ -586,7 +586,7 @@ public class JdbcTableListenerTest {
 		listener.open();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
@@ -598,7 +598,7 @@ public class JdbcTableListenerTest {
 
 
 			try(Connection connection = env.getConnection()) {
-				JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
 			}
 			assertTrue(listener.hasRawMessageAvailable(), "Should peek message when there is one");
 		}
@@ -615,7 +615,7 @@ public class JdbcTableListenerTest {
 		RawMessageWrapper rawMessage;
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
@@ -650,7 +650,7 @@ public class JdbcTableListenerTest {
 		String key = (String) rawMessage.getRawMessage();
 		assertEquals("10", key);
 		try (Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "UPDATE " + TEST_TABLE + " SET TINT=4 WHERE TKEY=10", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "UPDATE " + TEST_TABLE + " SET TINT=4 WHERE TKEY=10", null, new PipeLineSession());
 		} catch (Exception e) {
 			if (env.getDbmsSupport().getDbms() == Dbms.MSSQL) {
 				log.info("Allow MSSQL to fail concurrent update with an exception (happens in case 3, 4 and 5): " + e.getMessage());
@@ -678,7 +678,7 @@ public class JdbcTableListenerTest {
 		boolean secondaryRead = false;
 
 		try(Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
 		}
 
 		try (Connection connection = env.getConnection()) {
