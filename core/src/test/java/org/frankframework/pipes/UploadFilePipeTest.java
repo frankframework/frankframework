@@ -1,61 +1,59 @@
 package org.frankframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.zip.ZipInputStream;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-/**
- * UploadFilePipe Tester.
- *
- * @author <Sina Sen>
- *
- */
 public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 
-	private static ZipInputStream zis;
-	@ClassRule
-	public static TemporaryFolder testFolderSource = new TemporaryFolder();
+	private ZipInputStream zis;
+
+	@TempDir
+	public static Path testFolderSource;
 
 	private static String sourceFolderPath;
-
-	private static File newFile;
-	private static File newFile2;
 
 	@Override
 	public UploadFilePipe createPipe() {
 		return new UploadFilePipe();
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() throws Exception {
-		sourceFolderPath = testFolderSource.getRoot().getPath();
-		newFile = testFolderSource.newFile("1.txt");
-		newFile2 = testFolderSource.newFile("1.zip");
-		assert newFile.exists();
-		assert newFile2.exists();
+		sourceFolderPath = testFolderSource.toString();
+		Files.createFile(testFolderSource.resolve("1.txt"));
+		Files.createFile(testFolderSource.resolve("1.zip"));
 	}
 
-	@Before
-	public void before() throws Exception {
-
+	@BeforeEach
+	public void beforeEach() throws Exception {
 		FileInputStream fis = new FileInputStream(sourceFolderPath + "/1.zip");
 		BufferedInputStream bis = new BufferedInputStream(fis);
 		zis = new ZipInputStream(bis);
+	}
 
+	@AfterEach
+	public void teardown() throws IOException {
+		if(zis != null) {
+			zis.close();
+		}
 	}
 
 	/**
