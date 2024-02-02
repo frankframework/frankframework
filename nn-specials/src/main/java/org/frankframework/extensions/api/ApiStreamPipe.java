@@ -16,6 +16,7 @@
 package org.frankframework.extensions.api;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -158,17 +159,10 @@ public class ApiStreamPipe extends StreamPipe {
 
 	private void deleteMessage(String messageKey) throws JdbcException {
 		String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey + "'";
-		Connection conn = dummyQuerySender.getConnection();
-		try {
-			JdbcUtil.executeStatement(conn, query);
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
-				}
-			}
+		try (Connection connection = dummyQuerySender.getConnection(); PreparedStatement stmt = connection.prepareStatement(query)) {
+			stmt.execute();
+		} catch (Exception e) {
+			throw new JdbcException("could not execute query [" + query + "]", e);
 		}
 	}
 
