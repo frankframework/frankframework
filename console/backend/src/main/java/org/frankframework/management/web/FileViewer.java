@@ -33,7 +33,6 @@ import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
 
 @Path("/")
 public class FileViewer extends FrankApiBase {
