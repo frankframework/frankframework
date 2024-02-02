@@ -520,7 +520,7 @@ public class JdbcTableListenerTest {
 		testParallelChangeProcessState(true);
 	}
 
-//	Niels snapt deze tests niet helemaal... Dit kan niet, de tabel doet een rowlock, zoals het hoort.
+	// Niels doesn't quite understand these tests... This is not possible, the table does a rowlock, as it should.
 	@DatabaseTest
 	@Disabled("This test does not work and can never work")
 	public void testParallelChangeProcessStateMainThreadSecond() throws Exception {

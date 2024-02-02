@@ -34,7 +34,6 @@ import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.JdbcUtil;
-import org.frankframework.util.Semaphore;
 import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -73,11 +72,6 @@ public class DbmsSupportTest {
 			assertEquals(4, DbmsUtil.executeIntQuery(connection, "SELECT 1+? " + dbmsSupport.getFromForTablelessSelect(), 3));
 		}
 	}
-
-//	@DatabaseTest
-//	public void testTableLessSelectWithStringParam() throws Exception {
-//		assertEquals(3, JdbcUtil.executeIntQuery(connection,"SELECT ''||? "+dbmsSupport.getFromForTablelessSelect(), 3));
-//	}
 
 	@DatabaseTest
 	public void testInsertSelect() throws Exception {
@@ -646,7 +640,6 @@ public class DbmsSupportTest {
 			assertEquals(40, DbmsUtil.executeIntQuery(connection, readQueueQuery));
 			assertEquals(40, DbmsUtil.executeIntQuery(connection, peekQueueQuery));
 
-			Semaphore actionFinished = null;
 			try (Statement stmt1 = connection.createStatement()) {
 				stmt1.setFetchSize(1);
 				log.debug("Read queue using query [" + readQueueQuery + "]");
