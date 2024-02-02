@@ -246,6 +246,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	 * @ff.default 3000
 	 */
 	@Deprecated(since = "8.1")
+	@ConfigurationWarning("Use attribute timeout instead")
 	public void setTimeOut(long newTimeOut) {
 		timeout = newTimeOut;
 	}
