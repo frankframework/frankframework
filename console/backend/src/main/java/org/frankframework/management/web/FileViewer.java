@@ -18,10 +18,12 @@ package org.frankframework.management.web;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.ResponseUtils;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -31,6 +33,7 @@ import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 @Path("/")
 public class FileViewer extends FrankApiBase {
@@ -39,12 +42,14 @@ public class FileViewer extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/file-viewer")
 	@Produces({"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
-	public Response getFileContent(@QueryParam("file") String file, @QueryParam("type") String type) {
+	public Response getFileContent(@QueryParam("file") String file, @HeaderParam("Accept") String acceptHeader) {
+		String acceptType = acceptHeader.split(",")[0];
+		String wantedType = MediaType.valueOf(acceptType).getSubtype();
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
 		builder.addHeader("fileName", file);
-		builder.addHeader("resultType", type);
+		builder.addHeader("resultType", wantedType);
 
-		if (type.equalsIgnoreCase("html")) {
+		if (wantedType.equalsIgnoreCase("html")) {
 			return processHtmlMessage(builder);
 		}
 		return callSyncGateway(builder);
