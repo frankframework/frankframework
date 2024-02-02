@@ -1,112 +1,133 @@
 package org.frankframework.jdbc;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.Connection;
 
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.testutil.JdbcTestUtil;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.TxManagerTest;
+import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DbmsUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
-public class TransactionManagerTest extends TransactionManagerTestBase {
+public class TransactionManagerTest {
+	private static final String TEST_TABLE = "Tralala";
 
-	protected void checkNumberOfLines(int expected) throws JdbcException {
-		checkNumberOfLines(expected, "select count(*) from " + TEST_TABLE + " where TKEY = 1");
+	protected void checkNumberOfLines(DatabaseTestEnvironment env, int expected) throws Exception {
+		checkNumberOfLines(env, expected, "select count(*) from " + TEST_TABLE + " where TKEY = 1");
 	}
 
-	private void checkNumberOfLines(int expected, String query) throws JdbcException {
-		String preparedQuery = dbmsSupport.prepareQueryTextForNonLockingRead(query);
-		int count = DbmsUtil.executeIntQuery(connection, preparedQuery);
-		assertEquals("number of lines in table", expected, count);
+	private void checkNumberOfLines(DatabaseTestEnvironment env, int expected, String query) throws Exception {
+		String preparedQuery = env.getDbmsSupport().prepareQueryTextForNonLockingRead(query);
+		try(Connection connection = env.getConnection()) {
+			int count = DbmsUtil.executeIntQuery(connection, preparedQuery);
+			assertEquals(expected, count, "number of lines in table");
+		}
 	}
 
-	@Test
-	public void testCommit() throws Exception {
-		JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) throws Exception {
+		// This is required for Liquibase
+	}
 
-		TransactionStatus txStatus = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
+	@TxManagerTest
+	@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TEST_TABLE)
+	public void testCommit(DatabaseTestEnvironment env) throws Exception {
+		try(Connection connection = env.getConnection()) {
+			JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
+		}
 
-		try (Connection txManagedConnection = getConnection()) {
-			checkNumberOfLines(0);
+		TransactionStatus txStatus = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
+
+		try (Connection txManagedConnection = env.getConnection()) {
+			checkNumberOfLines(env, 0);
 			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
 		}
 
-		txManager.commit(txStatus);
+		env.getTxManager().commit(txStatus);
 
-		checkNumberOfLines(1);
+		checkNumberOfLines(env, 1);
 	}
 
-	@Test
-	public void testRollback() throws Exception {
-		JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
-
-		TransactionStatus txStatus = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
-
-		try (Connection txManagedConnection = getConnection()) {
-			checkNumberOfLines(0);
-			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
-//			checkNumberOfLines(0);
+	@TxManagerTest
+	@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TEST_TABLE)
+	public void testRollback(DatabaseTestEnvironment env) throws Exception {
+		try(Connection connection = env.getConnection()) {
+			JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
 		}
-//		checkNumberOfLines(0);
 
-		txManager.rollback(txStatus);
+		TransactionStatus txStatus = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 
-		checkNumberOfLines(0);
+		try (Connection txManagedConnection = env.getConnection()) {
+			checkNumberOfLines(env, 0);
+			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
+//			checkNumberOfLines(env, 0);
+		}
+//		checkNumberOfLines(env, 0);
+
+		env.getTxManager().rollback(txStatus);
+
+		checkNumberOfLines(env, 0);
 	}
 
-	@Test
-	public void testRequiresNew() throws Exception {
-		JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
-		try (Connection txManagedConnection = getConnection()) {
-			checkNumberOfLines(0);
+	@TxManagerTest
+	@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TEST_TABLE)
+	public void testRequiresNew(DatabaseTestEnvironment env) throws Exception {
+		try(Connection connection = env.getConnection()) {
+			JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
+		}
+
+		try (Connection txManagedConnection = env.getConnection()) {
+			checkNumberOfLines(env, 0);
 			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (1)");
 		}
 
-		TransactionStatus txStatus1 = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
+		TransactionStatus txStatus1 = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 
-		try (Connection txManagedConnection = getConnection()) {
-			checkNumberOfLines(1);
+		try (Connection txManagedConnection = env.getConnection()) {
+			checkNumberOfLines(env, 1);
 			JdbcTestUtil.executeStatement(txManagedConnection, "UPDATE " + TEST_TABLE + " SET TVARCHAR='tralala' WHERE tkey=1");
 		}
 
-		try (Connection txManagedConnection = getConnection()) {
+		try (Connection txManagedConnection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM " + TEST_TABLE + " WHERE tkey=1");
 		}
-		checkNumberOfLines(1);
+		checkNumberOfLines(env, 1);
 
-		TransactionStatus txStatus2 = startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-		try (Connection txManagedConnection = getConnection()) {
+		TransactionStatus txStatus2 = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		try (Connection txManagedConnection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (2)");
 		}
 
-		txManager.commit(txStatus2);
-		txManager.commit(txStatus1);
+		env.getTxManager().commit(txStatus2);
+		env.getTxManager().commit(txStatus1);
 
-		checkNumberOfLines(1);
-		checkNumberOfLines(1, "select count(*) from " + TEST_TABLE + " where TKEY = 2");
+		checkNumberOfLines(env, 1);
+		checkNumberOfLines(env, 1, "select count(*) from " + TEST_TABLE + " where TKEY = 2");
 	}
 
-	@Test
-	public void testRequiresNewAfterSelect() throws Exception {
+	@TxManagerTest
+	@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TEST_TABLE)
+	public void testRequiresNewAfterSelect(DatabaseTestEnvironment env) throws Exception {
 
 		// This tests fails for Narayana, if no Modifiers are present for the database driver.
 		// @see NarayanaDataSourceFactory.checkModifiers()
 
-		TransactionStatus txStatusOuter = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
-		try (Connection txManagedConnection = getConnection()) {
+		TransactionStatus txStatusOuter = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
+		try (Connection txManagedConnection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM " + TEST_TABLE + " WHERE tkey=1");
 		}
 
-		TransactionStatus txStatusInner = startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-		try (Connection txManagedConnection = getConnection()) {
+		TransactionStatus txStatusInner = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		try (Connection txManagedConnection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(txManagedConnection, "INSERT INTO " + TEST_TABLE + " (tkey) VALUES (2)");
 		}
 
-		txManager.commit(txStatusInner);
-		txManager.commit(txStatusOuter);
+		env.getTxManager().commit(txStatusInner);
+		env.getTxManager().commit(txStatusOuter);
 	}
 
 }
