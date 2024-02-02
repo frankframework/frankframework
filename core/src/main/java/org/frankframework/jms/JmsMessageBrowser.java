@@ -28,15 +28,16 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-import lombok.Setter;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Basic browser of JMS Messages.

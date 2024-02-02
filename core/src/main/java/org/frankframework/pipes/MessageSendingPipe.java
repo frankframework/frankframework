@@ -28,17 +28,9 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.jdbc.MessageStoreSender;
-import org.frankframework.receivers.MessageWrapper;
-import org.frankframework.senders.IbisLocalSender;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
@@ -67,11 +59,13 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jdbc.DirectQuerySender;
+import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.processors.ListenerProcessor;
 import org.frankframework.processors.PipeProcessor;
-
+import org.frankframework.receivers.MessageWrapper;
+import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.statistics.StatisticsKeeperIterationHandler;
@@ -85,6 +79,11 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
@@ -1189,6 +1188,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	 * @deprecated use {@link #setTimeoutOnResult(String)} instead
 	 */
 	@Deprecated(since = "8.1")
+	@ConfigurationWarning("Use attribute timeoutOnResult instead")
 	public void setTimeOutOnResult(String string) {
 		timeoutOnResult = string;
 	}

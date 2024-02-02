@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.parameters.Parameter;
@@ -87,6 +88,7 @@ public class EsbJmsSender extends JmsSender {
 	 * @ff.default 20000 (20s)
 	 */
 	@Deprecated(since = "8.1")
+	@ConfigurationWarning("Use attribute timeout instead")
 	public void setTimeOut(long l) {
 		timeout = l;
 	}
