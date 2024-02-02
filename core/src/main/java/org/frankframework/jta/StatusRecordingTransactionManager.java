@@ -46,7 +46,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 	protected Logger log = LogUtil.getLogger(this);
 
 	private static final long serialVersionUID = 1L;
-	private static final int TMUID_MAX_LENGTH=36; // 51 is valid for BTM. 36 appears to work for Narayana i.c.w. MS_SQL, MySQL and MariaDB, avoiding SQLException: ConnectionImple.registerDatabase - ARJUNA017017: enlist of resource failed
+	private static final int TMUID_MAX_LENGTH=36; // 36 appears to work for Narayana i.c.w. MS_SQL, MySQL and MariaDB, avoiding SQLException: ConnectionImple.registerDatabase - ARJUNA017017: enlist of resource failed
 
 	private @Getter @Setter String statusFile;
 	private @Getter @Setter String uidFile;

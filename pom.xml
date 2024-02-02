@@ -22,7 +22,6 @@
 		<spring-security.version>5.8.9</spring-security.version>
 		<spring-integration.version>5.5.20</spring-integration.version>
 
-		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.13.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
 		<micrometer.version>1.12.2</micrometer.version>

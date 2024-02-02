@@ -106,8 +106,7 @@ public class FunctionalUtil {
 	 *     <code>
 	 *	    public static Stream&lt;Arguments&gt; transactionManagers() {
 	 * 		    return Stream.of(
-	 * 			    Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManager)),
-	 * 			    Arguments.of(supplier(ReceiverTest::buildBtmTransactionManager))
+	 * 			    Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManager))
 	 * 		    );
 	 *      }
 	 *     </code>
@@ -133,8 +132,7 @@ public class FunctionalUtil {
 	 * <code>
 	 *  public static Stream&lt;Arguments&gt; transactionManagers() {
 	 * 		return Stream.of(
-	 * 			Arguments.of(function(ReceiverTest::buildNarayanaTransactionManager)),
-	 * 			Arguments.of(function(ReceiverTest::buildBtmTransactionManager))
+	 * 			Arguments.of(function(ReceiverTest::buildNarayanaTransactionManager))
 	 * 		);
 	 *  }
 	 * </code>

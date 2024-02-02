@@ -35,7 +35,6 @@ import org.springframework.transaction.TransactionStatus;
 
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 
-import bitronix.tm.TransactionManagerServices;
 import lombok.Getter;
 
 @RunWith(Parameterized.class)
@@ -105,8 +104,6 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 		switch (transactionManagerType) {
 		case DATASOURCE:
 			return null;
-		case BTM:
-			return TransactionManagerServices.getConfiguration().getServerId();
 		case NARAYANA:
 			return arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
 		default:

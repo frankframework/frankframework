@@ -21,8 +21,6 @@ import org.junit.rules.Timeout;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
 
-import bitronix.tm.TransactionManagerServices;
-
 public abstract class StatusRecordingTransactionManagerTestBase<S extends StatusRecordingTransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -61,9 +59,6 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 		if (transactionManager != null) {
 			transactionManager.shutdownTransactionManager();
 			transactionManager = null;
-		}
-		if (TransactionManagerServices.isTransactionManagerRunning()) {
-			TransactionManagerServices.getTransactionManager().shutdown();
 		}
 	}
 
