@@ -1381,7 +1381,7 @@ public class TestTool {
 	public static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener, Map<String, Object> writers) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
-		long oldTimeOut = pullingJmsListener.getTimeout();
+		long oldTimeout = pullingJmsListener.getTimeout();
 		pullingJmsListener.setTimeout(10);
 		boolean empty = false;
 		while (!empty) {
@@ -1415,7 +1415,12 @@ public class TestTool {
 				empty = true;
 			}
 		}
-		pullingJmsListener.setTimeout((int) oldTimeOut);
+
+		try {
+			pullingJmsListener.setTimeout(Math.toIntExact(oldTimeout));
+		} catch (ArithmeticException e) {
+			errorMessage("Could not set timeout on pullingJmsListener '" + queueName + "': " + e.getMessage(), e, writers);
+		}
 		return remainingMessagesFound;
 	}
 
