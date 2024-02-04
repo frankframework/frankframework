@@ -85,7 +85,8 @@ public class LarvaPipe extends FixedForwardPipe {
 		String realPath = AppConstants.getInstance().getProperty("webapp.realpath") + "iaf/";
 		List<String> scenariosRootDirectories = new ArrayList<>();
 		List<String> scenariosRootDescriptions = new ArrayList<>();
-		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
+		TestTool testTool = new TestTool();
+		String currentScenariosRootDirectory = testTool.initScenariosRootDirectories(
 				realPath,
 				null, scenariosRootDirectories,
 				scenariosRootDescriptions);
@@ -99,11 +100,8 @@ public class LarvaPipe extends FixedForwardPipe {
 		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
 		boolean silent = true;
 		TestTool.setTimeout(getTimeout());
-		int numScenariosFailed=TestTool.runScenarios(ibisContext, paramLogLevel,
-								paramAutoScroll, paramExecute,
-								paramWaitBeforeCleanUp, getTimeout(), realPath,
-        currentScenariosRootDirectory,
-								out, silent);
+		int numScenariosFailed = testTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramExecute, paramWaitBeforeCleanUp,
+				getTimeout(), realPath, currentScenariosRootDirectory, out, silent);
 		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, out.toString());
 	}

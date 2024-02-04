@@ -114,7 +114,7 @@ public class TestTool {
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
 	private static boolean autoSaveDiffs = false;
-	private static TestConfig config;
+	private TestConfig config;
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
@@ -158,18 +158,17 @@ public class TestTool {
 			}
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-		runScenarios(ibisContext, paramLogLevel,
-				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
+		TestTool testTool = new TestTool();
+		testTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
 	/**
-	 *
 	 * @return negative: error condition
 	 * 		   0: all scenarios passed
 	 * 		   positive: number of scenarios that failed
 	 */
-	public static int runScenarios(IbisContext ibisContext, String paramLogLevel,
+	public int runScenarios(IbisContext ibisContext, String paramLogLevel,
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
 			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
@@ -194,7 +193,7 @@ public class TestTool {
 			config.setSilentOut(out);
 		}
 
-		TestTool.debugMessage("Start logging to logbuffer until form is written");
+		debugMessage("Start logging to logbuffer until form is written");
 		String autoSave = appConstants.getProperty("larva.diffs.autosave");
 		if (autoSave!=null) {
 			autoSaveDiffs = Boolean.parseBoolean(autoSave);
@@ -246,7 +245,6 @@ public class TestTool {
 				errorMessage("Could not get canonical path: " + e.getMessage(), e);
 			}
 			if (paramExecuteCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
-
 				debugMessage("Initialize XMLUnit");
 				XMLUnit.setIgnoreWhitespace(true);
 				debugMessage("Initialize 'scenario files' variable");
@@ -265,6 +263,7 @@ public class TestTool {
 				long startTime = System.currentTimeMillis();
 				debugMessage("Execute scenario('s)");
 				ScenarioRunner scenarioRunner = new ScenarioRunner();
+				scenarioRunner.setTestTool(this);
 				scenarioRunner.runScenario(ibisContext, config, scenarioFiles, currentScenariosRootDirectory, appConstants, evenStep, waitBeforeCleanUp, logLevel);
 				config.flushWriters();
 				scenariosFailed = scenarioRunner.getScenariosFailed();
@@ -348,7 +347,7 @@ public class TestTool {
 		}
 	}
 
-	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute) {
+	public void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute) {
 		if (config.isSilent())
 			return;
 
@@ -524,7 +523,7 @@ public class TestTool {
 		config.flushWriters();
 	}
 
-	public static void write(String html, boolean isHtmlType, String method, boolean scroll) {
+	public void write(String html, boolean isHtmlType, String method, boolean scroll) {
 		if (config.isSilent()) {
 			return;
 		}
@@ -556,21 +555,21 @@ public class TestTool {
 		}
 	}
 
-	public static void writeHtml(String html, boolean scroll) {
+	public void writeHtml(String html, boolean scroll) {
 		write(html, true, null, scroll);
 	}
 
-	public static void writeLog(String html, String method, boolean scroll) {
+	public void writeLog(String html, String method, boolean scroll) {
 		write(html, false, method, scroll);
 	}
 
-	public static void debugMessage(String message) {
+	public void debugMessage(String message) {
 		String method = "debug";
 		logger.debug(message);
 		writeLog(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, false);
 	}
 
-	public static void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage) {
+	public void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage) {
 		if (config.isSilent()) return;
 
 		String method = "pipeline messages";
@@ -584,7 +583,7 @@ public class TestTool {
 		writeLog("</div>", method, false);
 	}
 
-	public static void debugPipelineMessagePreparedForDiff(String stepDisplayName, String message, String pipelineMessage) {
+	public void debugPipelineMessagePreparedForDiff(String stepDisplayName, String message, String pipelineMessage) {
 		if (config.isSilent()) return;
 		String method = "pipeline messages prepared for diff";
 		config.incrementMessageCounter();
@@ -597,7 +596,7 @@ public class TestTool {
 		writeLog("</div>", method, false);
 	}
 
-	public static void wrongPipelineMessage(String message, String pipelineMessage) {
+	public void wrongPipelineMessage(String message, String pipelineMessage) {
 		if (config.isSilent()) return;
 		String method = "wrong pipeline messages";
 		config.incrementMessageCounter();
@@ -609,7 +608,7 @@ public class TestTool {
 		writeLog("</div>", method, false);
 	}
 
-	public static void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected) {
+	public void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected) {
 		if (config.isSilent()) {
 			try {
 				config.getSilentOut().write(message);
@@ -668,7 +667,7 @@ public class TestTool {
 		config.incrementScenarioCounter();
 	}
 
-	public static void wrongPipelineMessagePreparedForDiff(String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff) {
+	public void wrongPipelineMessagePreparedForDiff(String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff) {
 		if (config.isSilent()) return;
 		String method = "wrong pipeline messages prepared for diff";
 		String formName = "scenario" + config.getScenarioCounter() + "Wpmpfd";
@@ -716,55 +715,52 @@ public class TestTool {
 	}
 
 	private static String writeCommands(String target, boolean textArea, String customCommand) {
-		String commands = "";
-
-		commands += "<div class='commands'>";
-		commands += "<span class='widthCommands'><a href='javascript:void(0);' class='" + target + "|widthDown'>-</a><a href='javascript:void(0);' class='" + target + "|widthExact'>width</a><a href='javascript:void(0);' class='" + target + "|widthUp'>+</a></span>";
-		commands += "<span class='heightCommands'><a href='javascript:void(0);' class='" + target + "|heightDown'>-</a><a href='javascript:void(0);' class='" + target + "|heightExact'>height</a><a href='javascript:void(0);' class='" + target + "|heightUp'>+</a></span>";
+		StringBuilder commands = new StringBuilder();
+		commands.append("<div class='commands'>");
+		commands.append("<span class='widthCommands'><a href='javascript:void(0);' class='").append(target).append("|widthDown'>-</a><a href='javascript:void(0);' class='").append(target).append("|widthExact'>width</a><a href='javascript:void(0);' class='").append(target).append("|widthUp'>+</a></span>");
+		commands.append("<span class='heightCommands'><a href='javascript:void(0);' class='").append(target).append("|heightDown'>-</a><a href='javascript:void(0);' class='").append(target).append("|heightExact'>height</a><a href='javascript:void(0);' class='").append(target).append("|heightUp'>+</a></span>");
 		if (textArea) {
-			commands += "<a href='javascript:void(0);' class='" + target + "|copy'>copy</a> ";
-			commands += "<a href='javascript:void(0);' class='" + target + "|xmlFormat'>indent</a>";
+			commands.append("<a href='javascript:void(0);' class='").append(target).append("|copy'>copy</a> ");
+			commands.append("<a href='javascript:void(0);' class='").append(target).append("|xmlFormat'>indent</a>");
 		}
 		if (customCommand != null) {
-			commands += " " + customCommand;
+			commands.append(" ").append(customCommand);
 		}
-		commands += "</div>";
-
-
-		return commands;
+		commands.append("</div>");
+		return commands.toString();
 	}
 
-	public static void stepPassedMessage(String message) {
+	public void stepPassedMessage(String message) {
 		String method = "step passed/failed";
 		writeLog("<h3 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
 	}
 
-	public static void stepAutosavedMessage(String message) {
+	public void stepAutosavedMessage(String message) {
 		String method = "step passed/failed";
 		writeLog("<h3 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
 	}
 
-	public static void stepFailedMessage(String message) {
+	public void stepFailedMessage(String message) {
 		String method = "step passed/failed";
 		writeLog("<h3 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
 	}
 
-	public static void scenarioPassedMessage(String message) {
+	public void scenarioPassedMessage(String message) {
 		String method = "scenario passed/failed";
 		writeLog("<h2 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
 	}
 
-	public static void scenarioAutosavedMessage(String message) {
+	public void scenarioAutosavedMessage(String message) {
 		String method = "scenario passed/failed";
 		writeLog("<h2 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
 	}
 
-	public static void scenarioFailedMessage(String message) {
+	public void scenarioFailedMessage(String message) {
 		String method = "scenario failed";
 		writeLog("<h2 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
 	}
 
-	public static void scenariosTotalMessage(String message) {
+	public void scenariosTotalMessage(String message) {
 		if (config.isSilent()) {
 			try {
 				config.getOut().write(message);
@@ -776,7 +772,7 @@ public class TestTool {
 		}
 	}
 
-	public static void scenariosPassedTotalMessage(String message) {
+	public void scenariosPassedTotalMessage(String message) {
 		if (config.isSilent()) {
 			try {
 				config.getOut().write(message);
@@ -788,7 +784,7 @@ public class TestTool {
 		}
 	}
 
-	public static void scenariosAutosavedTotalMessage(String message) {
+	public void scenariosAutosavedTotalMessage(String message) {
 		if (config.isSilent()) {
 			try {
 				config.getOut().write(message);
@@ -800,7 +796,7 @@ public class TestTool {
 		}
 	}
 
-	public static void scenariosFailedTotalMessage(String message) {
+	public void scenariosFailedTotalMessage(String message) {
 		if (config.isSilent()) {
 			try {
 				config.getOut().write(message);
@@ -812,7 +808,7 @@ public class TestTool {
 		}
 	}
 
-	public static void errorMessage(String message) {
+	public void errorMessage(String message) {
 		String method = "error";
 		writeLog("<h1 class='error'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, true);
 		if (config.getSilentOut() != null) {
@@ -823,7 +819,7 @@ public class TestTool {
 		}
 	}
 
-	public static void errorMessage(String message, Exception exception) {
+	public void errorMessage(String message, Exception exception) {
 		errorMessage(message);
 		if (config.isSilent()) return;
 
@@ -844,7 +840,7 @@ public class TestTool {
 		}
 	}
 
-	public static String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions) {
+	public String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String currentScenariosRootDirectory = null;
 		if (realPath == null) {
@@ -922,30 +918,30 @@ public class TestTool {
 		return currentScenariosRootDirectory;
 	}
 
-	public static List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory) {
+	public List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory) {
 		List<File> scenarioFiles = new ArrayList<>();
 		debugMessage("List all files in directory '" + scenariosDirectory + "'");
 		File[] files = new File(scenariosDirectory).listFiles();
 		if (files == null) {
 			debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
-		} else {
-			debugMessage("Sort files");
-			Arrays.sort(files);
-			debugMessage("Filter out property files containing a 'scenario.description' property");
-			for (int i = 0; i < files.length; i++) {
-				File file = files[i];
-				if (file.getName().endsWith(".properties")) {
-					Properties properties = readProperties(appConstants, file);
-					if (properties != null && properties.get("scenario.description") != null) {
-						String active = properties.getProperty("scenario.active", "true");
-						String unstable = properties.getProperty("adapter.unstable", "false");
-						if (active.equalsIgnoreCase("true") && unstable.equalsIgnoreCase("false")) {
-							scenarioFiles.add(file);
-						}
+			return scenarioFiles;
+		}
+		debugMessage("Sort files");
+		Arrays.sort(files);
+		debugMessage("Filter out property files containing a 'scenario.description' property");
+		for (int i = 0; i < files.length; i++) {
+			File file = files[i];
+			if (file.getName().endsWith(".properties")) {
+				Properties properties = readProperties(appConstants, file);
+				if (properties != null && properties.get("scenario.description") != null) {
+					String active = properties.getProperty("scenario.active", "true");
+					String unstable = properties.getProperty("adapter.unstable", "false");
+					if (active.equalsIgnoreCase("true") && unstable.equalsIgnoreCase("false")) {
+						scenarioFiles.add(file);
 					}
-				} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
-					scenarioFiles.addAll(readScenarioFiles(appConstants, file.getAbsolutePath()));
 				}
+			} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
+				scenarioFiles.addAll(readScenarioFiles(appConstants, file.getAbsolutePath()));
 			}
 		}
 		debugMessage(scenarioFiles.size() + " scenario files found");
@@ -953,12 +949,12 @@ public class TestTool {
 	}
 
 	@Nullable
-	public static Properties readProperties(AppConstants appConstants, File propertiesFile) {
+	public Properties readProperties(AppConstants appConstants, File propertiesFile) {
 		return readProperties(appConstants, propertiesFile, true);
 	}
 
 	@Nullable
-	public static Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root) {
+	public Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root) {
 		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
 		Properties properties = new Properties();
 		try {
@@ -1072,7 +1068,7 @@ public class TestTool {
 		properties.putAll(absolutePathProperties);
 	}
 
-	public static List<String> getSteps(Properties properties) {
+	public List<String> getSteps(Properties properties) {
 		List<String> steps = new ArrayList<>();
 		int i = 1;
 		boolean lastStepFound = false;
@@ -1100,7 +1096,7 @@ public class TestTool {
 		return steps;
 	}
 
-	public static boolean closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
+	public boolean closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Close jms senders");
 		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
@@ -1220,11 +1216,11 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	public static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener) {
+	public boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'");
 		long oldTimeOut = pullingJmsListener.getTimeOut();
-		pullingJmsListener.setTimeOut(10);
+		pullingJmsListener.setTimeout(10);
 		boolean empty = false;
 		while (!empty) {
 			RawMessageWrapper<javax.jms.Message> rawMessage = null;
@@ -1257,11 +1253,11 @@ public class TestTool {
 				empty = true;
 			}
 		}
-		pullingJmsListener.setTimeOut((int) oldTimeOut);
+		pullingJmsListener.setTimeout((int) oldTimeOut);
 		return remainingMessagesFound;
 	}
 
-	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, String fileContent, String correlationId) {
+	private int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
 		Map<?, ?> jmsSenderInfo = queues.get(queueName);
@@ -1299,7 +1295,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, String fileContent, String correlationId, Map<String, Object> xsltParameters) {
+	private int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, String fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		Queue queue = queues.get(queueName);
 		if (queue==null) {
 			errorMessage("Property '" + queueName + ".className' not found or not valid");
@@ -1321,7 +1317,7 @@ public class TestTool {
 	}
 
 
-	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent) {
+	private int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
 		Map<String, Object> jmsListenerInfo = queues.get(queueName);
@@ -1368,7 +1364,7 @@ public class TestTool {
 	}
 
 
-	private static int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent) {
+	private int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
 		Queue queue = queues.get(queueName);
@@ -1399,7 +1395,7 @@ public class TestTool {
 	}
 
 
-	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent, int parameterTimeout) {
+	private int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
 		Map listenerInfo = queues.get(queueName);
@@ -1452,7 +1448,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent, String correlationId) {
+	private int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
 		Map querySendersInfo = queues.get(queueName);
@@ -1460,8 +1456,9 @@ public class TestTool {
 
 		if (waitBeforeRead != null) {
 			try {
-				Thread.sleep(waitBeforeRead.intValue());
-			} catch(InterruptedException e) {
+				Thread.sleep(waitBeforeRead);
+			} catch (InterruptedException ignored) {
+				Thread.currentThread().interrupt();
 			}
 		}
 		boolean newRecordFound = true;
@@ -1520,7 +1517,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, String correlationId) {
+	public int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, String correlationId) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -1586,7 +1583,7 @@ public class TestTool {
 		return stepPassed;
 	}
 
-	public static String readFile(String fileName) {
+	public String readFile(String fileName) {
 		String result = null;
 		String encoding = null;
 		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
@@ -1637,14 +1634,14 @@ public class TestTool {
 	}
 
 	// Used by saveResultToFile.jsp
-	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
+	public void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
 		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getProperty("larva.windiff.command");
 		if (windiffCommand == null) {
 			String realPath = application.getRealPath("/iaf/");
 			List<String> scenariosRootDirectories = new ArrayList<>();
 			List<String> scenariosRootDescriptions = new ArrayList<>();
-			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
+			String currentScenariosRootDirectory = initScenariosRootDirectories(
 					realPath,
 					null, scenariosRootDirectories,
 					scenariosRootDescriptions);
@@ -1721,7 +1718,7 @@ public class TestTool {
 		return encoding;
 	}
 
-	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName) {
+	public int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName) {
 		if (fileName.endsWith("ignore")) {
 			debugMessage("ignoring compare for filename '"+fileName+"'");
 			return RESULT_OK;
@@ -1851,7 +1848,7 @@ public class TestTool {
 		return ok;
 	}
 
-	public static String prepareResultForCompare(String input, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap) {
+	public String prepareResultForCompare(String input, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap) {
 		String result = input;
 		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)-> {
 			boolean replaceNewlines = !"true".equals(pp.apply("replaceNewlines"));
@@ -1893,7 +1890,7 @@ public class TestTool {
 		String format(String value, Function<String, String> propertyProvider, String key1);
 	}
 
-	public static String doActionBetweenKeys(String key, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, BetweenKeysAction action) {
+	public String doActionBetweenKeys(String key, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, BetweenKeysAction action) {
 		String result = value;
 		debugMessage("Check "+key+" properties");
 		boolean lastKeyIndexProcessed = false;
@@ -1929,7 +1926,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static String doActionWithSingleKey(String keyName, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, SingleKeyAction action) {
+	public String doActionWithSingleKey(String keyName, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, SingleKeyAction action) {
 		String result = value;
 		debugMessage("Check "+keyName+" properties");
 		boolean lastKeyIndexProcessed = false;
@@ -2049,7 +2046,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static String decodeUnzipContentBetweenKeys(String string, String key1, String key2, boolean replaceNewlines) {
+	public String decodeUnzipContentBetweenKeys(String string, String key1, String key2, boolean replaceNewlines) {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
@@ -2095,7 +2092,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static String canonicaliseFilePathContentBetweenKeys(String string, String key1, String key2) {
+	public String canonicaliseFilePathContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;
 		if (key1.equals("*") && key2.equals("*")) {
 			File file = new File(result);
@@ -2128,7 +2125,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static String ignoreCurrentTimeBetweenKeys(String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString) {
+	public String ignoreCurrentTimeBetweenKeys(String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString) {
 		String result = string;
 		String ignoreText = "IGNORE_CURRENT_TIME";
 		int i = result.indexOf(key1);
@@ -2198,7 +2195,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static String formatDecimalContentBetweenKeys(String string,
+	public String formatDecimalContentBetweenKeys(String string,
 		String key1, String key2) {
 		String result = string;
 		int i = result.indexOf(key1);
@@ -2277,7 +2274,7 @@ public class TestTool {
 	 *
 	 * @return A map with parameters
 	 */
-	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, boolean createParameterObjects, PipeLineSession session) {
+	public Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, boolean createParameterObjects, PipeLineSession session) {
 		debugMessage("Search parameters for property '" + property + "'");
 		final String _name = ".name";
 		final String _param = ".param";
@@ -2393,7 +2390,7 @@ public class TestTool {
 		return result;
 	}
 
-	public static String formatString(String string) {
+	public String formatString(String string) {
 		StringBuilder sb = new StringBuilder();
 		try {
 			Reader reader = new StringReader(string);

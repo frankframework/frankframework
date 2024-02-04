@@ -56,7 +56,7 @@ public class TestConfig {
 			if (silentOut != null) {
 				silentOut.flush();
 			}
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 		}
 	}
 

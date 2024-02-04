@@ -44,9 +44,11 @@ import org.frankframework.util.EnumUtils;
 public class QueueCreator {
 
 	private final TestConfig config;
+	private final TestTool testTool;
 
-	public QueueCreator(TestConfig config) {
+	public QueueCreator(TestConfig config, TestTool testTool) {
 		this.config = config;
+		this.testTool = testTool;
 	}
 
 	public Map<String, Queue> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, String correlationId) {
@@ -230,7 +232,7 @@ public class QueueCreator {
 				//jmsListenerInfo.open(); // TODO: jmsListener was not opened here. Check if that should be done.
 				queues.put(queueName, jmsListenerInfo);
 				debugMessage("Opened jms listener '" + queueName + "'");
-				if (TestTool.jmsCleanUp(queueName, pullingJmsListener)) {
+				if (testTool.jmsCleanUp(queueName, pullingJmsListener)) {
 					errorMessage("Found one or more old messages on queue '" + queueName + "', you might want to run your tests with a higher 'wait before clean up' value");
 				}
 			}
@@ -373,21 +375,19 @@ public class QueueCreator {
 		}
 	}
 
-
-
 	private void closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
-		TestTool.closeQueues(queues, properties, correlationId);
+		testTool.closeQueues(queues, properties, correlationId);
 	}
 
 	private void debugMessage(String message) {
-		TestTool.debugMessage(message);
+		testTool.debugMessage(message);
 	}
 
 	private void errorMessage(String message) {
-		TestTool.errorMessage(message);
+		testTool.errorMessage(message);
 	}
 
 	private void errorMessage(String message, Exception e) {
-		TestTool.errorMessage(message, e);
+		testTool.errorMessage(message, e);
 	}
 }
