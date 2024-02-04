@@ -4,6 +4,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.ws.WebServiceContext;
+
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -11,6 +13,10 @@ import org.frankframework.stream.Message;
 import lombok.SneakyThrows;
 
 public class SoapProviderStub extends SOAPProviderBase {
+
+	public SoapProviderStub(WebServiceContext context) {
+		this.webServiceContext = context;
+	}
 
 	PipeLineSession session = null;
 

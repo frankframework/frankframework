@@ -15,17 +15,17 @@
 */
 package org.frankframework.management.bus;
 
-import javax.annotation.security.RolesAllowed;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.StreamingException;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 public class BusTestEndpoints {
 	public enum ExceptionTestTypes {
-		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE
+		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, NOT_FOUND
 	}
 
 	//Test authorization
@@ -46,13 +46,15 @@ public class BusTestEndpoints {
 			new ConfigurationException("cannot configure",
 				new IllegalStateException("something is wrong")));
 		switch (type) {
-		case MESSAGE:
-			throw new BusException("message without cause");
-		case CAUSE:
-			throw new IllegalStateException("uncaught exception", cause);
-		case MESSAGE_WITH_CAUSE:
-		default:
-			throw new BusException("message with a cause", cause);
+			case NOT_FOUND:
+				throw new BusException("Resource not found", 404);
+			case MESSAGE:
+				throw new BusException("message without cause");
+			case CAUSE:
+				throw new IllegalStateException("uncaught exception", cause);
+			case MESSAGE_WITH_CAUSE:
+			default:
+				throw new BusException("message with a cause", cause);
 		}
 	}
 }

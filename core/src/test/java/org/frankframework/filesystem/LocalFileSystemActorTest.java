@@ -17,7 +17,7 @@ import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem>{
+public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem> {
 
 	@TempDir
 	public Path folder;

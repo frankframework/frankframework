@@ -47,7 +47,7 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 	public enum ManagedException {
 		AUTHENTICATION(AuthenticationException.class, Status.UNAUTHORIZED), //Authentication exception
 		AUTHORIZATION(AccessDeniedException.class, Status.FORBIDDEN), // Authorization exception
-		BUS_EXCEPTION(BusException.class, Status.BAD_REQUEST), // Managed BUS exception
+		BUS_EXCEPTION(BusException.class, ManagedException::convertBusException), // Managed BUS exception
 		BACKEND_UNAVAILABLE(ResourceAccessException.class, Status.SERVICE_UNAVAILABLE), // Server doesn't exist
 		REQUEST_EXCEPTION(HttpClientErrorException.class, ManagedException::convertHttpClientError); // Server refused connection
 
@@ -86,6 +86,14 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 				return ApiException.formatExceptionResponse(status.getStatusCode() + " - " + status.getReasonPhrase(), status);
 			}
 			return ApiException.formatExceptionResponse(e.getResponseBodyAsString(), status);
+		}
+
+		/**
+		 * Returns the StatusCode + reason phrase for the given status code.
+		 */
+		private static Response convertBusException(BusException e) {
+			Status status = Status.fromStatusCode(e.getStatusCode());
+			return ApiException.formatExceptionResponse(e.getMessage(), status);
 		}
 	}
 

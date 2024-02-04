@@ -4,20 +4,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
 import java.nio.file.Path;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.PropertyUtil;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
-
-import org.frankframework.configuration.ConfigurationException;
 
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 
@@ -37,9 +35,14 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 
 	@Override
 	public AmazonS3FileSystem createFileSystem() {
-		AmazonS3FileSystem s3 = spy(AmazonS3FileSystem.class);
 		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) this.helper;
-		doReturn(awsHelper.getS3Client()).when(s3).createS3Client();
+		AmazonS3FileSystem s3 = new AmazonS3FileSystem() {
+			@Override
+			public AmazonS3 createS3Client() {
+				return awsHelper.createS3Client();
+			}
+		};
+
 		s3.setBucketName(awsHelper.getBucketName());
 		return s3;
 	}

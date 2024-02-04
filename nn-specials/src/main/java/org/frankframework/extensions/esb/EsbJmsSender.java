@@ -40,7 +40,7 @@ public class EsbJmsSender extends JmsSender {
 	}
 
 	private @Getter MessageProtocol messageProtocol = null;
-	private @Getter long timeOut = 20000;
+	private @Getter long timeOut = 20_000;
 
 	@Override
 	public void configure() throws ConfigurationException {
