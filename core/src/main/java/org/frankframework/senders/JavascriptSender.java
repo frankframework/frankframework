@@ -30,6 +30,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Optional;
 import org.frankframework.javascript.J2V8;
 import org.frankframework.javascript.JavascriptEngine;
 import org.frankframework.javascript.JavascriptException;
@@ -173,6 +174,12 @@ public class JavascriptSender extends SenderSeries {
 			return new SenderResult(Message.nullMessage());
 		}
 		return new SenderResult(result);
+	}
+
+	@Optional
+	@Override
+	public void registerSender(ISender sender) {
+		super.registerSender(sender);
 	}
 
 	/**

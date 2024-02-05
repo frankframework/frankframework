@@ -18,10 +18,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.TransactionManagerTestBase;
 import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DbmsUtil;
-import org.frankframework.util.JdbcUtil;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -146,7 +146,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 			TransactionStatus txStatus2 = startTransaction(TX_DEF);
 			assertFalse(txStatus2.isRollbackOnly());
 			assertFalse(txStatus2.isCompleted());
-			JdbcUtil.executeStatement(txManagedConnection, INSERT_QUERY, COUNT.getAndIncrement());
+			JdbcTestUtil.executeStatement(txManagedConnection, INSERT_QUERY, COUNT.getAndIncrement());
 			txManager.commit(txStatus2);
 			assertTrue(txStatus2.isCompleted());
 		}
@@ -155,7 +155,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 	private void getConnectionCloseJournalAndTestException() throws Exception {
 		TransactionStatus txStatus = startTransaction(TX_DEF);
 		try (Connection txManagedConnection = getConnection()) {
-			JdbcUtil.executeStatement(txManagedConnection, INSERT_QUERY, COUNT.getAndIncrement());
+			JdbcTestUtil.executeStatement(txManagedConnection, INSERT_QUERY, COUNT.getAndIncrement());
 
 			// Act
 			closeDiskJournal();

@@ -17,11 +17,11 @@ package org.frankframework.http.cxf;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -46,22 +46,14 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 
-@RunWith(MockitoJUnitRunner.class)
 public class SoapProviderTest {
 
-	@Spy
-	WebServiceContext webServiceContext = new WebServiceContextStub();
-
-	@InjectMocks
-	private SoapProviderStub SOAPProvider = new SoapProviderStub();
+	private WebServiceContext webServiceContext = new WebServiceContextStub();
+	private SoapProviderStub SOAPProvider = new SoapProviderStub(webServiceContext);
 
 	private static final String ATTACHMENT_CONTENT = "<dummy/>";
 	private static final String ATTACHMENT_MIMETYPE = "plain/text";
@@ -76,7 +68,7 @@ public class SoapProviderTest {
 
 	private static final String BASEDIR = "/Soap/";
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUp() {
 		Properties prop = System.getProperties();
 		String vendor = prop.getProperty("java.vendor");
