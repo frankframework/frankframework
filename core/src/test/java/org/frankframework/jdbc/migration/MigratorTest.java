@@ -2,16 +2,18 @@ package org.frankframework.jdbc.migration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.sql.Connection;
+import java.sql.SQLWarning;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,90 +24,113 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.BytesResource;
 import org.frankframework.core.Resource;
 import org.frankframework.core.Resource.GlobalScopeProvider;
-import org.frankframework.jdbc.TransactionManagerTestBase;
 import org.frankframework.testutil.ConfigurationMessageEventListener;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.MessageKeeper;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
-public class MigratorTest extends TransactionManagerTestBase {
+import lombok.extern.log4j.Log4j2;
 
-	private LiquibaseMigrator migrator = null;
+@Log4j2
+public class MigratorTest {
+
+	private LiquibaseMigrator migrator;
 	private final String tableName = "DUMMYTABLE";
+	private DatabaseTestEnvironment env;
 
-	@Override
-	protected void prepareDatabase() throws Exception {
-		super.prepareDatabase();
-		//Ignore programmatic creation of Temp table, run Liquibase instead!
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) throws Exception {
+		this.env = env;
+
+		migrator = env.createBean(LiquibaseMigrator.class);
+		migrator.setDatasourceName(env.getDataSourceName());
+
+		env.getConfiguration().getConfigurationWarnings().destroy();
+		env.getConfiguration().getConfigurationWarnings().afterPropertiesSet();
+		env.getConfiguration().getMessageKeeper().clear();
+	}
+
+	@AfterEach
+	public void teardown() throws Exception {
 		dropTableIfPresent(tableName);
 		dropTableIfPresent("DATABASECHANGELOG");
 		dropTableIfPresent("DATABASECHANGELOGLOCK");
-
-		migrator = getConfiguration().createBean(LiquibaseMigrator.class);
-		migrator.setDatasourceName(getDataSourceName());
 	}
 
-	@Override
-	public void setup() throws Exception {
-		super.setup();
-
-		//Make sure there are no previous warnings present
-		getConfiguration().getConfigurationWarnings().destroy();
-		getConfiguration().getConfigurationWarnings().afterPropertiesSet();
-		getConfiguration().getMessageKeeper().clear();
+	private boolean isTablePresent(String tableName) throws Exception {
+		try(Connection connection = env.getConnection()) {
+			return env.getDbmsSupport().isTablePresent(connection, tableName);
+		}
+	}
+	private void dropTableIfPresent(String tableName) throws Exception {
+		try(Connection connection = env.getConnection()) {
+			if(env.getDbmsSupport().isTablePresent(connection, tableName)) {
+				JdbcTestUtil.executeStatement(connection, "DROP TABLE "+tableName);
+				SQLWarning warnings = connection.getWarnings();
+				if(warnings != null) {
+					log.warn(JdbcUtil.warningsToString(warnings));
+				}
+				assertFalse(env.getDbmsSupport().isTablePresent(connection, tableName), "table ["+tableName+"] should not exist");
+			}
+		}
 	}
 
-	@Test
-	public void testSimpleChangelogFile() throws Exception {
-		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
+	@TxManagerTest
+	public void testSimpleChangelogFile(DatabaseTestEnvironment env) throws Exception {
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		migrator.update();
 
-		MessageKeeper messageKeeper = getConfiguration().getMessageKeeper();
-		assertNotNull("no message logged to the messageKeeper", messageKeeper);
+		MessageKeeper messageKeeper = env.getConfiguration().getMessageKeeper();
+		assertNotNull(messageKeeper, "no message logged to the messageKeeper");
+		System.err.println(messageKeeper.toString()); // == empty?
 		assertEquals(1, messageKeeper.size());
-		assertEquals("Configuration ["+getTransactionManagerType().name()+"] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
-		assertFalse("table ["+tableName+"] should not exist", isTablePresent(tableName));
+		assertEquals("Configuration ["+env.getName()+"] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
+		assertFalse(isTablePresent(tableName), "table ["+tableName+"] should not exist");
 	}
 
-	@Test
-	public void testFaultyChangelogFile() throws Exception {
-		AppConstants.getInstance(getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
+	@TxManagerTest
+	public void testFaultyChangelogFile(DatabaseTestEnvironment env) throws Exception {
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
 		migrator.update();
 
-		ConfigurationWarnings warnings = getConfiguration().getConfigurationWarnings();
+		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
 		assertEquals(1, warnings.size());
 
 		String warning = warnings.get(0);
 		assertThat(warning, containsString("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); //Test ObjectName + Error
 		assertThat(warning, containsString("Migration failed for changeset Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); //Test liquibase exception
 		//H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
-		assertTrue("table ["+tableName+"] should exist", isTablePresent(tableName));
+		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
 	}
 
-	@Test
-	public void testSQLWriter() throws Exception {
-
+	@TxManagerTest
+	public void testSQLWriter(DatabaseTestEnvironment env) throws Exception {
 		Resource resource = Resource.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
 		assertNotNull(resource);
 
 		StringWriter writer = new StringWriter();
 		migrator.update(writer, resource);
 
-		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+getDataSourceName().toLowerCase()+".sql");
+		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+env.getDataSourceName().toLowerCase()+".sql");
 
 		String result = applyIgnores(writer.toString());
 		result = removeComments(result);
 		TestAssertions.assertEqualsIgnoreCRLF(sqlChanges, result);
 	}
 
-	@Test
-	public void testSQLWriterBytesResource() throws Exception {
+	@TxManagerTest
+	public void testSQLWriterBytesResource(DatabaseTestEnvironment env) throws Exception {
 		// Arrange
 		Resource resource = Resource.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
-		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+getDataSourceName().toLowerCase()+".sql");
+		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+env.getDataSourceName().toLowerCase()+".sql");
 		assertNotNull(resource);
 
 		resource = new BytesResource(resource.openStream(), "inputstreamresource.xml", new GlobalScopeProvider());
@@ -161,9 +186,9 @@ public class MigratorTest extends TransactionManagerTestBase {
 		return sqlScript.replaceAll("(LOCKEDBY = ')(.*)(WHERE)", "LOCKEDBY = 'IGNORE', LOCKGRANTED = 'IGNORE' WHERE");
 	}
 
-	@Test
-	public void testScriptExecutionLogs() {
-		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
+	@TxManagerTest
+	public void testScriptExecutionLogs(DatabaseTestEnvironment env) {
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		try {
 			Configurator.reconfigure();
@@ -179,9 +204,9 @@ public class MigratorTest extends TransactionManagerTestBase {
 			migrator.update();
 
 			String msg = "LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]";
-			assertFalse("expected message not to be logged but found ["+appender.getLogLines()+"]", appender.contains(msg)); //Validate Liquibase doesn't log
+			assertFalse(appender.contains(msg), "expected message not to be logged but found ["+appender.getLogLines()+"]"); //Validate Liquibase doesn't log
 
-			ConfigurationMessageEventListener configurationMessages = getConfiguration().getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
+			ConfigurationMessageEventListener configurationMessages = env.getConfiguration().getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
 			assertTrue(configurationMessages.contains(msg)); //Validate Liquibase did run
 		} finally {
 			TestAppender.removeAppender(appender);
