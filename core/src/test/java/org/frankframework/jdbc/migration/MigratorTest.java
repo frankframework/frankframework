@@ -34,7 +34,6 @@ import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.MessageKeeper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
