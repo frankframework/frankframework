@@ -262,9 +262,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe> {
 
 	@Test
 	public void cantMoveFilesWithWildcardTest() throws ConfigurationException, PipeStartException, PipeRunException {
-		// exception.expect(PipeRunException.class);
-		// exception.expectMessage("no files with wildcard [*.xd] found in directory
-		// ["+sourceFolderPath+"]");
 		pipe.setMove2dir(destFolderPath);
 		pipe.setDirectory(sourceFolderPath);
 		pipe.setWildcard("*.xd");
@@ -289,8 +286,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe> {
 
 	@Test
 	public void cantDeleteDirectoryAsItIsNotEmpty() throws ConfigurationException, PipeStartException, PipeRunException {
-		// exception.expect(PipeRunException.class);
-		// exception.expectMessage("directory ["+cantdeleteFolderPath+"] is not empty");
 		pipe.setMove2dir(destFolderPath);// for MAC, different for Windows
 		pipe.setDirectory(cantdeleteFolderPath);// for MAC, different for Windows
 		pipe.setDeleteEmptyDirectory(true);

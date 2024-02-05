@@ -21,6 +21,7 @@ import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.job.CleanupDatabaseJob;
 import org.frankframework.scheduler.job.IJob;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.junit.DatabaseTest;
@@ -28,7 +29,6 @@ import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DbmsUtil;
-import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Locker;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -171,7 +171,7 @@ public class CleanupDatabaseJobTest {
 				+ sb.toString();
 
 		try(Connection connection = database.getConnection()) {
-			JdbcUtil.executeStatement(connection, query);
+			JdbcTestUtil.executeStatement(connection, query);
 		}
 
 		// check insertion

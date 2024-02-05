@@ -28,13 +28,13 @@ import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.JdbcUtil;
-import org.frankframework.util.Semaphore;
 import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -74,15 +74,10 @@ public class DbmsSupportTest {
 		}
 	}
 
-//	@DatabaseTest
-//	public void testTableLessSelectWithStringParam() throws Exception {
-//		assertEquals(3, JdbcUtil.executeIntQuery(connection,"SELECT ''||? "+dbmsSupport.getFromForTablelessSelect(), 3));
-//	}
-
 	@DatabaseTest
 	public void testInsertSelect() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY, TINT) SELECT 11, 2+2 " + dbmsSupport.getFromForTablelessSelect() + " WHERE 1=1");
+			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY, TINT) SELECT 11, 2+2 " + dbmsSupport.getFromForTablelessSelect() + " WHERE 1=1");
 		}
 	}
 
@@ -261,16 +256,16 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testGetDateTimeLiteral() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3," + dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(new Date()), 4) + "," + dbmsSupport.getDatetimeLiteral(new Date()) + ")");
-			Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3," + dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(new Date()), 4) + "," + dbmsSupport.getDatetimeLiteral(new Date()) + ")");
+			Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null, new PipeLineSession());
 		}
 	}
 
 	@DatabaseTest
 	public void testSysDate() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (2,'xxx',3," + dbmsSupport.getSysDate() + "," + dbmsSupport.getSysDate() + ")");
-			Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=2", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (2,'xxx',3," + dbmsSupport.getSysDate() + "," + dbmsSupport.getSysDate() + ")");
+			Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=2", null, new PipeLineSession());
 		}
 	}
 
@@ -351,7 +346,6 @@ public class DbmsSupportTest {
 			JdbcUtil.setParameter(stmt, 1, number, dbmsSupport.isParameterTypeMatchRequired());
 			JdbcUtil.setParameter(stmt, 2, date, dbmsSupport.isParameterTypeMatchRequired());
 			JdbcUtil.setParameter(stmt, 3, datetime, dbmsSupport.isParameterTypeMatchRequired());
-			//JdbcUtil.setParameter(stmt, 4, bool, dbmsSupport.isParameterTypeMatchRequired());
 			stmt.execute();
 		}
 
@@ -361,7 +355,6 @@ public class DbmsSupportTest {
 				assertTrue(resultSet.getString(1).startsWith(number));
 				assertEquals(date, resultSet.getString(2));
 				assertTrue(resultSet.getString(3).startsWith(datetime));
-				//assertEquals(Boolean.parseBoolean(bool), resultSet.getBoolean(4));
 			}
 		}
 	}
@@ -453,7 +446,7 @@ public class DbmsSupportTest {
 	public void testInsertEmptyClobUsingDbmsSupport() throws Exception {
 		try (Connection connection = env.getConnection()) {
 
-			JdbcUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (13," + dbmsSupport.emptyClobValue() + ")");
+			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (13," + dbmsSupport.emptyClobValue() + ")");
 
 			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=13", QueryType.SELECT)) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
@@ -575,7 +568,7 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testInsertEmptyBlobUsingDbmsSupport() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			JdbcUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (25," + dbmsSupport.emptyBlobValue() + ")");
+			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (25," + dbmsSupport.emptyBlobValue() + ")");
 
 			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=25", QueryType.SELECT)) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
@@ -646,7 +639,6 @@ public class DbmsSupportTest {
 			assertEquals(40, DbmsUtil.executeIntQuery(connection, readQueueQuery));
 			assertEquals(40, DbmsUtil.executeIntQuery(connection, peekQueueQuery));
 
-			Semaphore actionFinished = null;
 			try (Statement stmt1 = connection.createStatement()) {
 				stmt1.setFetchSize(1);
 				log.debug("Read queue using query [" + readQueueQuery + "]");
@@ -773,7 +765,7 @@ public class DbmsSupportTest {
 			}
 			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}
-		JdbcUtil.executeStatement(connection, translatedQuery);
+		JdbcTestUtil.executeStatement(connection, translatedQuery);
 		return null;
 	}
 }

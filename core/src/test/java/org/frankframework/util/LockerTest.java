@@ -18,6 +18,7 @@ import javax.sql.DataSource;
 
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.TransactionAttribute;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.dbms.ConcurrentManagedTransactionTester;
@@ -47,7 +48,7 @@ public class LockerTest {
 
 		try(Connection conn = env.getConnection()) {
 			if (env.getDbmsSupport().isTablePresent(conn, TABLENAME)) {
-				JdbcUtil.executeStatement(conn, "DELETE FROM "+TABLENAME);
+				JdbcTestUtil.executeStatement(conn, "DELETE FROM "+TABLENAME);
 			}
 		}
 	}
@@ -361,7 +362,7 @@ public class LockerTest {
 
 		@Override
 		public void action() throws SQLException, JdbcException {
-			JdbcUtil.executeStatement(conn, "INSERT INTO "+LockerTest.TABLENAME+" (OBJECTID) VALUES('myLocker')");
+			JdbcTestUtil.executeStatement(conn, "INSERT INTO "+LockerTest.TABLENAME+" (OBJECTID) VALUES('myLocker')");
 		}
 
 		@Override
