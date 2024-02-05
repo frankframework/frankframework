@@ -56,10 +56,7 @@ public class MigratorTest {
 		env.getConfiguration().getConfigurationWarnings().destroy();
 		env.getConfiguration().getConfigurationWarnings().afterPropertiesSet();
 		env.getConfiguration().getMessageKeeper().clear();
-	}
 
-	@AfterEach
-	public void teardown() throws Exception {
 		dropTableIfPresent(tableName);
 		dropTableIfPresent("DATABASECHANGELOG");
 		dropTableIfPresent("DATABASECHANGELOGLOCK");
