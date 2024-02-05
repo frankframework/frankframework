@@ -1919,7 +1919,7 @@ public class TestTool {
 				String key2 = keyPair.get("key2");
 
 				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
-				result = action.format(result, k -> keyPair.get(k), key1, key2);
+				result = action.format(result, keyPair::get, key1, key2);
 			}
 		}
 
@@ -1956,7 +1956,7 @@ public class TestTool {
 				String key = keyPair.get("key");
 
 				debugMessage(keyName + " key '" + key + "'");
-				result = action.format(result, k -> keyPair.get(k), key);
+				result = action.format(result, keyPair::get, key);
 
 				keySpecIt.remove();
 			}
@@ -2462,7 +2462,7 @@ public class TestTool {
 						if(key.endsWith("." + attribute)){
 							idMap.put(attribute, properties.getProperty(key));
 						}
-						else if(attribute.equals("")){
+						else if(attribute.isEmpty()){
 							// in case of an empty string as attribute, assume it should read the value
 							// ie: ignoreKey.identifier=value
 							idMap.put("value", properties.getProperty(key));
@@ -2485,7 +2485,7 @@ public class TestTool {
 
 		switch (propertyName) {
 			case "decodeUnzipContentBetweenKeys":
-			  	attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2", "replaceNewlines"} ) );
+			  	attributes = new ArrayList<>( Arrays.asList("key1", "key2", "replaceNewlines") );
 			  	break;
 			case "canonicaliseFilePathContentBetweenKeys":
 			case "replaceRegularExpressionKeys":
@@ -2495,22 +2495,22 @@ public class TestTool {
 			case "replaceKey":
 			case "formatDecimalContentBetweenKeys":
 			case "replaceEverywhereKey":
-				attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2"} ) );
+				attributes = new ArrayList<>( Arrays.asList("key1", "key2") );
 				break;
 			case "ignoreRegularExpressionKey":
 			case "removeRegularExpressionKey":
 			case "ignoreContentBeforeKey":
 			case "ignoreContentAfterKey":
-				attributes = new ArrayList( Arrays.asList( new String[]{"key"} ) );
+				attributes = new ArrayList<>(List.of("key"));
 				break;
 			case "ignoreCurrentTimeBetweenKeys":
-				attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2", "pattern", "margin", "errorMessageOnRemainingString"} ) );
+				attributes = new ArrayList<>( Arrays.asList("key1", "key2", "pattern", "margin", "errorMessageOnRemainingString") );
 				break;
 			case "ignoreKey":
 			case "removeKey":
 				// in case of an empty string as attribute, assume it should read the value
 				// ie: ignoreKey.identifier=value
-				attributes = new ArrayList<>(Arrays.asList( new String[]{"key", ""}));
+				attributes = new ArrayList<>(Arrays.asList("key", ""));
 				break;
 		}
 
