@@ -1,0 +1,3 @@
+05-Feb-2024 10:17:05.690 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name: Apache Tomcat/9.0.76
+05-Feb-2024 10:17:05.693 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built: Jun 5 2023 07:17:04 UTC
+05-Feb-2024 10:17:05.694 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 9.0.76.0
