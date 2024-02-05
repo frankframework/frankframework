@@ -17,7 +17,6 @@ package org.frankframework.jndi;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -138,23 +137,21 @@ public class JndiBase implements IConfigurable {
 	}
 
 	/**
-	 * Gets the Context<br/>
 	 * When InitialContextFactory and ProviderURL are set, these are used to get the
-	 * <code>Context</code>. Otherwise the the InitialContext is retrieved without
+	 * <code>Context</code>. Otherwise, the InitialContext is retrieved without
 	 * parameters.<br/>
 	 * <b>Notice:</b> you can set the parameters on the commandline with <br/>
-	 * java -Djava.naming.factory.initial= xxx -Djava.naming.provider.url=xxx <br/>
-	 * <br/>
+	 * java -Djava.naming.factory.initial=xxx -Djava.naming.provider.url=xxx
 	 */
 	public Context getContext() throws NamingException {
-		if(null == context) {
-			Hashtable jndiEnv = getJndiEnv();
-			if(jndiEnv.size() > 0) {
+		if (null == context) {
+			Properties jndiEnv = getJndiEnv();
+			if (!jndiEnv.isEmpty()) {
 				log.debug("creating initial JNDI-context using specified environment");
-				context = (Context) new InitialContext(jndiEnv);
+				context = new InitialContext(jndiEnv);
 			} else {
 				log.debug("creating initial JNDI-context");
-				context = (Context) new InitialContext();
+				context = new InitialContext();
 			}
 		}
 		return context;
