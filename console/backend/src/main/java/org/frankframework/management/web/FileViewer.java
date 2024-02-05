@@ -15,6 +15,7 @@
  */
 package org.frankframework.management.web;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.ResponseUtils;
@@ -61,7 +62,8 @@ public class FileViewer extends FrankApiBase {
 				BufferedReader fileContentsReader = new BufferedReader(new InputStreamReader((InputStream) fileContentsMessage.getPayload()));
 				String line;
 				while ((line = fileContentsReader.readLine()) != null) {
-					outputStream.write((line + "<br>").getBytes());
+					String formattedLine = StringUtils.replace(line, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
+					outputStream.write((formattedLine + "<br>").getBytes());
 				}
 				outputStream.flush();
 			} catch (Exception e) {

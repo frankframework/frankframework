@@ -1,5 +1,6 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpDownloadProgressEvent, HttpErrorResponse, HttpEventType, HttpHeaders, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
+import { concatMap, debounce, debounceTime, filter } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 
@@ -15,7 +16,9 @@ export class FileViewerComponent implements OnInit {
   @Input()
   contentType: string = "text/plain";
 
-  protected fileContents = "Loading...";
+  protected fileContents = "";
+  protected loading = true;
+  protected error = false;
 
   constructor(
     private http: HttpClient,
@@ -24,15 +27,30 @@ export class FileViewerComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const headers = { Accept: this.contentType };
-    // TODO get chucks by using HttpClient.request?
-    const fileContentsRequest = this.http.get(`${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(this.fileName)}`, { headers, responseType: 'text' });
-    fileContentsRequest.subscribe({ next: data => {
-      this.fileContents = data;
-    }, error: (errorData: HttpErrorResponse) => {
-      this.fileContents = `Error requesting file data: ${errorData.message}`;
-      console.error(errorData)
-    } });
+    const requestOptions = { headers: { Accept: this.contentType }, responseType: 'text', reportProgress: true, observe: 'events' } as const;
+    this.http.request(
+      'get', `${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(this.fileName)}`,requestOptions
+    ).pipe(
+      filter(event => event.type === HttpEventType.DownloadProgress || event.type === HttpEventType.Response),
+      debounceTime(1000)
+    ).subscribe({
+      next: event => {
+        if (event.type == HttpEventType.DownloadProgress) {
+          const partialDownloadedText = (event as HttpDownloadProgressEvent).partialText;
+          this.fileContents = partialDownloadedText ?? "";
+        }
+        if (event.type === HttpEventType.Response) {
+          const response = event as HttpResponse<string>;
+          this.fileContents = response.body ?? "<EOF>";
+          this.loading = false;
+        }
+      }, error: (errorData: HttpErrorResponse) => {
+        this.fileContents = `Error requesting file data: ${errorData.message}`;
+        this.loading = false;
+        this.error = true;
+      }
+    });
   }
+
 
 }
