@@ -13,7 +13,7 @@
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
-			<pipe name="Call Sender" className="org.frankframework.pipes.SenderPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
+			<pipe name="Call Sender" className="org.frankframework.pipes.SenderPipe" timeoutOnResult="[timeout]" exceptionOnResult="[error]">
 				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="TEST"/>
 				<forward name="success" path="READY"/>
 			</pipe>

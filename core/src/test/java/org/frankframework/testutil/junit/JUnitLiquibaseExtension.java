@@ -110,11 +110,12 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 			return;
 		}
 
-		log.info("found {} migration scripts", annotations.size());
+		log.info("found {} migration script(s)", annotations::size);
 
 		DatabaseTestEnvironment dbTestEnv = DatabaseTestInvocationContext.getDatabaseTestEnvironment(context);
 		if(dbTestEnv == null) {
-			throw new JUnitException("no DatabaseTestEnvironment found");
+			log.info("unable to execute Liquibase migration script, no DatabaseTestEnvironment found");
+			throw new JUnitException("no DatabaseTestEnvironment found, are you using the DatabaseTest annotation?");
 		}
 
 		AtomicInteger argumentIndex = new AtomicInteger();

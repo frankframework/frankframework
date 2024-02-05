@@ -27,10 +27,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -40,10 +36,16 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.SaxException;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import lombok.Getter;
 
 /**
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
  *
+ * @deprecated Please replace with ForEachChildElementPipe.
  * @author  Peter Leeuwenburgh
  */
 @Deprecated
@@ -69,14 +71,14 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 	private class ItemCallbackCallingHandler extends DefaultHandler {
 
-		private ItemCallback callback;
-		private StringBuilder elementBuffer = new StringBuilder();
-		private List<String> elements = new ArrayList<>();
+		private final ItemCallback callback;
+		private final StringBuilder elementBuffer = new StringBuilder();
+		private final List<String> elements = new ArrayList<>();
 		private boolean sElem = false;
 		private Exception rootException = null;
-		private int startLength;
+		private final int startLength;
 		private StopReason stopReason;
-		private TimeoutException timeOutException;
+		@Getter private TimeoutException timeoutException;
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback = callback;
@@ -113,9 +115,9 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 				sElem = true;
 			}
 			if (sElem) {
-				elementBuffer.append("<" + localName);
+				elementBuffer.append("<").append(localName);
 				for (int i = 0; i < attributes.getLength(); i++) {
-					elementBuffer.append(" " + attributes.getLocalName(i) + "=\"" + attributes.getValue(i) + "\"");
+					elementBuffer.append(" ").append(attributes.getLocalName(i)).append("=\"").append(attributes.getValue(i)).append("\"");
 				}
 				elementBuffer.append(">");
 			}
@@ -129,7 +131,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 				throw new SAXException("expected end element [" + lastElement + "] but got end element [" + localName + "]");
 			}
 			if (sElem) {
-				elementBuffer.append("</" + localName + ">");
+				elementBuffer.append("</").append(localName).append(">");
 			}
 			if ((getElementName() != null && localName.equals(getElementName()))
 					|| (getElementChain() != null && elementsToString().equals(getElementChain()))) {
@@ -139,7 +141,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 					sElem = false;
 				} catch (Exception e) {
 					if (e instanceof TimeoutException) {
-						timeOutException = (TimeoutException) e;
+						timeoutException = (TimeoutException) e;
 					}
 					rootException = e;
 					Throwable rootCause = e;
@@ -186,9 +188,6 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			return stopReason != null;
 		}
 
-		public TimeoutException getTimeOutException() {
-			return timeOutException;
-		}
 	}
 
 	@Override
@@ -208,8 +207,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			SAXParser saxParser = parserFactory.newSAXParser();
 			saxParser.parse(xmlInput, handler);
 		} catch (Exception e) {
-			if (handler.getTimeOutException() != null) {
-				throw handler.getTimeOutException();
+			if (handler.getTimeoutException() != null) {
+				throw handler.getTimeoutException();
 			}
 			if (!handler.isStopRequested()) {
 				throw new SenderException("Could not extract list of elements [" + getElementName() + "] using sax parser", e);
