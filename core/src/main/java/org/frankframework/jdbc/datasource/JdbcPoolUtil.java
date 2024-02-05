@@ -15,6 +15,7 @@
 */
 package org.frankframework.jdbc.datasource;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
@@ -33,10 +34,10 @@ public class JdbcPoolUtil {
 
 		if (datasource instanceof OpenManagedDataSource) {
 			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) datasource;
-			targetDataSource.addPoolMetadata(info);
+			addPoolMetadata(targetDataSource.getPool(), info);
 		} else if (datasource instanceof org.apache.commons.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) datasource;
-			dataSource.addPoolMetadata(info);
+			addPoolMetadata(dataSource.getPool(), info);
 		} else if (datasource instanceof PoolingDataSource) { // BTM instance
 			addBTMDatasourceInfo(datasource, info);
 		} else if (datasource instanceof DelegatingDataSource) { //Perhaps it's wrapped?
@@ -60,10 +61,8 @@ public class JdbcPoolUtil {
 		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append("]");
 	}
 
-	static void addPoolMetadata(GenericObjectPool pool, StringBuilder info) {
-		if (pool == null || info == null) {
-			return;
-		}
+
+	static void addPoolMetadata(@Nonnull GenericObjectPool<?> pool, @Nonnull StringBuilder info) {
 		info.append("DBCP2 Pool Info: ");
 		info.append("maxIdle [").append(pool.getMaxIdle()).append(CLOSE);
 		info.append("minIdle [").append(pool.getMinIdle()).append(CLOSE);

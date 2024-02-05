@@ -362,7 +362,7 @@
 							or @className='org.frankframework.pipes.ForEachChildElementPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
-			<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>
+			<xsl:attribute name="timeoutOnResult">[timeout]</xsl:attribute>
 			<xsl:attribute name="exceptionOnResult">[error]</xsl:attribute>
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>

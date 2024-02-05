@@ -18,7 +18,6 @@ package org.frankframework.jdbc.datasource;
 import java.sql.Connection;
 
 import org.apache.commons.dbcp2.PoolingDataSource;
-import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
@@ -26,14 +25,12 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
  *
  */
 public class OpenPoolingDataSource<C extends Connection> extends PoolingDataSource<C> {
-	public OpenPoolingDataSource(final ObjectPool<C> pool) {
+	public OpenPoolingDataSource(final GenericObjectPool<C> pool) {
 		super(pool);
 	}
 
-	public void addPoolMetadata(StringBuilder info) {
-		ObjectPool<C> objectPool = super.getPool();
-		if (objectPool instanceof GenericObjectPool) {
-			JdbcPoolUtil.addPoolMetadata((GenericObjectPool<C>) objectPool, info);
-		}
+	@Override
+	protected GenericObjectPool<C> getPool() {
+		return (GenericObjectPool<C>) super.getPool();
 	}
 }
