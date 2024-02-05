@@ -38,7 +38,6 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
@@ -60,14 +59,12 @@ public class StoredProcedureQuerySenderTest {
 
 	PipeLineSession session;
 
-	@DatabaseTest.Parameter(0)
-	private TransactionManagerType transactionManagerType;
-
-	@DatabaseTest.Parameter(1)
 	private String dataSourceName;
 
 	@BeforeEach
 	public void setUp(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+		dataSourceName = databaseTestEnvironment.getDataSourceName();
+
 		sender = databaseTestEnvironment.getConfiguration().createBean(StoredProcedureQuerySender.class);
 		sender.setSqlDialect("Oracle");
 		sender.setDatasourceName(dataSourceName);
