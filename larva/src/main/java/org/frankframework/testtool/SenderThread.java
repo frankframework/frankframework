@@ -40,8 +40,8 @@ public class SenderThread extends Thread {
 	private final String correlationId;
 	private SenderException senderException;
 	private IOException ioException;
-	private TimeoutException timeOutException;
-	private boolean convertExceptionToMessage = false;
+	private TimeoutException timeoutException;
+	private final boolean convertExceptionToMessage;
 
 	public SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage, String correlationId) {
 		name = sender.getName();
@@ -82,8 +82,8 @@ public class SenderThread extends Thread {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);
 			} else {
-				log.error("timeOutException for ISender '" + name + "'", e);
-				timeOutException = e;
+				log.error("timeoutException for ISender '" + name + "'", e);
+				timeoutException = e;
 			}
 		}
 	}
@@ -119,14 +119,14 @@ public class SenderThread extends Thread {
         return ioException;
     }
 
-    public TimeoutException getTimeOutException() {
+    public TimeoutException getTimeoutException() {
         while (this.isAlive()) {
             try {
                 Thread.sleep(100);
             } catch(InterruptedException e) {
             }
         }
-        return timeOutException;
+        return timeoutException;
     }
 
 }

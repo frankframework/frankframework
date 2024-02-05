@@ -30,14 +30,14 @@
 			<forward name="true" path="Call HelloWorld"/>
 			<forward name="false" path="Call HelloWorld for every line"/>
 		</pipe>
-		<pipe name="Call HelloWorld" className="org.frankframework.pipes.SenderPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
+		<pipe name="Call HelloWorld" className="org.frankframework.pipes.SenderPipe" timeoutOnResult="[timeout]" exceptionOnResult="[error]">
 			<sender javaListener="HelloWorld" className="org.frankframework.senders.IbisLocalSender"/>
 			<forward name="success" path="Transform result to XML"/>
 		</pipe>
 		<pipe name="Transform result to XML" xmlTag="result" className="org.frankframework.pipes.Text2XmlPipe">
 			<forward name="success" path="Add documentation"/>
 		</pipe>
-		<pipe name="Call HelloWorld for every line" blockSize="2" blockPrefix="&lt;batch&gt;" blockSuffix="&lt;/batch&gt;" elementXPathExpression="/lines/*" className="org.frankframework.pipes.ForEachChildElementPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
+		<pipe name="Call HelloWorld for every line" blockSize="2" blockPrefix="&lt;batch&gt;" blockSuffix="&lt;/batch&gt;" elementXPathExpression="/lines/*" className="org.frankframework.pipes.ForEachChildElementPipe" timeoutOnResult="[timeout]" exceptionOnResult="[error]">
 			<sender javaListener="HelloWorld" className="org.frankframework.senders.IbisLocalSender"/>
 			<param name="message"/>
 			<forward name="success" path="Add documentation"/>

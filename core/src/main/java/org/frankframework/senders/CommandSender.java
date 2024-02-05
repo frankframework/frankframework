@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -30,6 +30,8 @@ import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ProcessUtil;
+
+import lombok.Getter;
 
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
@@ -42,7 +44,7 @@ import org.frankframework.util.ProcessUtil;
 public class CommandSender extends SenderWithParametersBase {
 
 	private String command;
-	private int timeOut = 0;
+	@Getter private int timeout = 0;
 	private boolean commandWithArguments = false;
 	private final boolean synchronous = true;
 
@@ -69,15 +71,15 @@ public class CommandSender extends SenderWithParametersBase {
 				commandline.add(pv.getValue());
 			}
 		}
-		return new SenderResult(ProcessUtil.executeCommand(commandline, timeOut));
+		return new SenderResult(ProcessUtil.executeCommand(commandline, timeout));
 	}
 
-	private List commandToList(String command) {
-		List list;
+	private List<String> commandToList(String command) {
+		List<String> list;
 		if (commandWithArguments) {
 			list=ProcessUtil.splitUpCommandString(command);
 		} else {
-			list = new ArrayList();
+			list = new ArrayList<>();
 			list.add(command);
 		}
 		return list;
@@ -98,13 +100,21 @@ public class CommandSender extends SenderWithParametersBase {
 
 	/**
 	 * The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
+	 * @deprecated use {@link #setTimeout(int)} instead.
 	 * @ff.default 0
 	 */
-	public void setTimeOut(int timeOut) {
-		this.timeOut = timeOut;
+	@Deprecated(since = "8.1")
+	@ConfigurationWarning("Use attribute timeout instead")
+	public void setTimeOut(int timeout) {
+		this.timeout = timeout;
 	}
-	public int getTimeOut() {
-		return timeOut;
+
+	/**
+	 * The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
+	 * @ff.default 0
+	 */
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 
 	/**

@@ -378,9 +378,9 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			if (ioException != null) {
 				throw ioException;
 			}
-			TimeoutException timeOutException = senderThread.getTimeOutException();
-			if (timeOutException != null) {
-				throw timeOutException;
+			TimeoutException timeoutException = senderThread.getTimeoutException();
+			if (timeoutException != null) {
+				throw timeoutException;
 			}
 			return senderThread.getResponse();
 		}

@@ -243,9 +243,9 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			MessageConsumer mc=null;
 			try {
 				mc = getReceiver(threadContext,session,correlationId);
-				msg = mc.receive(getTimeOut());
+				msg = mc.receive(getTimeout());
 				while (msg==null && correlationId==null && canGoOn() && !isTransacted()) {
-					msg = mc.receive(getTimeOut());
+					msg = mc.receive(getTimeout());
 				}
 				if (msg == null) {
 					return null;
@@ -277,7 +277,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			MessageConsumer mc=null;
 			try {
 				mc = getMessageConsumer(session, getDestination(), messageSelector);
-				Message result = (getTimeOut()<0) ? mc.receiveNoWait() : mc.receive(getTimeOut());
+				Message result = (getTimeout()<0) ? mc.receiveNoWait() : mc.receive(getTimeout());
 				return new RawMessageWrapper<>(result, result.getJMSMessageID(), messageSelector);
 			} finally {
 				if (mc != null) {

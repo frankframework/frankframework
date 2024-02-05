@@ -28,17 +28,9 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.jdbc.MessageStoreSender;
-import org.frankframework.receivers.MessageWrapper;
-import org.frankframework.senders.IbisLocalSender;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
@@ -67,11 +59,13 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jdbc.DirectQuerySender;
+import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.processors.ListenerProcessor;
 import org.frankframework.processors.PipeProcessor;
-
+import org.frankframework.receivers.MessageWrapper;
+import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.statistics.StatisticsKeeperIterationHandler;
@@ -85,6 +79,11 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
@@ -148,7 +147,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private @Getter int presumedTimeOutInterval=0;
 
 	private @Getter String stubFilename;
-	private @Getter String timeOutOnResult;
+	private @Getter String timeoutOnResult;
 	private @Getter String exceptionOnResult;
 
 	private @Getter ISender sender = null;
@@ -255,8 +254,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					throw new ConfigurationException("has no forward with name [illegalResult]");
 			}
 			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
-				if (StringUtils.isNotEmpty(getTimeOutOnResult())) {
-					throw new ConfigurationException("timeOutOnResult only allowed in stub mode");
+				if (StringUtils.isNotEmpty(getTimeoutOnResult())) {
+					throw new ConfigurationException("timeoutOnResult only allowed in stub mode");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult())) {
 					throw new ConfigurationException("exceptionOnResult only allowed in stub mode");
@@ -754,9 +753,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			Message sendResultMessage = sendResult.getResult();
 			if (sendResultMessage.asObject() instanceof String) {
 				String result = (String)sendResultMessage.asObject();
-				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(result)) {
+				if (StringUtils.isNotEmpty(getTimeoutOnResult()) && getTimeoutOnResult().equals(result)) {
 					exitState = TIMEOUT_FORWARD;
-					throw new TimeoutException("timeOutOnResult ["+getTimeOutOnResult()+"]");
+					throw new TimeoutException("timeoutOnResult ["+ getTimeoutOnResult()+"]");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(result)) {
 					exitState = PipeForward.EXCEPTION_FORWARD_NAME;
@@ -1125,8 +1124,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 
 
-
-
 	/**
 	 * The message (e.g. 'receiver timed out') that is returned when the time listening for a reply message
 	 * exceeds the timeout, or in other situations no reply message is received.
@@ -1183,8 +1180,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	/** If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only) */
+	public void setTimeoutOnResult(String string) {
+		timeoutOnResult = string;
+	}
+
+	/** If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only)
+	 * @deprecated use {@link #setTimeoutOnResult(String)} instead
+	 */
+	@Deprecated(since = "8.1")
+	@ConfigurationWarning("Use attribute timeoutOnResult instead")
 	public void setTimeOutOnResult(String string) {
-		timeOutOnResult = string;
+		timeoutOnResult = string;
 	}
 
 	/** If not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only) */

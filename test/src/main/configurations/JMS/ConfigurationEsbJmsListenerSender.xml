@@ -13,7 +13,7 @@
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.extensions.esb.EsbJmsSender"
 					destinationName="${tibco.rr_queue}" jmsRealm="qcf_tibco_esb_rr"
-					messageProtocol="RR" timeOut="5000">
+					messageProtocol="RR" timeout="5000">
 					<param name="SOURCE" value="${hostname}_esbJmsRR" />
 				</sender>
 				<inputWrapper
@@ -36,7 +36,7 @@
 		<receiver>
 			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
 				destinationName="${tibco.rr_queue}" jmsRealm="qcf_tibco_esb_rr"
-				messageProtocol="RR" timeOut="5000"
+				messageProtocol="RR" timeout="5000"
 				messageSelector="SOURCE='${hostname}_esbJmsRR'"/>
 		</receiver>
 		<pipeline firstPipe="makeReply">
@@ -270,7 +270,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
 					destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
-					messageProtocol="RR" messageClass="BYTES" timeOut="5000">
+					messageProtocol="RR" messageClass="BYTES" timeout="5000">
 					<param name="SOURCE" value="FFTest_esbJmsRR_2" />
 				</sender>
 				<inputWrapper
@@ -288,7 +288,7 @@
 				  className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
 						destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
-						messageProtocol="RR" messageClass="TEXT" timeOut="5000">
+						messageProtocol="RR" messageClass="TEXT" timeout="5000">
 					<param name="SOURCE" value="FFTest_esbJmsRR_2" />
 				</sender>
 				<inputWrapper
