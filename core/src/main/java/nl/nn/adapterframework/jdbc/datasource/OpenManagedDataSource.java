@@ -36,9 +36,4 @@ public class OpenManagedDataSource<C extends Connection> extends ManagedDataSour
 	protected GenericObjectPool<C> getPool() {
 		return (GenericObjectPool<C>) super.getPool();
 	}
-
-	@Override
-	public String toString() {
-		return "ManagedDataSource, DBCP2 Pool Info: " + super.getPool();
-	}
 }
