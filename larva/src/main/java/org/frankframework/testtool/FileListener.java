@@ -52,7 +52,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	 * -- GETTER --
 	 *  Get the timeout in milliseconds waiting for creation of the file.
 	 */
-	@Getter private long timeOut = 3000;
+	@Getter private long timeout = 3000;
 	private long interval = 100;
 
 	@Override
@@ -72,9 +72,9 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			return;
 		}
 
-		long oldTimeOut = getTimeOut();
+		long oldTimeOut = getTimeout();
 		try {
-			setTimeOut(0);
+			setTimeout(0);
 			try {
 				String message = getMessage();
 				if (message != null) {
@@ -86,7 +86,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 				//Simply means no message was found
 			}
 		} finally {
-			setTimeOut(oldTimeOut);
+			setTimeout(oldTimeOut);
 		}
 	}
 
@@ -126,7 +126,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			}
 		} else {
 			long startTime = System.currentTimeMillis();
-			while ((file == null || !file.exists()) && System.currentTimeMillis() < startTime + timeOut) {
+			while ((file == null || !file.exists()) && System.currentTimeMillis() < startTime + timeout) {
 				try {
 					Thread.sleep(interval);
 				} catch(InterruptedException e) {
@@ -206,8 +206,8 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	/**
 	 * Set the timeout in milliseconds waiting for creation of the file.
 	 */
-	public void setTimeOut(long timeOut) {
-		this.timeOut = timeOut;
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
 	}
 
 	/**

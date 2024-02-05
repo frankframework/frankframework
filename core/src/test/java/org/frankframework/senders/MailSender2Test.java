@@ -30,7 +30,8 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 
 	static {
 		// Increase the timeout for the GreenMail server to start; default of 2000L fails on GitHub Actions
-		serverSetup.setServerStartupTimeout(4_000L);
+		serverSetup.setServerStartupTimeout(5_000L);
+		serverSetup.dynamicPort();
 	}
 
 	@BeforeEach
