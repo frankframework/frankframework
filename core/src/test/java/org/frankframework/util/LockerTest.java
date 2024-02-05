@@ -14,16 +14,14 @@ import java.sql.SQLException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.sql.DataSource;
-
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.TransactionAttribute;
-import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.dbms.ConcurrentManagedTransactionTester;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.task.TimeoutGuard;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
@@ -61,7 +59,7 @@ public class LockerTest {
 		objectId = locker.acquire();
 
 		assertNotNull(objectId);
-		assertEquals(1, getRowCount(env.getDataSource()));
+		assertEquals(1, getRowCount(env));
 	}
 
 	@TxManagerTest
@@ -71,7 +69,7 @@ public class LockerTest {
 		String objectId = locker.acquire();
 
 		assertNotNull(objectId);
-		assertEquals(1, getRowCount(env.getDataSource()));
+		assertEquals(1, getRowCount(env));
 
 		MessageKeeper messageKeeper = new MessageKeeper();
 
@@ -90,7 +88,7 @@ public class LockerTest {
 		locker.configure();
 
 		assertNotNull(locker.acquire());
-		assertEquals(1, getRowCount(env.getDataSource()));
+		assertEquals(1, getRowCount(env));
 	}
 
 	@TxManagerTest
@@ -100,7 +98,7 @@ public class LockerTest {
 		String objectId = locker.acquire();
 
 		assertNotNull(objectId);
-		assertEquals(1, getRowCount(env.getDataSource()));
+		assertEquals(1, getRowCount(env));
 
 		objectId = locker.acquire();
 		assertNull(objectId, "Should not be possible to obtain the lock a second time");
@@ -326,20 +324,20 @@ public class LockerTest {
 		lockObjectId = locker.acquire();
 
 		assertNotNull(lockObjectId);
-		assertEquals(1, getRowCount(env.getDataSource()));
+		assertEquals(1, getRowCount(env));
 
 		locker.release(lockObjectId);
-		assertEquals(0, getRowCount(env.getDataSource()));
+		assertEquals(0, getRowCount(env));
 
 		lockObjectId = locker.acquire();
 
 		assertNotNull(lockObjectId);
-		assertEquals(1, getRowCount(env.getDataSource()));
+		assertEquals(1, getRowCount(env));
 
 	}
 
-	public int getRowCount(DataSource ds) throws Exception {
-		try(Connection connection = ds.getConnection()) {
+	public int getRowCount(DatabaseTestEnvironment env) throws Exception {
+		try(Connection connection = env.getConnection()) {
 			return DbmsUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
 		}
 	}

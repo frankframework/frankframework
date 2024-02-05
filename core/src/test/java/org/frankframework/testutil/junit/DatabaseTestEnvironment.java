@@ -44,9 +44,9 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class DatabaseTestEnvironment implements Store.CloseableResource {
 
-	private @Getter String name;
+	private String name;
 	private final @Getter String dataSourceName;
-	private final @Getter DataSource dataSource;
+	private final DataSource dataSource;
 	private @Getter IDbmsSupport dbmsSupport;
 	private final TransactionManagerType type;
 	private final @Getter TestConfiguration configuration;
@@ -82,6 +82,10 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 				return method.invoke(connection, args);
 			}
 		});
+	}
+
+	public String getName() {
+		return type.name();
 	}
 
 	public DatabaseTestEnvironment(TransactionManagerType type, String productKey) {
