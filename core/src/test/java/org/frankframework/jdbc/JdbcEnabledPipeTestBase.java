@@ -12,12 +12,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
-import org.junit.After;
-import org.junit.Before;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
-public abstract class JdbcEnabledPipeTestBase<P extends IPipe> extends JdbcTestBase {
+public abstract class JdbcEnabledPipeTestBase<P extends IPipe> {
 
 	protected PipeLineSession session = new PipeLineSession();
+	protected DatabaseTestEnvironment env;
 
 	protected P pipe;
 	protected PipeLine pipeline;
@@ -25,26 +27,29 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> extends JdbcTestB
 
 	public abstract P createPipe();
 
-	@Override
-	@Before
-	public void setup() throws Exception {
-		super.setup();
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) throws Exception {
+		this.env = env;
 		pipe = createPipe();
-		autowireByType(pipe);
+		env.autowire(pipe);
 		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipeline = getConfiguration().createBean(PipeLine.class);
+		pipeline = env.createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
+		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
-		adapter = getConfiguration().createBean(Adapter.class);
+		adapter = env.createBean(Adapter.class);
 		adapter.setName("TestAdapter-for-".concat(pipe.getClass().getSimpleName()));
 		adapter.setPipeLine(pipeline);
 	}
 
-	@After
+	protected final String getDataSourceName() {
+		return env.getDataSourceName();
+	}
+
+	@AfterEach
 	public void tearDown() throws Exception {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
@@ -53,16 +58,8 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> extends JdbcTestB
 		adapter = null;
 	}
 
-	protected void autowireByType(Object bean) {
-		getConfiguration().autowireByType(bean);
-	}
-
-	protected void autowireByName(Object bean) {
-		getConfiguration().autowireByName(bean);
-	}
-
 	protected ConfigurationWarnings getConfigurationWarnings() {
-		return getConfiguration().getConfigurationWarnings();
+		return env.getConfiguration().getConfigurationWarnings();
 	}
 
 	/**

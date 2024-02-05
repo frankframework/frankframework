@@ -1,15 +1,17 @@
 package org.frankframework.jdbc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,18 +27,19 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DbmsUtil;
-import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
-import org.junit.Before;
-import org.junit.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
+@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = ResultSetIteratingPipeTest.TEST_TABLE)
 public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSetIteratingPipe> {
-
+	static final String TEST_TABLE = "TEMP";
 	private static final int PARALLEL_DELAY = 200;
 
 	@Override
@@ -44,8 +47,10 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		return new ResultSetIteratingPipe();
 	}
 
-	//Read a file, each row will be added to the database as (TKEY, TVARCHAR) with a new unique key.
-	private void readSqlInsertFile(URL url) throws Exception {
+	private void preFillDatabaseTable() throws Exception {
+		URL url = TestFileUtils.getTestFileURL("/Pipes/ResultSetIteratingPipe/sqlInserts.txt");
+		assertNotNull(url);
+
 		Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
 		BufferedReader buf = new BufferedReader(reader);
 		String line = buf.readLine();
@@ -56,22 +61,16 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		}
 	}
 
-	private void insert(int key, String value) throws JdbcException {
-		JdbcUtil.executeStatement(connection, String.format("INSERT INTO "+TEST_TABLE+" (TKEY, TVARCHAR, TINT) VALUES ('%d', '%s', '0')", key, value));
+	private void insert(int key, String value) throws JdbcException, SQLException {
+		try(Connection connection = env.getConnection()) {
+			JdbcTestUtil.executeStatement(connection, String.format("INSERT INTO "+TEST_TABLE+" (TKEY, TVARCHAR, TINT) VALUES ('%d', '%s', '0')", key, value));
+		}
 	}
 
-	@Override
-	@Before
-	public void setup() throws Exception {
-		super.setup();
-
-		URL url = TestFileUtils.getTestFileURL("/Pipes/ResultSetIteratingPipe/sqlInserts.txt");
-		assertNotNull(url);
-		readSqlInsertFile(url);
-	}
-
-	@Test
+	@DatabaseTest
 	public void testWithStylesheetNoCollectResultsAndIgnoreExceptions() throws Exception {
+		preFillDatabaseTable();
+
 		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
 		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
 		pipe.setCollectResults(false);
@@ -90,8 +89,10 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		MatchUtils.assertXmlEquals(xmlResult, sender.collectResults());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testWithStylesheetNoCollectResultsAndIgnoreExceptionsParallel() throws Exception {
+		preFillDatabaseTable();
+
 		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
 		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
 		pipe.setCollectResults(false);
@@ -109,29 +110,29 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		long startTime = System.currentTimeMillis();
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		long duration = System.currentTimeMillis() - startTime;
-		assertTrue("Test took "+(duration- (PARALLEL_DELAY + 100))+"ms too long.", duration < PARALLEL_DELAY + 100);
+		assertTrue(duration < PARALLEL_DELAY + 100, "Test took "+(duration- (PARALLEL_DELAY + 100))+"ms too long.");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		String expectedXml = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
 
 		MatchUtils.assertXmlEquals(expectedXml, sender.collectResults()); //to display clean diff
 	}
 
-	@Test
+	@DatabaseTest
 	public void testWithStylesheetNoCollectResultsAndIgnoreExceptionsWithUpdateInSameTable() throws Exception {
+		preFillDatabaseTable();
+
 		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
 		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
 		pipe.setCollectResults(false);
 		pipe.setIgnoreExceptions(true);
 		pipe.setDatasourceName(getDataSourceName());
 
-		FixedQuerySender sender = new FixedQuerySender();
+		FixedQuerySender sender = env.createBean(FixedQuerySender.class);
 		sender.setQuery("UPDATE "+TEST_TABLE+" SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
 		Parameter param = new Parameter();
 		param.setName("ID");
 		param.setXpathExpression("result/id");
 		sender.addParameter(param);
-		sender.setDatasourceName(getDataSourceName());
-		autowireByType(sender);
 		pipe.setSender(sender);
 
 		configurePipe();
@@ -139,12 +140,15 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
-		String jdbcResult = DbmsUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
-		assertEquals("10", jdbcResult);
+		try(Connection connection = env.getConnection()) {
+			String jdbcResult = DbmsUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
+			assertEquals("10", jdbcResult);
+		}
 	}
 
 	private void insertBlob(int key, InputStream blob, boolean compressBlob) throws Exception {
-		try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO "+TEST_TABLE+" (TKEY, TBLOB, TBOOLEAN, TVARCHAR) VALUES (?, ?, ?, ?)")) {
+		try(Connection connection = env.getConnection();
+				PreparedStatement stmt = connection.prepareStatement("INSERT INTO "+TEST_TABLE+" (TKEY, TBLOB, TBOOLEAN, TVARCHAR) VALUES (?, ?, ?, ?)")) {
 			stmt.setInt(1, key);
 			stmt.setBinaryStream(2, (compressBlob ? new DeflaterInputStream(blob) : blob));
 			stmt.setBoolean(3, compressBlob);
@@ -153,8 +157,10 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		}
 	}
 
-	@Test
+	@DatabaseTest
 	public void testWithCompressedAndDecompressedBlob() throws Exception {
+		preFillDatabaseTable();
+
 		// Arrange
 		Message xmlMessage = MessageTestUtils.getMessage("/file.xml");
 		insertBlob(1, xmlMessage.asInputStream(), false);
