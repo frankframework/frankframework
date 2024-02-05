@@ -1339,9 +1339,9 @@ public class TestTool {
 					if (senderException != null) {
 						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
 					}
-					TimeoutException timeOutException = senderThread.getTimeOutException();
-					if (timeOutException != null) {
-						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
+					TimeoutException timeoutexception = senderThread.getTimeoutException();
+					if (timeoutexception != null) {
+						errorMessage("Found remaining TimeOutException: " + timeoutexception.getMessage(), timeoutexception, writers);
 					}
 					String message = senderThread.getResponse();
 					if (message != null) {
@@ -1381,8 +1381,8 @@ public class TestTool {
 	public static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener, Map<String, Object> writers) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
-		long oldTimeOut = pullingJmsListener.getTimeOut();
-		pullingJmsListener.setTimeOut(10);
+		long oldTimeout = pullingJmsListener.getTimeout();
+		pullingJmsListener.setTimeout(10);
 		boolean empty = false;
 		while (!empty) {
 			RawMessageWrapper<javax.jms.Message> rawMessage = null;
@@ -1415,7 +1415,12 @@ public class TestTool {
 				empty = true;
 			}
 		}
-		pullingJmsListener.setTimeOut((int) oldTimeOut);
+
+		try {
+			pullingJmsListener.setTimeout(Math.toIntExact(oldTimeout));
+		} catch (ArithmeticException e) {
+			errorMessage("Could not set timeout on pullingJmsListener '" + queueName + "': " + e.getMessage(), e, writers);
+		}
 		return remainingMessagesFound;
 	}
 

@@ -109,10 +109,10 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
 		if (getPollGuardInterval() == Long.MIN_VALUE) {
-			setPollGuardInterval(getTimeOut() * 10);
+			setPollGuardInterval(getTimeout() * 10);
 		}
-		if (getPollGuardInterval() <= getTimeOut()) {
-			ConfigurationWarnings.add(this, log, "The pollGuardInterval ["+getPollGuardInterval()+"] should be larger than the receive timeout ["+getTimeOut()+"]");
+		if (getPollGuardInterval() <= getTimeout()) {
+			ConfigurationWarnings.add(this, log, "The pollGuardInterval ["+getPollGuardInterval()+"] should be larger than the receive timeout ["+ getTimeout()+"]");
 		}
 		CredentialFactory credentialFactory=null;
 		if (StringUtils.isNotEmpty(getAuthAlias())) {
@@ -121,7 +121,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		try {
 			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,
 					destination, getExceptionListener(), getCacheMode(), getAcknowledgeModeEnum().getAcknowledgeMode(),
-					isJmsTransacted(), getMessageSelector(), getTimeOut(), getPollGuardInterval());
+					isJmsTransacted(), getMessageSelector(), getTimeout(), getPollGuardInterval());
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);
 		}

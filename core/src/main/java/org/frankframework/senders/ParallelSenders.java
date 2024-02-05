@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,16 +18,9 @@ package org.frankframework.senders;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.Guard;
-import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlUtils;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.util.ConcurrencyThrottleSupport;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ISender;
@@ -36,15 +29,24 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.Guard;
 import org.frankframework.util.SpringUtils;
+import org.frankframework.util.XmlBuilder;
+import org.frankframework.util.XmlUtils;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.util.ConcurrencyThrottleSupport;
+
+import lombok.Getter;
 
 /**
  * Collection of Senders, that are executed all at the same time.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 @Category("Advanced")
 public class ParallelSenders extends SenderSeries {
@@ -55,12 +57,12 @@ public class ParallelSenders extends SenderSeries {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getParameterList()!=null && getParameterList().size()>0) {
-			String paramList=getParameterList().get(0).getName();
-			for (int i=1;i<getParameterList().size();i++) {
-				paramList+=", "+getParameterList().get(i).getName();
-			}
-			ConfigurationWarnings.add(this, log, "parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders");
+		if (getParameterList() != null && !getParameterList().isEmpty()) {
+			String paramList = getParameterList().stream()
+					.map(Parameter::getName)
+					.collect(Collectors.joining(", "));
+
+			ConfigurationWarnings.add(this, log, "parameters [" + paramList + "] of ParallelSenders [" + getName() + "] are not available for use by nested Senders");
 		}
 		executor = createTaskExecutor();
 	}
@@ -69,10 +71,17 @@ public class ParallelSenders extends SenderSeries {
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
-		boolean success=true;
-		String errorMessage=null;
+		boolean success = true;
+		String errorMessage = null;
 
-		for (ISender sender: getSenders()) {
+		try {
+			if (!message.isRepeatable()) {
+				message.preserve();
+			}
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + " could not preserve input message", e);
+		}
+		for (ISender sender : getSenders()) {
 			guard.addResource();
 			// Create a new ParameterResolutionContext to be thread safe, see
 			// documentation on constructor of ParameterResolutionContext
@@ -94,42 +103,42 @@ public class ParallelSenders extends SenderSeries {
 		try {
 			guard.waitForAllResources();
 		} catch (InterruptedException e) {
-			throw new SenderException(getLogPrefix()+"was interupted",e);
+			throw new SenderException(getLogPrefix() + "was interrupted", e);
 		}
 
 		XmlBuilder resultsXml = new XmlBuilder("results");
-		for (ISender sender: getSenders()) {
+		for (ISender sender : getSenders()) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
 			resultXml.addAttribute("senderClass", org.springframework.util.ClassUtils.getUserClass(sender).getSimpleName());
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
-			if (throwable==null) {
+			if (throwable == null) {
 				SenderResult senderResult = pse.getReply();
 				success &= senderResult.isSuccess();
 				resultXml.addAttribute("success", senderResult.isSuccess());
-				if (senderResult.getForwardName()!=null) {
+				if (senderResult.getForwardName() != null) {
 					resultXml.addAttribute("forwardName", senderResult.getForwardName());
 				}
 				if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
 					resultXml.addAttribute("errorMessage", senderResult.getErrorMessage());
-					if (errorMessage==null) {
-						errorMessage=senderResult.getErrorMessage();
+					if (errorMessage == null) {
+						errorMessage = senderResult.getErrorMessage();
 					}
 				}
 				Message result = senderResult.getResult();
-				if (result==null) {
+				if (result == null) {
 					resultXml.addAttribute("type", "null");
 				} else {
 					try {
 						resultXml.addAttribute("type", result.getRequestClass());
-						resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()),false);
+						resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()), false);
 					} catch (IOException e) {
-						throw new SenderException(getLogPrefix(),e);
+						throw new SenderException(getLogPrefix(), e);
 					}
 				}
 			} else {
-				success=false;
+				success = false;
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
 				resultXml.addAttribute("success", false);
 				resultXml.setValue(throwable.getMessage());
@@ -149,7 +158,7 @@ public class ParallelSenders extends SenderSeries {
 	protected TaskExecutor createTaskExecutor() {
 		SimpleAsyncTaskExecutor executor = SpringUtils.createBean(getApplicationContext(), SimpleAsyncTaskExecutor.class);
 
-		if(getMaxConcurrentThreads() > 0) { //ConcurrencyLimit defaults to NONE so only this technically limits it!
+		if (getMaxConcurrentThreads() > 0) { //ConcurrencyLimit defaults to NONE so only this technically limits it!
 			executor.setConcurrencyLimit(getMaxConcurrentThreads());
 		} else {
 			executor.setConcurrencyLimit(ConcurrencyThrottleSupport.UNBOUNDED_CONCURRENCY);
@@ -166,10 +175,11 @@ public class ParallelSenders extends SenderSeries {
 
 	/**
 	 * Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.
+	 *
 	 * @ff.default 0
 	 */
 	public void setMaxConcurrentThreads(int maxThreads) {
-		if(maxThreads < 1)
+		if (maxThreads < 1)
 			maxThreads = 0;
 
 		this.maxConcurrentThreads = maxThreads;
