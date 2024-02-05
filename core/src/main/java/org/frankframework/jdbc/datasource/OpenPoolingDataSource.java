@@ -34,9 +34,4 @@ public class OpenPoolingDataSource<C extends Connection> extends PoolingDataSour
 	protected GenericObjectPool<C> getPool() {
 		return (GenericObjectPool<C>) super.getPool();
 	}
-
-	@Override
-	public String toString() {
-		return "PoolingDataSource, DBCP2 Pool Info: " + super.getPool();
-	}
 }
