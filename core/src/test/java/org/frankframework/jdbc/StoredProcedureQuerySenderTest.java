@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 import java.util.zip.DeflaterInputStream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -41,23 +40,22 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-import liquibase.Liquibase;
+import lombok.extern.log4j.Log4j2;
 
 @WithLiquibase(tableName = StoredProcedureQuerySenderTest.TABLE_NAME, file = "Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml")
+@Log4j2
 public class StoredProcedureQuerySenderTest {
 
-	protected static final String TABLE_NAME = "SP_TESTDATA";
+	public static final String TABLE_NAME = "SP_TESTDATA";
 	public static final String TEST_DATA_STRING = "tést-data";
-	StoredProcedureQuerySender sender;
-	protected static Logger log = LogUtil.getLogger(StoredProcedureQuerySenderTest.class);
-	protected Liquibase liquibase;
 
-	PipeLineSession session;
+	private StoredProcedureQuerySender sender;
+
+	private PipeLineSession session;
 
 	private String dataSourceName;
 
