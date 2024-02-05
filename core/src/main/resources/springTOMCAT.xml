@@ -30,6 +30,7 @@
 		</property>
 	</bean>
 
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jndi.PoolingJndiDataSourceFactory" />
 	<bean
 		id="defaultDataSource"
 		factory-bean="dataSourceFactory"
