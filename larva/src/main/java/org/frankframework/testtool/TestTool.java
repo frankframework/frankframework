@@ -1177,9 +1177,9 @@ public class TestTool {
 					if (senderException != null) {
 						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException);
 					}
-					TimeoutException timeOutException = senderThread.getTimeOutException();
-					if (timeOutException != null) {
-						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException);
+					TimeoutException timeoutException = senderThread.getTimeoutException();
+					if (timeoutException != null) {
+						errorMessage("Found remaining TimeOutException: " + timeoutException.getMessage(), timeoutException);
 					}
 					String message = senderThread.getResponse();
 					if (message != null) {
@@ -1219,7 +1219,7 @@ public class TestTool {
 	public boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener) {
 		boolean remainingMessagesFound = false;
 		debugMessage("Check for remaining messages on '" + queueName + "'");
-		long oldTimeOut = pullingJmsListener.getTimeOut();
+		long oldTimeout = pullingJmsListener.getTimeout();
 		pullingJmsListener.setTimeout(10);
 		boolean empty = false;
 		while (!empty) {
@@ -1253,7 +1253,12 @@ public class TestTool {
 				empty = true;
 			}
 		}
-		pullingJmsListener.setTimeout((int) oldTimeOut);
+
+		try {
+			pullingJmsListener.setTimeout(Math.toIntExact(oldTimeout));
+		} catch (ArithmeticException e) {
+			errorMessage("Could not set timeout on pullingJmsListener '" + queueName + "': " + e.getMessage(), e);
+		}
 		return remainingMessagesFound;
 	}
 
