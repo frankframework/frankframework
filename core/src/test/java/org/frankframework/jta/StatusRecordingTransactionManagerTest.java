@@ -1,15 +1,13 @@
 package org.frankframework.jta;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.transaction.TransactionManager;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.TxManagerTest;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.transaction.TransactionSystemException;
 
 import lombok.Setter;
@@ -49,25 +47,15 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 
 	}
 
-	@Override
-	@Before
-	public void setup() throws IOException {
-		TemporaryFolder tmpFolder = new TemporaryFolder();
-		tmpFolder.create();
-		folder = tmpFolder.getRoot().toString();
-		super.setup();
-		delete(tmUidFile);
-	}
-
-	@Override
+	@AfterEach
 	public void tearDown() {
 		if (tm != null) {
 			tm.destroy();
 		}
-		super.tearDown();
 	}
 
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testCleanSetup() {
 		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
@@ -75,7 +63,8 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		assertEquals("ACTIVE", status);
 	}
 
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testPresetTmUid() {
 		write(tmUidFile,"fakeTmUid");
 		tm = setupTransactionManager();
@@ -86,7 +75,8 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		assertStatus("ACTIVE", tmUid);
 	}
 
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testCleanShutdown() {
 		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
@@ -101,7 +91,8 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		assertStatus("COMPLETED", tmUid);
 	}
 
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testNoStatusFiles() {
 		tm = new TestableStatusRecordingTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
@@ -110,7 +101,8 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		tm = null;
 	}
 
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testShutdownWithPendingTransactions() {
 		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
@@ -126,7 +118,8 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		assertStatus("PENDING", tmUid);
 	}
 
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testCreateFolders() {
 		tm = setupTransactionManager();
 		tm.setUidFile(folder+"/a/b/c/"+TMUID_FILE);
@@ -137,7 +130,8 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		assertEquals(tmUid, recordedTmUid);
 	}
 
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testTestReadWithWhitespace() {
 		tm = setupTransactionManager();
 		String value = "fake tm uid";
