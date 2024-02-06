@@ -82,6 +82,9 @@ public class JwtPipe extends FixedForwardPipe {
 		if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(sharedSecret)) {
 			sharedSecret = StringUtils.rightPad(sharedSecret, 32, "\0");
 		}
+		if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(authAlias)) {
+			authAlias = StringUtils.rightPad(authAlias, 32, "\0");
+		}
 
 		if(StringUtils.isNotEmpty(sharedSecret) || StringUtils.isNotEmpty(authAlias)) {
 			try {
