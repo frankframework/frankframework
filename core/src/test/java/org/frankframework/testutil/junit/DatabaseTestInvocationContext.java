@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.frankframework.testutil.TransactionManagerType;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
@@ -45,18 +46,24 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		return Arrays.stream(arguments).map(Objects::toString).collect(Collectors.joining(" - "));
 	}
 
-	private static class DatabaseTestParameterResolver implements ParameterResolver, BeforeEachCallback {
+	private static class DatabaseTestParameterResolver implements ParameterResolver, BeforeEachCallback, AfterEachCallback {
 		private final Object[] arguments;
-		private final boolean cleanupBeforeUse;
+		private final boolean cleanupAfterUse;
 		private final DatabaseTestEnvironment dte;
 
 		public DatabaseTestParameterResolver(Method testMethod, Object[] arguments) {
 			this.arguments = arguments;
-			this.dte = new DatabaseTestEnvironment((TransactionManagerType) arguments[0], (String)arguments[1]);
 
 			DatabaseTest annotation = AnnotationUtils.findAnnotation(testMethod, DatabaseTest.class)
 					.orElseThrow(()->new JUnitException("unable to find DatabaseTest annotation"));
-			cleanupBeforeUse = annotation.cleanupBeforeUse();
+			boolean cleanupBeforeUse = annotation.cleanupBeforeUse();
+			cleanupAfterUse = annotation.cleanupAfterUse();
+
+			if(cleanupBeforeUse) {
+				TransactionManagerType.closeAllConfigurationContexts();
+			}
+
+			this.dte = new DatabaseTestEnvironment((TransactionManagerType) arguments[0], (String)arguments[1]);
 		}
 
 		@Override
@@ -64,12 +71,15 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 			Object testInstance = context.getRequiredTestInstances().getInnermostInstance();
 			setAnnotatedFields(testInstance, testInstance.getClass());
 
-			if(cleanupBeforeUse) {
-				TransactionManagerType.closeAllConfigurationContexts();
-			}
-
 			//Always store the database context, so it's closed after each test.
 			getStore(context).put(JUnitDatabaseExtension.DB_INSTANCE, dte);
+		}
+
+		@Override
+		public void afterEach(ExtensionContext context) throws Exception {
+			if(cleanupAfterUse) {
+				TransactionManagerType.closeAllConfigurationContexts();
+			}
 		}
 
 		private void setAnnotatedFields(Object instance, Class<?> testClass) {

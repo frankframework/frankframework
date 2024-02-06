@@ -48,4 +48,9 @@ public @interface DatabaseTest {
 	 * Ensure a clean database test environment is used
 	 */
 	boolean cleanupBeforeUse() default false;
+
+	/**
+	 * Ensure the database test environment is cleaned up after use
+	 */
+	boolean cleanupAfterUse() default false;
 }
