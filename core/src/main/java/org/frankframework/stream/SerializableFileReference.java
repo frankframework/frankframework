@@ -26,28 +26,29 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.lang.ref.Cleaner;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * A reference to a file {@link Path} that can be serialized. When serialized it will write all the file data to
  * the serialization stream.
  * When deserialized, it will copy all file-data to a new temporary file.
  */
+@Log4j2
 public class SerializableFileReference implements Serializable, AutoCloseable {
+	private static final Cleaner cleaner = Cleaner.create(); // Start Cleaner thread, to clean file when resource becomes phantom reachable
 
-	private static final Logger LOG = LogManager.getLogger(SerializableFileReference.class);
 	private static final long serialVersionUID = 1L;
 	private static final long customSerializationVersion = 1L;
 
@@ -55,7 +56,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	@Getter private boolean binary;
 	private String charset;
 	@Getter private transient Path path;
-	private transient boolean isFileOwner;
+	private transient Cleaner.Cleanable cleanable;
+	private transient CleanupFileAction cleanupFileAction;
 
 
 	/**
@@ -126,18 +128,6 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	/**
 	 * Create a binary {@code SerializableFileReference} for the file at given path.
-	 * <p>
-	 * The file will be not deleted on calling {@link SerializableFileReference#close()}.
-	 * </p>
-	 *
-	 * @param path {@link Path} to the file being referenced.
-	 */
-	public SerializableFileReference(Path path) {
-		this(true, null, false, path);
-	}
-
-	/**
-	 * Create a binary {@code SerializableFileReference} for the file at given path.
 	 *
 	 * @param path {@link Path} to the file being referenced.
 	 * @param deleteOnClose if the temporary file will be deleted on calling {@link SerializableFileReference#close()}.
@@ -163,7 +153,31 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		this.binary = binary;
 		this.charset = charset;
 		this.path = path;
-		this.isFileOwner = isFileOwner;
+		cleanupFileAction = new CleanupFileAction(path, isFileOwner);
+		cleanable = cleaner.register(this, cleanupFileAction);
+	}
+
+	private static class CleanupFileAction implements Runnable {
+		private final Path fileToClean;
+		private boolean isFileOwner;
+
+		private CleanupFileAction(Path fileToClean, boolean isFileOwner) {
+			this.fileToClean = fileToClean;
+			this.isFileOwner = isFileOwner;
+		}
+
+		@Override
+		public void run() {
+			if (!isFileOwner) {
+				return;
+			}
+			try {
+				Files.deleteIfExists(fileToClean);
+			} catch (Exception e) {
+				log.warn("failed to remove file reference {}", fileToClean);
+			}
+		}
+
 	}
 
 	public long getSize() {
@@ -189,30 +203,14 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		try {
 			return Files.size(path);
 		} catch (IOException e) {
-			LOG.warn("unable to determine size of stream [{}], error: {}", ClassUtils.nameOf(path), e.getMessage(), e);
+			log.warn("unable to determine size of stream [{}], error: {}", ClassUtils.nameOf(path), e.getMessage(), e);
 			return -1;
-		}
-	}
-
-	public void delete() {
-		try {
-			Files.deleteIfExists(path);
-		} catch (IOException e) {
-			LOG.warn("Error deleting the file [{}]: {}", path, e.getMessage(), e);
 		}
 	}
 
 	@Override
 	public void close() throws Exception {
-		if (isFileOwner) {
-			delete();
-		}
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		close();
+		cleanable.clean();
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
@@ -229,13 +227,20 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		}
 	}
 
+	/**
+	 * Method is called by the serialization framework (from java.io.ObjectStreamClass) when deserializing an object.
+	 * @param in ObjectInputStream to create object from
+	 * @throws IOException if there is a problem reading from the stream
+	 */
+	@SuppressWarnings("unused")
 	private void readObject(ObjectInputStream in) throws IOException {
 		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
 		this.size = in.readLong();
 		this.binary = in.readBoolean();
 		this.charset = in.readUTF();
 		this.path = copyToTempFile(in, this.size);
-		this.isFileOwner = true;
+		cleanupFileAction = new CleanupFileAction(path, true);
+		cleanable = cleaner.register(this, cleanupFileAction);
 	}
 
 	/**
