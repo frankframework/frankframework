@@ -225,6 +225,18 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		}
 	}
 
+	public void changeDirectory(final String folder) throws FileSystemException {
+		if (StringUtils.isBlank(folder)) {
+			return;
+		}
+		try {
+			reconnectWhenNotConnected();
+			ftpClient.cd(folder);
+		} catch (SftpException e) {
+			throw new FileSystemException("unable to change remote directory to [" + folder + "]", e);
+		}
+	}
+
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		if(folderExists(folder)) {
@@ -419,18 +431,11 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	/**
-	 * pathname of the file or directory to list.
+	 * Path of the file or directory to start working.
 	 * @ff.default Home folder of the sftp user
 	 */
 	public void setRemoteDirectory(String remoteDirectory) {
 		this.remoteDirectory = remoteDirectory;
-		if (ftpClient != null && ftpClient.isConnected()) {
-			try {
-				ftpClient.cd(remoteDirectory);
-			} catch (SftpException e) {
-				log.warn("unable to change remote directory to [{}]", remoteDirectory, e);
-			}
-		}
 	}
 
 	private class SftpFilePathIterator implements Iterator<SftpFileRef> {

@@ -145,7 +145,7 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 		fileSystem.configure();
 		fileSystem.open();
 		fileSystem.createFolder("piet");
-		fileSystem.setRemoteDirectory("piet");
+		fileSystem.changeDirectory("piet");
 		fileSystem.createFolder("1/2/3/4/5");
 		assertTrue(fileSystem.folderExists("1/2/3/4"));
 		assertTrue(fileSystem.folderExists("/piet/1/2/3/4"));
@@ -208,38 +208,42 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 		// Manual action: run on your machine `docker run -p 22:22 emberstack/sftp --name sftp`
 		// Arrange: stop the SSH daemon directly, because we want to use the real local SFTP server.
 		sshd.stop(true);
-		testAppender = TestAppender.newBuilder()
-				.useIbisPatternLayout("%level %m")
-				.minLogLevel(Level.DEBUG)
-				.build();
-		TestAppender.addToRootLogger(testAppender);
+		fileSystem.close();
+		try {
+			testAppender = TestAppender.newBuilder()
+					.useIbisPatternLayout("%level %m")
+					.minLogLevel(Level.DEBUG)
+					.build();
+			TestAppender.addToRootLogger(testAppender);
 
-		// Arrange
-		port = 22; // Was changed by setup() to the dynamic port number of the SSH daemon.
-		remoteDirectory = "/sftp";
-		helper = new SftpFileSystemTestHelper("demo", "demo", "localhost", remoteDirectory, port);
-		fileSystem = createFileSystem();
-		fileSystem.configure();
-		fileSystem.open();
+			// Arrange
+			port = 22; // Was changed by setup() to the dynamic port number of the SSH daemon.
+			remoteDirectory = "/sftp";
+			helper = new SftpFileSystemTestHelper("demo", "demo", "localhost", remoteDirectory, port);
+			fileSystem = createFileSystem();
+			fileSystem.configure();
+			fileSystem.open();
 
-		fileSystem.createFolder("testFolder");
-		assertTrue(fileSystem.folderExists("testFolder"));
-		fileSystem.removeFolder("/sftp/testFolder", true);
-		assertFalse(fileSystem.folderExists("nonExistingFolder"));
+			fileSystem.createFolder("testFolder");
+			assertTrue(fileSystem.folderExists("testFolder"));
+			fileSystem.removeFolder("/sftp/testFolder", true);
+			assertFalse(fileSystem.folderExists("nonExistingFolder"));
 
-		fileSystem.setLastCheck(0); // Should trigger recheck connection
-		assertFalse(fileSystem.folderExists("nonExistingFolder"));
+			fileSystem.setLastCheck(0); // Should trigger recheck connection
+			assertFalse(fileSystem.folderExists("nonExistingFolder"));
 
-		// Act
-		log.info("Now restart your local SFTP server (within 7 seconds)");
-		Thread.sleep(7000L);
-		fileSystem.setLastCheck(0); // Should trigger recheck connection
+			// Act
+			log.info("Now restart your local SFTP server (within 7 seconds)");
+			Thread.sleep(7000L);
+			fileSystem.setLastCheck(0); // Should trigger recheck connection
 
-		// Assert
-		assertTrue(fileSystem.folderExists("/sftp"));
-		// Check that connection was reopened
-		long openSftpConnection = testAppender.getLogLines().stream().filter(line -> line.contains("open sftp client")).count();
-		assertEquals(2, openSftpConnection, "Expected 2 connection reopens in the log. Did you really restart the SFTP server?");
-		TestAppender.removeAppender(testAppender);
+			// Assert
+			assertTrue(fileSystem.folderExists("/sftp"));
+			// Check that connection was reopened
+			long openSftpConnection = testAppender.getLogLines().stream().filter(line -> line.contains("open sftp client")).count();
+			assertEquals(2, openSftpConnection, "Expected 2 connection reopens in the log. Did you really restart the SFTP server?");
+		} finally {
+			TestAppender.removeAppender(testAppender);
+		}
 	}
 }
