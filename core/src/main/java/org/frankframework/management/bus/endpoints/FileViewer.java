@@ -75,7 +75,7 @@ public class FileViewer extends BusEndpointBase {
 				response = new BinaryResponseMessage(inputStream, MediaType.APPLICATION_XML);
 				response.setFilename("inline", filename);
 				break;
-			case "text":
+			case "plain":
 				response = new BinaryResponseMessage(inputStream, MediaType.TEXT_PLAIN);
 				response.setFilename("inline", filename);
 				break;

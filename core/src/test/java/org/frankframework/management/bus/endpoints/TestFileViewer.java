@@ -1,37 +1,107 @@
 package org.frankframework.management.bus.endpoints;
 
 import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.ResponseMessageBase;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import java.io.InputStream;
 
 public class TestFileViewer extends BusTestBase {
 
+	private static final String TestFileName = "FileViewer.txt";
+	private static final String TestFilePath = "/Management/" + TestFileName;
+
 	@Test
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getFileContent() throws Exception {
-		String testFilePath = "/Management/FileViewer.txt";
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
-		request.setHeader("resultType", "text/plain");
-		request.setHeader("fileName", TestFileUtils.getTestFilePath(testFilePath));
+		request.setHeader("resultType", "plain");
+		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
 
 		Message<?> response = callSyncGateway(request);
-		String expectedTxt = TestFileUtils.getTestFile(testFilePath);
+		String expectedTxt = TestFileUtils.getTestFile(TestFilePath);
 		String result = new String(((InputStream) response.getPayload()).readAllBytes());
 		Assertions.assertEquals(expectedTxt, result);
 	}
 
 	@Test
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
-	public void getFileWithContentType(){
+	public void getFileWithHtmlContentType(){
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
+		request.setHeader("resultType", "html");
+		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
 
+		Message<?> response = callSyncGateway(request);
+		String contentType = BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
+		Assertions.assertEquals(MediaType.TEXT_HTML_VALUE, contentType);
+		Assertions.assertEquals("inline; filename=\""+TestFileName+"\"", contentDisposition);
+	}
+
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	public void getFileWithXmlContentType(){
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
+		request.setHeader("resultType", "xml");
+		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
+
+		Message<?> response = callSyncGateway(request);
+		String contentType = BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
+		Assertions.assertEquals(MediaType.APPLICATION_XML_VALUE, contentType);
+		Assertions.assertEquals("inline; filename=\""+TestFileName+"\"", contentDisposition);
+	}
+
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	public void getFileWithTextContentType(){
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
+		request.setHeader("resultType", "plain");
+		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
+
+		Message<?> response = callSyncGateway(request);
+		String contentType = BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
+		Assertions.assertEquals(MediaType.TEXT_PLAIN_VALUE, contentType);
+		Assertions.assertEquals("inline; filename=\""+TestFileName+"\"", contentDisposition);
+	}
+
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	public void getFileWithZipContentType(){
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
+		request.setHeader("resultType", "zip");
+		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
+
+		Message<?> response = callSyncGateway(request);
+		String contentType = BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
+		Assertions.assertEquals("application/zip", contentType);
+		Assertions.assertEquals("attachment; filename=\""+TestFileName+"\"", contentDisposition);
+	}
+
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	public void getFileWithAnyContentType(){
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
+		request.setHeader("resultType", "*");
+		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
+
+		Message<?> response = callSyncGateway(request);
+		String contentType = BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
+		Assertions.assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, contentType);
+		Assertions.assertEquals("attachment; filename=\""+TestFileName+"\"", contentDisposition);
 	}
 
 }
