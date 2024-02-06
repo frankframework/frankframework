@@ -23,8 +23,6 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
  * Extension of {@link ManagedDataSource} that exposes an extra method to fetch pool statistics.
- *
- * @param <C>
  */
 public class OpenManagedDataSource<C extends Connection> extends ManagedDataSource<C> {
 

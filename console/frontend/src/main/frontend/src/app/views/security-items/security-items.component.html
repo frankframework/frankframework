@@ -158,10 +158,15 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let datasource of datasources">
-                  <td>{{datasource.datasourceName}}</td>
-                  <td>{{datasource.info}}</td>
-                </tr>
+                <ng-container *ngFor="let datasource of datasources">
+                  <tr>
+                    <td rowspan="2">{{datasource.datasourceName}}</td>
+                    <td>{{datasource.info}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{datasource.connectionPoolProperties}}</td>
+                  </tr>
+                </ng-container>
               </tbody>
             </table>
           </div>
