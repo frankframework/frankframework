@@ -213,7 +213,7 @@ public class QueueCreator {
 				// - WebSphere Studio Application Developer (Windows) Version: 5.1.2
 				// - Ibis4Juice build 20051104-1351
 				// - y01\rr\getAgent1003\scenario01.properties
-				pullingJmsListener.setTimeOut(nTimeout);
+				pullingJmsListener.setTimeout(nTimeout);
 				String setForceMessageIdAsCorrelationId = (String)properties.get(queueName + ".setForceMessageIdAsCorrelationId");
 				if ("true".equals(setForceMessageIdAsCorrelationId)) {
 					pullingJmsListener.setForceMessageIdAsCorrelationId(true);

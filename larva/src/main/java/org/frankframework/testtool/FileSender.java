@@ -51,7 +51,7 @@ public class FileSender implements IConfigurable {
 	private File file;
 	private String encoding = "UTF-8";
 	private boolean checkDelete = true;
-	private long timeOut = 3000;
+	private long timeout = 3000;
 	private long interval = 100;
 	private boolean overwrite = false;
 	private boolean deletePath = false;
@@ -108,7 +108,7 @@ public class FileSender implements IConfigurable {
 						throw new SenderException("Exception writing file '" + filename + "': " + e.getMessage(), e);
 					}
 					long startTime = System.currentTimeMillis();
-					while (checkDelete && file.exists() && System.currentTimeMillis() < startTime + timeOut) {
+					while (checkDelete && file.exists() && System.currentTimeMillis() < startTime + timeout) {
 						try {
 							Thread.sleep(interval);
 						} catch(InterruptedException e) {
@@ -189,8 +189,8 @@ public class FileSender implements IConfigurable {
 	/**
 	 * Set the time out in milliseconds waiting for deletion of the file.
 	 */
-	public void setTimeOut(long timeOut) {
-		this.timeOut = timeOut;
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
 	}
 
 	/**

@@ -22,8 +22,9 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.URLDataSourceFactory;
@@ -224,7 +225,7 @@ public abstract class JdbcTestBase {
 
 	public static void dropTableIfPresent(IDbmsSupport dbmsSupport, Connection connection, String tableName) throws Exception {
 		if (dbmsSupport.isTablePresent(connection, tableName)) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
+			JdbcTestUtil.executeStatement(connection, "DROP TABLE "+tableName);
 			SQLWarning warnings = connection.getWarnings();
 			if(warnings != null) {
 				log.warn(JdbcUtil.warningsToString(warnings));
@@ -243,11 +244,11 @@ public abstract class JdbcTestBase {
 		if (productKey.equals("DB2")) {
 			query = query.replace(" PRIMARY KEY", "");
 		}
-		JdbcUtil.executeStatement(connection, query);
+		JdbcTestUtil.executeStatement(connection, query);
 		if (productKey.equals("DB2")) {
-			JdbcUtil.executeStatement(connection,"CREATE INDEX idx1 ON "+TEST_TABLE+"(tKEY)");
+			JdbcTestUtil.executeStatement(connection,"CREATE INDEX idx1 ON "+TEST_TABLE+"(tKEY)");
 		}
-		JdbcUtil.executeStatement(connection,"CREATE INDEX idx2 ON "+TEST_TABLE+"(tINT,tDATE)");
+		JdbcTestUtil.executeStatement(connection,"CREATE INDEX idx2 ON "+TEST_TABLE+"(tINT,tDATE)");
 		SQLWarning warnings = connection.getWarnings();
 		if(warnings != null) {
 			log.warn(JdbcUtil.warningsToString(warnings));
@@ -286,7 +287,7 @@ public abstract class JdbcTestBase {
 			}
 			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}
-		JdbcUtil.executeStatement(connection, translatedQuery);
+		JdbcTestUtil.executeStatement(connection, translatedQuery);
 		return null;
 	}
 
