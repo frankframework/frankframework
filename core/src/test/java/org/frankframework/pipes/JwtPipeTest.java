@@ -2,6 +2,7 @@ package org.frankframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -86,7 +87,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	void authAliasTooShortShouldBePadded() throws Exception {
+	void authAliasTooShortShouldPadPassword() throws Exception {
 		// Arrange
 		pipe.setJwtAllowWeakSecrets(true);
 		pipe.setSharedSecret(null);
@@ -95,7 +96,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		// Act && Assert: flow should work and message returns.
 		configureAndStartPipe();
 		String result = doPipe(DUMMY_INPUT).getResult().asString();
-		assertNull(result);
+		assertNotNull(result);
 	}
 
 	@Test
