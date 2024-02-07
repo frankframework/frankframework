@@ -26,6 +26,8 @@ import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
 
+import lombok.extern.log4j.Log4j2;
+
 class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 
 	private final Method testMethod;
@@ -46,6 +48,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		return Arrays.stream(arguments).map(Objects::toString).collect(Collectors.joining(" - "));
 	}
 
+	@Log4j2
 	private static class DatabaseTestParameterResolver implements ParameterResolver, BeforeEachCallback, AfterEachCallback {
 		private final Object[] arguments;
 		private final boolean cleanupAfterUse;
@@ -60,6 +63,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 			cleanupAfterUse = annotation.cleanupAfterUse();
 
 			if(cleanupBeforeUse) {
+				log.info("cleanup TransactionManager before executing test");
 				TransactionManagerType.closeAllConfigurationContexts();
 			}
 
@@ -78,6 +82,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		@Override
 		public void afterEach(ExtensionContext context) throws Exception {
 			if(cleanupAfterUse) {
+				log.info("cleanup TransactionManager after executing test");
 				TransactionManagerType.closeAllConfigurationContexts();
 			}
 		}

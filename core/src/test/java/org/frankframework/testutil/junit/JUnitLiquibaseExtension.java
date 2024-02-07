@@ -8,9 +8,11 @@ import java.net.URL;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
@@ -36,7 +38,7 @@ import lombok.extern.log4j.Log4j2;
  * @author Niels Meijer
  */
 @Log4j2
-public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCallback, BeforeTestExecutionCallback {
+public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCallback, BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
 	private static final String LIQUIBASE_CONFIGURATIONS = "LIQUIBASE_CONFIGURATIONS";
 	private static final Namespace LIQUIBASE_NAMESPACE = Namespace.create(JUnitLiquibaseExtension.class);
@@ -131,6 +133,24 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 		}
 	}
 
+	/** Runs directly after a test, before the test-teardown or any other afterEach annotations. */
+	@Override
+	public void afterTestExecution(ExtensionContext context) throws Exception {
+		List<WithLiquibase> annotations = getAnnotations(context);
+		if(annotations.isEmpty()) {
+			return;
+		}
+		log.info("cleaning up {} Liquibase instance(s)", annotations::size);
+
+		AtomicInteger argumentIndex = new AtomicInteger();
+		for(WithLiquibase annotation : annotations) {
+			CloseableArgument liquibase = getStore(context).get("liquibaseInstance#" + argumentIndex.incrementAndGet(), CloseableArgument.class);
+			if(liquibase != null) {
+				liquibase.close();
+			}
+		}
+	}
+
 	private Liquibase runMigrator(String changeLogFile, DatabaseTestEnvironment dbTestEnv) throws Exception {
 		Connection connection = dbTestEnv.createNonTransactionalConnection();
 		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
@@ -146,24 +166,28 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 		return liquibase;
 	}
 
+	/** Ensures the liquibase instance, as well as the database migrations are rolled back and all connection are closed. */
 	private static class CloseableArgument implements Store.CloseableResource {
 
 		private final Liquibase liquibase;
+		private final AtomicBoolean closed = new AtomicBoolean(false);
 
 		CloseableArgument(Liquibase liquibase) {
 			this.liquibase = liquibase;
 		}
 
 		@Override
-		public void close() throws Throwable {
-			log.info("Closing Liquibase [{}] and releasing all connections", liquibase::getChangeLogFile);
-			try {
-				liquibase.dropAll();
-			} catch(Exception e) {
-				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
-				liquibase.rollback(liquibase.getChangeSetStatuses(null, new LabelExpression()).size(), null);
+		public void close() throws Exception {
+			if(closed.compareAndSet(false, true)) {
+				log.info("Closing Liquibase [{}] and releasing all connections", liquibase::getChangeLogFile);
+				try {
+					liquibase.dropAll();
+				} catch(Exception e) {
+					log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
+					liquibase.rollback(liquibase.getChangeSetStatuses(null, new LabelExpression()).size(), null);
+				}
+				liquibase.close();
 			}
-			liquibase.close();
 		}
 	}
 }

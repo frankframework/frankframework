@@ -24,7 +24,7 @@ import org.springframework.util.StreamUtils;
  * Test timeout of 3 minutes is likely more than ever needed but some of these tests can
  * be very slow, so I'm being extra generous here.
  */
-@Timeout(value = 180, unit = TimeUnit.MINUTES)
+@Timeout(value = 180, unit = TimeUnit.SECONDS)
 public abstract class StatusRecordingTransactionManagerTestBase<S extends StatusRecordingTransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);
 

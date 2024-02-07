@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.lang.reflect.Field;
@@ -24,7 +23,6 @@ import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DbmsUtil;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.TransactionDefinition;
@@ -35,9 +33,7 @@ import bitronix.tm.TransactionManagerServices;
 import bitronix.tm.journal.DiskJournal;
 import bitronix.tm.journal.Journal;
 import bitronix.tm.journal.TransactionLogAppender;
-import lombok.extern.log4j.Log4j2;
 
-@Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TestSelfRecoveringBTMDiskJournal.TEST_TABLE)
 public class TestSelfRecoveringBTMDiskJournal {
 	static final String TEST_TABLE = "BTM_Temp_Table";
@@ -54,14 +50,6 @@ public class TestSelfRecoveringBTMDiskJournal {
 		assumeTrue("BTM".equals(env.getName()));
 
 		this.env = env;
-	}
-
-	@AfterEach
-	public void teardown(DatabaseTestEnvironment env) throws Exception {
-		if("BTM".equals(env.getName()) && TransactionManagerServices.isTransactionManagerRunning()) {
-			log.info("Did not shutdown TransactionManager after tests");
-			fail("unable to shutdown BTM TransactionManager");
-		}
 	}
 
 	private int getNumberOfLines() throws JdbcException, SQLException {
@@ -89,7 +77,7 @@ public class TestSelfRecoveringBTMDiskJournal {
 	}
 
 	@BTMArgumentSource
-	@DatabaseTest
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
 	public void testSelf5RecoveringDiskJournalDuringTransaction() throws Exception {
 		assertEquals(0, getNumberOfLines()); // Ensure that the table is empty
 		int amount = 5;
@@ -109,7 +97,7 @@ public class TestSelfRecoveringBTMDiskJournal {
 	}
 
 	@BTMArgumentSource
-	@DatabaseTest
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
 	public void testTooManyRecoveringsDuringTransaction() throws Exception {
 		assertEquals(0, getNumberOfLines()); // Ensure that the table is empty
 
