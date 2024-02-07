@@ -1,15 +1,19 @@
 package org.frankframework.util.flow.graphviz;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import org.frankframework.core.IScopeProvider;
+import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestScopeProvider;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.flow.FlowGenerationException;
@@ -20,25 +24,25 @@ import org.junit.jupiter.api.TestMethodOrder;
 @TestMethodOrder(MethodName.class)
 public class GraphvizEngineTest {
 
-	private String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
-	private IScopeProvider scopeProvider = new TestScopeProvider();
+	private final String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
+	private final IScopeProvider scopeProvider = new TestScopeProvider();
 
 	@Test
-	public void canInitDefaultWithoutErrors() throws IOException {
+	void canInitDefaultWithoutErrors() throws IOException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 		engine.close();
 	}
 
 	@Test
-	public void canInitNullWithoutErrors() throws IOException {
+	void canInitNullWithoutErrors() throws IOException {
 		GraphvizEngine engine = new GraphvizEngine(null);
 		assertNotNull(engine);
 		engine.close();
 	}
 
 	@Test
-	public void happyFlowDot2SVG() throws Exception {
+	void happyFlowDot2SVG() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -50,7 +54,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowRender2SVG() throws Exception {
+	void happyFlowRender2SVG() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -63,7 +67,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowDot2SVG_STANDALONE() throws Exception {
+	void happyFlowDot2SVG_STANDALONE() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -75,7 +79,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowRender2SVG_STANDALONE() throws Exception {
+	void happyFlowRender2SVG_STANDALONE() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -93,7 +97,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowDot2SVGCustomOptions() throws Exception {
+	void happyFlowDot2SVGCustomOptions() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 		String result = engine.execute(dot, Options.create().format(Format.SVG));
@@ -107,13 +111,13 @@ public class GraphvizEngineTest {
 
 	// This should be the last test case to run since it changes the graphviz version(prepend 'z' to method name)
 	@Test
-	public void zgetUnknownVizJsVersion() throws Exception {
+	void zgetUnknownVizJsVersion() {
 		IOException e = assertThrows(IOException.class, () -> new GraphvizEngine("1.2.3"));
 		assertEquals("failed to open vizjs file for version [1.2.3]", e.getMessage());
 	}
 
 	@Test
-	public void getFaultyDot() throws Exception {
+	void getFaultyDot() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 		assertThrows(FlowGenerationException.class, () -> engine.execute("i'm not a dot!"));
@@ -121,7 +125,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void smallerFontSize() throws Exception {
+	void smallerFontSize() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -137,7 +141,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void largerFontSize() throws Exception {
+	void largerFontSize() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -150,5 +154,33 @@ public class GraphvizEngineTest {
 		assertNotNull(svg);
 		TestAssertions.assertEqualsIgnoreWhitespaces(StreamUtil.streamToString(svg.openStream()), result);
 		engine.close();
+	}
+
+	@Test
+	public void testJavascriptEngineIsClosedProperly() throws Exception {
+		// Arrange: use FakeEngine, which works on every hardware architecture and is faster
+		AppConstants.getInstance().setProperty("flow.javascript.engines", "org.frankframework.javascript.FakeEngine");
+
+		TestAppender appender = TestAppender.newBuilder().build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			// Act
+			performCleanerTestScoped();
+
+			// GC should clean up the engine
+			System.gc();
+
+			// Assert: Give the garbage collector some time to clean up
+			await().pollInterval(50, TimeUnit.MILLISECONDS)
+					.atMost(2, TimeUnit.SECONDS)
+					.until(() -> appender.contains("Closing Javascript Engine"));
+		} finally {
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	private void performCleanerTestScoped() throws Exception {
+		GraphvizEngine engine = new GraphvizEngine();
+		assertNotNull(engine);
 	}
 }

@@ -16,21 +16,21 @@
 package org.frankframework.util.flow.graphviz;
 
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import org.frankframework.javascript.JavascriptEngine;
 import org.frankframework.javascript.JavascriptException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.flow.FlowGenerationException;
 import org.frankframework.util.flow.GraphvizJsFlowGenerator;
 import org.frankframework.util.flow.ResultHandler;
+
+import lombok.extern.log4j.Log4j2;
 
 //TODO: consider moving this to a separate module
 /**
@@ -39,16 +39,20 @@ import org.frankframework.util.flow.ResultHandler;
  * @author Niels Meijer
  *
  */
+@Log4j2
 public class GraphvizEngine {
-	protected Logger log = LogUtil.getLogger(this);
-	private Engine engine;
-	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
-	private String fileFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
+	private static final String FILE_FORMAT = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG").toUpperCase();
+	private static final Cleaner cleaner = Cleaner.create(); // Start Cleaner thread, to close the Javascript Engine when this GraphvizEngine becomes phantom reachable
 
 	// Available JS Engines. Lower index has priority.
 	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "org.frankframework.javascript.J2V8").split(",");
 
-	private Options defaultOptions = null;
+	private final Cleaner.Cleanable cleanable;
+
+	private Engine engine;
+	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
+
+	private final Options defaultOptions;
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
@@ -60,25 +64,42 @@ public class GraphvizEngine {
 
 	/**
 	 * Create a new GraphvizEngine instance
-	 * @param graphvizVersion version of the the VisJs engine to initiate
+	 * @param graphvizVersion version of the VisJs engine to initiate
 	 * @throws IOException
 	 */
 	public GraphvizEngine(String graphvizVersion) throws IOException {
-		if(StringUtils.isNotEmpty(graphvizVersion)) {
+		if (StringUtils.isNotEmpty(graphvizVersion)) {
 			this.graphvizVersion = graphvizVersion;
 		}
 
 		try {
-			Format format = Format.valueOf(fileFormat.toUpperCase());
+			Format format = Format.valueOf(FILE_FORMAT);
 			defaultOptions = Options.create().format(format);
-			if(log.isDebugEnabled()) log.debug("Setting Graphviz options to ["+defaultOptions+"]");
-		}
-		catch(IllegalArgumentException e) {
-			throw new IllegalArgumentException("unknown format["+fileFormat.toUpperCase()+"], must be one of "+Format.values());
+			if (log.isDebugEnabled()) log.debug("Setting Graphviz options to [" + defaultOptions + "]");
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("unknown format[" + FILE_FORMAT + "], must be one of " + Format.values());
 		}
 
 		//Create the GraphvizEngine, make sure it can find and load the required libraries
 		getEngine();
+
+		CleanupEngineAction cleanupEngineAction = new CleanupEngineAction(engine);
+		cleanable = cleaner.register(this, cleanupEngineAction);
+	}
+
+	private static class CleanupEngineAction implements Runnable {
+		private final Engine engine;
+
+		private CleanupEngineAction(Engine engine) {
+			this.engine = engine;
+		}
+
+		@Override
+		public void run() {
+			if (engine != null) {
+				engine.close();
+			}
+		}
 	}
 
 	/**
@@ -113,8 +134,8 @@ public class GraphvizEngine {
 
 		String call = jsVizExec(src, options);
 		String result = getEngine().execute(call);
-		if(start > 0) {
-			log.debug("executed VisJs in ["+(System.currentTimeMillis() - start)+"]ms");
+		if(start > 0 && log.isDebugEnabled()) {
+			log.debug("executed VisJs in [{}]ms", System.currentTimeMillis() - start);
 		}
 		return options.postProcess(result);
 	}
@@ -141,7 +162,7 @@ public class GraphvizEngine {
 	 * @throws IOException when the VizJS file can't be found
 	 */
 	private synchronized Engine getEngine() throws IOException {
-		if(null == engine) {
+		if(engine == null) {
 			log.debug("creating new VizJs engine");
 			String visJsSource = getVizJsSource(graphvizVersion);
 			engine = new Engine(getVisJsWrapper(), visJsSource);
@@ -150,22 +171,12 @@ public class GraphvizEngine {
 	}
 
 	/**
-	 * Shuts down the GraphvizEngine instance
+	 * Shuts down the GraphvizEngine instance properly.
+	 * The {@link GraphvizJsFlowGenerator} uses a ThreadLocal+SoftReference map to cache the
+	 * {@link GraphvizEngine GraphvisEngines}. This method ensures that the used Javascript engine is destroyed properly.
 	 */
 	public void close() {
-		if (engine != null) {
-			engine.close();
-		}
-	}
-
-	/**
-	 * The {@link GraphvizJsFlowGenerator} uses a ThreadLocal+SoftReference map to cache the
-	 * {@link GraphvizEngine GraphvisEngines}. This method ensures that the engine is destroyed properly.
-	 */
-	@Override
-	protected void finalize() throws Throwable {
-		close();
-		super.finalize();
+		cleanable.clean();
 	}
 
 	private String getVisJsWrapper() {
@@ -179,27 +190,28 @@ public class GraphvizEngine {
 				+ "}";
 	}
 
+	@Log4j2
 	private static class Engine {
-		protected Logger log = LogUtil.getLogger(this);
 		private JavascriptEngine<?> jsEngine;
 		private ResultHandler resultHandler;
 
 		Engine(String initScript, String graphvisJsLibrary) {
 
 			for (int i = 0; i < engines.length && jsEngine == null; i++) {
+				String engine = engines[i];
 				try {
-					Class<?> clazz = Class.forName(engines[i]);
-					log.debug("Trying Javascript engine [" + engines[i] + "] for Graphviz.");
-					JavascriptEngine<?> engine = ((JavascriptEngine<?>) clazz.newInstance());
+					log.debug("Trying Javascript engine [{}] for Graphviz.", engine);
+					Class<?> clazz = Class.forName(engine);
+					JavascriptEngine<?> javascriptEngine = ((JavascriptEngine<?>) clazz.getDeclaredConstructor().newInstance());
 					ResultHandler handler = new ResultHandler();
 
-					startEngine(engine, handler, initScript, graphvisJsLibrary);
+					startEngine(javascriptEngine, handler, initScript, graphvisJsLibrary);
 
-					log.info("Using Javascript engine [" + engines[i] + "] for Graphviz.");
-					jsEngine = engine;
+					log.info("Using Javascript engine [{}] for Graphviz.", engine);
+					jsEngine = javascriptEngine;
 					this.resultHandler = handler;
 				} catch (Exception e) {
-					log.error("Javascript engine [" + engines[i] + "] could not be initialized.", e);
+					log.error("Javascript engine [{}] could not be initialized.", engine, e);
 				}
 			}
 
@@ -223,13 +235,14 @@ public class GraphvizEngine {
 				jsEngine.executeScript(call);
 				return resultHandler.waitFor();
 			} catch (FlowGenerationException e) {
-				throw e; //Dont wrap this one!
+				throw e; //Don't wrap this one!
 			} catch (Throwable e) {
 				throw new FlowGenerationException(e);
 			}
 		}
 
 		public void close() {
+			log.debug("Closing Javascript Engine [{}]", jsEngine.getClass().getName());
 			jsEngine.closeRuntime();
 		}
 	}
