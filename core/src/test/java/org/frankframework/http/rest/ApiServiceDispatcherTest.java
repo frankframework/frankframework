@@ -1,5 +1,13 @@
 package org.frankframework.http.rest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.frankframework.core.ListenerException;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.util.EnumUtils;
@@ -9,18 +17,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 public class ApiServiceDispatcherTest {
 
 	private ApiServiceDispatcher dispatcher = null;
-	private final int amount = 100;
+	private final int NR_OF_THREADS = 100;
 	private static final String PATH = "/test/config/all/to/test/wildcards";
 
 	@BeforeEach
@@ -38,7 +38,7 @@ public class ApiServiceDispatcherTest {
 		List<Thread> list = new ArrayList<>();
 
 		// Spin up many simultaneous threads to 'bomb' the dispatcher with many concurrent requests
-		for (int i = 0; i < amount; i++) {
+		for (int i = 0; i < NR_OF_THREADS; i++) {
 			String name = "thread"+i;
 			CreateListener target = new CreateListener(name);
 			Thread t = new Thread(target);
@@ -53,11 +53,11 @@ public class ApiServiceDispatcherTest {
 		}
 
 		// Make sure the expected amount matches the clients registered in the dispatcher!
-		assertEquals(amount, dispatcher.getPatternClients().size());
+		assertEquals(NR_OF_THREADS, dispatcher.getPatternClients().size());
 	}
 
 	private class CreateListener implements Runnable {
-		private String name = null;
+		private final String name;
 
 		public CreateListener(String name) {
 			this.name = name;
@@ -65,9 +65,9 @@ public class ApiServiceDispatcherTest {
 
 		@Override
 		public void run() {
-			Double timeout = Math.ceil(Math.random()*3);
+			double timeout = Math.ceil(Math.random()*3);
 			try {
-				Thread.sleep(timeout.longValue());
+				Thread.sleep((long) timeout);
 			} catch (InterruptedException e1) {
 				//Failed to sleep? unsure why, but doesn't matter much
 			}
@@ -128,17 +128,25 @@ public class ApiServiceDispatcherTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"/customers/**, /customers/123/addresses/345",
-			"/employees/**, /employees/123/departments/456/seats/52",
-			"/customers/**, /customers/123/addresses/345"
+			"/customers/123/addresses/345, 1, /customers/**",
+			"/customers/123/addresses/345, 2, /customers/**|/customers/*/addresses/*/**",
+			"/employees/123/departments/456/seats/52, 1, /employees/**",
+			"/customers/123/addresses/345, 1, /customers/**",
+			"/customers/123/addresses/345, 0, /employees/**",
+			"/employees/123/departments/456/seats/52, 1, /employees/*/departments/**",
+			"/employees/123/departments/456/seats/52, 1, /employees/*/departments/*/seats/*",
+			"/customers/123/departments/456/seats/52, 0, /employees/*/departments/*/seats/*",
+			"/employees/123/departments/456/seats/52, 0, /employees/*/departments/*",
 	})
-	void testFindMatchDoubleAsterisk(String uriPattern, String expectedUri) throws ListenerException {
-		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, uriPattern);
-		dispatcher.registerServiceClient(listener);
+	void testFindMatchDoubleAsterisk(String requestUri, int expectedNrOfMatches, String uriPatterns) throws ListenerException {
+		for (String uriPattern : uriPatterns.split("\\|")) {
+			ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, uriPattern);
+			dispatcher.registerServiceClient(listener);
+		}
 
-		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri(expectedUri);
+		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri(requestUri);
 
-		assertEquals(1, matchingConfig.size());
+		assertEquals(expectedNrOfMatches, matchingConfig.size());
 	}
 
 

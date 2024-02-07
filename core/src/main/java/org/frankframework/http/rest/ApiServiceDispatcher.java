@@ -15,12 +15,20 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.ws.rs.core.Response.Status;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
@@ -38,19 +46,12 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.springframework.util.MimeType;
 
-import javax.ws.rs.core.Response.Status;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedMap;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 /**
  * This class registers dispatches requests to the proper registered ApiListeners.
@@ -93,21 +94,27 @@ public class ApiServiceDispatcher {
 
 			String[] patternSegments = uriPattern.split("/");
 
-			int matches = 0;
-
-			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length && !Arrays.asList(patternSegments).contains("**")) {
+			if (exactMatch && (patternSegments.length != uriSegments.length || patternSegments[patternSegments.length-1].equals("**"))) {
 				continue;
 			}
 
-			for (int i = 0; i < uriSegments.length; i++) {
-				if (patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
-					matches++;
-				}
+			int matches = 0;
 
-				if (patternSegments[i].equals("**")) {
+			for (int i = 0; i < uriSegments.length; i++) {
+				if (i >= patternSegments.length) {
+					break;
+				}
+				if (matches == i && patternSegments[i].equals("**")) {
 					ApiDispatchConfig result = patternClients.get(uriPattern);
 					results.add(result);
-					return results;
+					// TODO: Need to still find the most specific match, not the first match
+					if (exactMatch) {
+						return results;
+					}
+				}
+
+				if (patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
+					matches++;
 				}
 			}
 

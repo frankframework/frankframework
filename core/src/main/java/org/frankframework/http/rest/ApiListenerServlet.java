@@ -161,22 +161,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			 * Generate OpenApi specification
 			 */
 			if(uri.equalsIgnoreCase("/openapi.json")) {
-				String endpoint = createEndpointUrlFromRequest(request);
-				String specUri = request.getParameter("uri");
-				JsonObject jsonSchema = null;
-				if(specUri != null) {
-					ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
-					if(apiConfig != null) {
-						jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
-					}
-				} else {
-					jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
-				}
-				if(jsonSchema != null) {
-					returnJson(response, 200, jsonSchema);
-					return;
-				}
-				response.sendError(404, "OpenApi specification not found");
+				generateOpenApiSpec(request, response);
 				return;
 			}
 
@@ -185,15 +170,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			 * @Deprecated This is here to support old url's
 			 */
 			if(uri.endsWith("openapi.json")) {
-				String endpoint = createEndpointUrlFromRequest(request);
-				uri = uri.substring(0, uri.lastIndexOf("/"));
-				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
-				if(apiConfig != null) {
-					JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
-					returnJson(response, 200, jsonSchema);
-					return;
-				}
-				response.sendError(404, "OpenApi specification not found");
+				generatePartialOpenApiSpec(uri, request, response);
 				return;
 			}
 
@@ -201,6 +178,39 @@ public class ApiListenerServlet extends HttpServletBase {
 		} finally {
 			ThreadContext.clearAll();
 		}
+	}
+
+	private void generatePartialOpenApiSpec(String uri, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String endpoint = createEndpointUrlFromRequest(request);
+		uri = uri.substring(0, uri.lastIndexOf("/"));
+		ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+		if (apiConfig == null) {
+			response.sendError(404, "OpenApi specification not found");
+			return;
+		}
+		JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+		returnJson(response, 200, jsonSchema);
+	}
+
+	private void generateOpenApiSpec(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String endpoint = createEndpointUrlFromRequest(request);
+		String specUri = request.getParameter("uri");
+		JsonObject jsonSchema;
+		if(specUri != null) {
+			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
+			if(apiConfig != null) {
+				jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+			} else {
+				jsonSchema = null;
+			}
+		} else {
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
+		}
+		if (jsonSchema == null) {
+			response.sendError(404, "OpenApi specification not found");
+			return;
+		}
+		returnJson(response, 200, jsonSchema);
 	}
 
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response, ApiListener.HttpMethod method, String uri) {

@@ -16,6 +16,7 @@
 package org.frankframework.http.rest;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -111,6 +112,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if(StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
 
+		if (!isValidUriPattern(getUriPattern())) {
+			throw new ConfigurationException("uriPattern contains invalid wildcards");
+		}
+
 		if(getConsumes() != MediaTypes.ANY) {
 			if (hasMethod(HttpMethod.GET))
 				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
@@ -205,7 +210,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if(StringUtils.isEmpty(pattern))
 			return null;
 
-		return pattern.replaceAll("\\{.*?}", "*");
+		return pattern.replaceAll("\\{[^}]*+", "*");
 	}
 
 	/**
@@ -259,6 +264,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * @ff.mandatory
 	 */
 	public void setUriPattern(String uriPattern) {
+		if (StringUtils.isBlank(uriPattern)) {
+			// Invalid pattern, but will be validated in configure()
+			// Return early because otherwise the code obscures that on "" the following transformation happens: "" --> "/" --> ""
+			return;
+		}
 		if(!uriPattern.startsWith("/"))
 			uriPattern = "/" + uriPattern;
 
@@ -414,14 +424,18 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
-		builder.append(" uriPattern["+getUriPattern()+"]");
-		builder.append(" produces["+getProduces()+"]");
-		builder.append(" consumes["+getConsumes()+"]");
-		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
-		builder.append(" updateEtag["+isUpdateEtag()+"]");
-		return builder.toString();
+		return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) +
+				" uriPattern[" + getUriPattern() + "]" +
+				" produces[" + getProduces() + "]" +
+				" consumes[" + getConsumes() + "]" +
+				" messageIdHeader[" + getMessageIdHeader() + "]" +
+				" updateEtag[" + isUpdateEtag() + "]";
 	}
 
+	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
+
+	public static boolean isValidUriPattern(String uriPattern) {
+		String uriPatternToValidate = uriPattern.endsWith("/**") ? uriPattern.substring(0, uriPattern.length() - 3) : uriPattern;
+		return !VALID_URI_PATTERN_RE.matcher(uriPatternToValidate).find();
+	}
 }
