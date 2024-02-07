@@ -15,24 +15,22 @@
 */
 package org.frankframework.jdbc.datasource;
 
+import java.sql.Connection;
+
 import org.apache.commons.dbcp2.PoolingDataSource;
-import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
  * Extension of {@link PoolingDataSource} that exposes an extra method to fetch pool statistics.
  *
- * @param <C>
  */
-public class OpenPoolingDataSource<C> extends PoolingDataSource {
-	public OpenPoolingDataSource(final ObjectPool<C> pool) {
+public class OpenPoolingDataSource<C extends Connection> extends PoolingDataSource<C> {
+	public OpenPoolingDataSource(final GenericObjectPool<C> pool) {
 		super(pool);
 	}
 
-	public void addPoolMetadata(StringBuilder info) {
-		ObjectPool<C> objectPool = super.getPool();
-		if (objectPool instanceof GenericObjectPool) {
-			GenericObjectPoolUtil.addPoolMetadata((GenericObjectPool<C>) objectPool, info);
-		}
+	@Override
+	protected GenericObjectPool<C> getPool() {
+		return (GenericObjectPool<C>) super.getPool();
 	}
 }

@@ -1,6 +1,5 @@
 package org.frankframework.testutil;
 
-import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -31,11 +30,6 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 		if (StringUtils.isNotEmpty(password)) BeanUtils.setProperty(xaDataSource, "password", password);
 		xaDataSource = XaDatasourceCommitStopper.augmentXADataSource(xaDataSource);
 		return augmentXADataSource(xaDataSource, product);
-	}
-
-	@Override
-	protected DataSource augmentDatasource(CommonDataSource xaDataSource, String product) {
-		return super.augmentDatasource(xaDataSource, product);
 	}
 
 	protected abstract DataSource augmentXADataSource(XADataSource xaDataSource, String product);
