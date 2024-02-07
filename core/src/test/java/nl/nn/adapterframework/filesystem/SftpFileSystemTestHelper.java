@@ -13,7 +13,6 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.SftpSession;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -86,7 +85,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 
 		try {
 			ftpClient = ftpSession.openClient(remoteDirectory);
-		} catch (FtpConnectException e) {
+		} catch (FileSystemException e) {
 			throw new FileSystemException("Cannot connect to the FTP server with domain [" + host + "]", e);
 		}
 	}
@@ -138,10 +137,18 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	public void _createFolder(String folder) throws FileSystemException {
+	public void _createFolder(String folder) throws Exception {
 		try {
-			ftpClient.mkdir(folder);
-		} catch (SftpException e) {
+			String[] folders = folder.split("/");
+			for(int i = 1; i < folders.length; i++) {
+				folders[i] = folders[i - 1] + "/" + folders[i];
+			}
+			for(String f : folders) {
+				if(f.length() != 0 && !_folderExists(f)) {
+					ftpClient.mkdir(f);
+				}
+			}
+		} catch (SftpException | ArrayIndexOutOfBoundsException e) {
 			throw new FileSystemException("Cannot create directory", e);
 		}
 	}
