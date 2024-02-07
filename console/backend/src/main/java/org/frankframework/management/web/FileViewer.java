@@ -57,7 +57,7 @@ public class FileViewer extends FrankApiBase {
 
 	private Response processHtmlMessage(RequestMessageBuilder builder) {
 		Message<?> fileContentsMessage = sendSyncMessage(builder);
-		StreamingOutput stream = outputStream -> {
+		/*StreamingOutput stream = outputStream -> {
 			try {
 				BufferedReader fileContentsReader = new BufferedReader(new InputStreamReader((InputStream) fileContentsMessage.getPayload()));
 				String line;
@@ -69,7 +69,16 @@ public class FileViewer extends FrankApiBase {
 			} catch (Exception e) {
 				throw new ApiException("Can't modify file content to be properly rendered as HTML");
 			}
-		};
+		};*/
+		StreamingOutput stream = outputStream -> {
+            BufferedReader fileContentsReader = new BufferedReader(new InputStreamReader((InputStream) fileContentsMessage.getPayload()));
+            String line;
+            while ((line = fileContentsReader.readLine()) != null) {
+                String formattedLine = StringUtils.replace(line, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
+                outputStream.write((formattedLine + "<br>").getBytes());
+            }
+            outputStream.flush();
+        };
 		return ResponseUtils.convertToJaxRsStreamingResponse(fileContentsMessage, stream).build();
 	}
 

@@ -1,17 +1,17 @@
 package org.frankframework.management.bus.endpoints;
 
 import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.ResponseMessageBase;
-import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import java.io.InputStream;
@@ -102,6 +102,30 @@ public class TestFileViewer extends BusTestBase {
 		String contentDisposition = BusMessageUtils.getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
 		Assertions.assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, contentType);
 		Assertions.assertEquals("attachment; filename=\""+TestFileName+"\"", contentDisposition);
+	}
+
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	public void getFileWithoutFilename(){
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
+		request.setHeader("resultType", "*");
+
+		Exception thrown = Assertions.assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		Throwable exceptionCause = thrown.getCause();
+        Assertions.assertInstanceOf(BusException.class, exceptionCause);
+		Assertions.assertTrue(exceptionCause.getMessage().contains("fileName or type not specified"));
+	}
+
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	public void getFileWithoutType(){
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
+		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
+
+		Exception thrown = Assertions.assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+		Throwable exceptionCause = thrown.getCause();
+		Assertions.assertInstanceOf(BusException.class, exceptionCause);
+		Assertions.assertTrue(exceptionCause.getMessage().contains("fileName or type not specified"));
 	}
 
 }
