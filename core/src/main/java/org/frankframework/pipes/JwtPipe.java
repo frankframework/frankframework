@@ -79,17 +79,14 @@ public class JwtPipe extends FixedForwardPipe {
 
 		jwtHeader = new JWSHeader.Builder(JWSAlgorithm.HS256).type(JOSEObjectType.JWT).build();
 
-		if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(sharedSecret)) {
-			sharedSecret = StringUtils.rightPad(sharedSecret, 32, "\0");
-		}
-		if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(authAlias)) {
-			authAlias = StringUtils.rightPad(authAlias, 32, "\0");
-		}
-
 		if(StringUtils.isNotEmpty(sharedSecret) || StringUtils.isNotEmpty(authAlias)) {
 			try {
 				CredentialFactory credentialFactory = new CredentialFactory(authAlias, null, () -> sharedSecret);
-				globalSigner = new MACSigner(credentialFactory.getPassword());
+				String factoryPassword = credentialFactory.getPassword();
+				if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(factoryPassword)) {
+					factoryPassword = StringUtils.rightPad(factoryPassword, 32, "\0");
+				}
+				globalSigner = new MACSigner(factoryPassword);
 			} catch (KeyLengthException e) {
 				throw new ConfigurationException("invalid shared key", e);
 			}

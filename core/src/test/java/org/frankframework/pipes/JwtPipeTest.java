@@ -86,25 +86,26 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	void authAliasTooShortShouldBePadded() {
+	void authAliasTooShortShouldBePadded() throws Exception {
 		// Arrange
 		pipe.setJwtAllowWeakSecrets(true);
-		pipe.setAuthAlias("Potato");
+		pipe.setSharedSecret(null);
+		pipe.setAuthAlias("alias1");
 
-		// Act && Assert: at least 2 null bytes are added to the end of the warning message
-		// This assures it went into the flow to create the signer with the padded secret
-		ConfigurationException ex =  assertThrows(ConfigurationException.class, this::configureAndStartPipe);
-		assertThat(ex.getMessage(), Matchers.containsString("cannot obtain credentials from authentication alias [Potato\u0000\u0000"));
+		// Act && Assert: flow should work and message returns.
+		configureAndStartPipe();
+		String result = doPipe(DUMMY_INPUT).getResult().asString();
+		assertNull(result);
 	}
 
 	@Test
-	void authAliasTooShortShouldNOTBePadded() {
+	void authAliasTooShortShouldFailConfiguration() {
 		// Arrange
-		pipe.setAuthAlias("Potato");
+		pipe.setAuthAlias("alias1");
 
 		// Act && Assert: the warning message shows a non-padded secret
 		ConfigurationException ex =  assertThrows(ConfigurationException.class, this::configureAndStartPipe);
-		assertThat(ex.getMessage(), Matchers.containsString("cannot obtain credentials from authentication alias [Potato]: alias not found"));
+		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));
 	}
 
 	@Test
