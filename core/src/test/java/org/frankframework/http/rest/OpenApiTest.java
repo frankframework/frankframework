@@ -7,19 +7,12 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.testutil.threading.IsolatedThread;
-import org.frankframework.testutil.threading.RunInThreadRule;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 public class OpenApiTest extends OpenApiTestBase {
 
-	@Rule
-	public RunInThreadRule runInThread = new RunInThreadRule();
-
 	@Test
-	@IsolatedThread
 	void simpleEndpointGetTest() throws Exception {
 		String uri="/users";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -40,7 +33,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void simpleEndpointPostTest() throws Exception {
 		String uri="/simpleEndpointPostTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -60,7 +52,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void testChoiceWithComplexType() throws Exception {
 		String uri="/transaction";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -80,7 +71,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void testChoiceWithSimpleType() throws Exception {
 		String uri="/options";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -100,7 +90,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void testMultipleChoices() throws Exception {
 		String uri="/multipleChoices";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -120,7 +109,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void simpleEndpointPostWithEmptyExitTest() throws Exception {
 		String uri="/simpleEndpointPostWithEmptyExitTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -141,7 +129,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void simpleEndpointWithOperationIdTest() throws Exception {
 		String uri="/simpleEndpointWithOperationIdTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -161,7 +148,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void simpleEndpointQueryParamTest() throws Exception {
 		String uri="/simpleEndpointQueryParamTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -188,7 +174,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void pathParamQueryParamTest() throws Exception {
 		String uri="/pathParamQueryParamTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -222,7 +207,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void exitElementNamesTest() throws Exception {
 		String uri="/envelope";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -270,7 +254,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void petStore() throws Exception {
 		String uriBase="/pets";
 		//Make sure all adapters have been registered on the dispatcher
@@ -314,7 +297,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void rootSchemaTest() throws Exception {
 		String uri="/";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -342,7 +324,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void twoEndpointsOneWithoutValidatorTest() throws Exception {
 		String uri="/path";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -369,7 +350,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void parametersFromHeader() throws Exception {
 		String uri="/headerparams";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -395,7 +375,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 //	@Test
-//	@IsolatedThread
 //	public void parametersFromCookie() throws Exception {
 //		String uri="/cookieparams";
 //		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -423,7 +402,6 @@ public class OpenApiTest extends OpenApiTestBase {
 //	}
 
 //	@Test
-//	@IsolatedThread
 //	public void parametersFromCookieAndHeader() throws Exception {
 //		String uri="/cookieplusheaderparams";
 //		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -453,7 +431,6 @@ public class OpenApiTest extends OpenApiTestBase {
 //	}
 
 	@Test
-	@IsolatedThread
 	void validatorParamFromHeaderNotQuery() throws Exception {
 		String uri="/validatorParamFromHeaderNotQuery";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -478,7 +455,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void messageIdHeaderTest() throws Exception {
 		String uri="/messageIdHeaderTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -503,7 +479,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void testHeaderParamIsnotAddedAsQueryParam() throws Exception {
 		String uri="/headerparams";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -531,7 +506,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void testOutputValidator() throws Exception {
 		String uri="/outputValidator";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -552,7 +526,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void testInputOutputValidator() throws Exception {
 		String uri="/outputValidator";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -574,7 +547,6 @@ public class OpenApiTest extends OpenApiTestBase {
 	}
 
 	@Test
-	@IsolatedThread
 	void testWithoutValidator() throws Exception {
 		String uri="/noValidator";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
