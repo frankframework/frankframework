@@ -1356,10 +1356,10 @@
 			</pluginRepositories>
 			<build>
 				<plugins>
-					<plugin>
-						<groupId>org.projectlombok</groupId>
-						<artifactId>lombok-maven-plugin</artifactId>
-					</plugin>
+<!--					<plugin>-->
+<!--						<groupId>org.projectlombok</groupId>-->
+<!--						<artifactId>lombok-maven-plugin</artifactId>-->
+<!--					</plugin>-->
 					<plugin>
 						<groupId>org.frankframework</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
