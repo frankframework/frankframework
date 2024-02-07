@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +33,6 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";
-	protected DatabaseTestEnvironment env;
 
 	@TempDir
 	public Path folder;
@@ -47,10 +45,9 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 	protected abstract S createTransactionManager();
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment env) throws IOException {
+	public void setup() throws IOException {
 		statusFile = folder.toAbsolutePath().toString()+"/"+STATUS_FILE;
 		tmUidFile = folder.toAbsolutePath().toString()+"/"+TMUID_FILE;
-		this.env = env;
 
 		delete(tmUidFile);
 	}

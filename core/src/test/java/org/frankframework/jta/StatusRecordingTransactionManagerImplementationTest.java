@@ -18,6 +18,7 @@ import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
@@ -26,17 +27,18 @@ import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import bitronix.tm.TransactionManagerServices;
 import lombok.Getter;
 
-public class StatusRecordingTransactionManagerImplementationTest<S extends StatusRecordingTransactionManager> extends StatusRecordingTransactionManagerTestBase<S> {
+public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManager> {
 
 	private static final String SECONDARY_PRODUCT = "H2";
 
 	protected SpringTxManagerProxy txManager;
 	protected StatusRecordingTransactionManager txManagerReal;
 	private @Getter TestConfiguration configuration;
+	protected DatabaseTestEnvironment env;
 
 	private String tableName;
 
-	@Override
+	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws IOException {
 		assumeFalse("DATASOURCE".equals(env.getName()));
 		assumeFalse("H2".equals(env.getDataSourceName()));
@@ -44,11 +46,12 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 		// Release any hanging commits that might be from previous tests
 		XaDatasourceCommitStopper.stop(false);
 
-		super.setup(env);
+		super.setup();
+		this.env = env;
 	}
 
 	@Override
-	protected S createTransactionManager() {
+	protected StatusRecordingTransactionManager createTransactionManager() {
 		configuration = env.getConfiguration();
 		txManager = (SpringTxManagerProxy) env.getTxManager();
 		txManagerReal = configuration.getBean(StatusRecordingTransactionManager.class, "txReal");
@@ -56,7 +59,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 		tmUidFile = txManagerReal.getUidFile();
 		log.debug("statusFile [{}], tmUidFile [{}]", statusFile, tmUidFile);
 		tableName = "tmp_"+env.getName();
-		return (S)txManagerReal;
+		return txManagerReal;
 	}
 
 	@AfterEach
@@ -174,7 +177,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 			fs1.open();
 			fs2.open();
 
-			TransactionDefinition txDef = txManager.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 10);
+			TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 10);
 			TransactionStatus txStatus = txManager.getTransaction(txDef);
 			try {
 
