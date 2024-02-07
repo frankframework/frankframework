@@ -120,6 +120,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return datasource;
 	}
 
+	@Deprecated
 	public String getDatasourceInfo() throws JdbcException {
 		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
 			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
