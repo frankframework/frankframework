@@ -47,11 +47,13 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 
 	}
 
+	@Override
 	@AfterEach
 	public void tearDown() {
 		if (tm != null) {
 			tm.destroy();
 		}
+		super.tearDown();
 	}
 
 	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)

@@ -14,7 +14,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.util.LogUtil;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.transaction.TransactionSystemException;
@@ -24,6 +26,8 @@ import org.springframework.util.StreamUtils;
  * Test timeout of 3 minutes is likely more than ever needed but some of these tests can
  * be very slow, so I'm being extra generous here.
  */
+@Tag("slow")
+@Tag("unstable")
 @Timeout(value = 180, unit = TimeUnit.SECONDS)
 public abstract class StatusRecordingTransactionManagerTestBase<S extends StatusRecordingTransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -49,6 +53,14 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 		this.env = env;
 
 		delete(tmUidFile);
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (transactionManager != null) {
+			transactionManager.shutdownTransactionManager();
+			transactionManager = null;
+		}
 	}
 
 	protected S setupTransactionManager() {

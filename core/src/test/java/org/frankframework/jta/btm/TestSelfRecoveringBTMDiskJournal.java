@@ -50,6 +50,12 @@ public class TestSelfRecoveringBTMDiskJournal {
 		assumeTrue("BTM".equals(env.getName()));
 
 		this.env = env;
+
+		try(Connection conn = env.getConnection()) {
+			if(env.getDbmsSupport().isTablePresent(conn, TEST_TABLE)) {
+				JdbcTestUtil.executeStatement(conn, "DELETE FROM "+TEST_TABLE+" where tvarchar='TestSelfRecoveringBTMDiskJournal'");
+			}
+		}
 	}
 
 	private int getNumberOfLines() throws JdbcException, SQLException {

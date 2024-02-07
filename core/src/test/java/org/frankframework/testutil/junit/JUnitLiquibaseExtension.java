@@ -146,6 +146,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 		for(WithLiquibase annotation : annotations) {
 			CloseableArgument liquibase = getStore(context).get("liquibaseInstance#" + argumentIndex.incrementAndGet(), CloseableArgument.class);
 			if(liquibase != null) {
+				log.debug("closing liquibase instance {}", annotation::file);
 				liquibase.close();
 			}
 		}

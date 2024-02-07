@@ -6,11 +6,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestTemplate;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
@@ -25,6 +27,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 @ArgumentsSource(DatasourceArgumentSource.class) // automatically uses default datasource arguments
 @ExtendWith(JUnitDatabaseExtension.class) // Turns it into a matrix test
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS) // No test should take longer then 30s...
 @Documented
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
