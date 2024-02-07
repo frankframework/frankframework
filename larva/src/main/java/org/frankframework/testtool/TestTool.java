@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -48,7 +49,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -83,7 +83,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.testtool.queues.Queue;
-import org.frankframework.testtool.queues.QueueCreator;
 import org.frankframework.testtool.queues.QueueWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CaseInsensitiveComparator;
@@ -106,27 +105,23 @@ import jakarta.json.JsonException;
 public class TestTool {
 	private static final Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
-	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
-	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
-	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 10000);
-	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	public static final Message TESTTOOL_DUMMY_MESSAGE = new Message("<TestTool>Dummy message</TestTool>");
+	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND = -1;
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
 	public static final int RESULT_AUTOSAVED = 2;
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
-	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
-	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
+	private TestConfig config;
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
 	private static final boolean allowReadlineSteps = false;
-	protected static int globalTimeout=DEFAULT_TIMEOUT;
+	protected static int globalTimeout=AppConstants.getInstance().getInt("larva.timeout", 10_000);
 
 	private static final String TR_STARTING_TAG="<tr>";
 	private static final String TR_CLOSING_TAG="</tr>";
@@ -163,72 +158,65 @@ public class TestTool {
 			}
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-		runScenarios(ibisContext, paramLogLevel,
-				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
+		TestTool testTool = new TestTool();
+		testTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
-	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND=-1;
 	/**
-	 *
 	 * @return negative: error condition
 	 * 		   0: all scenarios passed
 	 * 		   positive: number of scenarios that failed
 	 */
-	public static int runScenarios(IbisContext ibisContext, String paramLogLevel,
+	public int runScenarios(IbisContext ibisContext, String paramLogLevel,
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
 			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
+		config = new TestConfig();
+		config.setTimeout(timeout);
+		config.setSilent(silent);
 		AppConstants appConstants = AppConstants.getInstance();
 		String logLevel = "wrong pipeline messages";
-		String autoScroll = "true";
+		boolean autoScroll = true;
 		if (paramLogLevel != null && LOG_LEVEL_ORDER.contains("[" + paramLogLevel + "]")) {
 			logLevel = paramLogLevel;
 		}
 		if (paramAutoScroll == null && paramLogLevel != null) {
-			autoScroll = "false";
+			autoScroll = false;
 		}
 
-		Map<String, Object> writers = null;
 		if (!silent) {
-			writers = new HashMap<>();
-			writers.put("out", out);
-			writers.put("htmlbuffer", new StringWriter());
-			writers.put("logbuffer", new StringWriter());
-			writers.put("loglevel", logLevel);
-			writers.put("autoscroll", autoScroll);
-			writers.put("usehtmlbuffer", "false");
-			writers.put("uselogbuffer", "true");
-			writers.put("messagecounter", 0);
-			writers.put("scenariocounter", 1);
+			config.setOut(out);
+			config.setLogLevel(logLevel);
+			config.setAutoScroll(autoScroll);
 		} else {
-			silentOut = out;
+			config.setSilentOut(out);
 		}
 
-		TestTool.debugMessage("Start logging to logbuffer until form is written", writers);
-		String asd = appConstants.getProperty("larva.diffs.autosave");
-		if (asd!=null) {
-			autoSaveDiffs = Boolean.parseBoolean(asd);
+		debugMessage("Start logging to logbuffer until form is written");
+		String autoSave = appConstants.getProperty("larva.diffs.autosave");
+		if (autoSave!=null) {
+			autoSaveDiffs = Boolean.parseBoolean(autoSave);
 		}
-		debugMessage("Initialize scenarios root directories", writers);
+		debugMessage("Initialize scenarios root directories");
 		List<String> scenariosRootDirectories = new ArrayList<>();
 		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = initScenariosRootDirectories(
 				realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
-				scenariosRootDescriptions, writers);
+				scenariosRootDescriptions);
 		if (scenariosRootDirectories.isEmpty()) {
-			debugMessage("Stop logging to logbuffer", writers);
-			if (writers != null) {
-				writers.put("uselogbuffer", "stop");
+			debugMessage("Stop logging to logbuffer");
+			if (!config.isSilent()) {
+				config.setUseLogBuffer(false);
 			}
-			errorMessage("No scenarios root directories found", writers);
+			errorMessage("No scenarios root directories found");
 			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
 		}
 
-		debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'", writers);
-		List<File> allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory, writers);
-		debugMessage("Initialize 'wait before cleanup' variable", writers);
+		debugMessage("Read scenarios from directory '" + currentScenariosRootDirectory + "'");
+		List<File> allScenarioFiles = readScenarioFiles(appConstants, currentScenariosRootDirectory);
+		debugMessage("Initialize 'wait before cleanup' variable");
 		int waitBeforeCleanUp = 100;
 		if (paramWaitBeforeCleanUp != null) {
 			try {
@@ -238,14 +226,12 @@ public class TestTool {
 			}
 		}
 
-		debugMessage("Write html form", writers);
-		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute, autoScroll, writers);
-		debugMessage("Stop logging to logbuffer", writers);
-		if (writers!=null) {
-			writers.put("uselogbuffer", "stop");
-		}
-		debugMessage("Start debugging to out", writers);
-		debugMessage("Execute scenario(s) if execute parameter present and scenarios root directory did not change", writers);
+		debugMessage("Write html form");
+		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute);
+		debugMessage("Stop logging to logbuffer");
+		config.setUseLogBuffer(false);
+		debugMessage("Start debugging to out");
+		debugMessage("Execute scenario(s) if execute parameter present and scenarios root directory did not change");
 		int scenariosFailed = 0;
 		if (paramExecute != null) {
 			String paramExecuteCanonicalPath;
@@ -256,741 +242,609 @@ public class TestTool {
 			} catch(IOException e) {
 				paramExecuteCanonicalPath = paramExecute;
 				scenariosRootDirectoryCanonicalPath = currentScenariosRootDirectory;
-				errorMessage("Could not get canonical path: " + e.getMessage(), e, writers);
+				errorMessage("Could not get canonical path: " + e.getMessage(), e);
 			}
 			if (paramExecuteCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
-
-				debugMessage("Initialize XMLUnit", writers);
+				debugMessage("Initialize XMLUnit");
 				XMLUnit.setIgnoreWhitespace(true);
-				debugMessage("Initialize 'scenario files' variable", writers);
-				debugMessage("Param execute: " + paramExecute, writers);
+				debugMessage("Initialize 'scenario files' variable");
+				debugMessage("Param execute: " + paramExecute);
 				List<File> scenarioFiles;
 				if (paramExecute.endsWith(".properties")) {
-					debugMessage("Read one scenario", writers);
+					debugMessage("Read one scenario");
 					scenarioFiles = new ArrayList<>();
 					scenarioFiles.add(new File(paramExecute));
 				} else {
-					debugMessage("Read all scenarios from directory '" + paramExecute + "'", writers);
-					scenarioFiles = readScenarioFiles(appConstants, paramExecute, writers);
+					debugMessage("Read all scenarios from directory '" + paramExecute + "'");
+					scenarioFiles = readScenarioFiles(appConstants, paramExecute);
 				}
 				boolean evenStep = false;
-				debugMessage("Initialize statistics variables", writers);
-				int scenariosPassed = 0;
-				int scenariosAutosaved = 0;
+				debugMessage("Initialize statistics variables");
 				long startTime = System.currentTimeMillis();
-				debugMessage("Execute scenario('s)", writers);
-				Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
-				while (scenarioFilesIterator.hasNext()) {
-					// increment suffix for each scenario
-					String correlationId = TESTTOOL_CORRELATIONID + "("+ correlationIdSuffixCounter.getAndIncrement() +")";
-					int scenarioPassed = RESULT_ERROR;
-					File scenarioFile = scenarioFilesIterator.next();
+				debugMessage("Execute scenario('s)");
+				ScenarioRunner scenarioRunner = new ScenarioRunner();
+				scenarioRunner.setTestTool(this);
+				scenarioRunner.runScenario(ibisContext, config, scenarioFiles, currentScenariosRootDirectory, appConstants, evenStep, waitBeforeCleanUp, logLevel);
+				config.flushWriters();
+				scenariosFailed = scenarioRunner.getScenariosFailed();
 
-					String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
-					String longName = scenarioFile.getAbsolutePath();
-					String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
-
-					if (writers!=null) {
-						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							writeHtml("<br/>", writers, false);
-							writeHtml("<br/>", writers, false);
-							writeHtml("<div class='scenario'>", writers, false);
-						}
-					}
-					debugMessage("Read property file " + scenarioFile.getName(), writers);
-					Properties properties = readProperties(appConstants, scenarioFile, writers);
-					List<String> steps = null;
-
-					if (properties != null) {
-						debugMessage("Read steps from property file", writers);
-						steps = getSteps(properties, writers);
-						if (steps != null) {
-							synchronized(STEP_SYNCHRONIZER) {
-								debugMessage("Open queues", writers);
-								Map<String, Queue> queues = QueueCreator.openQueues(scenarioDirectory, properties, ibisContext, writers, timeout, correlationId);
-								if (queues != null) {
-									debugMessage("Execute steps", writers);
-									boolean allStepsPassed = true;
-									boolean autoSaved = false;
-									Iterator<String> iterator = steps.iterator();
-									while (allStepsPassed && iterator.hasNext()) {
-										if (evenStep) {
-											writeHtml("<div class='even'>", writers, false);
-											evenStep = false;
-										} else {
-											writeHtml("<div class='odd'>", writers, false);
-											evenStep = true;
-										}
-										String step = iterator.next();
-										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
-										debugMessage("Execute step '" + stepDisplayName + "'", writers);
-										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout, correlationId);
-										if (stepPassed==RESULT_OK) {
-											stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
-										} else if (stepPassed==RESULT_AUTOSAVED) {
-											stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave", writers);
-											autoSaved = true;
-										} else {
-											stepFailedMessage("Step '" + stepDisplayName + "' failed", writers);
-											allStepsPassed = false;
-										}
-										writeHtml("</div>", writers, false);
-									}
-									if (allStepsPassed) {
-										if (autoSaved) {
-											scenarioPassed = RESULT_AUTOSAVED;
-										} else {
-											scenarioPassed = RESULT_OK;
-										}
-									}
-									debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up", writers);
-									try {
-										Thread.sleep(waitBeforeCleanUp);
-									} catch(InterruptedException e) {
-									}
-									debugMessage("Close queues", writers);
-									boolean remainingMessagesFound = closeQueues(queues, properties, writers, correlationId);
-									if (remainingMessagesFound) {
-										stepFailedMessage("Found one or more messages on queues or in database after scenario executed", writers);
-										scenarioPassed = RESULT_ERROR;
-									}
-								}
-							}
-						}
-					}
-
-					if (scenarioPassed==RESULT_OK) {
-						scenariosPassed++;
-						scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-						if (silent && LOG_LEVEL_ORDER.indexOf("[" + logLevel + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							try {
-								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
-							} catch (IOException e) {
-							}
-						}
-					} else if (scenarioPassed==RESULT_AUTOSAVED) {
-						scenariosAutosaved++;
-						scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave", writers);
-						if (silent) {
-							try {
-								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
-							} catch (IOException e) {
-							}
-						}
-					} else {
-						scenariosFailed++;
-						scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-						if (silent) {
-							try {
-								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
-							} catch (IOException e) {
-							}
-						}
-					}
-
-					writeHtml("</div>", writers, false);
-				}
 				long executeTime = System.currentTimeMillis() - startTime;
-				debugMessage("Print statistics information", writers);
-				int scenariosTotal = scenariosPassed + scenariosAutosaved + scenariosFailed;
+				debugMessage("Print statistics information");
+				int scenariosTotal = scenarioRunner.getScenariosPassed() + scenarioRunner.getScenariosAutosaved() + scenarioRunner.getScenariosFailed();
 				if (scenariosTotal == 0) {
-					scenariosTotalMessage("No scenarios found", writers, out, silent);
+					scenariosTotalMessage("No scenarios found");
 				} else {
-					if (writers!=null) {
-						if (LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
-							writeHtml("<br/>", writers, false);
-							writeHtml("<br/>", writers, false);
+					if (!config.isSilent()) {
+						if (LOG_LEVEL_ORDER.indexOf("[" + config.getLogLevel() + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
+							writeHtml("<br/><br/>",  false);
 						}
 					}
-					debugMessage("Print statistics information", writers);
-					if (scenariosPassed == scenariosTotal) {
+					debugMessage("Print statistics information");
+					String formattedTime = getFormattedTime(executeTime);
+					if (scenarioRunner.getScenariosPassed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
+							scenariosPassedTotalMessage("All scenarios passed (1 scenario executed in " + formattedTime + ")");
 						} else {
-							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
+							scenariosPassedTotalMessage("All scenarios passed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")");
 						}
-					} else if (scenariosFailed == scenariosTotal) {
+					} else if (scenarioRunner.getScenariosFailed() == scenariosTotal) {
 						if (scenariosTotal == 1) {
-							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + executeTime + " ms)", writers, out, silent);
+							scenariosFailedTotalMessage("All scenarios failed (1 scenario executed in " + formattedTime + ")");
 						} else {
-							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + executeTime + " ms)", writers, out, silent);
+							scenariosFailedTotalMessage("All scenarios failed (" + scenariosTotal + " scenarios executed in " + formattedTime + ")");
 						}
 					} else {
 						if (scenariosTotal == 1) {
-							scenariosTotalMessage("1 scenario executed in " + executeTime + " ms", writers, out, silent);
+							scenariosTotalMessage("1 scenario executed in " + formattedTime);
 						} else {
-							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + executeTime + " ms", writers, out, silent);
+							scenariosTotalMessage(scenariosTotal + " scenarios executed in " + formattedTime);
 						}
-						if (scenariosPassed == 1) {
-							scenariosPassedTotalMessage("1 scenario passed", writers, out, silent);
+						if (scenarioRunner.getScenariosPassed() == 1) {
+							scenariosPassedTotalMessage("1 scenario passed");
 						} else {
-							scenariosPassedTotalMessage(scenariosPassed + " scenarios passed", writers, out, silent);
+							scenariosPassedTotalMessage(scenarioRunner.getScenariosPassed() + " scenarios passed");
 						}
 						if (autoSaveDiffs) {
-							if (scenariosAutosaved == 1) {
-								scenariosAutosavedTotalMessage("1 scenario passed after autosave", writers, out, silent);
+							if (scenarioRunner.getScenariosAutosaved() == 1) {
+								scenariosAutosavedTotalMessage("1 scenario passed after autosave");
 							} else {
-								scenariosAutosavedTotalMessage(scenariosAutosaved + " scenarios passed after autosave", writers, out, silent);
+								scenariosAutosavedTotalMessage(scenarioRunner.getScenariosAutosaved() + " scenarios passed after autosave");
 							}
 						}
-						if (scenariosFailed == 1) {
-							scenariosFailedTotalMessage("1 scenario failed", writers, out, silent);
+						if (scenarioRunner.getScenariosFailed() == 1) {
+							scenariosFailedTotalMessage("1 scenario failed");
 						} else {
-							scenariosFailedTotalMessage(scenariosFailed + " scenarios failed", writers, out, silent);
+							scenariosFailedTotalMessage(scenarioRunner.getScenariosFailed() + " scenarios failed");
 						}
 					}
 				}
-				debugMessage("Start logging to htmlbuffer until form is written", writers);
-				if (writers!=null) {
-					writers.put("usehtmlbuffer", "start");
-				}
-				writeHtml("<br/>", writers, false);
-				writeHtml("<br/>", writers, false);
-				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute, autoScroll, writers);
-				debugMessage("Stop logging to htmlbuffer", writers);
-				if (writers!=null) {
-					writers.put("usehtmlbuffer", "stop");
-				}
-				writeHtml("", writers, true);
+				debugMessage("Start logging to htmlbuffer until form is written");
+				if (!config.isSilent())
+					config.setUseHtmlBuffer(true);
+				writeHtml("<br/><br/>",  false);
+				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute);
+				debugMessage("Stop logging to htmlbuffer");
+				if (!config.isSilent())
+					config.setUseHtmlBuffer(false);
+				writeHtml("",  true);
 			}
 		}
+		config.flushWriters();
 		return scenariosFailed;
 	}
 
-	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute, String autoScroll, Map<String, Object> writers) {
-		if (writers!=null) {
-			writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
+	private static String getFormattedTime(long executeTime) {
+		Duration duration = Duration.ofMillis(executeTime);
+		if (duration.toMinutesPart() == 0 && duration.toSecondsPart() == 0) {
+			// Only milliseconds (e.g. 123ms)
+			return duration.toMillisPart() + "ms";
+		} else if (duration.toMinutesPart() == 0) {
+			// Seconds and milliseconds (e.g. 1s 123ms)
+			return duration.toSecondsPart() + "s " + duration.toMillisPart() + "ms";
+		} else {
+			// Minutes, seconds and milliseconds (e.g. 1m 1s 123ms)
+			return duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s " + duration.toMillisPart() + "ms";
+		}
+	}
 
-			// scenario root directory drop down
-			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml("<td>Scenarios root directory</td>", writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml(TD_STARTING_TAG, writers, false);
-			writeHtml("<select name=\"scenariosrootdirectory\" onchange=\"updateScenarios()\">", writers, false);
-			Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
-			Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
-			while (scenariosRootDirectoriesIterator.hasNext()) {
-				String directory = scenariosRootDirectoriesIterator.next();
-				String description = scenariosRootDescriptionsIterator.next();
-				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(directory) + "\"";
-				if (scenariosRootDirectory.equals(directory)) {
-					option = option + " selected";
-				}
-				option = option + ">" + XmlEncodingUtils.encodeChars(description) + "</option>";
-				writeHtml(option, writers, false);
+	public void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute) {
+		if (config.isSilent())
+			return;
+
+		writeHtml("<form action=\"index.jsp\" method=\"post\">", false);
+
+		// scenario root directory drop down
+		writeHtml("<table style=\"float:left;height:50px\">", false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml("<td>Scenarios root directory</td>", false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml(TD_STARTING_TAG, false);
+		writeHtml("<select name=\"scenariosrootdirectory\" onchange=\"updateScenarios()\">", false);
+		Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
+		Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
+		while (scenariosRootDirectoriesIterator.hasNext()) {
+			String directory = scenariosRootDirectoriesIterator.next();
+			String description = scenariosRootDescriptionsIterator.next();
+			String option = "<option value=\"" + XmlEncodingUtils.encodeChars(directory) + "\"";
+			if (scenariosRootDirectory.equals(directory)) {
+				option = option + " selected";
 			}
-			writeHtml("</select>", writers, false);
-			writeHtml(TD_CLOSING_TAG, writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TABLE_CLOSING_TAG, writers, false);
+			option = option + ">" + XmlEncodingUtils.encodeChars(description) + "</option>";
+			writeHtml(option, false);
+		}
+		writeHtml("</select>", false);
+		writeHtml(TD_CLOSING_TAG, false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TABLE_CLOSING_TAG, false);
 
-			// Use a span to make IE put table on next line with a smaller window width
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml("<td>Wait before clean up (ms)</td>", writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml(TD_STARTING_TAG, writers, false);
-			writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", writers, false);
-			writeHtml(TD_CLOSING_TAG, writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TABLE_CLOSING_TAG, writers, false);
+		// Use a span to make IE put table on next line with a smaller window width
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
+		writeHtml("<table style=\"float:left;height:50px\">", false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml("<td>Wait before clean up (ms)</td>", false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml(TD_STARTING_TAG, false);
+		writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", false);
+		writeHtml(TD_CLOSING_TAG, false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TABLE_CLOSING_TAG, false);
 
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			// timeout box
-			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml("<td>Default timeout (ms)</td>", writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml(TD_STARTING_TAG, writers, false);
-			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", writers, false);
-			writeHtml(TD_CLOSING_TAG, writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TABLE_CLOSING_TAG, writers, false);
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
+		// timeout box
+		writeHtml("<table style=\"float:left;height:50px\">", false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml("<td>Default timeout (ms)</td>", false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml(TD_STARTING_TAG, false);
+		writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", false);
+		writeHtml(TD_CLOSING_TAG, false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TABLE_CLOSING_TAG, false);
 
-			// log level dropdown
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml("<td>Log level</td>", writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml(TD_STARTING_TAG, writers, false);
-			writeHtml("<select name=\"loglevel\">", writers, false);
-			for (String level : StringUtil.split(LOG_LEVEL_ORDER)) {
-				level = level.substring(1, level.length() - 1);
-				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(level) + "\"";
-				if (writers.get("loglevel").equals(level)) {
-					option = option + " selected";
-				}
-				option = option + ">" + XmlEncodingUtils.encodeChars(level) + "</option>";
-				writeHtml(option, writers, false);
+		// log level dropdown
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
+		writeHtml("<table style=\"float:left;height:50px\">", false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml("<td>Log level</td>", false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml(TD_STARTING_TAG, false);
+		writeHtml("<select name=\"loglevel\">", false);
+		for (String level : StringUtil.split(LOG_LEVEL_ORDER)) {
+			level = level.substring(1, level.length() - 1);
+			String option = "<option value=\"" + XmlEncodingUtils.encodeChars(level) + "\"";
+			if (config.getLogLevel().equals(level)) {
+				option = option + " selected";
 			}
-			writeHtml("</select>", writers, false);
-			writeHtml(TD_CLOSING_TAG, writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TABLE_CLOSING_TAG, writers, false);
+			option = option + ">" + XmlEncodingUtils.encodeChars(level) + "</option>";
+			writeHtml(option, false);
+		}
+		writeHtml("</select>", false);
+		writeHtml(TD_CLOSING_TAG, false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TABLE_CLOSING_TAG, false);
 
-			// Auto scroll checkbox
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml("<td>Auto scroll</td>", writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml(TD_STARTING_TAG, writers, false);
-			writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", writers, false);
-			if (autoScroll.equals("true")) {
-				writeHtml(" checked", writers, false);
+		// Auto scroll checkbox
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
+		writeHtml("<table style=\"float:left;height:50px\">", false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml("<td>Auto scroll</td>", false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml(TD_STARTING_TAG, false);
+		writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", false);
+		if (config.isAutoScroll()) {
+			writeHtml(" checked", false);
+		}
+		writeHtml(">", false);
+		writeHtml(TD_CLOSING_TAG, false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TABLE_CLOSING_TAG, false);
+
+		// Scenario(s)
+		writeHtml("<table style=\"clear:both;float:left;height:50px\">", false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml("<td>Scenario(s)</td>", false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml(TD_STARTING_TAG, false);
+		writeHtml("<select name=\"execute\">", false);
+		debugMessage("Fill execute select box.");
+		Set<String> addedDirectories = new HashSet<>();
+		Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
+		while (scenarioFilesIterator.hasNext()) {
+			File scenarioFile = scenarioFilesIterator.next();
+			String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
+			Properties properties = readProperties(appConstants, scenarioFile);
+			debugMessage("Add parent directories of '" + scenarioDirectory + "'");
+			int i = -1;
+			String scenarioDirectoryCanonicalPath;
+			String scenariosRootDirectoryCanonicalPath;
+			try {
+				scenarioDirectoryCanonicalPath = new File(scenarioDirectory).getCanonicalPath();
+				scenariosRootDirectoryCanonicalPath = new File(scenariosRootDirectory).getCanonicalPath();
+			} catch (IOException e) {
+				scenarioDirectoryCanonicalPath = scenarioDirectory;
+				scenariosRootDirectoryCanonicalPath = scenariosRootDirectory;
+				errorMessage("Could not get canonical path: " + e.getMessage(), e);
 			}
-			writeHtml(">", writers, false);
-			writeHtml(TD_CLOSING_TAG, writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TABLE_CLOSING_TAG, writers, false);
-
-			// Scenario(s)
-			writeHtml("<table style=\"clear:both;float:left;height:50px\">", writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml("<td>Scenario(s)</td>", writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml(TD_STARTING_TAG, writers, false);
-			writeHtml("<select name=\"execute\">", writers, false);
-			debugMessage("Fill execute select box.", writers);
-			Set<String> addedDirectories = new HashSet<>();
-			Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
-			while (scenarioFilesIterator.hasNext()) {
-				File scenarioFile = scenarioFilesIterator.next();
-				String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
-				Properties properties = readProperties(appConstants, scenarioFile, writers);
-				debugMessage("Add parent directories of '" + scenarioDirectory + "'", writers);
-				int i = -1;
-				String scenarioDirectoryCanonicalPath;
-				String scenariosRootDirectoryCanonicalPath;
-				try {
-					scenarioDirectoryCanonicalPath = new File(scenarioDirectory).getCanonicalPath();
-					scenariosRootDirectoryCanonicalPath = new File(scenariosRootDirectory).getCanonicalPath();
-				} catch(IOException e) {
-					scenarioDirectoryCanonicalPath = scenarioDirectory;
-					scenariosRootDirectoryCanonicalPath = scenariosRootDirectory;
-					errorMessage("Could not get canonical path: " + e.getMessage(), e, writers);
-				}
-				if (scenarioDirectoryCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
-					i = scenariosRootDirectory.length() - 1;
-					while (i != -1) {
-						String longName = scenarioDirectory.substring(0, i + 1);
-						debugMessage("longName: '" + longName + "'", writers);
-						if (!addedDirectories.contains(longName)) {
-							String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
-							String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
-							debugMessage("paramExecute: '" + paramExecute + "'", writers);
-							if (paramExecute != null && paramExecute.equals(longName)) {
-								option = option + " selected";
-							}
-							option = option + ">" + XmlEncodingUtils.encodeChars(shortName) + "</option>";
-							writeHtml(option, writers, false);
-							addedDirectories.add(longName);
+			if (scenarioDirectoryCanonicalPath.startsWith(scenariosRootDirectoryCanonicalPath)) {
+				i = scenariosRootDirectory.length() - 1;
+				while (i != -1) {
+					String longName = scenarioDirectory.substring(0, i + 1);
+					debugMessage("longName: '" + longName + "'");
+					if (!addedDirectories.contains(longName)) {
+						String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
+						String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
+						debugMessage("paramExecute: '" + paramExecute + "'");
+						if (paramExecute != null && paramExecute.equals(longName)) {
+							option = option + " selected";
 						}
-						i = scenarioDirectory.indexOf(File.separator, i + 1);
+						option = option + ">" + XmlEncodingUtils.encodeChars(shortName) + "</option>";
+						writeHtml(option, false);
+						addedDirectories.add(longName);
 					}
-					String longName = scenarioFile.getAbsolutePath();
-					String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
-					debugMessage("shortName: '" + shortName + "'", writers);
-					String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
-					if (paramExecute != null && paramExecute.equals(longName)) {
-						option = option + " selected";
-					}
-					option = option + ">" + XmlEncodingUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
-					writeHtml(option, writers, false);
+					i = scenarioDirectory.indexOf(File.separator, i + 1);
 				}
+				String longName = scenarioFile.getAbsolutePath();
+				String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
+				debugMessage("shortName: '" + shortName + "'");
+				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
+				if (paramExecute != null && paramExecute.equals(longName)) {
+					option = option + " selected";
+				}
+				option = option + ">" + XmlEncodingUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
+				writeHtml(option, false);
 			}
-			writeHtml("</select>", writers, false);
-			writeHtml(TD_CLOSING_TAG, writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TABLE_CLOSING_TAG, writers, false);
+		}
+		writeHtml("</select>", false);
+		writeHtml(TD_CLOSING_TAG, false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TABLE_CLOSING_TAG, false);
 
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			// submit button
-			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml("<td>&nbsp;</td>", writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TR_STARTING_TAG, writers, false);
-			writeHtml("<td align=\"right\">", writers, false);
-			writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\" id=\"submit\">", writers, false);
-			writeHtml(TD_CLOSING_TAG, writers, false);
-			writeHtml(TR_CLOSING_TAG, writers, false);
-			writeHtml(TABLE_CLOSING_TAG, writers, false);
+		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", false);
+		// submit button
+		writeHtml("<table style=\"float:left;height:50px\">", false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml("<td>&nbsp;</td>", false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TR_STARTING_TAG, false);
+		writeHtml("<td align=\"right\">", false);
+		writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\" id=\"submit\">", false);
+		writeHtml(TD_CLOSING_TAG, false);
+		writeHtml(TR_CLOSING_TAG, false);
+		writeHtml(TABLE_CLOSING_TAG, false);
 
-			writeHtml("</form>", writers, false);
-			writeHtml("<br clear=\"all\"/>", writers, false);
+		writeHtml("</form>", false);
+		writeHtml("<br clear=\"all\"/>", false);
+		config.flushWriters();
+	}
+
+	public void write(String html, boolean isHtmlType, String method, boolean scroll) {
+		if (config.isSilent()) {
+			return;
+		}
+
+		if (isHtmlType && !config.isUseHtmlBuffer()) {
+			try {
+				config.getOut().write(config.getHtmlBuffer().toString());
+			} catch (IOException ignored) {
+			}
+			config.setUseHtmlBuffer(false);
+		}
+
+		Writer writer = config.getOut();
+		if (!isHtmlType && config.isUseLogBuffer()) {
+			writer = config.getLogBuffer();
+		} else if (isHtmlType && config.isUseHtmlBuffer()) {
+			writer = config.getHtmlBuffer();
+		}
+		if (method == null || LOG_LEVEL_ORDER.indexOf("[" + config.getLogLevel() + "]") <= LOG_LEVEL_ORDER.indexOf("[" + method + "]")) {
+			try {
+				writer.write(html + "\n");
+				if (scroll && config.isAutoScroll()) {
+					writer.write("<script type=\"text/javascript\"><!--\n");
+					writer.write("scrollToBottom();\n");
+					writer.write("--></script>\n");
+				}
+			} catch (IOException e) {
+			}
 		}
 	}
 
-	public static void write(String html, String type, String method, Map<String, Object> writers, boolean scroll) {
-		if (writers!=null) {
-			String useBuffer = (String)writers.get("use" + type + "buffer");
-			if (useBuffer.equals("start")) {
-				useBuffer = "true";
-				writers.put("use" + type + "buffer", useBuffer);
-			} else if (useBuffer.equals("stop")) {
-				Writer out = (Writer)writers.get("out");
-				StringWriter buffer = (StringWriter)writers.get(type + "buffer");
-				try {
-					out.write(buffer.toString());
-				} catch(IOException ignored) {
-				}
-				useBuffer = "false";
-				writers.put("use" + type + "buffer", useBuffer);
-			}
-			Writer writer;
-			if (useBuffer.equals("true")) {
-				writer = (Writer)writers.get(type + "buffer");
-			} else {
-				writer = (Writer)writers.get("out");
-			}
-			if (method == null || LOG_LEVEL_ORDER.indexOf("[" + (String)writers.get("loglevel") + "]") <= LOG_LEVEL_ORDER.indexOf("[" + method + "]")) {
-				try {
-					writer.write(html + "\n");
-					if (scroll && "true".equals(writers.get("autoscroll"))) {
-						writer.write("<script type=\"text/javascript\"><!--\n");
-						writer.write("scrollToBottom();\n");
-						writer.write("--></script>\n");
-					}
-					writer.flush();
-				} catch(IOException e) {
-				}
-			}
-		}
+	public void writeHtml(String html, boolean scroll) {
+		write(html, true, null, scroll);
 	}
 
-	public static void writeHtml(String html, Map<String, Object> writers, boolean scroll) {
-		write(html, "html", null, writers, scroll);
+	public void writeLog(String html, String method, boolean scroll) {
+		write(html, false, method, scroll);
 	}
 
-	public static void writeLog(String html, String method, Map<String, Object> writers, boolean scroll) {
-		write(html, "log", method, writers, scroll);
-	}
-
-	public static void debugMessage(String message, Map<String, Object> writers) {
+	public void debugMessage(String message) {
 		String method = "debug";
 		logger.debug(message);
-		writeLog(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, writers, false);
+		writeLog(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, false);
 	}
 
-	public static void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage, Map<String, Object> writers) {
-		if (writers!=null) {
-			String method = "pipeline messages";
-			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-			messageCounter ++;
+	public void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage) {
+		if (config.isSilent()) return;
 
-			writeLog("<div class='message container'>", method, writers, false);
-			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);
+		String method = "pipeline messages";
+		config.incrementMessageCounter();
 
-			writers.put("messagecounter", new Integer(messageCounter));
-		}
+		writeLog("<div class='message container'>", method, false);
+		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, false);
+		writeLog(writeCommands("messagebox" + config.getMessageCounter(), true, null), method, false);
+		writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, false);
+		writeLog("<textarea cols='100' rows='10' id='messagebox" + config.getMessageCounter() + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, false);
+		writeLog("</div>", method, false);
 	}
 
-	public static void debugPipelineMessagePreparedForDiff(String stepDisplayName, String message, String pipelineMessage, Map<String, Object> writers) {
-		if (writers!=null) {
-			String method = "pipeline messages prepared for diff";
-			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-			messageCounter ++;
+	public void debugPipelineMessagePreparedForDiff(String stepDisplayName, String message, String pipelineMessage) {
+		if (config.isSilent()) return;
+		String method = "pipeline messages prepared for diff";
+		config.incrementMessageCounter();
 
-			writeLog("<div class='message container'>", method, writers, false);
-			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);
-
-			writers.put("messagecounter", new Integer(messageCounter));
-		}
+		writeLog("<div class='message container'>", method, false);
+		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, false);
+		writeLog(writeCommands("messagebox" + config.getMessageCounter(), true, null), method, false);
+		writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, false);
+		writeLog("<textarea cols='100' rows='10' id='messagebox" + config.getMessageCounter() + "'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", method, false);
+		writeLog("</div>", method, false);
 	}
 
-	public static void wrongPipelineMessage(String message, String pipelineMessage, Map<String, Object> writers) {
-		if (writers!=null) {
-			String method = "wrong pipeline messages";
-			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-			messageCounter ++;
+	public void wrongPipelineMessage(String message, String pipelineMessage) {
+		if (config.isSilent()) return;
+		String method = "wrong pipeline messages";
+		config.incrementMessageCounter();
 
-			writeLog("<div class='message container'>", method, writers, false);
-			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);
-
-			writers.put("messagecounter", new Integer(messageCounter));
-		}
+		writeLog("<div class='message container'>", method, false);
+		writeLog(writeCommands("messagebox" + config.getMessageCounter(), true, null), method, false);
+		writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, false);
+		writeLog("<textarea cols='100' rows='10' id='messagebox" + config.getMessageCounter() + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, false);
+		writeLog("</div>", method, false);
 	}
 
-	public static void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected, Map<String, Object> writers) {
-		if (writers!=null) {
-			String method = "wrong pipeline messages";
-			int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
-			String formName = "scenario" + scenarioCounter + "Wpm";
-			String resultBoxId = formName + "ResultBox";
-			String expectedBoxId = formName + "ExpectedBox";
-			String diffBoxId = formName + "DiffBox";
-
-			writeLog("<div class='error container'>", method, writers, false);
-			writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
-			writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
-			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-
-			writeLog("<hr/>", method, writers, false);
-
-			writeLog("<div class='resultContainer'>", method, writers, false);
-			writeLog(writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"), method, writers, false);
-			writeLog("<h5>Result (raw):</h5>", method, writers, false);
-			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);
-
-			writeLog("<div class='expectedContainer'>", method, writers, false);
-			writeLog(writeCommands(expectedBoxId, true, null), method, writers, true);
-			writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
-			writeLog("<input type='hidden' name='cmd' />", method, writers, false);
-			writeLog("<h5>Expected (raw):</h5>", method, writers, false);
-			writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);
-
-			writeLog("<hr/>", method, writers, false);
-
-			writeLog("<div class='differenceContainer'>", method, writers, false);
-			String btn1 = "<a class=\"['"+resultBoxId+"','"+expectedBoxId+"']|indentCompare|"+diffBoxId+"\" href=\"javascript:void(0)\">compare</a>";
-			String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
-			writeLog(writeCommands(diffBoxId, false, btn1+btn2), method, writers, false);
-			writeLog("<h5>Differences:</h5>", method, writers, false);
-			writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
-			writeLog("</div>", method, writers, false);
-
-			String scenarioPassedFailed = "scenario passed/failed";
-			if (LOG_LEVEL_ORDER.indexOf(
-					"[" + (String) writers.get("loglevel") + "]") == LOG_LEVEL_ORDER
-							.indexOf("[" + scenarioPassedFailed + "]")) {
-				writeLog("<h5 hidden='true'>Difference description:</h5>",
-						scenarioPassedFailed, writers, false);
-				writeLog(
-						"<p class='diffMessage' hidden='true'>"
-								+ XmlEncodingUtils.encodeChars(message) + "</p>",
-						scenarioPassedFailed, writers, true);
-			} else {
-				writeLog("<h5>Difference description:</h5>", method, writers,
-						false);
-				writeLog("<p class='diffMessage'>" + XmlEncodingUtils.encodeChars(message)
-						+ "</p>", method, writers, true);
-				writeLog("</form>", method, writers, false);
-				writeLog("</div>", method, writers, false);
+	public void wrongPipelineMessage(String stepDisplayName, String message, String pipelineMessage, String pipelineMessageExpected) {
+		if (config.isSilent()) {
+			try {
+				config.getSilentOut().write(message);
+			} catch (IOException e) {
 			}
+			return;
+		}
+		String method = "wrong pipeline messages";
+		String formName = "scenario" + config.getScenarioCounter() + "Wpm";
+		String resultBoxId = formName + "ResultBox";
+		String expectedBoxId = formName + "ExpectedBox";
+		String diffBoxId = formName + "DiffBox";
 
-			scenarioCounter++;
-			writers.put("scenariocounter", new Integer(scenarioCounter));
+		writeLog("<div class='error container'>", method, false);
+		writeLog("<form name='" + formName + "' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, false);
+		writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
+		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, false);
+
+		writeLog("<hr/>", method, false);
+
+		writeLog("<div class='resultContainer'>", method, false);
+		writeLog(writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"), method, false);
+		writeLog("<h5>Result (raw):</h5>", method, false);
+		writeLog("<textarea name='resultBox' id='" + resultBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", method, false);
+		writeLog("</div>", method, false);
+
+		writeLog("<div class='expectedContainer'>", method, false);
+		writeLog(writeCommands(expectedBoxId, true, null), method, true);
+		writeLog("<input type='hidden' name='expectedFileName' value='" + zeefVijlNeem + "' />", method, false);
+		writeLog("<input type='hidden' name='cmd' />", method, false);
+		writeLog("<h5>Expected (raw):</h5>", method, false);
+		writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, false);
+		writeLog("</div>", method, false);
+
+		writeLog("<hr/>", method, false);
+
+		writeLog("<div class='differenceContainer'>", method, false);
+		String btn1 = "<a class=\"['" + resultBoxId + "','" + expectedBoxId + "']|indentCompare|" + diffBoxId + "\" href=\"javascript:void(0)\">compare</a>";
+		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
+		writeLog(writeCommands(diffBoxId, false, btn1 + btn2), method, false);
+		writeLog("<h5>Differences:</h5>", method, false);
+		writeLog("<pre id='" + diffBoxId + "' class='diffBox'></pre>", method, false);
+		writeLog("</div>", method, false);
+
+		String scenarioPassedFailed = "scenario passed/failed";
+		if (LOG_LEVEL_ORDER.indexOf("[" + config.getLogLevel() + "]") == LOG_LEVEL_ORDER.indexOf("[" + scenarioPassedFailed + "]")) {
+			writeLog("<h5 hidden='true'>Difference description:</h5>", scenarioPassedFailed, false);
+			writeLog("<p class='diffMessage' hidden='true'>" + XmlEncodingUtils.encodeChars(message) + "</p>",
+					scenarioPassedFailed, true);
 		} else {
-			if (silentOut!=null) {
-				try {
-					silentOut.write(message);
-				} catch (IOException e) {
-				}
-			}
+			writeLog("<h5>Difference description:</h5>", method, false);
+			writeLog("<p class='diffMessage'>" + XmlEncodingUtils.encodeChars(message)	+ "</p>", method, true);
+			writeLog("</form>", method, false);
+			writeLog("</div>", method, false);
 		}
+		config.incrementScenarioCounter();
 	}
 
-	public static void wrongPipelineMessagePreparedForDiff(String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff, Map<String, Object> writers) {
-		if (writers!=null) {
-			String method = "wrong pipeline messages prepared for diff";
-			int scenarioCounter = ((Integer)writers.get("scenariocounter")).intValue();
-			int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-			String formName = "scenario" + scenarioCounter + "Wpmpfd";
-			String resultBoxId = formName + "ResultBox";
-			String expectedBoxId = formName + "ExpectedBox";
-			String diffBoxId = formName + "DiffBox";
+	public void wrongPipelineMessagePreparedForDiff(String stepDisplayName, String pipelineMessagePreparedForDiff, String pipelineMessageExpectedPreparedForDiff) {
+		if (config.isSilent()) return;
+		String method = "wrong pipeline messages prepared for diff";
+		String formName = "scenario" + config.getScenarioCounter() + "Wpmpfd";
+		String resultBoxId = formName + "ResultBox";
+		String expectedBoxId = formName + "ExpectedBox";
+		String diffBoxId = formName + "DiffBox";
 
-			writeLog("<div class='error container'>", method, writers, false);
-			writeLog("<form name='"+formName+"' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, writers, false);
-			writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, writers, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
-			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
-			messageCounter ++;
+		writeLog("<div class='error container'>", method, false);
+		writeLog("<form name='" + formName + "' action='saveResultToFile.jsp' method='post' target='saveResultWindow' accept-charset='UTF-8'>", method, false);
+		writeLog("<input type='hidden' name='iehack' value='&#9760;' />", method, false); // http://stackoverflow.com/questions/153527/setting-the-character-encoding-in-form-submit-for-internet-explorer
+		writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, false);
+		config.incrementMessageCounter();
 
-			writeLog("<hr/>", method, writers, false);
+		writeLog("<hr/>", method, false);
 
-			writeLog("<div class='resultContainer'>", method, writers, false);
-			writeLog(writeCommands(resultBoxId, true, null), method, writers, false);
-			writeLog("<h5>Result (prepared for diff):</h5>", method, writers, false);
-			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlEncodingUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);
+		writeLog("<div class='resultContainer'>", method, false);
+		writeLog(writeCommands(resultBoxId, true, null), method, false);
+		writeLog("<h5>Result (prepared for diff):</h5>", method, false);
+		writeLog("<textarea name='resultBox' id='" + resultBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, false);
+		writeLog("</div>", method, false);
 
-			messageCounter++;
-			writeLog("<div class='expectedContainer'>", method, writers, false);
-			writeLog(writeCommands(expectedBoxId, true, null), method, writers, false);
-			writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
-			writeLog("<input type='hidden' name='cmd' />", method, writers, false);
-			writeLog("<h5>Expected (prepared for diff):</h5>", method, writers, false);
-			writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
-			writeLog("</div>", method, writers, false);
+		config.incrementMessageCounter();
+		writeLog("<div class='expectedContainer'>", method, false);
+		writeLog(writeCommands(expectedBoxId, true, null), method, false);
+		writeLog("<input type='hidden' name='expectedFileName' value='" + zeefVijlNeem + "' />", method, false);
+		writeLog("<input type='hidden' name='cmd' />", method, false);
+		writeLog("<h5>Expected (prepared for diff):</h5>", method, false);
+		writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, false);
+		writeLog("</div>", method, false);
 
-			writeLog("<hr/>", method, writers, false);
+		writeLog("<hr/>", method, false);
 
-			messageCounter++;
-			writeLog("<div class='differenceContainer'>", method, writers, false);
+		config.incrementMessageCounter();
+		writeLog("<div class='differenceContainer'>", method, false);
 
-			String btn1 = "<a class=\"['"+resultBoxId+"','"+expectedBoxId+"']|indentCompare|"+diffBoxId+"\" href=\"javascript:void(0)\">compare</a>";
-			String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
-			writeLog(writeCommands(diffBoxId, false, btn1+btn2), method, writers, false);
-			writeLog("<h5>Differences:</h5>", method, writers, false);
-			writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
-			writeLog("</div>", method, writers, false);
+		String btn1 = "<a class=\"['" + resultBoxId + "','" + expectedBoxId + "']|indentCompare|" + diffBoxId + "\" href=\"javascript:void(0)\">compare</a>";
+		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
+		writeLog(writeCommands(diffBoxId, false, btn1 + btn2), method, false);
+		writeLog("<h5>Differences:</h5>", method, false);
+		writeLog("<pre id='" + diffBoxId + "' class='diffBox'></pre>", method, false);
+		writeLog("</div>", method, false);
 
-			writeLog("</form>", method, writers, false);
-			writeLog("</div>", method, writers, false);
-
-			writers.put("messagecounter", new Integer(messageCounter));
-		}
+		writeLog("</form>", method, false);
+		writeLog("</div>", method, false);
 	}
 
 	private static String writeCommands(String target, boolean textArea, String customCommand) {
-		String commands = "";
-
-		commands += "<div class='commands'>";
-		commands += "<span class='widthCommands'><a href='javascript:void(0);' class='" + target + "|widthDown'>-</a><a href='javascript:void(0);' class='" + target + "|widthExact'>width</a><a href='javascript:void(0);' class='" + target + "|widthUp'>+</a></span>";
-		commands += "<span class='heightCommands'><a href='javascript:void(0);' class='" + target + "|heightDown'>-</a><a href='javascript:void(0);' class='" + target + "|heightExact'>height</a><a href='javascript:void(0);' class='" + target + "|heightUp'>+</a></span>";
+		StringBuilder commands = new StringBuilder();
+		commands.append("<div class='commands'>");
+		commands.append("<span class='widthCommands'><a href='javascript:void(0);' class='").append(target).append("|widthDown'>-</a><a href='javascript:void(0);' class='").append(target).append("|widthExact'>width</a><a href='javascript:void(0);' class='").append(target).append("|widthUp'>+</a></span>");
+		commands.append("<span class='heightCommands'><a href='javascript:void(0);' class='").append(target).append("|heightDown'>-</a><a href='javascript:void(0);' class='").append(target).append("|heightExact'>height</a><a href='javascript:void(0);' class='").append(target).append("|heightUp'>+</a></span>");
 		if (textArea) {
-			commands += "<a href='javascript:void(0);' class='" + target + "|copy'>copy</a> ";
-			commands += "<a href='javascript:void(0);' class='" + target + "|xmlFormat'>indent</a>";
+			commands.append("<a href='javascript:void(0);' class='").append(target).append("|copy'>copy</a> ");
+			commands.append("<a href='javascript:void(0);' class='").append(target).append("|xmlFormat'>indent</a>");
 		}
 		if (customCommand != null) {
-			commands += " " + customCommand;
+			commands.append(" ").append(customCommand);
 		}
-		commands += "</div>";
-
-
-		return commands;
+		commands.append("</div>");
+		return commands.toString();
 	}
 
-	public static void stepPassedMessage(String message, Map<String, Object> writers) {
+	public void stepPassedMessage(String message) {
 		String method = "step passed/failed";
-		writeLog("<h3 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, writers, true);
+		writeLog("<h3 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
 	}
 
-	public static void stepAutosavedMessage(String message, Map<String, Object> writers) {
+	public void stepAutosavedMessage(String message) {
 		String method = "step passed/failed";
-		writeLog("<h3 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, writers, true);
+		writeLog("<h3 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
 	}
 
-	public static void stepFailedMessage(String message, Map<String, Object> writers) {
+	public void stepFailedMessage(String message) {
 		String method = "step passed/failed";
-		writeLog("<h3 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, writers, true);
+		writeLog("<h3 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
 	}
 
-	public static void scenarioPassedMessage(String message, Map<String, Object> writers) {
+	public void scenarioPassedMessage(String message) {
 		String method = "scenario passed/failed";
-		writeLog("<h2 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, writers, true);
+		writeLog("<h2 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
 	}
 
-	public static void scenarioAutosavedMessage(String message, Map<String, Object> writers) {
+	public void scenarioAutosavedMessage(String message) {
 		String method = "scenario passed/failed";
-		writeLog("<h2 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, writers, true);
+		writeLog("<h2 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
 	}
 
-	public static void scenarioFailedMessage(String message, Map<String, Object> writers) {
+	public void scenarioFailedMessage(String message) {
 		String method = "scenario failed";
-		writeLog("<h2 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, writers, true);
+		writeLog("<h2 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
 	}
 
-	public static void scenariosTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
-		if (silent) {
+	public void scenariosTotalMessage(String message) {
+		if (config.isSilent()) {
 			try {
-				out.write(message);
+				config.getOut().write(message);
 			} catch (IOException e) {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='total'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='total'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, true);
 		}
 	}
 
-	public static void scenariosPassedTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
-		if (silent) {
+	public void scenariosPassedTotalMessage(String message) {
+		if (config.isSilent()) {
 			try {
-				out.write(message);
+				config.getOut().write(message);
 			} catch (IOException e) {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, true);
 		}
 	}
 
-	public static void scenariosAutosavedTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
-		if (silent) {
+	public void scenariosAutosavedTotalMessage(String message) {
+		if (config.isSilent()) {
 			try {
-				out.write(message);
+				config.getOut().write(message);
 			} catch (IOException e) {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, true);
 		}
 	}
 
-	public static void scenariosFailedTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
-		if (silent) {
+	public void scenariosFailedTotalMessage(String message) {
+		if (config.isSilent()) {
 			try {
-				out.write(message);
+				config.getOut().write(message);
 			} catch (IOException e) {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, true);
 		}
 	}
 
-	public static void errorMessage(String message, Map<String, Object> writers) {
+	public void errorMessage(String message) {
 		String method = "error";
-		writeLog("<h1 class='error'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
-		if (silentOut!=null) {
+		writeLog("<h1 class='error'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, true);
+		if (config.getSilentOut() != null) {
 			try {
-				silentOut.write(message);
+				config.getSilentOut().write(message);
 			} catch (IOException e) {
 			}
 		}
 	}
 
-	public static void errorMessage(String message, Exception exception, Map<String, Object> writers) {
-		errorMessage(message, writers);
-		if (writers!=null) {
-			String method = "error";
-			Throwable throwable = exception;
-			while (throwable != null) {
-				StringWriter stringWriter = new StringWriter();
-				PrintWriter printWriter = new PrintWriter(stringWriter);
-				throwable.printStackTrace(printWriter);
-				printWriter.close();
-				int messageCounter = ((Integer)writers.get("messagecounter")).intValue();
-				messageCounter++;
-				writeLog("<div class='container'>", method, writers, false);
-				writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-				writeLog("<h5>Stack trace:</h5>", method, writers, false);
-				writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, writers, false);
-				writeLog("</div>", method, writers, false);
-				writers.put("messagecounter", new Integer(messageCounter));
-				throwable = throwable.getCause();
-			}
+	public void errorMessage(String message, Exception exception) {
+		errorMessage(message);
+		if (config.isSilent()) return;
+
+		String method = "error";
+		Throwable throwable = exception;
+		while (throwable != null) {
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter printWriter = new PrintWriter(stringWriter);
+			throwable.printStackTrace(printWriter);
+			printWriter.close();
+			config.incrementMessageCounter();
+			writeLog("<div class='container'>", method, false);
+			writeLog(writeCommands("messagebox" + config.getMessageCounter(), true, null), method, false);
+			writeLog("<h5>Stack trace:</h5>", method, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + config.getMessageCounter() + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, false);
+			writeLog("</div>", method, false);
+			throwable = throwable.getCause();
 		}
 	}
 
-	public static String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, Map<String, Object> writers) {
+	public String initScenariosRootDirectories(String realPath, String paramScenariosRootDirectory, List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String currentScenariosRootDirectory = null;
 		if (realPath == null) {
-			errorMessage("Could not read webapp real path", writers);
+			errorMessage("Could not read webapp real path");
 		} else {
 			if (!realPath.endsWith(File.separator)) {
 				realPath = realPath + File.separator;
@@ -1002,27 +856,27 @@ public class TestTool {
 			String description = appConstants.getProperty("scenariosroot" + j + ".description");
 			while (directory != null) {
 				if (description == null) {
-					errorMessage("Could not find description for root directory '" + directory + "'", writers);
+					errorMessage("Could not find description for root directory '" + directory + "'");
 				} else if (scenariosRoots.get(description) != null) {
-					errorMessage("A root directory named '" + description + "' already exist", writers);
+					errorMessage("A root directory named '" + description + "' already exist");
 				} else {
 					String parent = realPath;
 					String m2eFileName = appConstants.getProperty("scenariosroot" + j + ".m2e.pom.properties");
 					if (m2eFileName != null) {
 						File m2eFile = new File(realPath, m2eFileName);
 						if (m2eFile.exists()) {
-							debugMessage("Read m2e pom.properties: " + m2eFileName, writers);
-							Properties m2eProperties = readProperties(null, m2eFile, false, writers);
+							debugMessage("Read m2e pom.properties: " + m2eFileName);
+							Properties m2eProperties = readProperties(null, m2eFile, false);
 							parent = m2eProperties.getProperty("m2e.projectLocation");
-							debugMessage("Use m2e parent: " + parent, writers);
+							debugMessage("Use m2e parent: " + parent);
 						}
 					}
 					directory = getAbsolutePath(parent, directory, true);
 					if (new File(directory).exists()) {
-						debugMessage("directory for ["+description+"] exists: " + directory, writers);
+						debugMessage("directory for ["+description+"] exists: " + directory);
 						scenariosRoots.put(description, directory);
 					} else {
-						debugMessage("directory ["+directory+"] for ["+description+"] does not exist, parent ["+parent+"]", writers);
+						debugMessage("directory ["+directory+"] for ["+description+"] does not exist, parent ["+parent+"]");
 						scenariosRootsBroken.put(description, directory);
 					}
 				}
@@ -1034,7 +888,7 @@ public class TestTool {
 			treeSet.addAll(scenariosRoots.keySet());
 			Iterator<String> iterator = treeSet.iterator();
 			while (iterator.hasNext()) {
-				description = (String)iterator.next();
+				description = iterator.next();
 				scenariosRootDescriptions.add(description);
 				scenariosRootDirectories.add(scenariosRoots.get(description));
 			}
@@ -1042,20 +896,20 @@ public class TestTool {
 			treeSet.addAll(scenariosRootsBroken.keySet());
 			iterator = treeSet.iterator();
 			while (iterator.hasNext()) {
-				description = (String)iterator.next();
+				description = iterator.next();
 				scenariosRootDescriptions.add("X " + description);
 				scenariosRootDirectories.add(scenariosRootsBroken.get(description));
 			}
-			debugMessage("Read scenariosrootdirectory parameter", writers);
-			debugMessage("Get current scenarios root directory", writers);
-			if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
+			debugMessage("Read scenariosrootdirectory parameter");
+			debugMessage("Get current scenarios root directory");
+			if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.isEmpty()) {
 				String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");
 				if (scenariosRootDefault != null) {
 					currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
 				}
 				if (currentScenariosRootDirectory == null
-						&& scenariosRootDirectories.size() > 0) {
-					currentScenariosRootDirectory = (String)scenariosRootDirectories.get(0);
+						&& !scenariosRootDirectories.isEmpty()) {
+					currentScenariosRootDirectory = scenariosRootDirectories.get(0);
 				}
 			} else {
 				currentScenariosRootDirectory = paramScenariosRootDirectory;
@@ -1064,43 +918,43 @@ public class TestTool {
 		return currentScenariosRootDirectory;
 	}
 
-	public static List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory, Map<String, Object> writers) {
+	public List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory) {
 		List<File> scenarioFiles = new ArrayList<>();
-		debugMessage("List all files in directory '" + scenariosDirectory + "'", writers);
+		debugMessage("List all files in directory '" + scenariosDirectory + "'");
 		File[] files = new File(scenariosDirectory).listFiles();
 		if (files == null) {
-			debugMessage("Could not read files from directory '" + scenariosDirectory + "'", writers);
-		} else {
-			debugMessage("Sort files", writers);
-			Arrays.sort(files);
-			debugMessage("Filter out property files containing a 'scenario.description' property", writers);
-			for (int i = 0; i < files.length; i++) {
-				File file = files[i];
-				if (file.getName().endsWith(".properties")) {
-					Properties properties = readProperties(appConstants, file, writers);
-					if (properties != null && properties.get("scenario.description") != null) {
-						String active = properties.getProperty("scenario.active", "true");
-						String unstable = properties.getProperty("adapter.unstable", "false");
-						if (active.equalsIgnoreCase("true") && unstable.equalsIgnoreCase("false")) {
-							scenarioFiles.add(file);
-						}
+			debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
+			return scenarioFiles;
+		}
+		debugMessage("Sort files");
+		Arrays.sort(files);
+		debugMessage("Filter out property files containing a 'scenario.description' property");
+		for (int i = 0; i < files.length; i++) {
+			File file = files[i];
+			if (file.getName().endsWith(".properties")) {
+				Properties properties = readProperties(appConstants, file);
+				if (properties != null && properties.get("scenario.description") != null) {
+					String active = properties.getProperty("scenario.active", "true");
+					String unstable = properties.getProperty("adapter.unstable", "false");
+					if (active.equalsIgnoreCase("true") && unstable.equalsIgnoreCase("false")) {
+						scenarioFiles.add(file);
 					}
-				} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
-					scenarioFiles.addAll(readScenarioFiles(appConstants, file.getAbsolutePath(), writers));
 				}
+			} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
+				scenarioFiles.addAll(readScenarioFiles(appConstants, file.getAbsolutePath()));
 			}
 		}
-		debugMessage(scenarioFiles.size() + " scenario files found", writers);
+		debugMessage(scenarioFiles.size() + " scenario files found");
 		return scenarioFiles;
 	}
 
 	@Nullable
-	public static Properties readProperties(AppConstants appConstants, File propertiesFile, Map<String, Object> writers) {
-		return readProperties(appConstants, propertiesFile, true, writers);
+	public Properties readProperties(AppConstants appConstants, File propertiesFile) {
+		return readProperties(appConstants, propertiesFile, true);
 	}
 
 	@Nullable
-	public static Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root, Map<String, Object> writers) {
+	public Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root) {
 		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
 		Properties properties = new Properties();
 		try {
@@ -1116,9 +970,9 @@ public class TestTool {
 				includeFilename = properties.getProperty("include" + i);
 			}
 			while (includeFilename != null) {
-				debugMessage("Load include file: " + includeFilename, writers);
+				debugMessage("Load include file: " + includeFilename);
 				File includeFile = new File(getAbsolutePath(directory, includeFilename));
-				Properties includeProperties = readProperties(appConstants, includeFile, false, writers);
+				Properties includeProperties = readProperties(appConstants, includeFile, false);
 				if (includeProperties != null) {
 					includedProperties.putAll(includeProperties);
 				}
@@ -1133,10 +987,10 @@ public class TestTool {
 				}
 				addAbsolutePathProperties(directory, properties);
 			}
-			debugMessage(properties.size() + " properties found", writers);
+			debugMessage(properties.size() + " properties found");
 		} catch(Exception e) {
 			properties = null;
-			errorMessage("Could not read properties file: " + e.getMessage(), e, writers);
+			errorMessage("Could not read properties file: " + e.getMessage(), e);
 		}
 		return fixLegacyClassnames(properties);
 	}
@@ -1214,7 +1068,7 @@ public class TestTool {
 		properties.putAll(absolutePathProperties);
 	}
 
-	public static List<String> getSteps(Properties properties, Map<String, Object> writers) {
+	public List<String> getSteps(Properties properties) {
 		List<String> steps = new ArrayList<>();
 		int i = 1;
 		boolean lastStepFound = false;
@@ -1227,9 +1081,9 @@ public class TestTool {
 					if (!stepFound) {
 						steps.add(key);
 						stepFound = true;
-						debugMessage("Added step '" + key + "'", writers);
+						debugMessage("Added step '" + key + "'");
 					} else {
-						errorMessage("More than one step" + i + " properties found, already found '" + steps.get(steps.size() - 1) + "' before finding '" + key + "'", writers);
+						errorMessage("More than one step" + i + " properties found, already found '" + steps.get(steps.size() - 1) + "' before finding '" + key + "'");
 					}
 				}
 			}
@@ -1238,34 +1092,34 @@ public class TestTool {
 			}
 			i++;
 		}
-		debugMessage(steps.size() + " steps found", writers);
+		debugMessage(steps.size() + " steps found");
 		return steps;
 	}
 
-	public static boolean closeQueues(Map<String, Queue> queues, Properties properties, Map<String, Object> writers, String correlationId) {
+	public boolean closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
 		boolean remainingMessagesFound = false;
-		debugMessage("Close jms senders", writers);
+		debugMessage("Close jms senders");
 		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
 			String queueName = entry.getKey();
 			if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 				JmsSender jmsSender = (JmsSender)(entry.getValue()).get("jmsSender");
 				jmsSender.close();
-				debugMessage("Closed jms sender '" + queueName + "'", writers);
+				debugMessage("Closed jms sender '" + queueName + "'");
 			}
 		}
-		debugMessage("Close jms listeners", writers);
+		debugMessage("Close jms listeners");
 		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
 			String queueName = entry.getKey();
 			if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
 				PullingJmsListener pullingJmsListener = (PullingJmsListener)(entry.getValue()).get("jmsListener");
-				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
+				if (jmsCleanUp(queueName, pullingJmsListener)) {
 					remainingMessagesFound = true;
 				}
 				pullingJmsListener.close();
-				debugMessage("Closed jms listener '" + queueName + "'", writers);
+				debugMessage("Closed jms listener '" + queueName + "'");
 			}
 		}
-		debugMessage("Close jdbc connections", writers);
+		debugMessage("Close jdbc connections");
 		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
 			String name = entry.getKey();
 			if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(name + ".className"))) {
@@ -1288,12 +1142,12 @@ public class TestTool {
 							try {
 								message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 							} catch(TimeoutException e) {
-								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
+								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
 							} catch(IOException | SenderException e) {
-								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
+								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e);
 							}
 							if (message != null) {
-								wrongPipelineMessage("Found remaining message on '" + name + "'", message, writers);
+								wrongPipelineMessage("Found remaining message on '" + name + "'", message);
 							}
 
 							remainingMessagesFound = true;
@@ -1301,9 +1155,9 @@ public class TestTool {
 						}
 						prePostFixedQuerySender.close();
 					} catch(TimeoutException e) {
-						errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
+						errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e);
 					} catch(IOException | SenderException e) {
-						errorMessage("Could not close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
+						errorMessage("Could not close (pre/post) '" + name + "': " + e.getMessage(), e);
 					}
 				}
 				FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
@@ -1311,25 +1165,25 @@ public class TestTool {
 			}
 		}
 
-		debugMessage("Close autoclosables", writers);
+		debugMessage("Close autoclosables");
 		for(String queueName : queues.keySet()) {
 			Map<String, Object> value = queues.get(queueName);
 			if(value instanceof QueueWrapper) {
 				QueueWrapper queue = (QueueWrapper) value;
 				SenderThread senderThread = queue.getSenderThread();
 				if (senderThread != null) {
-					debugMessage("Found remaining SenderThread", writers);
+					debugMessage("Found remaining SenderThread");
 					SenderException senderException = senderThread.getSenderException();
 					if (senderException != null) {
-						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
+						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException);
 					}
-					TimeoutException timeOutException = senderThread.getTimeOutException();
-					if (timeOutException != null) {
-						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
+					TimeoutException timeoutException = senderThread.getTimeoutException();
+					if (timeoutException != null) {
+						errorMessage("Found remaining TimeOutException: " + timeoutException.getMessage(), timeoutException);
 					}
 					String message = senderThread.getResponse();
 					if (message != null) {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
+						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message);
 					}
 				}
 				ListenerMessageHandler listenerMessageHandler = queue.getMessageHandler();
@@ -1337,14 +1191,14 @@ public class TestTool {
 					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
-						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
+						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message);
 						remainingMessagesFound = true;
 						listenerMessage = listenerMessageHandler.getRequestMessage();
 					}
 					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
-						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
+						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message);
 						remainingMessagesFound = true;
 						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
@@ -1352,9 +1206,9 @@ public class TestTool {
 
 				try {
 					queue.close();
-					debugMessage("Closed queue '" + queueName + "'", writers);
+					debugMessage("Closed queue '" + queueName + "'");
 				} catch(Exception e) {
-					errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e, writers);
+					errorMessage("Could not close '" + queueName + "': " + e.getMessage(), e);
 				}
 			}
 		}
@@ -1362,11 +1216,11 @@ public class TestTool {
 		return remainingMessagesFound;
 	}
 
-	public static boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener, Map<String, Object> writers) {
+	public boolean jmsCleanUp(String queueName, PullingJmsListener pullingJmsListener) {
 		boolean remainingMessagesFound = false;
-		debugMessage("Check for remaining messages on '" + queueName + "'", writers);
-		long oldTimeOut = pullingJmsListener.getTimeOut();
-		pullingJmsListener.setTimeOut(10);
+		debugMessage("Check for remaining messages on '" + queueName + "'");
+		long oldTimeout = pullingJmsListener.getTimeout();
+		pullingJmsListener.setTimeout(10);
 		boolean empty = false;
 		while (!empty) {
 			RawMessageWrapper<javax.jms.Message> rawMessage = null;
@@ -1379,19 +1233,19 @@ public class TestTool {
 					message = pullingJmsListener.extractMessage(rawMessage, threadContext);
 					remainingMessagesFound = true;
 					if (message == null) {
-						errorMessage("Could not translate raw message from jms queue '" + queueName + "'", writers);
+						errorMessage("Could not translate raw message from jms queue '" + queueName + "'");
 					} else {
-						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message.asString(), writers);
+						wrongPipelineMessage("Found remaining message on '" + queueName + "'", message.asString());
 					}
 				}
 			} catch(ListenerException | IOException e) {
-				errorMessage("ListenerException on jms clean up '" + queueName + "': " + e.getMessage(), e, writers);
+				errorMessage("ListenerException on jms clean up '" + queueName + "': " + e.getMessage(), e);
 			} finally {
 				if (threadContext != null) {
 					try {
 						pullingJmsListener.closeThread(threadContext);
 					} catch(ListenerException e) {
-						errorMessage("Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e, writers);
+						errorMessage("Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e);
 					}
 				}
 			}
@@ -1399,11 +1253,16 @@ public class TestTool {
 				empty = true;
 			}
 		}
-		pullingJmsListener.setTimeOut((int) oldTimeOut);
+
+		try {
+			pullingJmsListener.setTimeout(Math.toIntExact(oldTimeout));
+		} catch (ArithmeticException e) {
+			errorMessage("Could not set timeout on pullingJmsListener '" + queueName + "': " + e.getMessage(), e);
+		}
 		return remainingMessagesFound;
 	}
 
-	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
+	private int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
 		Map<?, ?> jmsSenderInfo = queues.get(queueName);
@@ -1414,11 +1273,11 @@ public class TestTool {
 			if (useCorrelationIdFrom != null) {
 				Map<?, ?> listenerInfo = queues.get(useCorrelationIdFrom);
 				if (listenerInfo == null) {
-					errorMessage("Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from", writers);
+					errorMessage("Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from");
 				} else {
 					providedCorrelationId = (String)listenerInfo.get("correlationId");
 					if (providedCorrelationId == null) {
-						errorMessage("Could not find correlation id from listener '" + useCorrelationIdFrom + "'", writers);
+						errorMessage("Could not find correlation id from listener '" + useCorrelationIdFrom + "'");
 					}
 				}
 			}
@@ -1429,41 +1288,41 @@ public class TestTool {
 				providedCorrelationId = correlationId;
 			}
 			try (Message ignored = jmsSender.sendMessageOrThrow(new Message(fileContent), null)) {
-				debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
+				debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent);
 				result = RESULT_OK;
 			}
 		} catch(TimeoutException e) {
-			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
+			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e);
 		} catch(SenderException | IOException e) {
-			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
+			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e);
 		}
 
 		return result;
 	}
 
-	private static int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId, Map<String, Object> xsltParameters) {
+	private int executeQueueWrite(String stepDisplayName, Map<String, Queue> queues, String queueName, String fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		Queue queue = queues.get(queueName);
 		if (queue==null) {
-			errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+			errorMessage("Property '" + queueName + ".className' not found or not valid");
 			return RESULT_ERROR;
 		}
 		int result = RESULT_ERROR;
 		try {
 			result = queue.executeWrite(stepDisplayName, fileContent, correlationId, xsltParameters);
 			if (result == RESULT_OK) {
-				debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent, writers);
+				debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent);
 				logger.debug("Successfully wrote message to '{}'", queueName);
 			}
 		} catch(TimeoutException e) {
-			errorMessage("Time out sending message to '" + queueName + "': " + e.getMessage(), e, writers);
+			errorMessage("Time out sending message to '" + queueName + "': " + e.getMessage(), e);
 		} catch(Exception e) {
-			errorMessage("Could not send message to '" + queueName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e, writers);
+			errorMessage("Could not send message to '" + queueName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
 		return result;
 	}
 
 
-	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+	private int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
 		Map<String, Object> jmsListenerInfo = queues.get(queueName);
@@ -1480,14 +1339,14 @@ public class TestTool {
 			}
 		} catch(ListenerException e) {
 			if (!"".equals(fileName)) {
-				errorMessage("Could not read jms message from '" + queueName + "': " + e.getMessage(), e, writers);
+				errorMessage("Could not read jms message from '" + queueName + "': " + e.getMessage(), e);
 			}
 		} finally {
 			if (threadContext != null) {
 				try {
 					pullingJmsListener.closeThread(threadContext);
 				} catch(ListenerException e) {
-					errorMessage("Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e, writers);
+					errorMessage("Could not close thread on jms listener '" + queueName + "': " + e.getMessage(), e);
 				}
 			}
 		}
@@ -1496,13 +1355,13 @@ public class TestTool {
 			if ("".equals(fileName)) {
 				result = RESULT_OK;
 			} else {
-				errorMessage("Could not read jms message (null returned)", writers);
+				errorMessage("Could not read jms message (null returned)");
 			}
 		} else {
 			try {
-				result = compareResult(step, stepDisplayName, fileName, fileContent, message.asString(), properties, writers, queueName);
+				result = compareResult(step, stepDisplayName, fileName, fileContent, message.asString(), properties, queueName);
 			} catch (IOException e) {
-				errorMessage("Could not convert jms message from '" + queueName + "' to string: " + e.getMessage(), e, writers);
+				errorMessage("Could not convert jms message from '" + queueName + "' to string: " + e.getMessage(), e);
 			}
 		}
 
@@ -1510,12 +1369,12 @@ public class TestTool {
 	}
 
 
-	private static int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+	private int executeQueueRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
 		Queue queue = queues.get(queueName);
 		if (queue==null) {
-			errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
+			errorMessage("Property '" + queueName + ".className' not found or not valid");
 			return RESULT_ERROR;
 		}
 		try {
@@ -1524,44 +1383,44 @@ public class TestTool {
 				if ("".equals(fileName)) {
 					result = RESULT_OK;
 				} else {
-					errorMessage("Could not read from ["+queueName+"] (null returned)", writers);
+					errorMessage("Could not read from ["+queueName+"] (null returned)");
 				}
 			} else {
 				if ("".equals(fileName)) {
-					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 				} else {
-					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
+					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
 				}
 			}
 		} catch (Exception e) {
-			errorMessage("Could not read from ["+queueName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e, writers);
+			errorMessage("Could not read from ["+queueName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
 
 		return result;
 	}
 
 
-	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
+	private int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
 		Map listenerInfo = queues.get(queueName);
 		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
 		if (listenerMessageHandler == null) {
-			errorMessage("No ListenerMessageHandler found", writers);
+			errorMessage("No ListenerMessageHandler found");
 		} else {
 			String message = null;
 			ListenerMessage listenerMessage;
 			Long timeout;
 			try {
 				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
-				debugMessage("Timeout set to '" + timeout + "'", writers);
+				debugMessage("Timeout set to '" + timeout + "'");
 			} catch (Exception e) {
 				timeout = (long)parameterTimeout;
 			}
 			try {
 				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
 			} catch (TimeoutException e) {
-				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)", writers);
+				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)");
 				return RESULT_ERROR;
 			}
 
@@ -1573,13 +1432,13 @@ public class TestTool {
 				if ("".equals(fileName)) {
 					result = RESULT_OK;
 				} else {
-					errorMessage("Could not read listenerMessageHandler message (null returned)", writers);
+					errorMessage("Could not read listenerMessageHandler message (null returned)");
 				}
 			} else {
 				if ("".equals(fileName)) {
-					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+					debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 				} else {
-					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
+					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
 					if (result!=RESULT_OK) {
 						// Send a clean up reply because there is probably a
 						// thread waiting for a reply
@@ -1594,7 +1453,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, String correlationId) {
+	private int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, String queueName, String fileName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
 		Map querySendersInfo = queues.get(queueName);
@@ -1602,8 +1461,9 @@ public class TestTool {
 
 		if (waitBeforeRead != null) {
 			try {
-				Thread.sleep(waitBeforeRead.intValue());
-			} catch(InterruptedException e) {
+				Thread.sleep(waitBeforeRead);
+			} catch (InterruptedException ignored) {
+				Thread.currentThread().interrupt();
 			}
 		}
 		boolean newRecordFound = true;
@@ -1611,7 +1471,7 @@ public class TestTool {
 		if (prePostFixedQuerySender != null) {
 			try {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
-				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
+				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult);
 				String postResult;
 				try (PipeLineSession session = new PipeLineSession()) {
 					session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
@@ -1619,7 +1479,7 @@ public class TestTool {
 					postResult = message.asString();
 					message.close();
 				}
-				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
+				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult);
 				if (preResult.equals(postResult)) {
 					newRecordFound = false;
 				}
@@ -1628,9 +1488,9 @@ public class TestTool {
 				 */
 				querySendersInfo.put("prePostQueryResult", postResult);
 			} catch(TimeoutException e) {
-				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
+				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
 			} catch(IOException | SenderException e) {
-				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
+				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e);
 			}
 		}
 		String message = null;
@@ -1641,28 +1501,28 @@ public class TestTool {
 				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 				message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeoutException e) {
-				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
+				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
 			} catch (IOException | SenderException e) {
-				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
+				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e);
 			}
 		}
 		if (message == null) {
 			if ("".equals(fileName)) {
 				result = RESULT_OK;
 			} else {
-				errorMessage("Could not read jdbc message (null returned) or no new message found (pre result equals post result)", writers);
+				errorMessage("Could not read jdbc message (null returned) or no new message found (pre result equals post result)");
 			}
 		} else {
 			if ("".equals(fileName)) {
-				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message, writers);
+				debugPipelineMessage(stepDisplayName, "Unexpected message read from '" + queueName + "':", message);
 			} else {
-				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
+				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
 			}
 		}
 		return result;
 	}
 
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, int parameterTimeout, String correlationId) {
+	public int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, String correlationId) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -1674,37 +1534,37 @@ public class TestTool {
 
 		//inlezen file voor deze stap
 		if ("".equals(fileName)) {
-			errorMessage("No file specified for step '" + step + "'", writers);
+			errorMessage("No file specified for step '" + step + "'");
 		} else {
 			if (step.endsWith("readline") || step.endsWith("writeline")) {
 				fileContent = fileName;
 			} else {
 				if (fileName.endsWith("ignore")) {
-					debugMessage("creating dummy expected file for filename '"+fileName+"'", writers);
+					debugMessage("creating dummy expected file for filename '"+fileName+"'");
 					fileContent = "ignore";
 				} else {
-					debugMessage("Read file " + fileName, writers);
-					fileContent = readFile(fileNameAbsolutePath, writers);
+					debugMessage("Read file " + fileName);
+					fileContent = readFile(fileNameAbsolutePath);
 				}
 			}
 			if (fileContent == null) {
-				errorMessage("Could not read file '" + fileName + "'", writers);
+				errorMessage("Could not read file '" + fileName + "'");
 			} else {
 				queueName = step.substring(i + 1, step.lastIndexOf("."));
 				if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
 					if ("org.frankframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
 					} else if ("org.frankframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, correlationId);
+						stepPassed = executeFixedQuerySenderRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, correlationId);
 					} else if ("org.frankframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
 					} else if ("org.frankframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
 					} else if ("org.frankframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step, writers, false, null);
-						stepPassed = executeQueueWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
+						Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step, false, null);
+						stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 					} else {
-						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);
 					}
 				} else {
 					String resolveProperties = properties.getProperty("scenario.resolveProperties");
@@ -1715,11 +1575,11 @@ public class TestTool {
 					}
 
 					if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId);
+						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, queueName, fileContent, correlationId);
 					} else if ("org.frankframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
+						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 					} else {
-						stepPassed = executeQueueWrite(stepDisplayName, queues, writers, queueName, fileContent, correlationId, null);
+						stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, null);
 					}
 				}
 			}
@@ -1728,7 +1588,7 @@ public class TestTool {
 		return stepPassed;
 	}
 
-	public static String readFile(String fileName, Map<String, Object> writers) {
+	public String readFile(String fileName) {
 		String result = null;
 		String encoding = null;
 		if (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")) {
@@ -1744,7 +1604,7 @@ public class TestTool {
 				encoding = parser.getEncoding();
 				parser.close();
 			} catch (IOException | XMLStreamException e) {
-				errorMessage("Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e, writers);
+				errorMessage("Could not determine encoding for file '" + fileName + "': " + e.getMessage(), e);
 			}
 		} else if (fileName.endsWith(".utf8") || fileName.endsWith(".json")) {
 			encoding = "UTF-8";
@@ -1764,13 +1624,13 @@ public class TestTool {
 				}
 				result = stringBuilder.toString();
 			} catch (Exception e) {
-				errorMessage("Could not read file '" + fileName + "': " + e.getMessage(), e, writers);
+				errorMessage("Could not read file '" + fileName + "': " + e.getMessage(), e);
 			} finally {
 				if (inputStreamReader != null) {
 					try {
 						inputStreamReader.close();
 					} catch(Exception e) {
-						errorMessage("Could not close file '" + fileName + "': " + e.getMessage(), e, writers);
+						errorMessage("Could not close file '" + fileName + "': " + e.getMessage(), e);
 					}
 				}
 			}
@@ -1779,17 +1639,17 @@ public class TestTool {
 	}
 
 	// Used by saveResultToFile.jsp
-	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
+	public void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
 		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getProperty("larva.windiff.command");
 		if (windiffCommand == null) {
 			String realPath = application.getRealPath("/iaf/");
 			List<String> scenariosRootDirectories = new ArrayList<>();
 			List<String> scenariosRootDescriptions = new ArrayList<>();
-			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
+			String currentScenariosRootDirectory = initScenariosRootDirectories(
 					realPath,
 					null, scenariosRootDirectories,
-					scenariosRootDescriptions, null);
+					scenariosRootDescriptions);
 			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
 		}
 		File tempFileResult = writeTempFile(expectedFileName, result);
@@ -1863,9 +1723,9 @@ public class TestTool {
 		return encoding;
 	}
 
-	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map<String, Object> writers, String queueName) {
+	public int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, String queueName) {
 		if (fileName.endsWith("ignore")) {
-			debugMessage("ignoring compare for filename '"+fileName+"'", writers);
+			debugMessage("ignoring compare for filename '"+fileName+"'");
 			return RESULT_OK;
 		}
 
@@ -1877,13 +1737,13 @@ public class TestTool {
 			try {
 				printableExpectedResult = Misc.jsonPretty(expectedResult);
 			} catch (JsonException e) {
-				debugMessage("Could not prettify Json: "+e.getMessage(), writers);
+				debugMessage("Could not prettify Json: "+e.getMessage());
 				printableExpectedResult = expectedResult;
 			}
 			try {
 				printableActualResult = Misc.jsonPretty(actualResult);
 			} catch (JsonException e) {
-				debugMessage("Could not prettify Json: "+e.getMessage(), writers);
+				debugMessage("Could not prettify Json: "+e.getMessage());
 				printableActualResult = actualResult;
 			}
 		} else {
@@ -1894,8 +1754,8 @@ public class TestTool {
 		// Map all identifier based properties once
 		HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap = mapPropertiesToIgnores(properties);
 
-		String preparedExpectedResult = prepareResultForCompare(printableExpectedResult, properties, ignoreMap, writers);
-		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap, writers);
+		String preparedExpectedResult = prepareResultForCompare(printableExpectedResult, properties, ignoreMap);
+		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap);
 
 
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
@@ -1912,23 +1772,23 @@ public class TestTool {
 			}
 			if (identical) {
 				ok = RESULT_OK;
-				debugMessage("Strings are identical", writers);
-				debugPipelineMessage(stepDisplayName, "Result", printableActualResult, writers);
-				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult, writers);
+				debugMessage("Strings are identical");
+				debugPipelineMessage(stepDisplayName, "Result", printableActualResult);
+				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult);
 			} else {
-				debugMessage("Strings are not identical", writers);
+				debugMessage("Strings are not identical");
 				String message;
 				if (diffException == null) {
 					message = diff.toString();
 				} else {
 					message = "Exception during XML diff: " + diffException.getMessage();
-					errorMessage("Exception during XML diff: ", diffException, writers);
+					errorMessage("Exception during XML diff: ", diffException);
 				}
-				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult, writers);
-				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult, writers);
+				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult);
+				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult);
 				if (autoSaveDiffs) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
-					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]", writers);
+					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
 					try {
 						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult);
 					} catch (IOException e) {
@@ -1938,15 +1798,15 @@ public class TestTool {
 			}
 		} else {
 			// txt diff
-			String formattedPreparedExpectedResult = formatString(preparedExpectedResult, writers);
-			String formattedPreparedActualResult = formatString(preparedActualResult, writers);
+			String formattedPreparedExpectedResult = formatString(preparedExpectedResult);
+			String formattedPreparedActualResult = formatString(preparedActualResult);
 			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
 				ok = RESULT_OK;
-				debugMessage("Strings are identical", writers);
-				debugPipelineMessage(stepDisplayName, "Result", printableActualResult, writers);
-				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult, writers);
+				debugMessage("Strings are identical");
+				debugPipelineMessage(stepDisplayName, "Result", printableActualResult);
+				debugPipelineMessagePreparedForDiff(stepDisplayName, "Result as prepared for diff", preparedActualResult);
 			} else {
-				debugMessage("Strings are not identical", writers);
+				debugMessage("Strings are not identical");
 				String message = null;
 				StringBuilder diffActual = new StringBuilder();
 				StringBuilder diffExcpected = new StringBuilder();
@@ -1977,11 +1837,11 @@ public class TestTool {
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult, writers);
-				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult, writers);
+				wrongPipelineMessage(stepDisplayName, message, printableActualResult, printableExpectedResult);
+				wrongPipelineMessagePreparedForDiff(stepDisplayName, preparedActualResult, preparedExpectedResult);
 				if (autoSaveDiffs) {
 					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
-					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]", writers);
+					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
 					try {
 						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult);
 					} catch (IOException e) {
@@ -1993,38 +1853,38 @@ public class TestTool {
 		return ok;
 	}
 
-	public static String prepareResultForCompare(String input, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, Map<String, Object> writers) {
+	public String prepareResultForCompare(String input, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap) {
 		String result = input;
-		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)-> {
+		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)-> {
 			boolean replaceNewlines = !"true".equals(pp.apply("replaceNewlines"));
-			return decodeUnzipContentBetweenKeys(value, key1, key2, replaceNewlines, writers);
+			return decodeUnzipContentBetweenKeys(value, key1, key2, replaceNewlines);
 		});
 
-		result = doActionBetweenKeys("canonicaliseFilePathContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->canonicaliseFilePathContentBetweenKeys(value,key1,key2,writers));
-		result = doActionBetweenKeys("formatDecimalContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->formatDecimalContentBetweenKeys(value,key1,key2,writers));
-		result = doActionWithSingleKey("ignoreRegularExpressionKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreRegularExpression(value,key));
-		result = doActionWithSingleKey("removeRegularExpressionKey", result, properties, ignoreMap, writers, (value, pp, key)->removeRegularExpression(value,key));
+		result = doActionBetweenKeys("canonicaliseFilePathContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)->canonicaliseFilePathContentBetweenKeys(value,key1,key2));
+		result = doActionBetweenKeys("formatDecimalContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)->formatDecimalContentBetweenKeys(value,key1,key2));
+		result = doActionWithSingleKey("ignoreRegularExpressionKey", result, properties, ignoreMap, (value, pp, key)->ignoreRegularExpression(value,key));
+		result = doActionWithSingleKey("removeRegularExpressionKey", result, properties, ignoreMap, (value, pp, key)->removeRegularExpression(value,key));
 
-		result = doActionBetweenKeys("replaceRegularExpressionKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->replaceRegularExpression(value,key1,key2));
-		result = doActionBetweenKeys("ignoreContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->ignoreContentBetweenKeys(value,key1,key2));
-		result = doActionBetweenKeys("ignoreKeysAndContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->ignoreKeysAndContentBetweenKeys(value,key1,key2));
-		result = doActionBetweenKeys("removeKeysAndContentBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)->removeKeysAndContentBetweenKeys(value,key1,key2));
+		result = doActionBetweenKeys("replaceRegularExpressionKeys", result, properties, ignoreMap, (value, pp, key1, key2)->replaceRegularExpression(value,key1,key2));
+		result = doActionBetweenKeys("ignoreContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)->ignoreContentBetweenKeys(value,key1,key2));
+		result = doActionBetweenKeys("ignoreKeysAndContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)->ignoreKeysAndContentBetweenKeys(value,key1,key2));
+		result = doActionBetweenKeys("removeKeysAndContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)->removeKeysAndContentBetweenKeys(value,key1,key2));
 
-		result = doActionWithSingleKey("ignoreKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreKey(value,key));
-		result = doActionWithSingleKey("removeKey", result, properties, ignoreMap, writers, (value, pp, key)->removeKey(value,key));
+		result = doActionWithSingleKey("ignoreKey", result, properties, ignoreMap, (value, pp, key)->ignoreKey(value,key));
+		result = doActionWithSingleKey("removeKey", result, properties, ignoreMap, (value, pp, key)->removeKey(value,key));
 
-		result = doActionBetweenKeys("replaceKey", result, properties, ignoreMap, writers, (value, pp, key1, key2)->replaceKey(value,key1,key2));
-		result = doActionBetweenKeys("replaceEverywhereKey", result, properties, ignoreMap, writers, (value, pp, key1, key2)->replaceKey(value,key1,key2));
+		result = doActionBetweenKeys("replaceKey", result, properties, ignoreMap, (value, pp, key1, key2)->replaceKey(value,key1,key2));
+		result = doActionBetweenKeys("replaceEverywhereKey", result, properties, ignoreMap, (value, pp, key1, key2)->replaceKey(value,key1,key2));
 
-		result = doActionBetweenKeys("ignoreCurrentTimeBetweenKeys", result, properties, ignoreMap, writers, (value, pp, key1, key2)-> {
+		result = doActionBetweenKeys("ignoreCurrentTimeBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)-> {
 			String pattern = pp.apply("pattern");
 			String margin = pp.apply("margin");
 			boolean errorMessageOnRemainingString = !"false".equals(pp.apply("errorMessageOnRemainingString"));
-			return ignoreCurrentTimeBetweenKeys(value, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
+			return ignoreCurrentTimeBetweenKeys(value, key1, key2, pattern, margin, errorMessageOnRemainingString, false);
 		});
 
-		result = doActionWithSingleKey("ignoreContentBeforeKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreContentBeforeKey(value,key));
-		result = doActionWithSingleKey("ignoreContentAfterKey", result, properties, ignoreMap, writers, (value, pp, key)->ignoreContentAfterKey(value,key));
+		result = doActionWithSingleKey("ignoreContentBeforeKey", result, properties, ignoreMap, (value, pp, key)->ignoreContentBeforeKey(value,key));
+		result = doActionWithSingleKey("ignoreContentAfterKey", result, properties, ignoreMap, (value, pp, key)->ignoreContentAfterKey(value,key));
 		return result;
 	}
 
@@ -2035,9 +1895,9 @@ public class TestTool {
 		String format(String value, Function<String, String> propertyProvider, String key1);
 	}
 
-	public static String doActionBetweenKeys(String key, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, Map<String, Object> writers, BetweenKeysAction action) {
+	public String doActionBetweenKeys(String key, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, BetweenKeysAction action) {
 		String result = value;
-		debugMessage("Check "+key+" properties", writers);
+		debugMessage("Check "+key+" properties");
 		boolean lastKeyIndexProcessed = false;
 		int i = 1;
 		while (!lastKeyIndexProcessed) {
@@ -2045,7 +1905,7 @@ public class TestTool {
 			String key1 = properties.getProperty(keyPrefix + "key1");
 			String key2 = properties.getProperty(keyPrefix + "key2");
 			if (key1 != null && key2 != null) {
-				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
 				result = action.format(result, k -> properties.getProperty(keyPrefix + k), key1, key2);
 				i++;
 			} else {
@@ -2063,17 +1923,17 @@ public class TestTool {
 				String key1 = keyPair.get("key1");
 				String key2 = keyPair.get("key2");
 
-				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
-				result = action.format(result, k -> keyPair.get(k), key1, key2);
+				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
+				result = action.format(result, keyPair::get, key1, key2);
 			}
 		}
 
 		return result;
 	}
 
-	public static String doActionWithSingleKey(String keyName, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, Map<String, Object> writers, SingleKeyAction action) {
+	public String doActionWithSingleKey(String keyName, String value, Properties properties, HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap, SingleKeyAction action) {
 		String result = value;
-		debugMessage("Check "+keyName+" properties", writers);
+		debugMessage("Check "+keyName+" properties");
 		boolean lastKeyIndexProcessed = false;
 		int i = 1;
 		while (!lastKeyIndexProcessed) {
@@ -2083,7 +1943,7 @@ public class TestTool {
 				key = properties.getProperty(keyPrefix + ".key");
 			}
 			if (key != null) {
-				debugMessage(keyName+ " key '" + key + "'", writers);
+				debugMessage(keyName+ " key '" + key + "'");
 				result = action.format(result, k -> properties.getProperty(keyPrefix + "." + k), key);
 				i++;
 			} else {
@@ -2100,8 +1960,8 @@ public class TestTool {
 
 				String key = keyPair.get("key");
 
-				debugMessage(keyName + " key '" + key + "'", writers);
-				result = action.format(result, k -> keyPair.get(k), key);
+				debugMessage(keyName + " key '" + key + "'");
+				result = action.format(result, keyPair::get, key);
 
 				keySpecIt.remove();
 			}
@@ -2191,21 +2051,21 @@ public class TestTool {
 		return result;
 	}
 
-	public static String decodeUnzipContentBetweenKeys(String string, String key1, String key2, boolean replaceNewlines, Map<String, Object> writers) {
+	public String decodeUnzipContentBetweenKeys(String string, String key1, String key2, boolean replaceNewlines) {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
-			debugMessage("Key 1 found", writers);
+			debugMessage("Key 1 found");
 			int j = result.indexOf(key2, i + key1.length());
 			if (j != -1) {
-				debugMessage("Key 2 found", writers);
+				debugMessage("Key 2 found");
 				String encoded = result.substring(i + key1.length(), j);
 				String unzipped;
 				byte[] decodedBytes;
-				debugMessage("Decode", writers);
+				debugMessage("Decode");
 				decodedBytes = Base64.decodeBase64(encoded);
 				try {
-					debugMessage("Unzip", writers);
+					debugMessage("Unzip");
 					StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("<tt:file xmlns:tt=\"testtool\">");
 					ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
@@ -2225,7 +2085,7 @@ public class TestTool {
 					stringBuilder.append("</tt:file>");
 					unzipped = stringBuilder.toString();
 				} catch (Exception e) {
-					errorMessage("Could not unzip: " + e.getMessage(), e, writers);
+					errorMessage("Could not unzip: " + e.getMessage(), e);
 					unzipped = encoded;
 				}
 				result = result.substring(0, i) + key1 + unzipped + result.substring(j);
@@ -2237,14 +2097,14 @@ public class TestTool {
 		return result;
 	}
 
-	public static String canonicaliseFilePathContentBetweenKeys(String string, String key1, String key2, Map<String, Object> writers) {
+	public String canonicaliseFilePathContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;
 		if (key1.equals("*") && key2.equals("*")) {
 			File file = new File(result);
 			try {
 				result = file.getCanonicalPath();
 			} catch (IOException e) {
-				errorMessage("Could not canonicalise filepath: " + e.getMessage(), e, writers);
+				errorMessage("Could not canonicalise filepath: " + e.getMessage(), e);
 			}
 			result = FilenameUtils.normalize(result);
 		} else {
@@ -2257,7 +2117,7 @@ public class TestTool {
 					try {
 						fileName = file.getCanonicalPath();
 					} catch (IOException e) {
-						errorMessage("Could not canonicalise filepath: " + e.getMessage(), e, writers);
+						errorMessage("Could not canonicalise filepath: " + e.getMessage(), e);
 					}
 					fileName = FilenameUtils.normalize(fileName);
 					result = result.substring(0, i) + key1 + fileName + result.substring(j);
@@ -2270,15 +2130,15 @@ public class TestTool {
 		return result;
 	}
 
-	public static String ignoreCurrentTimeBetweenKeys(String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString, Map<String, Object> writers) {
+	public String ignoreCurrentTimeBetweenKeys(String string, String key1, String key2, String pattern, String margin, boolean errorMessageOnRemainingString, boolean isControlString) {
 		String result = string;
 		String ignoreText = "IGNORE_CURRENT_TIME";
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
-			debugMessage("Key 1 found", writers);
+			debugMessage("Key 1 found");
 			int j = result.indexOf(key2, i + key1.length());
 			if (j != -1) {
-				debugMessage("Key 2 found", writers);
+				debugMessage("Key 2 found");
 				String dateString = result.substring(i + key1.length(), j);
 				Date date;
 				boolean remainingString = false;
@@ -2297,7 +2157,7 @@ public class TestTool {
 							if (errorMessageOnRemainingString) {
 								errorMessage("Found remaining string after parsing date with pattern '"
 											 + pattern + "': "
-											 + dateString.substring(parsePosition.getIndex()), writers);
+											 + dateString.substring(parsePosition.getIndex()));
 							}
 						}
 					}
@@ -2321,17 +2181,17 @@ public class TestTool {
 								result = result.substring(0, i) + key1 + ignoreText + result.substring(j);
 								i = result.indexOf(key1, i + key1.length() + ignoreText.length() + key2.length());
 							} else {
-								errorMessage("Dates differ too much. Current time: '" + currentTime + "'. Result time: '" + dateString + "'", writers);
+								errorMessage("Dates differ too much. Current time: '" + currentTime + "'. Result time: '" + dateString + "'");
 								i = result.indexOf(key1, j + key2.length());
 							}
 						}
 					}
 				} catch(ParseException e) {
 					i = -1;
-					errorMessage("Could not parse margin or date: " + e.getMessage(), e, writers);
+					errorMessage("Could not parse margin or date: " + e.getMessage(), e);
 				} catch(NumberFormatException e) {
 					i = -1;
-					errorMessage("Could not parse long value: " + e.getMessage(), e, writers);
+					errorMessage("Could not parse long value: " + e.getMessage(), e);
 				}
 			} else {
 				i = -1;
@@ -2340,8 +2200,8 @@ public class TestTool {
 		return result;
 	}
 
-	public static String formatDecimalContentBetweenKeys(String string,
-		String key1, String key2, Map writers) {
+	public String formatDecimalContentBetweenKeys(String string,
+		String key1, String key2) {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
@@ -2358,7 +2218,7 @@ public class TestTool {
 					i = -1;
 					errorMessage(
 							"Could not parse double value: " + e.getMessage(),
-							e, writers);
+							e);
 				}
 			} else {
 				i = -1;
@@ -2415,13 +2275,12 @@ public class TestTool {
 	 * param2, param3 etc.
 	 * @param properties
 	 * @param property
-	 * @param writers
 	 * @param session TODO
 	 *
 	 * @return A map with parameters
 	 */
-	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, PipeLineSession session) {
-		debugMessage("Search parameters for property '" + property + "'", writers);
+	public Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, boolean createParameterObjects, PipeLineSession session) {
+		debugMessage("Search parameters for property '" + property + "'");
 		final String _name = ".name";
 		final String _param = ".param";
 		final String _type = ".type";
@@ -2453,7 +2312,7 @@ public class TestTool {
 						} else {
 							String inputStreamFilename = properties.getProperty(property + _param + i + ".valuefileinputstream.absolutepath");
 							if (inputStreamFilename != null) {
-								errorMessage("valuefileinputstream is no longer supported use valuefile instead", writers);
+								errorMessage("valuefileinputstream is no longer supported use valuefile instead");
 							}
 						}
 					}
@@ -2462,13 +2321,13 @@ public class TestTool {
 					try {
 						value = XmlUtils.buildNode(Message.asString(value), true);
 					} catch (DomBuilderException | IOException e) {
-						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("domdoc".equals(type)) {
 					try {
 						value = XmlUtils.buildDomDocument(Message.asString(value), true);
 					} catch (DomBuilderException | IOException e) {
-						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("list".equals(type)) {
 					try {
@@ -2479,7 +2338,7 @@ public class TestTool {
 						}
 						value = list;
 					} catch (IOException e) {
-						errorMessage("Could not build a list for parameter '" + name + "' with value: " + value, e, writers);
+						errorMessage("Could not build a list for parameter '" + name + "' with value: " + value, e);
 					}
 				} else if ("map".equals(type)) {
 					try {
@@ -2495,13 +2354,13 @@ public class TestTool {
 						}
 						value = map;
 					} catch (IOException e) {
-						errorMessage("Could not build a map for parameter '" + name + "' with value: " + value, e, writers);
+						errorMessage("Could not build a map for parameter '" + name + "' with value: " + value, e);
 					}
 				}
 				if (createParameterObjects) {
 					String  pattern = properties.getProperty(property + _param + i + ".pattern");
 					if (value == null && pattern == null) {
-						errorMessage("Property '" + property + _param + i + " doesn't have a value or pattern", writers);
+						errorMessage("Property '" + property + _param + i + " doesn't have a value or pattern");
 					} else {
 						try {
 							Parameter parameter = new Parameter();
@@ -2515,17 +2374,17 @@ public class TestTool {
 							}
 							parameter.configure();
 							result.put(name, parameter);
-							debugMessage("Add param with name '" + name + "', value '" + value + "' and pattern '" + pattern + "' for property '" + property + "'", writers);
+							debugMessage("Add param with name '" + name + "', value '" + value + "' and pattern '" + pattern + "' for property '" + property + "'");
 						} catch (ConfigurationException e) {
-							errorMessage("Parameter '" + name + "' could not be configured", writers);
+							errorMessage("Parameter '" + name + "' could not be configured");
 						}
 					}
 				} else {
 					if (value == null) {
-						errorMessage("Property '" + property + _param + i + ".value' or '" + property + _param + i + ".valuefile' not found while property '" + property + _param + i + ".name' exist", writers);
+						errorMessage("Property '" + property + _param + i + ".value' or '" + property + _param + i + ".valuefile' not found while property '" + property + _param + i + ".name' exist");
 					} else {
 						result.put(name, value);
-						debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'", writers);
+						debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + property + "'");
 					}
 				}
 				i++;
@@ -2536,12 +2395,12 @@ public class TestTool {
 		return result;
 	}
 
-	public static String formatString(String string, Map<String, Object> writers) {
+	public String formatString(String string) {
 		StringBuilder sb = new StringBuilder();
 		try {
 			Reader reader = new StringReader(string);
 			BufferedReader br = new BufferedReader(reader);
-			String l = null;
+			String l;
 			while ((l = br.readLine()) != null) {
 				if (sb.length()==0) {
 					sb.append(l);
@@ -2551,7 +2410,7 @@ public class TestTool {
 			}
 			br.close();
 		} catch(Exception e) {
-			errorMessage("Could not read string '" + string + "': " + e.getMessage(), e, writers);
+			errorMessage("Could not read string '" + string + "': " + e.getMessage(), e);
 		}
 		return sb.toString();
 	}
@@ -2566,7 +2425,6 @@ public class TestTool {
 	 *
 	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'>
 	*/
-
 	public static HashMap<String, HashMap<String, HashMap<String, String>>> mapPropertiesToIgnores(Properties properties){
 		HashMap<String, HashMap<String, HashMap<String, String>>> returnMap = new HashMap<>();
 		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
@@ -2609,7 +2467,7 @@ public class TestTool {
 						if(key.endsWith("." + attribute)){
 							idMap.put(attribute, properties.getProperty(key));
 						}
-						else if(attribute.equals("")){
+						else if(attribute.isEmpty()){
 							// in case of an empty string as attribute, assume it should read the value
 							// ie: ignoreKey.identifier=value
 							idMap.put("value", properties.getProperty(key));
@@ -2618,13 +2476,12 @@ public class TestTool {
 				}
 			}
 		}
-
 		return returnMap;
 	}
 
 	/**
 	 * This method is used to de-couple the need of providing a set of attributes when calling mapPropertiesByIdentifier().
-	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
+	 * Caller of mapPropertiesByIdentifier() should not necessarily know about all attributes related to an ignore.
 	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
 	*/
@@ -2633,7 +2490,7 @@ public class TestTool {
 
 		switch (propertyName) {
 			case "decodeUnzipContentBetweenKeys":
-			  	attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2", "replaceNewlines"} ) );
+			  	attributes = new ArrayList<>( Arrays.asList("key1", "key2", "replaceNewlines") );
 			  	break;
 			case "canonicaliseFilePathContentBetweenKeys":
 			case "replaceRegularExpressionKeys":
@@ -2643,22 +2500,22 @@ public class TestTool {
 			case "replaceKey":
 			case "formatDecimalContentBetweenKeys":
 			case "replaceEverywhereKey":
-				attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2"} ) );
+				attributes = new ArrayList<>( Arrays.asList("key1", "key2") );
 				break;
 			case "ignoreRegularExpressionKey":
 			case "removeRegularExpressionKey":
 			case "ignoreContentBeforeKey":
 			case "ignoreContentAfterKey":
-				attributes = new ArrayList( Arrays.asList( new String[]{"key"} ) );
+				attributes = new ArrayList<>(List.of("key"));
 				break;
 			case "ignoreCurrentTimeBetweenKeys":
-				attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2", "pattern", "margin", "errorMessageOnRemainingString"} ) );
+				attributes = new ArrayList<>( Arrays.asList("key1", "key2", "pattern", "margin", "errorMessageOnRemainingString") );
 				break;
 			case "ignoreKey":
 			case "removeKey":
 				// in case of an empty string as attribute, assume it should read the value
 				// ie: ignoreKey.identifier=value
-				attributes = new ArrayList<>(Arrays.asList( new String[]{"key", ""}));
+				attributes = new ArrayList<>(Arrays.asList("key", ""));
 				break;
 		}
 

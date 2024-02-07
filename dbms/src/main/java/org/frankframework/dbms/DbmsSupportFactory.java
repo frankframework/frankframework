@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.util.ClassUtils;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.util.ClassUtils;
 
 
 /**
@@ -38,7 +37,7 @@ import org.frankframework.util.ClassUtils;
  */
 @Log4j2
 public class DbmsSupportFactory {
-	private Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
+	private final Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
 
 	private @Getter Properties dbmsSupportMap;
 
@@ -47,15 +46,9 @@ public class DbmsSupportFactory {
 	}
 
 	private IDbmsSupport compute(DataSource datasource) {
-		try {
-			if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
-				return getDbmsSupport(md.get("product"), md.get("product-version"));
-			}
-			try (Connection connection = datasource.getConnection()) {
-				return getDbmsSupport(connection);
-			}
-		} catch (SQLException | DbmsException e) {
+		try (Connection connection = datasource.getConnection()) {
+			return getDbmsSupport(connection);
+		} catch (SQLException e) {
 			log.warn("SQL exception while trying to get a connection from datasource [{}]", datasource, e);
 			return new GenericDbmsSupport();
 		}
@@ -72,7 +65,7 @@ public class DbmsSupportFactory {
 		}
 	}
 
-	private IDbmsSupport getDbmsSupport(String product, String productVersion) throws DbmsException {
+	public IDbmsSupport getDbmsSupport(String product, String productVersion) throws DbmsException {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {

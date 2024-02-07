@@ -24,7 +24,8 @@
     "datasources": [
         {
             "datasourceName": "jdbc/testconfiguration",
-            "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
+            "connectionPoolProperties": "DBCP2 Pool Info: maxIdle [8], minIdle [0], maxTotal [8], numActive [0], numIdle [0], testOnBorrow [false], testOnCreate [false], testOnReturn [false], testWhileIdle [false], removeAbandonedOnBorrow [false], removeAbandonedOnMaintenance [false], removeAbandonedTimeoutDuration [PT596523H14M7S]",
+            "info": "targetDataSource [org.frankframework.jdbc.datasource.OpenPoolingDataSource]"
         }
     ],
     "authEntries": [
@@ -48,7 +49,7 @@
         {
             "name": "dummyJmsRealm1",
             "datasourceName": "dummyDatasourceName",
-            "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
+			"info": null
         },
         {
             "queueConnectionFactoryName": "dummyQCF",

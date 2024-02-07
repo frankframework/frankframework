@@ -21,6 +21,7 @@ import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
@@ -68,25 +69,25 @@ public class JdbcUtilTest {
 		String query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT) VALUES (1, 'just a text', 1793)";
 
 		// Act
-		JdbcUtil.executeStatement(connection, query);
+		JdbcTestUtil.executeStatement(connection, query);
 
 		// Arrange
 		query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT) VALUES (2, 'just a second text', 96)";
 
 		// Act
-		JdbcUtil.executeStatement(connection, query);
+		JdbcTestUtil.executeStatement(connection, query);
 
 		// Arrange
 		query = "INSERT INTO TEMP (TKEY, TVARCHAR2, TDATETIME) VALUES (3, 'just a third text', PARSEDATETIME('2018-04-12 03:05:06', 'yyyy-MM-dd HH:mm:ss'))";
 
 		// Act
-		JdbcUtil.executeStatement(connection, query);
+		JdbcTestUtil.executeStatement(connection, query);
 
 		// Arrange
 		query = "INSERT INTO TEMP (TKEY, TVARCHAR) VALUES (?, ?)";
 
 		// Act
-		JdbcUtil.executeStatement(connection, query, 4, "fourth text");
+		JdbcTestUtil.executeStatement(connection, query, 4, "fourth text");
 
 		// Arrange
 		query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT, TDATETIME, TCLOB, TBLOB) VALUES (?, ?, ?, ?, ?, ?)";
@@ -106,7 +107,7 @@ public class JdbcUtilTest {
 		ParameterValueList parameterValues = params.getValues(Message.nullMessage(), session);
 
 		// Act
-		JdbcUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
+		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
 
 		// Arrange
 		query = "SELECT COUNT(*) FROM TEMP";
@@ -136,7 +137,7 @@ public class JdbcUtilTest {
 		assertEquals("fourth text", stringResult);
 
 		// Assert
-		stringResult = JdbcUtil.selectAllFromTable(dbmsSupport, connection, "TEMP", "TKEY");
+		stringResult = JdbcTestUtil.selectAllFromTable(dbmsSupport, connection, "TEMP", "TKEY");
 		System.out.println(stringResult);
 		MatchUtils.assertXmlEquals(TestFileUtils.getTestFile("/JdbcUtil/expected.xml"), stringResult);
 		//compareXML("JdbcUtil/expected.xml", stringResult);
@@ -147,7 +148,7 @@ public class JdbcUtilTest {
 		params.add(ParameterBuilder.create().withValue("3").withType(ParameterType.INTEGER));
 
 		// Act
-		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, query, ParameterBuilder.getPVL(params), session);
+		List<Object> listResult = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, query, ParameterBuilder.getPVL(params), session);
 
 		// Assert
 		assertEquals("just a third text", listResult.get(0));
@@ -157,7 +158,7 @@ public class JdbcUtilTest {
 		query = "SELECT COUNT(*) FROM TEMP";
 
 		// Act
-		long result = (Long) JdbcUtil.executeQuery(dbmsSupport, connection, query, null, session);
+		long result = (Long) JdbcTestUtil.executeQuery(dbmsSupport, connection, query, null, session);
 
 		// Assert
 		assertEquals(5, result);
@@ -182,13 +183,13 @@ public class JdbcUtilTest {
 		ParameterValueList parameterValues = params.getValues(Message.nullMessage(), session);
 
 		// Act
-		JdbcUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
+		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
 
 		// Assert
 		ParameterList resultParams = new ParameterList();
 		resultParams.add(ParameterBuilder.create().withValue("1").withType(ParameterType.INTEGER));
 
-		List<Object> result = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT TCLOB, TBLOB FROM TEMP WHERE TKEY = ?", ParameterBuilder.getPVL(resultParams), session);
+		List<Object> result = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TCLOB, TBLOB FROM TEMP WHERE TKEY = ?", ParameterBuilder.getPVL(resultParams), session);
 
 		Clob clob = (Clob) result.get(0);
 		Blob blob = (Blob) result.get(1);

@@ -22,7 +22,7 @@
 			</exits>
 			<pipe name="Call Sender"
 				className="org.frankframework.pipes.SenderPipe"
-				timeOutOnResult="[timeout]" exceptionOnResult="[error]">
+				timeoutOnResult="[timeout]" exceptionOnResult="[error]">
 				<sender append="true"
 					className="org.frankframework.jdbc.ResultSet2FileSender" />
 

@@ -1,7 +1,7 @@
 package org.frankframework.scheduler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,51 +14,58 @@ import java.util.Date;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
 import org.frankframework.dbms.Dbms;
+import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.JdbcTestBase;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.job.CleanupDatabaseJob;
 import org.frankframework.scheduler.job.IJob;
+import org.frankframework.testutil.JdbcTestUtil;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DbmsUtil;
-import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Locker;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
-public class CleanupDatabaseJobTest extends JdbcTestBase {
+@WithLiquibase(tableName = "IBISLOCK") //Lock table must exist
+@WithLiquibase(tableName = CleanupDatabaseJobTest.txStorageTableName) //Actual JdbcTXStorage table
+public class CleanupDatabaseJobTest {
 
 	private CleanupDatabaseJob jobDef;
 	private JdbcTransactionalStorage<Serializable> storage;
-	private final String cleanupJobName="CleanupDB";
-	private final String txStorageTableName="NOT_IBISLOCK_TABLE";
+	private final String cleanupJobName = "CleanupDB";
+	protected static final String txStorageTableName = "NOT_IBISLOCK_TABLE";
 
-	@Override
-	@Before
-	public void setup() throws Exception {
-		super.setup();
+	@DatabaseTest.Parameter(0)
+	private TransactionManagerType transactionManagerType;
 
-		System.setProperty("tableName", "IBISLOCK"); //Lock table must exist
-		runMigrator(TEST_CHANGESET_PATH);
+	@DatabaseTest.Parameter(1)
+	private String dataSourceName;
 
-		System.setProperty("tableName", txStorageTableName); //Actual JdbcTXStorage table
-		runMigrator(TEST_CHANGESET_PATH);
+	private TestConfiguration getConfiguration() {
+		return transactionManagerType.getConfigurationContext(dataSourceName);
+	}
 
-		//noinspection unchecked
+	@BeforeEach
+	@SuppressWarnings("unchecked")
+	public void setUp(DatabaseTestEnvironment database) throws Exception {
 		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
 		storage.setSlotId("dummySlotId");
 		storage.setTableName(txStorageTableName);
 		storage.setSequenceName("SEQ_"+txStorageTableName);
-		storage.setDatasourceName(getDataSourceName());
+		storage.setDatasourceName(database.getDataSourceName());
 
 		if (getConfiguration().getScheduledJob("MockJob") == null) {
 			IJob mockJob = mock(IJob.class);
 			Locker mockLocker = mock(Locker.class);
-			when(mockLocker.getDatasourceName()).thenAnswer(invocation -> getDataSourceName());
+			when(mockLocker.getDatasourceName()).thenAnswer(invocation -> database.getDataSourceName());
 			when(mockJob.getLocker()).thenReturn(mockLocker);
 			when(mockJob.getName()).thenReturn("MockJob");
 
@@ -72,7 +79,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 			PipeLine pipeLine = new PipeLine();
 			MessageSendingPipe mockPipe = mock(MessageSendingPipe.class);
 			Locker mockLocker = mock(Locker.class);
-			when(mockLocker.getDatasourceName()).thenAnswer(invocation -> getDataSourceName());
+			when(mockLocker.getDatasourceName()).thenAnswer(invocation -> database.getDataSourceName());
 			when(mockPipe.getLocker()).thenReturn(mockLocker);
 			when(mockPipe.getName()).thenReturn("MockPipe");
 			when(mockPipe.getMessageLog()).thenReturn(storage);
@@ -95,11 +102,11 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		getConfiguration().autowireByName(jobDef);
 	}
 
-	@Test
-	public void testCleanupDatabaseJobMaxRowsZero() throws Exception {
+	@DatabaseTest
+	public void testCleanupDatabaseJobMaxRowsZero(DatabaseTestEnvironment database) throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.configure();
-		prepareInsertQuery(1);
+		prepareInsertQuery(database, 1);
 
 		// set max rows to 0
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "0");
@@ -107,23 +114,24 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		assertTrue(jobDef.beforeExecuteJob());
 		jobDef.execute();
 
-		assertEquals(0, getCount());
+		assertEquals(0, getCount(database));
 	}
 
-	@Test
-	public void testCleanupDatabaseJob() throws Exception {
+	@DatabaseTest
+	public void testCleanupDatabaseJob(DatabaseTestEnvironment database) throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.configure();
 
-		prepareInsertQuery(5);
+		prepareInsertQuery(database, 5);
 
 		assertTrue(jobDef.beforeExecuteJob());
 		jobDef.execute();
 
-		assertEquals(0, getCount());
+		assertEquals(0, getCount(database));
 	}
 
-	private void prepareInsertQuery(int numRows) throws Exception {
+	private void prepareInsertQuery(DatabaseTestEnvironment database, int numRows) throws Exception {
+		IDbmsSupport dbmsSupport = database.getDbmsSupport();
 		Date date = new Date();
 		Date expiryDate = new Date(date.getTime() - 3600 * 1000 * 24);
 		StringBuilder sb = new StringBuilder("");
@@ -162,30 +170,26 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 				+ storage.getLabelField() + ")" + (dbmsSupport.getDbms() == Dbms.ORACLE ? " WITH valuesTable AS (" : " VALUES ")
 				+ sb.toString();
 
-		try(Connection connection = getConnection()) {
-			JdbcUtil.executeStatement(connection, query);
+		try(Connection connection = database.getConnection()) {
+			JdbcTestUtil.executeStatement(connection, query);
 		}
 
 		// check insertion
-		assertEquals(numRows, getCount());
+		assertEquals(numRows, getCount(database));
 	}
 
-	private int getCount() throws SQLException, JdbcException {
-		return getCount(txStorageTableName);
-	}
-
-	private int getCount(String tableName) throws SQLException, JdbcException {
-		try(Connection connection = getConnection()) {
-			return DbmsUtil.executeIntQuery(connection, "SELECT count(*) from "+tableName);
+	private int getCount(DatabaseTestEnvironment database) throws SQLException, JdbcException {
+		try(Connection connection = database.getConnection()) {
+			return DbmsUtil.executeIntQuery(connection, "SELECT count(*) from "+txStorageTableName);
 		}
 	}
 
-	@Test
-	public void testCleanupDatabaseJobMaxRowsOne() throws Exception {
+	@DatabaseTest
+	public void testCleanupDatabaseJobMaxRowsOne(DatabaseTestEnvironment database) throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.configure();
 
-		prepareInsertQuery(5);
+		prepareInsertQuery(database, 5);
 
 		// to clean up 1 by 1
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "1");
@@ -193,7 +197,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		assertTrue(jobDef.beforeExecuteJob());
 		jobDef.execute();
 
-		assertEquals(0, getCount());
+		assertEquals(0, getCount(database));
 	}
 }
 

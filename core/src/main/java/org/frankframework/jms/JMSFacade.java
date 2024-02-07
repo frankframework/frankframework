@@ -632,7 +632,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * Send a message
 	 * @param messageProducer
 	 * @param message
-	 * @return messageID of the sent message
+	 * @return messageID of sent message
 	 */
 	public String send(MessageProducer messageProducer, javax.jms.Message message) throws JMSException {
 		return send(messageProducer, message, false);
