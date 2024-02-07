@@ -682,19 +682,16 @@
 		<subsystem xmlns="urn:jboss:domain:messaging-activemq:13.0">
 			<server name="default">
 				<security elytron-domain="ApplicationDomain"/>
-				<statistics
-						enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+				<journal pool-files="10"/>
+				<statistics enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
 				<security-setting name="#">
-					<role name="guest" send="true" consume="true" create-non-durable-queue="true"
-						  delete-non-durable-queue="true"/>
+					<role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
 				</security-setting>
 				<jms-queue name="dynamicQueues/Q.TEST.IN" entries="jms/i4testiaf_in-artemis"/>
 				<jms-queue name="dynamicQueues/Q.TEST.OUT" entries="jms/i4testiaf_out-artemis"/>
 				<jms-queue name="dynamicQueues/Q.TEST.FF" entries="jms/i4testiaf_ff-artemis"/>
 				<remote-connector name="netty-remote-throughput" socket-binding="artemis"/>
-				<pooled-connection-factory name="artemis"
-										   entries="jms/qcf-artemis java:jboss/DefaultJMSConnectionFactory"
-										   connectors="netty-remote-throughput" transaction="xa"/>
+				<pooled-connection-factory name="artemis" entries="jms/qcf-artemis java:jboss/DefaultJMSConnectionFactory"  connectors="netty-remote-throughput" transaction="xa"/>
 			</server>
 		</subsystem>
 		<subsystem xmlns="urn:wildfly:metrics:1.0" security-enabled="false" exposed-subsystems="*" prefix="${wildfly.metrics.prefix:jboss}"/>
@@ -703,7 +700,7 @@
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
 		<subsystem xmlns="urn:jboss:domain:remoting:4.0">
-			<http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
+			<http-connector name="http-remoting-connector" connector-ref="default" sasl-authentication-factory="application-sasl-authentication"/>
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
 		<subsystem xmlns="urn:jboss:domain:resource-adapters:6.0">
@@ -811,7 +808,7 @@
 								enable-http2="true"/>
 				<host name="default-host" alias="localhost">
 					<location name="/" handler="welcome-content"/>
-					<http-invoker security-realm="ApplicationRealm"/>
+					<http-invoker http-authentication-factory="application-http-authentication"/>
 				</host>
 			</server>
 			<servlet-container name="default">
