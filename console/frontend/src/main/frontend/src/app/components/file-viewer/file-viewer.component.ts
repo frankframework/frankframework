@@ -1,6 +1,6 @@
-import { HttpClient, HttpDownloadProgressEvent, HttpErrorResponse, HttpEventType, HttpHeaders, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpDownloadProgressEvent, HttpErrorResponse, HttpEventType, HttpResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
-import { concatMap, debounce, debounceTime, filter } from 'rxjs';
+import { debounceTime, filter } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 
@@ -12,11 +12,11 @@ import { MiscService } from 'src/app/services/misc.service';
 export class FileViewerComponent implements OnInit {
 
   @Input()
-  fileName: string = "";
+  fileName: string = '';
   @Input()
-  contentType: string = "text/plain";
+  contentType: string = 'text/plain';
 
-  protected fileContents = "";
+  protected fileContents = '';
   protected loading = true;
   protected error = false;
 
@@ -24,16 +24,20 @@ export class FileViewerComponent implements OnInit {
     private http: HttpClient,
     private appService: AppService,
     private miscService: MiscService,
-  ) {}
+  ) { }
 
   ngOnInit() {
     const requestOptions = { headers: { Accept: this.contentType }, responseType: 'text', reportProgress: true, observe: 'events' } as const;
     this.http.request(
-      'get', `${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(this.fileName)}`,requestOptions
-    ).pipe(
+      'get',
+      `${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(this.fileName)}`,
+      requestOptions
+    )
+    .pipe(
       filter(event => event.type === HttpEventType.DownloadProgress || event.type === HttpEventType.Response),
       debounceTime(1000)
-    ).subscribe({
+    )
+    .subscribe({
       next: event => {
         if (event.type == HttpEventType.DownloadProgress) {
           const partialDownloadedText = (event as HttpDownloadProgressEvent).partialText;
