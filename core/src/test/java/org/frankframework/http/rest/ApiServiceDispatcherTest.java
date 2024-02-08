@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.ListenerException;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.util.EnumUtils;
@@ -137,7 +138,7 @@ public class ApiServiceDispatcherTest {
 			"/customers/123/departments/456/seats/52, 0, /employees/*/departments/*/seats/*",
 			"/employees/123/departments/456/seats/52, 0, /employees/*/departments/*",
 	})
-	void testFindMatchDoubleAsterisk(String requestUri, int expectedNrOfMatches, String uriPatterns) throws ListenerException {
+	void testFindMatchWithWildcards(String requestUri, int expectedNrOfMatches, String uriPatterns) throws ListenerException {
 		for (String uriPattern : uriPatterns.split("\\|")) {
 			ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, uriPattern);
 			dispatcher.registerServiceClient(listener);
@@ -146,6 +147,34 @@ public class ApiServiceDispatcherTest {
 		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri(requestUri);
 
 		assertEquals(expectedNrOfMatches, matchingConfig.size());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"/customers/123/addresses/345, /customers/**, /customers/**",
+			"/customers/123/addresses/345, /customers/*/addresses/**, /customers/**|/customers/*/addresses/**",
+			"/customers/123/addresses/345, /customers/**, /customers/**|/customers/*/addresses/*/**",
+			"/employees/123/departments/456/seats/52, , /customers/**",
+			"/employees/123/departments/456/seats/52, , /employees/*/departments/*",
+			"/customers/123/addresses/345, /customers/**, /customers/**|/employees/**",
+			"/customers/123/addresses/345, /customers/*/addresses/**, /customers/**|/customers/*/addresses/**",
+			"/customers/123/addresses/345, /customers/*/addresses/**, /customers/**|/customers/{custno}/addresses/**",
+			"/customers/123/addresses/345, /customers/*/addresses/*, /customers/**|/customers/*/addresses/**|/customers/*/addresses/*",
+			"/employees/123/departments/456/seats/52, /employees/*/departments/*/seats/*, /employees/**|/employees/*/departments/*/seats/*",
+	})
+	void testFindConfigBestMatchWithWildcards(String requestUri, String expectedMatch, String uriPatterns) throws ListenerException {
+		for (String uriPattern : uriPatterns.split("\\|")) {
+			ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, uriPattern);
+			dispatcher.registerServiceClient(listener);
+		}
+
+		ApiDispatchConfig matchingConfig = dispatcher.findConfigForUri(requestUri);
+
+		if (StringUtils.isBlank(expectedMatch)) {
+			assertNull(matchingConfig);
+		} else {
+			assertEquals(expectedMatch, matchingConfig.getUriPattern());
+		}
 	}
 
 

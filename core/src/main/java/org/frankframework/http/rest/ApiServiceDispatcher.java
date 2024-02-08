@@ -18,6 +18,7 @@ package org.frankframework.http.rest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -75,55 +76,89 @@ public class ApiServiceDispatcher {
 
 	public ApiDispatchConfig findConfigForUri(String uri) {
 		List<ApiDispatchConfig> configs = findMatchingConfigsForUri(uri, true);
-		return configs.isEmpty()? null : configs.get(0);
+		return configs.stream()
+				.max(Comparator.comparingInt(cfg -> scoreUriPattern(cfg.getUriPattern())))
+				.orElse(null);
+	}
+
+	/**
+	 * Calculate a numerical score for a URI pattern incidating how specific it is, based on the number of segments and wildcards.
+	 * <p>
+	 *     The intent is to have a higher score the more specific a URI pattern is, thus the more segments
+	 *     the more specific the higher the score but the more wildcards, the less specific a patter is relative
+	 *     to another pattern of the same number of segments.
+	 * </p>
+	 * <p>
+	 *     Patterns ending with a {@code /**} "match all" wildcard are always scored as
+	 *     less specific than patterns which do not have the "match all" wildcard.
+	 * </p>
+	 * <p>
+	 *     Scoring rules:
+	 *     <lu>
+	 *         <li>The more slashes the longer the match the more specific</li>
+	 *         <li>The more wildcards in the pattern the less specific</li>
+	 *         <li>"Match-all" patterns ending with /** are penalized with a -10 starting score</li>
+	 *     </lu>
+	 * </p>
+	 * @param uriPattern A pattern of a URI containing wildcards
+	 * @return Numerical score calculated for the URI based on the rules above.
+	 */
+	public static int scoreUriPattern(String uriPattern) {
+		// Scoring rules:
+		// - The more slashes the longer the match the more specific
+		// - The more wildcards in the pattern the less specific
+		// - "Match-all" patterns ending with /** are penalized with a -10 starting score
+		int startValue = uriPattern.endsWith("/**") ? -10 : 0;
+		return uriPattern.chars()
+				.reduce(startValue, (cnt, chr) -> {
+					switch ((char)chr) {
+						case '/': return cnt + 1;
+						case '*': return cnt - 1;
+						default: return cnt;
+					}
+				});
 	}
 
 	public List<ApiDispatchConfig> findMatchingConfigsForUri(String uri) {
 		return findMatchingConfigsForUri(uri, false);
 	}
 
-	private List<ApiDispatchConfig>  findMatchingConfigsForUri(String uri, boolean exactMatch) {
+	private List<ApiDispatchConfig>  findMatchingConfigsForUri(String uri, boolean matchFullPattern) {
 		List<ApiDispatchConfig> results = new ArrayList<>();
 
 		String[] uriSegments = uri.split("/");
 
-		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
-			String uriPattern = it.next();
-
+		for (Map.Entry<String,ApiDispatchConfig> entry : patternClients.entrySet()) {
+			String uriPattern = entry.getKey();
 			if (log.isTraceEnabled()) log.trace("comparing uri [{}] to pattern [{}]", uri, uriPattern);
 
 			String[] patternSegments = uriPattern.split("/");
 
-			if (exactMatch && (patternSegments.length != uriSegments.length || patternSegments[patternSegments.length-1].equals("**"))) {
+			if (matchFullPattern
+					&& patternSegments.length != uriSegments.length
+					&& (!patternSegments[patternSegments.length - 1].equals("**") || patternSegments.length > uriSegments.length)) {
 				continue;
 			}
 
 			int matches = 0;
 
-			for (int i = 0; i < uriSegments.length; i++) {
-				if (i >= patternSegments.length) {
-					break;
-				}
-				if (matches == i && patternSegments[i].equals("**")) {
-					ApiDispatchConfig result = patternClients.get(uriPattern);
+			for (int i = 0; i < uriSegments.length && i < patternSegments.length; i++) {
+				if (matches == i && i == patternSegments.length - 1 && patternSegments[i].equals("**")) {
+					ApiDispatchConfig result = entry.getValue();
 					results.add(result);
-					// TODO: Need to still find the most specific match, not the first match
-					if (exactMatch) {
-						return results;
-					}
-				}
-
-				if (patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
+				} else if (patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
 					matches++;
+				} else {
+					break;
 				}
 			}
 
 			if (matches == uriSegments.length) {
-				ApiDispatchConfig result = patternClients.get(uriPattern);
-				results.add(result);
-				if (exactMatch) {
-					return results;
+				ApiDispatchConfig result = entry.getValue();
+				if (matchFullPattern && !uriPattern.endsWith("/**")) {
+					return List.of(result);
 				}
+				results.add(result);
 			}
 		}
 		return results;
@@ -131,7 +166,7 @@ public class ApiServiceDispatcher {
 
 	public void registerServiceClient(ApiListener listener) throws ListenerException {
 		String uriPattern = listener.getCleanPattern();
-		if(uriPattern == null)
+		if (StringUtils.isBlank(uriPattern))
 			throw new ListenerException("uriPattern cannot be null or empty");
 
 		synchronized(patternClients) {
