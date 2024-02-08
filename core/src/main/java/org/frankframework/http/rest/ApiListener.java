@@ -210,7 +210,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if(StringUtils.isEmpty(pattern))
 			return null;
 
-		return pattern.replaceAll("\\{[^}]*+", "*");
+		return pattern.replaceAll("\\{[^}]*+}", "*");
 	}
 
 	/**
