@@ -182,8 +182,8 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	private void generatePartialOpenApiSpec(String uri, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String endpoint = createEndpointUrlFromRequest(request);
-		uri = uri.substring(0, uri.lastIndexOf("/"));
-		ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+		final String cleanedUri = uri.substring(0, uri.lastIndexOf("/"));
+		ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(cleanedUri);
 		if (apiConfig == null) {
 			response.sendError(404, "OpenApi specification not found");
 			return;

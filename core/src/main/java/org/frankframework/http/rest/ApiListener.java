@@ -45,6 +45,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
+
 /**
  * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
  * Prepends the configured URI pattern with <code>api/</code>. The structure of REST messages is described
@@ -55,9 +56,10 @@ import lombok.Setter;
  * therefore they document the full URLs of the provided services.
  *
  * @author Niels Meijer
- *
  */
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
+
+	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter String uriPattern;
@@ -65,6 +67,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String operationId;
 
 	private List<HttpMethod> methods = List.of(HttpMethod.GET);
+
 	public enum HttpMethod {
 		GET, PUT, POST, PATCH, DELETE, HEAD, OPTIONS;
 	}
@@ -109,22 +112,22 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if(StringUtils.isEmpty(getUriPattern()))
+		if (StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
 
 		if (!isValidUriPattern(getCleanPattern())) {
 			throw new ConfigurationException("uriPattern contains invalid wildcards");
 		}
 
-		if(getConsumes() != MediaTypes.ANY) {
+		if (getConsumes() != MediaTypes.ANY) {
 			if (hasMethod(HttpMethod.GET))
 				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
 			if (hasMethod(HttpMethod.DELETE))
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
 
-		if(getAuthenticationMethod() == AuthenticationMethods.JWT) {
-			if(StringUtils.isEmpty(getJwksUrl())){
+		if (getAuthenticationMethod() == AuthenticationMethods.JWT) {
+			if (StringUtils.isEmpty(getJwksUrl())) {
 				throw new ConfigurationException("jwksUrl cannot be empty");
 			}
 
@@ -139,12 +142,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {
-		if(StringUtils.isNotEmpty(claimAttributeToValidate)){
+		if (StringUtils.isNotEmpty(claimAttributeToValidate)) {
 			List<String> invalidClaims = StringUtil.splitToStream(claimAttributeToValidate)
 					.filter(claim -> StringUtil.split(claim, "=").size() != 2)
 					.collect(Collectors.toList());
 
-			if(!invalidClaims.isEmpty()){
+			if (!invalidClaims.isEmpty()) {
 				String partialMessage = invalidClaims.size() == 1 ? "is not a valid key/value pair" : "are not valid key/value pairs";
 				throw new ConfigurationException("[" + String.join(",", invalidClaims) + "] " + partialMessage + " for [" + claimAttributeName + "].");
 			}
@@ -155,7 +158,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	@Override
 	public void open() throws ListenerException {
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
-		if(getAuthenticationMethod() == AuthenticationMethods.JWT) {
+		if (getAuthenticationMethod() == AuthenticationMethods.JWT) {
 			try {
 				jwtValidator = new JwtValidator<>();
 				jwtValidator.init(getJwksUrl(), getRequiredIssuer());
@@ -174,10 +177,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private void buildPhysicalDestinationName() {
 		StringBuilder builder = new StringBuilder("uriPattern: ");
-		if(servletManager != null) {
+		if (servletManager != null) {
 			ServletConfiguration config = servletManager.getServlet(ApiListenerServlet.class.getSimpleName());
-			if(config != null) {
-				if(config.getUrlMapping().size() == 1) {
+			if (config != null) {
+				if (config.getUrlMapping().size() == 1) {
 					builder.append(config.getUrlMapping().get(0));
 				} else {
 					builder.append(config.getUrlMapping());
@@ -187,10 +190,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		builder.append(getUriPattern());
 		builder.append("; method: ").append(getMethods());
 
-		if(MediaTypes.ANY != consumes) {
+		if (MediaTypes.ANY != consumes) {
 			builder.append("; consumes: ").append(getConsumes());
 		}
-		if(MediaTypes.ANY != produces) {
+		if (MediaTypes.ANY != produces) {
 			builder.append("; produces: ").append(getProduces());
 		}
 
@@ -203,11 +206,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * returns the clear pattern, replaces everything between <code>{}</code> to <code>*</code>
+	 *
 	 * @return null if no pattern is found
 	 */
 	public String getCleanPattern() {
 		String pattern = getUriPattern();
-		if(StringUtils.isEmpty(pattern))
+		if (StringUtils.isEmpty(pattern))
 			return null;
 
 		return pattern.replaceAll("\\{[^}]*+}", "*");
@@ -229,6 +233,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * HTTP method to listen to
+	 *
 	 * @ff.default GET
 	 */
 	public void setMethod(HttpMethod method) {
@@ -237,6 +242,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * HTTP method(s) to listen to, separated by comma
+	 *
 	 * @ff.default GET
 	 */
 	public void setMethods(String methods) { // Using an Enum array would be better (issue #6149).
@@ -261,6 +267,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * URI pattern to register this listener on, eq. `/my-listener/{something}/here`
+	 *
 	 * @ff.mandatory
 	 */
 	public void setUriPattern(String uriPattern) {
@@ -276,6 +283,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * The required contentType on requests, if it doesn't match the request will fail
+	 *
 	 * @ff.default ANY
 	 */
 	public void setConsumes(@Nonnull MediaTypes value) {
@@ -284,6 +292,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * The specified contentType on response. When <code>ANY</code> the response will determine the content type based on the return data.
+	 *
 	 * @ff.default ANY
 	 */
 	public void setProduces(@Nonnull MediaTypes value) {
@@ -293,16 +302,18 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * The specified character encoding on the response contentType header. NULL or empty
 	 * values will be ignored.
+	 *
 	 * @ff.default UTF-8
 	 */
 	public void setCharacterEncoding(String charset) {
-		if(StringUtils.isNotBlank(charset)) {
+		if (StringUtils.isNotBlank(charset)) {
 			this.charset = charset;
 		}
 	}
 
 	/**
 	 * Automatically generate and validate etags
+	 *
 	 * @ff.default <code>false</code>, can be changed by setting the property <code>api.etag.enabled</code>.
 	 */
 	public void setUpdateEtag(boolean updateEtag) {
@@ -313,6 +324,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService` property
+	 *
 	 * @ff.default <code>NONE</code>
 	 */
 	public void setAuthenticationMethod(AuthenticationMethods authenticationMethod) {
@@ -325,19 +337,22 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	public void setAuthenticationRoles(String authRoles) {
 		this.authenticationRoles = StringUtil.split(authRoles, ",;");
 	}
+
 	public List<String> getAuthenticationRoleList() {
 		return authenticationRoles;
 	}
 
 	/**
 	 * Specify the form-part you wish to enter the pipeline
+	 *
 	 * @ff.default name of the first form-part
 	 */
 	public void setMultipartBodyName(String multipartBodyName) {
 		this.multipartBodyName = multipartBodyName;
 	}
+
 	public String getMultipartBodyName() {
-		if(StringUtils.isNotEmpty(multipartBodyName)) {
+		if (StringUtils.isNotEmpty(multipartBodyName)) {
 			return multipartBodyName;
 		}
 		return null;
@@ -427,8 +442,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 				" messageIdHeader[" + getMessageIdHeader() + "]" +
 				" updateEtag[" + isUpdateEtag() + "]";
 	}
-
-	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
 
 	public static boolean isValidUriPattern(String uriPattern) {
 		String uriPatternToValidate = uriPattern.endsWith("/**") ? uriPattern.substring(0, uriPattern.length() - 3) : uriPattern;

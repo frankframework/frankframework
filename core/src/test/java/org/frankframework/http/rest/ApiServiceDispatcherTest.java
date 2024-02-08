@@ -20,8 +20,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 public class ApiServiceDispatcherTest {
 
 	private ApiServiceDispatcher dispatcher = null;
-	private final int NR_OF_THREADS = 100;
-	private static final String PATH = "/test/config/all/to/test/wildcards";
+	private static final int NR_OF_THREADS = 100;
 
 	@BeforeEach
 	public void setUp() {
