@@ -264,17 +264,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * @ff.mandatory
 	 */
 	public void setUriPattern(String uriPattern) {
-		if (StringUtils.isBlank(uriPattern)) {
-			// Invalid pattern, but will be validated in configure()
-			// Return early because otherwise the code obscures that on "" the following transformation happens: "" --> "/" --> ""
-			return;
+		if (StringUtils.isNotBlank(uriPattern)) {
+			if (!uriPattern.startsWith("/"))
+				uriPattern = "/" + uriPattern;
+
+			if (uriPattern.endsWith("/"))
+				uriPattern = uriPattern.substring(0, uriPattern.length() - 1);
 		}
-		if(!uriPattern.startsWith("/"))
-			uriPattern = "/" + uriPattern;
-
-		if(uriPattern.endsWith("/"))
-			uriPattern = uriPattern.substring(0, uriPattern.length()-1);
-
 		this.uriPattern = uriPattern;
 	}
 
