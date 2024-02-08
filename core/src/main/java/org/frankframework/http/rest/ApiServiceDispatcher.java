@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
 import org.frankframework.align.XmlTypeToJsonSchemaConverter;
 import org.frankframework.core.IAdapter;
@@ -44,7 +43,6 @@ import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
 import org.springframework.util.MimeType;
 
 import jakarta.json.Json;
@@ -53,6 +51,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * This class registers dispatches requests to the proper registered ApiListeners.
@@ -61,10 +60,10 @@ import jakarta.json.JsonValue;
  * @author Niels Meijer
  *
  */
+@Log4j2
 public class ApiServiceDispatcher {
 
-	private final Logger log = LogUtil.getLogger(this);
-	private final ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<>(new ApiUriComparator());
+	private final ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<>();
 	private static ApiServiceDispatcher self = null;
 
 	public static synchronized ApiServiceDispatcher getInstance() {
