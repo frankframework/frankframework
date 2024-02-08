@@ -45,36 +45,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<version>10.0.20</version>
-				<configuration>
-					<systemProperties>
-						<systemProperty>
-							<name>log.dir</name>
-							<value>./target/logs</value>
-						</systemProperty>
-						<systemProperty>
-							<name>log.level</name>
-							<value>DEBUG</value>
-						</systemProperty>
-						<systemProperty>
-							<name>dtap.stage</name>
-							<value>LOC</value>
-						</systemProperty>
-					</systemProperties>
-					<webAppConfig>
-						<webInfIncludeJarPattern>./WEB-INF/lib/frankframework-[^/]*\.jar|./WEB-INF/lib/spring-[^/]*\.jar</webInfIncludeJarPattern>
-						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-					</webAppConfig>
-					<loginServices>
-						<loginServices implementation="org.eclipse.jetty.jaas.JAASLoginService">
-							<name>Frank</name>
-						</loginServices>
-					</loginServices>
-				</configuration>
-			</plugin>
 			<!-- use maven-jar-plugin to make separate artifacts of context, configurations, resources and testscenarios, to inject them into deployments -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -26,11 +26,10 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
+import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
 
 /**
@@ -106,12 +105,6 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	public String getConnectionFactoryInfo(ConnectionFactory connectionFactory) {
-		if ("TIBCOAMX".equals(applicationServerType)) {
-			// Workaround to prevent the following exception:
-			// [org.apache.geronimo.connector.outbound.MCFConnectionInterceptor] - Error occurred creating ManagedConnection for org.apache.geronimo.connector.outbound.ConnectionInfo@#######
-			// javax.resource.ResourceException: JMSJCA-E084: Failed to create session: The JNDI name is null
-			return null;
-		}
 		String info=null;
 		Connection connection = null;
 		try {
