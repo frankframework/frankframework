@@ -112,7 +112,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if(StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
 
-		if (!isValidUriPattern(getUriPattern())) {
+		if (!isValidUriPattern(getCleanPattern())) {
 			throw new ConfigurationException("uriPattern contains invalid wildcards");
 		}
 
