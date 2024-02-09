@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.frankframework.core.PipeLineSession;
@@ -232,8 +234,11 @@ public class ApiListenerServlet extends HttpServletBase {
 		if (method == ApiListener.HttpMethod.OPTIONS || origin != null) {
 			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
 			String headers = request.getHeader("Access-Control-Request-Headers");
-			if (headers != null)
-				response.setHeader("Access-Control-Allow-Headers", headers);
+			if (headers != null) {
+				// Strip CR & LF characters from the headers as they come from request and Codacy warns
+				// this could result in a security issue.
+				response.setHeader("Access-Control-Allow-Headers", StringEscapeUtils.escapeJava(headers));
+			}
 			response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
 
 			String methods = config.getMethods().stream()
@@ -649,14 +654,16 @@ public class ApiListenerServlet extends HttpServletBase {
 			String paramName = paramNames.nextElement();
 			String[] paramList = request.getParameterValues(paramName);
 			if(paramList.length > 1) { // contains multiple items
-				List<String> valueList = List.of(paramList);
-				if(LOG.isTraceEnabled()) LOG.trace("setting queryParameter [{}] to {}", paramName, valueList);
+				List<String> valueList = Arrays.stream(paramList)
+						.map(StringEscapeUtils::escapeJava)
+						.collect(Collectors.toList());
+				LOG.trace("setting queryParameter [{}] to {}", paramName, valueList);
 				params.put(paramName, valueList);
 			}
 			else {
 				String paramValue = request.getParameter(paramName);
-				if(LOG.isTraceEnabled()) LOG.trace("setting queryParameter [{}] to [{}]", paramName, paramValue);
-				params.put(paramName, paramValue);
+				LOG.trace("setting queryParameter [{}] to [{}]", paramName, paramValue);
+				params.put(paramName, StringEscapeUtils.escapeJava(paramValue));
 			}
 		}
 		return params;
