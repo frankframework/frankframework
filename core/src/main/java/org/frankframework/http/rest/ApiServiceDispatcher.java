@@ -118,6 +118,11 @@ public class ApiServiceDispatcher {
 	 *     with the request URI, and supports the requested HTTP method.
 	 * </p>
 	 * <p>
+	 *     {@link org.frankframework.http.rest.ApiListener.HttpMethod#OPTIONS} requests and requests for methods that are not supported by the configuration are always matched to the most specific URI pattern match.
+	 *     This is so that the {@code OPTIONS} request will return correct results, and requests for unsupported methods will return HTTP status code
+	 *     {@code 405} instead of {@code 404}.
+	 * </p>
+	 * <p>
 	 *     So for instance if a configuration would have the following {@link ApiListener}s installed:
 	 *     <lu>
 	 *         <li>ApiListener1: GET on uri /user/**</li>
@@ -127,8 +132,10 @@ public class ApiServiceDispatcher {
 	 *     Then:
 	 *     <lu>
 	 *         <li>A request {@code GET /user/usr123/department/dept456} would return the {@link ApiDispatchConfig} for /user/{userId}/department/{departmentId} containing ApiListener2</li>
+	 *         <li>A request {@code OPTIONS /user/usr123/department/dept456} would return the {@link ApiDispatchConfig} for /user/{userId}/department/{departmentId} containing ApiListener2</li>
 	 *         <li>A request {@code GET /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/** containing ApiListener1</li>
 	 *         <li>A request {@code POST /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/{userId}/avatar containing ApiListener3</li>
+	 *         <li>A request {@code PUT /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/{userId}/avatar containing ApiListener3</li>
 	 *     </lu>
 	 * </p>
 	 *
@@ -140,9 +147,31 @@ public class ApiServiceDispatcher {
 	public ApiDispatchConfig findConfigForRequest(@Nonnull ApiListener.HttpMethod method, @Nonnull String requestUri) {
 		List<ApiDispatchConfig> configs = findMatchingConfigsForUri(requestUri, true);
 		return configs.stream()
-				.filter(cfg -> cfg.hasMethod(method))
-				.max(Comparator.comparingInt(cfg -> scoreUriPattern(cfg.getUriPattern())))
+				.max(Comparator.comparingInt(cfg -> scoreRequestMethodMatch(method, cfg) + scoreUriPattern(cfg.getUriPattern())))
 				.orElse(null);
+	}
+
+	/**
+	 * Calculate a numerical score for how well a given HTTP request {@link org.frankframework.http.rest.ApiListener.HttpMethod} is matched
+	 * by the given {@link ApiDispatchConfig}.
+	 * <p>
+	 *     <lu>
+	 *         <li>
+	 *             The score is positive 10 when the {@code HttpMethod} is {@link org.frankframework.http.rest.ApiListener.HttpMethod#OPTIONS} or
+	 *             {@link ApiDispatchConfig#hasMethod(ApiListener.HttpMethod)} returns {@code true}.
+	 *         </li>
+	 *         <li>
+	 *             In all other cases the score is negative 10.
+	 *         </li>
+	 *     </lu>
+	 * </p>
+	 * @param requestMethod The {@link org.frankframework.http.rest.ApiListener.HttpMethod} of the request
+	 * @param config The {@link ApiDispatchConfig} against which to match the request method
+	 * @return The calculated score of the match.
+	 */
+	public static int scoreRequestMethodMatch(ApiListener.HttpMethod requestMethod, ApiDispatchConfig config) {
+		if (requestMethod == ApiListener.HttpMethod.OPTIONS || config.hasMethod(requestMethod)) return 10;
+		else return -10;
 	}
 
 	/**
