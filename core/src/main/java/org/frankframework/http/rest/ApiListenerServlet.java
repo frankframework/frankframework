@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -654,16 +653,19 @@ public class ApiListenerServlet extends HttpServletBase {
 			String paramName = paramNames.nextElement();
 			String[] paramList = request.getParameterValues(paramName);
 			if(paramList.length > 1) { // contains multiple items
-				List<String> valueList = Arrays.stream(paramList)
-						.map(StringEscapeUtils::escapeJava)
-						.collect(Collectors.toList());
-				LOG.trace("setting queryParameter [{}] to {}", paramName, valueList);
+				List<String> valueList = List.of(paramList);
+				if (LOG.isTraceEnabled()) {
+					List<String> logValueList = valueList.stream()
+							.map(StringEscapeUtils::escapeJava)
+							.collect(Collectors.toList());
+					LOG.trace("setting queryParameter [{}] to {}", paramName, logValueList);
+				}
 				params.put(paramName, valueList);
 			}
 			else {
 				String paramValue = request.getParameter(paramName);
-				LOG.trace("setting queryParameter [{}] to [{}]", paramName, paramValue);
-				params.put(paramName, StringEscapeUtils.escapeJava(paramValue));
+				LOG.trace("setting queryParameter [{}] to [{}]", ()->paramName, ()->StringEscapeUtils.escapeJava(paramValue));
+				params.put(paramName, paramValue);
 			}
 		}
 		return params;
