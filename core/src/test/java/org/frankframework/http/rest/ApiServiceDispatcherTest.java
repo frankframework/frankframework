@@ -128,51 +128,59 @@ public class ApiServiceDispatcherTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"/customers/123/addresses/345, 1, /customers/**",
-			"/customers/123/addresses/345, 2, /customers/**|/customers/*/addresses/*/**",
-			"/employees/123/departments/456/seats/52, 1, /employees/**",
-			"/customers/123/addresses/345, 1, /customers/**",
+			"/customers/123/addresses/345, 0, /customers/**",
+			"/customers/123/addresses/345, 0, /customers/**|/customers/*/addresses/*/**",
+			"/customers/123/addresses/345, 1, /customers/**|/customers/*/addresses/*/*",
+			"/customers/123, 2, /customers/*|/customers/*/addresses/*/*",
+			"/employees/123/departments/456/seats/52, 0, /employees/**",
 			"/customers/123/addresses/345, 0, /employees/**",
-			"/employees/123/departments/456/seats/52, 1, /employees/*/departments/**",
-			"/employees/123/departments/456/seats/52, 1, /employees/*/departments/*/seats/*",
-			"/customers/123/departments/456/seats/52, 0, /employees/*/departments/*/seats/*",
-			"/employees/123/departments/456/seats/52, 0, /employees/*/departments/*",
 	})
-	void testFindMatchWithWildcards(String requestUri, int expectedNrOfMatches, String uriPatterns) throws ListenerException {
+	void testFindPartialPatternMatchWithWildcards(String requestUri, int expectedNrOfMatches, String uriPatterns) throws ListenerException {
+		// Arrange
 		for (String uriPattern : uriPatterns.split("\\|")) {
 			ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, uriPattern);
 			dispatcher.registerServiceClient(listener);
 		}
 
+		// Act
 		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri(requestUri);
 
+		// Assert
 		assertEquals(expectedNrOfMatches, matchingConfig.size());
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/customers/123/addresses/345, /customers/**, /customers/**",
-			"/customers/123/addresses/345, /customers/*/addresses/**, /customers/**|/customers/*/addresses/**",
-			"/customers/123/addresses/345, /customers/**, /customers/**|/customers/*/addresses/*/**",
-			"/employees/123/departments/456/seats/52, , /customers/**",
-			"/employees/123/departments/456/seats/52, , /employees/*/departments/*",
-			"/customers/123/addresses/345, /customers/**, /customers/**|/employees/**",
-			"/customers/123/addresses/345, /customers/*/addresses/**, /customers/**|/customers/*/addresses/**",
-			"/customers/123/addresses/345, /customers/*/addresses/**, /customers/**|/customers/{custno}/addresses/**",
-			"/customers/123/addresses/345, /customers/*/addresses/*, /customers/**|/customers/*/addresses/**|/customers/*/addresses/*",
-			"/employees/123/departments/456/seats/52, /employees/*/departments/*/seats/*, /employees/**|/employees/*/departments/*/seats/*",
+			"GET, /customers/123/addresses/345, /customers/**, GET:/customers/**",
+			"GET, /customers/123/addresses/345, /customers/*/addresses/**, GET:/customers/**|GET:/customers/*/addresses/**",
+			"GET, /customers/123/addresses/345, /customers/**, GET:/customers/**|GET:/customers/*/addresses/*/**",
+			"GET, /employees/123/departments/456/seats/52, , GET:/customers/**",
+			"GET, /employees/123/departments/456/seats/52, , GET:/employees/*/departments/*",
+			"GET, /customers/123/addresses/345, /customers/**, GET:/customers/**|GET:/employees/**",
+			"GET, /customers/123/addresses/345, /customers/*/addresses/**, GET:/customers/**|GET:/customers/*/addresses/**",
+			"GET, /customers/123/addresses/345, /customers/*/addresses/**, GET:/customers/**|GET:/customers/{custno}/addresses/**",
+			"GET, /customers/123/addresses/345, /customers/*/addresses/*, GET:/customers/**|GET:/customers/*/addresses/**|GET:/customers/*/addresses/*",
+			"GET, /customers/123/addresses/345, /customers/**, GET:/customers/**|POST:/customers/*/addresses/**|POST:/customers/*/addresses/*",
+			"GET, /employees/123/departments/456/seats/52, /employees/*/departments/*/seats/*, GET:/employees/**|GET:/employees/*/departments/*/seats/*",
 	})
-	void testFindConfigBestMatchWithWildcards(String requestUri, String expectedMatch, String uriPatterns) throws ListenerException {
+	void testFindConfigBestMatchWithWildcards(String requestMethod, String requestUri, String expectedMatch, String uriPatterns) throws ListenerException {
+		// Arrange
 		for (String uriPattern : uriPatterns.split("\\|")) {
-			ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, uriPattern);
+			String[] methodAndPattern = uriPattern.split(":");
+			ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.valueOf(methodAndPattern[0]), methodAndPattern[1]);
 			dispatcher.registerServiceClient(listener);
 		}
 
-		ApiDispatchConfig matchingConfig = dispatcher.findConfigForUri(requestUri);
+		ApiListener.HttpMethod method = ApiListener.HttpMethod.valueOf(requestMethod);
 
+		// Act
+		ApiDispatchConfig matchingConfig = dispatcher.findConfigForRequest(method, requestUri);
+
+		// Assert
 		if (StringUtils.isBlank(expectedMatch)) {
 			assertNull(matchingConfig);
 		} else {
+			assertNotNull(matchingConfig, "Expected to find a config but no config found");
 			assertEquals(expectedMatch, matchingConfig.getUriPattern());
 		}
 	}

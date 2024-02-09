@@ -79,6 +79,13 @@ public class ApiServiceDispatcher {
 				.max(Comparator.comparingInt(cfg -> scoreUriPattern(cfg.getUriPattern())))
 				.orElse(null);
 	}
+	public ApiDispatchConfig findConfigForRequest(ApiListener.HttpMethod method, String requestUri) {
+		List<ApiDispatchConfig> configs = findMatchingConfigsForUri(requestUri, true);
+		return configs.stream()
+				.filter(cfg -> cfg.hasMethod(method))
+				.max(Comparator.comparingInt(cfg -> scoreUriPattern(cfg.getUriPattern())))
+				.orElse(null);
+	}
 
 	/**
 	 * Calculate a numerical score for a URI pattern incidating how specific it is, based on the number of segments and wildcards.
@@ -122,7 +129,7 @@ public class ApiServiceDispatcher {
 		return findMatchingConfigsForUri(uri, false);
 	}
 
-	private List<ApiDispatchConfig>  findMatchingConfigsForUri(String uri, boolean matchFullPattern) {
+	private List<ApiDispatchConfig> findMatchingConfigsForUri(String uri, boolean matchFullPattern) {
 		List<ApiDispatchConfig> results = new ArrayList<>();
 
 		String[] uriSegments = uri.split("/");
@@ -133,34 +140,41 @@ public class ApiServiceDispatcher {
 
 			String[] patternSegments = uriPattern.split("/");
 
-			if (matchFullPattern
-					&& patternSegments.length != uriSegments.length
-					&& (!patternSegments[patternSegments.length - 1].equals("**") || patternSegments.length > uriSegments.length)) {
-				continue;
-			}
+			if (!isPotentialMatch(matchFullPattern, patternSegments, uriSegments)) continue;
 
-			int matches = 0;
-
-			for (int i = 0; i < uriSegments.length && i < patternSegments.length; i++) {
-				if (matches == i && i == patternSegments.length - 1 && patternSegments[i].equals("**")) {
-					ApiDispatchConfig result = entry.getValue();
-					results.add(result);
-				} else if (patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
-					matches++;
-				} else {
-					break;
-				}
-			}
-
-			if (matches == uriSegments.length) {
+			if (isMatch(uriSegments, patternSegments)) {
 				ApiDispatchConfig result = entry.getValue();
-				if (matchFullPattern && !uriPattern.endsWith("/**")) {
-					return List.of(result);
-				}
 				results.add(result);
 			}
 		}
 		return results;
+	}
+
+	private static boolean isMatch(String[] uriSegments, String[] patternSegments) {
+		int matchingSegmentCount = 0;
+		for (int i = 0; i < uriSegments.length && i < patternSegments.length; i++) {
+			if (matchingSegmentCount == i && i == patternSegments.length - 1 && patternSegments[i].equals("**")) {
+				// Check for match on ** only if all segments before matched and we're matching last segment of pattern
+				return true;
+			} else if (patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
+				matchingSegmentCount++;
+			} else {
+				// No match on the segment, so this pattern cannot match rest of the Request URI. Bail out without checking more.
+				break;
+			}
+		}
+
+		return matchingSegmentCount == uriSegments.length;
+	}
+
+	private static boolean isPotentialMatch(boolean matchFullPattern, String[] patternSegments, String[] uriSegments) {
+		if (matchFullPattern && (patternSegments.length == uriSegments.length
+				|| (patternSegments[patternSegments.length - 1].equals("**") && patternSegments.length <= uriSegments.length))) {
+			// This pattern will never be a match
+			return true;
+		}
+		// When not wanting full pattern matches we never want matches on "/**" match-all wildcard
+		return !matchFullPattern && !patternSegments[patternSegments.length - 1].equals("**");
 	}
 
 	public void registerServiceClient(ApiListener listener) throws ListenerException {

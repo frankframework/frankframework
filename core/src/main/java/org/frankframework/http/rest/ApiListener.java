@@ -24,6 +24,8 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.doc.Default;
@@ -117,6 +119,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 		if (!isValidUriPattern(getCleanPattern())) {
 			throw new ConfigurationException("uriPattern contains invalid wildcards");
+		}
+
+		if (getUriPattern().endsWith("/**")) {
+			ConfigurationWarnings.add(this, log, "When using /** patterns in an ApiListener the generated OpenAPI spec might be incomplete", SuppressKeys.CONFIGURATION_VALIDATION, getReceiver().getAdapter());
 		}
 
 		if (getConsumes() != MediaTypes.ANY) {

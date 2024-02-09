@@ -216,6 +216,51 @@ public class ApiListenerServlet extends HttpServletBase {
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response, ApiListener.HttpMethod method, String uri) {
 		String remoteUser = request.getRemoteUser();
 
+		ApiDispatchConfig config = dispatcher.findConfigForRequest(method, uri);
+		if(config == null) {
+			response.setStatus(404);
+			LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
+			return;
+		}
+
+		/*
+		 * Handle Cross-Origin Resource Sharing
+		 * TODO make this work behind loadbalancers/reverse proxies
+		 * TODO check if request ip/origin header matches allowOrigin property
+		 */
+		String origin = request.getHeader("Origin");
+		if (method == ApiListener.HttpMethod.OPTIONS || origin != null) {
+			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
+			String headers = request.getHeader("Access-Control-Request-Headers");
+			if (headers != null)
+				response.setHeader("Access-Control-Allow-Headers", headers);
+			response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
+
+			String methods = config.getMethods().stream()
+					.map(ApiListener.HttpMethod::name)
+					.collect(Collectors.joining(", "));
+			response.setHeader("Access-Control-Allow-Methods", methods);
+
+			//Only cut off OPTIONS (aka preflight) requests
+			if (method == ApiListener.HttpMethod.OPTIONS) {
+				response.setStatus(200);
+				LOG.trace("Aborting preflight request with status [200], method [{}]", method);
+				return;
+			}
+		}
+
+		/*
+		 * Get serviceClient
+		 */
+		ApiListener listener = config.getApiListener(method);
+		if(listener == null) {
+			response.setStatus(405);
+			LOG.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
+			return;
+		}
+
+		LOG.trace("ApiListenerServlet calling service [{}]", listener::getName);
+
 		/*
 		 * Initiate and populate messageContext
 		 */
@@ -226,51 +271,6 @@ public class ApiListenerServlet extends HttpServletBase {
 			pipelineSession.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
 			pipelineSession.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
-				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
-				if(config == null) {
-					response.setStatus(404);
-					LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
-					return;
-				}
-
-				/*
-				 * Handle Cross-Origin Resource Sharing
-				 * TODO make this work behind loadbalancers/reverse proxies
-				 * TODO check if request ip/origin header matches allowOrigin property
-				 */
-				String origin = request.getHeader("Origin");
-				if (method == ApiListener.HttpMethod.OPTIONS || origin != null) {
-					response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
-					String headers = request.getHeader("Access-Control-Request-Headers");
-					if (headers != null)
-						response.setHeader("Access-Control-Allow-Headers", headers);
-					response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
-
-					String methods = config.getMethods().stream()
-						.map(ApiListener.HttpMethod::name)
-						.collect(Collectors.joining(", "));
-					response.setHeader("Access-Control-Allow-Methods", methods);
-
-					//Only cut off OPTIONS (aka preflight) requests
-					if (method == ApiListener.HttpMethod.OPTIONS) {
-						response.setStatus(200);
-						if(LOG.isTraceEnabled()) LOG.trace("Aborting preflight request with status [200], method [{}]", method);
-						return;
-					}
-				}
-
-				/*
-				 * Get serviceClient
-				 */
-				ApiListener listener = config.getApiListener(method);
-				if(listener == null) {
-					response.setStatus(405);
-					LOG.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
-					return;
-				}
-
-				if(LOG.isTraceEnabled()) LOG.trace("ApiListenerServlet calling service [{}]", listener.getName());
-
 				/*
 				 * Check authentication
 				 */
