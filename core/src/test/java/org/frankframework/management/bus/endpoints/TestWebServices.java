@@ -164,7 +164,7 @@ public class TestWebServices extends BusTestBase {
 
 	@Test
 	public void getOpenApiSpec() throws Exception {
-		assertEquals(1, ApiServiceDispatcher.getInstance().findMatchingConfigsForUri(API_LISTENER_ENDPOINT).size());
+		assertEquals(1, ApiServiceDispatcher.getInstance().findAllMatchingConfigsForUri(API_LISTENER_ENDPOINT).size());
 
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.setHeader("type", "openapi");
@@ -179,7 +179,7 @@ public class TestWebServices extends BusTestBase {
 
 	@Test
 	public void getFullOpenApiSpec() throws Exception {
-		assertEquals(1, ApiServiceDispatcher.getInstance().findMatchingConfigsForUri(API_LISTENER_ENDPOINT).size());
+		assertEquals(1, ApiServiceDispatcher.getInstance().findAllMatchingConfigsForUri(API_LISTENER_ENDPOINT).size());
 
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.setHeader("type", "openapi");

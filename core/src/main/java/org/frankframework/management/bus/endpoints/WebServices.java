@@ -30,20 +30,6 @@ import java.util.SortedMap;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
-import lombok.Getter;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -64,9 +50,22 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.management.bus.StringResponseMessage;
+import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.soap.WsdlGenerator;
 import org.frankframework.soap.WsdlGeneratorUtils;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import lombok.Getter;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.WEBSERVICES)
@@ -102,7 +101,7 @@ public class WebServices extends BusEndpointBase {
 		JsonObject jsonSchema = null;
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		if(uri != null) {
-			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+			ApiDispatchConfig apiConfig = dispatcher.findExactMatchingConfigForUri(uri);
 			if(apiConfig == null) {
 				throw new BusException("unable to find Dispatch configuration for uri");
 			}

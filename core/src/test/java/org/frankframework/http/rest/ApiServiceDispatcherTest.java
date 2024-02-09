@@ -121,7 +121,7 @@ public class ApiServiceDispatcherTest {
 		ApiListener listener = createServiceClient(ApiListenerServletTest.Methods.GET, "/customers/*/addresses/345");
 		dispatcher.registerServiceClient(listener);
 
-		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri("/customers/123/addresses/345");
+		List<ApiDispatchConfig> matchingConfig = dispatcher.findAllMatchingConfigsForUri("/customers/123/addresses/345");
 
 		assertEquals(1, matchingConfig.size());
 	}
@@ -143,7 +143,7 @@ public class ApiServiceDispatcherTest {
 		}
 
 		// Act
-		List<ApiDispatchConfig> matchingConfig = dispatcher.findMatchingConfigsForUri(requestUri);
+		List<ApiDispatchConfig> matchingConfig = dispatcher.findAllMatchingConfigsForUri(requestUri);
 
 		// Assert
 		assertEquals(expectedNrOfMatches, matchingConfig.size());
@@ -187,19 +187,19 @@ public class ApiServiceDispatcherTest {
 
 
 	private void testMultipleMethods(String uri){
-		ApiDispatchConfig config = dispatcher.findConfigForUri("/"+uri);
+		ApiDispatchConfig config = dispatcher.findExactMatchingConfigForUri("/"+uri);
 		assertNotNull(config);
 		assertEquals("[GET, POST]", config.getMethods().toString());
 
 		//Test what happens after we remove 1 ServiceClient
 		dispatcher.unregisterServiceClient(createServiceClient(ApiListenerServletTest.Methods.POST, uri));
-		ApiDispatchConfig config2 = dispatcher.findConfigForUri("/"+uri);
+		ApiDispatchConfig config2 = dispatcher.findExactMatchingConfigForUri("/"+uri);
 		assertNotNull(config2);
 		assertEquals("[GET]", config2.getMethods().toString());
 
 		//Test what happens after we remove both ServiceClient in the same DispatchConfig
 		dispatcher.unregisterServiceClient(createServiceClient(ApiListenerServletTest.Methods.GET, uri));
-		ApiDispatchConfig config3 = dispatcher.findConfigForUri("/"+uri);
+		ApiDispatchConfig config3 = dispatcher.findExactMatchingConfigForUri("/"+uri);
 		assertNull(config3);
 	}
 }
