@@ -83,15 +83,15 @@ public class SerializableFileReferenceTest {
 	@Test
 	void testTemporaryFilesShouldBeRemoved() throws Exception {
 		// Arrange & Act
-		String filePath = performCleanerTests();
+		Path filePath = Path.of(performCleanerTests());
+		assertTrue(Files.exists(filePath), "File should exist after test, otherwise it was already closed too early");
 
-		// GC can clean up the path
+		// GC can clean up the file
 		System.gc();
 		// Assert: Give the garbage collector some time to clean up
 		await().pollInterval(50, TimeUnit.MILLISECONDS)
 				.atMost(2, TimeUnit.SECONDS)
-				.until(() -> !Files.exists(Path.of(filePath)));
-		assertFalse(Files.exists(Path.of(filePath)), "Path should not exist after garbage collection");
+				.until(() -> !Files.exists(filePath));
 	}
 
 	private String performCleanerTests() throws Exception {
