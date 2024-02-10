@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 
@@ -47,7 +48,7 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class SerializableFileReference implements Serializable, AutoCloseable {
-	private static final Cleaner cleaner = Cleaner.create(); // Start Cleaner thread, to clean file when resource becomes phantom reachable
+	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to clean the SFR file when this resource becomes phantom reachable
 
 	private static final long serialVersionUID = 1L;
 	private static final long customSerializationVersion = 1L;

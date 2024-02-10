@@ -62,6 +62,7 @@ import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
@@ -75,7 +76,7 @@ import lombok.Getter;
 import lombok.Lombok;
 
 public class Message implements Serializable, Closeable {
-	private static final Cleaner cleaner = Cleaner.create(); // Start Cleaner thread, to clean file when resource becomes phantom reachable
+	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 512L * 1024L;
 	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
