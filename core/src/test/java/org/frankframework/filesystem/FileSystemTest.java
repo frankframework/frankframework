@@ -31,7 +31,6 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 
 	@Test
-	@Disabled //Works in master (8.1-SNAPSHOT), but not in lower versions, because of failures in AmazonS3FileSystemTest
 	void fileSystemTestAfterClosingAndOpening() throws Exception {
 		// Arrange
 		String filename = "create2" + FILE1;
