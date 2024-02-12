@@ -187,7 +187,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 */
 	@Override
 	public void addParameter(Parameter param) {
-		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");
+		log.debug("Pipe [{}] added parameter [{}]", getName(), param);
 		parameterList.add(param);
 	}
 

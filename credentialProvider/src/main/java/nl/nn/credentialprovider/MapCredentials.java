@@ -23,10 +23,10 @@ import org.apache.commons.lang3.StringUtils;
 
 public class MapCredentials extends Credentials {
 
-	private String usernameSuffix;
-	private String passwordSuffix;
+	private final String usernameSuffix;
+	private final String passwordSuffix;
 
-	private Map<String,String> aliases;
+	private final Map<String,String> aliases;
 
 	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, Map<String,String> aliases) {
 		this(alias, defaultUsernameSupplier, defaultPasswordSupplier, null, null, aliases);
