@@ -13,7 +13,7 @@ Upcoming (8.0)
 - IBulkDataListener has been removed. This feature was only supported through custom listeners and not tested.
 - IbisTester class has been moved from the CORE module to LARVA
 - IteratingPipes with `parallel=true` now throws exceptions. In order to suppress this behaviour please set `ignoreExceptions=true`.
-
+- Remove support for Maven Jetty plugin
 
 7.9
 ---

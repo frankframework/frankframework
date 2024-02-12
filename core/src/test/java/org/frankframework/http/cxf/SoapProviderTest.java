@@ -15,13 +15,11 @@
 */
 package org.frankframework.http.cxf;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -72,7 +70,7 @@ public class SoapProviderTest {
 	public static void setUp() {
 		Properties prop = System.getProperties();
 		String vendor = prop.getProperty("java.vendor");
-		assumeThat(vendor, not(equalTo("IBM Corporation")));
+		assumeFalse(vendor.contains("IBM Corporation"));
 
 	/*
 	 * The above exclusion of IBM JDK to work around the below error, seen when executing these tests with an IBM JDK:

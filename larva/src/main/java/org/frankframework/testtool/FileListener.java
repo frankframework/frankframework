@@ -102,6 +102,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			try {
 				Thread.sleep(waitBeforeRead);
 			} catch(InterruptedException e) {
+				Thread.currentThread().interrupt();
 				throw new ListenerException("Exception waiting before reading the file: " + e.getMessage(), e);
 			}
 		}

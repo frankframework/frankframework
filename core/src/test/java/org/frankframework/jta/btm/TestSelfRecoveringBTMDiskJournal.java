@@ -1,12 +1,11 @@
 package org.frankframework.jta.btm;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.lang.reflect.Field;
 import java.nio.channels.FileChannel;
@@ -16,16 +15,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.TransactionManagerTestBase;
-import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.testutil.JdbcTestUtil;
-import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.junit.BTMArgumentSource;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DbmsUtil;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -36,52 +34,40 @@ import bitronix.tm.journal.DiskJournal;
 import bitronix.tm.journal.Journal;
 import bitronix.tm.journal.TransactionLogAppender;
 
-public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase {
+@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TestSelfRecoveringBTMDiskJournal.TEST_TABLE)
+public class TestSelfRecoveringBTMDiskJournal {
+	static final String TEST_TABLE = "BTM_Temp_Table";
 
 	private static final String SELECT_QUERY = "SELECT count(*) FROM "+TEST_TABLE+" where tvarchar='TestSelfRecoveringBTMDiskJournal'";
 	private static final String INSERT_QUERY = "INSERT INTO "+TEST_TABLE+" (tkey, tvarchar) VALUES (?, 'TestSelfRecoveringBTMDiskJournal')";
-	private static final TransactionDefinition TX_DEF = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 20);
 	private static final AtomicInteger COUNT = new AtomicInteger(0);
 
-	@Before
-	@Override
-	public void setup() throws Exception {
-		assumeTrue("H2".equals(productKey));
+	private DatabaseTestEnvironment env;
 
-		if(getTransactionManagerType().equals(TransactionManagerType.BTM) && TransactionManagerServices.isTransactionManagerRunning()) {
-			log.info("Shutting down TransactionManager before tests");
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) throws Exception {
+		assumeTrue("H2".equals(env.getDataSourceName()));
+		assumeTrue("BTM".equals(env.getName()));
 
-			getTransactionManagerType().closeConfigurationContext();
-		}
-		super.setup();
-	}
+		this.env = env;
 
-	@After
-	@Override
-	public void teardown() throws Exception {
-		super.teardown();
-
-		if(getTransactionManagerType().equals(TransactionManagerType.BTM) && TransactionManagerServices.isTransactionManagerRunning()) {
-			log.info("Shutting down TransactionManager after tests");
-			getTransactionManagerType().closeConfigurationContext();
-
-			if(TransactionManagerServices.isTransactionManagerRunning()) {
-				fail("unable to shutdown BTM TransactionManager");
+		try(Connection conn = env.getConnection()) {
+			if(env.getDbmsSupport().isTablePresent(conn, TEST_TABLE)) {
+				JdbcTestUtil.executeStatement(conn, "DELETE FROM "+TEST_TABLE+" where tvarchar='TestSelfRecoveringBTMDiskJournal'");
 			}
 		}
 	}
 
 	private int getNumberOfLines() throws JdbcException, SQLException {
-		String preparedQuery = dbmsSupport.prepareQueryTextForNonLockingRead(SELECT_QUERY);
-		try (Connection connection = createNonTransactionalConnection()) {
+		String preparedQuery = env.getDbmsSupport().prepareQueryTextForNonLockingRead(SELECT_QUERY);
+		try (Connection connection = env.getConnection()) {
 			return DbmsUtil.executeIntQuery(connection, preparedQuery);
 		}
 	}
 
-	@Test
+	@BTMArgumentSource
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
 	public void testSelfRecoveringDiskJournalDuringTransaction() throws Exception {
-		assumeTrue(getTransactionManagerType().equals(TransactionManagerType.BTM));
-
 		assertEquals(0, getNumberOfLines()); // Ensure that the table is empty
 
 		// Arrange
@@ -96,9 +82,9 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 		assertEquals(2, getNumberOfLines());
 	}
 
-	@Test
+	@BTMArgumentSource
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
 	public void testSelf5RecoveringDiskJournalDuringTransaction() throws Exception {
-		assumeTrue(getTransactionManagerType().equals(TransactionManagerType.BTM));
 		assertEquals(0, getNumberOfLines()); // Ensure that the table is empty
 		int amount = 5;
 
@@ -116,9 +102,9 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 		assertEquals(amount+1, getNumberOfLines());
 	}
 
-	@Test
+	@BTMArgumentSource
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
 	public void testTooManyRecoveringsDuringTransaction() throws Exception {
-		assumeTrue(getTransactionManagerType().equals(TransactionManagerType.BTM));
 		assertEquals(0, getNumberOfLines()); // Ensure that the table is empty
 
 		BtmDiskJournal.setMaxErrorCount(5);
@@ -142,25 +128,25 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 	}
 
 	private void runInsertQuery() throws Exception {
-		try (Connection txManagedConnection = getConnection()) {
-			TransactionStatus txStatus2 = startTransaction(TX_DEF);
+		try (Connection txManagedConnection = env.getConnection()) {
+			TransactionStatus txStatus2 = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 			assertFalse(txStatus2.isRollbackOnly());
 			assertFalse(txStatus2.isCompleted());
 			JdbcTestUtil.executeStatement(txManagedConnection, INSERT_QUERY, COUNT.getAndIncrement());
-			txManager.commit(txStatus2);
+			env.getTxManager().commit(txStatus2);
 			assertTrue(txStatus2.isCompleted());
 		}
 	}
 
 	private void getConnectionCloseJournalAndTestException() throws Exception {
-		TransactionStatus txStatus = startTransaction(TX_DEF);
-		try (Connection txManagedConnection = getConnection()) {
+		TransactionStatus txStatus = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		try (Connection txManagedConnection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(txManagedConnection, INSERT_QUERY, COUNT.getAndIncrement());
 
 			// Act
 			closeDiskJournal();
 
-			txManager.commit(txStatus);
+			env.getTxManager().commit(txStatus);
 
 			// Assert if old transaction has been completed.
 			// These values don't change regardless of the journal state.

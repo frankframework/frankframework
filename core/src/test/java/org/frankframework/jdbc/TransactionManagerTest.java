@@ -9,7 +9,6 @@ import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DbmsUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
@@ -26,11 +25,6 @@ public class TransactionManagerTest {
 			int count = DbmsUtil.executeIntQuery(connection, preparedQuery);
 			assertEquals(expected, count, "number of lines in table");
 		}
-	}
-
-	@BeforeEach
-	public void setup(DatabaseTestEnvironment env) throws Exception {
-		// This is required for Liquibase
 	}
 
 	@TxManagerTest

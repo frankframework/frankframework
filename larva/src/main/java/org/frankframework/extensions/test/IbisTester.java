@@ -200,6 +200,7 @@ public class IbisTester {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
+						Thread.currentThread().interrupt();
 					}
 					runState = adapter.getRunState();
 					if ((RunState.STARTED) != runState) {
