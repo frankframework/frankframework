@@ -132,18 +132,10 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	public void _createFolder(String folder) throws Exception {
+	public void _createFolder(String folder) throws FileSystemException {
 		try {
-			String[] folders = folder.split("/");
-			for(int i = 1; i < folders.length; i++) {
-				folders[i] = folders[i - 1] + "/" + folders[i];
-			}
-			for(String f : folders) {
-				if(f.length() != 0 && !_folderExists(f)) {
-					ftpClient.mkdir(f);
-				}
-			}
-		} catch (SftpException | ArrayIndexOutOfBoundsException e) {
+			ftpClient.mkdir(folder);
+		} catch (SftpException e) {
 			throw new FileSystemException("Cannot create directory", e);
 		}
 	}

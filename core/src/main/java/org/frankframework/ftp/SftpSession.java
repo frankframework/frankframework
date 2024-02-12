@@ -16,13 +16,10 @@
 package org.frankframework.ftp;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IConfigurable;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.util.CredentialFactory;
 import org.springframework.context.ApplicationContext;
 
-import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -35,15 +32,19 @@ import com.jcraft.jsch.SftpException;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IConfigurable;
+
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.LogUtil;
 
 /**
  * Helper class for sftp.
  *
  * @author Niels Meijer
  */
-@Log4j2
 public class SftpSession implements IConfigurable {
+	private static final Logger LOG = LogUtil.getLogger(SftpSession.class);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -103,7 +104,7 @@ public class SftpSession implements IConfigurable {
 	}
 
 	public synchronized ChannelSftp openClient(String remoteDirectory) throws FileSystemException {
-		log.debug("open sftp client");
+		LOG.debug("open sftp client");
 		if (sftpClient == null || sftpClient.isClosed()) {
 			openSftpClient(remoteDirectory);
 		}
@@ -163,26 +164,12 @@ public class SftpSession implements IConfigurable {
 			if (!sftpSession.isConnected()) {
 				throw new FileSystemException("could not authenticate to sftp server");
 			}
-			log.debug("created new sftp session to host {}", sftpSession.getHost());
+
 			return sftpSession;
 		}
 		catch(JSchException e) {
-			throw new FileSystemException("cannot connect to the FTP server with domain [" + getHost() + "] at port [" + getPort() + "]", e);
+			throw new FileSystemException("cannot connect to the FTP server with domain ["+getHost()+"]", e);
 		}
-	}
-
-	protected boolean isSessionStillWorking() {
-		try {
-			Session session = sftpClient.getSession();
-			ChannelExec testChannel = (ChannelExec) session.openChannel("exec");
-			testChannel.setCommand("true");
-			testChannel.connect();
-			testChannel.disconnect();
-			return true;
-		} catch (JSchException e) {
-			log.info("SFTP session is not working anymore.");
-		}
-		return false;
 	}
 
 	private Proxy createProxy() {
@@ -215,8 +202,8 @@ public class SftpSession implements IConfigurable {
 	}
 
 	public static void close(ChannelSftp sftpClient) {
+		LOG.debug("closing ftp client");
 		if (sftpClient != null && sftpClient.isConnected()) {
-			log.debug("closing sftp client");
 			sftpClient.disconnect();
 		}
 	}
