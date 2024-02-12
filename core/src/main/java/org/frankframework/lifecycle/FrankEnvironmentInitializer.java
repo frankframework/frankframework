@@ -28,6 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.MutablePropertySources;
@@ -40,8 +42,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
 import lombok.extern.log4j.Log4j2;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 /**
  * Programmatically load the Frank!Framework Web Environment.
@@ -144,13 +144,6 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 			autoDeterminedApplicationServerType = "JBOSS";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
 			autoDeterminedApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
-			String javaHome = System.getProperty("java.home");
-			if (StringUtils.containsIgnoreCase(javaHome, "tibco")) {
-				autoDeterminedApplicationServerType = "TIBCOAMX";
-			} else {
-				autoDeterminedApplicationServerType = "JETTYMVN";
-			}
 		} else {
 			autoDeterminedApplicationServerType = "TOMCAT";
 			APPLICATION_LOG.warn("Unknown server info [{}] default application server type could not be determined, TOMCAT will be used as default value", serverInfo);

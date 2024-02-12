@@ -16,11 +16,10 @@
 package org.frankframework.core;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.jndi.JndiLocatorSupport;
-
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.jndi.JndiLocatorSupport;
 
 public class JndiContextPrefixFactory implements InitializingBean {
 
@@ -29,7 +28,6 @@ public class JndiContextPrefixFactory implements InitializingBean {
 
 	private enum ContextPrefix {
 		JBOSS("java:/"),
-		TIBCOAMX("java:"), // no slash?
 		TOMCAT(JndiLocatorSupport.CONTAINER_PREFIX),
 		DEFAULT(JndiLocatorSupport.CONTAINER_PREFIX);
 
