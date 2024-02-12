@@ -24,6 +24,9 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.stream.Message;
+import org.frankframework.util.CredentialFactory;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -32,9 +35,6 @@ import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.stream.Message;
-import org.frankframework.util.CredentialFactory;
 
 /**
  * Uses the (old) SMB 1 protocol.
@@ -156,13 +156,14 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		}
 	}
 
-	public boolean isFolder(SmbFile f) throws FileSystemException {
+	private boolean isFolder(SmbFile f) throws FileSystemException {
 		try {
 			return f.isDirectory();
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
 		}
 	}
+
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		return isFolder(toFile(folder));
@@ -189,9 +190,13 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		String normalized = FilenameUtils.normalizeNoEndSeparator(folder, true) + "/";
 		try {
 			if (folderExists(normalized)) {
+				if(!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
+					throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
+				}
+
 				toFile(normalized).delete();
 			} else {
-				throw new FileSystemException("Remove directory for [" + normalized + "] has failed. Directory does not exist.");
+				throw new FileSystemException("Cannot remove folder [" + normalized + "]. Directory does not exist.");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);

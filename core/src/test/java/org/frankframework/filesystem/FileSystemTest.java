@@ -30,6 +30,29 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	}
 
 	@Test
+	void fileSystemTestAfterClosingAndOpening() throws Exception {
+		// Arrange
+		String filename = "create2" + FILE1;
+		createFile(null, filename, "tja");
+		waitForActionToFinish();
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		// Assert 1
+		assertTrue(fileSystem.exists(fileSystem.toFile(filename)), "Expected file[" + filename + "] to be present");
+
+		// Close & Open FS
+		fileSystem.close();
+		fileSystem.open();
+
+		// Assert 2
+		F f = fileSystem.toFile(filename);
+		fileSystem.deleteFile(f);
+		assertFalse(fileSystem.exists(f));
+	}
+
+	@Test
 	public void writableFileSystemTestCreateNewFile() throws Exception {
 		String filename = "create" + FILE1;
 		String contents = "regeltje tekst";
@@ -253,6 +276,22 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	@Test
 	public void writableFileSystemTestFolderExists() throws Exception {
 		String folderName = "dummyFolder";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		if (!_folderExists(folderName)) {
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue(_folderExists(folderName), "could not create folder before test");
+		}
+
+		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen");
+	}
+
+	@Test
+	public void writableFileSystemTestFolderExistsWithSlash() throws Exception {
+		String folderName = "dummyFolder/";
 
 		fileSystem.configure();
 		fileSystem.open();
