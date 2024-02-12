@@ -67,7 +67,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	void happyFlowDot2SVG_STANDALONE() throws Exception {
+	void happyFlowDot2SVG_StandAlone() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -79,7 +79,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	void happyFlowRender2SVG_STANDALONE() throws Exception {
+	void happyFlowRender2SVG_StandAlone() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -157,6 +157,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
+	@SuppressWarnings("java:S5786") // Make public for Javadoc reference
 	public void testJavascriptEngineIsClosedProperly() throws Exception {
 		// Arrange: use FakeEngine, which works on every hardware architecture and is faster
 		AppConstants.getInstance().setProperty("flow.javascript.engines", "org.frankframework.javascript.FakeEngine");
