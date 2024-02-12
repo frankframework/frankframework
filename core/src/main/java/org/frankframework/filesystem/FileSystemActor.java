@@ -16,12 +16,10 @@
 package org.frankframework.filesystem;
 
 import java.io.ByteArrayInputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.nio.file.DirectoryStream;
-import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -357,45 +355,19 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					return fileSystem.readFile(file, getCharset());
 				}
 				case READDELETE: {
-					final F file=getFile(input, pvl);
-					InputStream in = new FilterInputStream(fileSystem.readFile(file, getCharset()).asInputStream()) {
-						boolean isClosed = false;
-
-						@Override
-						public void close() throws IOException {
-							if (isClosed) {
-								return;
-							}
-							super.close();
-							isClosed = true;
-							try {
-								fileSystem.deleteFile(file);
-								deleteEmptyFolder(file);
-							} catch (NoSuchFileException e) {
-								log.debug("ignore", e);
-							} catch (FileSystemException e) {
-								if (e.getCause() instanceof NoSuchFileException) {
-									log.debug("ignore", e);
-									return;
-								}
-								throw new IOException("Could not delete file [" + fileSystem.getName(file) + "]: " + e.getMessage(), e);
-							}
+					final F file = getFile(input, pvl);
+					try {
+						Message result = fileSystem.readFile(file, getCharset());
+						// Make a copy of a local file, otherwise the file is deleted after this method returns.
+						if (fileSystem instanceof LocalFileSystem) {
+							return result.copyMessage();
 						}
-
-						@Override
-						protected void finalize() throws Throwable {
-							if (!isClosed) {
-								try {
-									close();
-								} catch (Exception e) {
-									log.warn("Could not close file [" + fileSystem.getName(file) + "]: " + e.getMessage(), e);
-								}
-							}
-							super.finalize();
-						}
-
-					};
-					return Message.asMessage(in);
+						result.preserve();
+						return result;
+					} finally {
+						fileSystem.deleteFile(file);
+						deleteEmptyFolder(file);
+					}
 				}
 				case LIST: {
 					String folder = arrangeFolder(determineInputFoldername(input, pvl));
@@ -547,13 +519,13 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return is;
 	}
 
-	private void deleteEmptyFolder(F f) throws FileSystemException, IOException {
+	private void deleteEmptyFolder(F f) throws FileSystemException {
 		if(isDeleteEmptyFolder()) {
 			deleteEmptyFolder(fileSystem.getParentFolder(f));
 		}
 	}
 
-	private void deleteEmptyFolder(String folder) throws FileSystemException, IOException {
+	private void deleteEmptyFolder(String folder) throws FileSystemException {
 		if(isDeleteEmptyFolder()) {
 			boolean isEmpty = false;
 			try (DirectoryStream<F> stream = fileSystem.listFiles(folder)) {

@@ -163,7 +163,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		try {
 			ftpClient.rm(getCanonicalName(f));
 		} catch (SftpException e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
 		}
 	}
 
