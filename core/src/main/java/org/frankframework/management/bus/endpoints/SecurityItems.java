@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.springframework.messaging.Message;
@@ -39,6 +42,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.jdbc.datasource.JdbcPoolUtil;
+import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsException;
 import org.frankframework.jms.JmsRealm;
@@ -111,7 +116,7 @@ public class SecurityItems extends BusEndpointBase {
 			String cfInfo = null;
 
 			if(StringUtils.isNotEmpty(dsName)) {
-				realm = mapDataSource(realmName, dsName);
+				realm = mapJmsRealmToDataSource(realmName, dsName);
 			} else {
 				JmsSender js = new JmsSender();
 				js.setJmsRealm(realmName);
@@ -139,19 +144,45 @@ public class SecurityItems extends BusEndpointBase {
 		return jmsRealmList;
 	}
 
-	private ArrayList<Object> addDataSources() {
+	private ArrayList<DataSourceDTO> addDataSources() {
 		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
 		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 
-		ArrayList<Object> dsList = new ArrayList<>();
+		ArrayList<DataSourceDTO> dsList = new ArrayList<>();
 		for(String datasourceName : dataSourceNames) {
-			dsList.add(mapDataSource(null, datasourceName));
+			DataSource ds = null;
+			try {
+				ds = dataSourceFactory.getDataSource(datasourceName);
+			} catch (NamingException e) {
+				log.debug("unable to retrieve datasource info for name [{}]", datasourceName);
+			}
+
+			dsList.add(new DataSourceDTO(datasourceName, ds));
 		}
+
 		return dsList;
 	}
 
-	private Map<String, Object> mapDataSource(String jmsRealm, String datasourceName) {
+	private static class DataSourceDTO {
+		private @Getter final String datasourceName;
+		private @Getter final String connectionPoolProperties;
+		private @Getter final String info;
+
+		public DataSourceDTO(String datasourceName, DataSource ds) {
+			this.datasourceName = datasourceName;
+			this.connectionPoolProperties = JdbcPoolUtil.getConnectionPoolInfo(ds);
+
+			if(ds instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				this.info = ((TransactionalDbmsSupportAwareDataSourceProxy) ds).getInfo();
+			} else {
+				this.info = null;
+			}
+		}
+	}
+
+	@Deprecated
+	private Map<String, Object> mapJmsRealmToDataSource(String jmsRealm, String datasourceName) {
 		Map<String, Object> realm = new HashMap<>();
 		FixedQuerySender qs = createBean(FixedQuerySender.class);
 

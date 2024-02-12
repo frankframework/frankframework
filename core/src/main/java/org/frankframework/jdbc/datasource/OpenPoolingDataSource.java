@@ -23,7 +23,6 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 /**
  * Extension of {@link PoolingDataSource} that exposes an extra method to fetch pool statistics.
  *
- * @param <C>
  */
 public class OpenPoolingDataSource<C extends Connection> extends PoolingDataSource<C> {
 	public OpenPoolingDataSource(final GenericObjectPool<C> pool) {
