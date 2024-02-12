@@ -17,7 +17,7 @@ package org.frankframework.credentialprovider;
 
 public interface ICredentials {
 
-	public String getAlias();
-	public String getUsername();
-	public String getPassword();
+	String getAlias();
+	String getUsername();
+	String getPassword();
 }
