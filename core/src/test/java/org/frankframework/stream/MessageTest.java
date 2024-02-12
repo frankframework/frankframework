@@ -1234,7 +1234,7 @@ public class MessageTest {
 		TestAppender.addToRootLogger(appender);
 		try {
 			createMessageInShortLivedScope();
-			// GC should clean up the engine
+			// GC should clean up the message object
 			System.gc();
 
 			// Assert: Give the garbage collector some time to clean up

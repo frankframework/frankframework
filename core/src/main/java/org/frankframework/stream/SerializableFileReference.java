@@ -154,25 +154,26 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		this.binary = binary;
 		this.charset = charset;
 		this.path = path;
-		cleanupFileAction = new CleanupFileAction(path, isFileOwner);
+		if (isFileOwner) {
+			createCleanerAction(path);
+		}
+	}
+
+	private void createCleanerAction(final Path path) {
+		cleanupFileAction = new CleanupFileAction(path);
 		cleanable = cleaner.register(this, cleanupFileAction);
 	}
 
 	private static class CleanupFileAction implements Runnable {
 		private final Path fileToClean;
-		private boolean isFileOwner;
 		private boolean calledByClose = false;
 
-		private CleanupFileAction(Path fileToClean, boolean isFileOwner) {
+		private CleanupFileAction(Path fileToClean) {
 			this.fileToClean = fileToClean;
-			this.isFileOwner = isFileOwner;
 		}
 
 		@Override
 		public void run() {
-			if (!isFileOwner) {
-				return;
-			}
 			if (!calledByClose) {
 				log.info("Leak detection: File [{}] was not closed properly, cleaning up", fileToClean);
 			}
@@ -182,7 +183,6 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 				log.warn("failed to remove file reference {}", fileToClean);
 			}
 		}
-
 	}
 
 	public long getSize() {
@@ -215,8 +215,10 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-		cleanupFileAction.calledByClose = true; // Mark that the file is being closed by the happy flow
-		cleanable.clean();
+		if (cleanupFileAction != null) {
+			cleanupFileAction.calledByClose = true;
+			cleanable.clean();
+		}
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
@@ -238,15 +240,13 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @param in ObjectInputStream to create object from
 	 * @throws IOException if there is a problem reading from the stream
 	 */
-	@SuppressWarnings("unused")
 	private void readObject(ObjectInputStream in) throws IOException {
 		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
-		this.size = in.readLong();
-		this.binary = in.readBoolean();
-		this.charset = in.readUTF();
-		this.path = copyToTempFile(in, this.size);
-		cleanupFileAction = new CleanupFileAction(path, true);
-		cleanable = cleaner.register(this, cleanupFileAction);
+		size = in.readLong();
+		binary = in.readBoolean();
+		charset = in.readUTF();
+		path = copyToTempFile(in, size);
+		createCleanerAction(path);
 	}
 
 	/**

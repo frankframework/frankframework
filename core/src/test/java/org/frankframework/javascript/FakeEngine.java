@@ -14,14 +14,17 @@ public class FakeEngine implements JavascriptEngine<String> {
 
 	@Override
 	public void setGlobalAlias(String alias) {
+		// do nothing
 	}
 
 	@Override
 	public void startRuntime() {
+		// do nothing
 	}
 
 	@Override
 	public void executeScript(String script) {
+		// do nothing
 	}
 
 	@Override
@@ -31,6 +34,7 @@ public class FakeEngine implements JavascriptEngine<String> {
 
 	@Override
 	public void closeRuntime() {
+		// do nothing
 	}
 
 	@Override
@@ -40,9 +44,11 @@ public class FakeEngine implements JavascriptEngine<String> {
 
 	@Override
 	public void registerCallback(final ISender sender, final PipeLineSession session) {
+		// do nothing
 	}
 
 	@Override
 	public void setResultHandler(ResultHandler resultHandler) {
+		// do nothing
 	}
 }
