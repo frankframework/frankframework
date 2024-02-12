@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.filesystem.smb;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import nl.nn.adapterframework.filesystem.FileSystemActor;
 import nl.nn.adapterframework.filesystem.FileSystemPipeTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.LocalFileServer;
@@ -60,5 +62,15 @@ public class Samba2PipeTest extends FileSystemPipeTest<Samba2Pipe, SmbFileRef, S
 		pipe.setRealm(realm);
 		pipe.setDomainName(domain);
 		return pipe;
+	}
+
+	@Test
+	void testRestartingPipe() throws Exception {
+		fileSystemPipe.setAction(FileSystemActor.FileSystemAction.CREATE);
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		fileSystemPipe.stop();
+		fileSystemPipe.start();
 	}
 }

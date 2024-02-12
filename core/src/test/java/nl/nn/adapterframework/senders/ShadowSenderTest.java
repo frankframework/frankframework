@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class ShadowSenderTest extends ParallelSendersTest {
@@ -205,6 +206,60 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		for(Node node : shadowResults) {
 			Element shadowResult = (Element) node;
 			assertEquals(INPUT_MESSAGE, XmlUtils.getStringValue(shadowResult, true));
+			assertTrue(shadowResult.getAttribute("senderName").startsWith("shadowSenderWithDelay"));
+			int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
+			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2150))));
+		}
+	}
+
+	@Test
+	public void testResultSenderResultWith3ShadowSendersAsync() throws Exception {
+		// Arrange
+		sender.registerSender(new TestSender("shadowSenderWithDelay1"));
+		sender.registerSender(new TestSender("shadowSenderWithDelay2"));
+		sender.registerSender(new TestSender("shadowSenderWithDelay3"));
+		((ShadowSender)sender).setWaitForShadowsToFinish(false);
+
+		sender.configure();
+		sender.open();
+
+		Message inputMessage = MessageTestUtils.getNonRepeatableMessage(MessageTestUtils.MessageType.CHARACTER_UTF8);
+
+		// Act
+		inputMessage.closeOnCloseOf(session, sender);
+		String result = sender.sendMessageOrThrow(inputMessage, session).asString();
+		session.close();
+
+		// Assert
+		assertEquals(ORIGINAL_SENDER_RESULT, result);
+
+		Thread.sleep(3000); // wait for results to be collected in the background
+		Message senderResult = null;
+		for(ISender sender : sender.getSenders()) {
+			if(RESULT_SENDER_NAME.equals(sender.getName())) {
+				senderResult = ((ResultSender)sender).getResult();
+			}
+		}
+		if(senderResult == null) {
+			fail("no sender result");
+		}
+
+		Element el = XmlUtils.buildDomDocument(senderResult.asInputSource(), false).getDocumentElement();
+
+		String origMsg = XmlUtils.getChildTagAsString(el, "originalMessage");
+		String expectedMessage = MessageTestUtils.getMessage(MessageTestUtils.MessageType.CHARACTER_UTF8).asString();
+		assertEquals(expectedMessage, origMsg);
+
+		Element origResult = XmlUtils.getFirstChildTag(el, "originalResult");
+		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
+		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
+		assertThat(Integer.parseInt(origResult.getAttribute("duration")), lessThan(200));
+
+		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
+		assertEquals(3, shadowResults.size());
+		for(Node node : shadowResults) {
+			Element shadowResult = (Element) node;
+			assertEquals(expectedMessage, XmlUtils.getStringValue(shadowResult, true));
 			assertTrue(shadowResult.getAttribute("senderName").startsWith("shadowSenderWithDelay"));
 			int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
 			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2150))));

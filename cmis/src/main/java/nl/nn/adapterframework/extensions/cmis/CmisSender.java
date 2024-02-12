@@ -43,7 +43,6 @@ import org.apache.chemistry.opencmis.client.api.QueryResult;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
@@ -54,7 +53,6 @@ import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
@@ -237,7 +235,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private boolean runtimeSession = false;
 	private @Getter boolean keepSession = true;
 
-	private Session globalSession;
+	private CloseableCmisSession globalSession;
 
 	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
@@ -283,7 +281,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	/**
 	 * Creates a session during JMV runtime, tries to retrieve parameters and falls back on the defaults when they can't be found
 	 */
-	public Session createCmisSession(ParameterValueList pvl) throws SenderException {
+	public CloseableCmisSession createCmisSession(ParameterValueList pvl) throws SenderException {
 		String authAlias_work = null;
 		String username_work = null;
 		String password_work = null;
@@ -346,26 +344,14 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	public void close() {
 		if (globalSession != null) {
 			log.debug("{} Closing global CMIS session", getLogPrefix());
-			closeCmisSession(globalSession);
+			globalSession.close();
 			globalSession = null;
-		}
-	}
-
-	private void closeCmisSession(Session session) {
-		log.debug("{} CMIS Session Close, SPI Binding class name: [{}]", getLogPrefix(), session.getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
-		session.clear();
-		CmisBinding binding = session.getBinding();
-		if (binding != null) {
-			log.debug("{} Closing CMIS Bindings instance [{}:{}]", getLogPrefix(), binding.getClass().getSimpleName(), binding);
-			binding.close();
-		} else {
-			log.debug("{} Session has no CMIS Bindings", getLogPrefix());
 		}
 	}
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		Session cmisSession = null;
+		CloseableCmisSession cmisSession = null;
 		try {
 			ParameterValueList pvl=null;
 			if (getParameterList() != null) {
@@ -404,7 +390,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} finally {
 			if (cmisSession != null && runtimeSession) {
 				log.debug("{} Closing CMIS runtime session", getLogPrefix());
-				closeCmisSession(cmisSession);
+				session.scheduleCloseOnSessionExit(cmisSession, getLogPrefix());
 				cmisSession = null;
 			}
 		}

@@ -96,7 +96,7 @@ class IbisLocalSenderTest {
 			"true, false, false"
 	})
 	@DisplayName("Test IbisLocalSender.sendMessage()")
-	void sendMessageAsync(boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws Exception {
+	void sendMessage(boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws Exception {
 		// Arrange
 		TestConfiguration configuration = new TestConfiguration();
 		configuration.stop();
@@ -134,6 +134,56 @@ class IbisLocalSenderTest {
 		assertAll(
 			() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult, msgPrefix + "Local reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
+			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
+			() -> assertNull(testPipe.recordedMessageId, msgPrefix + "Message ID should not be passed to nested session"),
+			() -> assertEquals("c-id", testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
+		);
+	}
+
+	@ParameterizedTest(name = "Call via Dispatcher: {0}")
+	@CsvSource({
+			"true",
+			"false",
+	})
+	@DisplayName("Test IbisLocalSender.sendMessage()")
+	void sendMessageAsync(boolean callByServiceName) throws Exception {
+		// Arrange
+		TestConfiguration configuration = new TestConfiguration();
+		configuration.stop();
+		configuration.getAdapterManager().close();
+		AtomicLong asyncCounterResult = new AtomicLong();
+		Semaphore asyncCompletionSemaphore = new Semaphore(0);
+
+		TestPipe testPipe = createTestPipe(asyncCounterResult, asyncCompletionSemaphore);
+		PipeLine pipeline = createPipeLine(testPipe, configuration);
+		JavaListener<?> listener = setupJavaListener(configuration, pipeline, callByServiceName);
+		IbisLocalSender ibisLocalSender = setupIbisLocalSender(configuration, listener, callByServiceName, true, false);
+
+		log.info("*>>> Starting Configuration");
+		configuration.configure();
+		configuration.start();
+
+		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+		ibisLocalSender.open();
+
+		// Act
+		PipeLineSession session = new PipeLineSession();
+		PipeLineSession.updateListenerParameters(session, "m-id", "c-id", null, null);
+
+		log.info("**>>> Calling Local Sender");
+		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
+		message.closeOnCloseOf(session, ibisLocalSender);
+		ibisLocalSender.sendMessage(message, session);
+
+		session.close();
+
+		log.info("***>>> Done reading result message");
+		boolean completedSuccess = asyncCompletionSemaphore.tryAcquire(10, TimeUnit.SECONDS);
+
+		// Assert
+		String msgPrefix = callByServiceName ? "Call via Dispatcher: " : "Call via JavaListener: ";
+		assertAll(
+			() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
 			() -> assertNull(testPipe.recordedMessageId, msgPrefix + "Message ID should not be passed to nested session"),
 			() -> assertEquals("c-id", testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")

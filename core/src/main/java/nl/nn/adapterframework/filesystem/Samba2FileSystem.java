@@ -72,14 +72,14 @@ import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
- * 
+ *
  * Uses the SMB 2 and 3 protocol
- * 
+ *
  * Possible error codes:
  * <br/>
  * Pre-authentication information was invalid (24) / Idenitfier doesn't match expected value (906):  login information is incorrect
  * Server not found in Kerberos database (7): Verify that the hostname is the FQDN and the server is using a valid SPN.
- * 
+ *
  * @author Ali Sihab
  * @author Niels Meijer
  *
@@ -166,24 +166,22 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	@Override
 	public void close() throws FileSystemException {
-		super.close();
-		try {
-			if(diskShare != null) {
+		if (diskShare != null) {
+			try {
 				diskShare.close();
+			} catch (IOException e) {
+				log.warn("error closing diskShare: {}", diskShare, e);
 			}
-			if(session != null) {
-				session.close();
-			}
-			if(client != null) {
-				client.close();
-			}
-			diskShare = null;
-			session = null;
-			connection = null;
-			client = null;
-		} catch (IOException e) {
-			throw new FileSystemException(e);
 		}
+		if (client != null) {
+			client.close();
+		}
+		diskShare = null;
+		session = null;
+		connection = null;
+		client = null;
+		super.close();
+		log.debug("closed connection to [{}] for Samba2FS", hostname);
 	}
 
 	private @Nonnull AuthenticationContext createAuthenticationContext() throws FileSystemException {

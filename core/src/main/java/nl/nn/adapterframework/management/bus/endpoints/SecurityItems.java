@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -43,6 +45,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.datasource.JdbcPoolUtil;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealm;
@@ -223,7 +226,8 @@ public class SecurityItems extends BusEndpointBase {
 			String cfInfo = null;
 
 			if(StringUtils.isNotEmpty(dsName)) {
-				realm = mapDataSource(realmName, dsName, confResString);
+				String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", dsName);
+				realm = mapDataSource(realmName, dsName, connectionPoolProperties);
 			} else {
 				JmsSender js = new JmsSender();
 				js.setJmsRealm(realmName);
@@ -266,12 +270,20 @@ public class SecurityItems extends BusEndpointBase {
 
 		ArrayList<Object> dsList = new ArrayList<>();
 		for(String datasourceName : dataSourceNames) {
-			dsList.add(mapDataSource(null, datasourceName, confResString));
+			DataSource ds = null;
+			try {
+				ds = dataSourceFactory.getDataSource(datasourceName);
+			} catch (NamingException e) {
+				log.debug("unable to retrieve datasource info for name [{}]", datasourceName);
+				continue;
+			}
+			String connectionPoolProperties = JdbcPoolUtil.getConnectionPoolInfo(ds);
+			dsList.add(mapDataSource(null, datasourceName, connectionPoolProperties));
 		}
 		return dsList;
 	}
 
-	private Map<String, Object> mapDataSource(String jmsRealm, String datasourceName, String confResString) {
+	private Map<String, Object> mapDataSource(String jmsRealm, String datasourceName, String connectionPoolProperties) {
 		Map<String, Object> realm = new HashMap<>();
 		FixedQuerySender qs = createBean(FixedQuerySender.class);
 
@@ -293,11 +305,8 @@ public class SecurityItems extends BusEndpointBase {
 		realm.put("datasourceName", datasourceName);
 		realm.put("info", dsInfo);
 
-		if (confResString!=null) {
-			String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", datasourceName);
-			if (StringUtils.isNotEmpty(connectionPoolProperties)) {
-				realm.put("connectionPoolProperties", connectionPoolProperties);
-			}
+		if (StringUtils.isNotEmpty(connectionPoolProperties)) {
+			realm.put("connectionPoolProperties", connectionPoolProperties);
 		}
 		return realm;
 	}

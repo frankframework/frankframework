@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,11 +26,12 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Factory through which (TX-enabled) DataSources can be retrieved.
- * 
+ *
  * Already created DataSources are stored in a ConcurrentHashMap.
  * Every DataSource can be augmented before it is added.
  */

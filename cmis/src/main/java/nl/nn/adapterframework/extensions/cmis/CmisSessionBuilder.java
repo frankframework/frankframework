@@ -21,9 +21,7 @@ import java.net.URL;
 
 import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.Session;
-import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.bindings.CmisBindingFactory;
-import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
@@ -107,7 +105,7 @@ public class CmisSessionBuilder {
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
-	public Session build() throws CmisSessionException {
+	public CloseableCmisSession build() throws CmisSessionException {
 		CredentialFactory cf = new CredentialFactory(authAlias, username, password);
 		return build(cf.getUsername(), cf.getPassword());
 	}
@@ -118,7 +116,7 @@ public class CmisSessionBuilder {
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
-	public Session build(String userName, String password) throws CmisSessionException {
+	public CloseableCmisSession build(String userName, String password) throws CmisSessionException {
 		if (StringUtils.isEmpty(url) && overrideEntryPointWSDL == null) {
 			throw new CmisSessionException("no url configured");
 		}
@@ -260,8 +258,8 @@ public class CmisSessionBuilder {
 			parameterMap.put(SessionParameter.AUTH_HTTP_BASIC, "true");
 		}
 
-		SessionFactory sessionFactory = SessionFactoryImpl.newInstance();
-		Session session = sessionFactory.createSession(parameterMap);
+		CloseableCmisSession session = new CloseableCmisSession(parameterMap, null, null, null, null);
+		session.connect();
 		log.debug("connected with repository [{}]", ()->getRepositoryInfo(session));
 
 		return session;

@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.Map;
 
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
 import org.junit.Test;
@@ -50,7 +51,14 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 		doReturn("version").when(md).getDatabaseProductVersion();
 		Connection conn = mock(Connection.class);
 		doReturn(md).when(conn).getMetaData();
-		JndiDataSourceFactory factory = new JndiDataSourceFactory();
+		JndiDataSourceFactory factory = new JndiDataSourceFactory() {
+			@Override
+			protected DataSource augmentDatasource(CommonDataSource dataSource, String product) {
+				// Just cast the datasource and do not wrap it in a pool for the benefit of the tests.
+				return (DataSource) dataSource;
+			}
+
+		};
 		DataSource dataSource = mock(DataSource.class);
 		String dataSourceName = "myDummyDataSource";
 		factory.add(dataSource, dataSourceName);

@@ -53,9 +53,9 @@
     },
     "datasources": [
         {
-            "connectionPoolProperties": "mockPoolProperties type [JDBC] jndi [jdbc/testconfiguration]",
+            "connectionPoolProperties": "DBCP2 Pool Info: maxIdle [8], minIdle [0], maxTotal [8], numActive [0], numIdle [0], testOnBorrow [false], testOnCreate [false], testOnReturn [false], testWhileIdle [false], removeAbandonedOnBorrow [false], removeAbandonedOnMaintenance [false], removeAbandonedTimeoutDuration [PT596523H14M7S]",
             "datasourceName": "jdbc/testconfiguration",
-            "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
+            "info": null
         }
     ],
     "authEntries": [
@@ -80,7 +80,7 @@
             "name": "dummyJmsRealm1",
             "connectionPoolProperties": "mockPoolProperties type [JDBC] jndi [dummyDatasourceName]",
             "datasourceName": "dummyDatasourceName",
-            "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
+			"info": null
         },
         {
             "queueConnectionFactoryName": "dummyQCF",

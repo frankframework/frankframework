@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
@@ -35,10 +37,10 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	private final Guard guard;
 	private final ThreadConnector<?> threadConnector;
 
-	public IsolatedServiceExecutor(ServiceClient service, Message message, PipeLineSession session, Guard guard, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) {
+	public IsolatedServiceExecutor(ServiceClient service, Message message, PipeLineSession session, Guard guard, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) throws IOException {
 		super();
 		this.service = service;
-		this.request = message;
+		this.request = message.copyMessage();
 		this.session = session;
 		this.guard = guard;
 		this.threadConnector = new ThreadConnector<>(this, "IsolatedServiceExecutor", threadLifeCycleEventListener, null, session);
