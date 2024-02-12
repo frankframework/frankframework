@@ -53,9 +53,9 @@
     },
     "datasources": [
         {
-            "connectionPoolProperties": "mockPoolProperties type [JDBC] jndi [jdbc/testconfiguration]",
+            "connectionPoolProperties": "DBCP2 Pool Info: maxIdle [8], minIdle [0], maxTotal [8], numActive [0], numIdle [0], testOnBorrow [false], testOnCreate [false], testOnReturn [false], testWhileIdle [false], removeAbandonedOnBorrow [false], removeAbandonedOnMaintenance [false], removeAbandonedTimeoutDuration [PT596523H14M7S]",
             "datasourceName": "jdbc/testconfiguration",
-			"info": null
+            "info": null
         }
     ],
     "authEntries": [

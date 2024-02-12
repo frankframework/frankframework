@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,20 +15,16 @@
 */
 package nl.nn.adapterframework.jdbc.datasource;
 
-import static nl.nn.adapterframework.jdbc.datasource.GenericObjectPoolUtil.addPoolMetadata;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
-import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -107,6 +103,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	public String getInfo() {
 		StringBuilder info = new StringBuilder();
+
 		if (metadata != null) {
 			info.append("user [").append(metadata.get("user")).append(CLOSE);
 			info.append("url [").append(metadata.get("url")).append(CLOSE);
@@ -115,29 +112,8 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 			info.append("driver [").append(metadata.get("driver")).append(CLOSE);
 			info.append("driver version [").append(metadata.get("driver-version")).append(CLOSE);
 		}
+		info.append("targetDataSource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 
-		// TODO: Clean up this code more.
-		DataSource targetDataSource = getTargetDataSource();
-		if (targetDataSource instanceof OpenManagedDataSource) {
-			OpenManagedDataSource<?> dataSource = (OpenManagedDataSource<?>) targetDataSource;
-			addPoolMetadata(dataSource.getPool(), info);
-		} else if (targetDataSource instanceof OpenPoolingDataSource) {
-			OpenPoolingDataSource<?> dataSource = (OpenPoolingDataSource<?>) targetDataSource;
-			addPoolMetadata(dataSource.getPool(), info);
-		} else if (targetDataSource instanceof PoolingDataSource) { // BTM instance
-			PoolingDataSource dataSource = (PoolingDataSource) targetDataSource;
-			addBTMDatasourceInfo(dataSource, info);
-		}
-
-		info.append(" datasource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 		return info.toString();
-	}
-
-	private void addBTMDatasourceInfo(@Nonnull PoolingDataSource dataSource, StringBuilder info) {
-		info.append("BTM Pool Info: ");
-		info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
-		info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
-		info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
-		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append(CLOSE);
 	}
 }
