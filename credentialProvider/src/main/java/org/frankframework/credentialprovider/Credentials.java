@@ -16,14 +16,14 @@
 package org.frankframework.credentialprovider;
 
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
-@Log4j2
 public class Credentials implements ICredentials {
+	protected Logger log = Logger.getLogger(this.getClass().getName());
 
 	private String alias;
 	@Setter private String username;
@@ -72,7 +72,7 @@ public class Credentials implements ICredentials {
 
 	protected void getCredentialsFromAlias() {
 		if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
-			log.warn("no credential factory for alias [{}], and no default credentials, username [{}]", alias, username);
+			log.warning(String.format("no credential factory for alias [%s], and no default credentials, username [%s]", alias, username));
 		}
 	}
 
