@@ -43,9 +43,10 @@ public class FileViewer extends FrankApiBase {
 	@Path("/file-viewer")
 	@Produces({"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
 	public Response getFileContent(@QueryParam("file") String file, @HeaderParam("Accept") String acceptHeader) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
+		if (acceptHeader == null) acceptHeader = "*/*";
 		String acceptType = acceptHeader.split(",")[0];
 		String wantedType = MediaType.valueOf(acceptType).getSubtype();
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", wantedType);
 
@@ -57,19 +58,6 @@ public class FileViewer extends FrankApiBase {
 
 	private Response processHtmlMessage(RequestMessageBuilder builder) {
 		Message<?> fileContentsMessage = sendSyncMessage(builder);
-		/*StreamingOutput stream = outputStream -> {
-			try {
-				BufferedReader fileContentsReader = new BufferedReader(new InputStreamReader((InputStream) fileContentsMessage.getPayload()));
-				String line;
-				while ((line = fileContentsReader.readLine()) != null) {
-					String formattedLine = StringUtils.replace(line, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
-					outputStream.write((formattedLine + "<br>").getBytes());
-				}
-				outputStream.flush();
-			} catch (Exception e) {
-				throw new ApiException("Can't modify file content to be properly rendered as HTML");
-			}
-		};*/
 		StreamingOutput stream = outputStream -> {
             BufferedReader fileContentsReader = new BufferedReader(new InputStreamReader((InputStream) fileContentsMessage.getPayload()));
             String line;
