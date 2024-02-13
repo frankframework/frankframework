@@ -729,7 +729,14 @@ public class Message implements Serializable, Closeable {
 		// save the generated String as the request before returning it
 		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
 		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
-		if(!isBinary() || !isRepeatable()) {
+		if (!isBinary() || !isRepeatable()) {
+			if (request instanceof AutoCloseable) {
+				try {
+					((AutoCloseable) request).close();
+				} catch (Exception e) {
+					throw new IOException("could not close request of type [" + requestClass + "], inside message " + this, e);
+				}
+			}
 			request = result;
 		}
 		return result;
@@ -831,7 +838,9 @@ public class Message implements Serializable, Closeable {
 		if (object instanceof String) {
 			return (String) object;
 		}
-		return Message.asMessage(object).asString(defaultCharset);
+		try (Message message = Message.asMessage(object)) {
+			return message.asString(defaultCharset);
+		}
 	}
 
 	public static byte[] asByteArray(Object object) throws IOException {
@@ -845,7 +854,9 @@ public class Message implements Serializable, Closeable {
 		if (object instanceof byte[]) {
 			return (byte[]) object;
 		}
-		return Message.asMessage(object).asByteArray(defaultCharset);
+		try (Message message = Message.asMessage(object)) {
+			return message.asByteArray(defaultCharset);
+		}
 	}
 
 	/**
