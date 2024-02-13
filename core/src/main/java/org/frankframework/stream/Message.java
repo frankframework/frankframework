@@ -838,6 +838,13 @@ public class Message implements Serializable, Closeable {
 		if (object instanceof String) {
 			return (String) object;
 		}
+		if (object instanceof Message) {
+			return ((Message) object).asString(defaultCharset);
+		}
+		if (object instanceof MessageWrapper) {
+			return ((MessageWrapper<?>) object).getMessage().asString(defaultCharset);
+		}
+		// In other cases, message can be closed directly after converting to String.
 		try (Message message = Message.asMessage(object)) {
 			return message.asString(defaultCharset);
 		}
@@ -854,6 +861,13 @@ public class Message implements Serializable, Closeable {
 		if (object instanceof byte[]) {
 			return (byte[]) object;
 		}
+		if (object instanceof Message) {
+			return ((Message) object).asByteArray(defaultCharset);
+		}
+		if (object instanceof MessageWrapper) {
+			return ((MessageWrapper<?>) object).getMessage().asByteArray(defaultCharset);
+		}
+		// In other cases, message can be closed directly after converting to byte array.
 		try (Message message = Message.asMessage(object)) {
 			return message.asByteArray(defaultCharset);
 		}

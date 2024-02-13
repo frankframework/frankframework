@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.functional.ThrowingSupplier;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.testutil.TestAppender;
@@ -54,7 +55,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
@@ -1290,5 +1290,63 @@ public class MessageTest {
 		assertTrue(msg1.isNull());
 		assertFalse(msg2.isNull());
 		assertEquals("á", msg2.asString());
+	}
+
+	@Test
+	void testMessageAsStringDoesNotCloseMessage() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Object msg = Message.asMessage(new StringReader("text"));
+
+		// Act
+		String content = Message.asString(msg);
+
+		// Assert
+		Message message = (Message) msg;
+		assertEquals("text", message.asString());
+		assertEquals("text", content);
+	}
+
+	@Test
+	void testMessageAsStringDoesNotCloseMessageWrapper() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Message msg = Message.asMessage(new StringReader("text"));
+		Object wrapper = new MessageWrapper<Message>(msg, null, null);
+
+		// Act
+		String content = Message.asString(wrapper);
+
+		// Assert
+		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
+		assertEquals("text", messageWrapper.getMessage().asString());
+		assertEquals("text", content);
+	}
+
+	@Test
+	void testMessageAsByteArrayDoesNotCloseMessage() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Object msg = Message.asMessage(new StringReader("text"));
+
+		// Act
+		byte[] content = Message.asByteArray(msg);
+
+		// Assert
+		Message message = (Message) msg;
+		assertEquals("text", message.asString());
+		assertTrue(content.length == 4);
+	}
+
+	@Test
+	void testMessageAsByteArrayDoesNotCloseMessageWrapper() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Message msg = Message.asMessage(new StringReader("text"));
+		Object wrapper = new MessageWrapper<Message>(msg, null, null);
+
+		// Act
+		byte[] content = Message.asByteArray(wrapper);
+
+		// Assert
+		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
+		assertEquals("text", messageWrapper.getMessage().asString());
+		assertTrue(content.length == 4);
 	}
 }
