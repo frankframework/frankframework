@@ -52,7 +52,7 @@ public class FileViewer extends BusEndpointBase {
 		if (fileName == null || resultType == null) {
 			throw new BusException("fileName or type not specified");
 		} else if (!FileUtils.readAllowed(permissionRules, fileName, BusMessageUtils::hasRole) || !FileUtils.readAllowed(oldPermissionRules, fileName, BusMessageUtils::hasRole)) {
-			throw new BusException("not allowed");
+			throw new BusException("not allowed", 403);
 		}
 
 		try {
