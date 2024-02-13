@@ -1,54 +1,45 @@
 package org.frankframework.statistics;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.stream.Stream;
 
 import org.frankframework.statistics.HasStatistics.Action;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
-@RunWith(Parameterized.class)
 public class StatisticsKeeperTest {
 
-	@Parameter(0)
-	public String  description=null;
-	@Parameter(1)
-	public Class<IBasics> basicsClass;
-
-	@Parameters(name = "{index}: {0} - {1}")
-	public static Collection estimators() {
-		return Arrays.asList(new Object[][] {
-			{ "classic", Basics.class },
-			{ "micrometer", MicroMeterBasics.class }
-		});
+	private static Stream<Arguments> data() {
+		return Stream.of(
+			Arguments.of(Basics.class),
+			Arguments.of(MicroMeterBasics.class)
+		);
 	}
 
-	public StatisticsKeeper createStatisticsKeeper(boolean publishPercentiles, boolean publishHistograms, boolean calculatePercentiles) {
+	public StatisticsKeeper createStatisticsKeeper(Class<IBasics> clazz, boolean publishPercentiles, boolean publishHistograms, boolean calculatePercentiles) {
 		try {
 			StringTokenizer boundariesTokenizer = new StringTokenizer("100,1000,2000,10000",",");
-			return new StatisticsKeeper("test", basicsClass.newInstance(), boundariesTokenizer, publishPercentiles, publishHistograms, calculatePercentiles, 2);
+			return new StatisticsKeeper("test", clazz.newInstance(), boundariesTokenizer, publishPercentiles, publishHistograms, calculatePercentiles, 2);
 		} catch (InstantiationException | IllegalAccessException e) {
 			fail(e.getMessage());
 		}
 		return null;
 	}
 
-	public StatisticsKeeper createStatisticsKeeper() {
-		return createStatisticsKeeper(false, false, true);
+	public StatisticsKeeper createStatisticsKeeper(Class<IBasics> clazz) {
+		return createStatisticsKeeper(clazz, false, false, true);
 	}
 
 	public void testLineair(StatisticsKeeper sk) {
@@ -98,52 +89,59 @@ public class StatisticsKeeperTest {
 		}
 	}
 
-	@Test
-	public void testLineair() {
-		StatisticsKeeper sk = createStatisticsKeeper();
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testLineair(Class<IBasics> clazz) {
+		StatisticsKeeper sk = createStatisticsKeeper(clazz);
 		sk.initMetrics(new SimpleMeterRegistry(), "testLineair", null);
 		testLineair(sk);
 	}
 
-	@Test
-	public void testLineairPublishPercentiles() {
-		StatisticsKeeper sk = createStatisticsKeeper(true, false, false);
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testLineairPublishPercentiles(Class<IBasics> clazz) {
+		StatisticsKeeper sk = createStatisticsKeeper(clazz, true, false, false);
 		sk.initMetrics(new SimpleMeterRegistry(), "testLineair", null);
 		testLineair(sk);
 	}
 
-	@Test
-	public void testLineairPublishHistograms() {
-		StatisticsKeeper sk = createStatisticsKeeper(false, true, false);
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testLineairPublishHistograms(Class<IBasics> clazz) {
+		StatisticsKeeper sk = createStatisticsKeeper(clazz, false, true, false);
 		sk.initMetrics(new SimpleMeterRegistry(), "testLineair", null);
 		testLineair(sk);
 	}
 
-	@Test
-	public void testRandom() {
-		StatisticsKeeper sk = createStatisticsKeeper();
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testRandom(Class<IBasics> clazz) {
+		StatisticsKeeper sk = createStatisticsKeeper(clazz);
 		sk.initMetrics(new SimpleMeterRegistry(), "testRandom", null);
 		testRandom(sk, true);
 	}
 
-	@Test
-	public void testRandomPublishPercentiles() {
-		StatisticsKeeper sk = createStatisticsKeeper(true, false, false);
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testRandomPublishPercentiles(Class<IBasics> clazz) {
+		StatisticsKeeper sk = createStatisticsKeeper(clazz, true, false, false);
 		sk.initMetrics(new SimpleMeterRegistry(), "testRandom", null);
 		testRandom(sk, true);
 	}
 
-	@Test
-	public void testRandomPublishHistograms() {
-		StatisticsKeeper sk = createStatisticsKeeper(false, true, false);
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testRandomPublishHistograms(Class<IBasics> clazz) {
+		StatisticsKeeper sk = createStatisticsKeeper(clazz, false, true, false);
 		sk.initMetrics(new SimpleMeterRegistry(), "testRandom", null);
 		assertEquals(16, sk.getItemCount());
 		testRandom(sk, true);
 	}
 
-	@Test
-	public void testRandomNoPercentiles() {
-		StatisticsKeeper sk = createStatisticsKeeper(false, false, false);
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testRandomNoPercentiles(Class<IBasics> clazz) {
+		StatisticsKeeper sk = createStatisticsKeeper(clazz, false, false, false);
 		sk.initMetrics(new SimpleMeterRegistry(), "testRandom", null);
 		assertEquals(12, sk.getItemCount());
 		testRandom(sk, false);
@@ -154,17 +152,18 @@ public class StatisticsKeeperTest {
 		return (double)sk.getItemValue(sk.getItemIndex(name));
 	}
 
-	@Test
-	public void testInterval() {
-		StatisticsKeeper sk = createStatisticsKeeper();
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testInterval(Class<IBasics> clazz) {
+		StatisticsKeeper sk = createStatisticsKeeper(clazz);
 		sk.initMetrics(new SimpleMeterRegistry(), "testInterval", null);
 
-		assertEquals(sk.getIntervalItemName(0), 0L,   sk.getIntervalItemValue(0)); // count
-		assertEquals(sk.getIntervalItemName(1), null, sk.getIntervalItemValue(1)); // min
-		assertEquals(sk.getIntervalItemName(2), null, sk.getIntervalItemValue(2)); // max
-		assertEquals(sk.getIntervalItemName(3), null, sk.getIntervalItemValue(3)); // avg
-		assertEquals(sk.getIntervalItemName(4), 0L,   sk.getIntervalItemValue(4)); // sum
-		assertEquals(sk.getIntervalItemName(5), 0L,   sk.getIntervalItemValue(5)); // sumSq
+		assertEquals(0L, sk.getIntervalItemValue(0), sk.getIntervalItemName(0)); // count
+		assertEquals(null, sk.getIntervalItemValue(1), sk.getIntervalItemName(1)); // min
+		assertEquals(null, sk.getIntervalItemValue(2), sk.getIntervalItemName(2)); // max
+		assertEquals(null, sk.getIntervalItemValue(3), sk.getIntervalItemName(3)); // avg
+		assertEquals(0L, sk.getIntervalItemValue(4), sk.getIntervalItemName(4)); // sum
+		assertEquals(0L, sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
 
 		for (int i=0; i<100; i++) {
 			sk.addValue(i);
@@ -177,21 +176,21 @@ public class StatisticsKeeperTest {
 		assertEquals(4950, sk.getTotal(), 0.001);
 		assertEquals(841.0, sk.getVariance(), 0.001);
 
-		assertEquals(sk.getIntervalItemName(0), 100L,    sk.getIntervalItemValue(0)); // count
-		assertEquals(sk.getIntervalItemName(1), 0L,      sk.getIntervalItemValue(1)); // min
-		assertEquals(sk.getIntervalItemName(2), 99L,     sk.getIntervalItemValue(2)); // max
-		assertEquals(sk.getIntervalItemName(3), 49.5,    sk.getIntervalItemValue(3)); // avg
-		assertEquals(sk.getIntervalItemName(4), 4950L,   sk.getIntervalItemValue(4)); // sum
-		assertEquals(sk.getIntervalItemName(5), 328350L, sk.getIntervalItemValue(5)); // sumSq
+		assertEquals(100L, sk.getIntervalItemValue(0), sk.getIntervalItemName(0)); // count
+		assertEquals(0L, sk.getIntervalItemValue(1), sk.getIntervalItemName(1)); // min
+		assertEquals(99L, sk.getIntervalItemValue(2), sk.getIntervalItemName(2)); // max
+		assertEquals(49.5, sk.getIntervalItemValue(3), sk.getIntervalItemName(3)); // avg
+		assertEquals(4950L, sk.getIntervalItemValue(4), sk.getIntervalItemName(4)); // sum
+		assertEquals(328350L, sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
 
 		sk.performAction(Action.MARK_FULL);
 
-		assertEquals(sk.getIntervalItemName(0), 0L,   sk.getIntervalItemValue(0)); // count
-		assertEquals(sk.getIntervalItemName(1), null, sk.getIntervalItemValue(1)); // min
-		assertEquals(sk.getIntervalItemName(2), null, sk.getIntervalItemValue(2)); // max
-		assertEquals(sk.getIntervalItemName(3), null, sk.getIntervalItemValue(3)); // avg
-		assertEquals(sk.getIntervalItemName(4), 0L,   sk.getIntervalItemValue(4)); // sum
-		assertEquals(sk.getIntervalItemName(5), 0L,   sk.getIntervalItemValue(5)); // sumSq
+		assertEquals(0L, sk.getIntervalItemValue(0), sk.getIntervalItemName(0)); // count
+		assertEquals(null, sk.getIntervalItemValue(1), sk.getIntervalItemName(1)); // min
+		assertEquals(null, sk.getIntervalItemValue(2), sk.getIntervalItemName(2)); // max
+		assertEquals(null, sk.getIntervalItemValue(3), sk.getIntervalItemName(3)); // avg
+		assertEquals(0L, sk.getIntervalItemValue(4), sk.getIntervalItemName(4)); // sum
+		assertEquals(0L, sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
 
 
 		for (int i=200; i<300; i++) {
@@ -205,18 +204,19 @@ public class StatisticsKeeperTest {
 		assertEquals(29900, sk.getTotal(), 0.001);
 		assertEquals(10887.0, sk.getVariance(), 0.001);
 
-		assertEquals(sk.getIntervalItemName(0), 100L,     sk.getIntervalItemValue(0)); // count
-		assertEquals(sk.getIntervalItemName(1), 200L,     sk.getIntervalItemValue(1)); // min
-		assertEquals(sk.getIntervalItemName(2), 299L,     sk.getIntervalItemValue(2)); // max
-		assertEquals(sk.getIntervalItemName(3), 249.5,    sk.getIntervalItemValue(3)); // avg
-		assertEquals(sk.getIntervalItemName(4), 24950L,   sk.getIntervalItemValue(4)); // sum
-		assertEquals(sk.getIntervalItemName(5), 6308350L, sk.getIntervalItemValue(5)); // sumSq
+		assertEquals(100L, sk.getIntervalItemValue(0), sk.getIntervalItemName(0)); // count
+		assertEquals(200L, sk.getIntervalItemValue(1), sk.getIntervalItemName(1)); // min
+		assertEquals(299L, sk.getIntervalItemValue(2), sk.getIntervalItemName(2)); // max
+		assertEquals(249.5, sk.getIntervalItemValue(3), sk.getIntervalItemName(3)); // avg
+		assertEquals(24950L, sk.getIntervalItemValue(4), sk.getIntervalItemName(4)); // sum
+		assertEquals(6308350L, sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
 
 	}
 
-	@Test
-	public void testGetMap() {
-		StatisticsKeeper sk = createStatisticsKeeper();
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testGetMap(Class<IBasics> clazz) {
+		StatisticsKeeper sk = createStatisticsKeeper(clazz);
 		sk.initMetrics(new SimpleMeterRegistry(), "group", new ArrayList<>());
 
 		for (int i=0; i<100; i++) {

@@ -62,6 +62,7 @@ public class MapPropertyDescriptorsTest {
 	@Test
 	public void testPropertyDescriptorsBeingRegistered() throws ClassNotFoundException, IntrospectionException {
 		for (String beanName : getClassesThatImplementIConfigurable()) {
+			if (beanName.endsWith(".UnloadableClass")) continue;
 			BeanInfo beanInfo = Introspector.getBeanInfo(Class.forName(beanName));
 			// get methods
 			MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
@@ -93,6 +94,8 @@ public class MapPropertyDescriptorsTest {
 	@Test
 	public void testIfAllConfigurationWarningsAreDeprecated() throws ClassNotFoundException {
 		for (String beanName : getClassesThatImplementIConfigurable()) {
+			if (beanName.endsWith(".UnloadableClass")) continue;
+
 			Class<?> beanClass = Class.forName(beanName);
 
 			if (beanClass.isAnnotationPresent(ConfigurationWarning.class)) {

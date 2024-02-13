@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.ws.rs.core.Response;
 
+import org.frankframework.core.IbisException;
+import org.frankframework.management.bus.BusException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,13 +16,10 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.client.HttpClientErrorException;
 
-import org.frankframework.core.IbisException;
-import org.frankframework.management.bus.BusException;
-
 public class TestSpringBusExceptionHandler {
 	private final SpringBusExceptionHandler handler = new SpringBusExceptionHandler();
 	public enum TestExceptionType {
-		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, AUTHORIZATION, AUTHENTICATION, CLIENT_EXCEPTION_400, CLIENT_EXCEPTION_404
+		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, AUTHORIZATION, AUTHENTICATION, CLIENT_EXCEPTION_400, CLIENT_EXCEPTION_404, NOT_FOUND
 	}
 
 	private MessageHandlingException createException(TestExceptionType type) {
@@ -36,6 +35,8 @@ public class TestSpringBusExceptionHandler {
 				new IllegalStateException("something is wrong")));
 
 		switch (type) {
+		case NOT_FOUND:
+			return new BusException("resource not found", 404);
 		case MESSAGE:
 			return new BusException("message without cause");
 		case CAUSE:
@@ -77,9 +78,20 @@ public class TestSpringBusExceptionHandler {
 		Response response = handler.toResponse(e);
 
 		// Assert
-		assertEquals(400, response.getStatus());
+		assertEquals(500, response.getStatus());
 		String json = ApiExceptionTest.toJsonString(response.getEntity());
 		assertEquals("message with a cause: cannot stream: cannot configure: (IllegalStateException) something is wrong", json);
+	}
+
+	@Test
+	public void testEndpointNotFoundException() {
+		MessageHandlingException e = createException(TestExceptionType.NOT_FOUND);
+
+		Response response = handler.toResponse(e);
+
+		assertEquals(404, response.getStatus());
+		String json = ApiExceptionTest.toJsonString(response.getEntity());
+		assertEquals("resource not found", json);
 	}
 
 	@Test

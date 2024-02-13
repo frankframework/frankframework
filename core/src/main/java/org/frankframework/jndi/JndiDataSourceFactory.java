@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
-import org.frankframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
+import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.util.AppConstants;
 

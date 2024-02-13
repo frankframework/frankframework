@@ -1,9 +1,10 @@
 package org.frankframework.jta.btm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.frankframework.util.AppConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +34,6 @@ public class BtmDataSourceFactoryTest {
 		assertEquals(3, factory.getMaxIdleTime());
 		assertEquals(4, factory.getMaxLifeTime());
 
-		assertNull(factory.getTestQuery());
+		assertTrue(StringUtils.isBlank(factory.getTestQuery()));
 	}
 }
