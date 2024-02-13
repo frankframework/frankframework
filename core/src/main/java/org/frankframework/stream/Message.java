@@ -820,26 +820,6 @@ public class Message implements Serializable, Closeable {
 		return new Message(new MessageContext(), object);
 	}
 
-	public static InputSource asInputSource(Object object) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof InputSource) {
-			return (InputSource) object;
-		}
-		return Message.asMessage(object).asInputSource();
-	}
-
-	public static Source asSource(Object object) throws IOException, SAXException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof Source) {
-			return (Source) object;
-		}
-		return Message.asMessage(object).asSource();
-	}
-
 	public static String asString(Object object) throws IOException {
 		return asString(object, null);
 	}
