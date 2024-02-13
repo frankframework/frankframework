@@ -7,6 +7,7 @@ import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.ResponseMessageBase;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -30,7 +31,7 @@ public class TestFileViewer extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		String expectedTxt = TestFileUtils.getTestFile(TestFilePath);
-		String result = new String(((InputStream) response.getPayload()).readAllBytes());
+		String result = StreamUtil.streamToString((InputStream) response.getPayload());
 		Assertions.assertEquals(expectedTxt, result);
 	}
 
