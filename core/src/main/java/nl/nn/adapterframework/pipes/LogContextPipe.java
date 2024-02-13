@@ -55,18 +55,7 @@ public class LogContextPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (!getParameterList().isEmpty()) {
-			Map<String,String> values = new LinkedHashMap<>();
-			try {
-				if (!message.isRepeatable()) {
-					message.preserve();
-				}
-				ParameterValueList pvl = getParameterList().getValues(message, session);
-				for(ParameterValue pv : pvl) {
-					values.put(pv.getName(), pv.asStringValue());
-				}
-			} catch (Exception e) {
-				log.warn("Exception getting parameter values. Ignoring.", e);
-			}
+			Map<String, String> values = getParameterValues(message, session);
 			if (isExport()) {
 				ThreadContext.putAll(values);
 			} else {
@@ -74,6 +63,19 @@ public class LogContextPipe extends FixedForwardPipe {
 			}
 		}
 		return new PipeRunResult(getSuccessForward(),message);
+	}
+
+	private Map<String, String> getParameterValues(Message message, PipeLineSession session) {
+		Map<String,String> values = new LinkedHashMap<>();
+		try {
+			ParameterValueList pvl = getParameterList().getValues(message, session);
+			for(ParameterValue pv : pvl) {
+				values.put(pv.getName(), pv.asStringValue());
+			}
+		} catch (Exception e) {
+			log.warn("Exception getting parameter values. Ignoring.", e);
+		}
+		return values;
 	}
 
 }

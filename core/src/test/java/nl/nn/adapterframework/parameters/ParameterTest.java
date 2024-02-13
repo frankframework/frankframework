@@ -416,6 +416,73 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testParameterXPathToMessageNoMatchOnXpath() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setDefaultValue("fakeDefault");
+		p.setXpathExpression("/notfound");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("<dummy>a</dummy>");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertEquals("fakeDefault", Message.asMessage(result).asString());
+	}
+
+	@Test
+	public void testParameterInvalidXPathToMessage() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setXpathExpression("{/}not-an-xpath");
+
+		assertThrows(ConfigurationException.class, () -> p.configure());
+	}
+
+	@Test
+	public void testParameterXPathToNonXmlMessage() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setDefaultValue("fakeDefault");
+		p.setXpathExpression("/dummy");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("{\"dummy\": \"a\"}");
+
+		assertThrows(ParameterException.class, ()-> p.getValue(alreadyResolvedParameters, message, null, false));
+	}
+
+	@Test
+	public void testParameterXPathToEmptyMessage() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setDefaultValue("fakeDefault");
+		p.setXpathExpression("/dummy");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = Message.nullMessage();
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertEquals("fakeDefault", Message.asMessage(result).asString());
+	}
+
+	@Test
+	public void testParameterXPathToNullMessage() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setDefaultValue("fakeDefault");
+		p.setXpathExpression("/dummy");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		Object result = p.getValue(alreadyResolvedParameters, null, null, false);
+		assertEquals("fakeDefault", Message.asMessage(result).asString());
+	}
+
+	@Test
 	public void testParameterXPathUnknownSessionKey() throws Exception {
 		Parameter p = new Parameter();
 		p.setName("number");

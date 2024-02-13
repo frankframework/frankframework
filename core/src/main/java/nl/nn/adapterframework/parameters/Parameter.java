@@ -380,7 +380,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return (Document) transformResult.getNode();
 	}
 
-
+	public boolean isWildcardSessionKey() {
+		return "*".equals(getSessionKey());
+	}
 	/**
 	 * if this returns true, then the input value must be repeatable, as it might be used multiple times.
 	 */
@@ -442,12 +444,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 				 *
 				 * N.B. this order differs from untransformed parameters
 				 */
-				Source source=null;
-				if (getValue()!=null) {
+				Source source;
+				if (getValue() != null) {
 					source = XmlUtils.stringToSourceForSingleUse(getValue(), namespaceAware);
 				} else if (StringUtils.isNotEmpty(requestedSessionKey)) {
 					Object sourceObject = session.get(requestedSessionKey);
-					if (getType()==ParameterType.LIST && sourceObject instanceof List) {
+					if (getType() == ParameterType.LIST && sourceObject instanceof List) {
 						// larva can produce the sourceObject as list
 						List<String> items = (List<String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
@@ -457,7 +459,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 							itemsXml.addSubElement(itemXml);
 						}
 						source = XmlUtils.stringToSourceForSingleUse(itemsXml.toXML(), namespaceAware);
-					} else if (getType()==ParameterType.MAP && sourceObject instanceof Map) {
+					} else if (getType() == ParameterType.MAP && sourceObject instanceof Map) {
 						// larva can produce the sourceObject as map
 						Map<String, String> items = (Map<String, String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
@@ -474,10 +476,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 							sourceMsg = Message.asMessage(sourceMsg.getContext().get(getContextKey()));
 						}
 						if (!sourceMsg.isEmpty()) {
-							LOG.debug("Parameter [{}] using sessionvariable [{}] as source for transformation", this::getName, ()-> requestedSessionKey);
+							LOG.debug("Parameter [{}] using sessionvariable [{}] as source for transformation", this::getName, () -> requestedSessionKey);
 							source = sourceMsg.asSource();
 						} else {
-							LOG.debug("Parameter [{}] sessionvariable [{}] empty, no transformation will be performed", this::getName, ()-> requestedSessionKey);
+							LOG.debug("Parameter [{}] sessionvariable [{}] empty, no transformation will be performed", this::getName, () -> requestedSessionKey);
+							source = null;
 						}
 					}
 				} else if (StringUtils.isNotEmpty(getPattern())) {
@@ -487,31 +490,34 @@ public class Parameter implements IConfigurable, IWithParameters {
 						source = XmlUtils.stringToSourceForSingleUse(sourceString, namespaceAware);
 					} else {
 						LOG.debug("Parameter [{}] pattern [{}] empty, no transformation will be performed", this::getName, this::getPattern);
+						source = null;
 					}
-				} else {
+				} else if (message != null) {
 					if (StringUtils.isNotEmpty(getContextKey())) {
 						source = Message.asSource(message.getContext().get(getContextKey()));
 					} else {
 						source = message.asSource();
 					}
+				} else {
+					source = null;
 				}
-				if (source!=null) {
+				if (source != null) {
 					if (transformerPoolRemoveNamespaces != null) {
 						String rnResult = transformerPoolRemoveNamespaces.transform(source);
 						source = XmlUtils.stringToSource(rnResult);
 					}
-					ParameterValueList pvl = paramList==null ? null : paramList.getValues(message, session, namespaceAware);
+					ParameterValueList pvl = paramList == null ? null : paramList.getValues(message, session, namespaceAware);
 					switch (getType()) {
-					case NODE:
-						return transformToDocument(source, pvl).getFirstChild();
-					case DOMDOC:
-						return transformToDocument(source, pvl);
-					default:
-						String transformResult = pool.transform(source, pvl);
-						if (StringUtils.isNotEmpty(transformResult)) {
-							result = transformResult;
-						}
-						break;
+						case NODE:
+							return transformToDocument(source, pvl).getFirstChild();
+						case DOMDOC:
+							return transformToDocument(source, pvl);
+						default:
+							String transformResult = pool.transform(source, pvl);
+							if (StringUtils.isNotEmpty(transformResult)) {
+								result = transformResult;
+							}
+							break;
 					}
 				}
 			} catch (Exception e) {

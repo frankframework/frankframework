@@ -129,31 +129,33 @@ public class ParameterList extends ArrayList<Parameter> {
 		}
 		ParameterValueList result = new ParameterValueList();
 		for (Parameter parm : this) {
-			String parmSessionKey = parm.getSessionKey();
 			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to
 			// each session variable whose name starts with the name of the original parameter
-			if ("*".equals(parmSessionKey)) {
-				String parmName = parm.getName();
-				for (String sessionKey: session.keySet()) {
-					if (!PipeLineSession.TS_RECEIVED_KEY.equals(sessionKey) && !PipeLineSession.TS_SENT_KEY.equals(sessionKey)) {
-						if ((sessionKey.startsWith(parmName) || "*".equals(parmName))) {
-							Parameter newParm = new Parameter();
-							newParm.setName(sessionKey);
-							newParm.setSessionKey(sessionKey); // TODO: Should also set the parameter.type, based on the type of the session key.
-							try {
-								newParm.configure();
-							} catch (ConfigurationException e) {
-								throw new ParameterException(e);
-							}
-							result.add(getValue(result, newParm, message, session, namespaceAware));
-						}
-					}
-				}
+			if (parm.isWildcardSessionKey()) {
+				addMatchingSessionKeys(result, parm, message, session, namespaceAware);
 			} else {
 				result.add(getValue(result, parm, message, session, namespaceAware));
 			}
 		}
 		return result;
+	}
+
+	private void addMatchingSessionKeys(ParameterValueList result, Parameter parm, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+		String parmName = parm.getName();
+		for (String sessionKey: session.keySet()) {
+			if (PipeLineSession.TS_RECEIVED_KEY.equals(sessionKey) || PipeLineSession.TS_SENT_KEY.equals(sessionKey) || ((!sessionKey.startsWith(parmName) && !"*".equals(parmName)))) {
+				continue;
+			}
+			Parameter newParm = new Parameter();
+			newParm.setName(sessionKey);
+			newParm.setSessionKey(sessionKey); // TODO: Should also set the parameter.type, based on the type of the session key.
+			try {
+				newParm.configure();
+			} catch (ConfigurationException e) {
+				throw new ParameterException(e);
+			}
+			result.add(getValue(result, newParm, message, session, namespaceAware));
+		}
 	}
 
 	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
