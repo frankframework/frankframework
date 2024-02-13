@@ -120,11 +120,11 @@ public class ParameterList extends ArrayList<Parameter> {
 	 * Returns a List of <link>ParameterValue<link> objects
 	 */
 	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
-		if(inputValueRequiredForResolution && message!=null) {
+		if(isInputValueRequiredForResolution() && message != null) {
 			try {
 				message.preserve();
 			} catch (IOException e) {
-				throw new ParameterException("Cannot preserve message for parameter resolution", e);
+				throw new ParameterException("<input message>", "Cannot preserve message for parameter resolution", e);
 			}
 		}
 		ParameterValueList result = new ParameterValueList();
@@ -140,10 +140,10 @@ public class ParameterList extends ArrayList<Parameter> {
 		return result;
 	}
 
-	private void addMatchingSessionKeys(ParameterValueList result, Parameter parm, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public void addMatchingSessionKeys(ParameterValueList result, Parameter parm, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		String parmName = parm.getName();
 		for (String sessionKey: session.keySet()) {
-			if (PipeLineSession.TS_RECEIVED_KEY.equals(sessionKey) || PipeLineSession.TS_SENT_KEY.equals(sessionKey) || ((!sessionKey.startsWith(parmName) && !"*".equals(parmName)))) {
+			if (PipeLineSession.TS_RECEIVED_KEY.equals(sessionKey) || PipeLineSession.TS_SENT_KEY.equals(sessionKey) || !sessionKey.startsWith(parmName) && !"*".equals(parmName)) {
 				continue;
 			}
 			Parameter newParm = new Parameter();
@@ -152,13 +152,13 @@ public class ParameterList extends ArrayList<Parameter> {
 			try {
 				newParm.configure();
 			} catch (ConfigurationException e) {
-				throw new ParameterException(e);
+				throw new ParameterException(sessionKey, e);
 			}
 			result.add(getValue(result, newParm, message, session, namespaceAware));
 		}
 	}
 
-	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, message, session, namespaceAware));
 	}
 
