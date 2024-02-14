@@ -36,7 +36,6 @@ import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -87,7 +86,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<CloseableHttpClient> {
+public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<HttpSession> {
 
 	private static final String CONTEXT_KEY_STATUS_CODE = "Http.StatusCode";
 	private static final String CONTEXT_KEY_REASON_PHRASE = "Http.ReasonPhrase";
@@ -234,14 +233,16 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	}
 
 	@Override
-	public Class<CloseableHttpClient> getObjectType() {
-		return CloseableHttpClient.class;
+	public Class<HttpSession> getObjectType() {
+		return HttpSession.class;
 	}
 
 	@Override
 	public void start() {
 		if(StringUtils.isNotBlank(sharedResourceRef)) {
-			setHttpClient(getSharedResource(sharedResourceRef));
+			HttpSession session = getSharedResource(sharedResourceRef);
+			setHttpClient(session.getHttpClient());
+			setHttpContext(session.getHttpClientContext());
 		} else {
 			buildHttpClient();
 		}
@@ -386,8 +387,6 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			for (String param: headersParamsMap.keySet()) {
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
 			}
-
-			preAuthenticate();
 
 			log.info("configured httpclient for host [{}]", targetUri::getHost);
 

@@ -15,18 +15,16 @@
 */
 package nl.nn.adapterframework.http;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-
 import nl.nn.adapterframework.core.SharedResource;
 
 /**
  * Shared HTTPSession, implements {@link SharedResource} so it can be set in the Configuration.xml
  */
-public class HttpSession extends HttpSessionBase implements SharedResource<CloseableHttpClient> {
+public class HttpSession extends HttpSessionBase implements SharedResource<HttpSession> {
 
 	@Override
-	public CloseableHttpClient getSharedResource() {
-		return getHttpClient();
+	public HttpSession getSharedResource() {
+		return this;
 	}
 
 }

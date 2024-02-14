@@ -65,6 +65,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.Assert;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -154,7 +155,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private @Getter int connectionTimeToLive = 900; // [s]
 	private @Getter int connectionIdleTimeout = 10; // [s]
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-	private HttpClientContext httpClientContext = HttpClientContext.create();
+	private @Getter HttpClientContext httpClientContext;
 	private @Getter CloseableHttpClient httpClient;
 
 	/* SECURITY */
@@ -237,6 +238,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		/**
 		 * TODO find out if this really breaks proxy authentication or not.
 		 */
+		httpClientContext = HttpClientContext.create();
 //		httpClientBuilder.disableAuthCaching();
 
 		if (getMaxConnections() <= 0) {
@@ -374,6 +376,9 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	protected void setHttpClient(CloseableHttpClient httpClient) {
 		this.httpClient = httpClient;
 	}
+	protected void setHttpContext(HttpClientContext httpContext) {
+		this.httpClientContext = httpContext;
+	}
 
 	@Override
 	public boolean isRunning() {
@@ -393,6 +398,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	private void setupAuthentication(CredentialFactory proxyCredentials, HttpHost proxy, RequestConfig.Builder requestConfigBuilder) throws HttpAuthenticationException {
+		Assert.notNull(httpClientContext, "no HttpClientContext created during configure"); //This should be set in #configure()
+
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		if (StringUtils.isNotEmpty(credentials.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
 
@@ -434,7 +441,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 	}
 
-	protected void preAuthenticate() {
+	private void preAuthenticate() {
 		if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
 			AuthState authState = httpClientContext.getTargetAuthState();
 			if (authState==null) {
@@ -489,8 +496,10 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase) throws IOException {
+		preAuthenticate();
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
-		return getHttpClient().execute(targetHost, httpRequestBase, httpClientContext);
+
+		return getHttpClient().execute(targetHost, httpRequestBase, getHttpClientContext());
 	}
 
 	/**
