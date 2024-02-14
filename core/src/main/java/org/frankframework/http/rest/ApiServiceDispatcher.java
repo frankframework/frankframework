@@ -197,10 +197,6 @@ public class ApiServiceDispatcher {
 	 * @return Numerical score calculated for the URI based on the rules above.
 	 */
 	public static int scoreUriPattern(@Nonnull String uriPattern) {
-		// Scoring rules:
-		// - The more slashes the longer the match the more specific
-		// - The more wildcards in the pattern the less specific
-		// - "Match-all" patterns ending with /** are penalized with a -10 starting score
 		int startValue = uriPattern.endsWith("/**") ? -10 : 0;
 		return uriPattern.chars()
 				.reduce(startValue, (cnt, chr) -> {
@@ -237,8 +233,8 @@ public class ApiServiceDispatcher {
 	private static boolean isMatch(String[] uriSegments, String[] patternSegments) {
 		int matchingSegmentCount = 0;
 		for (int i = 0; i < uriSegments.length && i < patternSegments.length; i++) {
-			if (matchingSegmentCount == i && i == patternSegments.length - 1 && patternSegments[i].equals("**")) {
-				// Check for match on ** only if all segments before matched and we're matching last segment of pattern
+			if (matchingSegmentCount == i && i == patternSegments.length - 1 && "**".equals(patternSegments[i])) {
+				// Check for match on ** only if all segments before matched, and we're matching last segment of pattern
 				return true;
 			} else if (patternSegments[i].equals(uriSegments[i]) || patternSegments[i].equals("*")) {
 				matchingSegmentCount++;

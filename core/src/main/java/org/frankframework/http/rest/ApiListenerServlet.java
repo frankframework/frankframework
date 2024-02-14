@@ -148,7 +148,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		String uri = request.getPathInfo();
 		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : ""));
 
-		if (uri==null) {
+		if (uri == null) {
 			response.setStatus(400);
 			LOG.warn("{} empty uri", () -> createAbortMessage(remoteUser, 400));
 			return;
