@@ -119,8 +119,7 @@
               </table>
             </div>
             <div class="col-md-3 configurationFlow" *ngIf="configurationFlowDiagram && !reloading">
-              <a [href]="configurationFlowDiagram" target="_blank" rel="noopener noreferrer"><img
-                  [src]="configurationFlowDiagram" alt="Configuration Flow Diagram"></a>
+              <app-flow [configurationFlowDiagram]="configurationFlowDiagram" />
             </div>
           </div>
         </div>
@@ -141,8 +140,8 @@
                   id="start-all-adapters" type="button"><i class="fa fa-play"></i></button>
               </div>
               <div class="text-right pull-right">
-                <button title="Open All Adapters" (click)="expandAll()" class="btn btn-default btn-xs space-it-out" id="expand-all"
-                  type="button"><i class="fa fa-angle-double-down fa-size-up"></i></button>
+                <button title="Open All Adapters" (click)="expandAll()" class="btn btn-default btn-xs space-it-out"
+                  id="expand-all" type="button"><i class="fa fa-angle-double-down fa-size-up"></i></button>
                 <button title="Collapse All Adapters" (click)="collapseAll()" class="btn btn-default btn-xs"
                   id="collapse-all" type="button"><i class="fa fa-angle-double-up fa-size-up"></i></button>
               </div>
@@ -152,12 +151,14 @@
                   title="Reload Configuration" (click)="reloadConfiguration()" class="btn btn-info btn-xs space-it-out"
                   id="reload-configuration" type="button"><i class="fa fa-undo"></i></button>
                 <button *ngIf="selectedConfiguration != 'All' && !reloading && isConfigReloading[selectedConfiguration]"
-                  disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs space-it-out" type="button"><i
-                    class="fa fa-spin fa-refresh"></i></button>
+                  disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs space-it-out"
+                  type="button"><i class="fa fa-spin fa-refresh"></i></button>
                 <button *ngIf="selectedConfiguration == 'All' && !reloading" title="Full Reload" (click)="fullReload()"
-                  class="btn btn-info btn-xs space-it-out" id="full-reload" type="button"><i class="fa fa-undo"></i></button>
+                  class="btn btn-info btn-xs space-it-out" id="full-reload" type="button"><i
+                    class="fa fa-undo"></i></button>
                 <button *ngIf="reloading" disabled="disabled" title="Full Reload in process"
-                  class="btn btn-danger btn-xs space-it-out" type="button"><i class="fa fa-spin fa-refresh"></i></button>
+                  class="btn btn-danger btn-xs space-it-out" type="button"><i
+                    class="fa fa-spin fa-refresh"></i></button>
                 <button *ngIf="configurationFlowDiagram" title="Show Adapter References" (click)="showReferences()"
                   class="btn btn-info btn-xs" id="adapter-references" type="button"><i
                     class="fa fa-file-picture-o"></i></button>
@@ -247,7 +248,8 @@
     <div *ngFor="let adapter of adapters | configurationFilter:selectedConfiguration:filter | searchFilter:searchText"
       class="col-lg-12 adapters">
       <div class="ibox float-e-margins" id="{{adapter.name}}">
-        <div (click)="adapterShowContent[adapter.configuration+'/'+adapter.name] = !showContent(adapter)" class="ibox-title" title="Click to open"
+        <div (click)="adapterShowContent[adapter.configuration+'/'+adapter.name] = !showContent(adapter)"
+          class="ibox-title" title="Click to open"
           [ngClass]="(adapter.status=='warning') ? 'warning' : ((adapter.status=='stopped') ? 'danger' : 'primary')">
           <div class="ibox-tools pull-right">
             <a> <i class="fa fa-chevron-{{(showContent(adapter)) ? 'up' : 'down' }}"></i></a>
@@ -302,11 +304,9 @@
             <div class="col-md-6">
               <!-- adapter information -->
               <span class="pull-right">
-                <a
-                  [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
-                  class="btn btn-xs btn-info pull-right m-r-xs"
-                  type="button"
-                ><i class="fa fa-bar-chart m-r-xs" aria-hidden="true"></i>More statistics</a>
+                <a [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
+                  class="btn btn-xs btn-info pull-right m-r-xs" type="button"><i class="fa fa-bar-chart m-r-xs"
+                    aria-hidden="true"></i>More statistics</a>
               </span>
               <h4>Adapter information</h4>
               <table class="table">
@@ -359,7 +359,8 @@
                   <tr>
                     <td></td>
                     <td>
-                      <a routerLink="/configurations" [queryParams]="{ name: adapter.configuration, adapter: adapter.name }">
+                      <a routerLink="/configurations"
+                        [queryParams]="{ name: adapter.configuration, adapter: adapter.name }">
                         View adapter configuration XML
                       </a>
                     </td>
@@ -431,8 +432,7 @@
                           <span *ngFor="let store of getTransactionalStores(receiver)">
                             <span class="text-{{getProcessStateIconColor(store.name)}}"
                               title="Browse messages with ProcessState: {{store.name}}">
-                              <a
-                                [routerLink]="['', adapter.configuration, 'adapters', adapter.name, 'receivers', receiver.name, 'stores', store.name]"
+                              <a [routerLink]="['', adapter.configuration, 'adapters', adapter.name, 'receivers', receiver.name, 'stores', store.name]"
                                 class="btn btn-xs btn-default" type="button">
                                 <i class="fa {{getProcessStateIcon(store.name)}}"></i>
                                 ({{store.numberOfMessages}})
@@ -476,7 +476,8 @@
                     <ng-template ngFor let-pipes [ngForOf]="adapter.pipes">
                       <tr *ngIf="pipes.sender">
                         <td>{{pipes.name}}</td>
-                        <td>{{pipes.sender}}<span *ngIf="pipes.destination" title="{{pipes.destination}}" #pipeDestination>
+                        <td>{{pipes.sender}}<span *ngIf="pipes.destination" title="{{pipes.destination}}"
+                            #pipeDestination>
                             ({{pipes.destination|truncate:150:pipeDestination}})</span></td>
                         <td>{{pipes.message?.slotId}}</td>
                         <td>

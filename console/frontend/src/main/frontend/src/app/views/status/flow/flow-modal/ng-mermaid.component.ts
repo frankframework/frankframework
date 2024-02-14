@@ -11,11 +11,17 @@ type CSSRuleExtended = CSSRule & { selectorText: string };
     CommonModule
   ],
   template: `
-    <pre
+    <div
       class="{{is_mermaid}}"
       #mermaidPre
-    >Loading...</pre>
-  `
+    >Loading...</div>
+  `,
+  styles: [`
+    div {
+      width: 100%;
+      height: 100%;
+    }
+  `]
 })
 export class NgMermaidComponent implements OnInit, OnChanges {
   @Input() nmModel?: any;
@@ -23,30 +29,32 @@ export class NgMermaidComponent implements OnInit, OnChanges {
   @Output() nmInitCallback = new EventEmitter();
 
   model = this.nmModel;
-  interval = this.nmRefreshInterval || 2000;
+  interval = 2000;
   is_mermaid = 'mermaid';
+  initialized = false;
   timeout?: number;
 
-  @ViewChild('mermaidPre') mermaidEl!: ElementRef<HTMLPreElement>;
+  @ViewChild('mermaidPre') mermaidEl!: ElementRef<HTMLElement>;
 
   private element = this.elRef.nativeElement;
 
   constructor(private elRef: ElementRef<HTMLElement>) { }
 
   ngOnInit() {
-    // angularjs ng:xxx style escape
-    /* for (const styleidx in document.styleSheets) {
-      for (var cssridx in document.styleSheets[styleidx].cssRules) {
-        const cssroule = document.styleSheets[styleidx].cssRules[cssridx] as CSSRuleExtended;
-        if (cssroule.selectorText) {
-          cssroule.selectorText = this.cssReplace(cssroule.selectorText);
-          cssroule.cssText = this.cssReplace(cssroule.cssText);
-        }
-      }
-    } */
+    this.render();
+    this.initialized = true;
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    if(this.initialized)
+      this.render();
+  }
+
+  render() {
+    if (this.nmRefreshInterval) {
+      this.interval = this.nmRefreshInterval || this.interval;
+    }
+
     if (this.nmModel) {
       this.model = this.nmModel;
       this.element.querySelectorAll("[data-processed]").forEach((v, k) => {
@@ -57,19 +65,30 @@ export class NgMermaidComponent implements OnInit, OnChanges {
       this.timeout = window.setTimeout(() => {
         try {
           this.mermaidEl.nativeElement.innerHTML = this.nmModel;
-          mermaid.init(this.mermaidEl.nativeElement);
-          this.nmInitCallback.emit();
+          mermaid.initialize({
+            startOnLoad: false, maxTextSize: 70 * 1000, maxEdges: 600, flowchart: {
+              diagramPadding: 8,
+              htmlLabels: true,
+              curve: 'basis',
+            },
+          });
+          mermaid.run({
+            nodes: [this.mermaidEl.nativeElement]
+          }).then(() => {
+            const svgElement = this.mermaidEl.nativeElement.firstChild as HTMLElement;
+            svgElement.setAttribute('height', '100%');
+            svgElement.setAttribute('style', "");
+          }).finally(() => {
+            this.nmInitCallback.emit();
+          });
         } catch (e) {
           if (e instanceof Error) {
             e.message.split('\n').forEach((v) => {
-              this.mermaidEl.nativeElement.innerHTML = '<span>' + v + '</span><br/>';
+              this.mermaidEl.nativeElement.innerHTML = `<span>${v}</span><br/>`;
             });
           }
         }
-      }, this.interval);
-    }
-    if (this.nmRefreshInterval) {
-      this.interval = this.nmRefreshInterval || this.interval;
+      }, this.initialized ? this.interval : 0);
     }
   }
 

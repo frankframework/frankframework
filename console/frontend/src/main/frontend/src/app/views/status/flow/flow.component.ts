@@ -2,7 +2,7 @@ import { HttpResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
-import { Adapter, AppService } from 'src/app/app.service';
+import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FlowModalComponent } from './flow-modal/flow-modal.component';
 
@@ -20,7 +20,8 @@ export class FlowComponent implements OnInit {
   } = { image: false, url: "" }
   flowModalLadda = false;
 
-  @Input() adapter!: Adapter;
+  @Input() adapter: Adapter | null = null;
+  @Input() configurationFlowDiagram: string | null = null;
 
   constructor(
     private appService: AppService,
@@ -30,9 +31,9 @@ export class FlowComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const uri = this.appService.getServerPath() + 'iaf/api/configurations/' + this.adapter.configuration + '/adapters/' + this.Misc.escapeURL(this.adapter.name) + "/flow?" + this.adapter.upSince;
-    this.flow = { "image": false, "url": uri };
-    this.statusService.getAdapterFlowDiagram(uri).subscribe((data) => {
+    const flowUrl = this.getflowUrl();
+    this.flow = { "image": false, "url": flowUrl };
+    this.statusService.getAdapterFlowDiagram(flowUrl).subscribe((data) => {
       const status = (data && data.status) ? data.status : 204;
       if (status == 200) {
         const contentType = data.headers.get("Content-Type")!;
@@ -52,8 +53,15 @@ export class FlowComponent implements OnInit {
     this.flowModalLadda = true;
     const modalRef = this.modalService.open(FlowModalComponent, { windowClass: 'mermaidFlow' });
     modalRef.componentInstance.flow = xhr?.body;
-    modalRef.componentInstance.adapterName = this.adapter.name;
+    modalRef.componentInstance.flowName = this.adapter?.name ?? "Configuration";
     setTimeout( () => { this.flowModalLadda = false; }, 1000);
+  }
+
+  private getflowUrl() {
+    if (this.adapter) {
+      return `${this.appService.getServerPath()}iaf/api/configurations/${this.adapter.configuration}/adapters/${this.Misc.escapeURL(this.adapter.name)}/flow?${this.adapter.upSince}`;
+    }
+    return this.configurationFlowDiagram ?? "";
   }
 
 }
