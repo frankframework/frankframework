@@ -1,8 +1,8 @@
 import { HttpResponse } from '@angular/common/http';
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
-import { Adapter, AppService, Configuration } from 'src/app/app.service';
+import { Adapter, AppService } from 'src/app/app.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FlowModalComponent } from './flow-modal/flow-modal.component';
 
