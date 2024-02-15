@@ -757,12 +757,12 @@ public class Message implements Serializable, Closeable {
 		// save the generated String as the request before returning it
 		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
 		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
-		if (!isBinary() || !isRepeatable()) {
+		if (!(request instanceof SerializableFileReference && (!isBinary() || !isRepeatable()))) {
 			if (request instanceof AutoCloseable) {
 				try {
 					((AutoCloseable) request).close();
 				} catch (Exception e) {
-					throw new IOException("could not close request of type [" + requestClass + "], inside message " + this, e);
+					LOG.info("could not close request of type [{}], inside message {}. Message: {}", requestClass, this, e.getMessage());
 				}
 			}
 			request = result;
@@ -855,11 +855,10 @@ public class Message implements Serializable, Closeable {
 		return new Message(new MessageContext(), object);
 	}
 
+	/**
+	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
+	 */
 	public static String asString(Object object) throws IOException {
-		return asString(object, null);
-	}
-
-	public static String asString(Object object, String defaultCharset) throws IOException {
 		if (object == null) {
 			return null;
 		}
@@ -867,22 +866,21 @@ public class Message implements Serializable, Closeable {
 			return (String) object;
 		}
 		if (object instanceof Message) {
-			return ((Message) object).asString(defaultCharset);
+			return ((Message) object).asString();
 		}
 		if (object instanceof MessageWrapper) {
-			return ((MessageWrapper<?>) object).getMessage().asString(defaultCharset);
+			return ((MessageWrapper<?>) object).getMessage().asString();
 		}
 		// In other cases, message can be closed directly after converting to String.
 		try (Message message = Message.asMessage(object)) {
-			return message.asString(defaultCharset);
+			return message.asString();
 		}
 	}
 
+	/**
+	 * Convert an object to a byte array. Does not close object when it is of type Message or MessageWrapper.
+	 */
 	public static byte[] asByteArray(Object object) throws IOException {
-		return asByteArray(object, null);
-	}
-
-	public static byte[] asByteArray(Object object, String defaultCharset) throws IOException {
 		if (object == null) {
 			return null;
 		}
@@ -890,14 +888,14 @@ public class Message implements Serializable, Closeable {
 			return (byte[]) object;
 		}
 		if (object instanceof Message) {
-			return ((Message) object).asByteArray(defaultCharset);
+			return ((Message) object).asByteArray();
 		}
 		if (object instanceof MessageWrapper) {
-			return ((MessageWrapper<?>) object).getMessage().asByteArray(defaultCharset);
+			return ((MessageWrapper<?>) object).getMessage().asByteArray();
 		}
 		// In other cases, message can be closed directly after converting to byte array.
 		try (Message message = Message.asMessage(object)) {
-			return message.asByteArray(defaultCharset);
+			return message.asByteArray();
 		}
 	}
 
