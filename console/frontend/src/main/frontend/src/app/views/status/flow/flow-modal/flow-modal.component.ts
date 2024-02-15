@@ -8,7 +8,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class FlowModalComponent {
 
-  @Input() adapterName = "";
+  @Input() flowName = "";
   @Input() flow = "";
 
   constructor(
