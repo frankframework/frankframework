@@ -206,7 +206,7 @@ public class Message implements Serializable, Closeable {
 		@Override
 		public void run() {
 			if (!calledByClose) {
-				LOG.info("Leak detection: Message was not closed properly! Content: [{}]", content);
+				LOG.info("Leak detection: Message was not closed properly! Content: [{}]", () -> StringUtils.substring(content, 0, 80));
 			}
 		}
 	}
@@ -757,7 +757,7 @@ public class Message implements Serializable, Closeable {
 		// save the generated String as the request before returning it
 		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
 		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
-		if (!(request instanceof SerializableFileReference && (!isBinary() || !isRepeatable()))) {
+		if (!(request instanceof SerializableFileReference) && (!isBinary() || !isRepeatable())) {
 			if (request instanceof AutoCloseable) {
 				try {
 					((AutoCloseable) request).close();
