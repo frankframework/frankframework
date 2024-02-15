@@ -90,6 +90,7 @@
 		<Logger name="org.frankframework.jta.btm.BtmJtaTransactionManager" level="WARN" />
 		<Logger name="org.frankframework.jta.narayana.NarayanaJtaTransactionManager" level="WARN" />
 		<Logger name="org.frankframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
+		<Logger name="com.hierynomus" level="WARN" /> <!-- SMB2 client -->
 		<Logger name="org.mongodb" level="INFO" />
 		<Logger name="org.quartz" level="WARN" />
 		<Logger name="org.frankframework.configuration.digester" level="WARN" />
