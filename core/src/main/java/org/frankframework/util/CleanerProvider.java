@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,11 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.credentialprovider;
+package org.frankframework.util;
 
-public interface ICredentials {
+import java.lang.ref.Cleaner;
 
-	String getAlias();
-	String getUsername();
-	String getPassword();
+import lombok.NoArgsConstructor;
+
+/**
+ * Starts the singleton Cleaner thread of F!F, to clean a resource when it becomes phantom reachable.
+ */
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+public class CleanerProvider {
+
+	private static final Cleaner CLEANER = Cleaner.create();
+
+	public static Cleaner getCleaner() {
+		return CLEANER;
+	}
 }

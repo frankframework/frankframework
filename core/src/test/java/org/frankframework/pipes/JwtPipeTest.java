@@ -2,6 +2,7 @@ package org.frankframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +13,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeStartException;
 import org.frankframework.parameters.Parameter;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,20 +52,29 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void noSecret() {
+	void noSecret() {
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must either provide a [sharedSecret] (alias) or parameter"));
 	}
 
 	@Test
-	public void secretTooShortShouldThrow() {
+	void secretTooShortShouldThrow() {
 		pipe.setSharedSecret("Potato");
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));
 	}
 
 	@Test
-	public void secretTooShortShouldBePadded() throws Exception {
+	void secretParamTooShortShouldThrow() throws ConfigurationException, PipeStartException {
+		pipe.addParameter(new Parameter(JwtPipe.SHARED_SECRET_PARAMETER_NAME, "Potato"));
+		configureAndStartPipe();
+
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(DUMMY_INPUT));
+		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));
+	}
+
+	@Test
+	void secretTooShortShouldBePadded() throws Exception {
 		pipe.setJwtAllowWeakSecrets(true);
 		pipe.setSharedSecret("Potato");
 		configureAndStartPipe();
@@ -75,7 +87,47 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void secretPaddedIsTheSame() throws Exception {
+	void authAliasTooShortShouldPadPassword() throws Exception {
+		// Arrange
+		pipe.setJwtAllowWeakSecrets(true);
+		pipe.setSharedSecret(null);
+		pipe.setAuthAlias("alias1");
+
+		// Act && Assert: flow should work and message returns.
+		configureAndStartPipe();
+		String result = doPipe(DUMMY_INPUT).getResult().asString();
+		assertNotNull(result);
+	}
+
+	@Test
+	void authAliasTooShortShouldFailConfiguration() {
+		// Arrange
+		pipe.setAuthAlias("alias1");
+
+		// Act && Assert: the warning message shows a non-padded secret
+		ConfigurationException ex =  assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));
+	}
+
+	@Test
+	void secretParamTooShortShouldBePadded() throws Exception {
+		pipe.setJwtAllowWeakSecrets(true);
+		Parameter potatoParam = new Parameter(JwtPipe.SHARED_SECRET_PARAMETER_NAME, "Potato");
+		pipe.addParameter(potatoParam);
+		configureAndStartPipe();
+		String jwt1 = doPipe(DUMMY_INPUT).getResult().asString();
+
+		pipe.setSharedSecret(null);
+		pipe.getParameterList().clear();
+		potatoParam.setValue("Potato\0\0\0\0");
+		pipe.addParameter(potatoParam);
+		configureAndStartPipe();
+		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
+		assertEquals(jwt1, jwt2);
+	}
+
+	@Test
+	void secretPaddedIsTheSame() throws Exception {
 		// Run with secret, 32 chars long (OK)
 		pipe.setSharedSecret(DUMMY_SECRET);
 		configureAndStartPipe();
@@ -93,7 +145,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void secretAsAttribute() throws Exception {
+	void secretAsAttribute() throws Exception {
 		pipe.setSharedSecret(DUMMY_SECRET);
 		configureAndStartPipe();
 
@@ -102,7 +154,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void secretAsParameter() throws Exception {
+	void secretAsParameter() throws Exception {
 		pipe.addParameter(new Parameter("sharedSecret", DUMMY_SECRET));
 		configureAndStartPipe();
 
@@ -111,7 +163,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void attributeAndParameter() throws Exception {
+	void attributeAndParameter() throws Exception {
 		pipe.setSharedSecret("asjdfjkadslfkjlsadfjlk;adsjflk;asjklfjaslkjfl;kasjld;aksfjl");
 		pipe.addParameter(new Parameter("sharedSecret", DUMMY_SECRET)); //Should overwrite the attribute
 		configureAndStartPipe();
@@ -121,7 +173,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void testJwtClaimSet() throws Exception {
+	void testJwtClaimSet() throws Exception {
 		// Arrange
 		pipe.setSharedSecret(DUMMY_SECRET);
 		pipe.setExpirationTime(60);
@@ -150,7 +202,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void dontUseSecretParameter() throws Exception {
+	void dontUseSecretParameter() throws Exception {
 		// Arrange
 		pipe.setExpirationTime(0); //And no expiration time
 		pipe.addParameter(new Parameter("sharedSecret", DUMMY_SECRET));

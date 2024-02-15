@@ -1,7 +1,7 @@
 package org.frankframework.jta;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,13 +13,12 @@ import javax.transaction.UserTransaction;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.jdbc.TransactionManagerTestBase;
 import org.frankframework.task.TimeoutGuard;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.TxManagerTest;
+import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionObject;
@@ -27,24 +26,27 @@ import org.springframework.transaction.jta.JtaTransactionObject;
 import bitronix.tm.BitronixTransaction;
 import bitronix.tm.internal.XAResourceManager;
 import bitronix.tm.utils.Uid;
+import lombok.extern.log4j.Log4j2;
 
-public class TransactionConnectorTest extends TransactionManagerTestBase {
-	protected static Logger log = LogUtil.getLogger(TransactionConnectorTest.class);
+@Log4j2
+@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TransactionConnectorTest.TEST_TABLE)
+public class TransactionConnectorTest {
+	static final String TEST_TABLE = "Temp_Table";
+	private IThreadConnectableTransactionManager txManager;
+	private DatabaseTestEnvironment env;
 
-	public static final TransactionDefinition TX_DEF = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 5);
+	private static final int TX_DEF = TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
-	@Override
-	@Before
-	public void setup() throws Exception {
-		super.setup();
-		runQuery("DELETE FROM "+TEST_TABLE+" WHERE TKEY=999");
-		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) throws Exception {
+		this.env = env;
+		txManager = (IThreadConnectableTransactionManager) env.getTxManager();
 	}
 
-	@Test
+	@TxManagerTest
 	public void testSimpleTransaction() throws Exception {
-
-		TransactionStatus txStatus = startTransaction(TX_DEF);
+		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
+		TransactionStatus txStatus = env.startTransaction(TX_DEF);
 
 		try {
 			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
@@ -52,22 +54,23 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		} finally {
 			if (txStatus.isRollbackOnly()) {
 				txManager.rollback(txStatus);
-				assertEquals(1,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
+				assertEquals(1, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 			} else {
 				txManager.commit(txStatus);
-				assertEquals(2,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
+				assertEquals(2, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 			}
 		}
 	}
 
-	@Test
+	@TxManagerTest
 	public void testNewTransactionMustLock() throws Exception {
-		TransactionStatus txStatus = startTransaction(TX_DEF);
+		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
+		TransactionStatus txStatus = env.startTransaction(TX_DEF);
 
 		try {
 			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
 
-			TransactionStatus txStatus2 = startTransaction(TX_DEF);
+			TransactionStatus txStatus2 = env.startTransaction(TX_DEF);
 			try {
 				runQuery("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
 			} catch (Exception e) {
@@ -84,13 +87,15 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		} finally {
 			txManager.commit(txStatus);
 		}
-		assertEquals(2,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(2, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
-	@Test
+	@TxManagerTest
 	public void testBasicSameThread() throws Exception {
+		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
+
 		displayTransaction();
-		TransactionStatus txStatus = startTransaction(TX_DEF);
+		TransactionStatus txStatus = env.startTransaction(TX_DEF);
 		displayTransaction();
 
 		try {
@@ -101,12 +106,13 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		} finally {
 			txManager.commit(txStatus);
 		}
-		assertEquals(3,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
-	@Test
+	@TxManagerTest
 	public void testBasic() throws Exception {
-		TransactionStatus txStatus = startTransaction(TX_DEF);
+		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
+		TransactionStatus txStatus = env.startTransaction(TX_DEF);
 
 		// do some action in main thread
 		try {
@@ -121,11 +127,12 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 		} finally {
 			txManager.commit(txStatus);
 		}
-		assertEquals(3,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
-	@Test
+	@TxManagerTest
 	public void testNoOuterTransaction() throws Exception {
+		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 		// do some action in main thread
 		runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
 
@@ -135,13 +142,14 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 			t.printStackTrace();
 			fail();
 		}
-		assertEquals(3,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
-	@Test
+	@TxManagerTest
 	public void testBasicRollbackInChildThread() throws Exception {
+		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 
-		TransactionStatus txStatus = startTransaction(TX_DEF);
+		TransactionStatus txStatus = env.startTransaction(TX_DEF);
 		// do some action in main thread
 		try {
 			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
@@ -159,35 +167,33 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	}
 
 	private void runQuery(String query) throws SQLException {
-		try (Connection con = getConnection()) {
-			try (PreparedStatement stmt = con.prepareStatement(query)) {
-				TimeoutGuard guard = new TimeoutGuard(3, "run child thread"){
+		try (Connection con = env.getConnection(); PreparedStatement stmt = con.prepareStatement(query)) {
+			TimeoutGuard guard = new TimeoutGuard(3, "run child thread") {
 
-					@Override
-					protected void abort() {
-						try {
-							log.warn("--> TIMEOUT executing ["+query+"]");
-							stmt.cancel();
-						} catch (SQLException e) {
-							e.printStackTrace();
-						}
+				@Override
+				protected void abort() {
+					try {
+						log.warn("--> TIMEOUT executing ["+query+"]");
+						stmt.cancel();
+					} catch (SQLException e) {
+						e.printStackTrace();
 					}
+				}
 
-				};
-				try {
-					log.debug("runQuery thread ["+Thread.currentThread().getId()+"] query ["+query+"] ");
-					stmt.execute();
-				} finally {
-					if (guard.cancel()) {
-						throw new SQLException("Interrupted ["+query+"");
-					}
+			};
+			try {
+				log.debug("runQuery thread ["+Thread.currentThread().getId()+"] query ["+query+"] ");
+				stmt.execute();
+			} finally {
+				if (guard.cancel()) {
+					throw new SQLException("Interrupted ["+query+"");
 				}
 			}
 		}
 	}
 
 	private int runSelectQuery(String query) throws SQLException {
-		try (Connection con = getConnection()) {
+		try (Connection con = env.getConnection()) {
 			try (PreparedStatement stmt = con.prepareStatement(query)) {
 				try (ResultSet rs = stmt.executeQuery()) {
 					rs.next();

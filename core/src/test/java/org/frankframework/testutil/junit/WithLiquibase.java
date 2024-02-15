@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Annotation that works in tandem with {@link DatabaseTest}, executes Liquibase before it runs the test and cleansup after the test has ran.
+ * Is executed AFTER the @BeforeEach step.
  *
  * @author Niels Meijer
  */

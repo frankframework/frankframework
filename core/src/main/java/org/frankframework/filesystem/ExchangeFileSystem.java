@@ -639,7 +639,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		try {
 			f.getMessage().delete(DeleteMode.MoveToDeletedItems);
 		} catch (Exception e) {
-			throw new FileSystemException("Could not delete", e);
+			throw new FileSystemException("Could not delete Exchange Message [" + getCanonicalName(f) + "]: " + e.getMessage());
 		}
 	}
 

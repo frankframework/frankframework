@@ -111,7 +111,7 @@
                     <td><strong>Warning messages</strong></td>
                     <td>{{messageSummary.warn}}</td>
                   </tr>
-                  <tr>
+                  <tr [ngClass]="{ hasErrorsSummary: messageSummary.error > 0}">
                     <td><strong>Error messages</strong></td>
                     <td>{{messageSummary.error}}</td>
                   </tr>
@@ -380,7 +380,7 @@
                     <td>In process</td>
                     <td>{{adapter.messagesInProcess ?? '0'}}</td>
                   </tr>
-                  <tr>
+                  <tr [ngClass]="{ hasErrors: (adapter.messagesInError ?? 0) > 0}">
                     <td>With error</td>
                     <td>{{adapter.messagesInError ?? '0'}}</td>
                   </tr>
