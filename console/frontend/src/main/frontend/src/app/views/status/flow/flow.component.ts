@@ -1,5 +1,5 @@
 import { HttpResponse } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
@@ -11,13 +11,13 @@ import { FlowModalComponent } from './flow-modal/flow-modal.component';
   templateUrl: './flow.component.html',
   styleUrls: ['./flow.component.scss']
 })
-export class FlowComponent implements OnInit {
+export class FlowComponent implements OnChanges {
 
   flow: {
-    image: boolean,
+    isImage: boolean,
     url: string,
     data?: HttpResponse<string>
-  } = { image: false, url: "" }
+  } = { isImage: false, url: "" }
   flowModalLadda = false;
 
   @Input() adapter: Adapter | null = null;
@@ -30,23 +30,24 @@ export class FlowComponent implements OnInit {
     private modalService: NgbModal,
   ) {}
 
-  ngOnInit() {
-    const flowUrl = this.getflowUrl();
-    this.flow = { "image": false, "url": flowUrl };
-    this.statusService.getAdapterFlowDiagram(flowUrl).subscribe((data) => {
-      const status = (data && data.status) ? data.status : 204;
-      if (status == 200) {
-        const contentType = data.headers.get("Content-Type")!;
-        this.flow.image = (contentType.indexOf("image") > 0 || contentType.indexOf("svg") > 0); //display an image or a button to open a modal
-        if (!this.flow.image) { //only store metadata when required
-          // data.adapter = this.adapter;
-          this.flow.data = data;
+  ngOnChanges(){
+    if(this.adapter || this.configurationFlowDiagram){
+      const flowUrl = this.getflowUrl();
+      this.flow = { "isImage": false, "url": flowUrl };
+      this.statusService.getAdapterFlowDiagram(flowUrl).subscribe((data) => {
+        const status = (data && data.status) ? data.status : 204;
+        if (status == 200) {
+          const contentType = data.headers.get("Content-Type")!;
+          this.flow.isImage = (contentType.indexOf("image") > 0 || contentType.indexOf("svg") > 0); //display an image or a button to open a modal
+          if (!this.flow.isImage) { //only store metadata when required
+            this.flow.data = data;
+          }
+        } else { //If non successful response, force no-image-available
+          this.flow.isImage = true;
+          this.flow.url = 'assets/images/no_image_available.svg'
         }
-      } else { //If non successfull response, force no-image-available
-        this.flow.image = true;
-        this.flow.url = 'assets/images/no_image_available.svg'
-      }
-    });
+      });
+    }
   }
 
 	openFlowModal(xhr?: HttpResponse<string>) {

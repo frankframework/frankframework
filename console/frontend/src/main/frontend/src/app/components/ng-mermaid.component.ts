@@ -46,7 +46,7 @@ export class NgMermaidComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if(this.initialized)
+    if (this.initialized)
       this.render();
   }
 
@@ -78,18 +78,25 @@ export class NgMermaidComponent implements OnInit, OnChanges {
             const svgElement = this.mermaidEl.nativeElement.firstChild as HTMLElement;
             svgElement.setAttribute('height', '100%');
             svgElement.setAttribute('style', "");
-          }).finally(() => {
-            this.nmInitCallback.emit();
-          });
-        } catch (e) {
-          if (e instanceof Error) {
-            e.message.split('\n').forEach((v) => {
-              this.mermaidEl.nativeElement.innerHTML = `<span>${v}</span><br/>`;
+          }).catch(e => { this.handleError(e) })
+            .finally(() => {
+              this.nmInitCallback.emit();
             });
-          }
+        } catch (e) {
+          this.handleError(e as Error);
         }
       }, this.initialized ? this.interval : 0);
     }
+  }
+
+  handleError(e: Error) {
+    let errorContainer = '';
+    errorContainer += `<div style="display: inline-block; text-align: left; color: red; margin: 8px auto; font-family: Monaco,Consolas,Liberation Mono,Courier New,monospace">`;
+    e.message.split('\n').forEach((v) => {
+      errorContainer += `<span>${v}</span><br/>`;
+    });
+    errorContainer += `</div>`;
+    this.mermaidEl.nativeElement.innerHTML += errorContainer;
   }
 
   cssReplace(cssRule: string) {
