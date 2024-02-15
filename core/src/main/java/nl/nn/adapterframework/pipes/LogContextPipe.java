@@ -23,6 +23,7 @@ import org.apache.logging.log4j.ThreadContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -43,13 +44,20 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author Gerrit van Brakel
  */
 @ElementType(ElementTypes.SESSION)
+@Log4j2
 public class LogContextPipe extends FixedForwardPipe {
 
-	/** 
-	 * If set <code>true</code> the ThreadContext parameters will be exported from the current PipeLine up in the call tree.
+	/**
+	 * If set to <code>true</code> the ThreadContext parameters will be exported from the current PipeLine up in the call tree.
 	 * @ff.default false
 	 */
 	private @Getter @Setter boolean export;
+
+	/**
+	 * If set {@code true} the pipe will never forward to the {@code ExceptionForward} even if an error occurred during execution.
+	 * @ff.default false
+	 */
+	private @Getter @Setter boolean continueOnError;
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
@@ -57,11 +65,20 @@ public class LogContextPipe extends FixedForwardPipe {
 			Map<String,String> values = new LinkedHashMap<>();
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
-				for(ParameterValue pv : pvl) {
+				for (ParameterValue pv : pvl) {
 					values.put(pv.getName(), pv.asStringValue());
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, "exception extracting parameters", e);
+				if (!continueOnError) {
+					throw new PipeRunException(this, "exception extracting value for parameter [" + e.getParameterName() + "]", e);
+				}
+				log.warn("Exception getting parameter values in parameter {}: {}", e.getParameterName(), e.getMessage(), e);
+				values.put(e.getParameterName(), e.getMessage());
+			} catch (Exception e) {
+				if (!continueOnError) {
+					throw new PipeRunException(this, "exception extracting parameters", e);
+				}
+				log.warn("Exception getting parameter values: {}. Ignoring.", e.getMessage(), e);
 			}
 			if (isExport()) {
 				ThreadContext.putAll(values);
