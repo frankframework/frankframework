@@ -1,28 +1,18 @@
 package org.frankframework.util;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import org.frankframework.filesystem.IFileHandler;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.provider.Arguments;
 
-@RunWith(value = Parameterized.class)
 public class FileHandlerTest extends FileHandlerTestBase {
-
-	@Parameterized.Parameter(0)
 	public Class<? extends IFileHandler> implementation;
 
-	@Parameterized.Parameters
-	public static Collection<Object[]> data() {
-		Object[][] data = new Object[][] { { FileHandlerWrapper.class }
-				// ,{LocalFileSystemHandler.class}
-		};
-		return Arrays.asList(data);
+	protected static Stream<Arguments> data() {
+		return Stream.of(
+				Arguments.of(FileHandlerWrapper.class)
+//				Arguments.of(LocalFileSystemHandler.class) // TODO: figure out what this class of the past should be; this one doesn't exist anymore
+		);
 	}
 
-	@Override
-	protected IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException {
-		return implementation.newInstance();
-	}
 }
