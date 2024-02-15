@@ -152,7 +152,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 						"Trying to remove [" + f.getName() + "] which is a directory instead of a file");
 			}
 		} catch (SmbException e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
 		}
 	}
 

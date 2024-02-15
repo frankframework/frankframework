@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -61,6 +62,7 @@ import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
@@ -74,6 +76,7 @@ import lombok.Getter;
 import lombok.Lombok;
 
 public class Message implements Serializable, Closeable {
+	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 512L * 1024L;
 	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
@@ -81,6 +84,8 @@ public class Message implements Serializable, Closeable {
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
 	private static final long serialVersionUID = 437863352486501445L;
+	private final transient Cleaner.Cleanable cleanable;
+	private final transient MessageNotClosedAction messageNotClosedAction;
 
 	private @Nullable Object request;
 	private @Getter @Nonnull String requestClass;
@@ -100,6 +105,9 @@ public class Message implements Serializable, Closeable {
 		}
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
+
+		messageNotClosedAction = new MessageNotClosedAction(this.toString());
+		cleanable = cleaner.register(this, messageNotClosedAction);
 	}
 
 	private Message(@Nonnull MessageContext context, Object request) {
@@ -185,6 +193,22 @@ public class Message implements Serializable, Closeable {
 	@Nonnull
 	public MessageContext copyContext() {
 		return new MessageContext(getContext());
+	}
+
+	private static class MessageNotClosedAction implements Runnable {
+		private boolean calledByClose = false;
+		private final String content;
+
+		private MessageNotClosedAction(String content) {
+			this.content = content;
+		}
+
+		@Override
+		public void run() {
+			if (!calledByClose) {
+				LOG.info("Leak detection: Message was not closed properly! Content: [{}]", content);
+			}
+		}
 	}
 
 	/**
@@ -355,6 +379,10 @@ public class Message implements Serializable, Closeable {
 
 	@Override
 	public void close() throws IOException {
+		if (messageNotClosedAction != null) {
+			messageNotClosedAction.calledByClose = true;
+			cleanable.clean();
+		}
 		try {
 			if (request instanceof AutoCloseable) {
 				try {
