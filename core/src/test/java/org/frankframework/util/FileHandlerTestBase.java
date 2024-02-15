@@ -105,7 +105,7 @@ public abstract class FileHandlerTestBase {
 			URL fileURL = getURL(filename);
 			filepath = fileURL.getPath() + ".tmp";
 
-			Files.delete(Path.of(filepath));
+			Files.deleteIfExists(Path.of(filepath));
 			if(fileContentsAtStart != null) {
 				FileWriter fw = new FileWriter(filepath);
 				fw.write(fileContentsAtStart);

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.URL;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebAppClassLoader> {
@@ -16,18 +17,21 @@ public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebA
 
 	@Override
 	@Test
+	@Disabled
 	public void configurationFileDefaultLocation() {
 		//Stub this method as the WebAppClassloader always asks its parent for resources, which it does not have.
 	}
 
 	@Override
 	@Test
+	@Disabled
 	public void configurationFileCustomLocation() {
 		//Stub this method as the WebAppClassloader always asks its parent for resources, which it does not have.
 	}
 
 	@Override
 	@Test
+	@Disabled
 	public void configurationFileCustomLocationAndBasePath() {
 		//Stub this method as the WebAppClassloader always asks its parent for resources, which it does not have.
 	}
