@@ -22,7 +22,7 @@ import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.pipes.XmlValidator;
-import org.frankframework.pipes.XmlValidatorTest;
+import org.frankframework.pipes.XmlValidatorPipelineTest;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlUtils;
@@ -255,7 +255,7 @@ public class WsdlTest {
 	}
 
 	protected XmlValidator getXmlValidatorInstance(String rootTag, String responseRootTag, String schema, String schemaLocation) throws Exception {
-		XmlValidator validator = XmlValidatorTest.getUnconfiguredValidator(schemaLocation, implementation);
+		XmlValidator validator = XmlValidatorPipelineTest.getUnconfiguredValidator(schemaLocation, implementation);
 		validator.setSchema(schema);
 		validator.setRoot(rootTag);
 		if (responseRootTag!=null) {

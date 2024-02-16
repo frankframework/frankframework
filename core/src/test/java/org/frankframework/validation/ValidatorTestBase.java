@@ -1,8 +1,8 @@
 package org.frankframework.validation;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.util.LogUtil;
@@ -32,7 +31,6 @@ public abstract class ValidatorTestBase {
 	public static final String MSG_CANNOT_FIND_DECLARATION="Cannot find the declaration of element";
 	public static final String MSG_UNKNOWN_NAMESPACE="Unknown namespace";
 	public static final String MSG_SCHEMA_NOT_FOUND="Cannot find";
-	public static final String MSG_CANNOT_RESOLVE="Cannot resolve the name";
 	public static final String MSG_IS_NOT_COMPLETE="is not complete";
 
 	public static final String BASE_DIR_VALIDATION="/Validation";
@@ -128,7 +126,7 @@ public abstract class ValidatorTestBase {
 		if (expectedFailureReasons == null) {
 			// expected valid XML
 			if (e != null) {
-				e.printStackTrace();
+				log.debug(e);
 				fail("expected XML to pass: "+e.getMessage());
 			}
 			if (result != ValidationResult.VALID) {
@@ -211,17 +209,17 @@ public abstract class ValidatorTestBase {
 			}
 
 			@Override
-			public String getSchemasId() throws ConfigurationException {
+			public String getSchemasId() {
 				return schemaLocation;
 			}
 
 			@Override
-			public String getSchemasId(PipeLineSession session) throws PipeRunException {
+			public String getSchemasId(PipeLineSession session) {
 				return null;
 			}
 
 			@Override
-			public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
+			public List<Schema> getSchemas(PipeLineSession session) {
 				return null;
 			}
 

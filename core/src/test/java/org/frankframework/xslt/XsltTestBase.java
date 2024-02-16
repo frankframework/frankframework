@@ -1,11 +1,9 @@
 package org.frankframework.xslt;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.Properties;
 
@@ -21,6 +19,7 @@ import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +40,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	protected abstract void setHandleLexicalEvents(boolean handleLexicalEvents);
 
 
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		session = new PipeLineSession();
@@ -126,7 +126,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		for (int i = 0; i < warnings.size(); i++) {
 			System.out.println(i + " " + warnings.get(i));
 		}
-		assertTrue(warnings.size()>0,"Expected at least one config warnings");
+		assertTrue(!warnings.isEmpty(), "Expected at least one config warnings");
 		int nextPos = 0;//warnings.size()>4?warnings.size()-2:1;
 		assertThat(warnings.get(nextPos), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
 		assertThat(warnings.get(nextPos), StringContains.containsString(styleSheetName));
@@ -186,52 +186,21 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	@Test
 	void documentIncludedInSourceRelativeXslt1() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupRelative1.xsl");
-		setXsltVersion(1);
-		setRemoveNamespaces(true);
-		setIndent(true);
-		pipe.configure();
-		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
-		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asString(prr.getResult());
-
-		assertResultsAreCorrect(expected, result, session);
+		runPipeAndValidate(1);
 	}
 
 	@Test
 	void documentIncludedInSourceRelativeXslt2() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupRelative2.xsl");
-		setXsltVersion(1);
-		setRemoveNamespaces(true);
-		setIndent(true);
-		pipe.configure();
-		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
-
-		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asString(prr.getResult());
-
-		assertResultsAreCorrect(expected, result, session);
+		runPipeAndValidate(1);
 	}
 
 	@Test
 	void documentIncludedInSourceRelativeWithDynamicStylesheetXslt1() throws Exception {
-		String stylesheetname="/Xslt/importDocument/importLookupRelative1.xsl";
-		session.put("Stylesheet", stylesheetname);
+		String stylesheetName="/Xslt/importDocument/importLookupRelative1.xsl";
+		session.put("Stylesheet", stylesheetName);
 		setStyleSheetNameSessionKey("Stylesheet");
-		setXsltVersion(1);
-		setRemoveNamespaces(true);
-		setIndent(true);
-		pipe.configure();
-		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
-		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asString(prr.getResult());
-
-		assertResultsAreCorrect(expected, result, session);
+		runPipeAndValidate(1);
 	}
 
 	@Test
@@ -239,23 +208,17 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		String stylesheetname="/Xslt/importDocument/importLookupRelative1.xsl";
 		session.put("Stylesheet", stylesheetname);
 		setStyleSheetNameSessionKey("Stylesheet");
-		setXsltVersion(2);
-		setRemoveNamespaces(true);
-		setIndent(true);
-		pipe.configure();
-		pipe.start();
-		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
-		String expected = TestFileUtils.getTestFile("/Xslt/importDocument/out.xml");
-		PipeRunResult prr = doPipe(pipe, input, session);
-		String result = Message.asString(prr.getResult());
-
-		assertResultsAreCorrect(expected, result, session);
+		runPipeAndValidate(2);
 	}
 
 	@Test
 	void documentIncludedInSourceAbsoluteXslt1() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupAbsolute1.xsl");
-		setXsltVersion(1);
+		runPipeAndValidate(1);
+	}
+
+	void runPipeAndValidate(final int xsltVersion) throws Exception {
+		setXsltVersion(xsltVersion);
 		setRemoveNamespaces(true);
 		setIndent(true);
 		pipe.configure();
@@ -404,7 +367,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		Properties prop = System.getProperties();
 		String vendor = prop.getProperty("java.vendor");
 		System.out.println("JVM Vendor : " + vendor);
-		assumeThat(vendor, not(equalTo("IBM Corporation"))); // comments are not properly processed in the IBM JDK
+		assumeFalse(vendor.equals("IBM Corporation")); // comments are not properly processed in the IBM JDK
 
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsText.txt");

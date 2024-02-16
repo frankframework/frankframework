@@ -15,10 +15,11 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.ClassLoaderUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
-public class StreamPipeTest extends PipeTestBase<StreamPipe> {
+class StreamPipeTest extends PipeTestBase<StreamPipe> {
 
 
 	@Override
@@ -27,6 +28,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		session = new PipeLineSession();

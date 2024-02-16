@@ -280,8 +280,12 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public void deleteFile(SmbFileRef f) {
-		diskShare.rm(f.getName());
+	public void deleteFile(SmbFileRef f) throws FileSystemException {
+		try {
+			diskShare.rm(f.getName());
+		} catch (SMBApiException e) {
+			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
+		}
 	}
 
 	@Override
@@ -525,7 +529,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 						FileAllInformation fileinfo = getAttributes(file);
 						file.setAttributes(fileinfo);
 
-						if (isFileAndAccessable(file) && allowHiddenFile(file)) {
+						if (isFileAndAccessible(file) && allowHiddenFile(file)) {
 							files.add(file);
 						}
 					} catch (SMBApiException e) {
@@ -539,7 +543,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 			}
 		}
 
-		private boolean isFileAndAccessable(SmbFileRef file) {
+		private boolean isFileAndAccessible(SmbFileRef file) {
 			FileStandardInformation fai = file.getAttributes().getStandardInformation();
 			boolean accessible = !fai.isDeletePending();
 			boolean isDirectory = fai.isDirectory();
@@ -567,7 +571,11 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		@Override
 		public void remove() {
 			SmbFileRef file = files.get(i++);
-			deleteFile(file);
+			try {
+				deleteFile(file);
+			} catch (FileSystemException e) {
+				log.warn("unable to remove file [{}]: {}", getCanonicalName(file), e.getMessage());
+			}
 		}
 	}
 
