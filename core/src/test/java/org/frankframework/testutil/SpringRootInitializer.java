@@ -7,8 +7,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * A minimal Spring ApplicationContext which contains no beans and no configuration.
  * Enables the use of
  * <pre>
- * @RunWith(SpringJUnit4ClassRunner.class)
- * @ContextConfiguration(initializers = {SpringRootInitializer.class})
+ * @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
  * </pre>
  * And
  * <pre>
