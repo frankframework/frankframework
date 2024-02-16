@@ -18,7 +18,7 @@
 
 		<jackson.version>2.16.1</jackson.version>
 		<cxf.version>3.6.2</cxf.version>
-		<spring.version>5.3.31</spring.version>
+		<spring.version>5.3.32</spring.version>
 		<spring-security.version>5.8.9</spring-security.version>
 		<spring-integration.version>5.5.20</spring-integration.version>
 
