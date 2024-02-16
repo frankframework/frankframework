@@ -16,12 +16,8 @@
 package org.frankframework.javascript;
 
 import java.lang.reflect.Field;
-
-import com.eclipsesource.v8.JavaCallback;
-import com.eclipsesource.v8.JavaVoidCallback;
-import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8Object;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -29,10 +25,18 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.flow.ResultHandler;
 
+import com.eclipsesource.v8.JavaCallback;
+import com.eclipsesource.v8.JavaVoidCallback;
+import com.eclipsesource.v8.V8;
+import com.eclipsesource.v8.V8Array;
+import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8Value;
+
 public class J2V8 implements JavascriptEngine<V8> {
 
 	private V8 v8;
 	private String alias = null;
+	private final List<V8Value> objectsToRelease = new ArrayList<>();
 
 	private static boolean j2v8LibraryLoaded = false;
 	private static final Object j2v8Lock = new Object();
@@ -82,7 +86,12 @@ public class J2V8 implements JavascriptEngine<V8> {
 	@Override
 	public Object executeFunction(String name, Object... parameters) throws JavascriptException {
 		try {
-			return v8.executeJSFunction(name, parameters);
+			Object result = v8.executeJSFunction(name, parameters);
+			if (result instanceof V8Value) {
+				V8Value v8Value = (V8Value) result;
+				objectsToRelease.add(v8Value);
+			}
+			return result;
 		} catch (Exception e) {
 			throw new JavascriptException("error executing function [" + name + "]", e);
 		}
@@ -90,6 +99,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 
 	@Override
 	public void closeRuntime() {
+		objectsToRelease.forEach(V8Value::release);
 		v8.release(true);
 	}
 
