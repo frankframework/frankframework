@@ -42,15 +42,20 @@ import lombok.Getter;
 
 /**
  * Sender used to run JavaScript code using J2V8
- *
+ * <p>
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
  * The sender doesn't accept nor uses the given input, instead for each argument for the {@link #jsFunctionName} method,
  * you will need to create a parameter on the sender.
- * It is recommended to have the result of the javascript function be of type String, as the output of the sender will be
- * of type String.
+ * </p>
+ * <p>
+ * The result of the javascript function should be of type String, or directly convertible to String from a primitive type
+ * or an array of primitive types / strings, as the output of the sender will be of type String.
+ * </p>
+ * <p>
+ * Failure to ensure the output is a string may mean the result will look like {@code [Object object]}.
+ * </p>
  *
- * @author Jarno Huibers
  * @since 7.4
  */
 

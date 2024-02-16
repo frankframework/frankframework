@@ -88,8 +88,8 @@ public class J2V8 implements JavascriptEngine<V8> {
 		try {
 			Object result = v8.executeJSFunction(name, parameters);
 			if (result instanceof V8Value) {
-				V8Value v8o = (V8Value) result;
-				objectsToRelease.add(v8o);
+				V8Value v8Value = (V8Value) result;
+				objectsToRelease.add(v8Value);
 			}
 			return result;
 		} catch (Exception e) {

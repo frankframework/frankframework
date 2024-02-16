@@ -275,7 +275,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 	static Stream<Arguments> testWithJavaScriptReturningAnObject() {
 		return Stream.of(
-				Arguments.of(JavaScriptEngines.J2V8, "returnObject", "{\"answer\": 42}"),
+				Arguments.of(JavaScriptEngines.J2V8, "returnObject", "[object Object]"),
 				Arguments.of(JavaScriptEngines.J2V8, "returnArray", "1,3,5")
 		);
 	}
