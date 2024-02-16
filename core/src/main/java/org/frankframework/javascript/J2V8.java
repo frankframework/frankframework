@@ -100,6 +100,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 	@Override
 	public void closeRuntime() {
 		objectsToRelease.forEach(V8Value::release);
+		objectsToRelease.clear();
 		v8.release(true);
 	}
 
