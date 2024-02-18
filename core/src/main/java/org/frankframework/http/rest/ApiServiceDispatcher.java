@@ -135,7 +135,7 @@ public class ApiServiceDispatcher {
 	 *         <li>A request {@code OPTIONS /user/usr123/department/dept456} would return the {@link ApiDispatchConfig} for /user/{userId}/department/{departmentId} containing ApiListener2</li>
 	 *         <li>A request {@code GET /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/** containing ApiListener1</li>
 	 *         <li>A request {@code POST /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/{userId}/avatar containing ApiListener3</li>
-	 *         <li>A request {@code PUT /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/{userId}/avatar containing ApiListener3</li>
+	 *         <li>A request {@code PUT /user/usr123/avatar} (method PUT has not been configured!) would return the {@link ApiDispatchConfig} for /user/{userId}/avatar containing ApiListener3. Error handling can then be specific about the URL hit not supporting this method.</li>
 	 *     </lu>
 	 * </p>
 	 *
