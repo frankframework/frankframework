@@ -17,18 +17,13 @@ package org.frankframework.receivers;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import javax.annotation.Nonnull;
 import javax.jms.Message;
 
 import org.frankframework.core.IPullingListener;
-import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock.TextMessageMock;
 
 public class SlowPullingListener extends SlowListenerBase implements IPullingListener<javax.jms.Message> {
-
-	private final BlockingQueue<String> value = new ArrayBlockingQueue<>(5);
 
 	@Nonnull
 	@Override
@@ -43,24 +38,6 @@ public class SlowPullingListener extends SlowListenerBase implements IPullingLis
 
 	@Override
 	public RawMessageWrapper<Message> getRawMessage(@Nonnull Map<String, Object> threadContext) {
-		String message = value.poll();
-		if(message != null) {
-			if(message.equals("getRawMessageException")) {
-				throw new RuntimeException(message);
-			}
-			TextMessageMock mock = TextMessageMock.newInstance();
-			mock.setText(message);
-			return new RawMessageWrapper<>(mock);
-		}
 		return null;
-	}
-
-	/**
-	 * If text equals <code>getRawMessageException</code> it throws an exception during the availability check.
-	 * If text equals <code>extractMessageException</code> it throws an exception during unwrapping.
-	 * If text equals <code>processMessageException</code> it throws an exception during message processing (in adapter).
-	 */
-	public void offerMessage(String text) {
-		value.add(text);
 	}
 }
