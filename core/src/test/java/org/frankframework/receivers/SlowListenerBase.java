@@ -18,10 +18,12 @@ package org.frankframework.receivers;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.jms.JMSException;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -51,8 +53,19 @@ public abstract class SlowListenerBase implements IListener<javax.jms.Message> {
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<javax.jms.Message> rawMessage, @Nonnull Map<String, Object> context) {
-		return Message.asMessage(rawMessage.getRawMessage());
+	public Message extractMessage(@Nonnull RawMessageWrapper<javax.jms.Message> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		if(rawMessage.getRawMessage() instanceof javax.jms.TextMessage) {
+			try {
+				String text = ((javax.jms.TextMessage) rawMessage.getRawMessage()).getText();
+				if(text.equals("extractMessageException")) {
+					throw new ListenerException(text);
+				}
+				return Message.asMessage(text);
+			} catch (JMSException e) {
+				throw new ListenerException(e);
+			}
+		}
+		return Message.asMessage(rawMessage.getRawMessage()); // No dummy implementations yet, but just in case
 	}
 
 	@Override

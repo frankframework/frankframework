@@ -170,5 +170,10 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		public Enumeration<String> getPropertyNames() throws JMSException {
 			return Collections.emptyEnumeration();
 		}
+
+		@Override
+		public String toString() {
+			return "JMS TextMessage ["+text+"]";
+		}
 	}
 }

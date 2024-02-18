@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentCaptor.forClass;
@@ -66,6 +67,7 @@ import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IListenerConnector;
 import org.frankframework.core.ITransactionalStorage;
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
@@ -80,6 +82,7 @@ import org.frankframework.jms.PushingJmsListener;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.management.IbisAction;
 import org.frankframework.pipes.EchoPipe;
+import org.frankframework.receivers.Receiver.OnError;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.TestAppender;
@@ -94,6 +97,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
@@ -121,6 +125,7 @@ public class ReceiverTest {
 
 	@AfterEach
 	void tearDown() {
+		LOG.info("!> tearing down test");
 		if (configuration != null) {
 			configuration.stop();
 			configuration.close();
@@ -135,7 +140,7 @@ public class ReceiverTest {
 		}
 	}
 
-	public SlowListenerBase setupSlowStartPullingListener(int startupDelay) {
+	public SlowPullingListener setupSlowStartPullingListener(int startupDelay) {
 		return createSlowListener(SlowPullingListener.class, startupDelay, 0);
 	}
 
@@ -264,7 +269,7 @@ public class ReceiverTest {
 
 		configuration.stop();
 		configuration.getBean("adapterManager", AdapterManager.class).close();
-		LOG.info("!Configuration Context for [{}] has been created.", txManagerType);
+		LOG.info("!> Configuration Context for [{}] has been created.", txManagerType);
 		return configuration;
 	}
 
@@ -1035,7 +1040,7 @@ public class ReceiverTest {
 	}
 
 	@Test
-	public void startReceiver() throws Exception {
+	public void startAndStopReceiver() throws Exception {
 		configuration = buildConfiguration(null);
 		Receiver<javax.jms.Message> receiver = setupReceiver(setupSlowStartPullingListener(10_000));
 		receiver.setStartTimeout(1);
@@ -1127,5 +1132,114 @@ public class ReceiverTest {
 
 		// Assert
 		assertEquals(result, message);
+	}
+
+	private Receiver<javax.jms.Message> startReceiver(IListener listener) throws Exception {
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter(receiver);
+		doAnswer(invocation -> {
+			Message m = invocation.getArgument(1);
+			if(m.asString().equals("processMessageException")) {
+				throw new ListenerException(m.asString());
+			}
+			return invocation.callRealMethod();
+		}).when(adapter).processMessageWithExceptions(anyString(), any(Message.class), any(PipeLineSession.class));
+
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		LOG.info("Adapter RunState "+adapter.getRunState());
+		assertEquals(RunState.STARTED, adapter.getRunState());
+
+		waitWhileInState(receiver, RunState.STOPPED); //Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
+		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
+		LOG.info("Receiver RunState "+receiver.getRunState());
+
+		assertEquals(RunState.STARTED, receiver.getRunState());
+		LOG.info("!> started the receiver, lets do some testing!");
+		return receiver;
+	}
+
+	@Test
+	public void testNormalOperation() throws Exception {
+		configuration = buildConfiguration(TransactionManagerType.DATASOURCE);
+		SlowPullingListener listener = setupSlowStartPullingListener(0);
+		Receiver<javax.jms.Message> receiver = startReceiver(listener);
+
+		// Act
+		listener.offerMessage("Test Message");
+		await()
+			.atMost(30, TimeUnit.SECONDS)
+			.pollInterval(100, TimeUnit.MILLISECONDS)
+			.until(() -> receiver.getMessagesReceived() > 0);
+		assertNotEquals(0, receiver.getLastMessageDate()); // Make sure we've processed a message
+
+		// Assert the receiver is still in state started and has processed a message
+		assertEquals(RunState.STARTED, receiver.getRunState());
+		assertEquals(1, receiver.getMessagesReceived());
+		assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"getRawMessageException, Receiver [receiver] caught Exception retrieving message, will continue retrieving messages",
+		"extractMessageException, Receiver [receiver] caught Exception processing message, will continue processing next message",
+		"processMessageException, Receiver [receiver] Exception in message processing"
+	})
+	public void testExceptionWithOnErrorContinue(final String message, final String logMessage) throws Exception {
+		configuration = buildConfiguration(TransactionManagerType.DATASOURCE);
+		SlowPullingListener listener = setupSlowStartPullingListener(0);
+		Receiver<javax.jms.Message> receiver = startReceiver(listener);
+		receiver.setOnError(OnError.CONTINUE); //Luckily we can change this runtime...
+
+		appender = TestAppender.newBuilder().build();
+		TestAppender.addToRootLogger(appender);
+
+		// Act
+		listener.offerMessage(message);
+		await()
+			.atMost(30, TimeUnit.SECONDS)
+			.pollInterval(100, TimeUnit.MILLISECONDS)
+			.until(() -> appender.contains(logMessage));
+
+		// Assert the Receiver state
+		assertEquals(RunState.STARTED, receiver.getRunState());
+		assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"getRawMessageException, Receiver [receiver] exception occurred while retrieving message, stopping receiver",
+		"extractMessageException, Receiver [receiver] caught Exception processing message",
+		"processMessageException, Receiver [receiver] exception occurred while processing message, stopping receiver"
+	})
+	public void testExceptionWithOnErrorClose(final String message, final String logMessage) throws Exception {
+		configuration = buildConfiguration(TransactionManagerType.DATASOURCE);
+		SlowPullingListener listener = setupSlowStartPullingListener(0);
+		Receiver<javax.jms.Message> receiver = startReceiver(listener);
+		receiver.setOnError(OnError.CLOSE); //Luckily we can change this runtime...
+
+		appender = TestAppender.newBuilder().build();
+		TestAppender.addToRootLogger(appender);
+
+		// Act
+		listener.offerMessage(message);
+		await()
+			.atMost(30, TimeUnit.SECONDS)
+			.pollInterval(100, TimeUnit.MILLISECONDS)
+			.until(() -> appender.contains(logMessage));
+
+		// Assert the Receiver state
+		waitWhileInState(receiver, RunState.STARTED);
+		waitForState(receiver, RunState.STOPPING, RunState.STOPPED);
+		assertEquals(RunState.STOPPED, receiver.getRunState());
 	}
 }
