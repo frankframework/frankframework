@@ -353,6 +353,21 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testStringAsStaticByteArray() throws Exception {
+		Object source = testString;
+		byte[] byteArray = Message.asByteArray(source);
+		assertEquals(byteArray.length, testString.getBytes().length, "lengths differ");
+	}
+
+	@Test
+	public void testByteArrayAsStaticByteArray() throws Exception {
+		Object source = testString.getBytes();
+		byte[] byteArray = Message.asByteArray(source);
+		assertEquals(byteArray.length, testString.getBytes().length, "lengths differ");
+		assertEquals(testString, new String(byteArray), "content differ");
+	}
+
+	@Test
 	public void testReaderAsString() throws Exception {
 		StringReader source = new StringReader(testString);
 		adapter = new Message(source);

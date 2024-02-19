@@ -200,13 +200,13 @@ public class Message implements Serializable, Closeable {
 		private final String content;
 
 		private MessageNotClosedAction(String content) {
-			this.content = content;
+			this.content = StringUtils.substring(content, 0, 80);
 		}
 
 		@Override
 		public void run() {
 			if (!calledByClose) {
-				LOG.info("Leak detection: Message was not closed properly! Content: [{}]", () -> StringUtils.substring(content, 0, 80));
+				LOG.info("Leak detection: Message was not closed properly! Content: [{}]", content);
 			}
 		}
 	}
@@ -886,6 +886,9 @@ public class Message implements Serializable, Closeable {
 		}
 		if (object instanceof byte[]) {
 			return (byte[]) object;
+		}
+		if (object instanceof String) {
+			return ((String) object).getBytes();
 		}
 		if (object instanceof Message) {
 			return ((Message) object).asByteArray();
