@@ -40,8 +40,6 @@ import java.io.InputStream;
 public class FileViewer extends BusEndpointBase {
 
 	public static final String permissionRules = AppConstants.getInstance().getProperty("FileViewer.permission.rules");
-	@Deprecated
-	public static final String oldPermissionRules = AppConstants.getInstance().getProperty("FileViewerServlet.permission.rules");
 
 	@ActionSelector(BusAction.GET)
 	public Message<?> getFileContent(Message<?> message) {
@@ -51,7 +49,7 @@ public class FileViewer extends BusEndpointBase {
 
 		if (fileName == null || resultType == null) {
 			throw new BusException("fileName or type not specified");
-		} else if (!FileUtils.readAllowed(permissionRules, fileName, BusMessageUtils::hasRole) || !FileUtils.readAllowed(oldPermissionRules, fileName, BusMessageUtils::hasRole)) {
+		} else if (!FileUtils.readAllowed(permissionRules, fileName, BusMessageUtils::hasRole)) {
 			throw new BusException("not allowed", 403);
 		}
 
