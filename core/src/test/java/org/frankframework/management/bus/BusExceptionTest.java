@@ -2,36 +2,31 @@ package org.frankframework.management.bus;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Level;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runners.Parameterized.Parameters;
 
-public class BusExceptionTest {
+class BusExceptionTest {
 
 	private static final String BUS_EXCEPTION_MESSAGE = "outer exception";
 
-	public String expectedLogMessage;
-	public Level expectedLogLevel;
-	public Exception innerException;
-
-	@Parameters(name= "{0}")
-	public static List<?> data() {
-		return Arrays.asList(new Object[][] {
-			{"", Level.WARN, null},
-			{": cannot configure", Level.ERROR, new ConfigurationException("cannot configure")},
-			{": cannot configure: (IllegalStateException) something is wrong", Level.ERROR, new ConfigurationException("cannot configure", new IllegalStateException("something is wrong"))},
-		});
+	private static Stream<Arguments> data() {
+		return Stream.of(
+				Arguments.of("", Level.WARN, null),
+				Arguments.of(": cannot configure", Level.ERROR, new ConfigurationException("cannot configure")),
+				Arguments.of(": cannot configure: (IllegalStateException) something is wrong", Level.ERROR, new ConfigurationException("cannot configure", new IllegalStateException("something is wrong")))
+		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("data")
-	public void testExceptionMessage(String expectedLogMessage, Level expectedLogLevel, Exception innerException) {
+	void testExceptionMessage(String expectedLogMessage, Level expectedLogLevel, Exception innerException) {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m - %throwable{1}").build(); //only log the first line of the exception
 		TestAppender.addToRootLogger(appender);
 		try {

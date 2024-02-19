@@ -6,12 +6,14 @@ import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.PipeForward;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ForwardHandlingTest extends ConfiguredTestBase {
+class ForwardHandlingTest extends ConfiguredTestBase {
 
 
 	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		ApplicationWarnings.removeInstance();

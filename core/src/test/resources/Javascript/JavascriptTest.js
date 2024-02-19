@@ -55,3 +55,11 @@ function promise() {
 		result(v);
 	});
 }
+
+function returnObject() {
+	return JSON.parse("{\"answer\": 42}");
+}
+
+function returnArray() {
+	return [1, 3, 5];
+}

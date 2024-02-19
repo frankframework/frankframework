@@ -16,7 +16,6 @@ import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,9 +76,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	protected void checkTestAppender(int expectedSize, String expectedString) {
-		System.out.println("Log Appender:"+testAppender.toString());
+		log.debug("Log Appender: {}", testAppender);
 		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(expectedSize));
-		if (expectedString!=null) assertThat(testAppender.toString(),containsString(expectedString));
+		if (expectedString != null) assertThat(testAppender.toString(), containsString(expectedString));
 	}
 
 	// detect duplicate imports in configure()
@@ -140,8 +139,6 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
-		} catch (AssumptionViolatedException e) {
-			throw e;
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
@@ -166,8 +163,6 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
-		} catch (AssumptionViolatedException e) {
-			throw e;
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
