@@ -39,6 +39,8 @@ import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class ApiListenerTest {
 
@@ -269,6 +271,29 @@ public class ApiListenerTest {
 
 		// Expect/When
 		assertThrows(ConfigurationException.class, listener::configure, "uriPattern cannot be empty");
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"/good/pat/*, true",
+			"/good/pat/**, true",
+			"/good/pat/*/friet, true",
+			"/bad/pat/a*, false",
+			"/bad/pat/a**, false",
+			"/bad/pat/***, false",
+			"/bad/pat/a*/friet, false",
+			"/bad/pat/*t, false",
+			"/bad/pat/*t/friet, false",
+			"/bad/pat/**/friet, false",
+			"/bad/pat/**/friet/**, false",
+	})
+	public void testUriPatternValidation(String uriPattern, boolean expected) {
+		// Act
+		boolean isValid = ApiListener.isValidUriPattern(uriPattern);
+
+		// Assert
+		assertEquals(expected, isValid, "URI Pattern [" + uriPattern + "] should have been " + (expected ? "" : "in")
+				+ "valid but was matched as " + (isValid ? "" : "in") + "valid.");
 	}
 
 	@Test

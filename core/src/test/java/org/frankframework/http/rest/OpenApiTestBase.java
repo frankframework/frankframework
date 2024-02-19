@@ -155,8 +155,8 @@ public class OpenApiTestBase extends Mockito {
 		private ApiListener listener;
 		private Json2XmlValidator inputValidator;
 		private Json2XmlValidator outputValidator;
-		private Adapter adapter;
-		private List<PipeLineExit> exits = new ArrayList<>();
+		private final Adapter adapter;
+		private final List<PipeLineExit> exits = new ArrayList<>();
 
 //		public static AdapterBuilder create(String name, String description) {
 //			return new AdapterBuilder(name, description);
