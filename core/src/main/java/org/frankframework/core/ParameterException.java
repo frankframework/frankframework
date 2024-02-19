@@ -15,6 +15,8 @@
 */
 package org.frankframework.core;
 
+import lombok.Getter;
+
 /**
  * Exception thrown by the ISender (implementation) to notify
  * that the sending did not succeed.
@@ -22,17 +24,22 @@ package org.frankframework.core;
  * @author  Gerrit van Brakel
  */
 public class ParameterException extends IbisException {
+	private final @Getter String parameterName;
 
-	public ParameterException() {
+	public ParameterException(String parameterName) {
 		super();
+		this.parameterName = parameterName;
 	}
-	public ParameterException(String errMsg) {
+	public ParameterException(String parameterName, String errMsg) {
 		super(errMsg);
+		this.parameterName = parameterName;
 	}
-	public ParameterException(String errMsg, Throwable t) {
+	public ParameterException(String parameterName, String errMsg, Throwable t) {
 		super(errMsg, t);
+		this.parameterName = parameterName;
 	}
-	public ParameterException(Throwable t) {
+	public ParameterException(String parameterName, Throwable t) {
 		super(t);
+		this.parameterName = parameterName;
 	}
 }

@@ -7,8 +7,8 @@ import static org.mockito.Mockito.spy;
 
 import java.util.Map;
 
+import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
@@ -22,15 +22,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(initializers = {SpringRootInitializer.class})
-public class ServletAuthenticatorTest {
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+class ServletAuthenticatorTest {
 
 	@Autowired
 	public ApplicationContext applicationContext;
@@ -58,7 +54,7 @@ public class ServletAuthenticatorTest {
 	}
 
 	@Test
-	public void testMultilineUrl() throws Exception {
+	void testMultilineUrl() {
 		// Arrange
 		DummyAuthenticator authenticator = new DummyAuthenticator();
 

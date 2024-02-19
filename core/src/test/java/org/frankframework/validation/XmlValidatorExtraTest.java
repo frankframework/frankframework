@@ -1,8 +1,8 @@
 package org.frankframework.validation;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,24 +12,16 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.pipes.XmlValidator;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
-
-	private String xsdLocation;
-	private String xmlLocation;
-	private String expectedOutcome;
-	private String xmlSchemaVersion;
 
 	@Override
 	public XmlValidator createPipe() {
 		return new XmlValidator();
 	}
 
-	@Parameterized.Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		// The order for the arrays should be as follows:
 		// Test Name, XSD location, XML location, expected outcome, XSD version.
@@ -52,15 +44,10 @@ public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
 			{ "Test Year 0000", 		"/Validation/Xsd1.1/Year0000/dateTime.xsd", 				"/Validation/Xsd1.1/Year0000/in_OK.xml", "success", "1.1" }, });
 	}
 
-	public XmlValidatorExtraTest(String testName, String xsdLocation, String xmlLocation, String expectedOutcome, String xmlSchemaVersion) {
-		this.xsdLocation = xsdLocation;
-		this.xmlLocation = xmlLocation;
-		this.expectedOutcome = expectedOutcome;
-		this.xmlSchemaVersion = xmlSchemaVersion;
-	}
 
-	@Test
-	public void testValidator() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testValidator(String testName, String xsdLocation, String xmlLocation, String expectedOutcome, String xmlSchemaVersion) throws Exception {
 		// Set properties for the pipe.
 		pipe.setSchema(xsdLocation);
 		pipe.setThrowException(true);
@@ -73,7 +60,7 @@ public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
 		} catch (Exception e) {
 			// If there are configuration exceptions st. having minVersion="1.1" on schema when running on XSD 1.0
 			// exceptions will be thrown here.
-			e.printStackTrace();
+			log.debug(e);
 			assertEquals("configurationException", expectedOutcome);
 			return;
 		}
@@ -92,8 +79,8 @@ public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
 
 			// Make sure the full stack trace is printed for easy debugging.
 			// Check if the error is the same type we were expecting.
-			e.printStackTrace();
-			Class expectedError = Class.forName(expectedOutcome);
+			log.debug(e);
+			Class<?> expectedError = Class.forName(expectedOutcome);
 			assertThat(e, instanceOf(expectedError));
 		}
 	}

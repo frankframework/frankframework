@@ -3,61 +3,67 @@ package org.frankframework.validation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.xerces.xni.XNIException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeStartException;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * @author Gerrit van Brakel / Michiel Meeuwissen
  */
 public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 
-	@Test
-	public void straighforward() throws Exception {
+	protected Class<? extends AbstractXmlValidator> implementation;
+
+	@ParameterizedTest
+	@MethodSource("data")
+	public void straightforward(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, false, INPUT_FILE_BASIC_A_OK, null);
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, false, INPUT_FILE_BASIC_A_ERR, MSG_INVALID_CONTENT);
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, false, INPUT_FILE_BASIC_A_OK, MSG_CANNOT_FIND_DECLARATION);
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, false, INPUT_FILE_BASIC_A_ERR, MSG_CANNOT_FIND_DECLARATION);
 	}
 
-//    @Test
-//    public void straighforwardInEnvelope() throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
-//    	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,null);
-//    	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_OK,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_INVALID_CONTENT);
-//    	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_OK_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
-//    	validation("A",ROOT_NAMESPACE_BASIC,SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE,INPUT_FILE_BASIC_A_ERR_IN_ENVELOPE,false,MSG_CANNOT_FIND_DECLARATION);
-//    }
-
-	@Test
-	public void addTargetNamespaceNoop() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void addTargetNamespaceNoop(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, true, INPUT_FILE_BASIC_A_OK, null);
 	}
 	public void addTargetNamespaceNoopWithErrors() throws Exception {
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, true, INPUT_FILE_BASIC_A_ERR, MSG_INVALID_CONTENT);
 	}
 
-
-	@Test
-	public void addNamespaceToSchema() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void addNamespaceToSchema(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, true, INPUT_FILE_BASIC_A_OK, null);
 	}
 
-	@Test
-	public void addNamespaceToSchemaWithErrors() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void addNamespaceToSchemaWithErrors(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, true, INPUT_FILE_BASIC_A_ERR, MSG_INVALID_CONTENT);
 	}
 
-	@Test
-	public void addNamespaceToSchemaNamespaceMismatch() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void addNamespaceToSchemaNamespaceMismatch(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH, true, INPUT_FILE_BASIC_A_OK, MSG_CANNOT_FIND_DECLARATION);
 	}
 
-	@Test
-	public void missingMandatoryElement() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void missingMandatoryElement(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
 		validate(ROOT_NAMESPACE_GPBDB, SCHEMA_LOCATION_SOAP_ENVELOPE, INPUT_FILE_GPBDB_NOBODY, MSG_IS_NOT_COMPLETE);
 	}
 
@@ -65,13 +71,17 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 		return "Content is not allowed in prolog";
 	}
 
-	@Test
-	public void validatePlainText() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void validatePlainText(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
 		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, INPUT_FILE_BASIC_PLAIN_TEXT, getExpectedErrorForPlainText());
 	}
 
-    @Test
-    public void step5() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void step5(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
         validate(ROOT_NAMESPACE_GPBDB,
         		SCHEMA_LOCATION_SOAP_ENVELOPE+" "+
         		SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
@@ -82,9 +92,11 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 				INPUT_FILE_GPBDB_OK);
     }
 
-    @Test
-    @Ignore("Fails for XmlValidatorBaseXerces26 Hard to fix....")
-    public void step5MissingNamespace() {
+	@ParameterizedTest
+	@MethodSource("data")
+    @Disabled("Fails for XmlValidatorBaseXerces26 Hard to fix....")
+    public void step5MissingNamespace(Class<? extends AbstractXmlValidator> implementation) {
+		this.implementation = implementation;
 		try {
 			validate(ROOT_NAMESPACE_GPBDB,
 					SCHEMA_LOCATION_SOAP_ENVELOPE+" "+
@@ -103,8 +115,10 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 		}
 	}
 
-    @Test
-    public void step5WrongOrderOfSchemaLocations() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+    public void step5WrongOrderOfSchemaLocations(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
         validate(ROOT_NAMESPACE_GPBDB,
         		SCHEMA_LOCATION_SOAP_ENVELOPE+" "+
                 SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
@@ -115,8 +129,10 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 				INPUT_FILE_GPBDB_OK);
     }
 
-    @Test
-    public void unresolvableSchema() throws Exception {
+    @ParameterizedTest
+	@MethodSource("data")
+    public void unresolvableSchema(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
     	try {
     		validate(ROOT_NAMESPACE_GPBDB, "http://www.ing.com/BESTAATNIET /Bestaatniet.xsd ",null,MSG_SCHEMA_NOT_FOUND);
     	} catch (ConfigurationException e) {
@@ -124,8 +140,10 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
     	}
     }
 
-    @Test // step4errorr1.xml uses the namespace xmlns="http://www.ing.com/BESTAATNIET
-    public void step5ValidationErrorUnknownNamespace() throws Exception {
+	@ParameterizedTest // step4errorr1.xml uses the namespace xmlns="http://www.ing.com/BESTAATNIET
+	@MethodSource("data")
+    public void step5ValidationErrorUnknownNamespace(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
         validateIgnoreUnknownNamespacesOff(ROOT_NAMESPACE_GPBDB,
         		SCHEMA_LOCATION_SOAP_ENVELOPE+" "+
                 SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
@@ -135,37 +153,44 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 				INPUT_FILE_GPBDB_ERR1,MSG_UNKNOWN_NAMESPACE);
     }
 
-    @Test
-    public void validationUnknownNamespaceSwitchedOff() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+    public void validationUnknownNamespaceSwitchedOff(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
     	validateIgnoreUnknownNamespacesOff(ROOT_NAMESPACE_GPBDB,
         		SCHEMA_LOCATION_SOAP_ENVELOPE, // every other namespace is thus unknown
 				INPUT_FILE_GPBDB_ERR1,MSG_UNKNOWN_NAMESPACE);
     }
 
-    @Test
-    public void validationUnknownNamespaceSwitchedOn() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+    public void validationUnknownNamespaceSwitchedOn(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
     	validateIgnoreUnknownNamespacesOn(ROOT_NAMESPACE_GPBDB,
     			SCHEMA_LOCATION_SOAP_ENVELOPE, // every other namespace is thus unknown
 				INPUT_FILE_GPBDB_ERR1,null);
     }
 
-    @Test
-    public void step5ValidationErrorUnknownTag() throws Exception {
-    	String expectedFailureReasons[]={MSG_CANNOT_FIND_DECLARATION,MSG_INVALID_CONTENT};
-        validate(ROOT_NAMESPACE_GPBDB,
-        		SCHEMA_LOCATION_SOAP_ENVELOPE+" "+
-           		SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
-				SCHEMA_LOCATION_GPBDB_GPBDB+" "+
-				SCHEMA_LOCATION_GPBDB_REQUEST+" "+
-				SCHEMA_LOCATION_GPBDB_RESPONSE,
-				INPUT_FILE_GPBDB_ERR2,expectedFailureReasons);
-    }
+	@ParameterizedTest
+	@MethodSource("data")
+	public void step5ValidationErrorUnknownTag(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
+		String[] expectedFailureReasons = {MSG_CANNOT_FIND_DECLARATION, MSG_INVALID_CONTENT};
+		validate(ROOT_NAMESPACE_GPBDB,
+				SCHEMA_LOCATION_SOAP_ENVELOPE + " " +
+						SCHEMA_LOCATION_GPBDB_MESSAGE + " " +
+						SCHEMA_LOCATION_GPBDB_GPBDB + " " +
+						SCHEMA_LOCATION_GPBDB_REQUEST + " " +
+						SCHEMA_LOCATION_GPBDB_RESPONSE,
+				INPUT_FILE_GPBDB_ERR2,
+				expectedFailureReasons);
+	}
 
-    @Test
-    public void step5ValidationUnknownNamespaces() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+    public void step5ValidationUnknownNamespaces(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		this.implementation = implementation;
         validate(ROOT_NAMESPACE_GPBDB,SCHEMA_LOCATION_SOAP_ENVELOPE, INPUT_FILE_GPBDB_OK,MSG_UNKNOWN_NAMESPACE);
     }
-
-
 
 }

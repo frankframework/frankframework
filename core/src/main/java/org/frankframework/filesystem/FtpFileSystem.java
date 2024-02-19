@@ -157,7 +157,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		try {
 			ftpClient.deleteFile(getCanonicalName(f));
 		} catch (IOException e) {
-			throw new FileSystemException(e);
+			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
 		}
 	}
 
@@ -380,7 +380,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to remove file ["+getCanonicalName(file)+"]", e);
+				log.warn("unable to remove file [{}]: {}", getCanonicalName(file), e.getMessage());
 			}
 		}
 	}

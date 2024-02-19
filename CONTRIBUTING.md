@@ -113,7 +113,7 @@ If you are developing under Windows, you can do the following to set this up:
 
 ## Developing with Eclipse
 
-You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/frankframework/frank-runner). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
+You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/wearefrank/frank-runner). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
 
 ### Install Eclipse
 

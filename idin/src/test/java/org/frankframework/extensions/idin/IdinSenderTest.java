@@ -15,9 +15,14 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.TimeoutException;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassLoaderUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
@@ -25,17 +30,10 @@ import net.bankid.merchant.library.Communicator;
 import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.DirectoryResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassLoaderUtils;
 
 /**
  * Initially I thought, hey lets add some unittests...
- * Lets just skip them for now shall we? :)
- *
- * PS: Requires java 1.7 to compile/run!
+ * Let's just skip them for now shall we? :)
  *
  */
 public class IdinSenderTest extends Mockito {
@@ -74,7 +72,7 @@ public class IdinSenderTest extends Mockito {
 		}
 	}
 
-	@Before
+	@BeforeEach
 	public void initializeIdinSender() throws ParserConfigurationException, SAXException, IOException {
 		URL expectedUrl = ClassLoaderUtils.getResourceURL("bankid-config.xml");
 		Configuration.defaultInstance().Load(expectedUrl.openStream());
@@ -93,7 +91,7 @@ public class IdinSenderTest extends Mockito {
 		sender.setAction("DIRECTORY");
 	}
 
-	@Ignore
+	@Disabled
 	@Test
 	public void randomMessage() throws SenderException, TimeoutException, IOException {
 		String message = "<test><woop>1</woop></test>";
@@ -102,7 +100,7 @@ public class IdinSenderTest extends Mockito {
 		//TODO compare
 	}
 
-	@Ignore
+	@Disabled
 	@Test
 	public void normal() throws SenderException, TimeoutException, IOException {
 		String message = "<idin/>";
@@ -111,7 +109,7 @@ public class IdinSenderTest extends Mockito {
 		//TODO assertEquals("result", result);
 	}
 
-	@Ignore
+	@Disabled
 	@Test
 	public void issuersByCountry() throws SenderException, TimeoutException, IOException {
 		String message = "<idin><issuersByCountry>true</issuersByCountry></idin>";

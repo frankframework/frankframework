@@ -2,12 +2,11 @@ package org.frankframework.validation;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.frankframework.configuration.ConfigurationException;
@@ -24,30 +23,29 @@ import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * @author Gerrit van Brakel
  */
-@RunWith(value = Parameterized.class)
 public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
-	private Class<? extends AbstractXmlValidator> implementation;
 	private AbstractXmlValidator validator;
 
 	Json2XmlValidator instance;
 	JsonPipe jsonPipe;
 
-	@Parameterized.Parameters
-	public static Collection<Object[]> data() {
-		Object[][] data = new Object[][] { { XercesXmlValidator.class }, { JavaxXmlValidator.class } };
-		return Arrays.asList(data);
+	protected static Stream<Arguments> data() {
+		return Stream.of(
+				Arguments.of(XercesXmlValidator.class),
+				Arguments.of(JavaxXmlValidator.class)
+		);
 	}
 
-	public Json2XmlValidatorTest(Class<? extends AbstractXmlValidator> implementation) {
+	public void initJson2XmlValidatorTest(Class<? extends AbstractXmlValidator> implementation) {
 		this.implementation = implementation;
 	}
 
@@ -156,39 +154,58 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		return "Message is not XML or JSON";
 	}
 
-	@Test
-	public void jsonStructs() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void jsonStructs(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		initJson2XmlValidatorTest(implementation);
 		validate(null, SCHEMA_LOCATION_ARRAYS, true, INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON, null);
 		validate(null, SCHEMA_LOCATION_ARRAYS, true, INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON, null);
 	}
 
 	@Override
-	@Ignore // check this later...
-	public void unresolvableSchema() throws Exception {
+	@ParameterizedTest
+	@Disabled("check this later...")
+	@MethodSource("data")
+	public void unresolvableSchema(Class<? extends AbstractXmlValidator> implementation) {
+		initJson2XmlValidatorTest(implementation);
 	}
 
 	@Override
-	@Ignore // no such thing as unknown namespace, align() determines it from the schema
-	public void step5ValidationErrorUnknownNamespace() throws Exception {
+	@ParameterizedTest
+	@Disabled("no such thing as unknown namespace, align() determines it from the schema")
+	@MethodSource("data")
+	public void step5ValidationErrorUnknownNamespace(Class<? extends AbstractXmlValidator> implementation) {
+		initJson2XmlValidatorTest(implementation);
 	}
 
 	@Override
-	@Ignore // no such thing as unknown namespace, align() determines it from the schema
-	public void validationUnknownNamespaceSwitchedOff() throws Exception {
+	@ParameterizedTest
+	@Disabled("no such thing as unknown namespace, align() determines it from the schema")
+	@MethodSource("data")
+	public void validationUnknownNamespaceSwitchedOff(Class<? extends AbstractXmlValidator> implementation) {
+		initJson2XmlValidatorTest(implementation);
 	}
 
 	@Override
-	@Ignore // no such thing as unknown namespace, align() determines it from the schema
-	public void validationUnknownNamespaceSwitchedOn() throws Exception {
+	@ParameterizedTest
+	@Disabled("no such thing as unknown namespace, align() determines it from the schema")
+	@MethodSource("data")
+	public void validationUnknownNamespaceSwitchedOn(Class<? extends AbstractXmlValidator> implementation) {
+		initJson2XmlValidatorTest(implementation);
 	}
 
 	@Override
-	@Ignore // no such thing as unknown namespace, align() determines it from the schema
-	public void step5ValidationUnknownNamespaces() throws Exception {
+	@ParameterizedTest
+	@Disabled("no such thing as unknown namespace, align() determines it from the schema")
+	@MethodSource("data")
+	public void step5ValidationUnknownNamespaces(Class<? extends AbstractXmlValidator> implementation) {
+		initJson2XmlValidatorTest(implementation);
 	}
 
-	@Test
-	public void issue3973MissingLocalWarning() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void issue3973MissingLocalWarning(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		initJson2XmlValidatorTest(implementation);
 		TestConfiguration config = new TestConfiguration();
 
 		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
@@ -216,8 +233,10 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals(0, config.getConfigurationWarnings().size(), "no config warning thrown by XercesValidationErrorHandler");
 	}
 
-	@Test
-	public void nonExistingResourceImportFromSchemaWithoutNamespace() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void nonExistingResourceImportFromSchemaWithoutNamespace(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+		initJson2XmlValidatorTest(implementation);
 		ClassLoader appClassLoader = Thread.currentThread().getContextClassLoader();
 		TestConfiguration config = new TestConfiguration();
 
