@@ -21,7 +21,7 @@ public class BtmDataSourceFactoryTest {
 	void testSetup() {
 		// Arrange
 		AppConstants appConstants = AppConstants.getInstance();
-		appConstants.setProperty("transactionmanager.btm.jdbc.connection.minPoolSize", "1");
+		appConstants.setProperty("transactionmanager.btm.jdbc.connection.minIdle", "1");
 		appConstants.setProperty("transactionmanager.btm.jdbc.connection.maxPoolSize", "2");
 		appConstants.setProperty("transactionmanager.btm.jdbc.connection.maxIdleTime", "3");
 		appConstants.setProperty("transactionmanager.btm.jdbc.connection.maxLifeTime", "4");
@@ -30,7 +30,7 @@ public class BtmDataSourceFactoryTest {
 		BtmDataSourceFactory factory = new BtmDataSourceFactory();
 
 		// Assert
-		assertEquals(1, factory.getMinPoolSize());
+		assertEquals(1, factory.getMinIdle());
 		assertEquals(2, factory.getMaxPoolSize());
 		assertEquals(3, factory.getMaxIdleTime());
 		assertEquals(4, factory.getMaxLifeTime());
