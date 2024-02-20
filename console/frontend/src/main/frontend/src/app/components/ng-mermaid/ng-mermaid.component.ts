@@ -1,7 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import mermaid from 'mermaid';
-import { NgMermaidService } from "./ng-mermaid.service";
 
 @Component({
   standalone: true,
@@ -40,23 +39,27 @@ export class NgMermaidComponent implements OnInit, OnChanges {
 
   constructor(
     private elRef: ElementRef<HTMLElement>,
-    private mermaidService: NgMermaidService,
   ) { }
 
   ngOnInit() {
+    mermaid.initialize({
+      startOnLoad: false,
+      maxTextSize: 70 * 1000,
+      maxEdges: 600,
+      flowchart: {
+        diagramPadding: 8,
+        htmlLabels: true,
+        curve: 'basis',
+      },
+    });
+
     this.renderAsync();
-    // this.testAsync();
     this.initialized = true;
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.initialized)
-      // this.render();
       this.renderAsync();
-  }
-
-  testAsync() {
-    this.mermaidService.sendMermaidRenderRequest();
   }
 
   renderAsync() {
@@ -74,47 +77,8 @@ export class NgMermaidComponent implements OnInit, OnChanges {
       this.timeout = window.setTimeout(() => {
         try {
           const uid = 'm' + (this.id ?? +(new Date).getTime());
-          this.mermaidService.render(uid, this.nmModel).then((res) => {
-            this.mermaidEl.nativeElement.innerHTML = res;
-            const svgElement = this.mermaidEl.nativeElement.firstChild as HTMLElement;
-            svgElement.setAttribute('height', '100%');
-            svgElement.setAttribute('style', "");
-          }).catch(e => { this.handleError(e) })
-            .finally(() => {
-              this.nmInitCallback.emit();
-            });
-        } catch (e) {
-          this.handleError(e as Error);
-        }
-      }, this.initialized ? this.interval : 0);
-    }
-  }
-
-  render() {
-    if (this.nmRefreshInterval) {
-      this.interval = this.nmRefreshInterval || this.interval;
-    }
-
-    if (this.nmModel) {
-      this.model = this.nmModel;
-      this.element.querySelectorAll("[data-processed]").forEach((v, k) => {
-        v.removeAttribute("data-processed");
-      });
-      if (this.timeout)
-        window.clearTimeout(this.timeout);
-      this.timeout = window.setTimeout(() => {
-        try {
-          this.mermaidEl.nativeElement.innerHTML = this.nmModel;
-          mermaid.initialize({
-            startOnLoad: false, maxTextSize: 70 * 1000, maxEdges: 600, flowchart: {
-              diagramPadding: 8,
-              htmlLabels: true,
-              curve: 'basis',
-            },
-          });
-          mermaid.run({
-            nodes: [this.mermaidEl.nativeElement]
-          }).then(() => {
+          mermaid.render(uid, this.nmModel).then(({ svg }) => {
+            this.mermaidEl.nativeElement.innerHTML = svg;
             const svgElement = this.mermaidEl.nativeElement.firstChild as HTMLElement;
             svgElement.setAttribute('height', '100%');
             svgElement.setAttribute('style', "");
@@ -139,10 +103,4 @@ export class NgMermaidComponent implements OnInit, OnChanges {
     errorContainer += `</div>`;
     this.mermaidEl.nativeElement.innerHTML += errorContainer;
   }
-
-  cssReplace(cssRule: string) {
-    return cssRule
-      .replace('ng\:cloak', 'ng--cloak')
-      .replace('ng\:form', 'ng--form');
-  };
 }

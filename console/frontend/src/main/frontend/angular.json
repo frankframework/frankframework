@@ -63,8 +63,7 @@
               "angular-datatables/dist/plugins/buttons/angular-datatables.buttons",
               "pace-js",
               "prismjs"
-            ],
-            "webWorkerTsConfig": "tsconfig.worker.json"
+            ]
           },
           "configurations": {
             "production": {
@@ -137,8 +136,7 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": [],
-            "webWorkerTsConfig": "tsconfig.worker.json"
+            "scripts": []
           }
         }
       }
