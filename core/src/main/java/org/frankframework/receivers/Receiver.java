@@ -19,6 +19,7 @@ import static org.frankframework.functional.FunctionalUtil.logMethod;
 import static org.frankframework.functional.FunctionalUtil.logValue;
 import static org.frankframework.functional.FunctionalUtil.supplier;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -1038,7 +1039,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String messageId = rawMessage.getId() != null ? rawMessage.getId() : session.getMessageId();
 			String correlationId = rawMessage.getCorrelationId() != null ? rawMessage.getCorrelationId() : session.getCorrelationId();
 			MessageWrapper<M> messageWrapper = rawMessage instanceof MessageWrapper ? (MessageWrapper<M>) rawMessage : new MessageWrapper<>(rawMessage, message, messageId, correlationId);
-			Message result = processMessageInAdapter(messageWrapper, session, -1, false, false);
+
+			final Message result;
+			try {
+				result = processMessageInAdapter(messageWrapper, session, -1, false, false);
+			} catch (ListenerException e) {
+				exceptionThrown("exception processing message", e);
+				throw e;
+			}
+
 			if(!Message.isNull(result)) {
 				result.unscheduleFromCloseOnExitOf(session);
 			}
@@ -1097,11 +1106,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 			long endExtractingMessage = System.currentTimeMillis();
 			messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-			try (Message output = processMessageInAdapter(messageWrapper, session, waitingDuration, manualRetry, duplicatesAlreadyChecked)) {
+
+			Message output = processMessageInAdapter(messageWrapper, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
+			try { //Only catch IOExceptions on Message#close, processMessageInAdapter throws Exceptions, which should not be caught!!
+				output.close();
 				log.debug("Closing result message [{}]", output);
-			} catch (Exception e) {
+			} catch (IOException e) {
 				log.warn("Could not close result message", e);
 			}
+
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		}
 		ThreadContext.clearAll();

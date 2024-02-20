@@ -38,14 +38,14 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
+
+import lombok.extern.log4j.Log4j2;
 
 
 /**
@@ -97,7 +97,7 @@ public class FileUtils {
 			pl.add(p);
 		}
 		catch(ConfigurationException e) {
-			throw new ParameterException(e);
+			throw new ParameterException("file", e);
 		}
 
 		// resolve the parameters

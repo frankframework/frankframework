@@ -2,12 +2,11 @@ package org.frankframework.pipes;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
@@ -24,40 +23,34 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.JavaxXmlValidator;
 import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorTestBase;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * @author Michiel Meeuwissen
  */
-@RunWith(value = Parameterized.class)
-public class XmlValidatorTest extends XmlValidatorTestBase {
-
-	private Class<AbstractXmlValidator> implementation;
+public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 	private TestConfiguration configuration;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		configuration = new TestConfiguration();
 		ApplicationWarnings.removeInstance();
 	}
 
-	public XmlValidatorTest(Class<AbstractXmlValidator> implementation) {
+	public void initXmlValidatorTest(Class<? extends AbstractXmlValidator> implementation) {
 		this.implementation = implementation;
 	}
 
-	@Parameterized.Parameters(name= "{0}")
-	public static Collection<Object[]> data() {
-		Object[][] data = new Object[][]{
-			{XercesXmlValidator.class}
-			,{JavaxXmlValidator.class}
-		};
-		return Arrays.asList(data);
+	protected static Stream<Arguments> data() {
+		return Stream.of(
+				Arguments.of(XercesXmlValidator.class),
+				Arguments.of(JavaxXmlValidator.class)
+		);
 	}
-
 
 	protected static PipeForward createSuccessForward() {
 		PipeForward forward = new PipeForward();
@@ -99,8 +92,8 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		// in other places in the code, which silently made warnings go to one instead of the other, making checks on just one
 		// of them useless (as the warnings would never show up there anymore).
 		// By checking both we prevent this in the future.
-		assertEquals(expectedNrOfWarnings + " ConfigurationWarnings expected, got " + configuration.getConfigurationWarnings().getWarnings(), expectedNrOfWarnings, configuration.getConfigurationWarnings().size());
-		assertEquals("No ApplicationWarnings expected, got " + ApplicationWarnings.getWarningsList(), 0, ApplicationWarnings.getSize());
+		assertEquals(expectedNrOfWarnings, configuration.getConfigurationWarnings().size(), expectedNrOfWarnings + " ConfigurationWarnings expected, got " + configuration.getConfigurationWarnings().getWarnings());
+		assertEquals(0, ApplicationWarnings.getSize(), "No ApplicationWarnings expected, got " + ApplicationWarnings.getWarningsList());
 	}
 
 	public static XmlValidator getValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
@@ -113,7 +106,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		return getUnconfiguredValidator(schemaLocation, false, implementation);
 	}
 
-	public static XmlValidator getUnconfiguredValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
+	public static XmlValidator getUnconfiguredValidator(String schemaLocation, boolean addNamespaceToSchema, Class<? extends AbstractXmlValidator> implementation) throws ConfigurationException {
 		XmlValidator validator = new XmlValidator();
 		try {
 			validator.setImplementation(implementation);
@@ -130,12 +123,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		return validator;
 	}
 
-
-
-	protected ValidationResult runAndEvaluate(XmlValidator validator, String inputfile, String[] expectedFailureReasons) throws IOException  {
-		System.out.println("inputfile ["+inputfile+"]");
-		String testXml=inputfile!=null?getTestXml(inputfile+".xml"):null;
-		PipeLineSession session=new PipeLineSession();
+	protected ValidationResult runAndEvaluate(XmlValidator validator, String inputFile, String[] expectedFailureReasons) throws IOException  {
+		log.debug("inputFile [{}]", inputFile);
+		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
+		PipeLineSession session = new PipeLineSession();
 		try {
 			PipeRunResult result=validator.doPipe(new Message(testXml), session);
 			PipeForward forward=result.getPipeForward();
@@ -159,8 +150,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		return runAndEvaluate(validator, inputfile, expectedFailureReasons);
 	}
 
-	@Test
-	public void testSoapNamespaceFeature() throws ConfigurationException, IOException, PipeStartException {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testSoapNamespaceFeature(Class<AbstractXmlValidator> implementation) throws ConfigurationException, IOException, PipeStartException {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, null, NO_NAMESPACE_SOAP_MSGROOT);
 		validator.setFullSchemaChecking(true);
@@ -185,8 +178,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertNull(runAndEvaluate(validator, NO_NAMESPACE_SOAP_FILE, null));
 	}
 
-	@Test
-	public void testStoreRootElement() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testStoreRootElement(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK, "A");
 		validator.setFullSchemaChecking(true);
@@ -212,8 +207,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test
-	public void testWrongRootElement() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testWrongRootElement(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK,  "anotherElement");
 		validator.setFullSchemaChecking(true);
@@ -241,8 +238,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	}
 
 
-	@Test
-	public void testMultipleRootElement() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testMultipleRootElement(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		String root = "A";
 		// if multiple root elements are specified, in a comma separated list, the validation succeeds if one of these root elements is found
@@ -268,8 +267,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test
-	public void testRuntimeRootElement() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testRuntimeRootElement(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		// if multiple root elements are specified, in a comma separated list, the validation succeeds if one of these root elements is found
 		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK, "oneElement,anotherElement");
@@ -294,8 +295,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test
-	public void testWrongRuntimeRootElement() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testWrongRuntimeRootElement(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		String root = "A";
 		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK, root);
@@ -322,8 +325,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertThat((String)session.get("reason"), containsString("Illegal element 'A'. Element(s) 'anotherElement' expected."));
 	}
 
-	@Test
-	public void testWithCircularReferenceInXsd1() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testWithCircularReferenceInXsd1(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://xmlns/a /Validation/Circular/AB/xsd/A.xsd", "A");
 
@@ -346,8 +351,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test
-	public void testWithCircularReferenceInXsd2() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testWithCircularReferenceInXsd2(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://www.egem.nl/StUF/sector/zkn/0310 /Validation/Circular/zds/xsd/zkn0310_msg_zs-dms_resolved2017.xsd", "Point");
 
@@ -370,8 +377,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test
-	public void testMultipleImport() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testMultipleImport(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "urn:frank/root /Validation/MultipleImport/xsd/root.xsd", "root");
 
@@ -395,8 +404,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test //copied from iaf-test /XmlValidator/scenario07a
-	public void testImportIncludeOK() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario07a
+	void testImportIncludeOK(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd", "root");
 
@@ -419,8 +430,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test
-	public void testImportNestedIncludeOK() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testImportNestedIncludeOK(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://nn.nl/root /Validation/ImportNestedInclude/xsd/root.xsd", "root");
 
@@ -442,8 +455,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test //copied from iaf-test /XmlValidator/scenario07b
-	public void testImportIncludeError() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario07b
+	void testImportIncludeError(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd", "root");
 		// Override throwing exception
@@ -468,8 +483,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("failure", forward.getName());
 	}
 
-	@Test //copied from iaf-test /XmlValidator/scenario05a, then simplified
-	public void testIncludeOK() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario05a, then simplified
+	void testIncludeOK(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://www.frankframework.org/tom /Validation/Include/xsd/main.xsd", "GetParties");
 
@@ -492,8 +509,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test //copied from iaf-test /XmlValidator/scenario05b, then simplified
-	public void testIncludeError() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario05b, then simplified
+	void testIncludeError(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		// Arrange
 		XmlValidator validator = buildXmlValidator(configuration, "http://www.frankframework.org/tom /Validation/Include/xsd/main.xsd", "GetParties");
 		validator.setThrowException(false);
@@ -517,8 +536,10 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("failure", forward.getName());
 	}
 
-	@Test
-	public void testElementFormDefaultUnqualified() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	void testElementFormDefaultUnqualified(Class<AbstractXmlValidator> implementation) throws Exception {
+		initXmlValidatorTest(implementation);
 		XmlValidator validator = getUnconfiguredValidator(ELEMENT_FORM_DEFAULT_UNQUALIFIED_NAMESPACE +" "+ ELEMENT_FORM_DEFAULT_UNQUALIFIED_SCHEMA, false, implementation);
 		validator.setIgnoreUnknownNamespaces(true);
 		validator.configure();

@@ -31,10 +31,10 @@ export class FlowComponent implements OnChanges {
     private Misc: MiscService,
     private statusService: StatusService,
     private modalService: NgbModal,
-  ) {}
+  ) { }
 
-  ngOnChanges(changes: SimpleChanges){
-    if (this.adapter || this.configurationFlowDiagram){
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.adapter || this.configurationFlowDiagram) {
       const flowUrl = this.getflowUrl();
       this.flow = { "isImage": false, "url": flowUrl };
       this.statusService.getAdapterFlowDiagram(flowUrl).subscribe((data) => {
@@ -45,7 +45,7 @@ export class FlowComponent implements OnChanges {
           if (!this.flow.isImage) { //only store metadata when required
             this.flow.data = data;
             this.loadInline = this.canLoadInline;
-            if(this.canLoadInline){
+            if (this.canLoadInline) {
               const dataLength = data.body?.length
               this.loadInline = (dataLength ?? 0) < 20000;
             }
@@ -58,12 +58,12 @@ export class FlowComponent implements OnChanges {
     }
   }
 
-	openFlowModal(xhr?: HttpResponse<string>) {
+  openFlowModal(xhr?: HttpResponse<string>) {
     this.flowModalLadda = true;
     const modalRef = this.modalService.open(FlowModalComponent, { windowClass: 'mermaidFlow' });
     modalRef.componentInstance.flow = xhr?.body;
     modalRef.componentInstance.flowName = this.adapter?.name ?? "Configuration";
-    setTimeout( () => { this.flowModalLadda = false; }, 1000);
+    setTimeout(() => { this.flowModalLadda = false; }, 1000);
   }
 
   private getflowUrl() {

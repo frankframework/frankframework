@@ -1,5 +1,7 @@
 package org.frankframework.extensions.fxf;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 
 import org.frankframework.core.IWrapperPipe.Direction;
@@ -7,10 +9,8 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 
@@ -22,6 +22,7 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 	}
 
 	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		String logDir = AppConstants.getInstance().getString("log.dir", null);

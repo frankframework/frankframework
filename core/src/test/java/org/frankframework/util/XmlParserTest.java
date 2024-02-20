@@ -1,10 +1,10 @@
 package org.frankframework.util;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
 
 import org.frankframework.core.Resource;
-import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.xml.XmlWriter;
@@ -39,15 +39,14 @@ public class XmlParserTest {
 
 	@Test
 	public void testParseXmlNoRelativeEntityInjection() throws IOException, SAXException {
-		URL    input    = TestFileUtils.getTestFileURL("/XmlUtils/EntityResolution/in-relative-entity.xml");
+		String testContent = TestFileUtils.getTestFile("/XmlUtils/EntityResolution/in-relative-entity.xml");
 		String expected = TestFileUtils.getTestFile("/XmlUtils/EntityResolution/out-not-resolved.xml");
 
 		XmlWriter writer = new XmlWriter();
-		InputSource source = Message.asInputSource(input);
-
+		InputSource source = new InputSource(new StringReader(testContent));
 		XmlUtils.parseXml(source, writer);
 
-		MatchUtils.assertXmlEquals(expected,writer.toString());
+		MatchUtils.assertXmlEquals(expected, writer.toString());
 	}
 
 	@Test

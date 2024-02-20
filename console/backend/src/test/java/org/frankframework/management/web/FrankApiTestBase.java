@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -235,7 +236,11 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		}
 
 		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata) {
-			return dispatchRequest(httpMethod, url, jsonOrFormdata, null);
+			return dispatchRequest(httpMethod, url, jsonOrFormdata, null, null);
+		}
+
+		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata, IbisRole role) {
+			return dispatchRequest(httpMethod, url, jsonOrFormdata, role, null);
 		}
 
 		/**
@@ -244,8 +249,9 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		 * @param url the relative path of the FF! API
 		 * @param jsonOrFormdata when using PUT/POST requests, a json string of formdata object
 		 * @param role IbisRole if you want to test authorization as well
+		 * @param headers Map of header parameters where the key is the header name and the value is the header value
 		 */
-		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata, IbisRole role) {
+		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata, IbisRole role, Map<String, String> headers) {
 
 			String rsResourceKey = compileKey(httpMethod, url);
 			log.info("trying to dispatch request to [{}]", rsResourceKey);
@@ -275,6 +281,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 					boolean isPathParameter = parameter.isAnnotationPresent(PathParam.class);
 					boolean isQueryParameter = parameter.isAnnotationPresent(QueryParam.class);
+					boolean isHeaderParameter = parameter.isAnnotationPresent(HeaderParam.class);
 
 					if(isPathParameter) {
 						String pathValue = findPathParameter(parameter, methodPath, url);
@@ -284,6 +291,10 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 						methodArguments[i] = value;
 					} else if(isQueryParameter) {
 						Object value = findQueryParameter(parameter, url);
+						log.debug("setting method argument [{}] to value [{}]", i, value);
+						methodArguments[i] = value;
+					} else if (isHeaderParameter) {
+						Object value = findHeaderParameter(parameter, headers);
 						log.debug("setting method argument [{}] to value [{}]", i, value);
 						methodArguments[i] = value;
 					} else {
@@ -427,6 +438,29 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 			Object value = ClassUtils.convertToType(parameter.getType(), queryValue);
 			log.info("resolved value [{}] to type [{}]", queryValue, value.getClass());
+			return value;
+		}
+
+		/**
+		 * If a header parameter is used, try to find it
+		 * @return the resolved header parameter value
+		 */
+		private Object findHeaderParameter(Parameter parameter, Map<String, String> headers) {
+			HeaderParam headerParameter = parameter.getAnnotation(HeaderParam.class);
+			String headerValue = headers.get(headerParameter.value());
+
+			if(headerValue == null) {
+				DefaultValue defaultValue = parameter.getAnnotation(DefaultValue.class);
+				if(defaultValue != null) {
+					headerValue = defaultValue.value();
+				}
+			}
+			if(headerValue == null) {
+				return null;
+			}
+
+			Object value = ClassUtils.convertToType(parameter.getType(), headerValue);
+			log.info("resolved value [{}] to type [{}]", headerValue, value.getClass());
 			return value;
 		}
 

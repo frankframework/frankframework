@@ -77,6 +77,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xmlbeans.GDate;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IScopeProvider;
+import org.frankframework.core.Resource;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterList;
+import org.frankframework.stream.Message;
+import org.frankframework.validation.RootValidations;
+import org.frankframework.validation.XmlValidatorContentHandler;
+import org.frankframework.validation.XmlValidatorErrorHandler;
+import org.frankframework.xml.BodyOnlyFilter;
+import org.frankframework.xml.CanonicalizeFilter;
+import org.frankframework.xml.ClassLoaderEntityResolver;
+import org.frankframework.xml.NamespaceRemovingFilter;
+import org.frankframework.xml.NonResolvingExternalEntityResolver;
+import org.frankframework.xml.PrettyPrintFilter;
+import org.frankframework.xml.SaxException;
+import org.frankframework.xml.XmlWriter;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -97,23 +114,6 @@ import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
 
 import net.sf.saxon.xpath.XPathFactoryImpl;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IScopeProvider;
-import org.frankframework.core.Resource;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterList;
-import org.frankframework.stream.Message;
-import org.frankframework.validation.RootValidations;
-import org.frankframework.validation.XmlValidatorContentHandler;
-import org.frankframework.validation.XmlValidatorErrorHandler;
-import org.frankframework.xml.BodyOnlyFilter;
-import org.frankframework.xml.CanonicalizeFilter;
-import org.frankframework.xml.ClassLoaderEntityResolver;
-import org.frankframework.xml.NamespaceRemovingFilter;
-import org.frankframework.xml.NonResolvingExternalEntityResolver;
-import org.frankframework.xml.PrettyPrintFilter;
-import org.frankframework.xml.SaxException;
-import org.frankframework.xml.XmlWriter;
 
 /**
  * Some utilities for working with XML.
@@ -455,7 +455,7 @@ public class XmlUtils {
 	}
 
 	public static void parseXml(String source, ContentHandler handler) throws IOException, SAXException {
-		parseXml(Message.asInputSource(source),handler);
+		parseXml(new InputSource(new StringReader(source)), handler, null);
 	}
 
 	/**

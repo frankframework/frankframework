@@ -46,7 +46,7 @@
           </div>
         </div>
         <div *ngIf="viewFile">
-          <iframe #iframe [src]="viewFile" style="width:100%; min-height:650px; border:none; overflow:hidden;"></iframe>
+          <app-file-viewer [fileName]="viewFile" contentType="text/html" style="width:100%; min-height:650px; border:none; overflow:hidden;"></app-file-viewer>
         </div>
       </div>
     </div>

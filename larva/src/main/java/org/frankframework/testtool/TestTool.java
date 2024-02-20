@@ -763,7 +763,7 @@ public class TestTool {
 	public void scenariosTotalMessage(String message) {
 		if (config.isSilent()) {
 			try {
-				config.getOut().write(message);
+				config.getSilentOut().write(message);
 			} catch (IOException e) {
 			}
 		} else {
@@ -775,7 +775,7 @@ public class TestTool {
 	public void scenariosPassedTotalMessage(String message) {
 		if (config.isSilent()) {
 			try {
-				config.getOut().write(message);
+				config.getSilentOut().write(message);
 			} catch (IOException e) {
 			}
 		} else {
@@ -787,7 +787,7 @@ public class TestTool {
 	public void scenariosAutosavedTotalMessage(String message) {
 		if (config.isSilent()) {
 			try {
-				config.getOut().write(message);
+				config.getSilentOut().write(message);
 			} catch (IOException e) {
 			}
 		} else {
@@ -799,7 +799,7 @@ public class TestTool {
 	public void scenariosFailedTotalMessage(String message) {
 		if (config.isSilent()) {
 			try {
-				config.getOut().write(message);
+				config.getSilentOut().write(message);
 			} catch (IOException e) {
 			}
 		} else {
