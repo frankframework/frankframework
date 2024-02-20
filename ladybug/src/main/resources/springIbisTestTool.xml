@@ -111,7 +111,6 @@
 		<property name="checkpointMatchers">
 			<list>
 				<bean class="org.frankframework.ibistesttool.filter.GrayBox"/>
-				<bean class="org.frankframework.ibistesttool.filter.FtpFileRetrieverPipe"/>
 			</list>
 		</property>
 	</bean>
@@ -121,7 +120,6 @@
 		<property name="checkpointMatchers">
 			<list>
 				<bean class="org.frankframework.ibistesttool.filter.BlackBox"/>
-				<bean class="org.frankframework.ibistesttool.filter.FtpFileRetrieverPipe"/>
 			</list>
 		</property>
 	</bean>
