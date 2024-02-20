@@ -1,5 +1,5 @@
 import { HttpResponse } from '@angular/common/http';
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { Adapter, AppService } from 'src/app/app.service';
@@ -13,15 +13,18 @@ import { FlowModalComponent } from './flow-modal/flow-modal.component';
 })
 export class FlowComponent implements OnChanges {
 
-  flow: {
+  protected flow: {
     isImage: boolean,
     url: string,
     data?: HttpResponse<string>
   } = { isImage: false, url: "" }
-  flowModalLadda = false;
+  protected flowModalLadda = false;
+  protected loadInline = true;
 
   @Input() adapter: Adapter | null = null;
   @Input() configurationFlowDiagram: string | null = null;
+  @Input() height = 350;
+  @Input() canLoadInline = true;
 
   constructor(
     private appService: AppService,
@@ -30,8 +33,8 @@ export class FlowComponent implements OnChanges {
     private modalService: NgbModal,
   ) {}
 
-  ngOnChanges(){
-    if(this.adapter || this.configurationFlowDiagram){
+  ngOnChanges(changes: SimpleChanges){
+    if (this.adapter || this.configurationFlowDiagram){
       const flowUrl = this.getflowUrl();
       this.flow = { "isImage": false, "url": flowUrl };
       this.statusService.getAdapterFlowDiagram(flowUrl).subscribe((data) => {
@@ -41,6 +44,11 @@ export class FlowComponent implements OnChanges {
           this.flow.isImage = (contentType.indexOf("image") > 0 || contentType.indexOf("svg") > 0); //display an image or a button to open a modal
           if (!this.flow.isImage) { //only store metadata when required
             this.flow.data = data;
+            this.loadInline = this.canLoadInline;
+            if(this.canLoadInline){
+              const dataLength = data.body?.length
+              this.loadInline = (dataLength ?? 0) < 20000;
+            }
           }
         } else { //If non successful response, force no-image-available
           this.flow.isImage = true;

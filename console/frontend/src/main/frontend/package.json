@@ -60,6 +60,7 @@
     "@types/markdown-it": "^13.0.7",
     "@types/prismjs": "^1.26.0",
     "@types/tinycon": "^0.6.3",
+    "@types/uuid": "^9.0.8",
     "jasmine-core": "~4.5.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",

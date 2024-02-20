@@ -119,7 +119,7 @@
               </table>
             </div>
             <div class="col-md-3 configurationFlow" *ngIf="configurationFlowDiagram && !reloading">
-              <app-flow [configurationFlowDiagram]="configurationFlowDiagram" />
+              <app-flow [configurationFlowDiagram]="configurationFlowDiagram" [height]="150" />
             </div>
           </div>
         </div>
@@ -533,7 +533,7 @@
             </div>
             <div class="col-lg-3 col-md-0 flow">
               <h4>Flow</h4>
-              <app-flow [adapter]="adapter" />
+              <app-flow [adapter]="adapter" [canLoadInline]="loadFlowInline" />
             </div>
           </div>
         </div>

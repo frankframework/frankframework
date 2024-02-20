@@ -1,6 +1,8 @@
 import { CommonModule } from "@angular/common";
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import mermaid from 'mermaid';
+import { v4 as uuidv4 } from 'uuid';
+
 
 @Component({
   standalone: true,
@@ -21,27 +23,21 @@ import mermaid from 'mermaid';
     }
   `]
 })
-export class NgMermaidComponent implements OnInit, OnChanges {
+export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   @Input() nmModel?: any;
   @Input() nmRefreshInterval?: number;
-  @Input() id?: string;
+  @Input() divId?: string;
   @Output() nmInitCallback = new EventEmitter();
-
-  model = this.nmModel;
-  interval = 2000;
-  is_mermaid = 'mermaid';
-  initialized = false;
-  timeout?: number;
 
   @ViewChild('mermaidPre') mermaidEl!: ElementRef<HTMLElement>;
 
-  private element = this.elRef.nativeElement;
+  protected interval = 2000;
+  protected is_mermaid = 'mermaid';
+  protected initialized = false;
+  protected firstRender = true;
+  protected timeout?: number;
 
-  constructor(
-    private elRef: ElementRef<HTMLElement>,
-  ) { }
-
-  ngOnInit() {
+  constructor() {
     mermaid.initialize({
       startOnLoad: false,
       maxTextSize: 70 * 1000,
@@ -52,44 +48,51 @@ export class NgMermaidComponent implements OnInit, OnChanges {
         curve: 'basis',
       },
     });
+  }
 
-    this.renderAsync();
+  ngOnInit() {
+    this.render();
     this.initialized = true;
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.initialized)
-      this.renderAsync();
+      this.render();
   }
 
-  renderAsync() {
+  ngOnDestroy() {
+    this.mermaidEl.nativeElement.innerHTML = 'Loading...'
+  }
+
+  render() {
     if (this.nmRefreshInterval) {
       this.interval = this.nmRefreshInterval || this.interval;
     }
 
     if (this.nmModel) {
-      this.model = this.nmModel;
-      this.element.querySelectorAll("[data-processed]").forEach((v, k) => {
-        v.removeAttribute("data-processed");
-      });
-      if (this.timeout)
+      if (this.timeout) {
         window.clearTimeout(this.timeout);
+      }
+
       this.timeout = window.setTimeout(() => {
         try {
-          const uid = 'm' + (this.id ?? +(new Date).getTime());
-          mermaid.render(uid, this.nmModel).then(({ svg }) => {
-            this.mermaidEl.nativeElement.innerHTML = svg;
-            const svgElement = this.mermaidEl.nativeElement.firstChild as HTMLElement;
+          const mermaidContainer = this.mermaidEl.nativeElement;
+          mermaidContainer.innerHTML = 'Loading...';
+          const uid = `m${uuidv4()}`;
+          mermaid.render(uid, this.nmModel, mermaidContainer).then(({ svg }) => {
+            mermaidContainer.innerHTML = svg;
+            const svgElement = mermaidContainer.firstChild as HTMLElement;
             svgElement.setAttribute('height', '100%');
             svgElement.setAttribute('style', "");
           }).catch(e => { this.handleError(e) })
             .finally(() => {
+              this.firstRender = false;
               this.nmInitCallback.emit();
             });
         } catch (e) {
           this.handleError(e as Error);
         }
-      }, this.initialized ? this.interval : 0);
+      }, this.firstRender ? 0 : this.interval);
     }
   }
 

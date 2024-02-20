@@ -31,6 +31,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   isConfigReloading: Record<string, boolean> = {};
   msgBoxExpanded = false;
   adapterShowContent: Record<keyof typeof this.adapters, boolean> = {}
+  loadFlowInline = true;
 
   adapterSummary: Summary = {
     started: 0,
@@ -176,20 +177,27 @@ export class StatusComponent implements OnInit, OnDestroy {
   };
 
   collapseAll() {
-    Object.keys(this.adapters)
-      .forEach(adapter => this.adapterShowContent[adapter] = false);
+    this.loadFlowInline = true;
+    for (const adapter of Object.keys(this.adapters)) {
+      this.adapterShowContent[adapter] = false;
+    }
   }
 
   expandAll() {
-    Object.keys(this.adapters)
-      .forEach(adapter => this.adapterShowContent[adapter] = true);
-  };
+    this.loadFlowInline = false;
+    for (const adapter of Object.keys(this.adapters)) {
+      this.adapterShowContent[adapter] = true;
+    }
+  }
+
   stopAll() {
     this.statusService.updateAdapters("stop", this.getCompiledAdapterList()).subscribe();
-  };
+  }
+
   startAll() {
     this.statusService.updateAdapters("start", this.getCompiledAdapterList()).subscribe();
-  };
+  }
+  
   reloadConfiguration() {
     if (this.selectedConfiguration == "All") return;
 
@@ -244,13 +252,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     } else {
       flowUrl = configurationName + "/flow";
     }
-
-    this.statusService.getConfigurationFlowDiagram(flowUrl).subscribe(({ data, url }) => {
-      let status = (data && data.status) ? data.status : 204;
-      if (status == 200) {
-        this.configurationFlowDiagram = url;
-      }
-    });
+    this.configurationFlowDiagram = this.statusService.getConfigurationFlowDiagramUrl(flowUrl);
   }
 
   check4StubbedConfigs() {
