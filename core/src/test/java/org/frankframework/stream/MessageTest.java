@@ -21,7 +21,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -49,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.functional.ThrowingSupplier;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.testutil.TestAppender;
@@ -57,6 +57,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
@@ -103,14 +104,23 @@ public class MessageTest {
 			{ "8.0 2023-12-21", "aced0005737200216f72672e6672616e6b6672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787474002a4c6f72672f6672616e6b6672616d65776f726b2f73747265616d2f4d657373616765436f6e746578743b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400124c6a6176612f6c616e672f537472696e673b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e740006627974655b5d78" },
 		};
 
-	private final SerializationTester<Message> serializationTester=new SerializationTester<>();
+	private final SerializationTester<Message> serializationTester = new SerializationTester<>();
+
+	private Message adapter;
+
+	@AfterEach
+	public void tearDown() throws IOException {
+		if (adapter != null) {
+			adapter.close();
+		}
+	}
 
 	protected void testAsInputStream(Message message) throws IOException {
 		byte[] header = message.getMagic(6);
 		assertEquals("<root>", new String(header));
 
 		InputStream result = message.asInputStream();
-		String actual = StreamUtil.streamToString(result, null, "UTF-8");
+		String actual = StreamUtil.streamToString(result, null, StandardCharsets.UTF_8.name());
 		MatchUtils.assertXmlEquals(testString, actual);
 	}
 
@@ -142,7 +152,7 @@ public class MessageTest {
 		assertEquals("<root>", new String(header));
 
 		byte[] actual = message.asByteArray();
-		byte[] expected = testString.getBytes("UTF-8");
+		byte[] expected = testString.getBytes(StandardCharsets.UTF_8);
 		assertEquals(expected.length, actual.length, "lengths differ");
 		for (int i = 0; i < expected.length; i++) {
 			assertEquals(expected[i], actual[i], "byte arrays differ at position [" + i + "]");
@@ -168,198 +178,213 @@ public class MessageTest {
 
 	@Test
 	public void testInputStreamAsInputStream() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		testAsInputStream(adapter);
-		adapter.close();
 		source.close();
 	}
 
 	@Test
 	public void testInputStreamAsReader() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		testAsReader(adapter);
+		source.close();
 	}
 
 	@Test
 	public void testInputStreamWithCharsetAsReader() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source, "utf-8");
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source, StandardCharsets.UTF_8.name());
 		testAsReader(adapter);
+		source.close();
 	}
 
 	@Test
 	public void testInputStreamAsInputSource() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testInputStreamAsByteArray() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testInputStreamAsString() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		testAsString(adapter);
 	}
 
 	@Test
-	public void testInputStreamToString() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+	public void testInputStreamToString() {
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		testToString(adapter, ByteArrayInputStream.class);
 	}
 
 	@Test
 	public void testInputStreamAsInputStreamCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsInputStream(adapter);
 
-		String captured = new String(outputStream.toByteArray(), "utf-8");
+		String captured = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
 		testToString(adapter, ByteArrayInputStream.class);
 	}
 
 	@Test
 	public void testInputStreamAsReaderCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsReader(adapter);
-
-		String captured = new String(outputStream.toByteArray(), "utf-8");
+		String captured = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
 	}
 
 	@Test
 	public void testInputStreamWithCharsetAsReaderCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source, "utf-8");
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source, StandardCharsets.UTF_8.name());
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsReader(adapter);
 
-		String captured = new String(outputStream.toByteArray(), "utf-8");
+		String captured = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
 	}
 
 	@Test
 	public void testInputStreamAsInputSourceCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsInputSource(adapter);
 
-		String captured = new String(outputStream.toByteArray(), "utf-8");
+		String captured = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
 	}
 
 	@Test
 	public void testInputStreamAsByteArrayCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsByteArray(adapter);
 
-		String captured = new String(outputStream.toByteArray(), "utf-8");
+		String captured = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
 	}
 
 	@Test
 	public void testInputStreamAsStringCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		testAsString(adapter);
 
-		String captured = new String(outputStream.toByteArray(), "utf-8");
+		String captured = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
 	}
 
 	@Test
 	public void testInputStreamClosedButCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		adapter.asInputStream().close();
 
-		String captured = new String(outputStream.toByteArray(), "utf-8");
+		String captured = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
 	}
 
 	@Test
 	public void testInputStreamPreservedAndCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));
-		Message adapter = new Message(source);
+		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
+		adapter = new Message(source);
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
 		adapter.preserve();
 
-		String captured = new String(outputStream.toByteArray(), "utf-8");
+		String captured = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
 	}
 
 	@Test
 	public void testReaderAsInputStream() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsInputStream(adapter);
 	}
 
 	@Test
 	public void testReaderAsReader() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testReaderAsInputSource() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testReaderAsByteArray() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsByteArray(adapter);
+	}
+
+	@Test
+	public void testStringAsStaticByteArray() throws Exception {
+		Object source = testString;
+		byte[] byteArray = Message.asByteArray(source);
+		assertEquals(byteArray.length, testString.getBytes().length, "lengths differ");
+	}
+
+	@Test
+	public void testByteArrayAsStaticByteArray() throws Exception {
+		Object source = testString.getBytes();
+		byte[] byteArray = Message.asByteArray(source);
+		assertEquals(byteArray.length, testString.getBytes().length, "lengths differ");
+		assertEquals(testString, new String(byteArray), "content differ");
 	}
 
 	@Test
 	public void testReaderAsString() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsString(adapter);
 	}
 
 	@Test
 	public void testReaderToString() {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testToString(adapter, StringReader.class);
 	}
 
 	@Test
 	public void testReaderAsInputStreamCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsInputStream(adapter);
@@ -371,7 +396,7 @@ public class MessageTest {
 	@Test
 	public void testReaderAsReaderCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsReader(adapter);
@@ -384,7 +409,7 @@ public class MessageTest {
 	@Test
 	public void testReaderAsInputSourceCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsInputSource(adapter);
@@ -396,7 +421,7 @@ public class MessageTest {
 	@Test
 	public void testReaderAsByteArrayCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsByteArray(adapter);
@@ -408,7 +433,7 @@ public class MessageTest {
 	@Test
 	public void testReaderAsStringCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		testAsString(adapter);
@@ -420,7 +445,7 @@ public class MessageTest {
 	@Test
 	public void testReaderClosedButCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		adapter.asReader().close();
@@ -432,7 +457,7 @@ public class MessageTest {
 	@Test
 	public void testReaderPreservedAndCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 		adapter.preserve();
@@ -444,7 +469,7 @@ public class MessageTest {
 	@Test
 	public void testReaderOnlyCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 
@@ -455,35 +480,35 @@ public class MessageTest {
 	@Test
 	public void testStringAsInputStream() throws Exception {
 		String source = testString;
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsInputStream(adapter);
 	}
 
 	@Test
 	public void testStringAsReader() throws Exception {
 		String source = testString;
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testStringAsInputSource() throws Exception {
 		String source = testString;
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testStringAsByteArray() throws Exception {
 		String source = testString;
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testStringAsString() throws Exception {
 		String source = testString;
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsString(adapter);
 	}
 
@@ -497,61 +522,62 @@ public class MessageTest {
 
 		String actual = message.asString();
 		assertEquals("", actual);
+		message.close();
 	}
 
 	@Test
 	public void testStringToString() {
 		String source = testString;
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testToString(adapter, String.class);
 	}
 
 	@Test
 	public void testByteArrayAsInputStream() throws Exception {
-		byte[] source = testString.getBytes("utf-8");
-		Message adapter = new Message(source);
+		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
+		adapter = new Message(source);
 		testAsInputStream(adapter);
 	}
 
 	@Test
 	public void testByteArrayAsReader() throws Exception {
-		byte[] source = testString.getBytes("utf-8");
-		Message adapter = new Message(source);
+		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
+		adapter = new Message(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testByteArrayAsInputSource() throws Exception {
-		byte[] source = testString.getBytes("utf-8");
-		Message adapter = new Message(source);
+		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
+		adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testByteArrayAsByteArray() throws Exception {
-		byte[] source = testString.getBytes("utf-8");
-		Message adapter = new Message(source);
+		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
+		adapter = new Message(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testByteArrayAsString() throws Exception {
-		byte[] source = testString.getBytes("utf-8");
-		Message adapter = new Message(source);
+		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
+		adapter = new Message(source);
 		testAsString(adapter);
 	}
 
 	@Test
-	public void testByteArrayToString() throws Exception {
-		byte[] source = testString.getBytes("utf-8");
-		Message adapter = new Message(source);
+	public void testByteArrayToString() {
+		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
+		adapter = new Message(source);
 		testToString(adapter, byte[].class);
 	}
 
 	@Test
 	public void testURLAsInputStream() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new UrlMessage(source);
+		adapter = new UrlMessage(source);
 		testAsInputStream(adapter);
 	}
 
@@ -559,194 +585,194 @@ public class MessageTest {
 	public void testUnknownURL() throws Exception {
 		String unknownFile = "xxx.bestaat.niet.txt";
 		URL source = new URL("file://" + unknownFile);
-		Message adapter = new UrlMessage(source);
-		Exception exception = assertThrows(Exception.class, () -> { adapter.asInputStream(); });
+		adapter = new UrlMessage(source);
+		Exception exception = assertThrows(Exception.class, adapter::asInputStream);
 		assertThat(exception.getMessage(), containsString(unknownFile));
 	}
 
 	@Test
 	public void testURLAsReader() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new UrlMessage(source);
+		adapter = new UrlMessage(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testURLAsInputSource() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new UrlMessage(source);
+		adapter = new UrlMessage(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testURLAsByteArray() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new UrlMessage(source);
+		adapter = new UrlMessage(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testURLAsString() throws Exception {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new UrlMessage(source);
+		adapter = new UrlMessage(source);
 		testAsString(adapter);
 	}
 
 	@Test
 	public void testURLToString() {
 		URL source = this.getClass().getResource(testStringFile);
-		Message adapter = new UrlMessage(source);
+		adapter = new UrlMessage(source);
 		testToString(adapter, URL.class);
 	}
 
 	@Test
 	public void testFileAsInputStream() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new FileMessage(source);
+		adapter = new FileMessage(source);
 		testAsInputStream(adapter);
 	}
 
 	@Test
-	public void testUnknownFile() throws Exception {
-		String unkownfilename = new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath() + "-bestaatniet";
-		File source = new File(unkownfilename);
-		Message adapter = new FileMessage(source);
-		Exception exception = assertThrows(NoSuchFileException.class, () -> { adapter.asInputStream(); });
-		assertThat(exception.getMessage(), containsString(unkownfilename));
+	public void testUnknownFile() {
+		String unknownFilename = new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath() + "-bestaatniet";
+		File source = new File(unknownFilename);
+		adapter = new FileMessage(source);
+		Exception exception = assertThrows(NoSuchFileException.class, () -> adapter.asInputStream());
+		assertThat(exception.getMessage(), containsString(unknownFilename));
 	}
 
 	@Test
 	public void testFileAsReader() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new FileMessage(source);
+		adapter = new FileMessage(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testFileAsInputSource() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new FileMessage(source);
+		adapter = new FileMessage(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testFileAsByteArray() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new FileMessage(source);
+		adapter = new FileMessage(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testFileAsString() throws Exception {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new FileMessage(source);
+		adapter = new FileMessage(source);
 		testAsString(adapter);
 	}
 
 	@Test
 	public void testFileToString() {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
-		Message adapter = new FileMessage(source);
+		adapter = new FileMessage(source);
 		testToString(adapter, File.class);
 	}
 
 	@Test
 	public void testPathAsInputStream() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new PathMessage(source);
+		adapter = new PathMessage(source);
 		testAsInputStream(adapter);
 	}
 
 	@Test
-	public void testUnknownPath() throws Exception {
+	public void testUnknownPath() {
 		String unkownfilename = new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath() + "-bestaatniet";
 		Path source = Paths.get(unkownfilename);
-		Message adapter = new PathMessage(source);
-		Exception exception = assertThrows(NoSuchFileException.class, () -> { adapter.asInputStream(); });
+		adapter = new PathMessage(source);
+		Exception exception = assertThrows(NoSuchFileException.class, () -> adapter.asInputStream());
 		assertThat(exception.getMessage(), containsString(unkownfilename));
 	}
 
 	@Test
 	public void testPathAsReader() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new PathMessage(source);
+		adapter = new PathMessage(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testPathAsInputSource() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new PathMessage(source);
+		adapter = new PathMessage(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testPathAsByteArray() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new PathMessage(source);
+		adapter = new PathMessage(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testPathAsString() throws Exception {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new PathMessage(source);
+		adapter = new PathMessage(source);
 		testAsString(adapter);
 	}
 
 	@Test
 	public void testPathToString() {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
-		Message adapter = new PathMessage(source);
+		adapter = new PathMessage(source);
 		testToString(adapter, source.getClass());
 	}
 
 	@Test
 	public void testDocumentAsInputStream() throws Exception {
 		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsInputStream(adapter);
 	}
 
 	@Test
 	public void testDocumentAsReader() throws Exception {
 		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testDocumentAsInputSource() throws Exception {
 		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testDocumentAsByteArray() throws Exception {
 		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testDocumentAsString() throws Exception {
 		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsString(adapter);
 	}
 
 	@Test
 	public void testDocumentToString() throws Exception {
 		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testToString(adapter, source.getClass());
 	}
 
 	@Test
 	public void testNodeAsInputStream() throws Exception {
 		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsInputStream(adapter);
 	}
 
@@ -757,107 +783,110 @@ public class MessageTest {
 
 		File file = new File(url.toURI());
 		FileInputStream fis = new FileInputStream(file);
-		Message message = Message.asMessage(fis);
-		testAsInputStream(message);
+		try (Message message = Message.asMessage(fis)) {
+			testAsInputStream(message);
+		}
 	}
 
 	@Test
 	public void testNodeAsReader() throws Exception {
 		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsReader(adapter);
 	}
 
 	@Test
 	public void testNodeAsInputSource() throws Exception {
 		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsInputSource(adapter);
 	}
 
 	@Test
 	public void testNodeAsByteArray() throws Exception {
 		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsByteArray(adapter);
 	}
 
 	@Test
 	public void testNodeAsString() throws Exception {
 		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testAsString(adapter);
 	}
 
 	@Test
 	public void testNodeToString() throws Exception {
 		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
-		Message adapter = new Message(source);
+		adapter = new Message(source);
 		testToString(adapter, source.getClass());
 	}
 
 	@Test
 	public void testSerializeWithString() throws Exception {
 		// NB: This test logs a serialization-wire that can be added to the array `characterWires` when there are change to the class structure, to protect a version against breakage by future changes.
-
 		String source = testString;
-		Message in = new Message(source);
+		try (Message in = new Message(source)) {
+			byte[] wire = serializationTester.serialize(in);
+			log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
 
-		byte[] wire = serializationTester.serialize(in);
-		log.debug("Current characterWire: [{}]", ()-> Hex.encodeHexString(wire));
-
-		assertNotNull(wire);
-		Message out = serializationTester.deserialize(wire);
-
-		assertFalse(out.isBinary());
-		assertEquals(testString, out.asString());
+			assertNotNull(wire);
+			Message out = serializationTester.deserialize(wire);
+			assertFalse(out.isBinary());
+			assertEquals(testString, out.asString());
+			out.close();
+		}
 	}
 
 	@Test
 	public void testSerializeWithByteArray() throws Exception {
 		// NB: This test logs a serialization-wire that can be added to the array `binaryWires` when there are change to the class structure, to protect a version against breakage by future changes.
 		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
-		Message in = new Message(source);
-		in.getContext().withCharset("UTF-8");
+		try (Message in = new Message(source)) {
+			in.getContext().withCharset(StandardCharsets.UTF_8);
 
-		byte[] wire = serializationTester.serialize(in);
-		log.debug("Current binaryWire: [{}]", ()-> Hex.encodeHexString(wire));
+			byte[] wire = serializationTester.serialize(in);
+			log.debug("Current binaryWire: [{}]", () -> Hex.encodeHexString(wire));
 
-		assertNotNull(wire);
-		Message out = serializationTester.deserialize(wire);
+			assertNotNull(wire);
+			Message out = serializationTester.deserialize(wire);
 
-		assertTrue(out.isBinary());
-		assertEquals(testString, out.asString());
+			assertTrue(out.isBinary());
+			assertEquals(testString, out.asString());
+			out.close();
+		}
 	}
 
 	@Test
 	public void testSerializeWithReader() throws Exception {
 		Reader source = new StringReader(testString);
-		Message in = new Message(source);
+		try (Message in = new Message(source)) {
+			byte[] wire = serializationTester.serialize(in);
 
-		byte[] wire = serializationTester.serialize(in);
+			assertNotNull(wire);
+			Message out = serializationTester.deserialize(wire);
 
-		assertNotNull(wire);
-		Message out = serializationTester.deserialize(wire);
-
-		assertFalse(out.isBinary());
-		assertEquals(testString, out.asString());
-		in.close();
+			assertFalse(out.isBinary());
+			assertEquals(testString, out.asString());
+			out.close();
+		}
 		source.close();
 	}
 
 	@Test
 	public void testSerializeWithInputStream() throws Exception {
 		InputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		Message in = new Message(source);
+		try (Message in = new Message(source)) {
+			byte[] wire = serializationTester.serialize(in);
 
-		byte[] wire = serializationTester.serialize(in);
+			assertNotNull(wire);
+			Message out = serializationTester.deserialize(wire);
 
-		assertNotNull(wire);
-		Message out = serializationTester.deserialize(wire);
-
-		assertTrue(out.isBinary());
-		assertEquals(testString, out.asString());
+			assertTrue(out.isBinary());
+			assertEquals(testString, out.asString());
+			out.close();
+		}
 	}
 
 	@Test
@@ -872,6 +901,8 @@ public class MessageTest {
 
 		assertTrue(out.isBinary());
 		assertEquals(testString, out.asString());
+		out.close();
+		in.close();
 	}
 
 	@Test
@@ -887,10 +918,12 @@ public class MessageTest {
 
 		assertTrue(out.isBinary());
 		assertEquals(testString, out.asString());
+		out.close();
+		in.close();
 	}
 
 	public static void writeContentsToFile(File file, String contents) throws IOException {
-		try (Writer fw = new OutputStreamWriter(new FileOutputStream(file), "utf-8")) {
+		try (Writer fw = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 			fw.write(contents);
 		}
 	}
@@ -906,13 +939,14 @@ public class MessageTest {
 		Message out = serializationTester.deserialize(wire);
 
 		assertFalse(out.isBinary());
-		assertEquals(testString,out.asString());
+		assertEquals(testString, out.asString());
+		out.close();
 	}
 
 	@Test
 	public void testDeserialization76CompatibilityWithByteArray() throws Exception {
-//		byte[] source = testString.getBytes("utf-8");
-//		Message in = new Message(source, "UTF-8");
+//		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
+//		Message in = new Message(source, StandardCharsets.UTF_8);
 //		byte[] wire = serializationTester.serialize(in);
 //		System.out.println("Bytes: "+Hex.encodeHexString(wire));
 
@@ -920,8 +954,9 @@ public class MessageTest {
 		Message out = serializationTester.deserialize(wire);
 
 		assertTrue(out.isBinary());
-		assertEquals("UTF-8", out.getCharset());
-		assertEquals(testString,out.asString());
+		assertEquals(StandardCharsets.UTF_8.name(), out.getCharset());
+		assertEquals(testString, out.asString());
+		out.close();
 	}
 
 	@Test
@@ -935,13 +970,14 @@ public class MessageTest {
 		Message out = serializationTester.deserialize(wire);
 
 		assertFalse(out.isBinary());
-		assertEquals(testString,out.asString());
+		assertEquals(testString, out.asString());
+		out.close();
 	}
 
 	@Test
 	public void testDeserialization77CompatibilityWithByteArray() throws Exception {
-//		byte[] source = testString.getBytes("utf-8");
-//		Message in = new Message(source, "UTF-8");
+//		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
+//		Message in = new Message(source, StandardCharsets.UTF_8);
 //		byte[] wire = serializationTester.serialize(in);
 //		System.out.println("Bytes: "+Hex.encodeHexString(wire));
 
@@ -949,50 +985,55 @@ public class MessageTest {
 		Message out = serializationTester.deserialize(wire);
 
 		assertTrue(out.isBinary());
-		assertEquals("UTF-8", out.getCharset());
-		assertEquals(testString,out.asString());
+		assertEquals(StandardCharsets.UTF_8.name(), out.getCharset());
+		assertEquals(testString, out.asString());
+		out.close();
 	}
 
 	@Test
 	public void testDeserializationCompatibilityWithString() throws Exception {
 
-		for (int i=0; i< characterWires.length; i++) {
+		for (int i = 0; i < characterWires.length; i++) {
 			String label = characterWires[i][0];
-			log.debug("testDeserializationCompatibilityWithString() "+label);
+			log.debug("testDeserializationCompatibilityWithString() " + label);
 			byte[] wire = Hex.decodeHex(characterWires[i][1]);
 			Message out = serializationTester.deserialize(wire);
 
 			assertFalse(out.isBinary(), label);
 			assertEquals(testString, out.asString(), label);
+			out.close();
 		}
 	}
 
 	@Test
 	public void testDeserializationCompatibilityWithByteArray() throws Exception {
 
-		for (int i=0; i< binaryWires.length; i++) {
+		for (int i = 0; i < binaryWires.length; i++) {
 			String label = binaryWires[i][0];
-			log.debug("testDeserializationCompatibilityWithByteArray() "+label);
+			log.debug("testDeserializationCompatibilityWithByteArray() " + label);
 			byte[] wire = Hex.decodeHex(binaryWires[i][1]);
 			Message out = serializationTester.deserialize(wire);
 
 			assertTrue(out.isBinary(), label);
-			assertEquals("UTF-8", out.getCharset(), label);
+			assertEquals(StandardCharsets.UTF_8.name(), out.getCharset(), label);
 			assertEquals(testString, out.asString(), label);
+			out.close();
 		}
 	}
 
 
 	@Test
-	public void testMessageSizeString() {
+	public void testMessageSizeString() throws IOException {
 		Message message = Message.asMessage("string");
-		assertEquals( 6, message.size(), "size differs or could not be determined");
+		assertEquals(6, message.size(), "size differs or could not be determined");
+		message.close();
 	}
 
 	@Test
-	public void testMessageSizeByteArray() {
+	public void testMessageSizeByteArray() throws IOException {
 		Message message = Message.asMessage("string".getBytes());
 		assertEquals(6, message.size(), "size differs or could not be determined");
+		message.close();
 	}
 
 	@Test
@@ -1001,9 +1042,10 @@ public class MessageTest {
 		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
-		FileInputStream fis = new FileInputStream(file);
-		Message message = Message.asMessage(fis);
-		assertEquals(33, message.size(), "size differs or could not be determined");
+		try (FileInputStream fis = new FileInputStream(file);
+			 Message message = Message.asMessage(fis)) {
+			assertEquals(33, message.size(), "size differs or could not be determined");
+		}
 	}
 
 	@Test
@@ -1012,23 +1054,26 @@ public class MessageTest {
 		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
-		Message message = Message.asMessage(file);
-		assertEquals(33, message.size(), "size differs or could not be determined");
+		try (Message message = Message.asMessage(file)) {
+			assertEquals(33, message.size(), "size differs or could not be determined");
+		}
 	}
 
 	@Test
-	public void testMessageSizeURL() {
+	public void testMessageSizeURL() throws IOException {
 		URL url = this.getClass().getResource("/file.xml");
 		assertNotNull(url, "cannot find testfile");
 
-		Message message = Message.asMessage(url);
-		assertEquals(-1, message.size(), "size differs or could not be determined");
+		try (Message message = Message.asMessage(url)) {
+			assertEquals(-1, message.size(), "size differs or could not be determined");
+		}
 	}
 
 	@Test
-	public void testNullMessageSize() {
-		Message message = Message.nullMessage();
-		assertEquals(0, message.size());
+	public void testNullMessageSize() throws IOException {
+		try (Message message = Message.nullMessage()) {
+			assertEquals(0, message.size());
+		}
 	}
 
 	@Test
@@ -1036,50 +1081,54 @@ public class MessageTest {
 		URL url = new URL("http://www.file.xml");
 		assertNotNull(url, "cannot find testfile");
 
-		Message message = Message.asMessage(url);
-		assertEquals(-1, message.size());
+		try (Message message = Message.asMessage(url)) {
+			assertEquals(-1, message.size());
+		}
 	}
 
 	@Test
-	public void testMessageSizeReader() {
-		Message message = new Message(new StringReader("string"));
-		assertEquals(-1, message.size(), "size differs or could not be determined");
+	public void testMessageSizeReader() throws IOException {
+		try (Message message = new Message(new StringReader("string"))) {
+			assertEquals(-1, message.size(), "size differs or could not be determined");
+		}
 	}
 
 	@Test
-	public void testMessageIsEmpty() {
-		Message message = Message.nullMessage();
-		assertTrue(message.isEmpty());
-		assertTrue(Message.isEmpty(message));
+	public void testMessageIsEmpty() throws IOException {
+		try (Message message = Message.nullMessage()) {
+			assertTrue(message.isEmpty());
+			assertTrue(Message.isEmpty(message));
+		}
 	}
 
 	@Test
 	public void testNullMessageIsEmpty() {
-		Message message = null;
-		assertTrue(Message.isEmpty(message));
+		assertTrue(Message.isEmpty(null));
 	}
 
 	@Test
 	public void testMessageDefaultCharset() throws Exception {
 		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
-		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes("utf-8"));
+		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes(StandardCharsets.UTF_8));
 		Message binaryMessage = new Message(source); //non-repeatable stream, no provided charset
 
 		assertEquals(utf8Input, binaryMessage.asString()); //Default must be used
 
-		Message characterMessage = new Message(utf8Input);
-
-		assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); //This should not be used as there is no binary conversion
+		try (Message characterMessage = new Message(utf8Input)) {
+			assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); //This should not be used as there is no binary conversion
+		}
+		binaryMessage.close();
 	}
 
 	@Test
 	public void testMessageDetectCharset() throws Exception {
 		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
-		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes("utf-8"));
+		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes(StandardCharsets.UTF_8));
 		Message message = new Message(source, "auto"); //Set the MessageContext charset
 
 		String stringResult = message.asString("ISO-8859-ik-besta-niet"); //use MessageContext charset
 		assertEquals(utf8Input, stringResult);
+		message.close();
 	}
 
 	@Test
@@ -1087,10 +1136,10 @@ public class MessageTest {
 		URL isoInputFile = TestFileUtils.getTestFileURL("/Util/MessageUtils/iso-8859-1.txt");
 		assertNotNull(isoInputFile, "unable to find isoInputFile");
 
-		Message message = new UrlMessage(isoInputFile); //repeatable stream, detect charset
-
-		String stringResult = message.asString("auto"); //detect when reading
-		assertEquals(StreamUtil.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
+		try (Message message = new UrlMessage(isoInputFile)) { //repeatable stream, detect charset
+			String stringResult = message.asString("auto"); //detect when reading
+			assertEquals(StreamUtil.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
+		}
 	}
 
 	@Test
@@ -1099,26 +1148,28 @@ public class MessageTest {
 			@Override
 			public String getCharset() {
 				return null;
-			};
+			}
 		};
 		Message messageAutoCharset = new Message((byte[]) null) { //NullMessage, charset cannot be determined
 			@Override
 			public String getCharset() {
 				return "AUTO";
-			};
+			}
 		};
 
 		// getCharset()==null && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
-		assertEquals("UTF-8", messageNullCharset.computeDecodingCharset("AUTO"));
+		assertEquals(StandardCharsets.UTF_8.name(), messageNullCharset.computeDecodingCharset("AUTO"));
 
 		// getCharset()==AUTO && defaultDecodingCharset==xyz ==> decodingCharset = xyz
 		assertEquals("ISO-8559-15", messageAutoCharset.computeDecodingCharset("ISO-8559-15"));
 
 		// getCharset()==AUTO && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
-		assertEquals("UTF-8", messageAutoCharset.computeDecodingCharset("AUTO"));
+		assertEquals(StandardCharsets.UTF_8.name(), messageAutoCharset.computeDecodingCharset("AUTO"));
 
 		// getCharset()==AUTO && defaultDecodingCharset==null ==> decodingCharset = UTF-8
-		assertEquals("UTF-8", messageAutoCharset.computeDecodingCharset(null));
+		assertEquals(StandardCharsets.UTF_8.name(), messageAutoCharset.computeDecodingCharset(null));
+		messageNullCharset.close();
+		messageAutoCharset.close();
 	}
 
 	@Test
@@ -1127,7 +1178,8 @@ public class MessageTest {
 			@Override
 			public String getCharset() {
 				return "AUTO";
-			};
+			}
+
 		};
 
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%m").build();
@@ -1142,10 +1194,10 @@ public class MessageTest {
 			message.asString(); //calls asReader();
 			message.asString("auto"); //calls asReader();
 			message.asString(); //calls asReader();
-
+			message.close();
 			int i = 0;
 			for (String log : appender.getLogLines()) {
-				if(log.contains("unable to detect charset for message")) {
+				if (log.contains("unable to detect charset for message")) {
 					i++;
 				}
 			}
@@ -1153,6 +1205,7 @@ public class MessageTest {
 		} finally {
 			TestAppender.removeAppender(appender);
 		}
+		message.close();
 	}
 
 	@Test
@@ -1162,7 +1215,7 @@ public class MessageTest {
 		FilterReader filterReader = new FilterReader(reader) {
 			private int readCounted(ThrowingSupplier<Integer, IOException> reader) throws IOException {
 				int len = reader.get();
-				if (len>0) {
+				if (len > 0) {
 					charsRead.addAndGet(len);
 				}
 				return len;
@@ -1176,7 +1229,7 @@ public class MessageTest {
 		Message message = new Message(filterReader);
 		int charsToRead = 6;
 		message.getMagic(charsToRead);
-
+		message.close();
 		assertEquals(charsToRead, charsRead.get());
 	}
 
@@ -1191,9 +1244,10 @@ public class MessageTest {
 		msg1.close();
 
 		// Assert
-		assertNull(msg1.asObject());
-		assertNotNull(msg2.asObject());
+		assertTrue(msg1.isNull());
+		assertFalse(msg2.isNull());
 		assertEquals("a", msg2.asString());
+		msg2.close();
 	}
 
 	@Test
@@ -1207,9 +1261,10 @@ public class MessageTest {
 		msg1.close();
 
 		// Assert
-		assertNull(msg1.asObject());
-		assertNotNull(msg2.asObject());
+		assertTrue(msg1.isNull());
+		assertFalse(msg2.isNull());
 		assertEquals("á", msg2.asString());
+		msg2.close();
 	}
 
 	@Test
@@ -1223,13 +1278,14 @@ public class MessageTest {
 		msg1.close();
 
 		// Assert
-		assertNull(msg1.asObject());
-		assertNotNull(msg2.asObject());
+		assertTrue(msg1.isNull());
+		assertFalse(msg2.isNull());
 		assertEquals("á", msg2.asString());
+		msg2.close();
 	}
 
 	@Test
-	void testMessageNotClosedByUser() {
+	void testMessageNotClosedByUser() throws IOException {
 		TestAppender appender = TestAppender.newBuilder().build();
 		TestAppender.addToRootLogger(appender);
 		try {
@@ -1249,5 +1305,67 @@ public class MessageTest {
 	private void createMessageInShortLivedScope() {
 		Message test = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "fakeContextValue1"));
 		assertNotNull(test);
+	}
+
+	@Test
+	void testMessageAsStringDoesNotCloseMessage() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Object msg = Message.asMessage(new StringReader("text"));
+
+		// Act
+		String content = Message.asString(msg);
+
+		// Assert
+		Message message = (Message) msg;
+		assertEquals("text", message.asString());
+		assertEquals("text", content);
+		message.close();
+	}
+
+	@Test
+	void testMessageAsStringDoesNotCloseMessageWrapper() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Message msg = Message.asMessage(new StringReader("text"));
+		Object wrapper = new MessageWrapper<Message>(msg, null, null);
+
+		// Act
+		String content = Message.asString(wrapper);
+
+		// Assert
+		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
+		assertEquals("text", messageWrapper.getMessage().asString());
+		assertEquals("text", content);
+		msg.close();
+	}
+
+	@Test
+	void testMessageAsByteArrayDoesNotCloseMessage() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Object msg = Message.asMessage(new StringReader("text"));
+
+		// Act
+		byte[] content = Message.asByteArray(msg);
+
+		// Assert
+		Message message = (Message) msg;
+		assertEquals("text", message.asString());
+    	assertEquals(4, content.length);
+		message.close();
+	}
+
+	@Test
+	void testMessageAsByteArrayDoesNotCloseMessageWrapper() throws IOException {
+		// Arrange: make it an object, so method can do instanceof check
+		Message msg = Message.asMessage(new StringReader("text"));
+		Object wrapper = new MessageWrapper<Message>(msg, null, null);
+
+		// Act
+		byte[] content = Message.asByteArray(wrapper);
+
+		// Assert
+		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
+		assertEquals("text", messageWrapper.getMessage().asString());
+    	assertEquals(4, content.length);
+		msg.close();
 	}
 }
