@@ -205,7 +205,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	protected final PreparedStatement getStatement(@Nonnull Connection con, @Nonnull String query, @Nullable QueryType queryType) throws JdbcException, SQLException {
-		return prepareQuery(con, query, queryType);
+		PreparedStatement preparedStatement = prepareQuery(con, query, queryType);
+		preparedStatement.setQueryTimeout(getTimeout());
+		return preparedStatement;
 	}
 
 	protected PreparedStatement prepareQuery(@Nonnull Connection con, @Nonnull String query, @Nullable QueryType queryType) throws SQLException, JdbcException {
@@ -239,7 +241,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
 		String callQuery = "BEGIN " + query + " RETURNING ROWID INTO ?; END;";
 		log.debug("{}preparing statement for query [{}]", this::getLogPrefix, () -> callQuery);
-		return con.prepareCall(callQuery);
+		CallableStatement callableStatement = con.prepareCall(callQuery);
+		callableStatement.setQueryTimeout(getTimeout());
+		return callableStatement;
 	}
 
 	protected ResultSet getReturnedColumns(PreparedStatement st) throws SQLException {
@@ -255,10 +259,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
 		PreparedStatement statement = getStatement(connection, query, getQueryTypeEnum());
 		log.debug(getLogPrefix() + "obtained prepared statement to execute");
-		statement.setQueryTimeout(getTimeout());
 		PreparedStatement resultQueryStatement;
 		if (convertedResultQuery != null) {
 			resultQueryStatement = connection.prepareStatement(convertedResultQuery);
+			resultQueryStatement.setQueryTimeout(getTimeout());
 		} else {
 			resultQueryStatement = null;
 		}
