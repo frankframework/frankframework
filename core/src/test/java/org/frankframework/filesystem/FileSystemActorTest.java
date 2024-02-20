@@ -212,8 +212,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	public void fileSystemActorListActionTest(String inputFolder, int numberOfFiles, int expectedNumberOfFiles) throws Exception {
-
-
 		for (int i=0; i<numberOfFiles; i++) {
 			String filename = "tobelisted"+i + FILE1;
 
@@ -245,6 +243,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //		}
 
 		assertFileCountEquals(result, expectedNumberOfFiles);
+		message.close();
 	}
 
 	@Test
@@ -762,11 +761,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 		waitForActionToFinish();
 
-
 		String actual = readFile(null, filename);
-		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+//		assertEquals(result, message, "result of sender should be input message");
 		assertEquals(contents.trim(), actual.trim());
 	}
 
@@ -1428,6 +1425,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		ParameterValueList pvl = null;
 		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
 		assertThat(e.getMessage(), containsString("unable to process [RMDIR] action for File [testDirectory]: Cannot remove folder"));
+
+		// Clean up
+		message.close();
 	}
 
 	@Test
@@ -1452,6 +1452,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// test
 		assertEquals(filename, result.asString(), "result of sender should be name of deleted file");
 		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
+
+		message.close();
 	}
 
 	@Test
@@ -1459,6 +1461,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename = "filetobedeleted" + FILE1;
 		String folder = "inner";
 
+		_deleteFolder(folder);
 		_createFolder(folder);
 		createFile(folder, filename, "is not empty");
 
@@ -1478,12 +1481,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(filename, result.asString(), "result of sender should be name of deleted file");
 		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
 		assertFalse(_folderExists(folder), "Expected parent folder not to be present");
+		message.close();
 	}
 
-	@Test //Should not be able to cleanup directory after removing 'filename' because there are still 2 empty folders on the same root. Tests if list detects DIRECTORIES
+	@Test //Should not be able to clean up directory after removing 'filename' because there are still 2 empty folders on the same root. Tests if list detects DIRECTORIES
 	public void fileSystemActorDeleteActionWithDeleteEmptyFolderRootContainsEmptyFoldersTest() throws Exception {
 		String filename = "filetobedeleted" + FILE1;
-		String folder = "inner";
+		final String folder = "inner";
 
 		_createFolder(folder);
 		_createFolder(folder+"/innerFolder1");
@@ -1505,6 +1509,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertFalse(_fileExists(filename), "Expected file [" + filename + "] " + "not to be present in the root");
 		assertTrue(_folderExists(folder), "Expected parent folder to be present");
 		assertTrue(_folderExists(folder+"/innerFolder1"), "Expected file in parent folder to be present");
+		message.close();
 	}
 
 	@Test
