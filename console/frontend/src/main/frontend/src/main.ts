@@ -113,7 +113,7 @@ $(function () {
     }
   });
 
-  $(window).on("scroll", function (this: JQuery<HTMLElement>) {
+  $('body').on("scroll", function (this: JQuery<HTMLElement>) {
     var scroll2top = $(".scroll-to-top").stop(true);
     if ($(this).scrollTop()! > 100) {
       if (parseInt(scroll2top.css("opacity")) === 0) {
