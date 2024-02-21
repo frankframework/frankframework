@@ -1,8 +1,8 @@
 import { CommonModule } from "@angular/common";
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import mermaid from 'mermaid';
+import { v4 as uuidv4 } from 'uuid';
 
-type CSSRuleExtended = CSSRule & { selectorText: string };
 
 @Component({
   standalone: true,
@@ -23,22 +23,32 @@ type CSSRuleExtended = CSSRule & { selectorText: string };
     }
   `]
 })
-export class NgMermaidComponent implements OnInit, OnChanges {
+export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   @Input() nmModel?: any;
   @Input() nmRefreshInterval?: number;
+  @Input() divId?: string;
   @Output() nmInitCallback = new EventEmitter();
-
-  model = this.nmModel;
-  interval = 2000;
-  is_mermaid = 'mermaid';
-  initialized = false;
-  timeout?: number;
 
   @ViewChild('mermaidPre') mermaidEl!: ElementRef<HTMLElement>;
 
-  private element = this.elRef.nativeElement;
+  protected interval = 2000;
+  protected is_mermaid = 'mermaid';
+  protected initialized = false;
+  protected firstRender = true;
+  protected timeout?: number;
 
-  constructor(private elRef: ElementRef<HTMLElement>) { }
+  constructor() {
+    mermaid.initialize({
+      startOnLoad: false,
+      maxTextSize: 70 * 1000,
+      maxEdges: 600,
+      flowchart: {
+        diagramPadding: 8,
+        htmlLabels: true,
+        curve: 'basis',
+      },
+    });
+  }
 
   ngOnInit() {
     this.render();
@@ -50,46 +60,44 @@ export class NgMermaidComponent implements OnInit, OnChanges {
       this.render();
   }
 
+  ngOnDestroy() {
+    this.mermaidEl.nativeElement.innerHTML = 'Loading...'
+  }
+
   render() {
     if (this.nmRefreshInterval) {
       this.interval = this.nmRefreshInterval || this.interval;
     }
 
     if (this.nmModel) {
-      this.model = this.nmModel;
-      this.element.querySelectorAll("[data-processed]").forEach((v, k) => {
-        v.removeAttribute("data-processed");
-      });
-      if (this.timeout)
+      if (this.timeout) {
         window.clearTimeout(this.timeout);
+      }
+
       this.timeout = window.setTimeout(() => {
         try {
-          this.mermaidEl.nativeElement.innerHTML = this.nmModel;
-          mermaid.initialize({
-            startOnLoad: false, maxTextSize: 70 * 1000, maxEdges: 600, flowchart: {
-              diagramPadding: 8,
-              htmlLabels: true,
-              curve: 'basis',
-            },
-          });
-          mermaid.run({
-            nodes: [this.mermaidEl.nativeElement]
-          }).then(() => {
-            const svgElement = this.mermaidEl.nativeElement.firstChild as HTMLElement;
+          const mermaidContainer = this.mermaidEl.nativeElement;
+          mermaidContainer.innerHTML = 'Loading...';
+          const uid = `m${uuidv4()}`;
+          mermaid.render(uid, this.nmModel, mermaidContainer).then(({ svg }) => {
+            mermaidContainer.innerHTML = svg;
+            const svgElement = mermaidContainer.firstChild as HTMLElement;
             svgElement.setAttribute('height', '100%');
             svgElement.setAttribute('style', "");
           }).catch(e => { this.handleError(e) })
             .finally(() => {
+              this.firstRender = false;
               this.nmInitCallback.emit();
             });
         } catch (e) {
           this.handleError(e as Error);
         }
-      }, this.initialized ? this.interval : 0);
+      }, this.firstRender ? 0 : this.interval);
     }
   }
 
   handleError(e: Error) {
+    console.error(e);
     let errorContainer = '';
     errorContainer += `<div style="display: inline-block; text-align: left; color: red; margin: 8px auto; font-family: Monaco,Consolas,Liberation Mono,Courier New,monospace">`;
     e.message.split('\n').forEach((v) => {
@@ -98,10 +106,4 @@ export class NgMermaidComponent implements OnInit, OnChanges {
     errorContainer += `</div>`;
     this.mermaidEl.nativeElement.innerHTML += errorContainer;
   }
-
-  cssReplace(cssRule: string) {
-    return cssRule
-      .replace('ng\:cloak', 'ng--cloak')
-      .replace('ng\:form', 'ng--form');
-  };
 }

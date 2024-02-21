@@ -71,7 +71,7 @@ import { FormatCodeDirective } from './views/configurations/configurations-show/
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
-import { NgMermaidComponent } from './components/ng-mermaid.component';
+import { NgMermaidComponent } from './components/ng-mermaid/ng-mermaid.component';
 import { LoggingComponent } from './views/logging/logging.component';
 import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 import { ConnectionsComponent } from './views/connections/connections.component';
