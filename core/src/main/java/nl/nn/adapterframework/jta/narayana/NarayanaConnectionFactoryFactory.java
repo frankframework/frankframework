@@ -37,7 +37,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
-	private @Getter @Setter int maxIdle = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdle", 60);
+	private @Getter @Setter int maxIdle = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdle", 2);
 	private @Getter @Setter int maxIdleTime = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdleTime", 60);
 	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 20);
 	private @Getter @Setter int connectionCheckInterval = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.checkInterval", 300);
