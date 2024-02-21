@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -13,7 +14,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -36,21 +36,20 @@ public class XmlParserTest {
 
 		XmlWriter writer = new XmlWriter();
 		XmlUtils.parseXml(input, writer);
-		
-		MatchUtils.assertXmlEquals(expected,writer.toString());		
+
+		MatchUtils.assertXmlEquals(expected,writer.toString());
 	}
 
 	@Test
 	public void testParseXmlNoRelativeEntityInjection() throws IOException, SAXException {
-		URL    input    = TestFileUtils.getTestFileURL("/XmlUtils/EntityResolution/in-relative-entity.xml");
+		String testContent = TestFileUtils.getTestFile("/XmlUtils/EntityResolution/in-relative-entity.xml");
 		String expected = TestFileUtils.getTestFile("/XmlUtils/EntityResolution/out-not-resolved.xml");
 
 		XmlWriter writer = new XmlWriter();
-		InputSource source = Message.asInputSource(input);
-		
+		InputSource source = new InputSource(new StringReader(testContent));
 		XmlUtils.parseXml(source, writer);
-		
-		MatchUtils.assertXmlEquals(expected,writer.toString());
+
+		MatchUtils.assertXmlEquals(expected, writer.toString());
 	}
 
 	@Test
@@ -61,7 +60,7 @@ public class XmlParserTest {
 		XmlWriter writer = new XmlWriter();
 		XmlUtils.parseXml(input, writer);
 
-		MatchUtils.assertXmlEquals(expected,writer.toString());
+		MatchUtils.assertXmlEquals(expected, writer.toString());
 	}
 
 	@Test
@@ -70,10 +69,10 @@ public class XmlParserTest {
 	public void testParseXmlResourceWithExternalEntityInjection() throws IOException, SAXException, ParserConfigurationException {
 		Resource input  = Resource.getResource("/XmlUtils/EntityResolution/in-file-entity-c-temp.xml");
 		String expected = TestFileUtils.getTestFile("/XmlUtils/EntityResolution/out-resolved.xml");
-		
+
 		XmlWriter writer = new XmlWriter();
 		XmlUtils.parseXml(input, writer);
-		
+
 		MatchUtils.assertXmlEquals(expected,writer.toString());
 	}
 }

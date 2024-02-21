@@ -494,7 +494,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 				} else if (message != null) {
 					if (StringUtils.isNotEmpty(getContextKey())) {
-						source = Message.asSource(message.getContext().get(getContextKey()));
+						source = Message.asMessage(message.getContext().get(getContextKey())).asSource();
 					} else {
 						source = message.asSource();
 					}
