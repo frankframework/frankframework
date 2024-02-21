@@ -8,7 +8,7 @@ export class ScrollToTopComponent {
   @Input() navElem!: HTMLElement;
 
   scrollTop() {
-    window.scrollTo({ top: 0 });
+    document.body.scrollTo({ top: 0 });
     this.navElem.scrollTo({ top: 0 });
   };
 }
