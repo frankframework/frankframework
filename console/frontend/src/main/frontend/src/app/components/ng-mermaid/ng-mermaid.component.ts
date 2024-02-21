@@ -26,7 +26,6 @@ import { v4 as uuidv4 } from 'uuid';
 export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   @Input() nmModel?: any;
   @Input() nmRefreshInterval?: number;
-  @Input() divId?: string;
   @Output() nmInitCallback = new EventEmitter();
 
   @ViewChild('mermaidPre') mermaidEl!: ElementRef<HTMLElement>;
@@ -35,6 +34,7 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   protected is_mermaid = 'mermaid';
   protected initialized = false;
   protected firstRender = true;
+  protected mermaidSvgElement: SVGSVGElement | null = null;
   protected timeout?: number;
 
   constructor() {
@@ -81,7 +81,8 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
           const uid = `m${uuidv4()}`;
           mermaid.render(uid, this.nmModel, mermaidContainer).then(({ svg }) => {
             mermaidContainer.innerHTML = svg;
-            const svgElement = mermaidContainer.firstChild as HTMLElement;
+            const svgElement = mermaidContainer.firstChild as SVGSVGElement;
+            this.mermaidSvgElement = svgElement;
             svgElement.setAttribute('height', '100%');
             svgElement.setAttribute('style', "");
           }).catch(e => { this.handleError(e) })
@@ -96,7 +97,11 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  handleError(e: Error) {
+  getMermaidSvgElement() {
+    return this.mermaidSvgElement;
+  }
+
+  private handleError(e: Error) {
     console.error(e);
     let errorContainer = '';
     errorContainer += `<div style="display: inline-block; text-align: left; color: red; margin: 8px auto; font-family: Monaco,Consolas,Liberation Mono,Courier New,monospace">`;
