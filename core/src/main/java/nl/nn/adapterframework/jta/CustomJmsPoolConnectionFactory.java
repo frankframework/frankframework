@@ -19,17 +19,36 @@ import java.time.Duration;
 
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 
-public class CustomJmsPoolConnectionFactory extends JmsPoolConnectionFactory {
+public class CustomJmsPoolConnectionFactory extends JmsPoolConnectionFactory implements CustomPoolExtensions {
 
 	@Override
 	public void setMaxConnections(int maxConnections) {
+		// Super-method sets both max-idle and max-total connections. Set only max-total.
 		this.getConnectionsPool().setMaxTotalPerKey(maxConnections);
 	}
 
+	@Override
+	public int getMaxConnections() {
+		// Super-method actually gets the max-idle per key, b/c it would set that equal to the max total.
+		return getConnectionsPool().getMaxTotalPerKey();
+	}
+
+	@Override
 	public void setMaxIdle(int maxIdle) {
 		this.getConnectionsPool().setMaxIdlePerKey(maxIdle);
 	}
 
+	@Override
+	public int getMaxIdle() {
+		return getConnectionsPool().getMaxIdlePerKey();
+	}
+
+	@Override
+	public int getNumIdle() {
+		return getConnectionsPool().getNumIdle();
+	}
+
+	@Override
 	public void setMaxIdleTimeSeconds(int maxIdleTimeSeconds) {
 		this.getConnectionsPool().setMinEvictableIdleDuration(Duration.ofSeconds(maxIdleTimeSeconds));
 	}

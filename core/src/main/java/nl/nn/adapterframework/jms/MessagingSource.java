@@ -43,6 +43,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
+import nl.nn.adapterframework.jta.CustomPoolExtensions;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
@@ -216,6 +217,10 @@ public class MessagingSource  {
 			result.append("max poolsize [").append(poolcf.getMaxPoolSize()).append(CLOSE);
 			result.append("max idle time [").append(poolcf.getMaxIdleTime()).append(CLOSE);
 			result.append("max life time [").append(poolcf.getMaxLifeTime()).append(CLOSE);
+		}
+		if (qcfd instanceof CustomPoolExtensions) {
+			CustomPoolExtensions poolcf = (CustomPoolExtensions) qcfd;
+			result.append("max idle [").append(poolcf.getMaxIdle()).append(CLOSE);
 		}
 		if (qcfd instanceof JmsPoolConnectionFactory) {
 			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
