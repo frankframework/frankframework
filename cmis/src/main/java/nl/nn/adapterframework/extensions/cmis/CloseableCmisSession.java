@@ -34,13 +34,13 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class CloseableCmisSession extends SessionImpl implements AutoCloseable {
 
-	public CloseableCmisSession(Map<String, String> parameters, ObjectFactory objectFactory, AuthenticationProvider authenticationProvider, Cache cache, TypeDefinitionCache typeDefCache) {
-		super(parameters, objectFactory, authenticationProvider, cache, typeDefCache);
+	public CloseableCmisSession(Map<String, String> parameters) {
+		super(parameters, null, null, null, null);
 	}
 
 	@Override
 	public void close() {
-		log.debug("CMIS Session Close, SPI Binding class name: [{}]", getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
+		log.debug("CMIS Session Close, SPI Binding class name: [{}]", () -> getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
 		clear();
 		CmisBinding binding = getBinding();
 		if (binding != null) {

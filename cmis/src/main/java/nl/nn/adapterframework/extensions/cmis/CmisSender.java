@@ -28,9 +28,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -43,6 +45,7 @@ import org.apache.chemistry.opencmis.client.api.QueryResult;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
@@ -243,6 +246,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private @Getter boolean convert2Base64 = false;
 	private @Getter String fileSessionKey;
 
+	public static final String HEADER_PARAM_PREFIX = "Header.";
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -266,6 +271,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 			// Legacy; check if the session should be created runtime (and thus for each call)
 			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null || getParameterList().findParameter("userName") != null ) {
+				runtimeSession = true;
+			}
+
+			// If any Header params exist, use RuntimeSessions
+			if(getParameterList().stream().anyMatch(param -> param.getName().startsWith(HEADER_PARAM_PREFIX))) {
 				runtimeSession = true;
 			}
 		}
@@ -316,7 +326,16 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		CredentialFactory cf = new CredentialFactory(authAlias_work, username_work, password_work);
 		try {
-			return getSessionBuilder().build(cf.getUsername(), cf.getPassword());
+			SessionParameterMap map = getSessionBuilder().build(cf.getUsername(), cf.getPassword());
+			for(Entry<String, Object> entry : pvl.getValueMap().entrySet()) {
+				if(entry.getKey().startsWith(HEADER_PARAM_PREFIX)) {
+					map.put(entry.getKey(), entry.getValue()+"");
+				}
+			}
+			CloseableCmisSession session = new CloseableCmisSession(map);
+			session.connect();
+
+			return session;
 		}
 		catch (CmisSessionException e) {
 			throw new SenderException(e);
@@ -332,7 +351,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		// If we don't need to create the session at JVM runtime, create to test the connection
 		if (!runtimeSession) {
 			try {
-				globalSession = getSessionBuilder().build();
+				SessionParameterMap map = getSessionBuilder().build();
+				globalSession = new CloseableCmisSession(map);
+				globalSession.connect();
 			}
 			catch (CmisSessionException e) {
 				throw new SenderException("unable to create cmis session", e);

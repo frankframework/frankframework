@@ -33,6 +33,7 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -261,6 +262,16 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 								}
 							}
 						}
+					}
+				}
+			}
+
+			for(String key : session.getKeys()) {
+				if(key.startsWith(CmisSender.HEADER_PARAM_PREFIX)) {
+					String name = StringUtils.substring(key, 7);
+					Object value = session.get(key);
+					if(value != null) {
+						headers.put(name, value.toString());
 					}
 				}
 			}
