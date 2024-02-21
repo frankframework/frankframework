@@ -26,7 +26,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<artifactId>geronimo-jms_2.0_spec</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.ing</groupId>

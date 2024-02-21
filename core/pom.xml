@@ -126,18 +126,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<artifactId>geronimo-jms_2.0_spec</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.messaginghub</groupId>
 			<artifactId>pooled-jms</artifactId>
 			<version>1.2.7</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jms_2.0_spec</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
