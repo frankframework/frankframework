@@ -27,8 +27,9 @@ import nl.nn.testtool.filter.CheckpointMatcher;
  *
  * @author Jaco de Groot
  */
-public class GrayBox implements CheckpointMatcher {
+public class GrayBox extends ViewBox {
 
+	@Override
 	public boolean match(Report report, Checkpoint checkpoint) {
 		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
 				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
@@ -44,36 +45,5 @@ public class GrayBox implements CheckpointMatcher {
 		} else {
 			return isSenderOrPipelineOrFirstOrLastCheckpoint(report, checkpoint);
 		}
-	}
-
-	protected boolean isSender(Checkpoint checkpoint) {
-		return checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ");
-	}
-
-	protected boolean isPipeline(Checkpoint checkpoint) {
-		return checkpoint.getName() != null && checkpoint.getName().startsWith("Pipeline ");
-	}
-
-	private boolean isSenderOrPipelineOrFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
-		return isSenderOrPipeline(checkpoint) || isFirstOrLastCheckpoint(report, checkpoint);
-	}
-
-	protected boolean isSenderOrPipeline(Checkpoint checkpoint) {
-		return isSender(checkpoint) || isPipeline(checkpoint);
-	}
-
-	private boolean isFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
-		List<Checkpoint> checkpoints = report.getCheckpoints();
-		if (!checkpoints.isEmpty()) {
-			Checkpoint firstCheckpoint = checkpoints.get(0);
-			if (checkpoint.equals(firstCheckpoint)) {
-				return true;
-			}
-			Checkpoint lastCheckpoint = checkpoints.get(checkpoints.size() - 1);
-			if (checkpoint.equals(lastCheckpoint)) {
-				return true;
-			}
-		}
-		return false;
 	}
 }

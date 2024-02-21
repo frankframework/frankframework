@@ -26,7 +26,7 @@ import nl.nn.testtool.Checkpoint;
  *
  * @author Jaco de Groot
  */
-public class BlackBox extends GrayBox {
+public class BlackBox extends ViewBox {
 	private static final Set<String> SENDERS_TO_HIDE = new HashSet<>(Arrays.asList(
 			// Also in stub4testtool.xsl
 			"org.frankframework.jdbc.ResultSet2FileSender",
