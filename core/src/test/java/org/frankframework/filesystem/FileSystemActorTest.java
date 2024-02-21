@@ -623,7 +623,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
-	public void fileSystemActorWriteActionTestWithStringAndUploadAsAction() throws Exception {
+	public void fileSystemActorUploadActionTestWithString() throws Exception {
 		String filename = "uploadedwithString" + FILE1;
 		String contents = "Some text content to test upload action\n";
 
@@ -695,6 +695,39 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String expected = contents + lineSeparator;
 
 		assertEquals(expected, actualContents);
+	}
+
+	@Test
+	public void fileSystemActorWriteActionSessionKeyFilenameAndContents() throws Exception {
+		String filename = "uploadedFilewithString" + FILE1;
+		String contents = "Some text content to test upload action\n";
+
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("fileContentSessionValue", contents);
+
+		ParameterList params = new ParameterList();
+		params.add(ParameterBuilder.create().withName("contents").withSessionKey("fileContentSessionValue"));
+		params.add(ParameterBuilder.create().withName("filename").withValue(filename));
+
+		actor.setAction(FileSystemAction.WRITE);
+		params.configure();
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message = new Message("should-not-be-used");
+		ParameterValueList pvl = params.getValues(message, session);
+		result = actor.doAction(message, pvl, session);
+		waitForActionToFinish();
+
+		String stringResult = result.asString();
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+
+		String actualContents = readFile(null, filename);
+		assertEquals(contents.trim(), actualContents.trim());
 	}
 
 	@Test
