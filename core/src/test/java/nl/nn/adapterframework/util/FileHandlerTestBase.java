@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -39,7 +40,7 @@ public abstract class FileHandlerTestBase {
 
 	private IFileHandler handler;
 	private PipeLineSession session = new PipeLineSession();
-	public String charset = "UTF-8";
+	public String charset = StandardCharsets.UTF_8.name();
 
 	protected abstract IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException;
 
