@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,15 @@
 */
 package nl.nn.adapterframework.stream;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -30,8 +35,11 @@ import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
-public class MessageContext extends LinkedHashMap<String,Object> {
+public class MessageContext implements Serializable {
 	private static final Logger LOG = LogManager.getLogger(MessageContext.class);
+
+	private static final long serialVersionUID = 1L;
+	private static final long customSerializationVersion = 1L;
 
 	public static final String HEADER_PREFIX = "Header.";
 
@@ -42,6 +50,8 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 	public static final String METADATA_LOCATION = "Metadata.Location";
 	public static final String METADATA_MIMETYPE = "Metadata.MimeType";
 
+	private Map<String, Serializable> data = new LinkedHashMap<>();
+
 	public MessageContext() {
 		super();
 	}
@@ -49,17 +59,54 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		this();
 		withCharset(charset);
 	}
-	public MessageContext(Map<String,Object> base) {
+	public MessageContext(Map<String, ?> base) {
 		this();
 		withAllFrom(base);
 	}
 
-	public MessageContext withAllFrom(Map<String,Object> base) {
+	public MessageContext(MessageContext base) {
+		this(base.data);
+	}
+
+	public MessageContext withAllFrom(Map<String,?> base) {
 		if (base!=null) {
 			putAll(base);
 		}
 		return this;
 	}
+
+	public void putAll(Map<String, ?> base) {
+		if (base!=null) {
+			base.forEach((key, value) -> {
+				if (value instanceof Serializable) data.put(key, (Serializable) value);
+			});
+		}
+	}
+
+	public void put(String key, Serializable value) {
+		data.put(key, value);
+	}
+
+	Serializable remove(String key) {
+		return data.remove(key);
+	}
+
+	public Serializable get(String key) {
+		return data.get(key);
+	}
+
+	public boolean containsKey(String key) {
+		return data.containsKey(key);
+	}
+
+	public boolean isEmpty() {
+		return data.isEmpty();
+	}
+
+	public Set<Map.Entry<String, Serializable>> entrySet() {
+		return data.entrySet();
+	}
+
 	public MessageContext withCharset(String charset) {
 		if (StringUtils.isNotEmpty(charset)) {
 			put(METADATA_CHARSET, charset);
@@ -129,5 +176,16 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 	public MessageContext with(String name, String value) {
 		put(name, value);
 		return this;
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		// If in future we need to make incompatible changes we can keep reading old version by selecting on version-nr
+		out.writeLong(customSerializationVersion);
+		out.writeObject(data);
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
+		data = (Map<String, Serializable>) in.readObject();
 	}
 }

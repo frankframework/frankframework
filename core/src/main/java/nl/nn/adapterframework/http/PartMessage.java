@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,18 +42,7 @@ public class PartMessage extends Message {
 		this(new MessageContext(charset), part);
 	}
 
-	public PartMessage(Part part, Map<String, Object> context) throws MessagingException {
-		this(toMessageContext(context), part);
-	}
-
-	private static MessageContext toMessageContext(Map<String, Object> context) {
-		if(context instanceof MessageContext) {
-			return (MessageContext)context;
-		}
-		return (context == null) ? new MessageContext() : new MessageContext(context);
-	}
-
-	private PartMessage(MessageContext context, Part part) throws MessagingException {
+	public PartMessage(MessageContext context, Part part) throws MessagingException {
 		super(part::getInputStream, context.withName(part.getFileName()), part.getClass());
 		this.part = part;
 

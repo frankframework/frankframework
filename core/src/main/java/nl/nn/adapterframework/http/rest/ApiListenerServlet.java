@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2023 WeAreFrank!
+   Copyright 2017-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -472,7 +472,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							final BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 							final String fieldName = MultipartUtils.getFieldName(bodyPart);
 							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
-								body = new PartMessage(bodyPart, MessageUtils.getContext(request));
+								body = new PartMessage(MessageUtils.getContext(request), bodyPart);
 							}
 
 							final XmlBuilder attachment = new XmlBuilder("part");

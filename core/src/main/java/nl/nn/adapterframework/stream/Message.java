@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -761,8 +761,8 @@ public class Message implements Serializable, Closeable {
 			return;
 		}
 		writer.append("context:\n");
-		for (Entry<String, Object> entry : context.entrySet()) {
-			Object value = entry.getValue();
+		for (Entry<String, Serializable> entry : context.entrySet()) {
+			Serializable value = entry.getValue();
 			if ("authorization".equalsIgnoreCase(entry.getKey())) {
 				value = StringUtil.hide((String) value);
 			}
@@ -934,6 +934,7 @@ public class Message implements Serializable, Closeable {
 		stream.writeObject(getCharset());
 		stream.writeObject(request);
 		stream.writeObject(requestClass);
+		stream.writeObject(context);
 	}
 
 	/*
@@ -955,10 +956,20 @@ public class Message implements Serializable, Closeable {
 			}
 		} catch (Exception e) {
 			requestClass = ClassUtils.nameOf(request);
-			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [" + requestClass + "], (" + ClassUtils.nameOf(e) + "): " + e.getMessage());
+			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", ()->requestClass, ()->ClassUtils.nameOf(e),  e::getMessage);
 		}
-
-		context = new MessageContext().withCharset(charset);
+		MessageContext newContext;
+		try {
+			newContext = (MessageContext) stream.readObject();
+		} catch (Exception e) {
+			// Old version of object, does not yet have the MessageContext stored?
+			LOG.warn("Could not read MessageContext of message {}, old format message? Exception: {}", requestClass, e.getMessage());
+			newContext = null;
+		}
+		if (newContext == null) {
+			newContext = new MessageContext().withCharset(charset);
+		}
+		context = newContext;
 	}
 
 	/**

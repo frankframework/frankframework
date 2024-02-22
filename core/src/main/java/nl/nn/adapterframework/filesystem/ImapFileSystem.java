@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -364,7 +364,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 					}
 				}
 			}
-			return new PartMessage(f, FileSystemUtils.getContext(this, f, charset));
+			return new PartMessage(FileSystemUtils.getContext(this, f, charset), f);
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}
