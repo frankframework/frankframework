@@ -254,32 +254,22 @@ public class XmlQuerySender extends DirectQuerySender {
 
 			if (root.equalsIgnoreCase("select")) {
 				result = selectQuery(connection, tableName, columns, where, order, session, next);
+			} else if (root.equalsIgnoreCase("insert")) {
+				result = new PipeRunResult(null, insertQuery(connection, tableName, columns));
+			} else if (root.equalsIgnoreCase("delete")) {
+				result = new PipeRunResult(null, deleteQuery(connection, tableName, where));
+			} else if (root.equalsIgnoreCase("update")) {
+				result = new PipeRunResult(null, updateQuery(connection, tableName, columns, where));
+			} else if (root.equalsIgnoreCase("alter")) {
+				String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
+				int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
+				result = new PipeRunResult(null, alterQuery(connection, sequenceName, startWith));
+			} else if (root.equalsIgnoreCase("sql")) {
+				String type = XmlUtils.getChildTagAsString(queryElement, "type");
+				String query = XmlUtils.getChildTagAsString(queryElement, "query");
+				result = new PipeRunResult(null, sql(connection, query, type));
 			} else {
-				if (root.equalsIgnoreCase("insert")) {
-					result = new PipeRunResult(null, insertQuery(connection, tableName, columns));
-				} else {
-					if (root.equalsIgnoreCase("delete")) {
-						result = new PipeRunResult(null, deleteQuery(connection, tableName, where));
-					} else {
-						if (root.equalsIgnoreCase("update")) {
-							result = new PipeRunResult(null, updateQuery(connection, tableName, columns, where));
-						} else {
-							if (root.equalsIgnoreCase("alter")) {
-								String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
-								int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
-								result = new PipeRunResult(null, alterQuery(connection, sequenceName, startWith));
-							} else {
-								if (root.equalsIgnoreCase("sql")) {
-									String type = XmlUtils.getChildTagAsString(queryElement, "type");
-									String query = XmlUtils.getChildTagAsString(queryElement, "query");
-									result = new PipeRunResult(null, sql(connection, query, type));
-								} else {
-								throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
-							}
-						}
-					}
-				}
-			}
+				throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
 			}
 		} catch (DomBuilderException e) {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
@@ -312,7 +302,6 @@ public class XmlQuerySender extends DirectQuerySender {
 		try {
 			String query = queryBuilder.toString();
 			PreparedStatement statement = getStatement(connection, query, QueryType.SELECT);
-			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null, session, next);
 		} catch (SQLException e) {
@@ -344,7 +333,6 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 		try {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
-			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command [" + query + "]", e);
@@ -372,7 +360,6 @@ public class XmlQuerySender extends DirectQuerySender {
 	private Message sql(Connection connection, String query, String type) throws SenderException, JdbcException {
 		try {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
-			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
 				return executeSelectQuery(statement,null,null, null, null).getResult();
@@ -403,7 +390,6 @@ public class XmlQuerySender extends DirectQuerySender {
 				applyParameters(callableStatement, columns);
 				int ri = 1 + countParameters(columns);
 				callableStatement.registerOutParameter(ri, Types.VARCHAR);
-				callableStatement.setQueryTimeout(getTimeout());
 				int numRowsAffected = callableStatement.executeUpdate();
 				String rowId = callableStatement.getString(ri);
 				log.debug(getLogPrefix() + "returning ROWID [" + rowId + "]");
@@ -419,7 +405,6 @@ public class XmlQuerySender extends DirectQuerySender {
 						}
 						PreparedStatement statement = getStatement(connection, query, queryType);
 						statement.setString(1, rowId);
-						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
 							executeUpdateBlobQuery(statement, new Message(column.getValue()));
 						} else {
@@ -431,7 +416,6 @@ public class XmlQuerySender extends DirectQuerySender {
 			}
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			applyParameters(statement, columns);
-			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
@@ -467,10 +451,10 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	private Message alterQuery(Connection connection, String sequenceName, int startWith) throws SenderException {
-		try {
-			String callQuery = "declare" + " pragma autonomous_transaction;" + " ln_increment number;" + " ln_curr_val number;" + " ln_reset_increment number;" + " ln_reset_val number;" + "begin" + " select increment_by into ln_increment from user_sequences where sequence_name = '" + sequenceName + "';" + " select " + (startWith - 2) + " - " + sequenceName + ".nextval into ln_reset_increment from dual;" + " select " + sequenceName + ".nextval into ln_curr_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_reset_increment ||' minvalue 0';" + " select " + sequenceName + ".nextval into ln_reset_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_increment;" + "end;";
-			log.debug(getLogPrefix() + "preparing procedure for query [" + callQuery + "]");
-			CallableStatement callableStatement = connection.prepareCall(callQuery);
+		String callQuery = "declare" + " pragma autonomous_transaction;" + " ln_increment number;" + " ln_curr_val number;" + " ln_reset_increment number;" + " ln_reset_val number;" + "begin" + " select increment_by into ln_increment from user_sequences where sequence_name = '" + sequenceName + "';" + " select " + (startWith - 2) + " - " + sequenceName + ".nextval into ln_reset_increment from dual;" + " select " + sequenceName + ".nextval into ln_curr_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_reset_increment ||' minvalue 0';" + " select " + sequenceName + ".nextval into ln_reset_val from dual;" + " EXECUTE IMMEDIATE 'alter sequence " + sequenceName + " increment by '|| ln_increment;" + "end;";
+		log.debug("{} preparing procedure for query [{}]", this::getLogPrefix, ()-> callQuery);
+		try (CallableStatement callableStatement = connection.prepareCall(callQuery)){
+			callableStatement.setQueryTimeout(getTimeout());
 			int numRowsAffected = callableStatement.executeUpdate();
 			return new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
 		} catch (SQLException e) {
