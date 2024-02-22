@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
