@@ -18,6 +18,7 @@ package nl.nn.adapterframework.errormessageformatters;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -80,7 +81,9 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 						log.error("got exception extracting parameters", e);
 					}
 				}
-				result = Message.asMessage(transformerPool.transform(Message.asSource(result), parameterValues));
+				Source resultSource = result.asSource();
+				result.close();
+				return Message.asMessage(transformerPool.transform(resultSource, parameterValues));
 			} catch (IOException e) {
 				log.error(" cannot retrieve [{}]", getStyleSheet(), e);
 			} catch (TransformerConfigurationException te) {
@@ -89,7 +92,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 				log.error("could not transform [{}] using stylesheet [{}]", result, getStyleSheet(), tfe);
 			}
 		} else {
-			log.warn("no stylesheet or xpathExpresstion defined for XslErrorMessageFormatter");
+			log.warn("no stylesheet or xpathExpression defined for XslErrorMessageFormatter");
 		}
 
 		return result;

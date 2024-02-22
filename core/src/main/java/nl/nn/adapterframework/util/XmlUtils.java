@@ -460,7 +460,7 @@ public class XmlUtils {
 	}
 
 	public static void parseXml(String source, ContentHandler handler) throws IOException, SAXException {
-		parseXml(Message.asInputSource(source),handler);
+		parseXml(new InputSource(new StringReader(source)), handler, null);
 	}
 
 	/**
