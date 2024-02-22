@@ -20,11 +20,17 @@ public interface CustomPoolExtensions {
 
 	void setMaxIdle(int maxIdle);
 
+	void setMinIdle(int minIdle);
+
 	int getMaxConnections();
 
 	int getMaxIdle();
 
+	int getMinIdle();
+
 	int getNumIdle();
+
+	int getNumActive();
 
 	void setMaxIdleTimeSeconds(int maxIdleTimeSeconds);
 }

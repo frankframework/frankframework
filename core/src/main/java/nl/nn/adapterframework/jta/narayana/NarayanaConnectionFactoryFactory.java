@@ -37,9 +37,10 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
+	private @Getter @Setter int minIdle = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.minIdle", 1);
 	private @Getter @Setter int maxIdle = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdle", 2);
 	private @Getter @Setter int maxIdleTime = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdleTime", 60);
-	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 20);
+	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 5);
 	private @Getter @Setter int connectionCheckInterval = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.checkInterval", 300);
 	private @Getter @Setter int maxSessions = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxSessions", 500);
 	private @Getter @Setter int sessionWaitTimeout = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connections.sessionWaitTimeout", 15);
@@ -71,6 +72,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 			CustomJmsPoolXaConnectionFactory pooledConnectionFactory = new CustomJmsPoolXaConnectionFactory();
 			pooledConnectionFactory.setTransactionManager(this.transactionManager.getTransactionManager());
 			pooledConnectionFactory.setConnectionFactory(connectionFactory);
+			pooledConnectionFactory.setMinIdle(minIdle);
 			pooledConnectionFactory.setMaxIdle(maxIdle);
 			pooledConnectionFactory.setMaxIdleTimeSeconds(maxIdleTime);
 			return augmentPool(pooledConnectionFactory);
@@ -78,6 +80,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 
 		CustomJmsPoolConnectionFactory pooledConnectionFactory = new CustomJmsPoolConnectionFactory();
 		pooledConnectionFactory.setConnectionFactory(connectionFactory);
+		pooledConnectionFactory.setMinIdle(minIdle);
 		pooledConnectionFactory.setMaxIdle(maxIdle);
 		pooledConnectionFactory.setMaxIdleTimeSeconds(maxIdleTime);
 		return augmentPool(pooledConnectionFactory);

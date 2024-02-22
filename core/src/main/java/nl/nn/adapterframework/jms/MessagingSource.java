@@ -220,7 +220,9 @@ public class MessagingSource  {
 		}
 		if (qcfd instanceof CustomPoolExtensions) {
 			CustomPoolExtensions poolcf = (CustomPoolExtensions) qcfd;
+			result.append("active [").append(poolcf.getNumActive()).append(CLOSE);
 			result.append("max idle [").append(poolcf.getMaxIdle()).append(CLOSE);
+			result.append("min idle [").append(poolcf.getMinIdle()).append(CLOSE);
 		}
 		if (qcfd instanceof JmsPoolConnectionFactory) {
 			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);

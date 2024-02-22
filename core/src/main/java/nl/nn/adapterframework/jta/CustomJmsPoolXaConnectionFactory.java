@@ -33,6 +33,11 @@ public class CustomJmsPoolXaConnectionFactory extends JmsPoolXAConnectionFactory
 	}
 
 	@Override
+	public void setMinIdle(int minIdle) {
+		this.getConnectionsPool().setMinIdlePerKey(minIdle);
+	}
+
+	@Override
 	public int getMaxConnections() {
 		// Super-method actually gets the max-idle per key, b/c it would set that equal to the max total.
 		return getConnectionsPool().getMaxTotalPerKey();
@@ -44,8 +49,17 @@ public class CustomJmsPoolXaConnectionFactory extends JmsPoolXAConnectionFactory
 	}
 
 	@Override
+	public int getMinIdle() {
+		return getConnectionsPool().getMinIdlePerKey();
+	}
+
+	@Override
 	public int getNumIdle() {
 		return getConnectionsPool().getNumIdle();
+	}
+
+	public int getNumActive() {
+		return getConnectionsPool().getNumActive();
 	}
 
 	@Override

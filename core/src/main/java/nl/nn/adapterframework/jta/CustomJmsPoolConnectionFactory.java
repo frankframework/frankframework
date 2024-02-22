@@ -39,13 +39,28 @@ public class CustomJmsPoolConnectionFactory extends JmsPoolConnectionFactory imp
 	}
 
 	@Override
+	public void setMinIdle(int minIdle) {
+		this.getConnectionsPool().setMinIdlePerKey(minIdle);
+	}
+
+	@Override
 	public int getMaxIdle() {
 		return getConnectionsPool().getMaxIdlePerKey();
 	}
 
 	@Override
+	public int getMinIdle() {
+		return getConnectionsPool().getMinIdlePerKey();
+	}
+
+	@Override
 	public int getNumIdle() {
 		return getConnectionsPool().getNumIdle();
+	}
+
+	@Override
+	public int getNumActive() {
+		return getConnectionsPool().getNumActive();
 	}
 
 	@Override
