@@ -21,10 +21,6 @@ import java.net.URL;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
@@ -45,6 +41,10 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
+import org.frankframework.util.XmlUtils;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 /**
  * Produces a fixed result that does not depend on the input message. It may return the contents of a file
@@ -191,7 +191,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 		if (transformerPool != null) {
 			try{
-				result = transformerPool.transform(Message.asSource(result));
+				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
 			} catch (SAXException e) {
 				throw new PipeRunException(this, "got error converting string [" + result + "] to source", e);
 			} catch (IOException | TransformerException e) {

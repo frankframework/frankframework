@@ -20,13 +20,6 @@ import java.io.IOException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.Misc;
-import org.frankframework.util.TransformerPool;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -38,8 +31,15 @@ import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedResultPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
+import org.frankframework.util.TransformerPool;
+import org.frankframework.util.XmlUtils;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 /**
  * FixedResultSender, same behaviour as {@link FixedResultPipe}, but now as a ISender.
@@ -108,7 +108,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 
 		if (transformerPool != null) {
 			try{
-				result = transformerPool.transform(Message.asSource(result));
+				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
 			} catch (IOException | TransformerException e) {
 				throw new SenderException(getLogPrefix()+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			} catch (SAXException se) {
