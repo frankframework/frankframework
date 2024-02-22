@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.PipeLineSession;
@@ -31,6 +30,8 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 
+import lombok.Getter;
+
 /**
  * Base class for building JDBC-senders.
  *
@@ -39,7 +40,7 @@ import org.frankframework.util.JdbcUtil;
  */
 public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnabledSender<H> {
 
-	private int timeout = 0;
+	@Getter private int timeout = 0;
 
 	protected Connection connection=null;
 	protected ParameterList paramList = null;
@@ -123,14 +124,11 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	}
 
 	/**
-	 * The number of seconds the driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
+	 * The number of seconds the JDBC driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
 	 * @ff.default 0
 	 */
 	public void setTimeout(int i) {
 		timeout = i;
-	}
-	public int getTimeout() {
-		return timeout;
 	}
 
 }
