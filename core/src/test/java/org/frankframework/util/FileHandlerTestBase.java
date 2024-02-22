@@ -41,7 +41,7 @@ public abstract class FileHandlerTestBase {
 
 	private IFileHandler handler;
 	private final PipeLineSession session = new PipeLineSession();
-	public String charset = "UTF-8";
+	public String charset = StandardCharsets.UTF_8.name();
 
 	public URL getURL(String file) {
 		return FileHandlerTestBase.class.getResource(BASEDIR + file);
@@ -249,14 +249,12 @@ public abstract class FileHandlerTestBase {
 	@MethodSource("data")
 	public void testIllegalAction1(Class<? extends IFileHandler> clazz) throws Exception {
 		handler = clazz.getConstructor().newInstance();
-		handler = clazz.getConstructor().newInstance();
 		testIllegalAction("lees");
 	}
 
 	@ParameterizedTest
 	@MethodSource("data")
 	public void testIllegalAction2(Class<? extends IFileHandler> clazz) throws Exception {
-		handler = clazz.getConstructor().newInstance();
 		handler = clazz.getConstructor().newInstance();
 		testIllegalAction("write,schrijf");
 	}
