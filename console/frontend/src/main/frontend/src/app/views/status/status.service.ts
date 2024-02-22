@@ -15,11 +15,9 @@ export class StatusService {
     private Misc: MiscService
   ) { }
 
-  getConfigurationFlowDiagram(flowUrl: string): Observable<{ data: HttpResponse<string>; url: string; }> {
+  getConfigurationFlowDiagramUrl(flowUrl: string): string {
     const baseUrl = this.appService.getServerPath() + 'iaf/api/configurations/';
-    const url = baseUrl + flowUrl;
-    return this.http.get(url, { observe: "response", responseType: "text" })
-      .pipe(map(data => ({ data, url })));
+    return baseUrl + flowUrl;
   }
 
   getAdapterFlowDiagram(flowUrl: string): Observable<HttpResponse<string>> {

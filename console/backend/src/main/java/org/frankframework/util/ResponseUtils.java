@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.MediaType;
@@ -46,6 +47,27 @@ public class ResponseUtils {
 		}
 
 		String contentDisposition = BusMessageUtils.getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
+		if(contentDisposition != null) {
+			builder.header("Content-Disposition", contentDisposition);
+		}
+
+		return builder;
+	}
+
+	public static ResponseBuilder convertToJaxRsStreamingResponse(Message<?> message, StreamingOutput response){
+		int status = BusMessageUtils.getIntHeader(message, ResponseMessageBase.STATUS_KEY, 200);
+		String mimeType = BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY, null);
+		ResponseBuilder builder = Response.status(status);
+
+		if(mimeType != null) {
+			builder.type(mimeType);
+		}
+
+		if(status == 200 || status > 204) {
+			builder.entity(response);
+		}
+
+		String contentDisposition = BusMessageUtils.getHeader(message, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
 		if(contentDisposition != null) {
 			builder.header("Content-Disposition", contentDisposition);
 		}

@@ -6,32 +6,31 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.TestFileUtils;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runners.Parameterized.Parameters;
 
-public class MessageUtilsCharsetDetectionTest {
+class MessageUtilsCharsetDetectionTest {
 
-	@Parameters(name= "file [{0}] encoding [{2}]")
-	public static List<Object[]> data() {
-		return Arrays.asList(new Object[][]{
-			{"cp1252.txt", "cp1252 test text ’•†™", Charset.forName("windows-1252")},
-			{"iso-8859-1.txt", null, Charset.forName("iso-8859-1")},
-			{"iso-8859-2.txt", "Naiveté de style, de langage, de pinceau.", Charset.forName("iso-8859-2")},
-			{"utf8-with-bom.txt", "testFile with BOM —•˜›", Charset.forName("utf-8")},
-			{"utf8-without-bom.txt", "testFile w/o BOM —•˜›", Charset.forName("utf-8")},
-		});
+	private static Stream<Arguments> data() {
+		return Stream.of(
+				Arguments.of("cp1252.txt", "cp1252 test text ’•†™", Charset.forName("windows-1252")),
+				Arguments.of("iso-8859-1.txt", null, StandardCharsets.ISO_8859_1),
+				Arguments.of("iso-8859-2.txt", "Naiveté de style, de langage, de pinceau.", Charset.forName("iso-8859-2")),
+				Arguments.of("utf8-with-bom.txt", "testFile with BOM —•˜›", StandardCharsets.UTF_8),
+				Arguments.of("utf8-without-bom.txt", "testFile w/o BOM —•˜›", StandardCharsets.UTF_8
+				));
 	}
 
 	@ParameterizedTest
 	@MethodSource("data")
-	public void testCharset(String testFile, String fileContent, Charset expectedCharset) throws Exception {
+	void testCharset(String testFile, String fileContent, Charset expectedCharset) throws Exception {
 		URL url = TestFileUtils.getTestFileURL("/Util/MessageUtils/"+testFile);
 		assertNotNull(url, "cannot find test file ["+testFile+"]");
 
@@ -49,7 +48,7 @@ public class MessageUtilsCharsetDetectionTest {
 
 	@ParameterizedTest
 	@MethodSource("data")
-	public void testDetection(String testFile, String fileContent, Charset expectedCharset) throws Exception {
+	void testDetection(String testFile, String fileContent, Charset expectedCharset) throws Exception {
 		assumeTrue(expectedCharset != Charset.forName("windows-1252"));
 
 		URL url = TestFileUtils.getTestFileURL("/Util/MessageUtils/"+testFile);

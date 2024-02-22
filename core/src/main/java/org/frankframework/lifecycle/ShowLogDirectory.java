@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.management.bus.endpoints.FileViewer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
@@ -37,7 +38,6 @@ import org.frankframework.management.bus.MessageDispatcher;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Dir2Map;
 import org.frankframework.util.FileUtils;
-import org.frankframework.webcontrol.FileViewerServlet;
 
 /**
  * Logging should work even when the application failed to start which is why it's not wired through the {@link MessageDispatcher}.
@@ -75,7 +75,7 @@ public class ShowLogDirectory {
 		String directory = BusMessageUtils.getHeader(message, "directory", defaultLogDirectory);
 		String wildcard = BusMessageUtils.getHeader(message, "wildcard", defaultLogWildcard);
 
-		if(StringUtils.isNotEmpty(directory) && !FileUtils.readAllowed(FileViewerServlet.permissionRules, directory, BusMessageUtils::hasAnyRole)) {
+		if(StringUtils.isNotEmpty(directory) && !FileUtils.readAllowed(FileViewer.permissionRules, directory, BusMessageUtils::hasAnyRole)) {
 			throw new BusException("Access to path (" + directory + ") not allowed!");
 		}
 

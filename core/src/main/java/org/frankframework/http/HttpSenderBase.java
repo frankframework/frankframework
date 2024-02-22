@@ -37,10 +37,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.CanUseSharedResource;
@@ -65,6 +61,9 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
@@ -472,7 +471,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			if (transformerPool != null && xhtml != null) {
 				log.debug("transforming result [{}]", xhtml);
 				try {
-					xhtml = transformerPool.transform(Message.asSource(xhtml));
+					xhtml = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(xhtml));
 				} catch (Exception e) {
 					throw new SenderException("Exception on transforming input", e);
 				}

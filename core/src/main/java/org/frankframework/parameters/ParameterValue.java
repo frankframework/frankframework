@@ -21,13 +21,12 @@ import java.util.Collections;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import org.frankframework.core.ParameterException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -171,7 +170,7 @@ public class ParameterValue {
 			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
 			return XmlUtils.getChildTags(holder, "*");
 		} catch (DomBuilderException e) {
-			throw new ParameterException("Parameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
+			throw new ParameterException(getDefinition().getName(), "Parameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
 		}
 	}
 }
