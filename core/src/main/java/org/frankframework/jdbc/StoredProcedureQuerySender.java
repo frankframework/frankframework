@@ -256,6 +256,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		try {
 			CallableStatement callableStatement = (CallableStatement) statement;
+			callableStatement.setQueryTimeout(getTimeout());
 			boolean alsoGetResultSets = callableStatement.execute();
 			return getResult(callableStatement, alsoGetResultSets, resultQuery, resStmt);
 		} catch (JdbcException | JMSException | IOException | SQLException e) {
