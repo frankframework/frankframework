@@ -99,7 +99,7 @@ public class FileUtils {
 			pl.add(p);
 		}
 		catch(ConfigurationException e) {
-			throw new ParameterException(e);
+			throw new ParameterException("file", e);
 		}
 
 		// resolve the parameters

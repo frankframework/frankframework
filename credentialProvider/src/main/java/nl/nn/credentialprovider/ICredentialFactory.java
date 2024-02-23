@@ -28,13 +28,13 @@ public interface ICredentialFactory {
 		// implementations can do their initialization, and throw an exception if they cannot.
 	}
 
-	public boolean hasCredentials(String alias);
+	boolean hasCredentials(String alias);
 
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier);
+	ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier);
 
 	/**
 	 * return a list of all configured aliases, or null if such a list cannot be provided.
 	 * @throws Exception
 	 */
-	public Collection<String> getConfiguredAliases() throws Exception;
+	Collection<String> getConfiguredAliases() throws Exception;
 }

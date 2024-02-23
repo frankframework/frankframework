@@ -54,14 +54,14 @@ import nl.nn.adapterframework.util.CredentialFactory;
 /**
  * Creates a JWT with a shared secret using the HmacSHA256 algorithm.
  *
- * @ff.parameter {@value #SHARED_SECRET_PARAMETER_NAME} overrides attribute <code>sharedSecret</code>
+ * @ff.parameter {@value #SHARED_SECRET_PARAMETER_NAME} overrides attribute <code>sharedSecret</code>. This parameter has worse performance, compared with the JwtPipe attribute.
  *
  * @author Niels Meijer
  * @since 7.9
  */
 @Category("Basic")
 public class JwtPipe extends FixedForwardPipe {
-	private static final String SHARED_SECRET_PARAMETER_NAME = "sharedSecret";
+	static final String SHARED_SECRET_PARAMETER_NAME = "sharedSecret";
 
 	private @Setter(AccessLevel.PACKAGE) boolean jwtAllowWeakSecrets = AppConstants.getInstance().getBoolean("application.security.jwt.allowWeakSecrets", false);
 
@@ -69,7 +69,7 @@ public class JwtPipe extends FixedForwardPipe {
 	private JWSSigner globalSigner;
 
 	private String sharedSecret;
-	private String sharedSecretAlias;
+	private String authAlias;
 	private int expirationTime = 600;
 
 	@Override
@@ -79,14 +79,14 @@ public class JwtPipe extends FixedForwardPipe {
 
 		jwtHeader = new JWSHeader.Builder(JWSAlgorithm.HS256).type(JOSEObjectType.JWT).build();
 
-		if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(sharedSecret)) {
-			sharedSecret = StringUtils.rightPad(sharedSecret, 32, "\0");
-		}
-
-		if(StringUtils.isNotEmpty(sharedSecret) || StringUtils.isNotEmpty(sharedSecretAlias)) {
+		if(StringUtils.isNotEmpty(sharedSecret) || StringUtils.isNotEmpty(authAlias)) {
 			try {
-				CredentialFactory credentialFactory = new CredentialFactory(sharedSecretAlias, null, () -> sharedSecret);
-				globalSigner = new MACSigner(credentialFactory.getPassword());
+				CredentialFactory credentialFactory = new CredentialFactory(authAlias, null, () -> sharedSecret);
+				String factoryPassword = credentialFactory.getPassword();
+				if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(factoryPassword)) {
+					factoryPassword = StringUtils.rightPad(factoryPassword, 32, "\0");
+				}
+				globalSigner = new MACSigner(factoryPassword);
 			} catch (KeyLengthException e) {
 				throw new ConfigurationException("invalid shared key", e);
 			}
@@ -102,7 +102,7 @@ public class JwtPipe extends FixedForwardPipe {
 		Builder claimsSetBuilder = new JWTClaimsSet.Builder();
 
 		Map<String, Object> parameterMap = getParameterValueMap(message, session);
-		Object sharedKey = parameterMap.remove(SHARED_SECRET_PARAMETER_NAME); //Remove the SharedKey, else it will be added as a JWT Claim
+		Object sharedSecretParam = parameterMap.remove(SHARED_SECRET_PARAMETER_NAME); //Remove the SharedKey, else it will be added as a JWT Claim
 		parameterMap.forEach(claimsSetBuilder::claim);
 
 		if(expirationTime > 0) {
@@ -111,18 +111,22 @@ public class JwtPipe extends FixedForwardPipe {
 		}
 		claimsSetBuilder.issueTime(Date.from(Instant.now()));
 
-		final JWSSigner signer = getSigner(sharedKey);
+		final JWSSigner signer = getSigner(sharedSecretParam);
 		String jwtToken = createAndSignJwtToken(signer, claimsSetBuilder.build());
 		return new PipeRunResult(getSuccessForward(), Message.asMessage(jwtToken));
 	}
 
 	/**
-	 * Get Signer based on the SharedKey parameter if it exists, else use the Global signer.
+	 * Get Signer based on the SharedSecretKey parameter if it exists, else return the Global signer.
 	 */
-	private JWSSigner getSigner(Object sharedKey) throws PipeRunException {
-		if(Objects.nonNull(sharedKey)) {
+	private JWSSigner getSigner(Object sharedSecretParam) throws PipeRunException {
+		if(Objects.nonNull(sharedSecretParam)) {
 			try {
-				return new MACSigner(Message.asString(sharedKey));
+				String sharedSecretKey = Message.asString(sharedSecretParam);
+				if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(sharedSecretKey)) {
+					sharedSecretKey = StringUtils.rightPad(sharedSecretKey, 32, "\0");
+				}
+				return new MACSigner(sharedSecretKey);
 			} catch (KeyLengthException | IOException e) {
 				throw new PipeRunException(this, "invalid shared key", e);
 			}
@@ -158,9 +162,9 @@ public class JwtPipe extends FixedForwardPipe {
 		return jwt;
 	}
 
-	/** Alias for the SharedSecret to be used when signing the JWT (using the HmacSHA256 algorithm) */
+	/** Auth Alias for the SharedSecret to be used when signing the JWT (using the HmacSHA256 algorithm) */
 	public void setAuthAlias(String alias) {
-		this.sharedSecretAlias = alias;
+		this.authAlias = alias;
 	}
 
 	/** Shared secret to be used when signing the JWT (using the HmacSHA256 algorithm) */
