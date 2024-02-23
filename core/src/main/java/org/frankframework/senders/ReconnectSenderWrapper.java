@@ -34,16 +34,16 @@ import lombok.Setter;
  * <b>Example:</b>
  * <pre><code>
  *   &lt;SenderPipe&gt;
- *     &lt;RuntimeSenderWrapper&gt;
+ *     &lt;ReconnectSenderWrapper&gt;
  *        &lt;EchoSender myAttribute="myValue" /&gt;
- *     &lt;/RuntimeSenderWrapper&gt;
+ *     &lt;/ReconnectSenderWrapper&gt;
  *   &lt;/SenderPipe&gt;
  * </code></pre>
  * </p>
  *
  * @author  Niels Meijer
  */
-public class RuntimeSenderWrapper extends SenderWrapperBase {
+public class ReconnectSenderWrapper extends SenderWrapperBase {
 
 	/** specification of sender to send messages with */
 	private @Setter ISender sender;

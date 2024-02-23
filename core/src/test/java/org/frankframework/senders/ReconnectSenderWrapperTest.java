@@ -11,11 +11,11 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Test;
 
-public class RuntimeSenderWrapperTest extends SenderTestBase<RuntimeSenderWrapper> {
+public class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> {
 
 	@Override
-	public RuntimeSenderWrapper createSender() {
-		RuntimeSenderWrapper senderWrapper = new RuntimeSenderWrapper();
+	public ReconnectSenderWrapper createSender() {
+		ReconnectSenderWrapper senderWrapper = new ReconnectSenderWrapper();
 		TestOpenAndConfigureSender testSender = new TestOpenAndConfigureSender();
 		senderWrapper.setSender(testSender);
 		return senderWrapper;
