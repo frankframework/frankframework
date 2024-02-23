@@ -43,7 +43,7 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 	public NarayanaDataSourceFactory() {
 		// For backwards compatibility, apply these configuration constants if they're found.
 		AppConstants appConstants = AppConstants.getInstance();
-		minPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.minPoolSize", minPoolSize);
+		minIdle = appConstants.getInt("transactionmanager.narayana.jdbc.connection.minIdle", minIdle);
 		maxPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", maxPoolSize);
 		maxIdle = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxIdle", maxIdle);
 		maxLifeTime = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxLifeTime", maxLifeTime);

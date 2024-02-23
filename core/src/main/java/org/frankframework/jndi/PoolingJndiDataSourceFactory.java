@@ -44,7 +44,7 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
-	@Getter @Setter protected int minPoolSize = 0;
+	@Getter @Setter protected int minIdle = 0;
 	@Getter @Setter protected int maxPoolSize = 20;
 	@Getter @Setter protected int maxIdle = 2;
 	@Getter @Setter protected int maxLifeTime = 0;
@@ -54,7 +54,7 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 	public PoolingJndiDataSourceFactory() {
 		super();
 		AppConstants appConstants = AppConstants.getInstance();
-		minPoolSize = appConstants.getInt("transactionmanager.jdbc.connection.minPoolSize", minPoolSize);
+		minIdle = appConstants.getInt("transactionmanager.jdbc.connection.minIdle", minIdle);
 		maxPoolSize = appConstants.getInt("transactionmanager.jdbc.connection.maxPoolSize", maxPoolSize);
 		maxIdle = appConstants.getInt("transactionmanager.jdbc.connection.maxIdle", maxIdle);
 		maxLifeTime = appConstants.getInt("transactionmanager.jdbc.connection.maxLifeTime", maxLifeTime);
@@ -105,7 +105,7 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 		}
 		poolableConnectionFactory.setFastFailValidation(true);
 		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
-		connectionPool.setMinIdle(minPoolSize);
+		connectionPool.setMinIdle(minIdle);
 		connectionPool.setMaxTotal(maxPoolSize);
 		connectionPool.setMaxIdle(maxIdle);
 		connectionPool.setTestOnBorrow(true);
