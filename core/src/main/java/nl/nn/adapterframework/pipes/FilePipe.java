@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.FileHandler;
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  *
- * @deprecated Please use LocalFileSystemPipe instead
+ * @deprecated Please use {@link LocalFileSystemPipe} instead
  *
  */
 @Deprecated
