@@ -14,6 +14,9 @@ import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	private final String username;
@@ -36,7 +39,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	@BeforeEach
 	public void setUp() throws ConfigurationException, FileSystemException {
 		open();
-		cleanFolder();
+		cleanFolder(null);
 	}
 
 	@Override
@@ -45,22 +48,35 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 		FtpSession.close(ftpClient);
 	}
 
-	private void cleanFolder() {
+	private void cleanFolder(String folder) {
 		try {
-			FTPFile[] files = ftpClient.listFiles();
+			if (folder != null) {
+				folder = folder + "/";
+			} else folder = "";
+			log.debug("cleaning folder [{}]", folder);
+			FTPFile[] files = ftpClient.listFiles(folder);
 			for (FTPFile o : files) {
 				if (o.isDirectory() && !o.getName().equals(".") && !o.getName().equals("..")) {
-					FTPFile[] filesInFolder = ftpClient.listFiles(o.getName());
+					FTPFile[] filesInFolder = ftpClient.listFiles(folder + o.getName());
 					for (FTPFile ftpFile : filesInFolder) {
-						ftpClient.deleteFile(o.getName()+"/"+ftpFile.getName());
+						if (ftpFile.isDirectory()) {
+							cleanFolder(o.getName() + "/" + ftpFile.getName());
+						} else {
+							log.debug("deleting file [{}]", folder + o.getName() + "/" + ftpFile.getName());
+							ftpClient.deleteFile(folder + o.getName() + "/" + ftpFile.getName());
+						}
 					}
-					ftpClient.removeDirectory(o.getName());
+					log.debug("deleting folder [{}]", folder + o.getName());
+					boolean removed = ftpClient.removeDirectory(folder + o.getName());
+					if (!removed) {
+						log.info("unable to clean folder: " + o.getName());
+					}
 				} else {
 					ftpClient.deleteFile(o.getName());
 				}
 			}
 		} catch (IOException e) {
-			LogUtil.getLogger(this).error("unable to clean folder", e);
+			LogUtil.getLogger(this).error("unable to clean folder: " + folder, e);
 		}
 	}
 
@@ -130,6 +146,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	@Override
 	public void _createFolder(String filename) throws FileSystemException {
 		try {
+			log.debug("creating folder [{}]", filename);
 			ftpClient.makeDirectory(filename);
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot create directory", e);
@@ -152,6 +169,14 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		ftpClient.rmd(folderName);
+		if (folderName != null && _folderExists(folderName)) {
+			log.debug("deleting folder [{}]", folderName);
+			boolean removed = ftpClient.removeDirectory(folderName);
+			if (!removed) {
+				log.info("folder [{}] not removed, cleaning it", folderName);
+				cleanFolder(folderName);
+				ftpClient.removeDirectory(folderName);
+			}
+		}
 	}
 }
