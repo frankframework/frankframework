@@ -944,12 +944,12 @@ public class Message implements Serializable, Closeable {
 		String charset = (String) stream.readObject();
 		request = stream.readObject();
 		try {
-			Object requestClass = stream.readObject();
-			if (requestClass != null) {
-				if (requestClass instanceof Class<?>) {
-					this.requestClass = ((Class<?>) requestClass).getTypeName();
+			Object requestClassFromStream = stream.readObject();
+			if (requestClassFromStream != null) {
+				if (requestClassFromStream instanceof Class<?>) {
+					this.requestClass = ((Class<?>) requestClassFromStream).getTypeName();
 				} else {
-					this.requestClass = requestClass.toString();
+					this.requestClass = requestClassFromStream.toString();
 				}
 			} else {
 				this.requestClass = ClassUtils.nameOf(request);
@@ -958,18 +958,18 @@ public class Message implements Serializable, Closeable {
 			requestClass = ClassUtils.nameOf(request);
 			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", ()->requestClass, ()->ClassUtils.nameOf(e),  e::getMessage);
 		}
-		MessageContext newContext;
+		MessageContext contextFromStream;
 		try {
-			newContext = (MessageContext) stream.readObject();
+			contextFromStream = (MessageContext) stream.readObject();
 		} catch (Exception e) {
 			// Old version of object, does not yet have the MessageContext stored?
-			LOG.warn("Could not read MessageContext of message {}, old format message? Exception: {}", requestClass, e.getMessage());
-			newContext = null;
+			LOG.debug("Could not read MessageContext of message {}, old format message? Exception: {}", requestClass, e.getMessage());
+			contextFromStream = null;
 		}
-		if (newContext == null) {
-			newContext = new MessageContext().withCharset(charset);
+		if (contextFromStream == null) {
+			contextFromStream = new MessageContext().withCharset(charset);
 		}
-		context = newContext;
+		context = contextFromStream;
 	}
 
 	/**
