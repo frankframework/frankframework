@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation } from "@angular/core";
 import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
   imports: [
     CommonModule
   ],
+  // encapsulation: ViewEncapsulation.ShadowDom,
   template: `
     <div
       class="{{is_mermaid}}"
@@ -81,7 +82,7 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
             this.mermaidSvgElement = svgElement;
             svgElement.setAttribute('height', '100%');
             svgElement.setAttribute('style', "max-width: 100%;");
-            if(bindFunctions)
+            if (bindFunctions)
               bindFunctions(svgElement);
           }).catch(e => { this.handleError(e) })
             .finally(() => {

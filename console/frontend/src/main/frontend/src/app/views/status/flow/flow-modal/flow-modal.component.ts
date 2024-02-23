@@ -13,6 +13,8 @@ export class FlowModalComponent {
   @Input() flowName = "";
   @Input() flow = "";
 
+  protected showActionButtons = false;
+
   @ViewChild(NgMermaidComponent) ngMermaid!: NgMermaidComponent;
 
   constructor(
@@ -22,6 +24,10 @@ export class FlowModalComponent {
 
   close() {
     this.activeModal.close();
+  }
+
+  mermaidLoaded() {
+    this.showActionButtons = true;
   }
 
   downloadAsPng() {
@@ -38,7 +44,7 @@ export class FlowModalComponent {
 
   copyToClipboard() {
     this.svgToImage().then(canvas => canvas.toBlob(blob => {
-      if(!blob)
+      if (!blob)
         throw new Error("Couldn't create blob from canvas");
 
       navigator.clipboard.write([
@@ -49,16 +55,26 @@ export class FlowModalComponent {
     }));
   }
 
-  private svgToBase64(svg: SVGSVGElement, width: number, height: number) {
+  openNewTab() {
+    const newTab = window.open('about:blank');
+    const svg = this.ngMermaid.getMermaidSvgElement()?.cloneNode(true) as SVGSVGElement;
+
+    if(newTab && svg){
+      setTimeout(() => {
+        newTab.document.body.innerHTML = svg.outerHTML;
+        newTab.document.title = `${this.flowName} Flow`;
+      });
+    }
+  }
+
+  private svgToBase64(svg: SVGSVGElement, width?: number, height?: number) {
     const svgClone = svg.cloneNode(true) as SVGSVGElement;
-    svgClone.setAttribute('height', `${height}px`);
-    svgClone.setAttribute('width', `${width}px`);
+    if (width) svgClone.setAttribute('height', `${height}px`);
+    if (height) svgClone.setAttribute('width', `${width}px`);
     const svgString = svgClone.outerHTML.replaceAll('<br>', '<br/>');
     return btoa(svgString);
   }
 
-  // https://github.com/mermaid-js/mermaid-live-editor/blob/master/src/lib/components/Actions.svelte#L136
-  // https://github.com/tsayen/dom-to-image/blob/master/src/dom-to-image.js
   private svgToImage() {
     return new Promise<HTMLCanvasElement>((resolve, reject) => {
       const canvas = document.createElement('canvas');
