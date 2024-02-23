@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -50,7 +51,7 @@ public class MessageContext implements Serializable {
 	public static final String METADATA_LOCATION = "Metadata.Location";
 	public static final String METADATA_MIMETYPE = "Metadata.MimeType";
 
-	private Map<String, Serializable> data = new LinkedHashMap<>();
+	private Map<String, Object> data = new LinkedHashMap<>();
 
 	public MessageContext() {
 		super();
@@ -77,21 +78,19 @@ public class MessageContext implements Serializable {
 
 	public void putAll(Map<String, ?> base) {
 		if (base!=null) {
-			base.forEach((key, value) -> {
-				if (value instanceof Serializable) data.put(key, (Serializable) value);
-			});
+			data.putAll(base);
 		}
 	}
 
-	public void put(String key, Serializable value) {
+	public void put(String key, Object value) {
 		data.put(key, value);
 	}
 
-	Serializable remove(String key) {
+	Object remove(String key) {
 		return data.remove(key);
 	}
 
-	public Serializable get(String key) {
+	public Object get(String key) {
 		return data.get(key);
 	}
 
@@ -103,7 +102,7 @@ public class MessageContext implements Serializable {
 		return data.isEmpty();
 	}
 
-	public Set<Map.Entry<String, Serializable>> entrySet() {
+	public Set<Map.Entry<String, Object>> entrySet() {
 		return data.entrySet();
 	}
 
@@ -181,11 +180,21 @@ public class MessageContext implements Serializable {
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		// If in future we need to make incompatible changes we can keep reading old version by selecting on version-nr
 		out.writeLong(customSerializationVersion);
-		out.writeObject(data);
+		Map<String, Serializable> serializableData = data.entrySet().stream()
+						.filter(e -> {
+							if (e.getValue() instanceof Serializable) return true;
+							else {
+								LOG.warn("Cannot write non-serializable MessageContext entry to stream: [{}] -> [{}]", e::getKey, e::getValue);
+								return false;
+							}
+						})
+						.collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable)(e.getValue())));
+		out.writeObject(serializableData);
 	}
 
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
-		data = (Map<String, Serializable>) in.readObject();
+		//noinspection unchecked
+		data = (Map<String, Object>) in.readObject();
 	}
 }

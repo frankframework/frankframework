@@ -33,14 +33,14 @@ public class PartMessage extends Message {
 	private final transient Part part;
 
 	public PartMessage(Part part) throws MessagingException {
-		this(new MessageContext(), part);
+		this(part, new MessageContext());
 	}
 
 	public PartMessage(Part part, String charset) throws MessagingException {
-		this(new MessageContext(charset), part);
+		this(part, new MessageContext(charset));
 	}
 
-	public PartMessage(MessageContext context, Part part) throws MessagingException {
+	public PartMessage(Part part, MessageContext context) throws MessagingException {
 		super(part::getInputStream, context.withName(part.getFileName()), part.getClass());
 		this.part = part;
 

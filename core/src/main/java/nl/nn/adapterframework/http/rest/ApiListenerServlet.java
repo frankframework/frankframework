@@ -472,7 +472,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							final BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 							final String fieldName = MultipartUtils.getFieldName(bodyPart);
 							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
-								body = new PartMessage(MessageUtils.getContext(request), bodyPart);
+								body = new PartMessage(bodyPart, MessageUtils.getContext(request));
 							}
 
 							final XmlBuilder attachment = new XmlBuilder("part");

@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.stream;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class UrlMessage extends Message {
 		this(url, Collections.emptyMap());
 	}
 
-	public UrlMessage(URL url, Map<String, Serializable> context) {
+	public UrlMessage(URL url, Map<String, Object> context) {
 		super(url::openStream, new MessageContext(context).withName(FilenameUtils.getName(url.toString())).withLocation(url.toString()), url.getClass());
 	}
 

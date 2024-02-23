@@ -364,7 +364,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 					}
 				}
 			}
-			return new PartMessage(FileSystemUtils.getContext(this, f, charset), f);
+			return new PartMessage(f, FileSystemUtils.getContext(this, f, charset));
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}
