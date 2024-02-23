@@ -28,7 +28,7 @@ import org.frankframework.stream.Message;
 import lombok.Setter;
 
 /**
- * Wrapper for senders, that opens 'runtime' before each sender action, and closes afterwards.
+ * Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
  * This prevents (long) open connections inside Senders and possible connection failures.
  * 
  * <b>Example:</b>
