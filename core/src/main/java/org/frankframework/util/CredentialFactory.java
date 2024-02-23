@@ -34,7 +34,7 @@ import org.frankframework.credentialprovider.ICredentials;
  */
 public class CredentialFactory  {
 
-	private ICredentials credentials;
+	private final ICredentials credentials;
 
 	public CredentialFactory(String alias) {
 		this(alias, null, (Supplier<String>)null);
