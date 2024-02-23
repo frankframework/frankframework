@@ -36,9 +36,7 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.ftp.SftpFileRef;
 import nl.nn.adapterframework.ftp.SftpSession;
 import nl.nn.adapterframework.stream.Message;
@@ -51,8 +49,6 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Niels Meijer
  */
 public class SftpFileSystem extends SftpSession implements IWritableFileSystem<SftpFileRef> {
-	private static final long RECHECK_CONNECTION_INTERVAL_SECONDS = 60;
-	@Setter(AccessLevel.PACKAGE) private double lastCheck;
 	private final Logger log = LogUtil.getLogger(this);
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "FTP";
@@ -63,7 +59,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public void open() throws FileSystemException {
 		ftpClient = openClient(remoteDirectory);
-		lastCheck = System.currentTimeMillis();
 	}
 
 	@Override
@@ -84,21 +79,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			return false;
 		}
 		return ftpClient.isConnected() && isSessionStillWorking();
-	}
-
-	private void reconnectWhenNotConnected() {
-		if (lastCheck + RECHECK_CONNECTION_INTERVAL_SECONDS * 1000L > System.currentTimeMillis()) {
-			return;
-		}
-		if (!isOpen()) {
-			try {
-				log.info("Reconnecting to SFTP server, since connection was closed");
-				ftpClient = openClient(remoteDirectory);
-			} catch (FileSystemException e) {
-				log.warn("error while getting sftp session", e);
-			}
-		}
-		lastCheck = System.currentTimeMillis();
 	}
 
 	@Override
@@ -154,7 +134,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	private LinkedList<LsEntry> list(String folder) throws SftpException {
-		reconnectWhenNotConnected();
 		String path = (folder == null) ? "*" : folder;
 		return new LinkedList<>(ftpClient.ls(path));
 	}
@@ -162,7 +141,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public OutputStream createFile(SftpFileRef f) throws FileSystemException, IOException {
 		try {
-			reconnectWhenNotConnected();
 			return ftpClient.put(f.getName());
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
@@ -172,7 +150,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public OutputStream appendFile(SftpFileRef f) throws FileSystemException {
 		try {
-			reconnectWhenNotConnected();
 			return ftpClient.put(f.getName(), ChannelSftp.APPEND);
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
@@ -182,7 +159,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public Message readFile(SftpFileRef f, String charset) throws FileSystemException {
 		try {
-			reconnectWhenNotConnected();
 			getFileAttributes(f);
 			InputStream inputStream = ftpClient.get(f.getName());
 			return new Message(inputStream, FileSystemUtils.getContext(this, f, charset));
@@ -194,7 +170,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public void deleteFile(SftpFileRef f) throws FileSystemException {
 		try {
-			reconnectWhenNotConnected();
 			ftpClient.rm(getCanonicalName(f));
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
@@ -205,7 +180,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	public boolean folderExists(String folder) throws FileSystemException {
 		String pwd;
 		try {
-			reconnectWhenNotConnected();
 			pwd = ftpClient.pwd();
 			try {
 				if (folder.startsWith("/")) {
@@ -230,7 +204,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			return;
 		}
 		try {
-			reconnectWhenNotConnected();
 			ftpClient.cd(folder);
 		} catch (SftpException e) {
 			throw new FileSystemException("unable to change remote directory to [" + folder + "]", e);
@@ -244,7 +217,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		}
 
 		try {
-			reconnectWhenNotConnected();
 			String[] folders = folder.split("/");
 			for(int i = 1; i < folders.length; i++) {
 				folders[i] = folders[i - 1] + "/" + folders[i];
@@ -269,7 +241,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			if(removeNonEmptyFolder) {
 				removeDirectoryContent(folder);
 			} else {
-				reconnectWhenNotConnected();
 				log.debug("removing folder [{}]", folder);
 				ftpClient.rmdir(folder);
 			}
@@ -285,7 +256,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	 * Recursively remove directory
 	 */
 	private void removeDirectoryContent(String folder) throws SftpException, FileSystemException {
-		reconnectWhenNotConnected();
 		String pwd = ftpClient.pwd();
 		LinkedList<LsEntry> files;
 		if (StringUtils.isNotEmpty(folder) && folder.startsWith("/")) {
@@ -326,7 +296,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public SftpFileRef renameFile(SftpFileRef source, SftpFileRef destination) throws FileSystemException {
 		try {
-			reconnectWhenNotConnected();
 			ftpClient.rename(getCanonicalName(source), getCanonicalName(destination));
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
@@ -342,7 +311,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		}
 
 		try {
-			reconnectWhenNotConnected();
 			ftpClient.rename(getCanonicalName(f), destination.getName());
 			return destination;
 		} catch (SftpException e) {
@@ -358,7 +326,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 		SftpFileRef destination = new SftpFileRef(getName(f), destinationFolder);
 
-		reconnectWhenNotConnected();
 		try (InputStream inputStream = ftpClient.get(f.getName()); SerializableFileReference ref = SerializableFileReference.of(inputStream) ) {
 			ftpClient.put(ref.getInputStream(), destination.getName());
 		} catch (Exception e) {
