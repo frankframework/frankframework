@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.filesystem;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,6 +17,7 @@ import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.stream.Message;
@@ -28,6 +29,30 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	public void setUp() throws Exception {
 		super.setUp();
 		autowireByName(fileSystem);
+	}
+
+	@Test
+	@Disabled("This test does not work with AmazonS3FileSystem in 7.9")
+	void fileSystemTestAfterClosingAndOpening() throws Exception {
+		// Arrange
+		String filename = "create2" + FILE1;
+		createFile(null, filename, "tja");
+		waitForActionToFinish();
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		// Assert 1
+		assertTrue(fileSystem.exists(fileSystem.toFile(filename)), "Expected file[" + filename + "] to be present");
+
+		// Close & Open FS
+		fileSystem.close();
+		fileSystem.open();
+
+		// Assert 2
+		F f = fileSystem.toFile(filename);
+		fileSystem.deleteFile(f);
+		assertFalse(fileSystem.exists(f));
 	}
 
 	@Test
@@ -186,11 +211,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.configure();
 		fileSystem.open();
 
-		if (!_folderExists(folderName)) {
-			_createFolder(folderName);
-			waitForActionToFinish();
-			assertTrue(_folderExists(folderName), "could not create folder before test");
-		}
+		createFolderIfNotExists(folderName);
 
 		fileSystem.removeFolder(folderName, false);
 		waitForActionToFinish();
@@ -205,11 +226,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.configure();
 		fileSystem.open();
 
-		if (!_folderExists(folderName)) {
-			_createFolder(folderName);
-			waitForActionToFinish();
-			assertTrue(_folderExists(folderName), "could not create folder before test");
-		}
+		createFolderIfNotExists(folderName);
 
 		for(int i=0;i<3;i++) {
 			createFile(folderName, "file_"+i+".txt", "some text here");
@@ -225,25 +242,22 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	public void writableFileSystemTestRemoveFolderRecursive() throws Exception {
 		String folderName = "dummyTestFolder";
 		String innerFolder = folderName+"/innerfolder";
+		String innerFolder2 = innerFolder + "/innerFolder2";
 		fileSystem.configure();
 		fileSystem.open();
 
-		if (!_folderExists(folderName)) {
-			_createFolder(folderName);
-			waitForActionToFinish();
-			assertTrue(_folderExists(folderName), "could not create folder before test");
+		createFolderIfNotExists(folderName); // Needed for SMB
+		createFolderIfNotExists(innerFolder);  // Needed for SMB
+		createFolderIfNotExists(innerFolder2);
+
+		for (int i = 0; i < 3; i++) {
+			createFile(folderName, "file_" + i + ".txt", "some text here");
+			createFile(innerFolder, "file_" + i + ".txt", "some text here");
 		}
 
-		if (!_folderExists(innerFolder)) {
-			_createFolder(innerFolder);
-			waitForActionToFinish();
-			assertTrue(_folderExists(folderName), "could not create folder before test");
-		}
-
-		for(int i=0;i<3;i++) {
-			createFile(folderName, "file_"+i+".txt", "some text here");
-			createFile(innerFolder, "file_"+i+".txt", "some text here");
-		}
+		fileSystem.removeFolder(innerFolder2, true);
+		waitForActionToFinish();
+		assertTrue(_folderExists(innerFolder), "folder is removed while it should not be");
 
 		fileSystem.removeFolder(folderName, true);
 		waitForActionToFinish();
@@ -258,11 +272,20 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.configure();
 		fileSystem.open();
 
-		if (!_folderExists(folderName)) {
-			_createFolder(folderName);
-			waitForActionToFinish();
-			assertTrue(_folderExists(folderName), "could not create folder before test");
-		}
+		createFolderIfNotExists(folderName);
+
+		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen");
+	}
+
+	@Test
+	@Disabled //Works in master (8.1-SNAPSHOT), but not in lower versions, because of failures in AmazonS3FileSystemTest
+	public void writableFileSystemTestFolderExistsWithSlash() throws Exception {
+		String folderName = "dummyFolder/";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFolderIfNotExists(folderName);
 
 		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen");
 	}
@@ -545,11 +568,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.configure();
 		fileSystem.open();
 
-		if (!_folderExists(folderName)) {
-			_createFolder(folderName);
-			waitForActionToFinish();
-			assertTrue(_folderExists(folderName), "could not create folder before test");
-		}
+		createFolderIfNotExists(folderName);
 		createFile(folderName, filename, "dummy");
 		waitForActionToFinish();
 		F file = fileSystem.toFile(folderName, filename);
@@ -563,15 +582,20 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.configure();
 		fileSystem.open();
 
-		if (!_folderExists(folderName)) {
-			_createFolder(folderName);
-			waitForActionToFinish();
-			assertTrue(_folderExists(folderName), "could not create folder before test");
-		}
+		createFolderIfNotExists(folderName);
 		createFile(folderName, filename, "dummy");
 		waitForActionToFinish();
 		F f = fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", true, true);
 
 		assertNotNull(f, "Copied file cannot be null");
+	}
+
+	private void createFolderIfNotExists(final String folderName) throws Exception {
+		if (!_folderExists(folderName)) {
+			log.debug("creating folder [{}]", folderName);
+			_createFolder(folderName);
+			waitForActionToFinish();
+			assertTrue(_folderExists(folderName), "could not create folder for test");
+		}
 	}
 }
