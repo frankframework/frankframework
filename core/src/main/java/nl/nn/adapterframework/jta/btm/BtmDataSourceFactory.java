@@ -30,6 +30,7 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public class BtmDataSourceFactory extends AbstractXADataSourceFactory implements DisposableBean {
 
+	private @Getter @Setter int minPoolSize = 0;
 	private @Getter @Setter int maxIdleTime = 60;
 
 	public BtmDataSourceFactory() {
