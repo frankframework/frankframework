@@ -15,11 +15,8 @@
 */
 package org.frankframework.senders;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
-import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -28,58 +25,69 @@ import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.stream.Message;
 
+import lombok.Setter;
+
 /**
- * Wrapper for senders, that opens 'runtime' before each sender action, and closes afterwards. Prevents long open connections inside Senders and possible connection failures. 
- *
- * @ff.parameters any parameters defined on the SenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}
+ * Wrapper for senders, that opens 'runtime' before each sender action, and closes afterwards.
+ * This prevents (long) open connections inside Senders and possible connection failures.
+ * 
+ * <b>Example:</b>
+ * <pre><code>
+ *   &lt;SenderPipe&gt;
+ *     &lt;RuntimeSenderWrapper&gt;
+ *        &lt;EchoSender myAttribute="myValue" /&gt;
+ *     &lt;/RuntimeSenderWrapper&gt;
+ *   &lt;/SenderPipe&gt;
+ * </code></pre>
+ * </p>
  *
  * @author  Niels Meijer
  */
 public class RuntimeSenderWrapper extends SenderWrapperBase {
 
 	/** specification of sender to send messages with */
-	private @Getter @Setter ISender sender;
+	private @Setter ISender sender;
 
 	@Override
 	protected boolean isSenderConfigured() {
-		return getSender()!=null;
+		return sender != null;
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
+		sender.configure();
 		super.configure();
-		getSender().configure();
 	}
 
 	@Override
 	public void open() throws SenderException {
 		try {
-			getSender().open();
+			sender.open();
 			super.open();
 		} finally {
-			getSender().close(); //Only open to test the connection, close afterwards if all is ok.
+			sender.close(); //Only open to test the connection, close afterwards if all is ok.
 		}
 	}
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			getSender().open();
+			sender.open();
 			return sender.sendMessage(message, session);
 		} finally {
-			getSender().close();
+			sender.close();
 		}
 	}
 
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		if (getSender() instanceof HasStatistics) {
-			((HasStatistics)getSender()).iterateOverStatistics(hski,data,action);
+		if (sender instanceof HasStatistics) {
+			((HasStatistics) sender).iterateOverStatistics(hski,data,action);
 		}
 	}
 
 	@Override
 	public boolean isSynchronous() {
-		return getSender().isSynchronous();
+		return sender.isSynchronous();
 	}
 }
