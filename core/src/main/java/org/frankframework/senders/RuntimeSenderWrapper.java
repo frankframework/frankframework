@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.stream.Message;
 
 /**
- * Wrapper for senders, that opens 'runtime' before each sender action, and closes afterwards.
+ * Wrapper for senders, that opens 'runtime' before each sender action, and closes afterwards. Prevents long open connections inside Senders and possible connection failures. 
  *
  * @ff.parameters any parameters defined on the SenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}
  *
