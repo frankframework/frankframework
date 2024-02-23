@@ -1,6 +1,7 @@
 package org.frankframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import org.apache.sshd.server.auth.hostbased.StaticHostBasedAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.frankframework.ftp.SftpFileRef;
+import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,27 +28,30 @@ import org.junit.jupiter.api.Test;
  */
 class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 
-	private final String username = "frankframework";
-	private final String password = "pass_123";
+	private final String username = "demo";
+	private final String password = "demo";
 	private final String host = "localhost";
 	private int port = 22;
 	private String remoteDirectory = "/home/frankframework/sftp";
+	protected TestAppender testAppender;
 
 	private SshServer sshd;
 
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
+		startNewSshDaemon();
+		super.setUp();
+	}
+
+	private void startNewSshDaemon() throws IOException {
 		if("localhost".equals(host)) {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
 			sshd = createSshServer(username, password);
-
 			sshd.start();
 			port = sshd.getPort();
 		}
-
-		super.setUp();
 	}
 
 	static SshServer createSshServer(String username, String password) throws IOException {
@@ -128,4 +133,19 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 		SftpFileRef ref2 = new SftpFileRef("folder1\\test123", "folder2");
 		assertEquals("folder2/test123", ref2.getName());
 	}
+
+	@Test
+	void testRemoveMultipleFolders() throws Exception {
+		fileSystem.configure();
+		fileSystem.open();
+		fileSystem.createFolder("piet");
+		fileSystem.changeDirectory("piet");
+		fileSystem.createFolder("1/2/3/4/5");
+		assertTrue(fileSystem.folderExists("1/2/3/4"));
+		assertTrue(fileSystem.folderExists("/piet/1/2/3/4"));
+		fileSystem.removeFolder("1/2/3", true);
+		assertFalse(fileSystem.folderExists("1/2/3"));
+		assertTrue(fileSystem.folderExists("1/2"));
+	}
+
 }

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.ftp.SftpFileRef;
 import org.frankframework.ftp.SftpSession;
@@ -66,10 +67,18 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		ftpClient = null;
 	}
 
-
 	@Override
 	public boolean isOpen() {
-		return ftpClient != null && ftpClient.isConnected();
+		log.debug("checking if SFTP connection is open");
+		try {
+			if (ftpClient == null || ftpClient.getSession() == null) {
+				return false;
+			}
+			ftpClient.getSession().sendKeepAliveMsg(); // Send a keep-alive packet to validate a working connection
+		} catch (Exception ignored) {
+			return false;
+		}
+		return ftpClient.isConnected() && isSessionStillWorking();
 	}
 
 	@Override
@@ -169,20 +178,35 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		String pwd = null;
+		String pwd;
 		try {
 			pwd = ftpClient.pwd();
 			try {
-				ftpClient.cd(pwd + "/" + folder); //Faster and more fail-safe method to ensure the target is a folder and not secretly a file
+				if (folder.startsWith("/")) {
+					ftpClient.cd(folder);
+				} else {
+					ftpClient.cd(pwd + "/" + folder); //Faster and more fail-safe method to ensure the target is a folder and not secretly a file
+				}
 				return true;
 			} finally {
 				ftpClient.cd(pwd);
 			}
 		} catch (SftpException e) {
-			if(e.id == 2 || e.id == 4) { // 2 == File not found, 4 == Can't change directory
+			if (e.id == 2 || e.id == 4) { // 2 == File not found, 4 == Can't change directory
 				return false;
 			}
 			throw new FileSystemException(e);
+		}
+	}
+
+	public void changeDirectory(final String folder) throws FileSystemException {
+		if (StringUtils.isBlank(folder)) {
+			return;
+		}
+		try {
+			ftpClient.cd(folder);
+		} catch (SftpException e) {
+			throw new FileSystemException("unable to change remote directory to [" + folder + "]", e);
 		}
 	}
 
@@ -198,7 +222,8 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				folders[i] = folders[i - 1] + "/" + folders[i];
 			}
 			for(String f : folders) {
-				if(f.length() != 0 && !folderExists(f)) {
+				if(!f.isEmpty() && !folderExists(f)) {
+					log.debug("creating folder [{}]", f);
 					ftpClient.mkdir(f);
 				}
 			}
@@ -216,6 +241,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			if(removeNonEmptyFolder) {
 				removeDirectoryContent(folder);
 			} else {
+				log.debug("removing folder [{}]", folder);
 				ftpClient.rmdir(folder);
 			}
 		} catch (SftpException e) {
@@ -231,13 +257,18 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	 */
 	private void removeDirectoryContent(String folder) throws SftpException, FileSystemException {
 		String pwd = ftpClient.pwd();
-		LinkedList<LsEntry> files = list(pwd+"/"+folder);
+		LinkedList<LsEntry> files;
+		if (StringUtils.isNotEmpty(folder) && folder.startsWith("/")) {
+			files = list(folder);
+		} else {
+			files = list(pwd + "/" + folder);
+		}
 		for (LsEntry ftpFile : files) {
 			String fileName = ftpFile.getFilename();
 			if (fileName.equals(".") || fileName.equals("..")) {
 				continue;
 			}
-			if(ftpFile.getAttrs().isDir()) {
+			if (ftpFile.getAttrs().isDir()) {
 				String recursiveName = (folder != null) ? folder + "/" + ftpFile.getFilename() : ftpFile.getFilename();
 				removeDirectoryContent(recursiveName);
 			} else {
@@ -247,7 +278,19 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			}
 		}
 		ftpClient.cd(pwd);
-		ftpClient.rmdir(pwd+"/"+folder);
+		if (StringUtils.isNotEmpty(folder) && folder.startsWith("/")) {
+			log.debug("removing folder [{}]", folder);
+			ftpClient.rmdir(folder);
+		} else {
+			String folderToDelete;
+			if ("/".equals(pwd)) { // Prevent double slashes
+				folderToDelete = pwd + folder;
+			} else {
+				folderToDelete = pwd + "/" + folder;
+			}
+			log.debug("removing folder [{}]", folderToDelete);
+			ftpClient.rmdir(folderToDelete);
+		}
 	}
 
 	@Override
@@ -355,8 +398,8 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	/**
-	 * pathname of the file or directory to list.
-	 * @ff.default Home folder of the ftp user
+	 * Path of the file or directory to start working.
+	 * @ff.default Home folder of the sftp user
 	 */
 	public void setRemoteDirectory(String remoteDirectory) {
 		this.remoteDirectory = remoteDirectory;
@@ -364,7 +407,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	private class SftpFilePathIterator implements Iterator<SftpFileRef> {
 
-		private List<SftpFileRef> files;
+		private final List<SftpFileRef> files;
 		private int i = 0;
 
 		SftpFilePathIterator(String folder, LinkedList<LsEntry> fileEnties) {
@@ -398,7 +441,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to remove file ["+getCanonicalName(file)+"]", e);
+				log.warn("unable to remove file [{}]", getCanonicalName(file), e);
 			}
 		}
 	}
