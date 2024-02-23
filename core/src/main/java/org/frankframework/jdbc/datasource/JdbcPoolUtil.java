@@ -56,7 +56,7 @@ public class JdbcPoolUtil {
 			return;
 		}
 		info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
-		info.append("minPoolSize [").append(dataSource.getMinPoolSize()).append(CLOSE);
+		info.append("minIdle [").append(dataSource.getMinPoolSize()).append(CLOSE);
 		info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
 		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append("]");
 	}
