@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.ThreadContext;
@@ -38,7 +37,7 @@ public class RetrieveContextPipe extends FixedForwardPipe {
 		try (ObjectBuilder document = DocumentBuilderFactory.startObjectDocument(DocumentFormat.JSON, "context")) {
 			document.add("message", message.asString());
 			try (ObjectBuilder messageContext = document.addObjectField("messageContext")) {
-				for (Entry<String, Serializable> entry : message.getContext().entrySet()) {
+				for (Entry<String, Object> entry : message.getContext().entrySet()) {
 					messageContext.add(entry.getKey(), entry.getValue().toString());
 				}
 			}
