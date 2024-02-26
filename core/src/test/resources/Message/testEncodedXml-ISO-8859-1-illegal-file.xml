@@ -1,0 +1,4 @@
+<root>
+	<!-- This file is invalid according to XML spec, because it has characters encoded with ISO-8859-1 without specifying the encoding in the file. It should be specified in the message. -->
+	<sub>Zoë</sub>
+</root>

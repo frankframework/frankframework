@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<root>
+	<!-- This file is valid according to XML spec, because the non-UTF8 encoding is declared in the file -->
+	<sub>Zoë</sub>
+</root>

@@ -637,7 +637,7 @@ public class Message implements Serializable, Closeable {
 			return new InputSource(new StringReader((String) request));
 		}
 		LOG.debug("returning {} as InputSource", this::getObjectId);
-		if (isBinary()) {
+		if (isBinary() && getCharset() == null) {
 			return new InputSource(asInputStream());
 		}
 		return new InputSource(asReader());
