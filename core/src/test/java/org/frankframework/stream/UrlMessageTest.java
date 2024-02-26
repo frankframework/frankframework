@@ -37,7 +37,7 @@ public class UrlMessageTest {
 		File source = File.createTempFile("junit", null, folder);
 		MessageTest.writeContentsToFile(source, testString);
 
-		Message in = new UrlMessage(source.toURL(), new MessageContext().withCharset("UTF-8"));
+		Message in = new UrlMessage(source.toURL(), "UTF-8");
 
 		byte[] wire = serializationTester.serialize(in);
 		log.debug("wire "+Hex.encodeHexString(wire));

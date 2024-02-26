@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.frankframework.functional.FunctionalUtil.logValue;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,13 +46,6 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Supplier;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.HasPhysicalDestination;
@@ -71,6 +65,13 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlException;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 
 /**
@@ -733,7 +734,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		Enumeration<String> names = message.getPropertyNames();
 		while (names.hasMoreElements()) {
 			String name = names.nextElement();
-			result.put(name, message.getObjectProperty(name));
+			result.put(name, (Serializable) message.getObjectProperty(name));
 		}
 		return result;
 	}
