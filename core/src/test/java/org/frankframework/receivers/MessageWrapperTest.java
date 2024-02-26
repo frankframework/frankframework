@@ -47,6 +47,7 @@ public class MessageWrapperTest {
 
 		MessageWrapper<?> in = new MessageWrapper<>(new Message(data), id, correlationId);
 		in.getContext().put(contextKey, contextValue);
+		in.getContext().put("NON-SERIALIZABLE-VALUE", new Object());
 
 		byte[] wire = serializationTester.serialize(in);
 		log.debug("Current characterWire: [{}]", ()-> Hex.encodeHexString(wire));
@@ -59,6 +60,7 @@ public class MessageWrapperTest {
 		assertEquals(id, out.getId());
 		assertEquals(correlationId, out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
+		assertFalse(out.getContext().containsKey("NON-SERIALIZABLE-VALUE"));
 	}
 
 	@Test
