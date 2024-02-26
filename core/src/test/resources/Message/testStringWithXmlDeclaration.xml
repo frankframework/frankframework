@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root><sub>abc&amp;&lt;&gt;</sub><sub><![CDATA[<a>a&amp;b</a>]]></sub><data attr="één €">één €</data></root>

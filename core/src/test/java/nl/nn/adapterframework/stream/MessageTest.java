@@ -1315,6 +1315,27 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws Exception {
+		// Arrange
+		URL testFileURL = TestFileUtils.getTestFileURL("/Message/testStringWithXmlDeclaration.xml");
+		Message message = Message.asMessage(testFileURL.openStream());
+		message.getContext().withCharset("ISO-8859-1");
+
+		ContentHandler handler = new XmlWriter();
+		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
+
+		// Act
+		InputSource source = message.asInputSource();
+		xmlReader.parse(source);
+
+		// Assert
+		System.err.println(handler);
+		// NB: This assert breaks, because the parser is not reading the input XML correctly.
+		// Shows how the "fix" could be wrong. (But of course, when encoding is specified externally in metadata, and it doesn't match the contents, that is the real bug...)
+		assertTrue(handler.toString().contains("één €"));
+	}
+
+	@Test
 	public void testReadMessageAsInputSourceWithNonDefaultCharset() throws Exception {
 		// Arrange
 		URL testFileURL = TestFileUtils.getTestFileURL("/Message/testEncodedXml-ISO-8859-1-correct-file.xml");
