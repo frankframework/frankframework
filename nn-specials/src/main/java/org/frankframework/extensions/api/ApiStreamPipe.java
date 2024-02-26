@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@ package org.frankframework.extensions.api;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.util.DbmsUtil;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.pipes.StreamPipe;
 import org.frankframework.util.AppConstants;
@@ -127,17 +126,15 @@ public class ApiStreamPipe extends StreamPipe {
 
 	private String selectMessageKey(String slotId, String messageId) throws JdbcException {
 		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='" + ITransactionalStorage.StorageType.MESSAGESTORAGE.getCode() + "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId + "'";
-		Connection conn = dummyQuerySender.getConnection();
-		try {
-			return DbmsUtil.executeStringQuery(conn, query);
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
+		try (Connection connection = dummyQuerySender.getConnection(); PreparedStatement stmt = connection.prepareStatement(query)) {
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next()) {
+					return null;
 				}
+				return rs.getString(1);
 			}
+		} catch (Exception e) {
+			throw new JdbcException("could not execute query [" + query + "]", e);
 		}
 	}
 

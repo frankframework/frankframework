@@ -35,7 +35,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.StreamUtil;
 
 import lombok.SneakyThrows;

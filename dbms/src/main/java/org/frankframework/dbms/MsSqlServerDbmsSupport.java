@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.DbmsUtil;
 
 
 /**
