@@ -15,27 +15,29 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 public class CredentialFactory {
-	protected Logger log = Logger.getLogger(this.getClass().getCanonicalName());
+	protected final Logger log = Logger.getLogger(CredentialFactory.class.getName());
 
-	private static final String CREDENTIAL_FACTORY_KEY="credentialFactory.class";
-	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY="credentialFactory.optionalPrefix";
-	private static final String DEFAULT_CREDENTIAL_FACTORY=FileSystemCredentialFactory.class.getName();
+	private static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
+	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY = "credentialFactory.optionalPrefix";
+	private static final String DEFAULT_CREDENTIAL_FACTORY = FileSystemCredentialFactory.class.getName();
 
 	public static final String LEGACY_PACKAGE_NAME = "nl.nn.credentialprovider.";
 	public static final String ORG_FRANKFRAMEWORK_PACKAGE_NAME = "org.frankframework.credentialprovider.";
 
 	private static String optionalPrefix;
 
-	private ICredentialFactory delegate;
+	private final LinkedList<ICredentialFactory> delegates = new LinkedList<>();
 
 	private static CredentialFactory self;
 
@@ -47,66 +49,77 @@ public class CredentialFactory {
 	}
 
 	public static synchronized CredentialFactory getInstance() {
-		if (self==null) {
-			self=new CredentialFactory();
+		if (self == null) {
+			self = new CredentialFactory();
 		}
 		return self;
 	}
 
+	// Parameter is for testing purposes only
 	private CredentialFactory() {
-		String factoryClassName = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
+		String factoryClassNames = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
 
 		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
-		if (StringUtils.isNotEmpty(factoryClassName) && factoryClassName.contains(LEGACY_PACKAGE_NAME)) {
-			factoryClassName = factoryClassName.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+		if (StringUtils.isNotEmpty(factoryClassNames) && factoryClassNames.contains(LEGACY_PACKAGE_NAME)) {
+			factoryClassNames = factoryClassNames.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
 		}
-		if (tryFactory(factoryClassName)) {
+		if (tryFactories(factoryClassNames)) {
 			return;
 		}
-		if (tryFactory(DEFAULT_CREDENTIAL_FACTORY)) {
+		if (tryFactories(DEFAULT_CREDENTIAL_FACTORY)) {
 			return;
 		}
 		log.warning("No CredentialFactory installed");
 	}
 
-	// package private method to force delegate for test purposes
-	void forceDelegate(ICredentialFactory delegate) {
-		this.delegate=delegate;
+	// Clear the existing static instance, for testing purposes only
+	static void clearInstance() {
+		self = null;
 	}
 
-	private boolean tryFactory(String factoryClassName) {
-		if (StringUtils.isNotEmpty(factoryClassName)) {
-			log.info("trying to configure CredentialFactory ["+factoryClassName+"]");
-			try {
-				Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>)Class.forName(factoryClassName);
-				delegate = factoryClass.newInstance();
-				delegate.initialize();
-				log.info("installed CredentialFactory ["+factoryClassName+"]");
-				return true;
-			} catch (Exception e) {
-				log.log(Level.WARNING, "Cannot instantiate CredentialFactory ["+factoryClassName+"] (" + e.getClass().getTypeName() + "): " + e.getMessage());
-			}
+	private boolean tryFactories(final String factoryClassNames) {
+		if (StringUtils.isBlank(factoryClassNames)) {
+			return false;
 		}
-		return false;
+		Arrays.stream(factoryClassNames.split(",")) // split on comma
+				.map(String::trim) // remove leading and trailing spaces
+				.forEach(this::tryFactory);
+		return !delegates.isEmpty();
+	}
+
+	private void tryFactory(String factoryClassName) {
+		try {
+			log.info("trying to configure CredentialFactory [" + factoryClassName + "]");
+			Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>) Class.forName(factoryClassName);
+			ICredentialFactory delegate = factoryClass.getDeclaredConstructor().newInstance();
+			delegate.initialize();
+			log.info("installed CredentialFactory [" + factoryClassName + "]");
+			delegates.add(delegate);
+		} catch (Exception e) {
+			log.warning("Cannot instantiate CredentialFactory [" + factoryClassName + "] (" + e.getClass().getTypeName() + "): " + e.getMessage());
+		}
 	}
 
 	private static String findAlias(String rawAlias) {
-		if (optionalPrefix!=null && rawAlias!=null && rawAlias.toLowerCase().startsWith(optionalPrefix)) {
+		if (optionalPrefix != null && rawAlias != null && rawAlias.toLowerCase().startsWith(optionalPrefix)) {
 			return rawAlias.substring(optionalPrefix.length());
 		}
 		return rawAlias;
 	}
 
 	public static boolean hasCredential(String rawAlias) {
-		ICredentialFactory delegate = getInstance().delegate;
-		return delegate==null || delegate.hasCredentials(findAlias(rawAlias));
+		for (ICredentialFactory factory : getInstance().delegates) {
+			if (factory.hasCredentials(findAlias(rawAlias))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static ICredentials getCredentials(String rawAlias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
-		ICredentialFactory delegate = getInstance().delegate;
-		if (delegate!=null) {
-			ICredentials result = delegate.getCredentials(findAlias(rawAlias), defaultUsernameSupplier, defaultPasswordSupplier);
-			if (result!=null) {
+		for (ICredentialFactory factory : getInstance().delegates) {
+			ICredentials result = factory.getCredentials(findAlias(rawAlias), defaultUsernameSupplier, defaultPasswordSupplier);
+			if (result != null) {
 				return result;
 			}
 		}
@@ -114,8 +127,14 @@ public class CredentialFactory {
 	}
 
 	public static Collection<String> getConfiguredAliases() throws Exception {
-		ICredentialFactory delegate = getInstance().delegate;
-		return delegate!=null ? delegate.getConfiguredAliases() : null;
+		Collection<String> aliases = new LinkedHashSet<>();
+		for (ICredentialFactory factory : getInstance().delegates) {
+			Collection<String> configuredAliases = factory.getConfiguredAliases();
+			if (configuredAliases != null) {
+				aliases.addAll(configuredAliases);
+			}
+		}
+		return aliases;
 	}
 
 }
