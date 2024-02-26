@@ -34,13 +34,13 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
 import org.frankframework.ftp.FTPFileRef;
 import org.frankframework.ftp.FtpSession;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.LogUtil;
+
+import lombok.Getter;
 
 /**
  * Implementation of FTP and FTPs FileSystem
@@ -178,11 +178,23 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
-		if(folderExists(folder)) {
+		if (folderExists(folder)) {
 			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 		try {
-			ftpClient.makeDirectory(folder);
+			String[] folders = folder.split("/");
+			for (int i = 1; i < folders.length; i++) {
+				folders[i] = folders[i - 1] + "/" + folders[i];
+			}
+			for (String f : folders) {
+				if (!f.isEmpty() && !folderExists(f)) {
+					log.debug("creating folder [{}]", f);
+					boolean created = ftpClient.makeDirectory(f);
+					if (!created) {
+						throw new FileSystemException("Cannot create folder: " + f);
+					}
+				}
+			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -197,7 +209,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			if(removeNonEmptyFolder) {
 				removeDirectoryContent(folder);
 			} else {
-				ftpClient.removeDirectory(folder);
+				log.debug("removing folder [{}]", folder);
+				boolean removed = ftpClient.removeDirectory(folder);
+				if (!removed) {
+					throw new FileSystemException("Cannot remove folder: " + folder);
+				}
 			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
@@ -227,7 +243,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 				}
 			}
 			ftpClient.changeWorkingDirectory(pwd);
-			ftpClient.removeDirectory(pwd+"/"+folder);
+			log.debug("removing folder [{}/{}]", pwd, folder);
+			boolean removed = ftpClient.removeDirectory(pwd + "/" + folder);
+			if (!removed) {
+				throw new FileSystemException("Cannot remove folder");
+			}
 		}
 	}
 
