@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -934,6 +934,7 @@ public class Message implements Serializable, Closeable {
 		stream.writeObject(getCharset());
 		stream.writeObject(request);
 		stream.writeObject(requestClass);
+		stream.writeObject(context);
 	}
 
 	/*
@@ -943,22 +944,32 @@ public class Message implements Serializable, Closeable {
 		String charset = (String) stream.readObject();
 		request = stream.readObject();
 		try {
-			Object requestClass = stream.readObject();
-			if (requestClass != null) {
-				if (requestClass instanceof Class<?>) {
-					this.requestClass = ((Class<?>) requestClass).getTypeName();
+			Object requestClassFromStream = stream.readObject();
+			if (requestClassFromStream != null) {
+				if (requestClassFromStream instanceof Class<?>) {
+					this.requestClass = ((Class<?>) requestClassFromStream).getTypeName();
 				} else {
-					this.requestClass = requestClass.toString();
+					this.requestClass = requestClassFromStream.toString();
 				}
 			} else {
 				this.requestClass = ClassUtils.nameOf(request);
 			}
 		} catch (Exception e) {
 			requestClass = ClassUtils.nameOf(request);
-			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [" + requestClass + "], (" + ClassUtils.nameOf(e) + "): " + e.getMessage());
+			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", ()->requestClass, ()->ClassUtils.nameOf(e),  e::getMessage);
 		}
-
-		context = new MessageContext().withCharset(charset);
+		MessageContext contextFromStream;
+		try {
+			contextFromStream = (MessageContext) stream.readObject();
+		} catch (Exception e) {
+			// Old version of object, does not yet have the MessageContext stored?
+			LOG.debug("Could not read MessageContext of message {}, old format message? Exception: {}", requestClass, e.getMessage());
+			contextFromStream = null;
+		}
+		if (contextFromStream == null) {
+			contextFromStream = new MessageContext().withCharset(charset);
+		}
+		context = contextFromStream;
 	}
 
 	/**

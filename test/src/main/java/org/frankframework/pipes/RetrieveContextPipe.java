@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.ThreadContext;
-import org.xml.sax.SAXException;
-
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -29,6 +27,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.document.DocumentBuilderFactory;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.stream.document.ObjectBuilder;
+import org.xml.sax.SAXException;
 
 public class RetrieveContextPipe extends FixedForwardPipe {
 
@@ -37,7 +36,7 @@ public class RetrieveContextPipe extends FixedForwardPipe {
 		try (ObjectBuilder document = DocumentBuilderFactory.startObjectDocument(DocumentFormat.JSON, "context")) {
 			document.add("message", message.asString());
 			try (ObjectBuilder messageContext = document.addObjectField("messageContext")) {
-				for (Entry<String,Object> entry:message.getContext().entrySet()) {
+				for (Entry<String, Object> entry : message.getContext().entrySet()) {
 					messageContext.add(entry.getKey(), entry.getValue().toString());
 				}
 			}
