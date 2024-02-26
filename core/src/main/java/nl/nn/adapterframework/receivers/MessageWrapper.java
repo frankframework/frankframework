@@ -22,11 +22,13 @@ import java.io.ObjectOutputStream;
 import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
@@ -37,6 +39,7 @@ import nl.nn.adapterframework.stream.Message;
  * @since   4.3
  */
 @SuppressWarnings({"deprecation", "unchecked"})
+@Log4j2
 public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializable {
 
 	private static final long serialVersionUID = -8251009650246241025L;
@@ -70,7 +73,16 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
-		stream.writeObject(context);
+		Map<String, Serializable> serializableData = context.entrySet().stream()
+				.filter(e -> {
+					if (e.getValue() instanceof Serializable) return true;
+					else {
+						log.warn("Cannot write non-serializable MessageWrapper context entry to stream: [{}] -> [{}]", e::getKey, e::getValue);
+						return false;
+					}
+				})
+				.collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable)(e.getValue())));
+		stream.writeObject(serializableData);
 		stream.writeObject(id);
 		stream.writeObject(message);
 		stream.writeObject(correlationId);
