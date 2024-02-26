@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,9 +30,6 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
-
-import lombok.Lombok;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.document.DocumentBuilderFactory;
@@ -44,6 +41,9 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.WildCardFilter;
+import org.xml.sax.SAXException;
+
+import lombok.Lombok;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
