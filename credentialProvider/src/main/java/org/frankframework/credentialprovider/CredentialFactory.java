@@ -15,10 +15,11 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
@@ -26,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 public class CredentialFactory {
-	protected final Logger log = Logger.getLogger(CredentialFactory.class.getName());
+	protected static final Logger log = Logger.getLogger(CredentialFactory.class.getName());
 
 	private static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
 	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY = "credentialFactory.optionalPrefix";
@@ -37,7 +38,7 @@ public class CredentialFactory {
 
 	private static String optionalPrefix;
 
-	private final LinkedList<ICredentialFactory> delegates = new LinkedList<>();
+	private final List<ICredentialFactory> delegates = new ArrayList<>();
 
 	private static CredentialFactory self;
 
@@ -100,7 +101,7 @@ public class CredentialFactory {
 		}
 	}
 
-	private static String findAlias(String rawAlias) {
+	private static String extractAlias(final String rawAlias) {
 		if (optionalPrefix != null && rawAlias != null && rawAlias.toLowerCase().startsWith(optionalPrefix)) {
 			return rawAlias.substring(optionalPrefix.length());
 		}
@@ -108,8 +109,9 @@ public class CredentialFactory {
 	}
 
 	public static boolean hasCredential(String rawAlias) {
+		final String alias = extractAlias(rawAlias);
 		for (ICredentialFactory factory : getInstance().delegates) {
-			if (factory.hasCredentials(findAlias(rawAlias))) {
+			if (factory.hasCredentials(alias)) {
 				return true;
 			}
 		}
@@ -117,13 +119,14 @@ public class CredentialFactory {
 	}
 
 	public static ICredentials getCredentials(String rawAlias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+		final String alias = extractAlias(rawAlias);
 		for (ICredentialFactory factory : getInstance().delegates) {
-			ICredentials result = factory.getCredentials(findAlias(rawAlias), defaultUsernameSupplier, defaultPasswordSupplier);
+			ICredentials result = factory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 			if (result != null) {
 				return result;
 			}
 		}
-		return new Credentials(findAlias(rawAlias), defaultUsernameSupplier, defaultPasswordSupplier);
+		return new Credentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
 	public static Collection<String> getConfiguredAliases() throws Exception {
