@@ -636,7 +636,7 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterList parameters, Message message, PipeLineSession session) throws SQLException, JdbcException, ParameterException {
+	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterList parameters, Message message, PipeLineSession session) throws JdbcException, ParameterException {
 		if (parameters != null) {
 			applyParameters(dbmsSupport, statement, parameters.getValues(message, session), session);
 		}

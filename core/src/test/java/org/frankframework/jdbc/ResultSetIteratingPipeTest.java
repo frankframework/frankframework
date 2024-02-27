@@ -33,7 +33,6 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.StreamUtil;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
@@ -141,7 +140,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		try(Connection connection = env.getConnection()) {
-			String jdbcResult = DbmsUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
+			String jdbcResult = JdbcTestUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
 			assertEquals("10", jdbcResult);
 		}
 	}

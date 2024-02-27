@@ -21,7 +21,6 @@ import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.DbmsUtil;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.CannotCreateTransactionException;
@@ -61,7 +60,7 @@ public class TestSelfRecoveringBTMDiskJournal {
 	private int getNumberOfLines() throws JdbcException, SQLException {
 		String preparedQuery = env.getDbmsSupport().prepareQueryTextForNonLockingRead(SELECT_QUERY);
 		try (Connection connection = env.getConnection()) {
-			return DbmsUtil.executeIntQuery(connection, preparedQuery);
+			return JdbcTestUtil.executeIntQuery(connection, preparedQuery);
 		}
 	}
 
@@ -155,7 +154,7 @@ public class TestSelfRecoveringBTMDiskJournal {
 			assertTrue(txStatus.isCompleted());
 			assertFalse(txManagedConnection.isClosed());
 
-			JdbcException ex = assertThrows(JdbcException.class, () -> DbmsUtil.executeIntQuery(txManagedConnection, SELECT_QUERY));
+			JdbcException ex = assertThrows(JdbcException.class, () -> JdbcTestUtil.executeIntQuery(txManagedConnection, SELECT_QUERY));
 			assertThat(ex.getMessage(), Matchers.endsWith("connection handle already closed")); // But the connection handle apparently is !?
 		}
 	}
