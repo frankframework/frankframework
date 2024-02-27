@@ -22,7 +22,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ITransactionalStorage;
+import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.dbms.JdbcException;
@@ -76,7 +76,7 @@ public class ApiStreamPipe extends StreamPipe {
 			}
 		}
 		if (retrieveMessage) {
-			String messageId = null;
+			String messageId;
 			try {
 				messageId = XmlUtils.evaluateXPathNodeSetFirstElement(firstStringPart, "MessageID");
 			} catch (Exception e) {
@@ -125,8 +125,11 @@ public class ApiStreamPipe extends StreamPipe {
 	}
 
 	private String selectMessageKey(String slotId, String messageId) throws JdbcException {
-		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='" + ITransactionalStorage.StorageType.MESSAGESTORAGE.getCode() + "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId + "'";
+		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='?' AND SLOTID='?' AND MESSAGEID='?'";
 		try (Connection connection = dummyQuerySender.getConnection(); PreparedStatement stmt = connection.prepareStatement(query)) {
+			stmt.setString(1, IMessageBrowser.StorageType.MESSAGESTORAGE.getCode());
+			stmt.setString(2, slotId);
+			stmt.setString(3, messageId);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					return null;
