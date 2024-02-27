@@ -39,6 +39,9 @@ import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_CONFIGURATION)
 public class UpdateLogSettings extends BusEndpointBase {
@@ -46,6 +49,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 	private static final String TESTTOOL_ENABLED_PROPERTY = "testtool.enabled";
 
 	@ActionSelector(BusAction.GET)
+	@PermitAll
 	public Message<String> getLogConfiguration(Message<?> message) {
 		Map<String, Object> logSettings = new HashMap<>(3);
 		LoggerContext logContext = LoggerContext.getContext(false);
@@ -65,6 +69,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.MANAGE)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void updateLogConfiguration(Message<?> message) {
 		String loglevelStr = BusMessageUtils.getHeader(message, "logLevel", null);
 		Level loglevel = Level.toLevel(loglevelStr, null);

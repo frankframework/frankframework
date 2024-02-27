@@ -57,6 +57,8 @@ import org.frankframework.util.JacksonUtils;
 
 import org.frankframework.util.SpringUtils;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.MONITORING)
 public class Monitoring extends BusEndpointBase {
@@ -85,6 +87,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.GET)
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> getMonitors(Message<?> message) {
 		boolean showConfigAsXml = BusMessageUtils.getBooleanHeader(message, "xml", false);
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
@@ -107,6 +110,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> addMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null); //when present update Trigger
@@ -135,6 +139,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.DELETE)
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> deleteMonitor(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null);
@@ -156,6 +161,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.MANAGE)
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> updateMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY);

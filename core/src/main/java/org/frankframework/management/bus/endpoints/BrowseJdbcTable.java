@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.JDBC)
 	@ActionSelector(BusAction.FIND)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> handleBrowseDatabase(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String tableName = BusMessageUtils.getHeader(message, "table");
