@@ -18,10 +18,12 @@ package org.frankframework.jdbc;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,13 +40,13 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DB2XMLWriter;
-import org.frankframework.util.JdbcUtil;
 
 /**
  * StoredProcedureQuerySender is used to send stored procedure queries and retrieve the result.
@@ -240,7 +242,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			if (getDbmsSupport().canFetchStatementParameterMetaData() && param.getType() != Parameter.ParameterType.LIST) {
 				typeNr = parameterMetaData.getParameterType(position);
 			} else {
-				typeNr = JdbcUtil.mapParameterTypeToSqlType(getDbmsSupport(), param.getType()).getVendorTypeNumber();
+				typeNr = mapParameterTypeToSqlType(getDbmsSupport(), param.getType()).getVendorTypeNumber();
 			}
 			callableStatement.registerOutParameter(position, typeNr);
 		}
@@ -276,6 +278,36 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		DB2XMLWriter db2xml = buildDb2XMLWriter();
 		String result = db2xml.getXML(getDbmsSupport(), callableStatement, alsoGetResultSets, outputParameters, getMaxRows(), isIncludeFieldDefinition());
 		return Message.asMessage(result);
+	}
+
+	static SQLType mapParameterTypeToSqlType(IDbmsSupport dbmsSupport, Parameter.ParameterType parameterType) {
+		switch (parameterType) {
+			case DATE:
+				return JDBCType.DATE;
+			case TIMESTAMP:
+			case DATETIME:
+			case XMLDATETIME:
+				return JDBCType.TIMESTAMP;
+			case TIME:
+				return JDBCType.TIME;
+			case NUMBER:
+				return JDBCType.NUMERIC;
+			case INTEGER:
+				return JDBCType.INTEGER;
+			case BOOLEAN:
+				return JDBCType.BOOLEAN;
+			case STRING:
+				return JDBCType.VARCHAR;
+			case CHARACTER:
+				return JDBCType.CLOB;
+			case BINARY:
+				return JDBCType.BLOB;
+			case LIST:
+				// Type 'LIST' is used for REF_CURSOR type OUTPUT parameters of stored procedures.
+				return dbmsSupport.getCursorSqlType();
+			default:
+				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
+		}
 	}
 
 	/**

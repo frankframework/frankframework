@@ -15,17 +15,21 @@
 */
 package org.frankframework.jdbc;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.zip.DeflaterOutputStream;
 
 import org.frankframework.batch.IResultHandler;
-
 import org.frankframework.core.SenderException;
-
+import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.doc.ReferTo;
-
-import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.StreamUtil;
 
 
 /**
@@ -56,10 +60,24 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 	@Override
 	protected Writer getWriter(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
 		try {
-			return JdbcUtil.getBlobWriter(dbmsSupport,lobHandle,rs,querySender.getBlobColumn(), querySender.getBlobCharset(), querySender.isBlobsCompressed());
+			return getBlobWriter(dbmsSupport,lobHandle,rs,querySender.getBlobColumn(), querySender.getBlobCharset(), querySender.isBlobsCompressed());
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
+	}
+
+	private static Writer getBlobWriter(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, DbmsException, SQLException {
+		Writer result;
+		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
+		if (charset == null) {
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		}
+		if (compressBlob) {
+			result = new BufferedWriter(new OutputStreamWriter(new DeflaterOutputStream(out), charset));
+		} else {
+			result = new BufferedWriter(new OutputStreamWriter(out, charset));
+		}
+		return result;
 	}
 
 	/**

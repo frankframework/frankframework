@@ -17,6 +17,7 @@ package org.frankframework.jdbc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,8 +31,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IPeekableListener;
@@ -39,14 +38,17 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
-
 import org.frankframework.dbms.DbmsException;
+import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.StreamUtil;
+
+import lombok.Getter;
 
 /**
  * JdbcListener base class.
@@ -261,7 +263,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				switch (getMessageFieldType()) {
 					case CLOB:
 						// TESTCOVERAGE: Untested branch
-						message = new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
+						message = new Message(getClobAsString(getDbmsSupport(), rs, getMessageField()));
 						break;
 					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
@@ -316,6 +318,14 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		} else {
 			throw new IllegalArgumentException("Cannot extract JDBC message key from raw message [" + rawMessage + "]");
 		}
+	}
+
+	private static String getClobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName) throws IOException, DbmsException, SQLException {
+		Reader reader = dbmsSupport.getClobReader(rs, columnName);
+		if (reader == null) {
+			return null;
+		}
+		return StreamUtil.readerToString(reader, null, false);
 	}
 
 	@Override

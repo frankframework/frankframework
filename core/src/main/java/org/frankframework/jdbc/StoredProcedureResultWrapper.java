@@ -46,7 +46,6 @@ import javax.annotation.Nonnull;
 
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.util.JdbcUtil;
 
 public class StoredProcedureResultWrapper implements ResultSet {
 
@@ -1058,7 +1057,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	private class MyResultSetMetaData implements ResultSetMetaData {
 
 		private SQLType getSqlType(final int column) {
-			return JdbcUtil.mapParameterTypeToSqlType(dbmsSupport, parameterPositions.get(column - 1).getValue().getType());
+			return StoredProcedureQuerySender.mapParameterTypeToSqlType(dbmsSupport, parameterPositions.get(column - 1).getValue().getType());
 		}
 
 		@Override

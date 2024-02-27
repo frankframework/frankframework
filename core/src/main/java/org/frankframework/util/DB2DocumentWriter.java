@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 
 import org.frankframework.stream.document.ArrayBuilder;
 import org.frankframework.stream.document.DocumentBuilderFactory;
@@ -174,7 +175,7 @@ public class DB2DocumentWriter {
 						if (rs.wasNull()) {
 							row.add(columnName, (String)null);
 						} else {
-							if (JdbcUtil.isNumeric(rsmeta.getColumnType(i))) {
+							if (isSQLTypeNumeric(rsmeta.getColumnType(i))) {
 								row.addNumber(columnName, value);
 							} else {
 								row.add(columnName, value);
@@ -189,6 +190,22 @@ public class DB2DocumentWriter {
 		}
 	}
 
+	private static boolean isSQLTypeNumeric(int sqlType) {
+		switch (sqlType) {
+			case Types.INTEGER:
+			case Types.NUMERIC:
+			case Types.DOUBLE:
+			case Types.BIGINT:
+			case Types.DECIMAL:
+			case Types.FLOAT:
+			case Types.REAL:
+			case Types.SMALLINT:
+			case Types.TINYINT:
+				return true;
+			default:
+				return false;
+		}
+	}
 
 	public void setDocumentName(String s) {
 		docname = s;
