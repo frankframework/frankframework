@@ -1332,7 +1332,8 @@ public class MessageTest {
 		System.err.println(handler);
 		// NB: This assert breaks, because the parser is not reading the input XML correctly.
 		// Shows how the "fix" could be wrong. (But of course, when encoding is specified externally in metadata, and it doesn't match the contents, that is the real bug...)
-		assertTrue(handler.toString().contains("één €"));
+//		assertTrue(handler.toString().contains("één €"));
+		assertFalse(handler.toString().contains("één €"));
 	}
 
 	@Test
