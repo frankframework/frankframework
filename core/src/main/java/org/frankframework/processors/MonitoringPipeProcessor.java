@@ -17,8 +17,6 @@ package org.frankframework.processors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
-import org.frankframework.core.IExtendedPipe;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -39,13 +37,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
-		PipeRunResult pipeRunResult = null;
-
-		IExtendedPipe pe=null;
-
-		if (pipe instanceof IExtendedPipe) {
-			pe = (IExtendedPipe)pipe;
-		}
+		PipeRunResult pipeRunResult;
 
 		long pipeStartTime= System.currentTimeMillis();
 
@@ -66,7 +58,6 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			if (lir) {
 				sb.append(" current result ").append(message == null ? "<null>" : "(" + message.getClass().getSimpleName() + ") [" + message + "]").append(" ");
 			}
-
 			log.debug(sb.toString());
 		}
 
@@ -76,13 +67,13 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 		try {
 			pipeRunResult = chain.apply(message);
 		} catch (PipeRunException pre) {
-			if (pe!=null) {
-				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+			if (pipe!=null) {
+				pipe.throwEvent(IPipe.PIPE_EXCEPTION_MONITORING_EVENT);
 			}
 			throw pre;
 		} catch (RuntimeException re) {
-			if (pe!=null) {
-				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+			if (pipe!=null) {
+				pipe.throwEvent(IPipe.PIPE_EXCEPTION_MONITORING_EVENT);
 			}
 			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '" + (pipe==null?"null":pipe.getName()) + "'", re);
 		} finally {
@@ -95,9 +86,9 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 				sk.addValue(pipeDuration);
 			}
 
-			if (pe!=null && pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
-				durationLog.info("Pipe ["+pe.getName()+"] of ["+pipeLine.getOwner().getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+message+"]");
-				pe.throwEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
+			if (pipe!=null && pipe.getDurationThreshold() >= 0 && pipeDuration > pipe.getDurationThreshold()) {
+				durationLog.info("Pipe ["+pipe.getName()+"] of ["+pipeLine.getOwner().getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pipe.getDurationThreshold()+ "], message ["+message+"]");
+				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
 			}
 
 		}

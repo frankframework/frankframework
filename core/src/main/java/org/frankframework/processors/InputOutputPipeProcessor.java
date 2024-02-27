@@ -21,10 +21,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.pipes.FixedForwardPipe;
-import org.xml.sax.InputSource;
-
-import org.frankframework.core.IExtendedPipe;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
@@ -32,13 +28,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
-
+import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CompactSaxHandler;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
+import org.xml.sax.InputSource;
 
 /**
  * The InputOutputPipeProcessor class is a subclass of PipeProcessorBase and is responsible for processing pipes in a pipeline.
@@ -72,43 +69,35 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		Object preservedObject = message;
 		INamedObject owner = pipeLine.getOwner();
 
-		IExtendedPipe pe=null;
-
-		if (pipe instanceof IExtendedPipe) {
-			pe = (IExtendedPipe)pipe;
-		}
-
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
-			if (pe!=null) {
-				if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
-					log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with contents of sessionKey [{}]", owner::getName, pe::getName, pe::getGetInputFromSessionKey);
-					message.closeOnCloseOf(pipeLineSession, owner);
-					if (!pipeLineSession.containsKey(pe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pe.getEmptyInputReplacement())) {
-						boolean throwOnMissingSessionKey;
-						if (pipe instanceof FixedForwardPipe) {
-							FixedForwardPipe ffp = (FixedForwardPipe) pipe;
-							throwOnMissingSessionKey = !(ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey()));
-						} else {
-							throwOnMissingSessionKey = true;
-						}
-
-						if (throwOnMissingSessionKey) {
-							throw new PipeRunException(pe, "getInputFromSessionKey ["+pe.getGetInputFromSessionKey()+"] is not present in session");
-						}
+			if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
+				log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with contents of sessionKey [{}]", owner::getName, pipe::getName, pipe::getGetInputFromSessionKey);
+				message.closeOnCloseOf(pipeLineSession, owner);
+				if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
+					boolean throwOnMissingSessionKey;
+					if (pipe instanceof FixedForwardPipe) {
+						FixedForwardPipe ffp = (FixedForwardPipe) pipe;
+						throwOnMissingSessionKey = !(ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey()));
 					} else {
-						message = pipeLineSession.getMessage(pe.getGetInputFromSessionKey());
+						throwOnMissingSessionKey = true;
 					}
-				}
-				if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
-					log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner::getName, pe::getName, pe::getGetInputFromFixedValue);
-					message.closeOnCloseOf(pipeLineSession, owner);
-					message = Message.asMessage(pe.getGetInputFromFixedValue());
-				}
 
-				if (Message.isEmpty(message) && StringUtils.isNotEmpty(pe.getEmptyInputReplacement())) {
-					log.debug("Pipeline of adapter [{}] replacing empty input for pipe [{}] with fixed value [{}]", owner::getName, pe::getName, pe::getEmptyInputReplacement);
-					message = Message.asMessage(pe.getEmptyInputReplacement());
+					if (throwOnMissingSessionKey) {
+						throw new PipeRunException(pipe, "getInputFromSessionKey [" + pipe.getGetInputFromSessionKey() + "] is not present in session");
+					}
+				} else {
+					message = pipeLineSession.getMessage(pipe.getGetInputFromSessionKey());
 				}
+			}
+			if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
+				log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getGetInputFromFixedValue);
+				message.closeOnCloseOf(pipeLineSession, owner);
+				message = Message.asMessage(pipe.getGetInputFromFixedValue());
+			}
+
+			if (Message.isEmpty(message) && StringUtils.isNotEmpty(pipe.getEmptyInputReplacement())) {
+				log.debug("Pipeline of adapter [{}] replacing empty input for pipe [{}] with fixed value [{}]", owner::getName, pipe::getName, pipe::getEmptyInputReplacement);
+				message = Message.asMessage(pipe.getEmptyInputReplacement());
 			}
 
 			PipeRunResult pipeRunResult = null;
@@ -126,74 +115,72 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner().getName() + "] received null result from pipe [" + pipe.getName() + "]d");
 			}
 
-			if (pe !=null) {
-				if (pe.isRestoreMovedElements()) {
-					log.debug("Pipeline of adapter [{}] restoring from compacted result for pipe [{}]", owner::getName, pe::getName);
-					Message result = pipeRunResult.getResult();
-					if (!result.isEmpty()) {
-						try {
-							String resultString = result.asString();
-							pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
-						} catch (IOException e) {
-							throw new PipeRunException(pipe, "cannot open stream of result", e);
-						}
+			if (pipe.isRestoreMovedElements()) {
+				log.debug("Pipeline of adapter [{}] restoring from compacted result for pipe [{}]", owner::getName, pipe::getName);
+				Message result = pipeRunResult.getResult();
+				if (!result.isEmpty()) {
+					try {
+						String resultString = result.asString();
+						pipeRunResult.setResult(restoreMovedElements(resultString, pipeLineSession));
+					} catch (IOException e) {
+						throw new PipeRunException(pipe, "cannot open stream of result", e);
 					}
-				}
-
-				if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
-					log.debug("Pipeline of adapter [{}] compact received message", owner::getName);
-					Message result = pipeRunResult.getResult();
-					if (result!=null && !result.isEmpty()) {
-						InputSource inputSource;
-						try {
-							// Preserve the message so that it can be read again
-							// in case there was an error during compacting
-							result.preserve();
-							inputSource = result.asInputSource();
-						} catch (IOException e) {
-							throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] could not read received message during compacting to more compact format: " + e.getMessage(), e);
-						}
-						XmlWriter xmlWriter = new XmlWriter();
-						CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
-						handler.setChompCharSize(pe.getChompCharSize());
-						handler.setElementToMove(pe.getElementToMove());
-						handler.setElementToMoveChain(pe.getElementToMoveChain());
-						handler.setElementToMoveSessionKey(pe.getElementToMoveSessionKey());
-						handler.setRemoveCompactMsgNamespaces(pe.isRemoveCompactMsgNamespaces());
-						handler.setContext(pipeLineSession);
-						try {
-							XmlUtils.parseXml(inputSource, handler);
-							pipeRunResult.setResult(xmlWriter.toString());
-						} catch (Exception e) {
-							log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner.getName(), e.getMessage());
-						}
-					}
-				}
-
-				if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
-					log.debug("Pipeline of adapter [{}] storing result for pipe [{}] under sessionKey [{}]", owner::getName, pe::getName, pe::getStoreResultInSessionKey);
-					Message result = pipeRunResult.getResult();
-					pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
-					if (!pe.isPreserveInput() && !result.isRepeatable()) {
-						// when there is a duplicate use of the result (in a sessionKey as well as as the result), then message must be repeatable
-						try {
-							result.preserve();
-						} catch (IOException e) {
-							throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] could not preserve output", e);
-						}
-					}
-				}
-				if (pe.isPreserveInput()) {
-					pipeRunResult.getResult().closeOnCloseOf(pipeLineSession, owner);
-					pipeRunResult.setResult(preservedObject);
 				}
 			}
 
-			if (pe != null && pe.isWriteToSecLog()) {
-				String secLogMsg = "adapter [" + owner.getName() + "] pipe [" + pe.getName() + "]";
-				if (pe.getSecLogSessionKeys() != null) {
+			if (pipe.getChompCharSize() != null || pipe.getElementToMove() != null || pipe.getElementToMoveChain() != null) {
+				log.debug("Pipeline of adapter [{}] compact received message", owner::getName);
+				Message result = pipeRunResult.getResult();
+				if (result != null && !result.isEmpty()) {
+					InputSource inputSource;
+					try {
+						// Preserve the message so that it can be read again
+						// in case there was an error during compacting
+						result.preserve();
+						inputSource = result.asInputSource();
+					} catch (IOException e) {
+						throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner().getName() + "] could not read received message during compacting to more compact format: " + e.getMessage(), e);
+					}
+					XmlWriter xmlWriter = new XmlWriter();
+					CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
+					handler.setChompCharSize(pipe.getChompCharSize());
+					handler.setElementToMove(pipe.getElementToMove());
+					handler.setElementToMoveChain(pipe.getElementToMoveChain());
+					handler.setElementToMoveSessionKey(pipe.getElementToMoveSessionKey());
+					handler.setRemoveCompactMsgNamespaces(pipe.isRemoveCompactMsgNamespaces());
+					handler.setContext(pipeLineSession);
+					try {
+						XmlUtils.parseXml(inputSource, handler);
+						pipeRunResult.setResult(xmlWriter.toString());
+					} catch (Exception e) {
+						log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner.getName(), e.getMessage());
+					}
+				}
+			}
+
+			if (StringUtils.isNotEmpty(pipe.getStoreResultInSessionKey())) {
+				log.debug("Pipeline of adapter [{}] storing result for pipe [{}] under sessionKey [{}]", owner::getName, pipe::getName, pipe::getStoreResultInSessionKey);
+				Message result = pipeRunResult.getResult();
+				pipeLineSession.put(pipe.getStoreResultInSessionKey(), result);
+				if (!pipe.isPreserveInput() && !result.isRepeatable()) {
+					// when there is a duplicate use of the result (in a sessionKey as well as as the result), then message must be repeatable
+					try {
+						result.preserve();
+					} catch (IOException e) {
+						throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner().getName() + "] could not preserve output", e);
+					}
+				}
+			}
+			if (pipe.isPreserveInput()) {
+				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession, owner);
+				pipeRunResult.setResult(preservedObject);
+			}
+
+			if (pipe.isWriteToSecLog()) {
+				String secLogMsg = "adapter [" + owner.getName() + "] pipe [" + pipe.getName() + "]";
+				if (pipe.getSecLogSessionKeys() != null) {
 					secLogMsg = secLogMsg + " sessionKeys [" +
-							StringUtil.splitToStream(pe.getSecLogSessionKeys(), " ,;")
+							StringUtil.splitToStream(pipe.getSecLogSessionKeys(), " ,;")
 									.map(key -> key + "=" + pipeLineSession.get(key))
 									.collect(Collectors.joining(","))
 							+ "]";
