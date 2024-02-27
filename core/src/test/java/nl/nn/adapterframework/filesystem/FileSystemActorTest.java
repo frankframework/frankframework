@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.util.Date;
 
 import org.apache.commons.codec.binary.Base64;
@@ -960,45 +959,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// TODO: evaluate 'result'
 		//assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
-	}
-
-	@Test
-	public void fileSystemActorWriteActionTestWithOutputStream() throws Exception {
-		String filename = "uploadedwithOutputStream" + FILE1;
-		String contents = "Some text content to test upload action\n";
-
-		if (_fileExists(filename)) {
-			_deleteFile(null, filename);
-		}
-
-//		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSession session = new PipeLineSession();
-
-		ParameterList paramlist = new ParameterList();
-		paramlist.add(new Parameter("filename", filename));
-		paramlist.configure();
-
-		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem,paramlist,owner);
-		actor.open();
-
-		assertTrue(actor.canProvideOutputStream());
-
-		MessageOutputStream target = actor.provideOutputStream(session, null);
-
-		// stream the contents
-		try (Writer writer = target.asWriter()) {
-			writer.write(contents);
-		}
-
-		// verify the filename is properly returned
-		String stringResult=target.getPipeRunResult().getResult().asString();
-		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-
-		// verify the file contents
-		waitForActionToFinish();
-		String actualContents = readFile(null, filename);
-		assertEquals(contents,actualContents);
 	}
 
 	@Test
