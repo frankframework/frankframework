@@ -26,14 +26,16 @@ import nl.nn.testtool.Report;
  *
  * @author Jaco de Groot
  */
-public class GrayBox extends ViewBox {
-
+public class GrayBox extends AbstractBox {
 	@Override
 	public boolean match(Report report, Checkpoint checkpoint) {
 		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
 				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
 			List<Checkpoint> checkpoints = report.getCheckpoints();
 			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
+			if (!isLastInCheckpointBranch(report, checkpoint)) {
+				return false;
+			}
 			while (iterator.hasPrevious()) {
 				Checkpoint previous = iterator.previous();
 				if (previous.getType() == Checkpoint.TYPE_STARTPOINT && previous.getLevel() < checkpoint.getLevel()) {
@@ -44,5 +46,30 @@ public class GrayBox extends ViewBox {
 		} else {
 			return isSenderOrPipelineOrFirstOrLastCheckpoint(report, checkpoint);
 		}
+	}
+
+	public boolean isLastInCheckpointBranch(Report report, Checkpoint checkpoint) {
+		List<Checkpoint> checkpoints = report.getCheckpoints();
+		ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
+		int currentLevel = checkpoint.getLevel();
+		while (iterator.hasNext()) {
+			Checkpoint nextCheckpoint = iterator.next();
+			if (nextCheckpoint.getLevel() < currentLevel || nextCheckpoint.getType() == Checkpoint.TYPE_ENDPOINT) {
+				break;
+			}
+			if (nextCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
+				return false;
+			}
+		}
+		while (iterator.hasPrevious()) {
+			Checkpoint previousCheckpoint = iterator.previous();
+			if (previousCheckpoint.getLevel() < currentLevel) {
+				break;
+			}
+			if (previousCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

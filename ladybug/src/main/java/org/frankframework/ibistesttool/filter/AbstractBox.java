@@ -22,7 +22,7 @@ import nl.nn.testtool.filter.CheckpointMatcher;
 import java.util.List;
 import java.util.ListIterator;
 
-public abstract class ViewBox implements CheckpointMatcher {
+public abstract class AbstractBox implements CheckpointMatcher {
 	public boolean match(Report report, Checkpoint checkpoint) {
 		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
 				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
