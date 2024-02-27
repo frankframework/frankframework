@@ -64,10 +64,11 @@ class CredentialFactoryTest {
 	void testMultipleFactories() {
 		// Init setting on purpose with extra whitespaces, commas etc.
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", " java.util.doesNotExist , org.frankframework.credentialprovider.PropertyFileCredentialFactory,,  , org.frankframework.credentialprovider.MockCredentialFactory");
+		MockCredentialFactory.getInstance().add("account", "mockUsername", "mockPassword");
 		// Act
 		ICredentials c = CredentialFactory.getCredentials("account", null, null);
 
-		// Assert
+		// Assert values are from the first factory that returns a value
 		assertEquals("fakeUsername", c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
 	}
@@ -77,12 +78,19 @@ class CredentialFactoryTest {
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.MockCredentialFactory, org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 		CredentialFactory.getCredentials(null, null, null); // Make sure the factories are initialized and class loading is done
 		MockCredentialFactory.getInstance().add("account", "fakeUsername", "mockGoesFirst");
+		MockCredentialFactory.getInstance().add("alias1", "alias1Username", "alias1Password");
+		MockCredentialFactory.getInstance().add("alias2", null, "alias2Password");
 		// Act
-		ICredentials c = CredentialFactory.getCredentials("account", null, null);
+		ICredentials account = CredentialFactory.getCredentials("account", null, null);
+		ICredentials alias1 = CredentialFactory.getCredentials("alias1", null, null);
+		ICredentials alias2 = CredentialFactory.getCredentials("alias2", null, null);
 
 		// Assert
-		assertEquals("fakeUsername", c.getUsername());
-		assertEquals("mockGoesFirst", c.getPassword());
+		assertEquals("fakeUsername", account.getUsername());
+		assertEquals("mockGoesFirst", account.getPassword());
+		assertEquals("alias1Username", alias1.getUsername());
+		assertEquals("alias1Password", alias1.getPassword());
+		assertEquals("alias2Password", alias2.getPassword());
 		assertFalse(CredentialFactory.hasCredential("notExists"));
 		assertEquals(3, CredentialFactory.getConfiguredAliases().size());
 	}
@@ -91,18 +99,24 @@ class CredentialFactoryTest {
 	void testRightOrderMockLast() throws Exception {
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory, org.frankframework.credentialprovider.MockCredentialFactory, ");
 		CredentialFactory.getCredentials(null, null, null); // Make sure the factories are initialized and class loading is done
-		MockCredentialFactory.getInstance().add("account", "fakeUsername", "mockGoesSecond");
+		MockCredentialFactory.getInstance().add("account", "mockUsername", "mockGoesSecond");
+		MockCredentialFactory.getInstance().add("alias1", "alias1Username", "alias1Password");
+		MockCredentialFactory.getInstance().add("alias2", null, "alias2Password");
 		MockCredentialFactory.getInstance().add("TheMaster", "masterUsername", "masterPassword");
 		MockCredentialFactory.getInstance().add("TheBachelor", "bachelorUsername", "bachelorPassword");
 		// Act
-		ICredentials c = CredentialFactory.getCredentials("account", null, null);
+		ICredentials account = CredentialFactory.getCredentials("account", null, null);
+		ICredentials alias1 = CredentialFactory.getCredentials("alias1", null, null);
+		ICredentials alias2 = CredentialFactory.getCredentials("alias2", null, null);
 
 		// Assert
-		assertEquals("fakeUsername", c.getUsername());
-		assertEquals("fakePassword", c.getPassword()); // comes from property file, ignore mock value
+		assertEquals("fakeUsername", account.getUsername());
+		assertEquals("fakePassword", account.getPassword()); // comes from property file, ignore mock value
+		assertEquals("username1", alias1.getUsername());
+		assertEquals("password1", alias1.getPassword());
+		assertEquals("passwordOnly", alias2.getPassword());
 		assertEquals("[alias1, account, alias2, TheMaster, TheBachelor]", CredentialFactory.getConfiguredAliases().toString());
 		assertTrue(CredentialFactory.hasCredential("TheMaster"));
 		assertTrue(CredentialFactory.hasCredential("fakePrefix:TheBachelor"));
-
 	}
 }
