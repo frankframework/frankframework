@@ -212,8 +212,8 @@ public class MessagingSource  {
 		}
 		if (qcfd instanceof JmsPoolConnectionFactory) {
 			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
-			result.append("idle connections [").append(poolcf.getNumConnections()).append(CLOSE);
-			result.append("max connections [").append(poolcf.getMaxConnections()).append(CLOSE);
+			result.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
+			result.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
 			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);
 			result.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append(CLOSE);
 			result.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append(CLOSE);
