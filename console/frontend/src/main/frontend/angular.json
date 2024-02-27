@@ -101,15 +101,15 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "ff-console-gui:build:production"
+              "buildTarget": "ff-console-gui:build:production"
             },
             "development": {
-              "browserTarget": "ff-console-gui:build:development",
-              "proxyConfig": "src/proxy.conf.json"
+              "proxyConfig": "src/proxy.conf.json",
+              "buildTarget": "ff-console-gui:build:development"
             },
             "development-fftest": {
-              "browserTarget": "ff-console-gui:build:development",
-              "proxyConfig": "src/proxy-fftest.conf.json"
+              "proxyConfig": "src/proxy-fftest.conf.json",
+              "buildTarget": "ff-console-gui:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -117,7 +117,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ff-console-gui:build"
+            "buildTarget": "ff-console-gui:build"
           }
         },
         "test": {
