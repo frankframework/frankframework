@@ -33,7 +33,7 @@ public class GrayBox extends AbstractBox {
 				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
 			List<Checkpoint> checkpoints = report.getCheckpoints();
 			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
-			if (!isLastCheckpointOnLevel(report, checkpoint)) {
+			if (hasStartPointOnLevel(report, checkpoint)) {
 				return false;
 			}
 			while (iterator.hasPrevious()) {
@@ -48,7 +48,7 @@ public class GrayBox extends AbstractBox {
 		}
 	}
 
-	public boolean isLastCheckpointOnLevel(Report report, Checkpoint checkpoint) {
+	public boolean hasStartPointOnLevel(Report report, Checkpoint checkpoint) {
 		List<Checkpoint> checkpoints = report.getCheckpoints();
 		ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
 		int currentLevel = checkpoint.getLevel();
@@ -58,7 +58,7 @@ public class GrayBox extends AbstractBox {
 				break;
 			}
 			if (nextCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
-				return false;
+				return true;
 			}
 		}
 		while (iterator.hasPrevious()) {
@@ -67,9 +67,9 @@ public class GrayBox extends AbstractBox {
 				break;
 			}
 			if (previousCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
-				return false;
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 }
