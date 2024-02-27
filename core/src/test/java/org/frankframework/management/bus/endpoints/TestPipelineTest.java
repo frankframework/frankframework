@@ -17,6 +17,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
@@ -25,7 +26,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestPipelineTest extends BusTestBase {
 	private static final String TEST_PIPELINE_ADAPER_NAME = "TestPipelineAdapter";
 	private Adapter adapter;
@@ -132,6 +136,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
+	@WithMockUser(roles = { "IbisTester" })
 	public void testWithoutThreadContext() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("normal payload", BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		request.setHeader("configuration", getConfiguration().getName());
@@ -141,6 +146,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
+	@WithMockUser(roles = { "IbisTester" })
 	public void testWithSession() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("sessionKey", BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		request.setHeader("configuration", getConfiguration().getName());
@@ -151,6 +157,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
+	@WithMockUser(roles = { "IbisTester" })
 	public void testWithProcessingInstruction() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("<?ibiscontext piName=piValue ?>\n<dummy/>", BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		request.setHeader("configuration", getConfiguration().getName());

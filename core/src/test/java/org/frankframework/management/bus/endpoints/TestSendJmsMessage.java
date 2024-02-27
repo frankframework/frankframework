@@ -18,9 +18,14 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@WithMockUser(roles = { "IbisTester" })
 public class TestSendJmsMessage extends BusTestBase {
 
 	public static final String DUMMY_DESTINATION = "dummyDestination";

@@ -8,6 +8,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,11 @@ import org.springframework.messaging.Message;
 
 import com.mockrunner.mock.jms.MockMessage;
 
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@WithMockUser(roles = { "IbisTester" })
 public class TestBrowseQueue extends BusTestBase {
 
 	@Override
