@@ -33,7 +33,6 @@ import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,14 +62,14 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testTableLessSelect() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			assertEquals(4, DbmsUtil.executeIntQuery(connection, "SELECT 2+2 " + dbmsSupport.getFromForTablelessSelect()));
+			assertEquals(4, JdbcTestUtil.executeIntQuery(connection, "SELECT 2+2 " + dbmsSupport.getFromForTablelessSelect()));
 		}
 	}
 
 	@DatabaseTest
 	public void testTableLessSelectWithIntParam() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			assertEquals(4, DbmsUtil.executeIntQuery(connection, "SELECT 1+? " + dbmsSupport.getFromForTablelessSelect(), 3));
+			assertEquals(4, JdbcTestUtil.executeIntQuery(connection, "SELECT 1+? " + dbmsSupport.getFromForTablelessSelect(), 3));
 		}
 	}
 
@@ -612,8 +611,8 @@ public class DbmsSupportTest {
 			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBOOLEAN) VALUES (30,99," + dbmsSupport.getBooleanValue(false) + ")", QueryType.OTHER);
 			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBOOLEAN) VALUES (31,99," + dbmsSupport.getBooleanValue(true) + ")", QueryType.OTHER);
 
-			assertEquals(30, DbmsUtil.executeIntQuery(connection, "SELECT TKEY FROM " + TEST_TABLE + " WHERE TINT=99 AND TBOOLEAN=" + dbmsSupport.getBooleanValue(false)));
-			assertEquals(31, DbmsUtil.executeIntQuery(connection, "SELECT TKEY FROM " + TEST_TABLE + " WHERE TINT=99 AND TBOOLEAN=" + dbmsSupport.getBooleanValue(true)));
+			assertEquals(30, JdbcTestUtil.executeIntQuery(connection, "SELECT TKEY FROM " + TEST_TABLE + " WHERE TINT=99 AND TBOOLEAN=" + dbmsSupport.getBooleanValue(false)));
+			assertEquals(31, JdbcTestUtil.executeIntQuery(connection, "SELECT TKEY FROM " + TEST_TABLE + " WHERE TINT=99 AND TBOOLEAN=" + dbmsSupport.getBooleanValue(true)));
 		}
 	}
 
@@ -629,15 +628,15 @@ public class DbmsSupportTest {
 			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (40,100)", QueryType.OTHER);
 
 			String selectQuery = "SELECT TKEY FROM " + TEST_TABLE + " WHERE TINT=100";
-			assertEquals(40, DbmsUtil.executeIntQuery(connection, selectQuery));
+			assertEquals(40, JdbcTestUtil.executeIntQuery(connection, selectQuery));
 
 			String readQueueQuery = dbmsSupport.prepareQueryTextForWorkQueueReading(1, selectQuery);
 			String peekQueueQuery = dbmsSupport.prepareQueryTextForWorkQueuePeeking(1, selectQuery);
 
 			// test that peek and read find records when they are available
-			assertEquals(40, DbmsUtil.executeIntQuery(connection, peekQueueQuery));
-			assertEquals(40, DbmsUtil.executeIntQuery(connection, readQueueQuery));
-			assertEquals(40, DbmsUtil.executeIntQuery(connection, peekQueueQuery));
+			assertEquals(40, JdbcTestUtil.executeIntQuery(connection, peekQueueQuery));
+			assertEquals(40, JdbcTestUtil.executeIntQuery(connection, readQueueQuery));
+			assertEquals(40, JdbcTestUtil.executeIntQuery(connection, peekQueueQuery));
 
 			try (Statement stmt1 = connection.createStatement()) {
 				stmt1.setFetchSize(1);

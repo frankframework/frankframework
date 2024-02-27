@@ -23,8 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.frankframework.util.DbmsUtil;
-
 
 /**
  * Support for H2.

@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation } from "@angular/core";
 import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
   imports: [
     CommonModule
   ],
+  // encapsulation: ViewEncapsulation.ShadowDom,
   template: `
     <div
       class="{{is_mermaid}}"
@@ -26,7 +27,6 @@ import { v4 as uuidv4 } from 'uuid';
 export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   @Input() nmModel?: any;
   @Input() nmRefreshInterval?: number;
-  @Input() divId?: string;
   @Output() nmInitCallback = new EventEmitter();
 
   @ViewChild('mermaidPre') mermaidEl!: ElementRef<HTMLElement>;
@@ -35,20 +35,10 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   protected is_mermaid = 'mermaid';
   protected initialized = false;
   protected firstRender = true;
+  protected mermaidSvgElement: SVGSVGElement | null = null;
   protected timeout?: number;
 
-  constructor() {
-    mermaid.initialize({
-      startOnLoad: false,
-      maxTextSize: 70 * 1000,
-      maxEdges: 600,
-      flowchart: {
-        diagramPadding: 8,
-        htmlLabels: true,
-        curve: 'basis',
-      },
-    });
-  }
+  constructor() { }
 
   ngOnInit() {
     this.render();
@@ -76,14 +66,24 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
 
       this.timeout = window.setTimeout(() => {
         try {
+          mermaid.initialize({
+            startOnLoad: false,
+            maxTextSize: 70 * 1000,
+            maxEdges: 600,
+          });
+
           const mermaidContainer = this.mermaidEl.nativeElement;
           mermaidContainer.innerHTML = 'Loading...';
           const uid = `m${uuidv4()}`;
-          mermaid.render(uid, this.nmModel, mermaidContainer).then(({ svg }) => {
+
+          mermaid.render(uid, this.nmModel, mermaidContainer).then(({ svg, bindFunctions }) => {
             mermaidContainer.innerHTML = svg;
-            const svgElement = mermaidContainer.firstChild as HTMLElement;
+            const svgElement = mermaidContainer.firstChild as SVGSVGElement;
+            this.mermaidSvgElement = svgElement;
             svgElement.setAttribute('height', '100%');
-            svgElement.setAttribute('style', "");
+            svgElement.setAttribute('style', "max-width: 100%;");
+            if (bindFunctions)
+              bindFunctions(svgElement);
           }).catch(e => { this.handleError(e) })
             .finally(() => {
               this.firstRender = false;
@@ -96,7 +96,11 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  handleError(e: Error) {
+  getMermaidSvgElement() {
+    return this.mermaidSvgElement;
+  }
+
+  private handleError(e: Error) {
     console.error(e);
     let errorContainer = '';
     errorContainer += `<div style="display: inline-block; text-align: left; color: red; margin: 8px auto; font-family: Monaco,Consolas,Liberation Mono,Courier New,monospace">`;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!
+   Copyright 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.http.PartMessage;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StringUtil;
+import org.frankframework.xml.SaxElementBuilder;
 import org.xml.sax.SAXException;
 
 import com.sun.mail.imap.AppendUID;
@@ -53,11 +58,6 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.http.PartMessage;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StringUtil;
-import org.frankframework.xml.SaxElementBuilder;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "IMAP";
