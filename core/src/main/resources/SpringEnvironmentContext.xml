@@ -19,12 +19,13 @@
 
 	<context:property-placeholder />
 
-	<context:component-scan base-package="org.frankframework,nl.nn.adapterframework,nl.nn.ibistesttool">
+	<context:component-scan base-package="org.frankframework">
 		<context:include-filter type="annotation" expression="org.frankframework.lifecycle.IbisInitializer"/>
 
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\..*"/>
 	</context:component-scan>
 
 	<bean id="cxf" class="org.frankframework.http.cxf.SpringSoapBus">

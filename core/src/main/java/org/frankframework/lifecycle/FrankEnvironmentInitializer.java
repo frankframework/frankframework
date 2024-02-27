@@ -15,10 +15,6 @@
 */
 package org.frankframework.lifecycle;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -35,7 +31,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
@@ -103,7 +98,7 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
-		applicationContext.setConfigLocations(getSpringConfigurationFiles());
+		applicationContext.setConfigLocations(SpringContextScope.ENVIRONMENT.getContextFile());
 		applicationContext.setDisplayName("EnvironmentContext");
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
@@ -112,27 +107,6 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.ENVIRONMENT.getFriendlyName(), AppConstants.getInstance()));
 
 		return applicationContext;
-	}
-
-	private String[] getSpringConfigurationFiles() {
-		List<String> springConfigurationFiles = new ArrayList<>();
-		springConfigurationFiles.add(SpringContextScope.ENVIRONMENT.getContextFile());
-
-		String file = AppConstants.getInstance().getProperty("ibistesttool.springConfigFile");
-		ClassLoader classLoader = this.getClass().getClassLoader();
-		URL fileURL = classLoader.getResource(file);
-		if(fileURL == null) {
-			log.warn("unable to locate TestTool configuration [{}] using classloader [{}]", file, classLoader);
-		} else {
-			if(file.indexOf(":") == -1) {
-				file = ResourceUtils.CLASSPATH_URL_PREFIX+file;
-			}
-
-			log.info("loading TestTool configuration [{}]", file);
-			springConfigurationFiles.add(file);
-		}
-
-		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 
 	private void determineApplicationServerType(ServletContext servletContext) {

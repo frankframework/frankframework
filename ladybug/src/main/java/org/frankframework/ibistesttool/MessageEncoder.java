@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,18 +24,16 @@ import java.io.StringWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.BoundedReader;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.frankframework.stream.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
-import nl.nn.testtool.TestTool;
 
 public class MessageEncoder extends MessageEncoderImpl {
 
-	private @Setter @Getter TestTool testTool;
+	private @Autowired int maxMessageLength;
 
 	@Override
 	public ToStringResult toString(Object message, String charset) {
@@ -49,7 +47,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 					if (m.isBinary()) {
 						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 						try (InputStream inputStream = m.asInputStream()) {
-							IOUtils.copy(new BoundedInputStream(inputStream, testTool.getMaxMessageLength()), baos, testTool.getMaxMessageLength());
+							IOUtils.copy(new BoundedInputStream(inputStream, maxMessageLength), baos, maxMessageLength);
 							ToStringResult result = super.toString(baos.toByteArray(), charset);
 							result.setMessageClassName(m.getObjectId());
 							return result;
@@ -59,7 +57,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 					}
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
-						IOUtils.copy(new BoundedReader(reader, testTool.getMaxMessageLength()), writer);
+						IOUtils.copy(new BoundedReader(reader, maxMessageLength), writer);
 					} catch (IOException e) {
 						return super.toString(e, null);
 					}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,10 +13,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.ibistesttool;
+package org.frankframework.ibistesttool.web;
 
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.lifecycle.IbisInitializer;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -27,8 +25,7 @@ import nl.nn.testtool.echo2.Echo2Application;
 /**
  * @author Jaco de Groot
  */
-@IbisInitializer
-public class Servlet extends WebContainerServlet implements DynamicRegistration.Servlet {
+public class TesttoolServlet extends WebContainerServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -40,18 +37,4 @@ public class Servlet extends WebContainerServlet implements DynamicRegistration.
 		return webApplicationContext.getBean("echo2Application", Echo2Application.class);
 	}
 
-	@Override
-	public String getUrlMapping() {
-		return "/iaf/testtool";
-	}
-
-	@Override
-	public String getName() {
-		return "TestTool";
-	}
-
-	@Override
-	public String[] getAccessGrantingRoles() {
-		return ALL_IBIS_USER_ROLES;
-	}
 }
