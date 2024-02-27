@@ -20,7 +20,6 @@ import java.util.ListIterator;
 
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
-import nl.nn.testtool.filter.CheckpointMatcher;
 
 /**
  * Only show senders and pipelines (within these senders) (show only the pipeline checkpoints, not it's children)
