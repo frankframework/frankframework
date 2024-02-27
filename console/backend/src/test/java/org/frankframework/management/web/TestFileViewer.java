@@ -1,19 +1,8 @@
 package org.frankframework.management.web;
 
-import org.apache.commons.io.FilenameUtils;
-import org.frankframework.management.bus.ResponseMessageBase;
-import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -23,7 +12,18 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
+import org.apache.commons.io.FilenameUtils;
+import org.frankframework.management.bus.ResponseMessageBase;
+import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 
 public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 
@@ -46,7 +46,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		result.write(boas);
-		Assertions.assertTrue(boas.toString().contains("<br>"));
+		assertTrue(boas.toString().contains("<br>"));
 	}
 
 	@Test
@@ -62,7 +62,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 		InputStream result = (InputStream) response.getEntity();
 
 		String resultString = StreamUtil.streamToString(result);
-        Assertions.assertFalse(resultString.contains("<br>"));
+		assertFalse(resultString.contains("<br>"));
 	}
 
 	private static Message<?> getDefaultAnswer(InvocationOnMock i, String filePath) throws FileNotFoundException {

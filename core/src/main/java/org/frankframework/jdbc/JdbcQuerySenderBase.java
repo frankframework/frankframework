@@ -42,10 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.ContentHandler;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IForwardTarget;
@@ -54,7 +50,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
@@ -69,14 +64,15 @@ import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DB2DocumentWriter;
 import org.frankframework.util.DB2XMLWriter;
-
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JdbcUtil;
-
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.xml.sax.ContentHandler;
+
+import lombok.Getter;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -207,7 +203,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	protected final PreparedStatement getStatement(@Nonnull Connection con, @Nonnull String query, @Nullable QueryType queryType) throws JdbcException, SQLException {
-		return prepareQuery(con, query, queryType);
+		PreparedStatement preparedStatement = prepareQuery(con, query, queryType);
+		preparedStatement.setQueryTimeout(getTimeout());
+		return preparedStatement;
 	}
 
 	protected PreparedStatement prepareQuery(@Nonnull Connection con, @Nonnull String query, @Nullable QueryType queryType) throws SQLException, JdbcException {
@@ -241,7 +239,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
 		String callQuery = "BEGIN " + query + " RETURNING ROWID INTO ?; END;";
 		log.debug("{}preparing statement for query [{}]", this::getLogPrefix, () -> callQuery);
-		return con.prepareCall(callQuery);
+		CallableStatement callableStatement = con.prepareCall(callQuery);
+		callableStatement.setQueryTimeout(getTimeout());
+		return callableStatement;
 	}
 
 	protected ResultSet getReturnedColumns(PreparedStatement st) throws SQLException {
@@ -257,10 +257,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
 		PreparedStatement statement = getStatement(connection, query, getQueryTypeEnum());
 		log.debug(getLogPrefix() + "obtained prepared statement to execute");
-		statement.setQueryTimeout(getTimeout());
 		PreparedStatement resultQueryStatement;
 		if (convertedResultQuery != null) {
 			resultQueryStatement = connection.prepareStatement(convertedResultQuery);
+			resultQueryStatement.setQueryTimeout(getTimeout());
 		} else {
 			resultQueryStatement = null;
 		}
