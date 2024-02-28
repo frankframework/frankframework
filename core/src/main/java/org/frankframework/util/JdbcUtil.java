@@ -15,7 +15,6 @@
 */
 package org.frankframework.util;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
@@ -109,8 +108,8 @@ public class JdbcUtil {
 			XmlBuilder warningsElem = new XmlBuilder("warnings");
 			while (warnings != null) {
 				XmlBuilder warningElem = new XmlBuilder("warning");
-				warningElem.addAttribute("errorCode", "" + warnings.getErrorCode());
-				warningElem.addAttribute("sqlState", "" + warnings.getSQLState());
+				warningElem.addAttribute("errorCode", String.valueOf(warnings.getErrorCode()));
+				warningElem.addAttribute("sqlState", warnings.getSQLState());
 				String message = warnings.getMessage();
 
 				Throwable cause = warnings.getCause();
@@ -132,14 +131,13 @@ public class JdbcUtil {
 		return null;
 	}
 
-
-	public static void warningsToXml(SQLWarning warnings, SaxElementBuilder parent) throws SAXException {
+	static void warningsToXml(SQLWarning warnings, SaxElementBuilder parent) throws SAXException {
 		if (warnings != null) {
 			try (SaxElementBuilder elementBuilder = parent.startElement("warnings")) {
 				while (warnings != null) {
 					try (SaxElementBuilder warning = elementBuilder.startElement("warning")) {
-						warning.addAttribute("errorCode", "" + warnings.getErrorCode());
-						warning.addAttribute("sqlState", "" + warnings.getSQLState());
+						warning.addAttribute("errorCode", String.valueOf(warnings.getErrorCode()));
+						warning.addAttribute("sqlState", warnings.getSQLState());
 
 						String message = warnings.getMessage();
 
@@ -160,14 +158,14 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void warningsToDocument(SQLWarning warnings, ObjectBuilder parent) throws SAXException {
+	static void warningsToDocument(SQLWarning warnings, ObjectBuilder parent) throws SAXException {
 		if (warnings != null) {
 			try (ArrayBuilder arrayBuilder = parent.addArrayField("warnings", "warning")) {
 				while (warnings != null) {
 					try (INodeBuilder nodeBuilder = arrayBuilder.addElement()) {
 						try (ObjectBuilder warning = nodeBuilder.startObject()) {
-							warning.add("errorCode", "" + warnings.getErrorCode());
-							warning.add("sqlState", "" + warnings.getSQLState());
+							warning.add("errorCode", String.valueOf(warnings.getErrorCode()));
+							warning.add("sqlState", warnings.getSQLState());
 
 							String message = warnings.getMessage();
 
@@ -251,11 +249,11 @@ public class JdbcUtil {
 		}
 	}
 
-	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, boolean blobIsCompressed) throws SQLException, JdbcException, DbmsException {
+	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, boolean blobIsCompressed) throws SQLException, JdbcException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
-	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, boolean blobIsCompressed) throws SQLException, JdbcException, DbmsException {
+	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, boolean blobIsCompressed) throws SQLException, JdbcException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
@@ -269,15 +267,11 @@ public class JdbcUtil {
 		return blobInputStream;
 	}
 
-	public static Reader getBlobReader(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException, DbmsException {
+	public static Reader getBlobReader(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
 		return getBlobReader(getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed), charset);
 	}
 
-	public static Reader getBlobReader(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException, DbmsException {
-		return getBlobReader(getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed), charset);
-	}
-
-	public static Reader getBlobReader(final InputStream blobInputStream, String charset) throws IOException {
+	private static Reader getBlobReader(final InputStream blobInputStream, String charset) throws IOException {
 		if (blobInputStream == null) {
 			return null;
 		}
@@ -287,19 +281,13 @@ public class JdbcUtil {
 		return StreamUtil.getCharsetDetectingInputStreamReader(blobInputStream, charset);
 	}
 
-	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException, DbmsException {
+	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		try (InputStream blobInputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
 			streamBlob(blobInputStream, charset, blobBase64Direction, target, close);
 		}
 	}
 
-	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException, DbmsException {
-		try (InputStream blobInputStream = getBlobInputStream(dbmsSupport, rs, columnName, blobIsCompressed)) {
-			streamBlob(blobInputStream, charset, blobBase64Direction, target, close);
-		}
-	}
-
-	public static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
+	private static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
 		if (target == null) {
 			throw new JdbcException("cannot stream Blob to null object");
 		}
@@ -333,7 +321,7 @@ public class JdbcUtil {
 	}
 
 	@Deprecated
-	public static Writer getWriter(Object target) throws IOException {
+	private static Writer getWriter(Object target) throws IOException {
 		if (target instanceof HttpServletResponse) {
 			return ((HttpServletResponse) target).getWriter();
 		}
@@ -373,7 +361,7 @@ public class JdbcUtil {
 		throw new IOException("cannot stream Clob to [" + target.getClass().getName() + "]");
 	}
 
-	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException, DbmsException {
+	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
 		try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed)) {
 			return getBlobAsString(blobStream, Integer.toString(column), charset, blobSmartGet, encodeBlobBase64);
 		} catch (ZipException | EOFException e) {    // if any decompression exception occurs in getBlobInputStream
@@ -386,7 +374,7 @@ public class JdbcUtil {
 		}
 	}
 
-	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException, DbmsException {
+	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
 		try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed)) {
 			return getBlobAsString(blobStream, column, charset, blobSmartGet, encodeBlobBase64);
 		} catch (ZipException | EOFException e) {    // if any decompression exception occurs in getBlobInputStream
@@ -399,7 +387,7 @@ public class JdbcUtil {
 		}
 	}
 
-	public static String getBlobAsString(final InputStream blobInputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException {
+	private static String getBlobAsString(final InputStream blobInputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException {
 		if (blobInputStream == null) {
 			log.debug("no blob found in column [" + column + "]");
 			return null;
@@ -461,72 +449,7 @@ public class JdbcUtil {
 		return result;
 	}
 
-	public static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, PreparedStatement stmt, int columnIndex, boolean compressBlob) throws DbmsException, SQLException {
-		OutputStream result;
-		OutputStream out = dbmsSupport.getBlobOutputStream(stmt, columnIndex, blobUpdateHandle);
-		if (compressBlob) {
-			result = new DeflaterOutputStream(out, true);
-		} else {
-			result = out;
-		}
-		return result;
-	}
-
-	public static Writer getBlobWriter(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, DbmsException, SQLException {
-		Writer result;
-		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
-		if (charset == null) {
-			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
-		if (compressBlob) {
-			result = new BufferedWriter(new OutputStreamWriter(new DeflaterOutputStream(out), charset));
-		} else {
-			result = new BufferedWriter(new OutputStreamWriter(out, charset));
-		}
-		return result;
-	}
-
-	public static void putStringAsBlob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String content, String charset, boolean compressBlob) throws IOException, DbmsException, SQLException {
-		if (content != null) {
-			Object blobHandle = dbmsSupport.getBlobHandle(rs, columnIndex);
-			try (OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle)) {
-				if (charset == null) {
-					charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-				}
-				if (compressBlob) {
-					try (DeflaterOutputStream dos = new DeflaterOutputStream(out)) {
-						dos.write(content.getBytes(charset));
-					}
-				} else {
-					out.write(content.getBytes(charset));
-				}
-			}
-			dbmsSupport.updateBlob(rs, columnIndex, blobHandle);
-		} else {
-			log.warn("content to store in blob was null");
-		}
-	}
-
-	public static void putByteArrayAsBlob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, byte[] content, boolean compressBlob) throws IOException, DbmsException, SQLException {
-		if (content != null) {
-			Object blobHandle = dbmsSupport.getBlobHandle(rs, columnIndex);
-			try (OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle)) {
-				if (compressBlob) {
-					try (DeflaterOutputStream dos = new DeflaterOutputStream(out)) {
-						dos.write(content);
-					}
-				} else {
-					out.write(content);
-				}
-			}
-			dbmsSupport.updateBlob(rs, columnIndex, blobHandle);
-		} else {
-			log.warn("content to store in blob was null");
-		}
-	}
-
-
-	public static String getClobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException, DbmsException {
+	public static String getClobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException {
 		Reader reader = dbmsSupport.getClobReader(rs, columnIndex);
 		if (reader == null) {
 			return null;
@@ -534,37 +457,18 @@ public class JdbcUtil {
 		return StreamUtil.readerToString(reader, null, xmlEncode);
 	}
 
-	public static String getClobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, boolean xmlEncode) throws IOException, DbmsException, SQLException {
-		Reader reader = dbmsSupport.getClobReader(rs, columnName);
-		if (reader == null) {
-			return null;
-		}
-		return StreamUtil.readerToString(reader, null, xmlEncode);
-	}
-
-	public static void putStringAsClob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String content) throws IOException, DbmsException, SQLException {
-		if (content != null) {
-			Object clobHandle = dbmsSupport.getClobHandle(rs, columnIndex);
-			try (Writer writer = dbmsSupport.getClobWriter(rs, columnIndex, clobHandle)) {
-				writer.write(content);
-			}
-			dbmsSupport.updateClob(rs, columnIndex, clobHandle);
-		} else {
-			log.warn("content to store in blob was null");
-		}
-	}
-
 	public static void fullClose(Connection connection, ResultSet rs) {
 		if (rs == null) {
-			log.warn("resultset to close was null");
+			log.warn("resultSet to close was null");
 			close(connection);
 			return;
 		}
 		try {
+			if (!rs.getStatement().isClosed()) {
+				rs.getStatement().close();
+			}
 			if (!rs.isClosed()) {
-				try (Statement statement = rs.getStatement()) {
-					//No Operation, just trying to close the statement!
-				}
+				rs.close();
 			}
 		} catch (SQLException e) {
 			log.warn("Could not obtain statement or connection from resultset", e);
@@ -585,13 +489,8 @@ public class JdbcUtil {
 	 * @param statement  the statement to close
 	 */
 	public static void fullClose(Connection connection, Statement statement) {
-		if (statement == null) {
-			log.warn("statement to close was null");
-			close(connection);
-			return;
-		}
 		try {
-			if (!statement.isClosed()) {
+			if (statement != null && !statement.isClosed()) {
 				statement.close();
 			}
 		} catch (SQLException e) {
@@ -608,21 +507,6 @@ public class JdbcUtil {
 			} catch (SQLException e) {
 				log.warn("Could not close connection", e);
 			}
-		}
-	}
-
-
-	public static String executeBlobQuery(IDbmsSupport dbmsSupport, Connection connection, String query) throws JdbcException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query [" + query + "]");
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (!rs.next()) {
-					return null;
-				}
-				return getBlobAsString(dbmsSupport, rs, 1, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
-			}
-		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query [" + query + "]", e);
 		}
 	}
 
@@ -816,8 +700,8 @@ public class JdbcUtil {
 		}
 	}
 
-	public static boolean isNumeric(int sqlTYpe) {
-		switch (sqlTYpe) {
+	public static boolean isSQLTypeNumeric(int sqlType) {
+		switch (sqlType) {
 			case Types.INTEGER:
 			case Types.NUMERIC:
 			case Types.DOUBLE:
