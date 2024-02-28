@@ -18,6 +18,8 @@ package org.frankframework.processors;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
@@ -65,7 +67,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	 * @throws PipeRunException if there is an error during processing.
 	 */
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Object preservedObject = message;
 		INamedObject owner = pipeLine.getOwner();
 
@@ -193,7 +195,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	}
 
 	@Override // method needs to be overridden to enable AOP for debugger
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
 		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
 	}
 

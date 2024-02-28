@@ -15,6 +15,8 @@
 */
 package org.frankframework.processors;
 
+import javax.annotation.Nonnull;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -32,7 +34,7 @@ import org.frankframework.util.Misc;
 public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		checkMessageSize(message.size(), pipeLine, pipe, true);
 		PipeRunResult pipeRunResult = chain.apply(message);
 

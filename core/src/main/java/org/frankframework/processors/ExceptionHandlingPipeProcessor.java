@@ -18,6 +18,8 @@ package org.frankframework.processors;
 import java.time.Instant;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
@@ -32,7 +34,7 @@ import org.frankframework.stream.Message;
 public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		try {
 			return chain.apply(message);
 		} catch (Exception e) {

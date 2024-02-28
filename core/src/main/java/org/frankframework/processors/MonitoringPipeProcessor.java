@@ -38,7 +38,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 	private final Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		long pipeStartTime = System.currentTimeMillis();
 		doDebugLogging(pipeLine, pipe, message, pipeLineSession);
 
