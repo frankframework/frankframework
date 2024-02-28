@@ -16,6 +16,7 @@
 package org.frankframework.processors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IPipe;
@@ -41,15 +42,15 @@ public abstract class PipeProcessorBase implements PipeProcessor {
 
 	@Setter private PipeProcessor pipeProcessor;
 
-	protected abstract PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException;
+	protected abstract PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException;
 
 	@Override
-	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
 		return processPipe(pipeLine, pipe, message, pipeLineSession, m -> pipeProcessor.processPipe(pipeLine, pipe, m, pipeLineSession));
 	}
 
 	@Override
-	public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+	public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
 		return processPipe(pipeLine, validator, message, pipeLineSession, m -> pipeProcessor.validate(pipeLine, validator, m, pipeLineSession, messageRoot));
 	}
 

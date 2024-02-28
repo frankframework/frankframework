@@ -16,6 +16,7 @@
 package org.frankframework.processors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.frankframework.core.HasSender;
 import org.frankframework.core.HasTransactionAttribute;
@@ -47,7 +48,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeline, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeline, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		TransactionDefinition txDef;
 		int txTimeout = 0;
 		if(pipe instanceof HasTransactionAttribute) {
