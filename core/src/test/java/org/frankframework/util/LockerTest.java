@@ -338,7 +338,7 @@ public class LockerTest {
 
 	public int getRowCount(DatabaseTestEnvironment env) throws Exception {
 		try(Connection connection = env.getConnection()) {
-			return DbmsUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
+			return JdbcTestUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
 		}
 	}
 

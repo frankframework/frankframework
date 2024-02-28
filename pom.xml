@@ -660,7 +660,7 @@
 					<excludes>
 						<exclude>it.**</exclude>
 					</excludes>
-					<argLine>@{argLine} -Dfile.encoding=CP-1252 --illegal-access=permit --add-opens java.base/java.io=ALL-UNNAMED</argLine>
+					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED</argLine>
 				</configuration>
 			</plugin>
 			<plugin>

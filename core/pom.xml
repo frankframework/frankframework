@@ -391,7 +391,7 @@
 		<dependency>
 			<groupId>com.github.mwiede</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.2.16</version>
+			<version>0.2.17</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
@@ -731,7 +731,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>6.6.0</version>
+			<version>6.6.1</version>
 		</dependency>
 		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>

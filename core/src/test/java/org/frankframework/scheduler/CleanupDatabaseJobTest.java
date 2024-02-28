@@ -28,7 +28,6 @@ import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.Locker;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -180,7 +179,7 @@ public class CleanupDatabaseJobTest {
 
 	private int getCount(DatabaseTestEnvironment database) throws SQLException, JdbcException {
 		try(Connection connection = database.getConnection()) {
-			return DbmsUtil.executeIntQuery(connection, "SELECT count(*) from "+txStorageTableName);
+			return JdbcTestUtil.executeIntQuery(connection, "SELECT count(*) from "+txStorageTableName);
 		}
 	}
 

@@ -113,7 +113,7 @@ public class JdbcUtilTest {
 		query = "SELECT COUNT(*) FROM TEMP";
 
 		// Act
-		int intResult = DbmsUtil.executeIntQuery(connection, query);
+		int intResult = JdbcTestUtil.executeIntQuery(connection, query);
 
 		// Assert
 		assertEquals(5, intResult);
@@ -122,7 +122,7 @@ public class JdbcUtilTest {
 		query = "SELECT TDATETIME FROM TEMP WHERE TKEY = 3";
 
 		// Act
-		String stringResult = DbmsUtil.executeStringQuery(connection, query);
+		String stringResult = JdbcTestUtil.executeStringQuery(connection, query);
 
 		// Assert
 		assertEquals("2018-04-12 03:05:06", stringResult);
@@ -131,7 +131,7 @@ public class JdbcUtilTest {
 		query = "SELECT TVARCHAR FROM TEMP WHERE TKEY = 4";
 
 		// Act
-		stringResult = DbmsUtil.executeStringQuery(connection, query);
+		stringResult = JdbcTestUtil.executeStringQuery(connection, query);
 
 		// Assert
 		assertEquals("fourth text", stringResult);

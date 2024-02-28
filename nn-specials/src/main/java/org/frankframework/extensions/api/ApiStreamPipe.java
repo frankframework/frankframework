@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,21 +17,26 @@ package org.frankframework.extensions.api;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.util.DbmsUtil;
-
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ITransactionalStorage;
+import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.pipes.StreamPipe;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Extension to StreamPipe for API Management.
@@ -52,9 +57,10 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Peter Leeuwenburgh
  */
+@Log4j2
 @Deprecated
 public class ApiStreamPipe extends StreamPipe {
-	private String jmsRealm;
+	@Getter @Setter private String jmsRealm;
 
 	private FixedQuerySender dummyQuerySender;
 
@@ -77,7 +83,7 @@ public class ApiStreamPipe extends StreamPipe {
 			}
 		}
 		if (retrieveMessage) {
-			String messageId = null;
+			String messageId;
 			try {
 				messageId = XmlUtils.evaluateXPathNodeSetFirstElement(firstStringPart, "MessageID");
 			} catch (Exception e) {
@@ -126,18 +132,19 @@ public class ApiStreamPipe extends StreamPipe {
 	}
 
 	private String selectMessageKey(String slotId, String messageId) throws JdbcException {
-		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='" + ITransactionalStorage.StorageType.MESSAGESTORAGE.getCode() + "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId + "'";
-		Connection conn = dummyQuerySender.getConnection();
-		try {
-			return DbmsUtil.executeStringQuery(conn, query);
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					log.warn("Could not close connection", e);
+		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='?' AND SLOTID='?' AND MESSAGEID='?'";
+		try (Connection connection = dummyQuerySender.getConnection(); PreparedStatement stmt = connection.prepareStatement(query)) {
+			stmt.setString(1, IMessageBrowser.StorageType.MESSAGESTORAGE.getCode());
+			stmt.setString(2, slotId);
+			stmt.setString(3, messageId);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next()) {
+					return null;
 				}
+				return rs.getString(1);
 			}
+		} catch (Exception e) {
+			throw new JdbcException("could not execute query [" + query + "]", e);
 		}
 	}
 
@@ -145,7 +152,7 @@ public class ApiStreamPipe extends StreamPipe {
 		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey + "'";
 		Connection conn = dummyQuerySender.getConnection();
 		try {
-			return JdbcUtil.executeBlobQuery(dummyQuerySender.getDbmsSupport(), conn, query);
+			return executeBlobQuery(dummyQuerySender.getDbmsSupport(), conn, query);
 		} finally {
 			if (conn != null) {
 				try {
@@ -166,12 +173,18 @@ public class ApiStreamPipe extends StreamPipe {
 		}
 	}
 
-	public String getJmsRealm() {
-		return jmsRealm;
-	}
-
-	public void setJmsRealm(String jmsRealm) {
-		this.jmsRealm = jmsRealm;
+	private static String executeBlobQuery(IDbmsSupport dbmsSupport, Connection connection, String query) throws JdbcException {
+		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]", query);
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next()) {
+					return null;
+				}
+				return JdbcUtil.getBlobAsString(dbmsSupport, rs, 1, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query [" + query + "]", e);
+		}
 	}
 
 }

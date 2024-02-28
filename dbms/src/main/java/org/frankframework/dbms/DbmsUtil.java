@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package org.frankframework.util;
+package org.frankframework.dbms;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,13 +24,13 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 
-import org.frankframework.dbms.DbmsException;
-
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 
 @Log4j2
-public class DbmsUtil {
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+class DbmsUtil {
 
 	/**
 	 * Executes query that returns a string. Returns {@literal null} if no results are found.
@@ -40,13 +40,13 @@ public class DbmsUtil {
 	 * Supported Java types and JDBC Type mapping:
 	 *     <table>
 	 *         <tr><th>{@link java.lang.Integer}</th> <td>{@link Types#INTEGER}</td></tr>
-	 *         <tr><th>{@link java.lang.Long}</th> <td>{@link Types#BIGINT}</td></tr>
-	 *         <tr><th>{@link java.lang.Float}</th> <td>{@link Types#NUMERIC}</td></tr>
-	 *         <tr><th>{@link java.lang.Double}</th> <td>{@link Types#NUMERIC}</td></tr>
+	 *         <tr><th>{@link Long}</th> <td>{@link Types#BIGINT}</td></tr>
+	 *         <tr><th>{@link Float}</th> <td>{@link Types#NUMERIC}</td></tr>
+	 *         <tr><th>{@link Double}</th> <td>{@link Types#NUMERIC}</td></tr>
 	 *         <tr><th>{@link java.sql.Timestamp}</th> <td>{@link Types#TIMESTAMP}</td></tr>
 	 *         <tr><th>{@link java.sql.Time}</th> <td>{@link Types#TIME}</td></tr>
 	 *         <tr><th>{@link java.sql.Date}</th> <td>{@link Types#DATE}</td></tr>
-	 *         <tr><th>{@link java.lang.String}</th> <td>{@link Types#VARCHAR}</td></tr>
+	 *         <tr><th>{@link String}</th> <td>{@link Types#VARCHAR}</td></tr>
 	 *     </table>
 	 * </p>
 	 *
@@ -56,8 +56,8 @@ public class DbmsUtil {
 	 * @return Query result as string, or {@literal  NULL}. The result is taken from only the first result-row, first column.
 	 * @throws DbmsException if there is an error in query execution or parameter mapping
 	 */
-	public static String executeStringQuery(Connection connection, String query, Object... params) throws DbmsException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]{}", query, displayParameters(params));
+	static String executeStringQuery(Connection connection, String query, Object... params) throws DbmsException {
+		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]{}", query, displayQueryParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt, params);
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -67,11 +67,9 @@ public class DbmsUtil {
 				return rs.getString(1);
 			}
 		} catch (Exception e) {
-			throw new DbmsException("could not obtain value using query [" + query + "]" + displayParameters(params), e);
+			throw new DbmsException("could not obtain value using query [" + query + "]" + displayQueryParameters(params), e);
 		}
 	}
-
-
 
 	/**
 	 * Executes query that returns an integer. Returns {@literal -1} if no results are found.
@@ -81,14 +79,14 @@ public class DbmsUtil {
 	 * <p>
 	 *     Supported Java types and JDBC Type mapping:
 	 *     <table>
-	 *         <tr><th>{@link java.lang.Integer}</th> <td>{@link Types#INTEGER}</td></tr>
-	 *         <tr><th>{@link java.lang.Long}</th> <td>{@link Types#BIGINT}</td></tr>
-	 *         <tr><th>{@link java.lang.Float}</th> <td>{@link Types#NUMERIC}</td></tr>
-	 *         <tr><th>{@link java.lang.Double}</th> <td>{@link Types#NUMERIC}</td></tr>
-	 *         <tr><th>{@link java.sql.Timestamp}</th> <td>{@link Types#TIMESTAMP}</td></tr>
+	 *         <tr><th>{@link Integer}</th> <td>{@link Types#INTEGER}</td></tr>
+	 *         <tr><th>{@link Long}</th> <td>{@link Types#BIGINT}</td></tr>
+	 *         <tr><th>{@link Float}</th> <td>{@link Types#NUMERIC}</td></tr>
+	 *         <tr><th>{@link Double}</th> <td>{@link Types#NUMERIC}</td></tr>
+	 *         <tr><th>{@link Timestamp}</th> <td>{@link Types#TIMESTAMP}</td></tr>
 	 *         <tr><th>{@link java.sql.Time}</th> <td>{@link Types#TIME}</td></tr>
 	 *         <tr><th>{@link java.sql.Date}</th> <td>{@link Types#DATE}</td></tr>
-	 *         <tr><th>{@link java.lang.String}</th> <td>{@link Types#VARCHAR}</td></tr>
+	 *         <tr><th>{@link String}</th> <td>{@link Types#VARCHAR}</td></tr>
 	 *     </table>
 	 * </p>
 	 *
@@ -98,8 +96,8 @@ public class DbmsUtil {
 	 * @return Query result as string, or {@literal  -1}. The result is taken from only the first result-row, first column.
 	 * @throws DbmsException if there is an error in query execution or parameter mapping
 	 */
-	public static int executeIntQuery(Connection connection, String query, Object... params) throws DbmsException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]{}", query, displayParameters(params));
+	static int executeIntQuery(Connection connection, String query, Object... params) throws DbmsException {
+		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]{}", query, displayQueryParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt, params);
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -109,10 +107,9 @@ public class DbmsUtil {
 				return rs.getInt(1);
 			}
 		} catch (Exception e) {
-			throw new DbmsException("could not obtain value using query [" + query + "]" + displayParameters(params), e);
+			throw new DbmsException("could not obtain value using query [" + query + "]" + displayQueryParameters(params), e);
 		}
 	}
-
 
 	/**
 	 * Applies parameters to a PreparedStatement.
@@ -121,14 +118,14 @@ public class DbmsUtil {
 	 * <p>
 	 *     Supported Java types and JDBC Type mapping:
 	 *     <table>
-	 *         <tr><th>{@link java.lang.Integer}</th> <td>{@link Types#INTEGER}</td></tr>
-	 *         <tr><th>{@link java.lang.Long}</th> <td>{@link Types#BIGINT}</td></tr>
-	 *         <tr><th>{@link java.lang.Float}</th> <td>{@link Types#NUMERIC}</td></tr>
-	 *         <tr><th>{@link java.lang.Double}</th> <td>{@link Types#NUMERIC}</td></tr>
-	 *         <tr><th>{@link java.sql.Timestamp}</th> <td>{@link Types#TIMESTAMP}</td></tr>
+	 *         <tr><th>{@link Integer}</th> <td>{@link Types#INTEGER}</td></tr>
+	 *         <tr><th>{@link Long}</th> <td>{@link Types#BIGINT}</td></tr>
+	 *         <tr><th>{@link Float}</th> <td>{@link Types#NUMERIC}</td></tr>
+	 *         <tr><th>{@link Double}</th> <td>{@link Types#NUMERIC}</td></tr>
+	 *         <tr><th>{@link Timestamp}</th> <td>{@link Types#TIMESTAMP}</td></tr>
 	 *         <tr><th>{@link java.sql.Time}</th> <td>{@link Types#TIME}</td></tr>
 	 *         <tr><th>{@link java.sql.Date}</th> <td>{@link Types#DATE}</td></tr>
-	 *         <tr><th>{@link java.lang.String}</th> <td>{@link Types#VARCHAR}</td></tr>
+	 *         <tr><th>{@link String}</th> <td>{@link Types#VARCHAR}</td></tr>
 	 *     </table>
 	 * </p>
 	 *
@@ -136,7 +133,7 @@ public class DbmsUtil {
 	 * @param params  the parameters to apply
 	 * @throws SQLException if there is an error applying the parameters
 	 */
-	public static void applyParameters(PreparedStatement stmt, Object... params) throws SQLException {
+	static void applyParameters(PreparedStatement stmt, Object... params) throws SQLException {
 		for (int i = 0; i < params.length; i++) {
 			Object param = params[i];
 			if (param == null) continue;
@@ -169,7 +166,7 @@ public class DbmsUtil {
 		return sqlType;
 	}
 
-	public static String displayParameters(Object... params) {
+	static String displayQueryParameters(Object... params) {
 		StringBuilder sb = new StringBuilder(1024);
 		for (int i = 0; i < params.length; i++) {
 			sb.append(" param").append(i + 1).append(" [").append(params[i]).append("]");
