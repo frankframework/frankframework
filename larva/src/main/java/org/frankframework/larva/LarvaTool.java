@@ -1014,6 +1014,7 @@ public class LarvaTool {
 			return e;
 		}
 		String newClassName = e.getValue().toString().replace(ClassNameRewriter.LEGACY_PACKAGE_NAME, ClassNameRewriter.ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+		newClassName = newClassName.replace(ClassNameRewriter.LEGACY_PACKAGE_NAME_LARVA, ClassNameRewriter.CURRENT_PACKAGE_NAME_LARVA);
 		return Map.entry(propertyName, newClassName);
 	}
 

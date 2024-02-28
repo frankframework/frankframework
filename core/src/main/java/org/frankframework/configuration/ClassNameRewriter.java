@@ -15,19 +15,21 @@
 */
 package org.frankframework.configuration;
 
+import org.frankframework.xml.FullXmlFilter;
+import org.frankframework.xml.WritableAttributes;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
-import org.frankframework.xml.FullXmlFilter;
-import org.frankframework.xml.WritableAttributes;
 
 @Log4j2
 public class ClassNameRewriter extends FullXmlFilter {
 
 	public static final String LEGACY_PACKAGE_NAME = "nl.nn.adapterframework.";
 	public static final String ORG_FRANKFRAMEWORK_PACKAGE_NAME = "org.frankframework.";
+	public static final String LEGACY_PACKAGE_NAME_LARVA = "org.frankframework.testtool.";
+	public static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
 	public static final String CLASS_NAME_ATTRIBUTE = "className";
 
 	public ClassNameRewriter(ContentHandler handler) {
@@ -38,14 +40,15 @@ public class ClassNameRewriter extends FullXmlFilter {
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		WritableAttributes writableAttributes = new WritableAttributes(attributes);
 		String className = writableAttributes.getValue(CLASS_NAME_ATTRIBUTE);
-		if (className != null && (className.startsWith(LEGACY_PACKAGE_NAME))) {
+		if (className != null && (className.startsWith(LEGACY_PACKAGE_NAME) || className.startsWith(LEGACY_PACKAGE_NAME_LARVA))) {
 			writableAttributes.setValue(CLASS_NAME_ATTRIBUTE, rewriteClassName(className));
 		}
 		super.startElement(uri, localName, qName, writableAttributes);
 	}
 
 	private static String rewriteClassName(final String originalClassName) {
-		final String newClassName = originalClassName.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+		String newClassName = originalClassName.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+		newClassName = newClassName.replace(LEGACY_PACKAGE_NAME_LARVA, CURRENT_PACKAGE_NAME_LARVA);
 		if (canLoadClass(newClassName)) {
 			log.debug("Replaced classname [{}] in configuration with classname [{}]", originalClassName, newClassName);
 			return newClassName;

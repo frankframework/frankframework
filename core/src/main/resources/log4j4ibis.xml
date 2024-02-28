@@ -154,10 +154,10 @@
 		<!-- Logger name="org.apache.cxf" level="DEBUG" additivity="false">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
- 		<!-- Logger name="org.frankframework.larva.LarvaTool" level="DEBUG" additivity="false">
+ 		<!-- Logger name="nl.nn.testtool.TestTool" level="DEBUG" additivity="false">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
-		<!-- Logger name="org.frankframework.larva.Report" level="DEBUG" additivity="false">
+		<!-- Logger name="nl.nn.testtool.Report" level="DEBUG" additivity="false">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
 		<!-- Show Tibet2 metadata query -->
