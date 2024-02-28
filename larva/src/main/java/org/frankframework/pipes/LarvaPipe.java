@@ -28,7 +28,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.LarvaTool;
+import org.frankframework.larva.LarvaTool;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 

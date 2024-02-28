@@ -37,7 +37,7 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.Adapter;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.LarvaTool;
+import org.frankframework.larva.LarvaTool;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;

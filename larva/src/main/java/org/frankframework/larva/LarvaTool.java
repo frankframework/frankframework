@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.testtool;
+package org.frankframework.larva;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -82,8 +82,8 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.queues.Queue;
-import org.frankframework.testtool.queues.QueueWrapper;
+import org.frankframework.larva.queues.Queue;
+import org.frankframework.larva.queues.QueueWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CaseInsensitiveComparator;
 import org.frankframework.util.DomBuilderException;
@@ -1560,7 +1560,7 @@ public class LarvaTool {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
 					} else if ("org.frankframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
-					} else if ("org.frankframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step, false, null);
 						stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 					} else {
@@ -1576,7 +1576,7 @@ public class LarvaTool {
 
 					if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, queueName, fileContent, correlationId);
-					} else if ("org.frankframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 					} else {
 						stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, null);

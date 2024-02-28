@@ -78,6 +78,7 @@
 		<Logger name="liquibase" level="INFO" />
 		<Logger name="org.frankframework.jdbc.migration.LiquibaseXmlChangeLogParser" level="INFO" /> <!-- to avoid stacktraces in DEBUG mode about "Cannot enable ACCESS_EXTERNAL_SCHEMA" -->
 		<Logger name="org.frankframework.testtool" level="WARN" />
+		<Logger name="org.frankframework.larva" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
 		<Logger name="org.apache.cxf" level="WARN" />
@@ -153,10 +154,10 @@
 		<!-- Logger name="org.apache.cxf" level="DEBUG" additivity="false">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
- 		<!-- Logger name="nl.nn.testtool.TestTool" level="DEBUG" additivity="false">
+ 		<!-- Logger name="org.frankframework.larva.LarvaTool" level="DEBUG" additivity="false">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
-		<!-- Logger name="nl.nn.testtool.Report" level="DEBUG" additivity="false">
+		<!-- Logger name="org.frankframework.larva.Report" level="DEBUG" additivity="false">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
 		<!-- Show Tibet2 metadata query -->

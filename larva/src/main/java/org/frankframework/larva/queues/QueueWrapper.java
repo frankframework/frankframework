@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.testtool.queues;
+package org.frankframework.larva.queues;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,14 +44,14 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.DelaySender;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.FileListener;
-import org.frankframework.testtool.FileSender;
-import org.frankframework.testtool.HttpServletResponseMock;
-import org.frankframework.testtool.LarvaTool;
-import org.frankframework.testtool.ListenerMessage;
-import org.frankframework.testtool.ListenerMessageHandler;
-import org.frankframework.testtool.SenderThread;
-import org.frankframework.testtool.XsltProviderListener;
+import org.frankframework.larva.FileListener;
+import org.frankframework.larva.FileSender;
+import org.frankframework.larva.HttpServletResponseMock;
+import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.ListenerMessage;
+import org.frankframework.larva.ListenerMessageHandler;
+import org.frankframework.larva.SenderThread;
+import org.frankframework.larva.XsltProviderListener;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;

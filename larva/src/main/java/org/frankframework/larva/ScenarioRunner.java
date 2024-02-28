@@ -13,12 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.testtool;
+package org.frankframework.larva;
 
-import static org.frankframework.testtool.LarvaTool.LOG_LEVEL_ORDER;
-import static org.frankframework.testtool.LarvaTool.RESULT_AUTOSAVED;
-import static org.frankframework.testtool.LarvaTool.RESULT_ERROR;
-import static org.frankframework.testtool.LarvaTool.RESULT_OK;
+import static org.frankframework.larva.LarvaTool.LOG_LEVEL_ORDER;
+import static org.frankframework.larva.LarvaTool.RESULT_AUTOSAVED;
+import static org.frankframework.larva.LarvaTool.RESULT_ERROR;
+import static org.frankframework.larva.LarvaTool.RESULT_OK;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +29,8 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.testtool.queues.Queue;
-import org.frankframework.testtool.queues.QueueCreator;
+import org.frankframework.larva.queues.Queue;
+import org.frankframework.larva.queues.QueueCreator;
 import org.frankframework.util.AppConstants;
 
 import lombok.Getter;

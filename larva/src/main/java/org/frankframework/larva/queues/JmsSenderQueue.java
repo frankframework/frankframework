@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.testtool.queues;
+package org.frankframework.larva.queues;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -23,37 +23,39 @@ import java.util.Properties;
 import org.apache.commons.lang3.NotImplementedException;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.jms.PullingJmsListener;
+import org.frankframework.jms.JmsSender;
 
-public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
+public class JmsSenderQueue extends HashMap<String, Object> implements Queue {
 
-	private final PullingJmsListener jmsListener;
+	private final JmsSender jmsSender;
 
-	public JmsListenerQueue(PullingJmsListener jmsListener) {
+	public JmsSenderQueue(JmsSender jmsSender, String useCorrelationIdFrom, String jmsCorrelationId) {
 		super();
-		this.jmsListener=jmsListener;
-		put("jmsListener", jmsListener);
+		this.jmsSender=jmsSender;
+		put("useCorrelationIdFrom", useCorrelationIdFrom);
+		if (jmsCorrelationId!=null) {
+			put("jmsCorrelationId", jmsCorrelationId);
+		}
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		jmsListener.configure();
+		jmsSender.configure();
 	}
 
 	@Override
 	public void open() throws ConfigurationException {
 		try {
-			jmsListener.open();
-		} catch (ListenerException e) {
+			jmsSender.open();
+		} catch (SenderException e) {
 			throw new ConfigurationException(e);
 		}
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException {
+	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException {
 		throw new NotImplementedException("executeWrite");
 	}
 

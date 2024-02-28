@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.testtool.queues;
+package org.frankframework.larva.queues;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,8 +37,8 @@ import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.jms.PullingJmsListener;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.LarvaTool;
-import org.frankframework.testtool.TestConfig;
+import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.TestConfig;
 import org.frankframework.util.EnumUtils;
 
 public class QueueCreator {
