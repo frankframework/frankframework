@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,18 +21,16 @@ import java.io.Writer;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import nl.nn.testtool.MessageCapturerImpl;
-import nl.nn.testtool.TestTool;
 
 public class MessageCapturer extends MessageCapturerImpl {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private @Setter @Getter TestTool testTool;
+	private @Autowired int maxMessageLength;
 
 	@Override
 	public StreamingType getStreamingType(Object message) {
@@ -53,7 +51,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message) {
 			try {
-				((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
+				((Message)message).captureCharacterStream(writer, maxMessageLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {
@@ -67,7 +65,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 		if (message instanceof WriterPlaceHolder) {
 			WriterPlaceHolder writerPlaceHolder = (WriterPlaceHolder)message;
 			writerPlaceHolder.setWriter(writer);
-			writerPlaceHolder.setSizeLimit(testTool.getMaxMessageLength());
+			writerPlaceHolder.setSizeLimit(maxMessageLength);
 			return message;
 		}
 		return super.toWriter(message, writer, exceptionNotifier);
@@ -79,7 +77,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 			Message m = (Message)message;
 			charsetNotifier.accept(m.getCharset());
 			try {
-				((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
+				((Message)message).captureBinaryStream(outputStream, maxMessageLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {
