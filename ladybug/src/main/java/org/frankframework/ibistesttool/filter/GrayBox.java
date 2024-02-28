@@ -31,11 +31,11 @@ public class GrayBox extends AbstractBox {
 	public boolean match(Report report, Checkpoint checkpoint) {
 		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
 				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
-			List<Checkpoint> checkpoints = report.getCheckpoints();
-			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
 			if (hasStartPointOnLevel(report, checkpoint)) {
 				return false;
 			}
+			List<Checkpoint> checkpoints = report.getCheckpoints();
+			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
 			while (iterator.hasPrevious()) {
 				Checkpoint previous = iterator.previous();
 				if (previous.getType() == Checkpoint.TYPE_STARTPOINT && previous.getLevel() < checkpoint.getLevel()) {
