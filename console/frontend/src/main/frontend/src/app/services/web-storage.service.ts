@@ -3,7 +3,7 @@ import { DebugService } from './debug.service';
 import { AppService } from '../app.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebStorageService {
   // cache: Record<string, any> | null = null;
@@ -11,9 +11,7 @@ export class WebStorageService {
 
   private sessionStorage = this.window.sessionStorage;
 
-  constructor(
-    private window: Window
-  ) {
+  constructor(private window: Window) {
     /* const date = new Date();
     date.setDate(date.getDate() + 7);
     this.options = {
@@ -37,5 +35,5 @@ export class WebStorageService {
 
   clear(): void {
     this.sessionStorage.clear();
-  };
+  }
 }

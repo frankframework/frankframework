@@ -8,9 +8,8 @@ describe('IframeCustomViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ IframeCustomViewComponent ]
-    })
-    .compileComponents();
+      declarations: [IframeCustomViewComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(IframeCustomViewComponent);
     component = fixture.componentInstance;

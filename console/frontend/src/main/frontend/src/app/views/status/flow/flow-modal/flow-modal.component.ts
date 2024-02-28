@@ -5,21 +5,18 @@ import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.com
 @Component({
   selector: 'app-flow-modal',
   templateUrl: './flow-modal.component.html',
-  styleUrls: ['./flow-modal.component.scss']
+  styleUrls: ['./flow-modal.component.scss'],
 })
 export class FlowModalComponent {
-
-  @Input() flowName = "";
-  @Input() flow = "";
+  @Input() flowName = '';
+  @Input() flow = '';
 
   protected showActionButtons = false;
   protected errorActionMessage: null | string = null;
 
   @ViewChild(NgMermaidComponent) ngMermaid!: NgMermaidComponent;
 
-  constructor(
-    private activeModal: NgbActiveModal
-  ) { }
+  constructor(private activeModal: NgbActiveModal) {}
 
   close() {
     this.activeModal.close();
@@ -32,16 +29,16 @@ export class FlowModalComponent {
   downloadAsPng(event: MouseEvent) {
     const buttonElement = event.target as HTMLButtonElement;
     this.svgToImage()
-      .then(canvas => canvas.toDataURL('image/png'))
-      .then(url => {
+      .then((canvas) => canvas.toDataURL('image/png'))
+      .then((url) => {
         const a = document.createElement('a');
         a.download = `${this.flowName}-flow.png`;
         a.href = url;
         a.click();
         a.remove();
       })
-      .catch(error => {
-        buttonElement.textContent = "Failed";
+      .catch((error) => {
+        buttonElement.textContent = 'Failed';
         buttonElement.disabled = true;
         this.errorActionMessage = error;
         console.error(error);
@@ -52,15 +49,17 @@ export class FlowModalComponent {
     const buttonElement = event.target as HTMLButtonElement;
     buttonElement.textContent = 'Copying...';
     this.svgToImage()
-      .then(canvas => this.canvasToBlob(canvas))
-      .then(blob => navigator.clipboard.write([
-        new ClipboardItem({
-          [blob.type]: blob
-        })
-      ]))
-      .then(() => buttonElement.textContent = 'Copied')
-      .catch(error => {
-        buttonElement.textContent = "Failed";
+      .then((canvas) => this.canvasToBlob(canvas))
+      .then((blob) =>
+        navigator.clipboard.write([
+          new ClipboardItem({
+            [blob.type]: blob,
+          }),
+        ]),
+      )
+      .then(() => (buttonElement.textContent = 'Copied'))
+      .catch((error) => {
+        buttonElement.textContent = 'Failed';
         buttonElement.disabled = true;
         this.errorActionMessage = error;
         console.error(error);
@@ -69,7 +68,9 @@ export class FlowModalComponent {
 
   openNewTab() {
     const newTab = window.open('about:blank');
-    const svg = this.ngMermaid.getMermaidSvgElement()?.cloneNode(true) as SVGSVGElement;
+    const svg = this.ngMermaid
+      .getMermaidSvgElement()
+      ?.cloneNode(true) as SVGSVGElement;
 
     if (newTab && svg) {
       setTimeout(() => {
@@ -79,14 +80,22 @@ export class FlowModalComponent {
     }
   }
 
-  private canvasToBlob(canvas: HTMLCanvasElement, type?: string, quality?: any): Promise<Blob>{
+  private canvasToBlob(
+    canvas: HTMLCanvasElement,
+    type?: string,
+    quality?: any,
+  ): Promise<Blob> {
     return new Promise((resolve, reject) => {
-      canvas.toBlob(blob => {
-        if (blob != null) {
-          resolve(blob);
-        }
-        reject("Couldn't create blob from canvas");
-      }, type, quality);
+      canvas.toBlob(
+        (blob) => {
+          if (blob != null) {
+            resolve(blob);
+          }
+          reject("Couldn't create blob from canvas");
+        },
+        type,
+        quality,
+      );
     });
   }
 
@@ -120,10 +129,10 @@ export class FlowModalComponent {
       context.imageSmoothingQuality = 'high';
 
       const image = new Image();
-      image.onload = () => {
+      image.addEventListener('load', () => {
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
         resolve(canvas);
-      }
+      });
       image.onerror = reject;
       image.src = `data:image/svg+xml;base64,${this.svgToBase64(svg, canvas.width, canvas.height)}`;
     });

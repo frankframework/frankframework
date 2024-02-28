@@ -2,59 +2,60 @@ import { Injectable } from '@angular/core';
 import { SessionService } from './session.service';
 
 export type Alert = {
-  type: string,
-  message: any,
-  time: number
-  id?: number,
-}
+  type: string;
+  message: any;
+  time: number;
+  id?: number;
+};
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AlertService {
-
-  constructor(private Session: SessionService) { }
+  constructor(private Session: SessionService) {}
 
   add(level: string | number, message: any, non_repeditive: boolean): void {
-    if (non_repeditive === true)
-      if (this.checkIfExists(message))
-        return;
+    if (non_repeditive === true && this.checkIfExists(message)) return;
 
     var type;
     switch (level) {
-      case "info":
-      case 1:
-        type = "fa fa-info";
+      case 'info':
+      case 1: {
+        type = 'fa fa-info';
         break;
-      case "warning":
-      case 2:
-        type = "fa fa-warning";
+      }
+      case 'warning':
+      case 2: {
+        type = 'fa fa-warning';
         break;
-      case "severe":
-      case 3:
-        type = "fa fa-times";
+      }
+      case 'severe':
+      case 3: {
+        type = 'fa fa-times';
         break;
-      default:
-        type = "fa fa-info";
+      }
+      default: {
+        type = 'fa fa-info';
         break;
+      }
     }
     var list = this.get(true);
-    var obj: Alert = {
+    var object: Alert = {
       type: type,
       message: message,
-      time: new Date().getTime()
+      time: Date.now(),
     };
-    list.unshift(obj);
-    obj.id = list.length;
-    this.Session.set("Alert", list);
+    list.unshift(object);
+    object.id = list.length;
+    this.Session.set('Alert', list);
     //sessionStorage.setItem("Alert", JSON.stringify(list));
   }
 
   get(preserveList?: boolean): Alert[] {
     //var list = JSON.parse(sessionStorage.getItem("Alert"));
-    var list = this.Session.get("Alert");
-    if (preserveList == undefined) this.Session.set("Alert", []); //sessionStorage.setItem("Alert", JSON.stringify([])); //Clear after retreival
-    return (list != null) ? list : [];
+    var list = this.Session.get('Alert');
+    if (preserveList == undefined) this.Session.set('Alert', []); //sessionStorage.setItem("Alert", JSON.stringify([])); //Clear after retreival
+    return list == null ? [] : list;
   }
 
   getCount(): number {
@@ -64,8 +65,8 @@ export class AlertService {
   checkIfExists(message: any): boolean {
     var list = this.get(true);
     if (list.length > 0) {
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].message == message) {
+      for (const element of list) {
+        if (element.message == message) {
           return true;
         }
       }

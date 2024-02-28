@@ -5,22 +5,22 @@ import { JdbcService } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 interface Form {
-  configuration: string
+  configuration: string;
 }
 
 @Component({
   selector: 'app-liquibase',
   templateUrl: './liquibase.component.html',
-  styleUrls: ['./liquibase.component.scss']
+  styleUrls: ['./liquibase.component.scss'],
 })
 export class LiquibaseComponent implements OnInit, OnDestroy {
   form: Form = {
-    configuration: ""
+    configuration: '',
   };
   file: File | null = null;
   generateSql: boolean = false;
-  error: string = "";
-  result: string = "";
+  error: string = '';
+  result: string = '';
   configurations: Configuration[] = [];
   filteredConfigurations: Configuration[] = [];
 
@@ -28,25 +28,30 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
 
   constructor(
     private appService: AppService,
-    private jdbcService: JdbcService
-  ) { };
+    private jdbcService: JdbcService,
+  ) {}
 
   ngOnInit(): void {
     const findFirstAvailabeConfiguration = () => {
       this.configurations = this.appService.configurations;
-      this.filteredConfigurations = this.configurations.filter((item) => item.jdbcMigrator === true);
+      this.filteredConfigurations = this.configurations.filter(
+        (item) => item.jdbcMigrator === true,
+      );
 
-      for (let i in this.filteredConfigurations) {
-        let configuration = this.configurations[i];
+      for (let index in this.filteredConfigurations) {
+        let configuration = this.configurations[index];
 
         if (configuration.jdbcMigrator) {
           this.form['configuration'] = configuration.name;
           break;
-        };
-      };
+        }
+      }
     };
 
-    const configurationsSubscription = this.appService.configurations$.subscribe(() => findFirstAvailabeConfiguration());
+    const configurationsSubscription =
+      this.appService.configurations$.subscribe(() =>
+        findFirstAvailabeConfiguration(),
+      );
     this._subscriptions.add(configurationsSubscription);
     findFirstAvailabeConfiguration();
   }
@@ -56,29 +61,33 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   }
 
   download() {
-    window.open(this.appService.getServerPath() + "iaf/api/jdbc/liquibase/");
-  };
+    window.open(this.appService.getServerPath() + 'iaf/api/jdbc/liquibase/');
+  }
 
   submit(formData: Form) {
-    if (!formData) formData = { configuration: "" };
+    if (!formData) formData = { configuration: '' };
     var fd = new FormData();
     this.generateSql = true;
 
     if (this.file != null) {
-      fd.append("file", this.file as any);
-    };
+      fd.append('file', this.file as any);
+    }
 
-    fd.append("configuration", formData.configuration);
+    fd.append('configuration', formData.configuration);
 
-    this.jdbcService.postJdbcLiquibase(fd).subscribe({ next: returnData => {
-      this.error = "";
-      this.generateSql = false;
-      this.result = returnData.result;
-    }, error: (errorData: HttpErrorResponse) => {
-      this.generateSql = false;
-      const error = (errorData && errorData.error) ? errorData.error : "An error occured!";
-      this.error = typeof error === 'object' ? error.error : error;
-      this.result = "";
-    }}); // TODO no intercept
-  };
+    this.jdbcService.postJdbcLiquibase(fd).subscribe({
+      next: (returnData) => {
+        this.error = '';
+        this.generateSql = false;
+        this.result = returnData.result;
+      },
+      error: (errorData: HttpErrorResponse) => {
+        this.generateSql = false;
+        const error =
+          errorData && errorData.error ? errorData.error : 'An error occured!';
+        this.error = typeof error === 'object' ? error.error : error;
+        this.result = '';
+      },
+    }); // TODO no intercept
+  }
 }

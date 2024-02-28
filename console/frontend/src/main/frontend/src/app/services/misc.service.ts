@@ -3,83 +3,91 @@ import { AppConstants, AppService } from '../app.service';
 import { Base64Service } from './base64.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MiscService {
-
-  constructor(
-    private Base64: Base64Service
-  ) {}
+  constructor(private Base64: Base64Service) {}
 
   escapeURL(uri: string | number | boolean): string {
     return encodeURIComponent(uri);
   }
 
   isMobile(): boolean {
-    return (navigator.userAgent.match(/Android/i)
-      || navigator.userAgent.match(/webOS/i)
-      || navigator.userAgent.match(/iPhone/i)
-      || navigator.userAgent.match(/iPad/i)
-      || navigator.userAgent.match(/iPod/i)
-      || navigator.userAgent.match(/BlackBerry/i)
-      || navigator.userAgent.match(/Windows Phone/i)
-    ) ? true : false;
+    return /android/i.test(navigator.userAgent) ||
+      /webos/i.test(navigator.userAgent) ||
+      /iphone/i.test(navigator.userAgent) ||
+      /ipad/i.test(navigator.userAgent) ||
+      /ipod/i.test(navigator.userAgent) ||
+      /blackberry/i.test(navigator.userAgent) ||
+      /windows phone/i.test(navigator.userAgent)
+      ? true
+      : false;
   }
 
   getUID(serverInfo: Record<string, any>): string {
-    let queryObj = {
-      "v": serverInfo["framework"].version,
-      "n": serverInfo["instance"].name,
-      "s": serverInfo["dtap.stage"],
+    let queryObject = {
+      v: serverInfo['framework'].version,
+      n: serverInfo['instance'].name,
+      s: serverInfo['dtap.stage'],
     };
-    let b = this.Base64.encode(JSON.stringify(queryObj));
+    let b = this.Base64.encode(JSON.stringify(queryObject));
     const chunks = [];
-    let pos = 0
+    let pos = 0;
     while (pos < b.length) {
-      chunks.push(b.slice(pos, pos += 5));
+      chunks.push(b.slice(pos, (pos += 5)));
     }
-    return chunks.reverse().join("");
+    return chunks.reverse().join('');
   }
 
-  compare_version(v1: string | number, v2: string | number, operator?: string): boolean | number | null {
+  compare_version(
+    v1: string | number,
+    v2: string | number,
+    operator?: string,
+  ): boolean | number | null {
     // See for more info: http://locutus.io/php/info/version_compare/
 
-    let i, x, compare = 0;
+    let index,
+      x,
+      compare = 0;
     let vm = {
-      'dev': -6,
-      'alpha': -5,
-      'a': -5,
-      'beta': -4,
-      'b': -4,
-      'RC': -3,
-      'rc': -3,
+      dev: -6,
+      alpha: -5,
+      a: -5,
+      beta: -4,
+      b: -4,
+      RC: -3,
+      rc: -3,
       '#': -2,
-      'p': 1,
-      'pl': 1
+      p: 1,
+      pl: 1,
     };
 
     let _prepVersion = function (v: string | number) {
-      v = ('' + v).replace(/[_\-+]/g, '.');
-      v = v.replace(/([^.\d]+)/g, '.$1.').replace(/\.{2,}/g, '.');
-      return (!v.length ? [-8] : v.split('.'));
+      v = ('' + v).replaceAll(/[+_\-]/g, '.');
+      v = v.replaceAll(/([^\d.]+)/g, '.$1.').replaceAll(/\.{2,}/g, '.');
+      return v.length === 0 ? [-8] : v.split('.');
     };
-    let _numVersion = function (v: string | number): number {
-      return !v ? 0 : (isNaN(v as number) ? vm[v as keyof typeof vm] || -7 : parseInt(v as string, 10));
+    let _numberVersion = function (v: string | number): number {
+      return v
+        ? isNaN(v as number)
+          ? vm[v as keyof typeof vm] || -7
+          : Number.parseInt(v as string, 10)
+        : 0;
     };
 
-    let v1Arr = _prepVersion(v1);
-    let v2Arr = _prepVersion(v2);
-    x = Math.max(v1Arr.length, v2Arr.length);
-    for (i = 0; i < x; i++) {
-      if (v1Arr[i] === v2Arr[i]) {
+    let v1Array = _prepVersion(v1);
+    let v2Array = _prepVersion(v2);
+    x = Math.max(v1Array.length, v2Array.length);
+    for (index = 0; index < x; index++) {
+      if (v1Array[index] === v2Array[index]) {
         continue;
       }
-      v1Arr[i] = _numVersion(v1Arr[i]);
-      v2Arr[i] = _numVersion(v2Arr[i]);
-      if (v1Arr[i] < v2Arr[i]) {
+      v1Array[index] = _numberVersion(v1Array[index]);
+      v2Array[index] = _numberVersion(v2Array[index]);
+      if (v1Array[index] < v2Array[index]) {
         compare = -1;
         break;
-      } else if (v1Arr[i] > v2Arr[i]) {
+      } else if (v1Array[index] > v2Array[index]) {
         compare = 1;
         break;
       }
@@ -90,28 +98,35 @@ export class MiscService {
 
     switch (operator) {
       case '>':
-      case 'gt':
-        return (compare > 0);
+      case 'gt': {
+        return compare > 0;
+      }
       case '>=':
-      case 'ge':
-        return (compare >= 0);
+      case 'ge': {
+        return compare >= 0;
+      }
       case '<=':
-      case 'le':
-        return (compare <= 0);
+      case 'le': {
+        return compare <= 0;
+      }
       case '===':
       case '=':
-      case 'eq':
-        return (compare === 0);
+      case 'eq': {
+        return compare === 0;
+      }
       case '<>':
       case '!==':
-      case 'ne':
-        return (compare !== 0);
+      case 'ne': {
+        return compare !== 0;
+      }
       case '':
       case '<':
-      case 'lt':
-        return (compare < 0);
-      default:
+      case 'lt': {
+        return compare < 0;
+      }
+      default: {
         return null;
+      }
     }
   }
 }

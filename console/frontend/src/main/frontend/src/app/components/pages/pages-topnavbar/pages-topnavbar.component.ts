@@ -1,26 +1,33 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: 'app-pages-topnavbar',
   templateUrl: './pages-topnavbar.component.html',
-  styleUrls: ['./pages-topnavbar.component.scss']
+  styleUrls: ['./pages-topnavbar.component.scss'],
 })
-export class PagesTopnavbarComponent implements OnInit, OnDestroy{
+export class PagesTopnavbarComponent implements OnInit, OnDestroy {
   notificationCount: number = this.Notification.getCount();
-  notificationList: NotificationService["list"] = [];
+  notificationList: NotificationService['list'] = [];
 
-  @Input() dtapSide: string = "";
-  @Input() dtapStage: string = "";
-  @Input() serverTime: string = "";
+  @Input() dtapSide: string = '';
+  @Input() dtapStage: string = '';
+  @Input() serverTime: string = '';
   @Input() loggedin: boolean = false;
   @Input() userName?: string;
   @Output() onOpenFeedback = new EventEmitter<number>();
 
   private _subscriptions = new Subscription();
 
-  constructor(private Notification: NotificationService) { }
+  constructor(private Notification: NotificationService) {}
 
   ngOnInit() {
     const notifCountSub = this.Notification.onCountUpdate$.subscribe(() => {
@@ -39,9 +46,13 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy{
   }
 
   hoverFeedback(rating: number) {
-    $(".rating i").removeClass("fa-star").addClass("fa-star-o");
-    $(".rating i:nth-child(-n+" + (rating + 1) + ")").addClass("fa-star").removeClass("fa-star-o");
-  };
+    $('.rating i').removeClass('fa-star').addClass('fa-star-o');
+    $('.rating i:nth-child(-n+' + (rating + 1) + ')')
+      .addClass('fa-star')
+      .removeClass('fa-star-o');
+  }
 
-  resetNotificationCount() { this.Notification.resetCount(); };
+  resetNotificationCount() {
+    this.Notification.resetCount();
+  }
 }

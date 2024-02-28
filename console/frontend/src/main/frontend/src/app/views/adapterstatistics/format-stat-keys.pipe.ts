@@ -1,14 +1,18 @@
-import { KeyValueDiffer, KeyValueDiffers, Pipe, PipeTransform } from '@angular/core';
+import {
+  KeyValueDiffer,
+  KeyValueDiffers,
+  Pipe,
+  PipeTransform,
+} from '@angular/core';
 
 @Pipe({
-  name: 'formatStatKeys'
+  name: 'formatStatKeys',
 })
 export class FormatStatKeysPipe implements PipeTransform {
-
   private keyValues: string[] = [];
   private differ?: KeyValueDiffer<string, any>;
 
-  constructor(private differs: KeyValueDiffers) { }
+  constructor(private differs: KeyValueDiffers) {}
 
   transform(input: Record<string, any>): string[] {
     if (!input || (!(input instanceof Map) && typeof input !== 'object')) {
@@ -27,5 +31,4 @@ export class FormatStatKeysPipe implements PipeTransform {
     }
     return this.keyValues;
   }
-
 }

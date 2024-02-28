@@ -90,8 +90,8 @@ import { FileViewerComponent } from './components/file-viewer/file-viewer.compon
 
 const windowProvider: ValueProvider = {
   provide: Window,
-  useValue: window
-}
+  useValue: window,
+};
 
 @NgModule({
   declarations: [
@@ -185,13 +185,13 @@ const windowProvider: ValueProvider = {
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
     DataTablesModule,
-    NgMermaidComponent
+    NgMermaidComponent,
   ],
   providers: [
     windowProvider,
     { provide: TitleStrategy, useClass: PagesTitleStrategy },
-    httpInterceptorProviders
+    httpInterceptorProviders,
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {}

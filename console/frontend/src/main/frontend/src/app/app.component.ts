@@ -1,8 +1,24 @@
-import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import {
+  Component,
+  Inject,
+  LOCALE_ID,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+} from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { Observable, Subscription, filter, first } from 'rxjs';
 import { Adapter, AppConstants, AppService, ServerInfo } from './app.service';
-import { ActivatedRoute, Data, NavigationEnd, NavigationSkipped, NavigationStart, ParamMap, Router, convertToParamMap } from '@angular/router';
+import {
+  ActivatedRoute,
+  Data,
+  NavigationEnd,
+  NavigationSkipped,
+  NavigationStart,
+  ParamMap,
+  Router,
+  convertToParamMap,
+} from '@angular/router';
 import { ViewportScroller, formatDate } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 // @ts-ignore pace-js does not have types
@@ -22,7 +38,7 @@ import { FeedbackModalComponent } from './components/pages/feedback-modal/feedba
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
   loading = true;
@@ -30,9 +46,9 @@ export class AppComponent implements OnInit, OnDestroy {
   loggedin = false;
   monitoring = false;
   config_database = false;
-  dtapStage = "";
-  dtapSide = "";
-  serverTime = "";
+  dtapStage = '';
+  dtapSide = '';
+  serverTime = '';
   startupError: string | null = null;
   userName?: string;
   appConstants: AppConstants;
@@ -59,99 +75,109 @@ export class AppComponent implements OnInit, OnDestroy {
     private appService: AppService,
     private idle: Idle,
     private modalService: NgbModal,
-    @Inject(LOCALE_ID) private locale: string
+    @Inject(LOCALE_ID) private locale: string,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
   }
 
   ngOnInit() {
     Pace.start({
-      ajax: false
+      ajax: false,
     });
 
     this.urlHash$ = this.route.fragment;
-    this.router.events.pipe(
-      filter((e) =>
-        e instanceof NavigationStart && e.url.startsWith('/!')
-      ), first()
-    ).subscribe((e) => {
-      const event = e as any as NavigationStart
-      this.router.navigateByUrl(event.url.replace('/!', ''));
-    });
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationStart && e.url.startsWith('/!')),
+        first(),
+      )
+      .subscribe((e) => {
+        const event = e as any as NavigationStart;
+        this.router.navigateByUrl(event.url.replace('/!', ''));
+      });
 
-    this.router.events.pipe(filter((e) =>
-      e instanceof NavigationSkipped
-    )).subscribe(() => {
-      const childRoute = this.route.children.slice(-1)[0];
-      this.routeQueryParams = childRoute.snapshot.queryParamMap;
-      this.routeData = childRoute.snapshot.data;
-    })
+    this.router.events
+      .pipe(filter((e) => e instanceof NavigationSkipped))
+      .subscribe(() => {
+        const childRoute = this.route.children.at(-1);
+        this.routeQueryParams = childRoute.snapshot.queryParamMap;
+        this.routeData = childRoute.snapshot.data;
+      });
 
-    this.router.events.pipe(
-      filter((e) => e instanceof NavigationEnd)
-    ).subscribe((e) => {
-      const childRoute = this.route.children.slice(-1)[0];
-      this.routeQueryParams = childRoute.snapshot.queryParamMap;
-      this.routeData = childRoute.snapshot.data;
-      if (this.router.url === '/login') {
-        this.isLoginView = true;
-        this.renderer.addClass(document.body, 'gray-bg');
-      } else {
-        this.isLoginView = false;
-        this.renderer.removeClass(document.body, 'gray-bg');
-      };
-    });
+    this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        const childRoute = this.route.children.at(-1);
+        this.routeQueryParams = childRoute.snapshot.queryParamMap;
+        this.routeData = childRoute.snapshot.data;
+        if (this.router.url === '/login') {
+          this.isLoginView = true;
+          this.renderer.addClass(document.body, 'gray-bg');
+        } else {
+          this.isLoginView = false;
+          this.renderer.removeClass(document.body, 'gray-bg');
+        }
+      });
 
     /* state controller */
     this.authService.loggedin(); //Check if the user is logged in.
 
-    $(".main").show();
-    $(".loading").remove();
+    $('.main').show();
+    $('.loading').remove();
     /* state controller end */
 
-    Pace.on("done", () => this.initializeFrankConsole());
+    Pace.on('done', () => this.initializeFrankConsole());
     window.setTimeout(() => this.initializeFrankConsole(), 250);
 
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
-      this.pollerService.getAll().changeInterval(this.appConstants["console.idle.pollerInterval"]);
+      this.pollerService
+        .getAll()
+        .changeInterval(this.appConstants['console.idle.pollerInterval']);
 
-      let idleTimeout = (parseInt(this.appConstants["console.idle.timeout"]) > 0) ? parseInt(this.appConstants["console.idle.timeout"]) : false;
+      let idleTimeout =
+        Number.parseInt(this.appConstants['console.idle.timeout']) > 0
+          ? Number.parseInt(this.appConstants['console.idle.timeout'])
+          : false;
       if (!idleTimeout) return;
 
       this.sweetAlertService.Warning({
-        title: "Idle timer...",
+        title: 'Idle timer...',
         text: "Your session will be terminated in <span class='idleTimer'>60:00</span> minutes.",
         showConfirmButton: false,
-        showCloseButton: true
+        showCloseButton: true,
       });
     });
     this._subscriptions.add(idleStartSubscription);
 
-    const idleWarnSubscription = this.idle.onTimeoutWarning.subscribe(function (timeRemaining) {
-      let minutes = Math.floor(timeRemaining / 60);
-      let seconds = Math.round(timeRemaining % 60);
-      if (minutes < 10) minutes = +"0" + minutes;
-      if (seconds < 10) seconds = +"0" + seconds;
-      let elm = $(".swal2-container").find(".idleTimer");
-      elm.text(minutes + ":" + seconds);
-    });
+    const idleWarnSubscription = this.idle.onTimeoutWarning.subscribe(
+      function (timeRemaining) {
+        let minutes = Math.floor(timeRemaining / 60);
+        let seconds = Math.round(timeRemaining % 60);
+        if (minutes < 10) minutes = +'0' + minutes;
+        if (seconds < 10) seconds = +'0' + seconds;
+        let elm = $('.swal2-container').find('.idleTimer');
+        elm.text(minutes + ':' + seconds);
+      },
+    );
     this._subscriptions.add(idleWarnSubscription);
 
     const idleTimeoutSubscription = this.idle.onTimeout.subscribe(() => {
       this.sweetAlertService.Info({
-        title: "Idle timer...",
-        text: "You have been logged out due to inactivity.",
-        showCloseButton: true
+        title: 'Idle timer...',
+        text: 'You have been logged out due to inactivity.',
+        showCloseButton: true,
       });
       this.router.navigate(['logout']);
     });
     this._subscriptions.add(idleTimeoutSubscription);
 
     const idleEndSubscription = this.idle.onIdleEnd.subscribe(() => {
-      let elm = $(".swal2-container").find(".swal2-close");
+      let elm = $('.swal2-container').find('.swal2-close');
       elm.click();
 
-      this.pollerService.getAll().changeInterval(this.appConstants["console.pollerInterval"]);
+      this.pollerService
+        .getAll()
+        .changeInterval(this.appConstants['console.pollerInterval']);
     });
     this._subscriptions.add(idleEndSubscription);
   }
@@ -163,34 +189,38 @@ export class AppComponent implements OnInit, OnDestroy {
   initializeFrankConsole() {
     if (this.appConstants['init'] === -1) {
       this.appConstants['init'] = 0;
-      this.debugService.log("Initializing Frank!Console");
+      this.debugService.log('Initializing Frank!Console');
     } else if (this.appConstants['init'] === 0) {
-      this.debugService.log("Cancelling 2nd initialization attempt");
+      this.debugService.log('Cancelling 2nd initialization attempt');
       Pace.stop();
       return;
     } else {
-      this.debugService.info("Loading Frank!Console", this.appConstants['init']);
+      this.debugService.info(
+        'Loading Frank!Console',
+        this.appConstants['init'],
+      );
     }
 
-    if (this.appConstants['init'] === 0) { //Only continue if the init state was -1
+    if (this.appConstants['init'] === 0) {
+      //Only continue if the init state was -1
       this.appConstants['init'] = 1;
       this.appService.getServerInfo().subscribe({
         next: (data) => {
           this.serverInfo = data;
 
           this.appConstants['init'] = 2;
-          if (!(this.router.url.indexOf("login") >= 0)) {
+          if (!this.router.url.includes('login')) {
             this.idle.watch();
-            $("body").removeClass("gray-bg");
-            $(".main").show();
-            $(".loading").hide();
+            $('body').removeClass('gray-bg');
+            $('.main').show();
+            $('.loading').hide();
           }
 
-          this.appService.dtapStage = data["dtap.stage"];
-          this.dtapStage = data["dtap.stage"];
-          this.dtapSide = data["dtap.side"];
+          this.appService.dtapStage = data['dtap.stage'];
+          this.dtapStage = data['dtap.stage'];
+          this.dtapSide = data['dtap.side'];
           // appService.userName = data["userName"];
-          this.userName = data["userName"];
+          this.userName = data['userName'];
 
           let serverTime = Date.parse(new Date(data.serverTime).toUTCString());
           let localTime = Date.parse(new Date().toUTCString());
@@ -201,17 +231,31 @@ export class AppComponent implements OnInit, OnDestroy {
 
           const updateTime = () => {
             const serverDate = new Date();
-            serverDate.setTime(serverDate.getTime() - this.appConstants['timeOffset']);
-            this.serverTime = formatDate(serverDate, this.appConstants["console.dateFormat"], this.locale);
-          }
+            serverDate.setTime(
+              serverDate.getTime() - this.appConstants['timeOffset'],
+            );
+            this.serverTime = formatDate(
+              serverDate,
+              this.appConstants['console.dateFormat'],
+              this.locale,
+            );
+          };
           window.setInterval(updateTime, 1000);
           updateTime();
 
           this.appService.updateInstanceName(data.instance.name);
-          $(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
+          $('.iaf-info').html(
+            data.framework.name +
+              ' ' +
+              data.framework.version +
+              ': ' +
+              data.instance.name +
+              ' ' +
+              data.instance.version,
+          );
           this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
-          if (this.appService.dtapStage == "LOC") {
+          if (this.appService.dtapStage == 'LOC') {
             this.debugService.setLevel(3);
           }
 
@@ -225,125 +269,160 @@ export class AppComponent implements OnInit, OnDestroy {
           });
           this.checkIafVersions();
           this.initializeWarnings();
-        }, error: (error: HttpErrorResponse) => {
+        },
+        error: (error: HttpErrorResponse) => {
           if (error.status == 500) {
             this.router.navigate(['error']);
           }
-        }
+        },
       });
       this.appService.getEnvironmentVariables().subscribe((data) => {
-        if (data["Application Constants"]) {
-          this.appConstants = $.extend(this.appConstants, data["Application Constants"]["All"]); //make FF!Application Constants default
+        if (data['Application Constants']) {
+          this.appConstants = $.extend(
+            this.appConstants,
+            data['Application Constants']['All'],
+          ); //make FF!Application Constants default
 
-          let idleTime = (parseInt(this.appConstants["console.idle.time"]) > 0) ? parseInt(this.appConstants["console.idle.time"]) : 0;
+          let idleTime =
+            Number.parseInt(this.appConstants['console.idle.time']) > 0
+              ? Number.parseInt(this.appConstants['console.idle.time'])
+              : 0;
           if (idleTime > 0) {
-            let idleTimeout = (parseInt(this.appConstants["console.idle.timeout"]) > 0) ? parseInt(this.appConstants["console.idle.timeout"]) : 0;
+            let idleTimeout =
+              Number.parseInt(this.appConstants['console.idle.timeout']) > 0
+                ? Number.parseInt(this.appConstants['console.idle.timeout'])
+                : 0;
             this.idle.setIdle(idleTime);
             this.idle.setTimeout(idleTimeout);
-          }
-          else {
+          } else {
             this.idle.stop();
           }
-          this.appService.updateDatabaseSchedulesEnabled((this.appConstants["loadDatabaseSchedules.active"] === 'true'));
+          this.appService.updateDatabaseSchedulesEnabled(
+            this.appConstants['loadDatabaseSchedules.active'] === 'true',
+          );
           this.appService.triggerAppConstants();
         }
       });
     }
 
     let token = sessionStorage.getItem('authToken');
-    this.loggedin = (token != null && token != "null") ? true : false;
+    this.loggedin = token != null && token != 'null' ? true : false;
   }
 
   checkIafVersions() {
     /* Check FF version */
-    console.log("Checking FF version with remote...");
-    this.appService.getIafVersions(this.miscService.getUID(this.serverInfo!)).subscribe((response) => {
-      this.serverInfo = null;
-      if (!response || response.length === 0) return;
+    console.log('Checking FF version with remote...');
+    this.appService
+      .getIafVersions(this.miscService.getUID(this.serverInfo!))
+      .subscribe((response) => {
+        this.serverInfo = null;
+        if (!response || response.length === 0) return;
 
-      const release = response[0]; //Not sure what ID to pick, smallest or latest?
+        const release = response[0]; //Not sure what ID to pick, smallest or latest?
 
-      const newVersion = (release.tag_name.substr(0, 1) == "v") ? release.tag_name.substr(1) : release.tag_name;
-      const currentVersion = this.appConstants["application.version"];
-      const version = this.miscService.compare_version(newVersion, currentVersion) || 0;
-      console.log("Comparing version: '" + currentVersion + "' with latest release: '" + newVersion + "'.");
-      this.sessionService.remove("IAF-Release");
+        const newVersion =
+          release.tag_name.slice(0, 1) == 'v'
+            ? release.tag_name.slice(1)
+            : release.tag_name;
+        const currentVersion = this.appConstants['application.version'];
+        const version =
+          this.miscService.compare_version(newVersion, currentVersion) || 0;
+        console.log(
+          "Comparing version: '" +
+            currentVersion +
+            "' with latest release: '" +
+            newVersion +
+            "'.",
+        );
+        this.sessionService.remove('IAF-Release');
 
-      if (+version > 0) {
-        this.sessionService.set("IAF-Release", release);
-        this.notificationService.add('fa-exclamation-circle', "FF update available!", false, () => {
-          this.router.navigate(['iaf-update']);
-        });
-      }
-    });
+        if (+version > 0) {
+          this.sessionService.set('IAF-Release', release);
+          this.notificationService.add(
+            'fa-exclamation-circle',
+            'FF update available!',
+            false,
+            () => {
+              this.router.navigate(['iaf-update']);
+            },
+          );
+        }
+      });
   }
 
   initializeWarnings() {
-    this.pollerService.add("server/warnings", (configurations) => {
-      this.appService.updateAlerts([]); //Clear all old alerts
+    this.pollerService.add(
+      'server/warnings',
+      (configurations) => {
+        this.appService.updateAlerts([]); //Clear all old alerts
 
-      configurations['All'] = { messages: configurations.messages };
-      delete configurations.messages;
+        configurations['All'] = { messages: configurations.messages };
+        delete configurations.messages;
 
-      configurations['All'].errorStoreCount = configurations.totalErrorStoreCount;
-      delete configurations.totalErrorStoreCount;
+        configurations['All'].errorStoreCount =
+          configurations.totalErrorStoreCount;
+        delete configurations.totalErrorStoreCount;
 
-      for (let x in configurations.warnings) {
-        this.appService.addWarning('', configurations.warnings[x]);
-      }
+        for (let x in configurations.warnings) {
+          this.appService.addWarning('', configurations.warnings[x]);
+        }
 
-      for (const i in configurations) {
-        let configuration = configurations[i];
-        if (configuration.exception)
-          this.appService.addException(i, configuration.exception);
-        if (configuration.warnings) {
-          for (const x in configuration.warnings) {
-            this.appService.addWarning(i, configuration.warnings[x]);
+        for (const index in configurations) {
+          let configuration = configurations[index];
+          if (configuration.exception)
+            this.appService.addException(index, configuration.exception);
+          if (configuration.warnings) {
+            for (const x in configuration.warnings) {
+              this.appService.addWarning(index, configuration.warnings[x]);
+            }
+          }
+
+          configuration.messageLevel = 'INFO';
+          for (const x in configuration.messages) {
+            let level = configuration.messages[x].level;
+            if (level == 'WARN' && configuration.messageLevel != 'ERROR')
+              configuration.messageLevel = 'WARN';
+            if (level == 'ERROR') configuration.messageLevel = 'ERROR';
           }
         }
 
-        configuration.messageLevel = "INFO";
-        for (const x in configuration.messages) {
-          let level = configuration.messages[x].level;
-          if (level == "WARN" && configuration.messageLevel != "ERROR")
-            configuration.messageLevel = "WARN";
-          if (level == "ERROR")
-            configuration.messageLevel = "ERROR";
-        }
-      }
+        this.appService.updateMessageLog(configurations);
 
-      this.appService.updateMessageLog(configurations);
-
-      const startupErrorSubscription = this.appService.startupError$.subscribe(() => {
-        this.startupError = this.appService.startupError;
-      });
-      this._subscriptions.add(startupErrorSubscription);
-    }, true, 60000);
+        const startupErrorSubscription =
+          this.appService.startupError$.subscribe(() => {
+            this.startupError = this.appService.startupError;
+          });
+        this._subscriptions.add(startupErrorSubscription);
+      },
+      true,
+      60_000,
+    );
 
     let raw_adapter_data: Record<string, string> = {};
     let pollerCallback = (allAdapters: Record<string, Adapter>) => {
-      for (const i in raw_adapter_data) { //Check if any old adapters should be removed
-        if (!allAdapters[i]) {
-          delete raw_adapter_data[i];
-          delete this.appService.adapters[i];
-          this.debugService.log("removed adapter [" + i + "]");
+      for (const index in raw_adapter_data) {
+        //Check if any old adapters should be removed
+        if (!allAdapters[index]) {
+          delete raw_adapter_data[index];
+          delete this.appService.adapters[index];
+          this.debugService.log('removed adapter [' + index + ']');
         }
       }
-      for (const adapterName in allAdapters) { //Add new adapter information
+      for (const adapterName in allAdapters) {
+        //Add new adapter information
         let adapter = allAdapters[adapterName];
 
         if (raw_adapter_data[adapter.name] != JSON.stringify(adapter)) {
           raw_adapter_data[adapter.name] = JSON.stringify(adapter);
 
-          adapter.status = "started";
+          adapter.status = 'started';
 
           for (const x in adapter.receivers) {
             let adapterReceiver = adapter.receivers[+x];
-            if (adapterReceiver.state != 'started')
-              adapter.status = 'warning';
+            if (adapterReceiver.state != 'started') adapter.status = 'warning';
 
             if (adapterReceiver.transactionalStores) {
-              let store = adapterReceiver.transactionalStores["ERROR"];
+              let store = adapterReceiver.transactionalStores['ERROR'];
               if (store && store.numberOfMessages > 0) {
                 adapter.status = 'warning';
               }
@@ -360,7 +439,7 @@ export class AppComponent implements OnInit, OnDestroy {
             if (pipe.sender) {
               adapter.hasSender = true;
               if (pipe.hasMessageLog) {
-                let count = parseInt(pipe.messageLogCount || '');
+                let count = Number.parseInt(pipe.messageLogCount || '');
                 if (!Number.isNaN(count)) {
                   if (pipe.isSenderTransactionalStorage) {
                     adapter.senderTransactionalStorageMessageCount += count;
@@ -378,14 +457,19 @@ export class AppComponent implements OnInit, OnDestroy {
                         adapter.status = 'warning';
                     }
           */
-          if (adapter.state != "started") {
-            adapter.status = "stopped";
+          if (adapter.state != 'started') {
+            adapter.status = 'stopped';
           }
 
-          this.appService.adapters[`${adapter.configuration}/${adapter.name}`] = adapter;
+          this.appService.adapters[`${adapter.configuration}/${adapter.name}`] =
+            adapter;
 
-          const selectedConfiguration = this.routeQueryParams.get("configuration");
-          this.appService.updateAdapterSummary(selectedConfiguration ?? 'All', false);
+          const selectedConfiguration =
+            this.routeQueryParams.get('configuration');
+          this.appService.updateAdapterSummary(
+            selectedConfiguration ?? 'All',
+            false,
+          );
           this.updateAdapterNotifications(adapter);
         }
       }
@@ -393,9 +477,20 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     //Get base information first, then update it with more details
-    this.appService.getAdapters().pipe(first()).subscribe((data: Record<string, Adapter>) => { pollerCallback(data) });
+    this.appService
+      .getAdapters()
+      .pipe(first())
+      .subscribe((data: Record<string, Adapter>) => {
+        pollerCallback(data);
+      });
     window.setTimeout(() => {
-      this.pollerService.add("adapters?expanded=all", (data: Record<string, Adapter>) => { pollerCallback(data) }, true);
+      this.pollerService.add(
+        'adapters?expanded=all',
+        (data: Record<string, Adapter>) => {
+          pollerCallback(data);
+        },
+        true,
+      );
       this.appService.updateLoading(false);
       this.loading = false;
       this.scrollToAdapter();
@@ -404,7 +499,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   scrollToAdapter() {
     this.urlHash$.subscribe((hash) => {
-      if (this.router.url.startsWith("/status") && hash && hash !== "") {
+      if (this.router.url.startsWith('/status') && hash && hash !== '') {
         /* let el = $("#" + hash);
         if (el && el[0]) {
           el[0].scrollIntoView();
@@ -416,38 +511,45 @@ export class AppComponent implements OnInit, OnDestroy {
 
   updateAdapterNotifications(adapter: Adapter) {
     let name = adapter.name;
-    if (name.length > 20)
-      name = name.substring(0, 17) + "...";
+    if (name.length > 20) name = name.slice(0, 17) + '...';
     if (adapter.started == true) {
       for (const x in adapter.receivers) {
         // TODO Receiver.started is not really a thing, maybe this should work differently?
         // @ts-ignore
         if (adapter.receivers[+x].started == false) {
-          this.notificationService.add('fa-exclamation-circle', "Receiver '" + name + "' stopped!", false, () => {
-            this.router.navigate(['status'], { fragment: adapter.name });
-          });
+          this.notificationService.add(
+            'fa-exclamation-circle',
+            "Receiver '" + name + "' stopped!",
+            false,
+            () => {
+              this.router.navigate(['status'], { fragment: adapter.name });
+            },
+          );
         }
       }
-    }
-    else {
-      this.notificationService.add('fa-exclamation-circle', "Adapter '" + name + "' stopped!", false, () => {
-        this.router.navigate(['status'], { fragment: adapter.name });
-      });
+    } else {
+      this.notificationService.add(
+        'fa-exclamation-circle',
+        "Adapter '" + name + "' stopped!",
+        false,
+        () => {
+          this.router.navigate(['status'], { fragment: adapter.name });
+        },
+      );
     }
   }
 
   openInfoModel() {
-    this.modalService.open(InformationModalComponent, /* { size: 'sm' } */);
-  };
+    this.modalService.open(InformationModalComponent /* { size: 'sm' } */);
+  }
 
   sendFeedback(rating?: number) {
-    if (!this.appConstants["console.feedbackURL"])
-      return;
+    if (!this.appConstants['console.feedbackURL']) return;
 
-    $(".rating i").each(function (i, e) {
-      $(e).addClass("fa-star-o").removeClass("fa-star");
+    $('.rating i').each(function (index, e) {
+      $(e).addClass('fa-star-o').removeClass('fa-star');
     });
-    const modalRef = this.modalService.open(FeedbackModalComponent);
-    modalRef.componentInstance.rating = rating;
-  };
+    const modalReference = this.modalService.open(FeedbackModalComponent);
+    modalReference.componentInstance.rating = rating;
+  }
 }

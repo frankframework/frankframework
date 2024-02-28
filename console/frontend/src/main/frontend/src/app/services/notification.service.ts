@@ -3,40 +3,44 @@ import { Subject } from 'rxjs';
 import * as Tinycon from 'tinycon';
 
 export type Notification = {
-  icon: string,
-  title: string,
-  message: string | boolean,
-  fn: ((notification: Notification) => void) | boolean,
-  time: number,
-  id?: number
-}
+  icon: string;
+  title: string;
+  message: string | boolean;
+  fn: ((notification: Notification) => void) | boolean;
+  time: number;
+  id?: number;
+};
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationService {
-  private onCountUpdateSource = new Subject<void>();
-
   list: Notification[] = [];
   count: number = 0;
+  private onCountUpdateSource = new Subject<void>();
   onCountUpdate$ = this.onCountUpdateSource.asObservable();
 
-  constructor(){
+  constructor() {
     Tinycon.setOptions({
-      background: '#f03d25'
+      background: '#f03d25',
     });
   }
 
-  add(icon: string, title: string, msg?: string | boolean, fn?: (notification: Notification) => void): void {
-    let obj: Notification = {
+  add(
+    icon: string,
+    title: string,
+    message?: string | boolean,
+    function_?: (notification: Notification) => void,
+  ): void {
+    let object: Notification = {
       icon: icon,
       title: title,
-      message: (msg) ? msg : false,
-      fn: (fn) ? fn : false,
-      time: new Date().getTime()
+      message: message ?? false,
+      fn: function_ ?? false,
+      time: Date.now(),
     };
-    this.list.unshift(obj);
-    obj.id = this.list.length;
+    this.list.unshift(object);
+    object.id = this.list.length;
     this.count++;
     this.onCountUpdateSource.next();
 
@@ -44,13 +48,13 @@ export class NotificationService {
   }
 
   get(id: number): Notification | false {
-    for (let i = 0; i < this.list.length; i++) {
-      let notification = this.list[i];
+    for (let index = 0; index < this.list.length; index++) {
+      let notification = this.list[index];
       if (notification.id == id) {
         if (notification.fn) {
           window.setTimeout(() => {
-            if(typeof notification.fn === 'function')
-              notification.fn.apply(this, [notification]);
+            if (typeof notification.fn === 'function')
+              Reflect.apply(notification.fn, this, [notification]);
           }, 50);
         }
         return notification;

@@ -1,12 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
-import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.service';
+import {
+  ApiListener,
+  Service,
+  WebservicesService,
+  Wsdl,
+} from './webservices.service';
 
 @Component({
   selector: 'app-webservices',
   templateUrl: './webservices.component.html',
-  styleUrls: ['./webservices.component.scss']
+  styleUrls: ['./webservices.component.scss'],
 })
 export class WebservicesComponent implements OnInit {
   rootURL: string = this.appService.getServerPath();
@@ -16,8 +21,8 @@ export class WebservicesComponent implements OnInit {
 
   constructor(
     private appService: AppService,
-    private wsService: WebservicesService
-  ) { };
+    private wsService: WebservicesService,
+  ) {}
 
   ngOnInit() {
     this.wsService.getWebservices().subscribe((data) => {
@@ -25,9 +30,13 @@ export class WebservicesComponent implements OnInit {
       this.services = data.services;
       this.wsdls = data.wsdls;
     });
-  };
+  }
 
   compileURL(apiListener: ApiListener) {
-    return this.rootURL + "iaf/api/webservices/openapi.json?uri=" + encodeURI(apiListener.uriPattern);
-  };
-};
+    return (
+      this.rootURL +
+      'iaf/api/webservices/openapi.json?uri=' +
+      encodeURI(apiListener.uriPattern)
+    );
+  }
+}

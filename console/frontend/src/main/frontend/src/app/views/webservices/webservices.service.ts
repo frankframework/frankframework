@@ -28,17 +28,17 @@ interface WebServices {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebservicesService {
-
   constructor(
     private http: HttpClient,
-    private appService: AppService
-  ) { }
+    private appService: AppService,
+  ) {}
 
   getWebservices() {
-    return this.http.get<WebServices>(this.appService.absoluteApiPath + "webservices");
+    return this.http.get<WebServices>(
+      this.appService.absoluteApiPath + 'webservices',
+    );
   }
-
 }

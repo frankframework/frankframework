@@ -50,7 +50,7 @@ body.mini-navbar .navbar-static-side {
 }
 
 .modal-backdrop.fade {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .modal.fade .modal-dialog {
@@ -96,7 +96,7 @@ app-toasts-container {
   background-color: #f8ac59;
 }
 
-.sk-spinner-wave.sk-spinner>div+div {
+.sk-spinner-wave.sk-spinner > div + div {
   margin-left: 3px;
 }
 
@@ -145,8 +145,8 @@ div.dataTables_wrapper div.dataTables_paginate {
 
 .dataTables_paginate .paginate_button,
 .dataTables_paginate .ellipsis {
-  background-color: #FFFFFF;
-  border: 1px solid #DDDDDD;
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
   color: inherit;
   line-height: 1.42857;
   margin-left: -1px;
@@ -160,7 +160,7 @@ div.dataTables_wrapper div.dataTables_paginate {
   z-index: 2;
   color: #23527c !important;
   background-color: #eee !important;
-  border: 1px solid #DDDDDD !important;
+  border: 1px solid #dddddd !important;
 }
 
 .dataTables_paginate .paginate_button:first-child {
@@ -173,7 +173,7 @@ div.dataTables_wrapper div.dataTables_paginate {
 
 .dataTables_paginate .paginate_button.current {
   background-color: #f4f4f4;
-  border-color: #DDDDDD;
+  border-color: #dddddd;
   color: inherit;
   cursor: default;
   z-index: 2;
@@ -182,9 +182,9 @@ div.dataTables_wrapper div.dataTables_paginate {
 .dataTables_paginate .disabled.paginate_button,
 .dataTables_paginate .disabled.paginate_button:focus,
 .dataTables_paginate .disabled.paginate_button:hover,
-.pagination>.disabled>span,
-.pagination>.disabled>span:focus,
-.pagination>.disabled>span:hover {
+.pagination > .disabled > span,
+.pagination > .disabled > span:focus,
+.pagination > .disabled > span:hover {
   color: #777;
   cursor: not-allowed;
   background-color: #fff;

@@ -1,21 +1,27 @@
-import { Directive, Output, EventEmitter, ElementRef, OnInit } from '@angular/core';
+import {
+  Directive,
+  Output,
+  EventEmitter,
+  ElementRef,
+  OnInit,
+} from '@angular/core';
 
 @Directive({
-  selector: '[appQuickSubmitForm]'
+  selector: '[appQuickSubmitForm]',
 })
 export class QuickSubmitFormDirective implements OnInit {
   @Output() quickSubmit = new EventEmitter<void>();
 
-  constructor(
-    private element: ElementRef
-  ) { }
+  constructor(private element: ElementRef) {}
 
   ngOnInit() {
-    this.element.nativeElement.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 'Enter') {
-        this.quickSubmit.emit();
-      }
-    });
+    this.element.nativeElement.addEventListener(
+      'keydown',
+      (event: KeyboardEvent) => {
+        if (event.ctrlKey && event.key === 'Enter') {
+          this.quickSubmit.emit();
+        }
+      },
+    );
   }
-
 }

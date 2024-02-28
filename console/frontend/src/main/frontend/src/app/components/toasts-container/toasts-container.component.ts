@@ -4,24 +4,26 @@ import { ToastService, ToastType } from 'src/app/services/toast.service';
 @Component({
   selector: 'app-toasts-container',
   templateUrl: './toasts-container.component.html',
-  styleUrls: ['./toasts-container.component.scss']
+  styleUrls: ['./toasts-container.component.scss'],
 })
 export class ToastsContainerComponent {
-  constructor(
-    public toastService: ToastService
-  ){}
+  constructor(public toastService: ToastService) {}
 
-  getClassByType(type: ToastType){
-    switch(type){
-      case 'error':
+  getClassByType(type: ToastType) {
+    switch (type) {
+      case 'error': {
         return 'toast-error text-light';
-      case 'success':
+      }
+      case 'success': {
         return 'toast-success text-light';
-      case 'warning':
+      }
+      case 'warning': {
         return 'toast-warning';
+      }
       case 'info':
-      default:
+      default: {
         return 'toast-info';
+      }
     }
   }
 }

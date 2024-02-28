@@ -10,22 +10,21 @@ import { filter, merge } from 'rxjs';
   styleUrls: ['./storage.component.scss'],
 })
 export class StorageComponent implements OnInit {
-
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private SweetAlert: SweetalertService,
-    private storageService: StorageService
-  ) { }
+    private storageService: StorageService,
+  ) {}
 
   ngOnInit() {
-    this.route.firstChild?.paramMap.subscribe(params => {
-      const adapterName = params.get('adapter'),
-        configuration = params.get('configuration'),
-        storageSource = params.get('storageSource'),
-        storageSourceName = params.get('storageSourceName'),
-        processState = params.get('processState'),
-        messageId = params.get('messageId');
+    this.route.firstChild?.paramMap.subscribe((parameters) => {
+      const adapterName = parameters.get('adapter'),
+        configuration = parameters.get('configuration'),
+        storageSource = parameters.get('storageSource'),
+        storageSourceName = parameters.get('storageSourceName'),
+        processState = parameters.get('processState'),
+        messageId = parameters.get('messageId');
 
       if (!configuration) {
         this.router.navigate(['status']);
@@ -33,19 +32,25 @@ export class StorageComponent implements OnInit {
       }
 
       if (!adapterName) {
-        this.SweetAlert.Warning("Invalid URL", "No adapter name provided!");
+        this.SweetAlert.Warning('Invalid URL', 'No adapter name provided!');
         return;
       }
       if (!storageSourceName) {
-        this.SweetAlert.Warning("Invalid URL", "No receiver or pipe name provided!");
+        this.SweetAlert.Warning(
+          'Invalid URL',
+          'No receiver or pipe name provided!',
+        );
         return;
       }
       if (!storageSource) {
-        this.SweetAlert.Warning("Invalid URL", "Component type [receivers] or [pipes] is not provided in url!");
+        this.SweetAlert.Warning(
+          'Invalid URL',
+          'Component type [receivers] or [pipes] is not provided in url!',
+        );
         return;
       }
       if (!processState) {
-        this.SweetAlert.Warning("Invalid URL", "No storage type provided!");
+        this.SweetAlert.Warning('Invalid URL', 'No storage type provided!');
         return;
       }
 
@@ -55,17 +60,22 @@ export class StorageComponent implements OnInit {
         processState,
         storageSource,
         storageSourceName,
-        messageId
+        messageId,
       });
     });
 
-
-    this.router.events.pipe(
-      filter((e) => e instanceof ActivationEnd && e.snapshot.paramMap.has('processState'))
-    ).subscribe(() => {
-      const messageId = this.route.firstChild?.snapshot.paramMap.get('messageId');
-      this.storageService.updateStorageParams({ messageId });
-    });
+    this.router.events
+      .pipe(
+        filter(
+          (e) =>
+            e instanceof ActivationEnd &&
+            e.snapshot.paramMap.has('processState'),
+        ),
+      )
+      .subscribe(() => {
+        const messageId =
+          this.route.firstChild?.snapshot.paramMap.get('messageId');
+        this.storageService.updateStorageParams({ messageId });
+      });
   }
-
 }

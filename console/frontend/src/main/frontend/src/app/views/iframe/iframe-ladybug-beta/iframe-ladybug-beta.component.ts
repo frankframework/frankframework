@@ -5,20 +5,20 @@ import { AppService } from 'src/app/app.service';
 @Component({
   selector: 'app-iframe-ladybug-beta',
   templateUrl: '../iframe.component.html',
-  styleUrls: ['../iframe.component.scss']
+  styleUrls: ['../iframe.component.scss'],
 })
 export class IframeLadybugBetaComponent implements OnInit {
-  url: string = "";
+  url: string = '';
   iframeSrc?: SafeResourceUrl;
   redirectURL?: string;
 
   constructor(
     private sanitizer: DomSanitizer,
-    private appService: AppService
-  ) { };
+    private appService: AppService,
+  ) {}
 
   ngOnInit(): void {
-    this.url = this.appService.getServerPath() + "iaf/ladybug";
+    this.url = this.appService.getServerPath() + 'iaf/ladybug';
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
-  };
+  }
 }

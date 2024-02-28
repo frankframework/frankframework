@@ -49,16 +49,17 @@ interface SecurityItems {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SecurityItemsService {
-
   constructor(
     private http: HttpClient,
     private appService: AppService,
-  ) { }
+  ) {}
 
   getSecurityItems() {
-    return this.http.get<SecurityItems>(this.appService.absoluteApiPath + "securityitems");
+    return this.http.get<SecurityItems>(
+      this.appService.absoluteApiPath + 'securityitems',
+    );
   }
 }

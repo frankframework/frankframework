@@ -9,16 +9,16 @@ import { ToastService } from 'src/app/services/toast.service';
 @Component({
   selector: 'app-configurations-manage-details',
   templateUrl: './configurations-manage-details.component.html',
-  styleUrls: ['./configurations-manage-details.component.scss']
+  styleUrls: ['./configurations-manage-details.component.scss'],
 })
 export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   configuration: Configuration = {
-    name: "",
+    name: '',
     stubbed: false,
-    state: "STOPPED",
-    type: "DatabaseClassLoader",
+    state: 'STOPPED',
+    type: 'DatabaseClassLoader',
     jdbcMigrator: false,
-    version: ""
+    version: '',
   };
   configurations: Configuration[] = [];
   loading: boolean = false;
@@ -31,26 +31,26 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     private appService: AppService,
     private configurationsService: ConfigurationsService,
     private sweetalertService: SweetalertService,
-    private toastService: ToastService
+    private toastService: ToastService,
   ) {
-    const routeState = this.router.getCurrentNavigation()?.extras.state ?? {}
-    if(!routeState['configuration']){
+    const routeState = this.router.getCurrentNavigation()?.extras.state ?? {};
+    if (!routeState['configuration']) {
       this.router.navigate(['..'], { relativeTo: this.route });
     }
     this.configuration = routeState['configuration'];
-  };
+  }
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      const nameParam = params.get('name');
-      if (nameParam && nameParam != "")
-        this.appService.customBreadcrumbs("Configurations > Manage > " + nameParam);
-      else
-        this.router.navigate(['..'], { relativeTo: this.route });
+    this.route.paramMap.subscribe((params) => {
+      const nameParameter = params.get('name');
+      if (nameParameter && nameParameter != "")
+        this.appService.customBreadcrumbs("Configurations > Manage > " + nameParameter);
+        );
+      else this.router.navigate(['..'], { relativeTo: this.route });
 
       this.promise = window.setInterval(() => {
         this.update();
-      }, 30000);
+      }, 30_000);
 
       this.update();
     });
@@ -58,63 +58,102 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     clearInterval(this.promise);
-  };
+  }
 
   update() {
     this.loading = true;
-    this.configurationsService.getConfigurationVersions(this.configuration.name).subscribe((data) => {
-      for (const configs of data) {
-        if (configs.active) {
-          configs.actived = true;
+    this.configurationsService
+      .getConfigurationVersions(this.configuration.name)
+      .subscribe((data) => {
+        for (const configs of data) {
+          if (configs.active) {
+            configs.actived = true;
+          }
         }
-      }
 
-      this.versions = data;
-      this.loading = false;
-    });
-  };
+        this.versions = data;
+        this.loading = false;
+      });
+  }
 
   download(config: Configuration) {
-    window.open(this.appService.getServerPath() + "iaf/api/configurations/" + config.name + "/versions/" + encodeURIComponent(config.version!) + "/download");
-  };
+    window.open(
+      this.appService.getServerPath() +
+        'iaf/api/configurations/' +
+        config.name +
+        '/versions/' +
+        encodeURIComponent(config.version!) +
+        '/download',
+    );
+  }
 
   deleteConfig(config: Configuration) {
-    var message = "";
+    var message = '';
 
-    if (config.version) {
-      message = "Are you sure you want to remove version '" + config.version + "'?";
-    } else {
-      message = "Are you sure?";
-    };
+    message = config.version ? "Are you sure you want to remove version '" + config.version + "'?" : "Are you sure?";;
 
-    this.sweetalertService.Confirm({ title: message }).then(result => {
+    this.sweetalertService.Confirm({ title: message }).then((result) => {
       if (result.isConfirmed) {
-        this.configurationsService.deleteConfigurationVersion(config.name, encodeURIComponent(config.version!)).subscribe(() => {
-          this.toastService.success("Successfully removed version '" + config.version + "'");
-          this.update();
-        });
+        this.configurationsService
+          .deleteConfigurationVersion(
+            config.name,
+            encodeURIComponent(config.version!),
+          )
+          .subscribe(() => {
+            this.toastService.success(
+              "Successfully removed version '" + config.version + "'",
+            );
+            this.update();
+          });
       }
     });
-  };
+  }
 
   activate(config: Configuration) {
     for (const x in this.versions) {
       var configs = this.versions[x];
-      if (configs.version != config.version)
-        configs.actived = false;
+      if (configs.version != config.version) configs.actived = false;
     }
-    this.configurationsService.updateConfigurationVersion( config.name, encodeURIComponent(config.version!), { activate: config.active! }).subscribe({ next: () => {
-      this.toastService.success("Successfully changed startup config to version '" + config.version + "'");
-    }, error: () => {
-      this.update();
-    }});
-  };
+    this.configurationsService
+      .updateConfigurationVersion(
+        config.name,
+        encodeURIComponent(config.version!),
+        { activate: config.active! },
+      )
+      .subscribe({
+        next: () => {
+          this.toastService.success(
+            "Successfully changed startup config to version '" +
+              config.version +
+              "'",
+          );
+        },
+        error: () => {
+          this.update();
+        },
+      });
+  }
 
   scheduleReload(config: Configuration) {
-    this.configurationsService.updateConfigurationVersion( config.name, encodeURIComponent(config.version!), { autoreload: config.autoreload }).subscribe({ next: () => {
-      this.toastService.success("Successfully " + (config.autoreload ? "enabled" : "disabled") + " Auto Reload for version '" + config.version + "'");
-    }, error: () => {
-      this.update();
-    }});
-  };
+    this.configurationsService
+      .updateConfigurationVersion(
+        config.name,
+        encodeURIComponent(config.version!),
+        { autoreload: config.autoreload },
+      )
+      .subscribe({
+        next: () => {
+          this.toastService.success(
+            'Successfully ' +
+              (config.autoreload ? 'enabled' : 'disabled') +
+              " Auto Reload for version '" +
+              config.version +
+              "'",
+          );
+        },
+        error: () => {
+          this.update();
+        },
+      });
+  }
 }

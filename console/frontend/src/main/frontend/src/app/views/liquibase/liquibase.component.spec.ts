@@ -8,9 +8,8 @@ describe('LiquibaseComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LiquibaseComponent ]
-    })
-    .compileComponents();
+      declarations: [LiquibaseComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(LiquibaseComponent);
     component = fixture.componentInstance;

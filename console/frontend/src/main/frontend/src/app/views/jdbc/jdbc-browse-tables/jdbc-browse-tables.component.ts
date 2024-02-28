@@ -5,57 +5,64 @@ import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 interface ColumnName {
-  id: number
-  name: string
-  desc: string
+  id: number;
+  name: string;
+  desc: string;
 }
 
 @Component({
   selector: 'app-jdbc-browse-tables',
   templateUrl: './jdbc-browse-tables.component.html',
-  styleUrls: ['./jdbc-browse-tables.component.scss']
+  styleUrls: ['./jdbc-browse-tables.component.scss'],
 })
 export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   datasources: string[] = [];
   resultTypes: string[] = [];
-  error: string = "";
+  error: string = '';
   processingMessage: boolean = false;
   form: JdbcBrowseForm = {
-    datasource: "",
-    resultType: "",
-    table: "",
-    where: "",
-    order: "",
+    datasource: '',
+    resultType: '',
+    table: '',
+    where: '',
+    order: '',
     numberOfRowsOnly: false,
     minRow: 0,
-    maxRow: 0
+    maxRow: 0,
   };
   columnNames: ColumnName[] = [];
   result: string[][] = [];
-  query: string = "";
+  query: string = '';
 
   private _subscriptions = new Subscription();
   private appConstants: AppConstants;
 
   constructor(
     private appService: AppService,
-    private jdbcService: JdbcService
+    private jdbcService: JdbcService,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-    });
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(
+      () => {
+        this.appConstants = this.appService.APP_CONSTANTS;
+      },
+    );
     this._subscriptions.add(appConstantsSubscription);
-  };
+  }
 
   ngOnInit(): void {
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.form["datasource"] = this.appConstants['jdbc.datasource.default'];
-    });
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(
+      () => {
+        this.form['datasource'] = this.appConstants['jdbc.datasource.default'];
+      },
+    );
     this._subscriptions.add(appConstantsSubscription);
 
     this.jdbcService.getJdbc().subscribe((data) => {
-      this.form["datasource"] = (this.appConstants['jdbc.datasource.default'] != undefined) ? this.appConstants['jdbc.datasource.default'] : data.datasources[0];
+      this.form['datasource'] =
+        this.appConstants['jdbc.datasource.default'] == undefined
+          ? data.datasources[0]
+          : this.appConstants['jdbc.datasource.default'];
       this.datasources = data.datasources;
     });
   }
@@ -71,63 +78,66 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
     this.processingMessage = true;
 
     if (!formData || !formData.table) {
-      this.error = "Please specify a datasource and table name!";
+      this.error = 'Please specify a datasource and table name!';
       this.processingMessage = false;
       return;
     }
 
-    if (!formData.datasource) formData.datasource = this.datasources[0] || "";
-    if (!formData.resultType) formData.resultType = this.resultTypes[0] || "";
+    if (!formData.datasource) formData.datasource = this.datasources[0] || '';
+    if (!formData.resultType) formData.resultType = this.resultTypes[0] || '';
 
-    this.jdbcService.postJdbcBrowse(formData).subscribe({ next: returnData => {
-      this.error = "";
-      this.query = returnData.query;
-      let i = 0;
+    this.jdbcService.postJdbcBrowse(formData).subscribe({
+      next: (returnData) => {
+        this.error = '';
+        this.query = returnData.query;
+        let index = 0;
 
-      for (const x in returnData.fielddefinition) {
-        this.columnNames.push({
-          id: i++,
-          name: x,
-          desc: returnData.fielddefinition[x]
-        });
-        columnNameArray.push(x);
-      }
-
-      for (const x in returnData.result) {
-        const row = returnData.result[x];
-        const orderedRow: string[] = [];
-
-        for (const columnName in row) {
-          const index = columnNameArray.indexOf(columnName);
-          let value = row[columnName];
-
-          if (index === -1 && columnName.indexOf("LENGTH ") > -1) {
-            value += " (length)";
-            value = row[columnName.replace("LENGTH ", "")];
-          }
-          orderedRow[index] = value;
+        for (const x in returnData.fielddefinition) {
+          this.columnNames.push({
+            id: index++,
+            name: x,
+            desc: returnData.fielddefinition[x],
+          });
+          columnNameArray.push(x);
         }
-        this.result.push(orderedRow);
-      }
 
-      this.processingMessage = false;
-    }, error: (errorData: HttpErrorResponse) => {
-      const error = errorData.error ? errorData.error.error : "";
-      this.error = typeof error === 'object' ? error.error : error;
-      this.query = "";
-      this.processingMessage = false;
-    }}); // TODO no intercept
+        for (const x in returnData.result) {
+          const row = returnData.result[x];
+          const orderedRow: string[] = [];
+
+          for (const columnName in row) {
+            const index = columnNameArray.indexOf(columnName);
+            let value = row[columnName];
+
+            if (index === -1 && columnName.includes('LENGTH ')) {
+              value += ' (length)';
+              value = row[columnName.replace('LENGTH ', '')];
+            }
+            orderedRow[index] = value;
+          }
+          this.result.push(orderedRow);
+        }
+
+        this.processingMessage = false;
+      },
+      error: (errorData: HttpErrorResponse) => {
+        const error = errorData.error ? errorData.error.error : '';
+        this.error = typeof error === 'object' ? error.error : error;
+        this.query = '';
+        this.processingMessage = false;
+      },
+    }); // TODO no intercept
   }
 
   reset() {
-    this.query = "";
-    this.error = "";
+    this.query = '';
+    this.error = '';
     if (!this.form) return;
-    if (this.form["table"]) this.form["table"] = "";
-    if (this.form["where"]) this.form["where"] = "";
-    if (this.form["order"]) this.form["order"] = "";
-    if (this.form["numberOfRowsOnly"]) this.form["numberOfRowsOnly"] = false;
-    if (this.form["minRow"]) this.form["minRow"] = 0;
-    if (this.form["maxRow"]) this.form["maxRow"] = 0;
+    if (this.form['table']) this.form['table'] = '';
+    if (this.form['where']) this.form['where'] = '';
+    if (this.form['order']) this.form['order'] = '';
+    if (this.form['numberOfRowsOnly']) this.form['numberOfRowsOnly'] = false;
+    if (this.form['minRow']) this.form['minRow'] = 0;
+    if (this.form['maxRow']) this.form['maxRow'] = 0;
   }
 }
