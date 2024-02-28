@@ -16,6 +16,7 @@
 package org.frankframework.management.bus.endpoints;
 
 import java.lang.reflect.Method;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.naming.NamingException;
+import javax.net.ssl.SSLContext;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
@@ -72,6 +74,7 @@ public class SecurityItems extends BusEndpointBase {
 		returnMap.put("sapSystems", addSapSystems());
 		returnMap.put("authEntries", addAuthEntries());
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
+		returnMap.put("protocols", getSupportedProtocols());
 
 		return new JsonResponseMessage(returnMap);
 	}
@@ -303,4 +306,12 @@ public class SecurityItems extends BusEndpointBase {
 
 		return authEntries;
 	}
+
+	private String[] getSupportedProtocols() {
+        try {
+            return SSLContext.getDefault().getSupportedSSLParameters().getProtocols();
+        } catch (NoSuchAlgorithmException e) {
+            return new String[0];
+        }
+    }
 }
