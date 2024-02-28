@@ -44,7 +44,6 @@ import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.Semaphore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -634,7 +633,7 @@ public class JdbcTableListenerTest {
 			}
 		}
 		try(Connection connection = env.getConnection()) {
-			String status = DbmsUtil.executeStringQuery(connection, "SELECT TINT FROM " + TEST_TABLE + " WHERE TKEY=10");
+			String status = JdbcTestUtil.executeStringQuery(connection, "SELECT TINT FROM " + TEST_TABLE + " WHERE TKEY=10");
 			assertEquals("1", status, "status should be returned to available, to be able to try again");
 		}
 	}

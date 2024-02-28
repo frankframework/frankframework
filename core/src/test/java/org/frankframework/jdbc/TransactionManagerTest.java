@@ -8,7 +8,6 @@ import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.frankframework.util.DbmsUtil;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
@@ -22,7 +21,7 @@ public class TransactionManagerTest {
 	private void checkNumberOfLines(DatabaseTestEnvironment env, int expected, String query) throws Exception {
 		String preparedQuery = env.getDbmsSupport().prepareQueryTextForNonLockingRead(query);
 		try(Connection connection = env.getConnection()) {
-			int count = DbmsUtil.executeIntQuery(connection, preparedQuery);
+			int count = JdbcTestUtil.executeIntQuery(connection, preparedQuery);
 			assertEquals(expected, count, "number of lines in table");
 		}
 	}
