@@ -63,7 +63,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final String MSGLOG_KEYS = APP_CONSTANTS.getProperty("msg.log.keys");
-	static final String JMS_RR_FORCE_MESSAGE_KEY = "jms.rr.forceMessageIdAsCorrelationId.default";
+	static final String JMS_RR_FORCE_MESSAGE_KEY = "jms.esb.rr.forceMessageIdAsCorrelationId.default";
 	private final String messageIdAsCorrelationIdRR = APP_CONSTANTS.getString(JMS_RR_FORCE_MESSAGE_KEY, null);
 
 	private @Getter MessageProtocol messageProtocol = null;
