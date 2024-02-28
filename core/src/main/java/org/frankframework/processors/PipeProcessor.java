@@ -16,6 +16,7 @@
 package org.frankframework.processors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
@@ -30,7 +31,7 @@ import org.frankframework.stream.Message;
  */
 public interface PipeProcessor {
 
-	PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException;
-	PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException;
+	PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException;
+	PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException;
 
 }
