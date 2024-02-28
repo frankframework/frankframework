@@ -47,10 +47,10 @@ import org.frankframework.stream.Message;
 import org.frankframework.testtool.FileListener;
 import org.frankframework.testtool.FileSender;
 import org.frankframework.testtool.HttpServletResponseMock;
+import org.frankframework.testtool.LarvaTool;
 import org.frankframework.testtool.ListenerMessage;
 import org.frankframework.testtool.ListenerMessageHandler;
 import org.frankframework.testtool.SenderThread;
-import org.frankframework.testtool.TestTool;
 import org.frankframework.testtool.XsltProviderListener;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StringUtil;
@@ -305,7 +305,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		if(get() instanceof FileSender) {
 			FileSender fileSender = (FileSender)get();
 			fileSender.sendMessage(fileContent);
-			return TestTool.RESULT_OK;
+			return LarvaTool.RESULT_OK;
 		}
 		if (get() instanceof DelaySender) {
 			DelaySender delaySender = (DelaySender) get();
@@ -315,12 +315,12 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			} catch (IOException e) {
 				log.warn("Could not close senderResult for queue {}", get(), e);
 			}
-			return TestTool.RESULT_OK;
+			return LarvaTool.RESULT_OK;
 		}
 		if(get() instanceof XsltProviderListener) {
 			XsltProviderListener xsltProviderListener = (XsltProviderListener)get();
 			xsltProviderListener.processRequest(fileContent, parameters);
-			return TestTool.RESULT_OK;
+			return LarvaTool.RESULT_OK;
 		}
 		if(get() instanceof ISender) {
 			ISender sender = (ISender)get();
@@ -330,7 +330,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			senderThread.start();
 			put(SENDER_THREAD_KEY, senderThread);
 			setSenderThread(senderThread); // 'put' and 'set' do something similar
-			return TestTool.RESULT_OK;
+			return LarvaTool.RESULT_OK;
 		}
 		if(get() instanceof IListener<?>) {
 			ListenerMessageHandler listenerMessageHandler = getMessageHandler();
@@ -344,7 +344,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			}
 			ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
 			listenerMessageHandler.putResponseMessage(listenerMessage);
-			return TestTool.RESULT_OK;
+			return LarvaTool.RESULT_OK;
 		}
 		throw new SenderException("Could not perform executeWrite() for queue ["+get()+"]");
 	}

@@ -67,7 +67,7 @@ public class FileSender implements IConfigurable {
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException("Could not find scenario root directory", e);
 		}
-		String absPath = TestTool.getAbsolutePath(scenarioDirectory, filename);
+		String absPath = LarvaTool.getAbsolutePath(scenarioDirectory, filename);
 		file = new File(absPath);
 	}
 

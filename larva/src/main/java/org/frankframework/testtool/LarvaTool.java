@@ -102,12 +102,12 @@ import jakarta.json.JsonException;
 /**
  * @author Jaco de Groot
  */
-public class TestTool {
-	private static final Logger logger = LogUtil.getLogger(TestTool.class);
+public class LarvaTool {
+	private static final Logger logger = LogUtil.getLogger(LarvaTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
-	public static final Message TESTTOOL_DUMMY_MESSAGE = new Message("<TestTool>Dummy message</TestTool>");
+	public static final Message TESTTOOL_DUMMY_MESSAGE = new Message("<LarvaTool>Dummy message</LarvaTool>");
 	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND = -1;
-	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
+	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<LarvaTool>Clean up reply</LarvaTool>";
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
 	public static final int RESULT_AUTOSAVED = 2;
@@ -158,8 +158,8 @@ public class TestTool {
 			}
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-		TestTool testTool = new TestTool();
-		testTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
+		LarvaTool larvaTool = new LarvaTool();
+		larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
@@ -263,7 +263,7 @@ public class TestTool {
 				long startTime = System.currentTimeMillis();
 				debugMessage("Execute scenario('s)");
 				ScenarioRunner scenarioRunner = new ScenarioRunner();
-				scenarioRunner.setTestTool(this);
+				scenarioRunner.setLarvaTool(this);
 				scenarioRunner.runScenario(ibisContext, config, scenarioFiles, currentScenariosRootDirectory, appConstants, evenStep, waitBeforeCleanUp, logLevel);
 				config.flushWriters();
 				scenariosFailed = scenarioRunner.getScenariosFailed();
@@ -1001,7 +1001,7 @@ public class TestTool {
 			return null;
 		}
 		Map<Object, Object> collected = properties.entrySet().stream()
-				.map(TestTool::rewriteClassName)
+				.map(LarvaTool::rewriteClassName)
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 		Properties result = new Properties();
 		result.putAll(collected);

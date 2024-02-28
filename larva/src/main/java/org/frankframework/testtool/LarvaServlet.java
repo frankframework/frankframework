@@ -140,7 +140,7 @@ public class LarvaServlet extends HttpServletBase {
 
 		String realPath = getServletContext().getRealPath("/jsp/"); //Points to a folder in the webapp project
 
-		TestTool.runScenarios(getServletContext(), req, writer, realPath);
+		LarvaTool.runScenarios(getServletContext(), req, writer, realPath);
 		writer.append("</body></html>");
 		resp.flushBuffer();
 	}
@@ -171,7 +171,7 @@ public class LarvaServlet extends HttpServletBase {
 				writer.append("<p>Comparing actual result with expected result...</p>");
 				writer.flush();
 				try {
-					new TestTool().windiff(getServletContext(), request, request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
+					new LarvaTool().windiff(getServletContext(), request, request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
 				} catch (SenderException e) {
 					log.warn("unable to execute windiff command", e);
 					resp.sendError(500, "unable to save file");
@@ -182,7 +182,7 @@ public class LarvaServlet extends HttpServletBase {
 			} else {
 				writer.append("<p>Overwriting expected result with actual result...</p>");
 				writer.flush();
-				TestTool.writeFile(request.getParameter("expectedFileName"), request.getParameter("resultBox"));
+				LarvaTool.writeFile(request.getParameter("expectedFileName"), request.getParameter("resultBox"));
 			}
 			writer.append("<p>Done!</p>");
 			writer.append("<script>window.close();</script>");
