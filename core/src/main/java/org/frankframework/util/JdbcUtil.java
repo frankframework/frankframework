@@ -32,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -544,6 +545,36 @@ public class JdbcUtil {
 		}
 	}
 
+	public static SQLType mapParameterTypeToSqlType(IDbmsSupport dbmsSupport, ParameterType parameterType) {
+		switch (parameterType) {
+			case DATE:
+				return JDBCType.DATE;
+			case TIMESTAMP:
+			case DATETIME:
+			case XMLDATETIME:
+				return JDBCType.TIMESTAMP;
+			case TIME:
+				return JDBCType.TIME;
+			case NUMBER:
+				return JDBCType.NUMERIC;
+			case INTEGER:
+				return JDBCType.INTEGER;
+			case BOOLEAN:
+				return JDBCType.BOOLEAN;
+			case STRING:
+				return JDBCType.VARCHAR;
+			case CHARACTER:
+				return JDBCType.CLOB;
+			case BINARY:
+				return JDBCType.BLOB;
+			case LIST:
+				// Type 'LIST' is used for REF_CURSOR type OUTPUT parameters of stored procedures.
+				return dbmsSupport.getCursorSqlType();
+			default:
+				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
+		}
+	}
+
 	private static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired, PipeLineSession session) throws SQLException, IOException {
 		String paramName = pv.getDefinition().getName();
 		ParameterType paramType = pv.getDefinition().getType();
@@ -666,6 +697,23 @@ public class JdbcUtil {
 			}
 		} catch (DateTimeParseException | IllegalArgumentException e) { // thrown by parseAnyDate in case DATE and TIMESTAMP
 			throw new SQLException("Could not convert [" + value + "] for parameter [" + parameterIndex + "]", e);
+		}
+	}
+
+	public static boolean isSQLTypeNumeric(int sqlType) {
+		switch (sqlType) {
+			case Types.INTEGER:
+			case Types.NUMERIC:
+			case Types.DOUBLE:
+			case Types.BIGINT:
+			case Types.DECIMAL:
+			case Types.FLOAT:
+			case Types.REAL:
+			case Types.SMALLINT:
+			case Types.TINYINT:
+				return true;
+			default:
+				return false;
 		}
 	}
 
