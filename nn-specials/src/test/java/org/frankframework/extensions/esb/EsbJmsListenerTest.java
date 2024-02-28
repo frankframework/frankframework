@@ -18,6 +18,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListenerConnector;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
+import org.frankframework.util.AppConstants;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,6 +89,17 @@ class EsbJmsListenerTest {
 		jmsListener.configure();
 
 		assertFalse(jmsListener.getForceMessageIdAsCorrelationId());
+	}
+
+	@Test
+	void testConfigureWithRRProtocol_DefaultSetForceMessageIdAsCorrelationId() throws Exception {
+		AppConstants.getInstance().put(EsbJmsListener.JMS_RR_FORCE_MESSAGE_KEY, "false");
+		setUp(); // Reset the listener to re-read the AppConstants
+		jmsListener.setMessageProtocol(EsbJmsListener.MessageProtocol.RR);
+		jmsListener.configure();
+
+		assertFalse(jmsListener.getForceMessageIdAsCorrelationId());
+		AppConstants.getInstance().remove(EsbJmsListener.JMS_RR_FORCE_MESSAGE_KEY);
 	}
 
 	@Test
