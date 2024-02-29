@@ -90,8 +90,8 @@ export class FeedbackModalComponent implements OnInit {
     $(`.rating i.rating${index}`).addClass('fa-star');
   }
   private resetRating(): void {
-    $('.rating i').each((index, e) => {
-      $(e).addClass('fa-star-o').removeClass('fa-star');
+    $('.rating i').each((index, element) => {
+      $(element).addClass('fa-star-o').removeClass('fa-star');
     });
   }
 }

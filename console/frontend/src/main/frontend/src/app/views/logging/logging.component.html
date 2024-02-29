@@ -55,9 +55,9 @@
             <table class="table table-striped">
               <thead>
                 <tr>
-                  <th sortable="name" (onSort)="onSort($event)">Name</th>
-                  <th sortable="size" (onSort)="onSort($event)">Size</th>
-                  <th sortable="lastModified" (onSort)="onSort($event)">
+                  <th sortable="name" (sorted)="onSort($event)">Name</th>
+                  <th sortable="size" (sorted)="onSort($event)">Size</th>
+                  <th sortable="lastModified" (sorted)="onSort($event)">
                     Date
                   </th>
                   <th>&nbsp;</th>

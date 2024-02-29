@@ -2,6 +2,7 @@ import {
   Directive,
   ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   OnInit,
   Output,
@@ -44,14 +45,11 @@ export function basicTableSort<T extends Record<string, string | number>>(
 
 @Directive({
   selector: 'th[sortable]',
-  host: {
-    '(click)': 'nextSort()',
-  },
 })
 export class ThSortableDirective implements OnInit {
   @Input() sortable: string = '';
   @Input() direction: SortDirection = null;
-  @Output() onSort = new EventEmitter<SortEvent>();
+  @Output() sorted = new EventEmitter<SortEvent>();
 
   private nextSortOption(sortOption: SortDirection): SortDirection {
     switch (sortOption) {
@@ -94,8 +92,8 @@ export class ThSortableDirective implements OnInit {
     this.updateIcon(this.direction);
   }
 
-  nextSort(): void {
+  @HostListener('click') nextSort(): void {
     this.updateDirection(this.nextSortOption(this.direction));
-    this.onSort.emit({ column: this.sortable, direction: this.direction });
+    this.sorted.emit({ column: this.sortable, direction: this.direction });
   }
 }

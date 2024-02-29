@@ -14,7 +14,7 @@ import {
 })
 export class InputFileUploadComponent {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-  @Output() onUpdateFile = new EventEmitter<File | null>();
+  @Output() fileUpdated = new EventEmitter<File | null>();
   @Input() accept?: string;
   @Input() title?: string;
 
@@ -26,10 +26,10 @@ export class InputFileUploadComponent {
 
   handleFile(files: FileList | null): void {
     if (!files || files.length === 0) {
-      this.onUpdateFile.emit(null);
+      this.fileUpdated.emit(null);
       return;
     }
-    this.onUpdateFile.emit(files[0]); //Can only parse 1 file!
+    this.fileUpdated.emit(files[0]); //Can only parse 1 file!
   }
 
   reset(): void {

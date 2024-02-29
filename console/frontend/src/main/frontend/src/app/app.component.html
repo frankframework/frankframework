@@ -3,8 +3,8 @@
 <div id="wrapper" *ngIf="!isLoginView; else loginWrapper">
   <!-- Navigation -->
   <app-pages-navigation
-    (onOpenInfo)="openInfoModel()"
-    (onOpenFeedback)="sendFeedback()"
+    (shouldOpenInfo)="openInfoModel()"
+    (shouldOpenFeedback)="sendFeedback()"
     [queryParams]="routeQueryParams"
   ></app-pages-navigation>
 
@@ -15,7 +15,7 @@
     <!-- Page wrapper -->
     <app-pages-topnavbar
       class="topnavbar"
-      (onOpenFeedback)="sendFeedback($event)"
+      (shouldOpenFeedback)="sendFeedback($event)"
       [serverTime]="serverTime"
       [dtapSide]="dtapSide"
       [dtapStage]="dtapStage"

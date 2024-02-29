@@ -46,7 +46,7 @@
               >
               <div class="col-sm-5">
                 <app-input-file-upload
-                  (onUpdateFile)="file = $event"
+                  (fileUpdated)="file = $event"
                   accept=".zip,.xml"
                   title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files."
                 />

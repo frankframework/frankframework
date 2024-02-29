@@ -23,7 +23,7 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy {
   @Input() serverTime: string = '';
   @Input() loggedin: boolean = false;
   @Input() userName?: string;
-  @Output() onOpenFeedback = new EventEmitter<number>();
+  @Output() shouldOpenFeedback = new EventEmitter<number>();
 
   private _subscriptions = new Subscription();
 
@@ -42,7 +42,7 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy {
   }
 
   openFeedback(rating: number): void {
-    this.onOpenFeedback.emit(rating);
+    this.shouldOpenFeedback.emit(rating);
   }
 
   hoverFeedback(rating: number): void {

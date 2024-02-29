@@ -8,17 +8,17 @@ import { Router, convertToParamMap } from '@angular/router';
 })
 export class PagesNavigationComponent {
   @Input() queryParams = convertToParamMap({});
-  @Output() onOpenInfo = new EventEmitter<void>();
-  @Output() onOpenFeedback = new EventEmitter<void>();
+  @Output() shouldOpenInfo = new EventEmitter<void>();
+  @Output() shouldOpenFeedback = new EventEmitter<void>();
 
   constructor(private router: Router) {}
 
   openInfo(): void {
-    this.onOpenInfo.emit();
+    this.shouldOpenInfo.emit();
   }
 
   openFeedback(): void {
-    this.onOpenFeedback.emit();
+    this.shouldOpenFeedback.emit();
   }
 
   getClassByRoute(
