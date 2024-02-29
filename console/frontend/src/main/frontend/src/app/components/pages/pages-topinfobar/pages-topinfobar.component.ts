@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { Subscription, filter, map } from 'rxjs';
+import { Subscription, filter } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
 @Component({
@@ -20,10 +20,10 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
     private appService: AppService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.router.events
-      .pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe((e) => {
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
         const childRoute = this.route.children.pop()!;
         this.breadcrumbs = childRoute.snapshot.data['breadcrumbs'] ?? 'Error';
       });
@@ -38,7 +38,7 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
     this._subscriptions.add(customBreadcrumbsSubscription);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 }

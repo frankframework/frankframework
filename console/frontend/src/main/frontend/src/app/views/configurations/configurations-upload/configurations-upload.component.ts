@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { JdbcService } from '../../jdbc/jdbc.service';
@@ -47,13 +47,17 @@ export class ConfigurationsUploadComponent implements OnInit {
     this.appConstants = this.appService.APP_CONSTANTS;
     this.appService.appConstants$.subscribe(() => {
       this.appConstants = this.appService.APP_CONSTANTS;
-      this.form.datasource = this.appConstants['jdbc.datasource.default'];
+      this.form.datasource = this.appConstants[
+        'jdbc.datasource.default'
+      ] as string;
     });
   }
 
   ngOnInit(): void {
     this.appService.appConstants$.subscribe(() => {
-      this.form.datasource = this.appConstants['jdbc.datasource.default'];
+      this.form.datasource = this.appConstants[
+        'jdbc.datasource.default'
+      ] as string;
     });
 
     this.jdbcService.getJdbc().subscribe((data) => {
@@ -61,21 +65,21 @@ export class ConfigurationsUploadComponent implements OnInit {
       this.form.datasource =
         this.appConstants['jdbc.datasource.default'] == undefined
           ? data.datasources[0]
-          : this.appConstants['jdbc.datasource.default'];
+          : (this.appConstants['jdbc.datasource.default'] as string);
     });
   }
 
-  updateFile(file: File | null) {
+  updateFile(file: File | null): void {
     this.file = file;
   }
 
-  submit() {
+  submit(): void {
     if (this.file == null) {
       this.error = 'Please upload a file';
       return;
     }
 
-    var fd = new FormData();
+    const fd = new FormData();
     if (this.form.datasource && this.form.datasource != '')
       fd.append('datasource', this.form.datasource);
     else fd.append('datasource', this.datasources[0]);
@@ -84,7 +88,7 @@ export class ConfigurationsUploadComponent implements OnInit {
     fd.append('multiple_configs', this.form.multiple_configs.toString());
     fd.append('activate_config', this.form.activate_config.toString());
     fd.append('automatic_reload', this.form.automatic_reload.toString());
-    fd.append('file', this.file as any, this.file.name);
+    fd.append('file', this.file as unknown as Blob, this.file.name);
 
     this.configurationsService.postConfiguration(fd).subscribe({
       next: (data) => {
@@ -93,15 +97,9 @@ export class ConfigurationsUploadComponent implements OnInit {
 
         for (const pair in data) {
           if (data[pair] == 'loaded') {
-            this.result +=
-              'Successfully uploaded configuration [' + pair + ']<br/>';
+            this.result += `Successfully uploaded configuration [${pair}]<br/>`;
           } else {
-            this.error +=
-              'Could not upload configuration from the file [' +
-              pair +
-              ']: ' +
-              data[pair] +
-              '<br/>';
+            this.error += `Could not upload configuration from the file [${pair}]: ${data[pair]}<br/>`;
           }
         }
 
@@ -120,14 +118,16 @@ export class ConfigurationsUploadComponent implements OnInit {
         }
       },
       error: (errorData: HttpErrorResponse) => {
-        var error = errorData.error ? errorData.error.error : errorData.message;
+        const error = errorData.error
+          ? errorData.error.error
+          : errorData.message;
         this.error = error;
         this.result = '';
       },
     }); // TODO no intercept
   }
 
-  reset() {
+  reset(): void {
     this.result = '';
     this.error = '';
     this.form = {

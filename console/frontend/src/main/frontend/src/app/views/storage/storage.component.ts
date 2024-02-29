@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { StorageService } from './storage.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ActivatedRoute, ActivationEnd, Router } from '@angular/router';
-import { filter, merge } from 'rxjs';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-storage',
@@ -17,7 +17,7 @@ export class StorageComponent implements OnInit {
     private storageService: StorageService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.firstChild?.paramMap.subscribe((parameters) => {
       const adapterName = parameters.get('adapter'),
         configuration = parameters.get('configuration'),
@@ -67,9 +67,9 @@ export class StorageComponent implements OnInit {
     this.router.events
       .pipe(
         filter(
-          (e) =>
-            e instanceof ActivationEnd &&
-            e.snapshot.paramMap.has('processState'),
+          (event) =>
+            event instanceof ActivationEnd &&
+            event.snapshot.paramMap.has('processState'),
         ),
       )
       .subscribe(() => {

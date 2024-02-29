@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
@@ -46,12 +46,14 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(
       () => {
-        this.form['datasource'] = this.appConstants['jdbc.datasource.default'];
+        this.form['datasource'] = this.appConstants[
+          'jdbc.datasource.default'
+        ] as string;
       },
     );
     this._subscriptions.add(appConstantsSubscription);
 
-    var executeQueryCookie = this.webStorageService.get('executeQuery');
+    const executeQueryCookie = this.webStorageService.get('executeQuery');
 
     this.jdbcService.getJdbc().subscribe((data) => {
       Object.assign(this, data);
@@ -59,7 +61,7 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
       this.form['datasource'] =
         this.appConstants['jdbc.datasource.default'] == undefined
           ? data.datasources[0]
-          : this.appConstants['jdbc.datasource.default'];
+          : (this.appConstants['jdbc.datasource.default'] as string);
       this.form['queryType'] = data.queryTypes[0];
       this.form['resultType'] = data.resultTypes[0];
 
@@ -75,11 +77,11 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  submit(formData: JdbcQueryForm) {
+  submit(formData: JdbcQueryForm): void {
     this.processingMessage = true;
 
     if (!formData || !formData.query) {
@@ -114,7 +116,7 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     }); // TODO no intercept
   }
 
-  reset() {
+  reset(): void {
     this.form['query'] = '';
     this.result = '';
     this.form['datasource'] = this.datasources[0];

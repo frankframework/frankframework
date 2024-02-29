@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService, Configuration } from 'src/app/app.service';
 
 @Injectable({
@@ -14,10 +15,10 @@ export class ConfigurationsService {
   getConfiguration(
     selectedConfiguration: string,
     loadedConfiguration: boolean,
-  ) {
+  ): Observable<string> {
     let uri = 'configurations';
 
-    if (selectedConfiguration != 'All') uri += '/' + selectedConfiguration;
+    if (selectedConfiguration != 'All') uri += `/${selectedConfiguration}`;
     if (loadedConfiguration) uri += '?loadedConfiguration=true';
 
     return this.http.get(this.appService.absoluteApiPath + uri, {
@@ -25,24 +26,23 @@ export class ConfigurationsService {
     });
   }
 
-  getConfigurations() {
+  getConfigurations(): Observable<Configuration[]> {
     return this.http.get<Configuration[]>(
-      this.appService.absoluteApiPath + 'server/configurations',
+      `${this.appService.absoluteApiPath}server/configurations`,
     );
   }
 
-  getConfigurationVersions(configurationName: string) {
+  getConfigurationVersions(
+    configurationName: string,
+  ): Observable<Configuration[]> {
     return this.http.get<Configuration[]>(
-      this.appService.absoluteApiPath +
-        'configurations/' +
-        configurationName +
-        '/versions',
+      `${this.appService.absoluteApiPath}configurations/${configurationName}/versions`,
     );
   }
 
-  postConfiguration(data: FormData) {
+  postConfiguration(data: FormData): Observable<Record<string, string>> {
     return this.http.post<Record<string, string>>(
-      this.appService.absoluteApiPath + 'configurations',
+      `${this.appService.absoluteApiPath}configurations`,
       data,
     );
   }
@@ -50,14 +50,10 @@ export class ConfigurationsService {
   updateConfigurationVersion(
     configurationName: string,
     configurationVersion: string,
-    configuration: Record<string, any>,
-  ) {
+    configuration: Record<string, NonNullable<unknown>>,
+  ): Observable<object> {
     return this.http.put(
-      this.appService.absoluteApiPath +
-        'configurations/' +
-        configurationName +
-        '/versions/' +
-        configurationVersion,
+      `${this.appService.absoluteApiPath}configurations/${configurationName}/versions/${configurationVersion}`,
       configuration,
     );
   }
@@ -65,13 +61,9 @@ export class ConfigurationsService {
   deleteConfigurationVersion(
     configurationName: string,
     configurationVersion: string,
-  ) {
+  ): Observable<object> {
     return this.http.delete(
-      this.appService.absoluteApiPath +
-        'configurations/' +
-        configurationName +
-        '/versions/' +
-        configurationVersion,
+      `${this.appService.absoluteApiPath}configurations/${configurationName}/versions/${configurationVersion}`,
     );
   }
 }

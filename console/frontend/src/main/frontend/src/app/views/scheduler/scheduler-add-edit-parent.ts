@@ -25,7 +25,7 @@ export class SchedulerAddEditParent {
   configurations: Configuration[] = [];
   adapters: Record<string, Adapter> = {};
 
-  reset() {
+  reset(): void {
     this.form = {
       name: '',
       group: '',
@@ -40,11 +40,11 @@ export class SchedulerAddEditParent {
     };
   }
 
-  addLocalAlert(type: string, message: string) {
+  addLocalAlert(type: string, message: string): void {
     this.state.push({ type: type, message: message });
   }
 
-  clearLocalAlerts() {
+  clearLocalAlerts(): void {
     this.state = [];
   }
 }

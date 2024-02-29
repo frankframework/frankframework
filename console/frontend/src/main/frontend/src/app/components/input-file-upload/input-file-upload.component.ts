@@ -3,7 +3,6 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -21,11 +20,11 @@ export class InputFileUploadComponent {
 
   constructor() {}
 
-  onFilesChange() {
+  onFilesChange(): void {
     this.handleFile(this.fileInput.nativeElement.files);
   }
 
-  handleFile(files: FileList | null) {
+  handleFile(files: FileList | null): void {
     if (!files || files.length === 0) {
       this.onUpdateFile.emit(null);
       return;
@@ -33,7 +32,7 @@ export class InputFileUploadComponent {
     this.onUpdateFile.emit(files[0]); //Can only parse 1 file!
   }
 
-  reset() {
+  reset(): void {
     this.fileInput.nativeElement.value = '';
   }
 }

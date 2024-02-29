@@ -8,7 +8,7 @@ import { PartialMessage, StorageService } from '../../storage.service';
 })
 export class StorageListDtComponent {
   @Input() message!: PartialMessage;
-  @Input() userData!: any;
+  @Input() userData!: unknown;
 
   constructor(public storageService: StorageService) {}
 }

@@ -9,7 +9,13 @@ import { ToastService, ToastType } from 'src/app/services/toast.service';
 export class ToastsContainerComponent {
   constructor(public toastService: ToastService) {}
 
-  getClassByType(type: ToastType) {
+  getClassByType(
+    type: ToastType,
+  ):
+    | 'toast-error text-light'
+    | 'toast-success text-light'
+    | 'toast-warning'
+    | 'toast-info' {
     switch (type) {
       case 'error': {
         return 'toast-error text-light';
@@ -20,7 +26,7 @@ export class ToastsContainerComponent {
       case 'warning': {
         return 'toast-warning';
       }
-      case 'info':
+      // case 'info':
       default: {
         return 'toast-info';
       }

@@ -49,11 +49,11 @@ export class JmsSendMessageComponent implements OnInit {
     });
   }
 
-  submit(formData: Form) {
+  submit(formData: Form): void {
     this.processing = true;
     if (!formData) return;
 
-    var fd = new FormData();
+    const fd = new FormData();
     if (formData.connectionFactory && formData.connectionFactory != '')
       fd.append('connectionFactory', formData.connectionFactory);
     else fd.append('connectionFactory', this.connectionFactories[0]);
@@ -78,20 +78,21 @@ export class JmsSendMessageComponent implements OnInit {
     )
       fd.append(
         'property',
-        formData.propertyKey + ',' + formData.propertyValue,
+        `${formData.propertyKey},${formData.propertyValue}`,
       );
     if (formData.message && formData.message != '') {
-      var encoding =
+      const encoding =
         formData.encoding && formData.encoding != ''
-          ? ';charset=' + formData.encoding
+          ? `;charset=${formData.encoding}`
           : '';
       fd.append(
         'message',
-        new Blob([formData.message], { type: 'text/plain' + encoding }),
+        new Blob([formData.message], { type: `text/plain${encoding}` }),
         'message',
       );
     }
-    if (this.file) fd.append('file', this.file as any, this.file['name']);
+    if (this.file)
+      fd.append('file', this.file as unknown as Blob, this.file['name']);
     if (formData.encoding && formData.encoding != '')
       fd.append('encoding', formData.encoding);
 
@@ -102,7 +103,7 @@ export class JmsSendMessageComponent implements OnInit {
     }
 
     this.jmsService.postJmsMessage(fd).subscribe({
-      next: (returnData) => {
+      next: () => {
         this.error = '';
         this.processing = false;
       },
@@ -116,7 +117,7 @@ export class JmsSendMessageComponent implements OnInit {
     });
   }
 
-  reset() {
+  reset(): void {
     this.error = '';
     if (!this.form) return;
     if (this.form['destination']) this.form['destination'] = '';

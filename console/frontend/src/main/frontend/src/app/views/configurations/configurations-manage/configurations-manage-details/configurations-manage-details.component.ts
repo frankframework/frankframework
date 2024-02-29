@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
-import { MiscService } from 'src/app/services/misc.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -40,11 +39,12 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     this.configuration = routeState['configuration'];
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       const nameParameter = params.get('name');
-      if (nameParameter && nameParameter != "")
-        this.appService.customBreadcrumbs("Configurations > Manage > " + nameParameter);
+      if (nameParameter && nameParameter != '')
+        this.appService.customBreadcrumbs(
+          `Configurations > Manage > ${nameParameter}`,
         );
       else this.router.navigate(['..'], { relativeTo: this.route });
 
@@ -56,11 +56,11 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     clearInterval(this.promise);
   }
 
-  update() {
+  update(): void {
     this.loading = true;
     this.configurationsService
       .getConfigurationVersions(this.configuration.name)
@@ -76,21 +76,20 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
-  download(config: Configuration) {
+  download(config: Configuration): void {
     window.open(
-      this.appService.getServerPath() +
-        'iaf/api/configurations/' +
-        config.name +
-        '/versions/' +
-        encodeURIComponent(config.version!) +
-        '/download',
+      `${this.appService.getServerPath()}iaf/api/configurations/${
+        config.name
+      }/versions/${encodeURIComponent(config.version!)}/download`,
     );
   }
 
-  deleteConfig(config: Configuration) {
-    var message = '';
+  deleteConfig(config: Configuration): void {
+    let message = '';
 
-    message = config.version ? "Are you sure you want to remove version '" + config.version + "'?" : "Are you sure?";;
+    message = config.version
+      ? `Are you sure you want to remove version '${config.version}'?`
+      : 'Are you sure?';
 
     this.sweetalertService.Confirm({ title: message }).then((result) => {
       if (result.isConfirmed) {
@@ -101,7 +100,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
           )
           .subscribe(() => {
             this.toastService.success(
-              "Successfully removed version '" + config.version + "'",
+              `Successfully removed version '${config.version}'`,
             );
             this.update();
           });
@@ -109,9 +108,9 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  activate(config: Configuration) {
+  activate(config: Configuration): void {
     for (const x in this.versions) {
-      var configs = this.versions[x];
+      const configs = this.versions[x];
       if (configs.version != config.version) configs.actived = false;
     }
     this.configurationsService
@@ -123,9 +122,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.toastService.success(
-            "Successfully changed startup config to version '" +
-              config.version +
-              "'",
+            `Successfully changed startup config to version '${config.version}'`,
           );
         },
         error: () => {
@@ -134,21 +131,19 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
-  scheduleReload(config: Configuration) {
+  scheduleReload(config: Configuration): void {
     this.configurationsService
       .updateConfigurationVersion(
         config.name,
         encodeURIComponent(config.version!),
-        { autoreload: config.autoreload },
+        { autoreload: config.autoreload! },
       )
       .subscribe({
         next: () => {
           this.toastService.success(
-            'Successfully ' +
-              (config.autoreload ? 'enabled' : 'disabled') +
-              " Auto Reload for version '" +
-              config.version +
-              "'",
+            `Successfully ${
+              config.autoreload ? 'enabled' : 'disabled'
+            } Auto Reload for version '${config.version}'`,
           );
         },
         error: () => {

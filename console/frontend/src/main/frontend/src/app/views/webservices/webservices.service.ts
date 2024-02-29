@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
 export interface Service {
@@ -36,9 +37,9 @@ export class WebservicesService {
     private appService: AppService,
   ) {}
 
-  getWebservices() {
+  getWebservices(): Observable<WebServices> {
     return this.http.get<WebServices>(
-      this.appService.absoluteApiPath + 'webservices',
+      `${this.appService.absoluteApiPath}webservices`,
     );
   }
 }

@@ -8,7 +8,14 @@ import {
 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { Observable, Subscription, filter, first } from 'rxjs';
-import { Adapter, AppConstants, AppService, ServerInfo } from './app.service';
+import {
+  Adapter,
+  AdapterMessage,
+  AppConstants,
+  AppService,
+  MessageLog,
+  ServerInfo,
+} from './app.service';
 import {
   ActivatedRoute,
   Data,
@@ -21,7 +28,7 @@ import {
 } from '@angular/router';
 import { ViewportScroller, formatDate } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-// @ts-ignore pace-js does not have types
+// @ts-expect-error pace-js does not have types
 import * as Pace from 'pace-js';
 import { NotificationService } from './services/notification.service';
 import { MiscService } from './services/misc.service';
@@ -80,7 +87,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.appConstants = this.appService.APP_CONSTANTS;
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     Pace.start({
       ajax: false,
     });
@@ -88,34 +95,41 @@ export class AppComponent implements OnInit, OnDestroy {
     this.urlHash$ = this.route.fragment;
     this.router.events
       .pipe(
-        filter((e) => e instanceof NavigationStart && e.url.startsWith('/!')),
+        filter(
+          (event) =>
+            event instanceof NavigationStart && event.url.startsWith('/!'),
+        ),
         first(),
       )
-      .subscribe((e) => {
-        const event = e as any as NavigationStart;
-        this.router.navigateByUrl(event.url.replace('/!', ''));
+      .subscribe((event) => {
+        const navigationEvent = event as NavigationStart;
+        this.router.navigateByUrl(navigationEvent.url.replace('/!', ''));
       });
 
     this.router.events
-      .pipe(filter((e) => e instanceof NavigationSkipped))
+      .pipe(filter((event) => event instanceof NavigationSkipped))
       .subscribe(() => {
         const childRoute = this.route.children.at(-1);
-        this.routeQueryParams = childRoute.snapshot.queryParamMap;
-        this.routeData = childRoute.snapshot.data;
+        if (childRoute) {
+          this.routeQueryParams = childRoute.snapshot.queryParamMap;
+          this.routeData = childRoute.snapshot.data;
+        }
       });
 
     this.router.events
-      .pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe((e) => {
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
         const childRoute = this.route.children.at(-1);
-        this.routeQueryParams = childRoute.snapshot.queryParamMap;
-        this.routeData = childRoute.snapshot.data;
-        if (this.router.url === '/login') {
-          this.isLoginView = true;
-          this.renderer.addClass(document.body, 'gray-bg');
-        } else {
-          this.isLoginView = false;
-          this.renderer.removeClass(document.body, 'gray-bg');
+        if (childRoute) {
+          this.routeQueryParams = childRoute.snapshot.queryParamMap;
+          this.routeData = childRoute.snapshot.data;
+          if (this.router.url === '/login') {
+            this.isLoginView = true;
+            this.renderer.addClass(document.body, 'gray-bg');
+          } else {
+            this.isLoginView = false;
+            this.renderer.removeClass(document.body, 'gray-bg');
+          }
         }
       });
 
@@ -132,11 +146,13 @@ export class AppComponent implements OnInit, OnDestroy {
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
       this.pollerService
         .getAll()
-        .changeInterval(this.appConstants['console.idle.pollerInterval']);
+        .changeInterval(
+          this.appConstants['console.idle.pollerInterval'] as number,
+        );
 
-      let idleTimeout =
-        Number.parseInt(this.appConstants['console.idle.timeout']) > 0
-          ? Number.parseInt(this.appConstants['console.idle.timeout'])
+      const idleTimeout =
+        Number.parseInt(this.appConstants['console.idle.timeout'] as string) > 0
+          ? Number.parseInt(this.appConstants['console.idle.timeout'] as string)
           : false;
       if (!idleTimeout) return;
 
@@ -155,8 +171,8 @@ export class AppComponent implements OnInit, OnDestroy {
         let seconds = Math.round(timeRemaining % 60);
         if (minutes < 10) minutes = +'0' + minutes;
         if (seconds < 10) seconds = +'0' + seconds;
-        let elm = $('.swal2-container').find('.idleTimer');
-        elm.text(minutes + ':' + seconds);
+        const elm = $('.swal2-container').find('.idleTimer');
+        elm.text(`${minutes}:${seconds}`);
       },
     );
     this._subscriptions.add(idleWarnSubscription);
@@ -172,21 +188,21 @@ export class AppComponent implements OnInit, OnDestroy {
     this._subscriptions.add(idleTimeoutSubscription);
 
     const idleEndSubscription = this.idle.onIdleEnd.subscribe(() => {
-      let elm = $('.swal2-container').find('.swal2-close');
+      const elm = $('.swal2-container').find('.swal2-close');
       elm.click();
 
       this.pollerService
         .getAll()
-        .changeInterval(this.appConstants['console.pollerInterval']);
+        .changeInterval(this.appConstants['console.pollerInterval'] as number);
     });
     this._subscriptions.add(idleEndSubscription);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  initializeFrankConsole() {
+  initializeFrankConsole(): void {
     if (this.appConstants['init'] === -1) {
       this.appConstants['init'] = 0;
       this.debugService.log('Initializing Frank!Console');
@@ -222,21 +238,24 @@ export class AppComponent implements OnInit, OnDestroy {
           // appService.userName = data["userName"];
           this.userName = data['userName'];
 
-          let serverTime = Date.parse(new Date(data.serverTime).toUTCString());
-          let localTime = Date.parse(new Date().toUTCString());
+          const serverTime = Date.parse(
+            new Date(data.serverTime).toUTCString(),
+          );
+          const localTime = Date.parse(new Date().toUTCString());
           this.appConstants['timeOffset'] = serverTime - localTime;
           // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
           this.appConstants['timezoneOffset'] = 0;
           //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
 
-          const updateTime = () => {
+          const updateTime = (): void => {
             const serverDate = new Date();
             serverDate.setTime(
-              serverDate.getTime() - this.appConstants['timeOffset'],
+              serverDate.getTime() -
+                (this.appConstants['timeOffset'] as number),
             );
             this.serverTime = formatDate(
               serverDate,
-              this.appConstants['console.dateFormat'],
+              this.appConstants['console.dateFormat'] as string,
               this.locale,
             );
           };
@@ -245,13 +264,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
           this.appService.updateInstanceName(data.instance.name);
           $('.iaf-info').html(
-            data.framework.name +
-              ' ' +
-              data.framework.version +
-              ': ' +
-              data.instance.name +
-              ' ' +
-              data.instance.version,
+            `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`,
           );
           this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
@@ -283,14 +296,21 @@ export class AppComponent implements OnInit, OnDestroy {
             data['Application Constants']['All'],
           ); //make FF!Application Constants default
 
-          let idleTime =
-            Number.parseInt(this.appConstants['console.idle.time']) > 0
-              ? Number.parseInt(this.appConstants['console.idle.time'])
+          const idleTime =
+            Number.parseInt(this.appConstants['console.idle.time'] as string) >
+            0
+              ? Number.parseInt(
+                  this.appConstants['console.idle.time'] as string,
+                )
               : 0;
           if (idleTime > 0) {
-            let idleTimeout =
-              Number.parseInt(this.appConstants['console.idle.timeout']) > 0
-                ? Number.parseInt(this.appConstants['console.idle.timeout'])
+            const idleTimeout =
+              Number.parseInt(
+                this.appConstants['console.idle.timeout'] as string,
+              ) > 0
+                ? Number.parseInt(
+                    this.appConstants['console.idle.timeout'] as string,
+                  )
                 : 0;
             this.idle.setIdle(idleTime);
             this.idle.setTimeout(idleTimeout);
@@ -305,11 +325,11 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     }
 
-    let token = sessionStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     this.loggedin = token != null && token != 'null' ? true : false;
   }
 
-  checkIafVersions() {
+  checkIafVersions(): void {
     /* Check FF version */
     console.log('Checking FF version with remote...');
     this.appService
@@ -324,15 +344,13 @@ export class AppComponent implements OnInit, OnDestroy {
           release.tag_name.slice(0, 1) == 'v'
             ? release.tag_name.slice(1)
             : release.tag_name;
-        const currentVersion = this.appConstants['application.version'];
+        const currentVersion = this.appConstants[
+          'application.version'
+        ] as string;
         const version =
           this.miscService.compare_version(newVersion, currentVersion) || 0;
         console.log(
-          "Comparing version: '" +
-            currentVersion +
-            "' with latest release: '" +
-            newVersion +
-            "'.",
+          `Comparing version: '${currentVersion}' with latest release: '${newVersion}'.`,
         );
         this.sessionService.remove('IAF-Release');
 
@@ -350,36 +368,42 @@ export class AppComponent implements OnInit, OnDestroy {
       });
   }
 
-  initializeWarnings() {
+  initializeWarnings(): void {
     this.pollerService.add(
       'server/warnings',
-      (configurations) => {
+      (data) => {
+        const configurations = data as Record<string, MessageLog>;
         this.appService.updateAlerts([]); //Clear all old alerts
 
-        configurations['All'] = { messages: configurations.messages };
-        delete configurations.messages;
+        configurations['All'] = {
+          messages: configurations['messages'] as unknown as AdapterMessage[],
+          errorStoreCount: configurations[
+            'totalErrorStoreCount'
+          ] as unknown as number,
+          messageLevel: 'ERROR',
+        };
+        delete configurations['messages'];
+        delete configurations['totalErrorStoreCount'];
 
-        configurations['All'].errorStoreCount =
-          configurations.totalErrorStoreCount;
-        delete configurations.totalErrorStoreCount;
-
-        for (let x in configurations.warnings) {
-          this.appService.addWarning('', configurations.warnings[x]);
+        for (const warning of configurations[
+          'warnings'
+        ] as unknown as string[]) {
+          this.appService.addWarning('', warning);
         }
 
         for (const index in configurations) {
-          let configuration = configurations[index];
+          const configuration = configurations[index];
           if (configuration.exception)
             this.appService.addException(index, configuration.exception);
           if (configuration.warnings) {
-            for (const x in configuration.warnings) {
-              this.appService.addWarning(index, configuration.warnings[x]);
+            for (const warning of configuration.warnings) {
+              this.appService.addWarning(index, warning);
             }
           }
 
           configuration.messageLevel = 'INFO';
           for (const x in configuration.messages) {
-            let level = configuration.messages[x].level;
+            const level = configuration.messages[x].level;
             if (level == 'WARN' && configuration.messageLevel != 'ERROR')
               configuration.messageLevel = 'WARN';
             if (level == 'ERROR') configuration.messageLevel = 'ERROR';
@@ -398,19 +422,19 @@ export class AppComponent implements OnInit, OnDestroy {
       60_000,
     );
 
-    let raw_adapter_data: Record<string, string> = {};
-    let pollerCallback = (allAdapters: Record<string, Adapter>) => {
+    const raw_adapter_data: Record<string, string> = {};
+    const pollerCallback = (allAdapters: Record<string, Adapter>): void => {
       for (const index in raw_adapter_data) {
         //Check if any old adapters should be removed
         if (!allAdapters[index]) {
           delete raw_adapter_data[index];
           delete this.appService.adapters[index];
-          this.debugService.log('removed adapter [' + index + ']');
+          this.debugService.log(`removed adapter [${index}]`);
         }
       }
       for (const adapterName in allAdapters) {
         //Add new adapter information
-        let adapter = allAdapters[adapterName];
+        const adapter = allAdapters[adapterName];
 
         if (raw_adapter_data[adapter.name] != JSON.stringify(adapter)) {
           raw_adapter_data[adapter.name] = JSON.stringify(adapter);
@@ -418,11 +442,11 @@ export class AppComponent implements OnInit, OnDestroy {
           adapter.status = 'started';
 
           for (const x in adapter.receivers) {
-            let adapterReceiver = adapter.receivers[+x];
+            const adapterReceiver = adapter.receivers[+x];
             if (adapterReceiver.state != 'started') adapter.status = 'warning';
 
             if (adapterReceiver.transactionalStores) {
-              let store = adapterReceiver.transactionalStores['ERROR'];
+              const store = adapterReceiver.transactionalStores['ERROR'];
               if (store && store.numberOfMessages > 0) {
                 adapter.status = 'warning';
               }
@@ -435,11 +459,11 @@ export class AppComponent implements OnInit, OnDestroy {
           adapter.sendersMessageLogCount = 0;
           adapter.senderTransactionalStorageMessageCount = 0;
           for (const x in adapter.pipes) {
-            let pipe = adapter.pipes[+x];
+            const pipe = adapter.pipes[+x];
             if (pipe.sender) {
               adapter.hasSender = true;
               if (pipe.hasMessageLog) {
-                let count = Number.parseInt(pipe.messageLogCount || '');
+                const count = Number.parseInt(pipe.messageLogCount || '');
                 if (!Number.isNaN(count)) {
                   if (pipe.isSenderTransactionalStorage) {
                     adapter.senderTransactionalStorageMessageCount += count;
@@ -486,8 +510,8 @@ export class AppComponent implements OnInit, OnDestroy {
     window.setTimeout(() => {
       this.pollerService.add(
         'adapters?expanded=all',
-        (data: Record<string, Adapter>) => {
-          pollerCallback(data);
+        (data: unknown) => {
+          pollerCallback(data as Record<string, Adapter>);
         },
         true,
       );
@@ -497,7 +521,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  scrollToAdapter() {
+  scrollToAdapter(): void {
     this.urlHash$.subscribe((hash) => {
       if (this.router.url.startsWith('/status') && hash && hash !== '') {
         /* let el = $("#" + hash);
@@ -509,17 +533,17 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateAdapterNotifications(adapter: Adapter) {
+  updateAdapterNotifications(adapter: Adapter): void {
     let name = adapter.name;
-    if (name.length > 20) name = name.slice(0, 17) + '...';
+    if (name.length > 20) name = `${name.slice(0, 17)}...`;
     if (adapter.started == true) {
       for (const x in adapter.receivers) {
         // TODO Receiver.started is not really a thing, maybe this should work differently?
-        // @ts-ignore
+        // @ts-expect-error Receiver.started does not exist
         if (adapter.receivers[+x].started == false) {
           this.notificationService.add(
             'fa-exclamation-circle',
-            "Receiver '" + name + "' stopped!",
+            `Receiver '${name}' stopped!`,
             false,
             () => {
               this.router.navigate(['status'], { fragment: adapter.name });
@@ -530,7 +554,7 @@ export class AppComponent implements OnInit, OnDestroy {
     } else {
       this.notificationService.add(
         'fa-exclamation-circle',
-        "Adapter '" + name + "' stopped!",
+        `Adapter '${name}' stopped!`,
         false,
         () => {
           this.router.navigate(['status'], { fragment: adapter.name });
@@ -539,15 +563,15 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  openInfoModel() {
+  openInfoModel(): void {
     this.modalService.open(InformationModalComponent /* { size: 'sm' } */);
   }
 
-  sendFeedback(rating?: number) {
+  sendFeedback(rating?: number): void {
     if (!this.appConstants['console.feedbackURL']) return;
 
-    $('.rating i').each(function (index, e) {
-      $(e).addClass('fa-star-o').removeClass('fa-star');
+    $('.rating i').each(function (index, element) {
+      $(element).addClass('fa-star-o').removeClass('fa-star');
     });
     const modalReference = this.modalService.open(FeedbackModalComponent);
     modalReference.componentInstance.rating = rating;

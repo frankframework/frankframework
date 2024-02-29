@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService, Configuration } from 'src/app/app.service';
 import { KeyValue } from '@angular/common';
@@ -31,18 +31,7 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
     this._subscriptions.add(appConstantsSubscription);
   }
 
-  ngOnInit() {
-    function convertPropertiesToArray(propertyList: Record<string, string>) {
-      var temporary: keyValueProperty[] = [];
-      for (var variableName in propertyList) {
-        temporary.push({
-          key: variableName,
-          value: propertyList[variableName],
-        });
-      }
-      return temporary;
-    }
-
+  ngOnInit(): void {
     this.configurations = this.appService.configurations;
     const configurationsSubscription =
       this.appService.configurations$.subscribe(() => {
@@ -51,9 +40,9 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
     this._subscriptions.add(configurationsSubscription);
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
-      var instanceName = null;
-      for (var configName in data['Application Constants']) {
-        this.appConstants[configName] = convertPropertiesToArray(
+      let instanceName = null;
+      for (const configName in data['Application Constants']) {
+        this.appConstants[configName] = this.convertPropertiesToArray(
           data['Application Constants'][configName],
         );
         if (instanceName == null) {
@@ -62,21 +51,34 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
         }
       }
       this.changeConfiguration('All');
-      this.environmentProperties = convertPropertiesToArray(
+      this.environmentProperties = this.convertPropertiesToArray(
         data['Environment Variables'],
       );
-      this.systemProperties = convertPropertiesToArray(
+      this.systemProperties = this.convertPropertiesToArray(
         data['System Properties'],
       );
     });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  changeConfiguration(name: string) {
+  changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
-    this.configProperties = this.appConstants[name];
+    this.configProperties = this.appConstants[name] as keyValueProperty[];
+  }
+
+  private convertPropertiesToArray(
+    propertyList: Record<string, string>,
+  ): keyValueProperty[] {
+    const temporary: keyValueProperty[] = [];
+    for (const variableName in propertyList) {
+      temporary.push({
+        key: variableName,
+        value: propertyList[variableName],
+      });
+    }
+    return temporary;
   }
 }

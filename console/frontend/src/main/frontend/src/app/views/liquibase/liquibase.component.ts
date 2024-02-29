@@ -32,45 +32,29 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const findFirstAvailabeConfiguration = () => {
-      this.configurations = this.appService.configurations;
-      this.filteredConfigurations = this.configurations.filter(
-        (item) => item.jdbcMigrator === true,
-      );
-
-      for (let index in this.filteredConfigurations) {
-        let configuration = this.configurations[index];
-
-        if (configuration.jdbcMigrator) {
-          this.form['configuration'] = configuration.name;
-          break;
-        }
-      }
-    };
-
     const configurationsSubscription =
       this.appService.configurations$.subscribe(() =>
-        findFirstAvailabeConfiguration(),
+        this.findFirstAvailabeConfiguration(),
       );
     this._subscriptions.add(configurationsSubscription);
-    findFirstAvailabeConfiguration();
+    this.findFirstAvailabeConfiguration();
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  download() {
-    window.open(this.appService.getServerPath() + 'iaf/api/jdbc/liquibase/');
+  download(): void {
+    window.open(`${this.appService.getServerPath()}iaf/api/jdbc/liquibase/`);
   }
 
-  submit(formData: Form) {
+  submit(formData: Form): void {
     if (!formData) formData = { configuration: '' };
-    var fd = new FormData();
+    const fd = new FormData();
     this.generateSql = true;
 
     if (this.file != null) {
-      fd.append('file', this.file as any);
+      fd.append('file', this.file as unknown as string);
     }
 
     fd.append('configuration', formData.configuration);
@@ -89,5 +73,21 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
         this.result = '';
       },
     }); // TODO no intercept
+  }
+
+  private findFirstAvailabeConfiguration(): void {
+    this.configurations = this.appService.configurations;
+    this.filteredConfigurations = this.configurations.filter(
+      (item) => item.jdbcMigrator === true,
+    );
+
+    for (const index in this.filteredConfigurations) {
+      const configuration = this.configurations[index];
+
+      if (configuration.jdbcMigrator) {
+        this.form['configuration'] = configuration.name;
+        break;
+      }
+    }
   }
 }

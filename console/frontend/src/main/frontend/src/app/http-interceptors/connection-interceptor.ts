@@ -22,9 +22,9 @@ export class ConnectionInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(
-    request: HttpRequest<any>,
+    request: HttpRequest<unknown>,
     next: HttpHandler,
-  ): Observable<HttpEvent<any>> {
+  ): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
       tap({
         error: (error: HttpErrorResponse) => {
@@ -36,7 +36,7 @@ export class ConnectionInterceptor implements HttpInterceptor {
                 fetch(error.url, { redirect: 'manual' }).then((res) => {
                   if (res.type === 'opaqueredirect') {
                     // if the request ended in a redirect that failed, then login
-                    const login_url = this.appService.getServerPath() + 'iaf/';
+                    const login_url = `${this.appService.getServerPath()}iaf/`;
                     this.router.navigate([login_url]);
                   }
                 });

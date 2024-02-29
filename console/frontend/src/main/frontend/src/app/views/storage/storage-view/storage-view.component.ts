@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Message, StorageService, PartialMessage } from '../storage.service';
+import {
+  Message,
+  StorageService,
+  PartialMessage,
+  Note,
+} from '../storage.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,10 +34,10 @@ export class StorageViewComponent implements OnInit {
 
   // service bindings
   storageParams = this.storageService.storageParams;
-  closeNote = (index: number) => {
+  closeNote = (index: number): void => {
     this.storageService.closeNote(index);
   };
-  downloadMessage = (messageId: string) => {
+  downloadMessage = (messageId: string): void => {
     this.storageService.downloadMessage(messageId);
   };
 
@@ -44,17 +49,17 @@ export class StorageViewComponent implements OnInit {
     private appService: AppService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.storageService.closeNotes();
 
     this.appService.customBreadcrumbs(
-      'Adapter > ' +
-        (this.storageParams['storageSource'] == 'pipes'
-          ? 'Pipes > ' + this.storageParams['storageSourceName'] + ' > '
-          : '') +
-        this.storageParams['processState'] +
-        ' List > View Message ' +
-        this.storageParams['messageId'],
+      `Adapter > ${
+        this.storageParams['storageSource'] == 'pipes'
+          ? `Pipes > ${this.storageParams['storageSourceName']} > `
+          : ''
+      }${this.storageParams['processState']} List > View Message ${
+        this.storageParams['messageId']
+      }`,
     );
     // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List > View Message " + this.$state.params["messageId"];
 
@@ -80,12 +85,12 @@ export class StorageViewComponent implements OnInit {
           if (errorData.status == 500) {
             this.SweetAlert.Warning(
               'An error occured while opening the message',
-              'message id [' + this.message.id + '] error [' + error + ']',
+              `message id [${this.message.id}] error [${error}]`,
             );
           } else {
             this.SweetAlert.Warning(
               'Message not found',
-              'message id [' + this.message.id + '] error [' + error + ']',
+              `message id [${this.message.id}] error [${error}]`,
             );
           }
           this.goBack();
@@ -93,25 +98,25 @@ export class StorageViewComponent implements OnInit {
       });
   }
 
-  getNotes() {
+  getNotes(): Note[] {
     return this.storageService.notes;
   }
 
-  resendMessage(message: PartialMessage) {
-    this.storageService.resendMessage(message, (messageId: string) => {
+  resendMessage(message: PartialMessage): void {
+    this.storageService.resendMessage(message, () => {
       //Go back to the storage list if successful
       this.goBack();
     });
   }
 
-  deleteMessage(message: PartialMessage) {
-    this.storageService.deleteMessage(message, (messageId: string) => {
+  deleteMessage(message: PartialMessage): void {
+    this.storageService.deleteMessage(message, () => {
       //Go back to the storage list if successful
       this.goBack();
     });
   }
 
-  goBack() {
+  goBack(): void {
     this.router.navigate(['../..'], { relativeTo: this.route });
   }
 }

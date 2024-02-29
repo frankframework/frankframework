@@ -36,7 +36,7 @@ export class FeedbackModalComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     window.setTimeout(() => {
       while (this.rating >= 0) {
         this.setRate(this.rating);
@@ -45,7 +45,7 @@ export class FeedbackModalComponent implements OnInit {
     }, 150);
   }
 
-  setRating(event: MouseEvent, index: number) {
+  setRating(event: MouseEvent, index: number): void {
     this.resetRating();
     this.form.rating = index;
     let index_ = index;
@@ -55,10 +55,12 @@ export class FeedbackModalComponent implements OnInit {
     }
   }
 
-  submit(form: FeedbackForm) {
+  submit(form: FeedbackForm): void {
     form.rating++;
     this.http
-      .post<{ result: string }>(this.appConstants['console.feedbackURL'], form)
+      .post<{
+        result: string;
+      }>(this.appConstants['console.feedbackURL'] as string, form)
       .subscribe({
         next: (response) => {
           if (response['result'] == 'ok')
@@ -79,15 +81,15 @@ export class FeedbackModalComponent implements OnInit {
     this.activeModal.close();
   }
 
-  close() {
+  close(): void {
     this.activeModal.close();
   }
 
-  private setRate(index: number) {
-    $('.rating i.rating' + index).removeClass('fa-star-o');
-    $('.rating i.rating' + index).addClass('fa-star');
+  private setRate(index: number): void {
+    $(`.rating i.rating${index}`).removeClass('fa-star-o');
+    $(`.rating i.rating${index}`).addClass('fa-star');
   }
-  private resetRating() {
+  private resetRating(): void {
     $('.rating i').each((index, e) => {
       $(e).addClass('fa-star-o').removeClass('fa-star');
     });

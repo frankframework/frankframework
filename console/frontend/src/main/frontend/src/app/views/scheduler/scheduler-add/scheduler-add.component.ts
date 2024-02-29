@@ -32,8 +32,8 @@ export class SchedulerAddComponent
     });
   }
 
-  submit() {
-    var fd = new FormData();
+  submit(): void {
+    const fd = new FormData();
     this.state = [];
 
     fd.append('name', this.form.name);
@@ -67,7 +67,9 @@ export class SchedulerAddComponent
         };
       },
       error: (errorData: HttpErrorResponse) => {
-        var error = errorData.error ? errorData.error.error : errorData.message;
+        const error = errorData.error
+          ? errorData.error.error
+          : errorData.message;
         this.addLocalAlert('warning', error);
       },
     }); //TODO no intercept

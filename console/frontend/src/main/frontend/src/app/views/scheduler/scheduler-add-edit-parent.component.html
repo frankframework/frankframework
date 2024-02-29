@@ -85,7 +85,7 @@
                   >
                     {{
                       adapter.name +
-                        (adapter.description != null
+                        (adapter.description !== null
                           ? ' - ' + adapter.description
                           : '') | truncate: 150
                     }}

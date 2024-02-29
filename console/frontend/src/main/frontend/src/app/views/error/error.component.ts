@@ -31,11 +31,11 @@ export class ErrorComponent implements OnInit {
     private appService: AppService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.checkState();
   }
 
-  cooldown(data: ServerError) {
+  cooldown(data: ServerError): void {
     this.cooldownCounter = 60;
 
     if (
@@ -47,7 +47,7 @@ export class ErrorComponent implements OnInit {
       this.appService.updateStartupError(data.error);
       this.stackTrace = data.stackTrace;
 
-      let interval = window.setInterval(() => {
+      const interval = window.setInterval(() => {
         this.cooldownCounter--;
         if (this.cooldownCounter < 1) {
           clearInterval(interval);
@@ -59,7 +59,7 @@ export class ErrorComponent implements OnInit {
     }
   }
 
-  checkState() {
+  checkState(): void {
     this.appService.getServerHealth().subscribe({
       next: () => {
         this.router.navigate(['/status']);

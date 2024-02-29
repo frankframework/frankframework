@@ -16,7 +16,7 @@ export class LogoutComponent implements OnInit {
     private router: Router,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.Poller.getAll().remove();
     this.idle.stop();
     this.authService.logout().subscribe({

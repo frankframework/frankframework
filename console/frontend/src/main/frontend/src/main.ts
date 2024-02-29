@@ -7,11 +7,21 @@ import 'prismjs/plugins/line-numbers/prism-line-numbers';
 import 'prismjs/plugins/line-highlight/prism-line-highlight';
 import 'prismjs/plugins/custom-class/prism-custom-class';
 
+declare global {
+  let ff_version: string;
+  let serverurl: string;
+  interface Window {
+    server: string;
+  }
+  // var jQuery: jQuery; already defined in @types/jquery (type import solves this for us?)
+  // var $: jQuery;
+}
+
 try {
   //Try and see if serverurl has been defined, if not try to deduct from local url;
   window.server = serverurl;
 } catch {
-  var path = window.location.pathname;
+  let path = window.location.pathname;
 
   if (path.includes('/iaf/gui'))
     path = path.slice(0, Math.max(0, path.indexOf('/iaf/gui') + 1));
@@ -20,16 +30,10 @@ try {
   window.server = path;
 }
 
-platformBrowserDynamic()
-  .bootstrapModule(AppModule)
-  .catch((error) => console.error(error));
-
-declare global {
-  var ff_version: string;
-  var serverurl: string;
-  var server: string;
-  // var jQuery: jQuery; already defined in @types/jquery (type import solves this for us?)
-  // var $: jQuery;
+function main(): void {
+  platformBrowserDynamic()
+    .bootstrapModule(AppModule)
+    .catch((error) => console.error(error));
 }
 
 if (location.hostname != 'localhost') {
@@ -40,6 +44,7 @@ if (location.hostname != 'localhost') {
 }
 
 console.time('startup');
+main();
 console.time('documentReady');
 
 /* Main.js */
@@ -48,16 +53,7 @@ $(document).ready(function () {
   console.log('Launching GUI!');
   $('.loading').css('display', '');
   // Full height of sidebar
-  function fix_height_function() {
-    var navbarHeight = $('nav.navbar-default').height()!;
-    var wrapperHeight = $('#page-wrapper').height()!;
-
-    if (navbarHeight <= wrapperHeight && $(window).height()! > navbarHeight) {
-      $('#page-wrapper').css('min-height', $(window).height() + 'px');
-    } else {
-      $('#page-wrapper').css('min-height', navbarHeight + 'px');
-    }
-  }
+  fix_height_function();
 
   $(window).on('resize scroll', function () {
     if (!$('body').hasClass('body-small')) {
@@ -70,34 +66,39 @@ $(document).ready(function () {
     }
   });
 
-  function fix_height(time?: number) {
+  function fix_height(time?: number): void {
     if (!time) time = 50;
     setTimeout(function () {
       fix_height_function();
     }, time);
   }
 
-  window.addEventListener('keydown', function (e) {
-    if (e.which == 70 && (e.ctrlKey || e.metaKey) && e.shiftKey) {
-      var searchbar = document.querySelector('#searchbar');
+  window.addEventListener('keydown', function (event) {
+    if (
+      event.key == 'F' &&
+      (event.ctrlKey || event.metaKey) &&
+      event.shiftKey
+    ) {
+      const searchbar = document.querySelector('#searchbar');
       if (searchbar) {
-        e.preventDefault();
+        event.preventDefault();
         searchbar.querySelectorAll('input')[0].focus();
       }
     }
   });
 });
 
-//Foist: To force upon or impose fraudulently or unjustifiably
-function foist(callback: () => void) {
-  // @ts-ignore
-  $(document.body).scope().foist(callback);
+function fix_height_function(): void {
+  const navbarHeight = $('nav.navbar-default').height()!;
+  const wrapperHeight = $('#page-wrapper').height()!;
+
+  if (navbarHeight <= wrapperHeight && $(window).height()! > navbarHeight) {
+    $('#page-wrapper').css('min-height', `${$(window).height()}px`);
+  } else {
+    $('#page-wrapper').css('min-height', `${navbarHeight}px`);
+  }
 }
-//Changes the log level to; 0 - error, 1 - warn, 2 - info, 3 - debug
-function setLogLevel(level: number) {
-  // @ts-ignore
-  $(document.body).scope().setLogLevel(level);
-}
+
 //Detect if using any (older) version of Internet Explorer
 if (
   navigator.userAgent.includes('MSIE') ||
@@ -106,6 +107,31 @@ if (
   $('body').prepend(
     "<h2 style='text-align: center; color: #fdc300;'><strong>Internet Explorer 11 and older do not support XHR requests, the Frank!Console might not load correctly!</strong><br/>Please open this website in MS Edge, Mozilla Firefox or Google Chrome.</h2>",
   );
+}
+
+// this stinks but blame prismjs for the bad support for how its handling / giving content
+function customClassFunction({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  language,
+  type,
+  content,
+}: {
+  language: string;
+  type: string;
+  content: string;
+}): string | void {
+  if (
+    type === 'tag' &&
+    content.endsWith('<span class="token punctuation">></span>') &&
+    content.includes('adapter')
+  ) {
+    const nameRegex =
+      /<span class="token attr-value"><span class="token punctuation attr-equals">=<\/span><span class="token punctuation">"<\/span>(?<value>[^<]+)<span class="token punctuation">"<\/span><\/span>/g.exec(
+        content,
+      );
+    if (nameRegex?.groups) return `adapter-tag ${nameRegex?.groups['value']}`;
+    return 'adapter-tag';
+  }
 }
 
 // Automatically minimalize menu when screen is less than 768px
@@ -119,7 +145,7 @@ $(function () {
   });
 
   $('body').on('scroll', function (this: JQuery<HTMLElement>) {
-    var scroll2top = $('.scroll-to-top').stop(true);
+    const scroll2top = $('.scroll-to-top').stop(true);
     if ($(this).scrollTop()! > 100) {
       if (Number.parseInt(scroll2top.css('opacity')) === 0) {
         scroll2top.animate({ opacity: 1, 'z-index': 10_000 }, 50, 'linear');
@@ -131,7 +157,7 @@ $(function () {
 
   Prism.hooks.add('after-highlight', function (environment) {
     // works only for <code> wrapped inside <pre data-line-numbers> (not inline)
-    var pre = environment.element.parentNode as HTMLElement;
+    const pre = environment.element.parentNode as HTMLElement;
     if (
       !pre ||
       !/pre/i.test(pre.nodeName) ||
@@ -140,43 +166,19 @@ $(function () {
       return;
     }
 
-    var linesNumber = environment.code.split('\n').length;
-    var lineNumbersWrapper;
+    const linesNumber = environment.code.split('\n').length;
 
-    let lines = new Array(linesNumber);
+    const lines = Array.from({ length: linesNumber });
     //See https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
     for (let index = 0; index < linesNumber; ++index)
-      lines[index] = '<span id="L' + (index + 1) + '"></span>';
+      lines[index] = `<span id="L${index + 1}"></span>`;
 
-    lineNumbersWrapper = document.createElement('span');
+    const lineNumbersWrapper = document.createElement('span');
     lineNumbersWrapper.className = 'line-numbers-rows';
     lineNumbersWrapper.innerHTML = lines.join('');
 
     environment.element.append(lineNumbersWrapper);
   });
 
-  // this stinks but blame prismjs for the bad support for how its handling / giving content
-  const customClassFunction = ({
-    language,
-    type,
-    content,
-  }: {
-    language: string;
-    type: string;
-    content: string;
-  }): any => {
-    if (
-      type === 'tag' &&
-      content.endsWith('<span class="token punctuation">></span>') &&
-      content.includes('adapter')
-    ) {
-      const nameRegex =
-        /<span class="token attr-value"><span class="token punctuation attr-equals">=<\/span><span class="token punctuation">"<\/span>(?<value>[^<]+)<span class="token punctuation">"<\/span><\/span>/g.exec(
-          content,
-        );
-      if (nameRegex?.groups) return `adapter-tag ${nameRegex?.groups['value']}`;
-      return 'adapter-tag';
-    }
-  };
   Prism.plugins['customClass'].add(customClassFunction);
 });

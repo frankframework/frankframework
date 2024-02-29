@@ -1,5 +1,5 @@
 import { HttpResponse } from '@angular/common/http';
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { Adapter, AppService } from 'src/app/app.service';
@@ -32,7 +32,7 @@ export class FlowComponent implements OnChanges {
     private modalService: NgbModal,
   ) {}
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(): void {
     if (this.adapter || this.configurationFlowDiagram) {
       const flowUrl = this.getflowUrl();
       this.flow = { isImage: false, url: flowUrl };
@@ -60,7 +60,7 @@ export class FlowComponent implements OnChanges {
     }
   }
 
-  openFlowModal(xhr?: HttpResponse<string>) {
+  openFlowModal(xhr?: HttpResponse<string>): void {
     this.flowModalLadda = true;
     const modalReference = this.modalService.open(FlowModalComponent, {
       windowClass: 'mermaidFlow',
@@ -73,7 +73,7 @@ export class FlowComponent implements OnChanges {
     }, 1000);
   }
 
-  private getflowUrl() {
+  private getflowUrl(): string {
     if (this.adapter) {
       return `${this.appService.getServerPath()}iaf/api/configurations/${this.adapter.configuration}/adapters/${this.Misc.escapeURL(this.adapter.name)}/flow?${this.adapter.upSince}`;
     }

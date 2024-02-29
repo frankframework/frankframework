@@ -34,12 +34,12 @@ export class LoggingManageComponent implements OnInit {
     private toastService: ToastService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.updateLogInformation();
     this.setForm();
   }
 
-  setForm() {
+  setForm(): void {
     this.loggingService.getLoggingSettings().subscribe((data) => {
       this.form = data;
       this.errorLevels = data.errorLevels;
@@ -47,24 +47,25 @@ export class LoggingManageComponent implements OnInit {
   }
 
   //Root logger level
-  changeRootLoglevel(level: (typeof this.errorLevels)[number]) {
+  changeRootLoglevel(level: (typeof this.errorLevels)[number]): void {
     this.form.loglevel = level;
   }
 
   //Individual level
-  changeLoglevel(logger: string, level: (typeof this.errorLevels)[number]) {
+  changeLoglevel(
+    logger: string,
+    level: (typeof this.errorLevels)[number],
+  ): void {
     this.loggingService
       .putLoggingSettingsChange({ logger: logger, level: level })
       .subscribe(() => {
-        this.toastService.success(
-          'Updated logger [' + logger + '] to [' + level + ']',
-        );
+        this.toastService.success(`Updated logger [${logger}] to [${level}]`);
         this.updateLogInformation();
       });
   }
 
   //Reconfigure Log4j2
-  reconfigure() {
+  reconfigure(): void {
     this.loggingService
       .putLoggingSettingsChange({ reconfigure: true })
       .subscribe(() => {
@@ -73,7 +74,7 @@ export class LoggingManageComponent implements OnInit {
       });
   }
 
-  submit(formData: typeof this.form) {
+  submit(formData: typeof this.form): void {
     this.updateDynamicParams = true;
     this.loggingService.putLoggingSettings(formData).subscribe({
       next: () => {
@@ -90,7 +91,7 @@ export class LoggingManageComponent implements OnInit {
     });
   }
 
-  updateLogInformation() {
+  updateLogInformation(): void {
     this.loggingService.getLoggingSettingsLogInformation().subscribe({
       next: (data) => {
         this.loggers = data.loggers;
@@ -104,7 +105,7 @@ export class LoggingManageComponent implements OnInit {
     });
   }
 
-  reset() {
+  reset(): void {
     this.setForm();
   }
 }

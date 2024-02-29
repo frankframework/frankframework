@@ -8,7 +8,7 @@ import { SidebarService } from '../sidebar.service';
 })
 export class MinimalizaSidebarComponent {
   constructor(private Sidebar: SidebarService) {}
-  toggleSidebar() {
+  toggleSidebar(): void {
     this.Sidebar.toggle();
   }
 }

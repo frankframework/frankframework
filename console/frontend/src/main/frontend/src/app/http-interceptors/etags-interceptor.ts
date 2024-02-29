@@ -15,9 +15,9 @@ export class EtagsInterceptor implements HttpInterceptor {
   constructor() {}
 
   intercept(
-    request: HttpRequest<any>,
+    request: HttpRequest<unknown>,
     next: HttpHandler,
-  ): Observable<HttpEvent<any>> {
+  ): Observable<HttpEvent<unknown>> {
     if (this.etags.hasOwnProperty(request.url)) {
       //If not explicitly disabled (httpOptions==false), check eTag
       const tag = this.etags[request.url];
@@ -31,8 +31,8 @@ export class EtagsInterceptor implements HttpInterceptor {
   }
 
   handleResponse(
-    handler: Observable<HttpEvent<any>>,
-  ): Observable<HttpEvent<any>> {
+    handler: Observable<HttpEvent<unknown>>,
+  ): Observable<HttpEvent<unknown>> {
     return handler.pipe(
       tap({
         next: (event) => {

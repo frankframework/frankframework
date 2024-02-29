@@ -57,13 +57,13 @@ export class ConfigurationsShowComponent implements OnInit {
     });
   }
 
-  update(loaded: boolean) {
+  update(loaded: boolean): void {
     this.loadedConfiguration = loaded;
     this.anchor = '';
     this.getConfiguration();
   }
 
-  changeConfiguration(name: string) {
+  changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
     this.selectedAdapter = undefined;
     this.router.navigate([], { relativeTo: this.route, fragment: '' });
@@ -71,7 +71,7 @@ export class ConfigurationsShowComponent implements OnInit {
     this.getConfiguration();
   }
 
-  updateQueryParams() {
+  updateQueryParams(): void {
     const transitionObject: TransitionObject = {};
     if (this.selectedConfiguration != 'All')
       transitionObject.name = this.selectedConfiguration;
@@ -88,13 +88,13 @@ export class ConfigurationsShowComponent implements OnInit {
     });
   }
 
-  clipboard() {
+  clipboard(): void {
     if (this.configuration) {
       this.appService.copyToClipboard(this.configuration);
     }
   }
 
-  getConfiguration() {
+  getConfiguration(): void {
     this.updateQueryParams();
 
     this.configurationsService

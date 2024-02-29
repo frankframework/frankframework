@@ -27,7 +27,7 @@ export class SchedulerEditComponent
     super();
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.configurations = this.appService.configurations;
     this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
@@ -65,8 +65,8 @@ export class SchedulerEditComponent
     });
   }
 
-  submit() {
-    var fd = new FormData();
+  submit(): void {
+    const fd = new FormData();
     this.state = [];
 
     fd.append('name', this.form.name);
@@ -86,11 +86,13 @@ export class SchedulerEditComponent
     if (this.form.lockkey) fd.append('lockkey', this.form.lockkey);
 
     this.schedulerService.putJob(this.groupName, this.jobName, fd).subscribe({
-      next: (data) => {
+      next: () => {
         this.addLocalAlert('success', 'Successfully edited schedule!');
       },
       error: (errorData: HttpErrorResponse) => {
-        var error = errorData.error ? errorData.error.error : errorData.message;
+        const error = errorData.error
+          ? errorData.error.error
+          : errorData.message;
         this.addLocalAlert('warning', error);
       },
     }); // TODO no intercept

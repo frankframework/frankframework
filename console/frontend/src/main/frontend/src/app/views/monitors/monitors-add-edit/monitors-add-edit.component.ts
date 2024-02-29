@@ -48,7 +48,7 @@ export class MonitorsAddEditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.appService.loading$.subscribe((_) => (this.loading = false));
+    this.appService.loading$.subscribe(() => (this.loading = false));
     this.route.title.subscribe((title) => {
       this.pageTitle = title ?? '';
     });
@@ -77,7 +77,7 @@ export class MonitorsAddEditComponent implements OnInit {
                 this.calculateEventSources();
 
                 if (data.trigger && data.trigger.sources) {
-                  let sources = { ...data.trigger.sources };
+                  const sources = { ...data.trigger.sources };
                   this.trigger.changedSources = [];
                   this.trigger.adapters = [];
 
@@ -85,7 +85,7 @@ export class MonitorsAddEditComponent implements OnInit {
                     if (data.trigger.filter == 'SOURCE') {
                       for (const index in sources[adapter]) {
                         this.trigger.changedSources.push(
-                          adapter + '$$' + sources[adapter][index],
+                          `${adapter}$$${sources[adapter][index]}`,
                         );
                       }
                     } else {
@@ -103,19 +103,19 @@ export class MonitorsAddEditComponent implements OnInit {
       });
   }
 
-  navigateBack() {
+  navigateBack(): void {
     this.router.navigate(['monitors'], {
       queryParams: { configuration: this.selectedConfiguration },
     });
   }
 
-  getAdaptersForEvents(events: string[]) {
+  getAdaptersForEvents(events: string[]): string[] {
     if (!events) return [];
     let adapters: string[] = [];
 
     for (const item in this.events) {
       if (events.includes(item)) {
-        let sourceList = this.events[item].sources;
+        const sourceList = this.events[item].sources;
         adapters = [...adapters, ...Object.keys(sourceList)];
       }
     }
@@ -123,10 +123,10 @@ export class MonitorsAddEditComponent implements OnInit {
     return [...new Set(adapters)];
   }
 
-  calculateEventSources() {
+  calculateEventSources(): void {
     for (const eventCode in this.events) {
-      let returnValue: EventSource[] = [];
-      let eventSources = this.events[eventCode].sources;
+      const returnValue: EventSource[] = [];
+      const eventSources = this.events[eventCode].sources;
 
       for (const adapter in eventSources) {
         for (const index in eventSources[adapter]) {
@@ -138,7 +138,7 @@ export class MonitorsAddEditComponent implements OnInit {
     }
   }
 
-  getSourceForEvents(events: string[]) {
+  getSourceForEvents(events: string[]): EventSource[] {
     let returnValue: EventSource[] = [];
 
     for (const eventCode of events) {
@@ -148,18 +148,18 @@ export class MonitorsAddEditComponent implements OnInit {
     return returnValue;
   }
 
-  submit(trigger: Trigger) {
+  submit(trigger: Trigger): void {
     if (trigger.filter == 'ADAPTER') {
       delete trigger.sources;
     } else if (trigger.filter == 'SOURCE') {
       delete trigger.adapters;
-      let sources = trigger.changedSources;
+      const sources = trigger.changedSources;
       trigger.sources = {};
 
       for (const item of sources) {
-        let s = item.split('$$');
-        let adapter = s[0];
-        let source = s[1];
+        const s = item.split('$$');
+        // const adapter = s[0];
+        const source = s[1];
         if (!trigger.sources[item]) trigger.sources[item] = [];
         trigger.sources[item] = [source];
       }

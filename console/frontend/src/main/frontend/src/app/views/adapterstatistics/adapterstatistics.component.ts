@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
@@ -110,7 +110,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     this._subscriptions.add(appConstantsSubscription);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     const routeParameters = this.route.snapshot.paramMap;
     this.adapterName = routeParameters.get('name');
     this.configuration = routeParameters.get('configuration');
@@ -134,24 +134,25 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  refresh() {
+  refresh(): void {
     this.refreshing = true;
     this.statisticsService
       .getStatistics(this.configuration!, this.adapterName!)
       .subscribe((data) => {
         this.stats = data;
 
-        let labels: string[] = [];
-        let chartData: number[] = [];
+        const labels: string[] = [];
+        const chartData: number[] = [];
         for (const index in data['hourly']) {
           let hour = data['hourly'][index];
           labels.push(hour['time']);
           if (this.appConstants['timezoneOffset'] != 0) {
-            const offsetInHours = this.appConstants['timezoneOffset'] / 60;
+            const offsetInHours =
+              (this.appConstants['timezoneOffset'] as number) / 60;
             const offsetIndex = +index + offsetInHours;
             const wrapCutoff = 24;
             const wrappedOffsetIndex =
@@ -176,21 +177,24 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       });
   }
 
-  populateBoundaries() {
-    let timeBoundaries: string[] =
-      this.appConstants['Statistics.boundaries'].split(',');
-    let sizeBoundaries: string[] =
-      this.appConstants['Statistics.size.boundaries'].split(',');
-    let percBoundaries: string[] =
-      this.appConstants['Statistics.percentiles'].split(',');
+  populateBoundaries(): void {
+    const timeBoundaries: string[] = (
+      this.appConstants['Statistics.boundaries'] as string
+    ).split(',');
+    const sizeBoundaries: string[] = (
+      this.appConstants['Statistics.size.boundaries'] as string
+    ).split(',');
+    const percBoundaries: string[] = (
+      this.appConstants['Statistics.percentiles'] as string
+    ).split(',');
 
-    let publishPercentiles =
+    const publishPercentiles =
       this.appConstants['Statistics.percentiles.publish'] == 'true';
-    let publishHistograms =
+    const publishHistograms =
       this.appConstants['Statistics.histograms.publish'] == 'true';
-    let calculatePercentiles =
+    const calculatePercentiles =
       this.appConstants['Statistics.percentiles.internal'] == 'true';
-    let displayPercentiles =
+    const displayPercentiles =
       publishPercentiles || publishHistograms || calculatePercentiles;
 
     this.Debug.info(
@@ -204,16 +208,16 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     const statisticsSizeBoundariesAdditive: Record<string, string> = {};
 
     for (const index in timeBoundaries) {
-      let index_ = timeBoundaries[index];
-      statisticsTimeBoundariesAdditive[index_ + 'ms'] = '< ' + index_ + 'ms';
+      const index_ = timeBoundaries[index];
+      statisticsTimeBoundariesAdditive[`${index_}ms`] = `< ${index_}ms`;
     }
     for (const index in sizeBoundaries) {
-      let index_ = sizeBoundaries[index];
-      statisticsSizeBoundariesAdditive[index_ + 'B'] = '< ' + index_ + 'B';
+      const index_ = sizeBoundaries[index];
+      statisticsSizeBoundariesAdditive[`${index_}B`] = `< ${index_}B`;
     }
     if (displayPercentiles) {
       for (const index in percBoundaries) {
-        let index_ = 'p' + percBoundaries[index];
+        const index_ = `p${percBoundaries[index]}`;
         statisticsTimeBoundariesAdditive[index_] = index_;
         statisticsSizeBoundariesAdditive[index_] = index_;
       }

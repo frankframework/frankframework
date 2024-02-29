@@ -1,11 +1,4 @@
-import {
-  Directive,
-  ElementRef,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-} from '@angular/core';
+import { Directive, ElementRef, Input, OnChanges, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as Prism from 'prismjs';
 
@@ -23,10 +16,10 @@ export class FormatCodeDirective implements OnInit, OnChanges {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private elementReference: ElementRef<HTMLElement>,
+    private elementRef: ElementRef<HTMLElement>,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.element.classList.add('line-numbers');
     this.element.classList.add('language-markup');
     this.element.append(this.code);
@@ -36,7 +29,7 @@ export class FormatCodeDirective implements OnInit, OnChanges {
     );
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(): void {
     if (this.text && this.text != '' /*  && this.initHash !== '' */) {
       $(this.code).text(this.text);
       Prism.highlightElement(this.code);
@@ -53,16 +46,16 @@ export class FormatCodeDirective implements OnInit, OnChanges {
     }
   }
 
-  scrollToLine() {
-    let element = $('#' + this.initHash);
+  scrollToLine(): void {
+    const element = $(`#${this.initHash}`);
     if (element) {
       element.addClass('line-selected');
-      let lineNumber = Math.max(
+      const lineNumber = Math.max(
         0,
         Number.parseInt(this.initHash.slice(1)) - 15,
       );
       setTimeout(() => {
-        let lineElement = $('#L' + lineNumber)[0];
+        const lineElement = $(`#L${lineNumber}`)[0];
         if (lineElement) {
           lineElement.scrollIntoView();
         }
@@ -70,7 +63,7 @@ export class FormatCodeDirective implements OnInit, OnChanges {
     }
   }
 
-  scrollToAdapter() {
+  scrollToAdapter(): void {
     const element = document.querySelector(`.adapter-tag.${this.initAdapter}`);
     setTimeout(() => {
       element?.scrollIntoView();
@@ -78,14 +71,14 @@ export class FormatCodeDirective implements OnInit, OnChanges {
     }, 500);
   }
 
-  addOnClickEvent(root: HTMLElement) {
-    let spanElements = $(root)
+  addOnClickEvent(root: HTMLElement): void {
+    const spanElements = $(root)
       .children('span.line-numbers-rows')
       .children('span');
     spanElements.on('click', (event) => {
-      let target = $(event.target);
+      const target = $(event.target);
       target.parent().children('.line-selected').removeClass('line-selected');
-      let anchor = target.attr('id');
+      const anchor = target.attr('id');
       target.addClass('line-selected');
       this.router.navigate([], {
         relativeTo: this.route,

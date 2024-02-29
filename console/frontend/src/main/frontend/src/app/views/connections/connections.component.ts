@@ -43,27 +43,28 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
         { data: 'destination' },
         { data: 'direction' },
       ],
-      ajax: (data: Record<any, any>, callback, settings) => {
+      ajax: (data, callback): void => {
         this.http
-          .get<Connections>(this.appService.absoluteApiPath + 'connections')
+          .get<Connections>(`${this.appService.absoluteApiPath}connections`)
           .subscribe((response) => {
             callback({
               ...response,
-              draw: data['draw'],
+              draw: (data as Record<string, unknown>)['draw'],
               recordsTotal: response.data.length,
               recordsFiltered: response.data.length,
             });
           });
       },
-      initComplete: () => {
+      initComplete: (): undefined => {
         this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
           dtInstance.columns([2, 4]).every(function () {
+            // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
             const column = this;
 
-            var select = $('<select><option value=""></option></select>')
+            const select = $('<select><option value=""></option></select>')
               .appendTo($(column.header()))
               .on('change', function (event) {
-                var input = event.target as HTMLInputElement;
+                const input = event.target as HTMLInputElement;
                 if (column.search() !== input['value']) {
                   column.search(input['value']).draw();
                 }
@@ -73,8 +74,8 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
               .data()
               .unique()
               .sort()
-              .each(function (d, index) {
-                select.append('<option value="' + d + '">' + d + '</option>');
+              .each(function (d) {
+                select.append(`<option value="${d}">${d}</option>`);
               });
           });
         });
@@ -82,7 +83,7 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
       columnDefs: [
         {
           targets: [0, 1, 3],
-          render: (data, type, row) => {
+          render: (data, type): unknown => {
             if (
               type === 'display' &&
               typeof data == 'string' &&
@@ -102,8 +103,10 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
+      // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
       const _this = this;
       dtInstance.columns([0, 1, 3]).every(function () {
+        // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
         const column = this;
 
         column.nodes().on('click', (event) => {
@@ -114,7 +117,7 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
         });
 
         $('input', this.header()).on('keyup change', function (event) {
-          var input = event.target as HTMLInputElement;
+          const input = event.target as HTMLInputElement;
           if (column.search() !== input['value']) {
             column.search(input['value']).draw();
           }
@@ -123,7 +126,7 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  updateTable() {
+  updateTable(): void {
     this.datatableElement.dtInstance.then((table) => {
       table.columns([0, 1, 3]).every(function () {
         this.search('').draw();

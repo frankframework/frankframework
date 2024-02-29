@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { AppConstants, AppService } from '../app.service';
 import { Base64Service } from './base64.service';
+import { ServerInfo } from '../app.service';
 
 @Injectable({
   providedIn: 'root',
@@ -24,13 +24,13 @@ export class MiscService {
       : false;
   }
 
-  getUID(serverInfo: Record<string, any>): string {
-    let queryObject = {
+  getUID(serverInfo: ServerInfo): string {
+    const queryObject = {
       v: serverInfo['framework'].version,
       n: serverInfo['instance'].name,
       s: serverInfo['dtap.stage'],
     };
-    let b = this.Base64.encode(JSON.stringify(queryObject));
+    const b = this.Base64.encode(JSON.stringify(queryObject));
     const chunks = [];
     let pos = 0;
     while (pos < b.length) {
@@ -47,9 +47,8 @@ export class MiscService {
     // See for more info: http://locutus.io/php/info/version_compare/
 
     let index,
-      x,
       compare = 0;
-    let vm = {
+    const vm = {
       dev: -6,
       alpha: -5,
       a: -5,
@@ -62,22 +61,17 @@ export class MiscService {
       pl: 1,
     };
 
-    let _prepVersion = function (v: string | number) {
-      v = ('' + v).replaceAll(/[+_\-]/g, '.');
-      v = v.replaceAll(/([^\d.]+)/g, '.$1.').replaceAll(/\.{2,}/g, '.');
-      return v.length === 0 ? [-8] : v.split('.');
-    };
-    let _numberVersion = function (v: string | number): number {
+    const _numberVersion = function (v: string | number): number {
       return v
-        ? isNaN(v as number)
+        ? Number.isNaN(v as number)
           ? vm[v as keyof typeof vm] || -7
           : Number.parseInt(v as string, 10)
         : 0;
     };
 
-    let v1Array = _prepVersion(v1);
-    let v2Array = _prepVersion(v2);
-    x = Math.max(v1Array.length, v2Array.length);
+    const v1Array = this._prepVersion(v1);
+    const v2Array = this._prepVersion(v2);
+    const x = Math.max(v1Array.length, v2Array.length);
     for (index = 0; index < x; index++) {
       if (v1Array[index] === v2Array[index]) {
         continue;
@@ -128,5 +122,11 @@ export class MiscService {
         return null;
       }
     }
+  }
+
+  private _prepVersion(v: string | number): string[] | number[] {
+    v = `${v}`.replaceAll(/[+_\-]/g, '.');
+    v = v.replaceAll(/([^\d.]+)/g, '.$1.').replaceAll(/\.{2,}/g, '.');
+    return v.length === 0 ? [-8] : v.split('.');
   }
 }

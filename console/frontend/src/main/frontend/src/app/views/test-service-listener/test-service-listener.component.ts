@@ -35,25 +35,25 @@ export class TestServiceListenerComponent implements OnInit {
     private appService: AppService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.http
       .get<{
         services: string[];
-      }>(this.appService.absoluteApiPath + 'test-servicelistener')
+      }>(`${this.appService.absoluteApiPath}test-servicelistener`)
       .subscribe((data) => {
         this.services = data.services;
       });
   }
 
-  addNote(type: string, message: string, removeQueue?: boolean) {
+  addNote(type: string, message: string): void {
     this.state.push({ type: type, message: message });
   }
 
-  updateFile(file: File | null) {
+  updateFile(file: File | null): void {
     this.file = file;
   }
 
-  submit(event: SubmitEvent) {
+  submit(event: SubmitEvent): void {
     event.preventDefault();
     this.result = '';
     this.state = [];
@@ -62,17 +62,17 @@ export class TestServiceListenerComponent implements OnInit {
       return;
     }
 
-    var fd = new FormData();
+    const fd = new FormData();
     if (this.form.service !== '') fd.append('service', this.form.service);
     if (this.form.encoding !== '') fd.append('encoding', this.form.encoding);
     if (this.form.message !== '') {
-      var encoding =
+      const encoding =
         this.form.encoding && this.form.encoding != ''
-          ? ';charset=' + this.form.encoding
+          ? `;charset=${this.form.encoding}`
           : '';
       fd.append(
         'message',
-        new Blob([this.form.message], { type: 'text/plain' + encoding }),
+        new Blob([this.form.message], { type: `text/plain${encoding}` }),
         'message',
       );
     }
@@ -88,7 +88,7 @@ export class TestServiceListenerComponent implements OnInit {
       .post<ServiceListenerResult>('test-servicelistener', fd)
       .subscribe({
         next: (returnData) => {
-          var warnLevel = 'success';
+          let warnLevel = 'success';
           if (returnData.state == 'ERROR') warnLevel = 'danger';
           this.addNote(warnLevel, returnData.state);
           this.result = returnData.result;

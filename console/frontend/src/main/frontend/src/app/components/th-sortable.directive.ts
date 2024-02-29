@@ -17,7 +17,7 @@ export type SortEvent = {
 export function updateSortableHeaders(
   headers: QueryList<ThSortableDirective>,
   column: string,
-) {
+): void {
   for (const header of headers) {
     if (header.sortable !== column) {
       header.updateDirection(null);
@@ -25,9 +25,9 @@ export function updateSortableHeaders(
   }
 }
 
-const compare = (v1: string | number, v2: string | number) =>
+const compare = (v1: string | number, v2: string | number): 1 | -1 | 0 =>
   v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
-export function basicTableSort<T extends Record<string, any>>(
+export function basicTableSort<T extends Record<string, string | number>>(
   array: T[],
   headers: QueryList<ThSortableDirective>,
   { column, direction }: SortEvent,
@@ -71,13 +71,13 @@ export class ThSortableDirective implements OnInit {
   }
   private headerText = '';
 
-  constructor(private elementReference: ElementRef<HTMLTableCellElement>) {}
+  constructor(private elementRef: ElementRef<HTMLTableCellElement>) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.headerText = this.elementRef.nativeElement.innerHTML;
   }
 
-  updateIcon(direction: SortDirection) {
+  updateIcon(direction: SortDirection): void {
     let updateColumnName = '';
     updateColumnName =
       direction == null
@@ -89,12 +89,12 @@ export class ThSortableDirective implements OnInit {
     this.elementRef.nativeElement.innerHTML = updateColumnName;
   }
 
-  updateDirection(newDirection: SortDirection) {
+  updateDirection(newDirection: SortDirection): void {
     this.direction = newDirection;
     this.updateIcon(this.direction);
   }
 
-  nextSort() {
+  nextSort(): void {
     this.updateDirection(this.nextSortOption(this.direction));
     this.onSort.emit({ column: this.sortable, direction: this.direction });
   }

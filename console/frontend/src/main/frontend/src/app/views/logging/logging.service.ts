@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
 export const errorLevelsConst = ['DEBUG', 'INFO', 'WARN', 'ERROR'] as const;
@@ -43,34 +44,35 @@ type Logging = {
   providedIn: 'root',
 })
 export class LoggingService {
-  private logSettingsBaseURL: string =
-    this.appService.absoluteApiPath + 'server/logging';
-  private logSettingsURL: string = this.logSettingsBaseURL + '/settings';
+  private logSettingsBaseURL: string = `${this.appService.absoluteApiPath}server/logging`;
+  private logSettingsURL: string = `${this.logSettingsBaseURL}/settings`;
 
   constructor(
     private http: HttpClient,
     private appService: AppService,
   ) {}
 
-  getLogging(directory: string) {
+  getLogging(directory: string): Observable<Logging> {
     const url =
       directory.length > 0 ? `logging?directory=${directory}` : 'logging';
     return this.http.get<Logging>(this.appService.absoluteApiPath + url);
   }
 
-  getLoggingSettings() {
+  getLoggingSettings(): Observable<LoggingSettings> {
     return this.http.get<LoggingSettings>(this.logSettingsBaseURL);
   }
 
-  getLoggingSettingsLogInformation() {
+  getLoggingSettingsLogInformation(): Observable<LogInformation> {
     return this.http.get<LogInformation>(this.logSettingsURL);
   }
 
-  putLoggingSettingsChange(action: Record<string, any>) {
+  putLoggingSettingsChange(
+    action: Record<string, NonNullable<unknown>>,
+  ): Observable<object> {
     return this.http.put(this.logSettingsURL, action);
   }
 
-  putLoggingSettings(formData: LoggingSettings) {
+  putLoggingSettings(formData: LoggingSettings): Observable<object> {
     return this.http.put(this.logSettingsBaseURL, formData);
   }
 }

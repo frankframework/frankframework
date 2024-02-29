@@ -30,7 +30,7 @@ export class JmsBrowseQueueComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    var browseJmsQueue = this.webStorageService.get('browseJmsQueue');
+    const browseJmsQueue = this.webStorageService.get('browseJmsQueue');
     if (browseJmsQueue) this.form = browseJmsQueue;
 
     this.jmsService.getJms().subscribe((data) => {
@@ -39,7 +39,7 @@ export class JmsBrowseQueueComponent implements OnInit {
     });
   }
 
-  submit(formData: JmsBrowseForm) {
+  submit(formData: JmsBrowseForm): void {
     if (!formData || !formData.destination) {
       this.error = 'Please specify a connection factory and destination!';
       return;
@@ -54,7 +54,7 @@ export class JmsBrowseQueueComponent implements OnInit {
     this.jmsService.postJmsBrowse(formData).subscribe({
       next: (data) => {
         //this.connectionFactories = data["connectionFactories"]; // doesnt exist in the result?
-        this.messages = data.messages ? data.messages : [];
+        this.messages = data.messages ?? [];
         this.numberOfMessages = data.numberOfMessages;
         this.error = '';
         this.processing = false;
@@ -67,7 +67,7 @@ export class JmsBrowseQueueComponent implements OnInit {
     });
   }
 
-  reset() {
+  reset(): void {
     console.log(this.form);
     this.error = '';
     if (!this.form) return;

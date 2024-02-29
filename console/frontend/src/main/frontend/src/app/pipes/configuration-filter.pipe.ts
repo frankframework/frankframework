@@ -5,11 +5,11 @@ export function ConfigurationFilter(
   adapters: Record<string, Adapter>,
   selectedConfiguration: string,
   filter?: Record<AdapterStatus, boolean>,
-) {
+): Record<string, Adapter> {
   if (!adapters || Object.keys(adapters).length === 0) return {};
-  let r: Record<string, Adapter> = {};
+  const r: Record<string, Adapter> = {};
   for (const adapterName in adapters) {
-    let adapter = adapters[adapterName];
+    const adapter = adapters[adapterName];
 
     if (
       (adapter.configuration == selectedConfiguration ||

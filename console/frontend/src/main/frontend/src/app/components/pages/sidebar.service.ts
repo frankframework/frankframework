@@ -4,17 +4,17 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class SidebarService {
-  toggle() {
+  toggle(): void {
     $('body').toggleClass('mini-navbar');
     this.swichStates();
   }
 
-  small() {
+  small(): void {
     $('body').addClass('mini-navbar');
     this.swichStates();
   }
 
-  private swichStates() {
+  private swichStates(): void {
     if (
       !$('body').hasClass('mini-navbar') ||
       $('body').hasClass('body-small')

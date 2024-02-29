@@ -24,7 +24,7 @@ export class LoginComponent implements OnInit {
     private authService: AuthService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.authService.loggedin(); //Check whether or not the client is logged in.
 
     window.setTimeout(() => {
@@ -32,7 +32,7 @@ export class LoginComponent implements OnInit {
     }, 500);
   }
 
-  login(credentials: Credentials) {
+  login(credentials: Credentials): void {
     this.authService.login(credentials.username, credentials.password);
   }
 }

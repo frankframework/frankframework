@@ -18,15 +18,15 @@ export class FlowModalComponent {
 
   constructor(private activeModal: NgbActiveModal) {}
 
-  close() {
+  close(): void {
     this.activeModal.close();
   }
 
-  mermaidLoaded() {
+  mermaidLoaded(): void {
     this.showActionButtons = true;
   }
 
-  downloadAsPng(event: MouseEvent) {
+  downloadAsPng(event: MouseEvent): void {
     const buttonElement = event.target as HTMLButtonElement;
     this.svgToImage()
       .then((canvas) => canvas.toDataURL('image/png'))
@@ -45,7 +45,7 @@ export class FlowModalComponent {
       });
   }
 
-  copyToClipboard(event: MouseEvent) {
+  copyToClipboard(event: MouseEvent): void {
     const buttonElement = event.target as HTMLButtonElement;
     buttonElement.textContent = 'Copying...';
     this.svgToImage()
@@ -66,7 +66,7 @@ export class FlowModalComponent {
       });
   }
 
-  openNewTab() {
+  openNewTab(): void {
     const newTab = window.open('about:blank');
     const svg = this.ngMermaid
       .getMermaidSvgElement()
@@ -83,7 +83,7 @@ export class FlowModalComponent {
   private canvasToBlob(
     canvas: HTMLCanvasElement,
     type?: string,
-    quality?: any,
+    quality?: number,
   ): Promise<Blob> {
     return new Promise((resolve, reject) => {
       canvas.toBlob(
@@ -99,7 +99,11 @@ export class FlowModalComponent {
     });
   }
 
-  private svgToBase64(svg: SVGSVGElement, width?: number, height?: number) {
+  private svgToBase64(
+    svg: SVGSVGElement,
+    width?: number,
+    height?: number,
+  ): string {
     const svgClone = svg.cloneNode(true) as SVGSVGElement;
     if (width) svgClone.setAttribute('height', `${height}px`);
     if (height) svgClone.setAttribute('width', `${width}px`);
@@ -107,7 +111,7 @@ export class FlowModalComponent {
     return btoa(svgString);
   }
 
-  private svgToImage() {
+  private svgToImage(): Promise<HTMLCanvasElement> {
     return new Promise<HTMLCanvasElement>((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const svg = this.ngMermaid.getMermaidSvgElement();
@@ -133,6 +137,7 @@ export class FlowModalComponent {
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
         resolve(canvas);
       });
+      // eslint-disable-next-line unicorn/prefer-add-event-listener
       image.onerror = reject;
       image.src = `data:image/svg+xml;base64,${this.svgToBase64(svg, canvas.width, canvas.height)}`;
     });

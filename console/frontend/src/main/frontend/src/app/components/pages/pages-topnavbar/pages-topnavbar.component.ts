@@ -29,7 +29,7 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy {
 
   constructor(private Notification: NotificationService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     const notifCountSub = this.Notification.onCountUpdate$.subscribe(() => {
       this.notificationCount = this.Notification.getCount();
       this.notificationList = this.Notification.getLatest(5);
@@ -37,22 +37,22 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy {
     this._subscriptions.add(notifCountSub);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  openFeedback(rating: number) {
+  openFeedback(rating: number): void {
     this.onOpenFeedback.emit(rating);
   }
 
-  hoverFeedback(rating: number) {
+  hoverFeedback(rating: number): void {
     $('.rating i').removeClass('fa-star').addClass('fa-star-o');
-    $('.rating i:nth-child(-n+' + (rating + 1) + ')')
+    $(`.rating i:nth-child(-n+${rating + 1})`)
       .addClass('fa-star')
       .removeClass('fa-star-o');
   }
 
-  resetNotificationCount() {
+  resetNotificationCount(): void {
     this.Notification.resetCount();
   }
 }

@@ -48,7 +48,7 @@ export class TestPipelineComponent implements OnInit {
     private appService: AppService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.configurations = this.appService.configurations;
     this.appService.configurations$.subscribe(() => {
       this.configurations = this.appService.configurations;
@@ -60,11 +60,11 @@ export class TestPipelineComponent implements OnInit {
     });
   }
 
-  addNote(type: string, message: string, removeQueue?: boolean) {
+  addNote(type: string, message: string): void {
     this.state.push({ type: type, message: message });
   }
 
-  updateSessionKeys(sessionKey: FormSessionKey) {
+  updateSessionKeys(sessionKey: FormSessionKey): void {
     if (
       sessionKey.name &&
       sessionKey.name != '' &&
@@ -90,11 +90,11 @@ export class TestPipelineComponent implements OnInit {
     }
   }
 
-  updateFile(file: File | null) {
+  updateFile(file: File | null): void {
     this.file = file;
   }
 
-  submit(event: SubmitEvent) {
+  submit(event: SubmitEvent): void {
     event.preventDefault();
     this.result = '';
     this.state = [];
@@ -103,7 +103,7 @@ export class TestPipelineComponent implements OnInit {
       return;
     }
 
-    let fd = new FormData();
+    const fd = new FormData();
     fd.append('configuration', this.selectedConfiguration);
     if (this.form.adapter && this.form.adapter != '') {
       fd.append('adapter', this.form.adapter);
@@ -114,13 +114,13 @@ export class TestPipelineComponent implements OnInit {
     if (this.form.encoding && this.form.encoding != '')
       fd.append('encoding', this.form.encoding);
     if (this.form.message && this.form.message != '') {
-      let encoding =
+      const encoding =
         this.form.encoding && this.form.encoding != ''
-          ? ';charset=' + this.form.encoding
+          ? `;charset=${this.form.encoding}`
           : '';
       fd.append(
         'message',
-        new Blob([this.form.message], { type: 'text/plain' + encoding }),
+        new Blob([this.form.message], { type: `text/plain${encoding}` }),
         'message',
       );
     }
@@ -145,7 +145,7 @@ export class TestPipelineComponent implements OnInit {
     this.processingMessage = true;
     this.http
       .post<PipelineResult>(
-        this.appService.absoluteApiPath + 'test-pipeline',
+        `${this.appService.absoluteApiPath}test-pipeline`,
         fd,
       )
       .subscribe({

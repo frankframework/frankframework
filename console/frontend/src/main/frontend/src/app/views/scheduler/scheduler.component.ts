@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppService, JobMessage, RunState } from 'src/app/app.service';
+import { AppService, JobMessage } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
@@ -100,39 +100,39 @@ export class SchedulerComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.pollerService.remove('schedules');
   }
 
-  showContent(job: keyof typeof this.jobs) {
+  showContent(job: keyof typeof this.jobs): boolean {
     return this.jobShowContent[job];
   }
 
-  start() {
+  start(): void {
     this.refreshing = true;
     this.schedulerService.putSchedulesAction('start').subscribe();
   }
 
-  pauseScheduler() {
+  pauseScheduler(): void {
     this.refreshing = true;
     this.schedulerService.putSchedulesAction('pause').subscribe();
   }
 
-  pause(jobGroup: string, jobName: string) {
+  pause(jobGroup: string, jobName: string): void {
     this.schedulerService
       .putScheduleJobAction(jobGroup, jobName, 'pause')
       .subscribe();
   }
 
-  resume(jobGroup: string, jobName: string) {
+  resume(jobGroup: string, jobName: string): void {
     this.schedulerService
       .putScheduleJobAction(jobGroup, jobName, 'resume')
       .subscribe();
   }
 
-  remove(jobGroup: string, jobName: string) {
+  remove(jobGroup: string, jobName: string): void {
     this.sweetAlertService
-      .Confirm({ title: "Please confirm the deletion of '" + jobName + "'" })
+      .Confirm({ title: `Please confirm the deletion of '${jobName}'` })
       .then((result) => {
         if (result.isConfirmed) {
           this.schedulerService
@@ -142,13 +142,13 @@ export class SchedulerComponent implements OnInit, OnDestroy {
       });
   }
 
-  trigger(jobGroup: string, jobName: string) {
+  trigger(jobGroup: string, jobName: string): void {
     this.schedulerService
       .putScheduleJobAction(jobGroup, jobName, 'trigger')
       .subscribe();
   }
 
-  edit(jobGroup: string, jobName: string) {
+  edit(jobGroup: string, jobName: string): void {
     this.router.navigate(['scheduler', 'edit', jobGroup, jobName]);
   }
 }

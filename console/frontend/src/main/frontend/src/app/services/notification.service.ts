@@ -32,7 +32,7 @@ export class NotificationService {
     message?: string | boolean,
     function_?: (notification: Notification) => void,
   ): void {
-    let object: Notification = {
+    const object: Notification = {
       icon: icon,
       title: title,
       message: message ?? false,
@@ -49,7 +49,7 @@ export class NotificationService {
 
   get(id: number): Notification | false {
     for (let index = 0; index < this.list.length; index++) {
-      let notification = this.list[index];
+      const notification = this.list[index];
       if (notification.id == id) {
         if (notification.fn) {
           window.setTimeout(() => {

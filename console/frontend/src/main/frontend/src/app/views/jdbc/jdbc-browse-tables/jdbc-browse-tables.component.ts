@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
@@ -53,7 +53,9 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(
       () => {
-        this.form['datasource'] = this.appConstants['jdbc.datasource.default'];
+        this.form['datasource'] = this.appConstants[
+          'jdbc.datasource.default'
+        ] as string;
       },
     );
     this._subscriptions.add(appConstantsSubscription);
@@ -62,7 +64,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
       this.form['datasource'] =
         this.appConstants['jdbc.datasource.default'] == undefined
           ? data.datasources[0]
-          : this.appConstants['jdbc.datasource.default'];
+          : (this.appConstants['jdbc.datasource.default'] as string);
       this.datasources = data.datasources;
     });
   }
@@ -71,7 +73,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  submit(formData: JdbcBrowseForm) {
+  submit(formData: JdbcBrowseForm): void {
     const columnNameArray: string[] = [];
     this.columnNames = [];
     this.result = [];
@@ -129,7 +131,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
     }); // TODO no intercept
   }
 
-  reset() {
+  reset(): void {
     this.query = '';
     this.error = '';
     if (!this.form) return;

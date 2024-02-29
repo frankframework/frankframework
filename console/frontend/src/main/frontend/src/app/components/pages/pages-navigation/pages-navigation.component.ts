@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ParamMap, Router, convertToParamMap } from '@angular/router';
+import { Router, convertToParamMap } from '@angular/router';
 
 @Component({
   selector: 'app-pages-navigation',
@@ -13,15 +13,20 @@ export class PagesNavigationComponent {
 
   constructor(private router: Router) {}
 
-  openInfo() {
+  openInfo(): void {
     this.onOpenInfo.emit();
   }
 
-  openFeedback() {
+  openFeedback(): void {
     this.onOpenFeedback.emit();
   }
 
-  getClassByRoute(className: string, routeState: string | string[]) {
+  getClassByRoute(
+    className: string,
+    routeState: string | string[],
+  ): {
+    [x: string]: boolean;
+  } {
     if (Array.isArray(routeState)) {
       return {
         [className]: routeState.some((routePartial) =>
@@ -34,7 +39,7 @@ export class PagesNavigationComponent {
     };
   }
 
-  getConfigurationsQueryParam() {
+  getConfigurationsQueryParam(): string | null {
     if (this.queryParams.has('configuration')) {
       return this.queryParams.get('configuration');
     }

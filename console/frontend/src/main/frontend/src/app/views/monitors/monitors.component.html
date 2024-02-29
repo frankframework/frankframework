@@ -7,7 +7,7 @@
       <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
         <li
           *ngFor="let configuration of configurations"
-          [ngClass]="{ active: selectedConfiguration == configuration.name }"
+          [ngClass]="{ active: selectedConfiguration === configuration.name }"
         >
           <a (click)="changeConfiguration(configuration.name)">{{
             configuration.name
@@ -33,7 +33,7 @@
             monitors in state raised
           </h4>
         </div>
-        <div *ngIf="monitors.length == 0" class="ibox-title summary">
+        <div *ngIf="monitors.length === 0" class="ibox-title summary">
           <h4>No monitors found in this configuration</h4>
         </div>
       </div>
@@ -182,7 +182,7 @@
               >
                 {{ destination }}<span *ngIf="!last">,</span>
               </span>
-              <span *ngIf="monitor.destinations.length == 0">None</span>
+              <span *ngIf="monitor.destinations.length === 0">None</span>
             </p>
           </div>
           <div class="row">

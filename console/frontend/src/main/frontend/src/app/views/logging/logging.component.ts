@@ -33,7 +33,7 @@ export class LoggingComponent implements OnInit {
     private loggingService: LoggingService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.queryParamMap.subscribe((parameters) => {
       const directoryParameter = parameters.get('directory') ?? '';
       const fileParameter = parameters.get('file') ?? '';
@@ -55,19 +55,19 @@ export class LoggingComponent implements OnInit {
     });
   }
 
-  closeFile() {
+  closeFile(): void {
     this.viewFile = null;
     this.router.navigate(['/logging'], {
       queryParams: { directory: this.directory },
     });
   }
 
-  download(file: LoggingFile) {
+  download(file: LoggingFile): void {
     const url = `${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(file.path)}`;
     window.open(url, '_blank');
   }
 
-  open(file: LoggingFile) {
+  open(file: LoggingFile): void {
     if (file.type == 'directory') {
       this.router.navigate(['/logging'], {
         queryParams: { directory: file.path },
@@ -79,7 +79,7 @@ export class LoggingComponent implements OnInit {
     }
   }
 
-  openDirectory(directory: string) {
+  openDirectory(directory: string): void {
     this.loggingService.getLogging(directory).subscribe({
       next: (data) => {
         this.alert = false;
@@ -97,12 +97,12 @@ export class LoggingComponent implements OnInit {
     });
   }
 
-  copyToClipboard(path: string) {
+  copyToClipboard(path: string): void {
     const textToCopy = path.trim();
     this.appService.copyToClipboard(textToCopy);
   }
 
-  onSort(event: SortEvent) {
+  onSort(event: SortEvent): void {
     this.sortedlist = basicTableSort(this.originalList, this.headers, event);
   }
 }

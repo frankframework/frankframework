@@ -14,7 +14,7 @@ export class QuickSubmitFormDirective implements OnInit {
 
   constructor(private element: ElementRef) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.element.nativeElement.addEventListener(
       'keydown',
       (event: KeyboardEvent) => {

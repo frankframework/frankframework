@@ -1,7 +1,7 @@
 import { LocationStrategy } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 
 @Component({
@@ -22,8 +22,11 @@ export class IframeCustomViewComponent implements OnInit {
     private window: Window,
   ) {}
 
-  ngOnInit() {
-    const routeState = this.location.getState() as Record<string, any>;
+  ngOnInit(): void {
+    const routeState = this.location.getState() as Record<
+      string,
+      { name: string; url: string }
+    >;
 
     if (!('view' in routeState) || routeState['view'].url == '')
       this.router.navigate(['status']);

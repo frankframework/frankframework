@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { AppService } from 'src/app/app.service';
 
 @Component({
@@ -46,7 +46,7 @@ export class InformationModalComponent implements OnInit {
     private appService: AppService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.appService.getServerInfo().subscribe({
       next: (data) => {
         this.applicationServer = data.applicationServer;
@@ -64,7 +64,7 @@ export class InformationModalComponent implements OnInit {
     });
   }
 
-  close() {
+  close(): void {
     this.activeModal.close();
   }
 }

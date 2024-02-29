@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
 interface Date {
@@ -75,35 +76,39 @@ export class JdbcService {
     private appService: AppService,
   ) {}
 
-  getJdbc() {
-    return this.http.get<JDBC>(this.appService.absoluteApiPath + 'jdbc');
+  getJdbc(): Observable<JDBC> {
+    return this.http.get<JDBC>(`${this.appService.absoluteApiPath}jdbc`);
   }
 
-  postJdbcBrowse(formData: JdbcBrowseForm) {
+  postJdbcBrowse(formData: JdbcBrowseForm): Observable<JdbcBrowseReturnData> {
     return this.http.post<JdbcBrowseReturnData>(
-      this.appService.absoluteApiPath + 'jdbc/browse',
+      `${this.appService.absoluteApiPath}jdbc/browse`,
       formData,
     );
   }
 
-  postJdbcQuery(formData: JdbcQueryForm) {
+  postJdbcQuery(formData: JdbcQueryForm): Observable<string> {
     return this.http.post(
-      this.appService.absoluteApiPath + 'jdbc/query',
+      `${this.appService.absoluteApiPath}jdbc/query`,
       formData,
       { responseType: 'text' },
     );
   }
 
-  postJdbcSummary(formData: JdbcSummaryForm) {
+  postJdbcSummary(
+    formData: JdbcSummaryForm,
+  ): Observable<JdbcSummaryReturnData> {
     return this.http.post<JdbcSummaryReturnData>(
-      this.appService.absoluteApiPath + 'jdbc/summary',
+      `${this.appService.absoluteApiPath}jdbc/summary`,
       formData,
     );
   }
 
-  postJdbcLiquibase(formData: FormData) {
+  postJdbcLiquibase(formData: FormData): Observable<{
+    result: string;
+  }> {
     return this.http.post<{ result: string }>(
-      this.appService.absoluteApiPath + 'jdbc/liquibase',
+      `${this.appService.absoluteApiPath}jdbc/liquibase`,
       formData,
     );
   }

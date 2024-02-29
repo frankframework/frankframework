@@ -4,7 +4,6 @@ import { Monitor, MonitorsService, Trigger } from './monitors.service';
 import {
   ActivatedRoute,
   ParamMap,
-  Params,
   Router,
   convertToParamMap,
 } from '@angular/router';
@@ -51,13 +50,13 @@ export class MonitorsComponent implements OnInit {
     });
   }
 
-  updateConfigurations() {
+  updateConfigurations(): void {
     let configName = this.routeQueryParams.get('configuration'); // See if the configuration query param is populated
     if (!configName) configName = this.configurations[0].name; // Fall back to the first configuration
     this.changeConfiguration(configName); // Update the view
   }
 
-  changeConfiguration(name: string) {
+  changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
     const configurationQueryParameter =
       this.routeQueryParams.get('configuration');
@@ -76,7 +75,7 @@ export class MonitorsComponent implements OnInit {
     this.update();
   }
 
-  update() {
+  update(): void {
     this.monitorsService
       .getMonitors(this.selectedConfiguration)
       .subscribe((data) => {
@@ -98,7 +97,7 @@ export class MonitorsComponent implements OnInit {
       });
   }
 
-  raise(monitor: Monitor, trigger?: Trigger) {
+  raise(monitor: Monitor, trigger?: Trigger): void {
     this.monitorsService
       .putMonitorOrTriggerAction(
         'raise',
@@ -111,7 +110,7 @@ export class MonitorsComponent implements OnInit {
       });
   }
 
-  clear(monitor: Monitor, trigger?: Trigger) {
+  clear(monitor: Monitor, trigger?: Trigger): void {
     this.monitorsService
       .putMonitorOrTriggerAction(
         'clear',
@@ -124,8 +123,8 @@ export class MonitorsComponent implements OnInit {
       });
   }
 
-  edit(monitor: Monitor, trigger?: Trigger) {
-    let destinations = [];
+  edit(monitor: Monitor, trigger?: Trigger): void {
+    const destinations = [];
 
     for (const destination in monitor.activeDestinations) {
       if (monitor.activeDestinations[destination]) {
@@ -145,7 +144,7 @@ export class MonitorsComponent implements OnInit {
       });
   }
 
-  deleteMonitor(monitor: Monitor, trigger?: Trigger) {
+  deleteMonitor(monitor: Monitor, trigger?: Trigger): void {
     this.monitorsService
       .deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger)
       .subscribe(() => {
@@ -153,7 +152,7 @@ export class MonitorsComponent implements OnInit {
       });
   }
 
-  deleteTrigger(monitor: Monitor, trigger?: Trigger) {
+  deleteTrigger(monitor: Monitor, trigger?: Trigger): void {
     this.monitorsService
       .deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger)
       .subscribe(() => {
@@ -161,15 +160,13 @@ export class MonitorsComponent implements OnInit {
       });
   }
 
-  downloadXML(monitorName?: string) {
-    let url =
-      this.appService.getServerPath() +
-      'iaf/api/configurations/' +
-      this.selectedConfiguration +
-      '/monitors';
+  downloadXML(monitorName?: string): void {
+    let url = `${this.appService.getServerPath()}iaf/api/configurations/${
+      this.selectedConfiguration
+    }/monitors`;
     if (monitorName) {
-      url += '/' + monitorName;
+      url += `/${monitorName}`;
     }
-    window.open(url + '?xml=true', '_blank');
+    window.open(`${url}?xml=true`, '_blank');
   }
 }

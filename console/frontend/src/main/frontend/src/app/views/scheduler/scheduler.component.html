@@ -155,7 +155,7 @@
                 name="search"
               />
               <i
-                [ngClass]="searchFilter.length == 0 ? ['hidden'] : []"
+                [ngClass]="searchFilter.length === 0 ? ['hidden'] : []"
                 (click)="searchFilter = ''"
                 class="fa fa-times input-group-closeSearch"
                 aria-hidden="true"

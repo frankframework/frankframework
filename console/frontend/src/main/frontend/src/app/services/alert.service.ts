@@ -3,7 +3,7 @@ import { SessionService } from './session.service';
 
 export type Alert = {
   type: string;
-  message: any;
+  message: string;
   time: number;
   id?: number;
 };
@@ -14,10 +14,10 @@ export type Alert = {
 export class AlertService {
   constructor(private Session: SessionService) {}
 
-  add(level: string | number, message: any, non_repeditive: boolean): void {
+  add(level: string | number, message: string, non_repeditive: boolean): void {
     if (non_repeditive === true && this.checkIfExists(message)) return;
 
-    var type;
+    let type;
     switch (level) {
       case 'info':
       case 1: {
@@ -39,8 +39,8 @@ export class AlertService {
         break;
       }
     }
-    var list = this.get(true);
-    var object: Alert = {
+    const list = this.get(true);
+    const object: Alert = {
       type: type,
       message: message,
       time: Date.now(),
@@ -53,17 +53,17 @@ export class AlertService {
 
   get(preserveList?: boolean): Alert[] {
     //var list = JSON.parse(sessionStorage.getItem("Alert"));
-    var list = this.Session.get('Alert');
+    const list = this.Session.get('Alert');
     if (preserveList == undefined) this.Session.set('Alert', []); //sessionStorage.setItem("Alert", JSON.stringify([])); //Clear after retreival
-    return list == null ? [] : list;
+    return list == null ? [] : (list as Alert[]);
   }
 
   getCount(): number {
     return this.get(true).length || 0;
   }
 
-  checkIfExists(message: any): boolean {
-    var list = this.get(true);
+  checkIfExists(message: string): boolean {
+    const list = this.get(true);
     if (list.length > 0) {
       for (const element of list) {
         if (element.message == message) {

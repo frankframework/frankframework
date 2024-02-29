@@ -8,7 +8,7 @@ import { Component, Input } from '@angular/core';
 export class ScrollToTopComponent {
   @Input() navElem!: HTMLElement;
 
-  scrollTop() {
+  scrollTop(): void {
     document.body.scrollTo({ top: 0 });
     this.navElem.scrollTo({ top: 0 });
   }

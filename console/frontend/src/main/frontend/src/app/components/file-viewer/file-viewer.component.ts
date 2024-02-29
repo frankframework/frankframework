@@ -31,7 +31,7 @@ export class FileViewerComponent implements OnInit {
     private miscService: MiscService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     const requestOptions = {
       headers: { Accept: this.contentType },
       responseType: 'text',

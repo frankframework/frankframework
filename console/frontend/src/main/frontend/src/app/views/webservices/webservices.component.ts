@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
-import { MiscService } from 'src/app/services/misc.service';
 import {
   ApiListener,
   Service,
@@ -24,7 +23,7 @@ export class WebservicesComponent implements OnInit {
     private wsService: WebservicesService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.wsService.getWebservices().subscribe((data) => {
       this.apiListeners = data.apiListeners;
       this.services = data.services;
@@ -32,11 +31,9 @@ export class WebservicesComponent implements OnInit {
     });
   }
 
-  compileURL(apiListener: ApiListener) {
-    return (
-      this.rootURL +
-      'iaf/api/webservices/openapi.json?uri=' +
-      encodeURI(apiListener.uriPattern)
-    );
+  compileURL(apiListener: ApiListener): string {
+    return `${this.rootURL}iaf/api/webservices/openapi.json?uri=${encodeURI(
+      apiListener.uriPattern,
+    )}`;
   }
 }

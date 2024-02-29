@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
 @Component({
@@ -17,7 +17,7 @@ export class IframeLarvaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.url = this.appService.getServerPath() + 'iaf/larva';
+    this.url = `${this.appService.getServerPath()}iaf/larva`;
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
   }
 }

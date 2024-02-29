@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import type { DataTableDirective } from 'angular-datatables';
+import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 
@@ -42,12 +43,17 @@ export type StorageParams = {
   messageId: string | null;
 };
 
+export type Note = {
+  type: string;
+  message: string;
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class StorageService {
   baseUrl = '';
-  notes: { type: string; message: string }[] = [];
+  notes: Note[] = [];
   storageParams: StorageParams = {
     adapterName: '',
     configuration: '',
@@ -65,49 +71,46 @@ export class StorageService {
     private Misc: MiscService,
   ) {}
 
-  updateStorageParams(parameters: Partial<StorageParams>) {
+  updateStorageParams(parameters: Partial<StorageParams>): void {
     this.storageParams = Object.assign(this.storageParams, parameters); // dont make this a new object
-    this.baseUrl =
-      this.appService.absoluteApiPath +
-      'configurations/' +
-      this.Misc.escapeURL(this.storageParams.configuration) +
-      '/adapters/' +
-      this.Misc.escapeURL(this.storageParams.adapterName) +
-      '/' +
-      this.storageParams.storageSource +
-      '/' +
-      this.Misc.escapeURL(this.storageParams.storageSourceName) +
-      '/stores/' +
-      this.storageParams.processState;
+    this.baseUrl = `${
+      this.appService.absoluteApiPath
+    }configurations/${this.Misc.escapeURL(
+      this.storageParams.configuration,
+    )}/adapters/${this.Misc.escapeURL(this.storageParams.adapterName)}/${
+      this.storageParams.storageSource
+    }/${this.Misc.escapeURL(this.storageParams.storageSourceName)}/stores/${
+      this.storageParams.processState
+    }`;
 
     setTimeout(() => {
-      this.appService.updateTitle(this.storageParams.processState + ' List');
+      this.appService.updateTitle(`${this.storageParams.processState} List`);
     }, 0);
   }
 
-  addNote(type: string, message: string) {
+  addNote(type: string, message: string): void {
     this.notes.push({ type: type, message: message });
   }
 
-  closeNote(index: number) {
+  closeNote(index: number): void {
     this.notes.splice(index, 1);
   }
 
-  closeNotes() {
+  closeNotes(): void {
     this.notes = [];
   }
 
   deleteMessage(
     message: PartialMessage,
     callback?: (messageId: string) => void,
-  ) {
+  ): void {
     message.deleting = true;
     const messageId = message.id;
     this.http
       .delete(
-        this.baseUrl +
-          '/messages/' +
-          encodeURIComponent(encodeURIComponent(messageId)),
+        `${this.baseUrl}/messages/${encodeURIComponent(
+          encodeURIComponent(messageId),
+        )}`,
       )
       .subscribe({
         next: () => {
@@ -115,7 +118,7 @@ export class StorageService {
             callback(messageId);
           this.addNote(
             'success',
-            'Successfully deleted message with ID: ' + messageId,
+            `Successfully deleted message with ID: ${messageId}`,
           );
           this.updateTable();
         },
@@ -123,33 +126,32 @@ export class StorageService {
           message.deleting = false;
           this.addNote(
             'danger',
-            'Unable to delete messages with ID: ' + messageId,
+            `Unable to delete messages with ID: ${messageId}`,
           );
           this.updateTable();
         },
       });
   }
 
-  downloadMessage(messageId: string) {
+  downloadMessage(messageId: string): void {
     window.open(
-      this.baseUrl +
-        '/messages/' +
-        encodeURIComponent(encodeURIComponent(messageId)) +
-        '/download',
+      `${this.baseUrl}/messages/${encodeURIComponent(
+        encodeURIComponent(messageId),
+      )}/download`,
     );
   }
 
   resendMessage(
     message: PartialMessage,
     callback?: (messageId: string) => void,
-  ) {
+  ): void {
     message.resending = true;
     const messageId = message.id;
     this.http
       .put(
-        this.baseUrl +
-          '/messages/' +
-          encodeURIComponent(encodeURIComponent(messageId)),
+        `${this.baseUrl}/messages/${encodeURIComponent(
+          encodeURIComponent(messageId),
+        )}`,
         false,
       )
       .subscribe({
@@ -157,7 +159,7 @@ export class StorageService {
           if (callback != undefined) callback(message.id);
           this.addNote(
             'success',
-            'Message with ID: ' + messageId + ' will be reprocessed',
+            `Message with ID: ${messageId} will be reprocessed`,
           );
           this.updateTable();
         },
@@ -166,43 +168,46 @@ export class StorageService {
           data = data.error?.error ?? data.error;
           this.addNote(
             'danger',
-            'Unable to resend message [' + messageId + ']. ' + data,
+            `Unable to resend message [${messageId}]. ${data}`,
           );
           this.updateTable();
         },
       }); // TODO no intercept
   }
 
-  updateTable() {
+  updateTable(): void {
     this.dtElement?.dtInstance.then((table) => table.draw());
     for (const index in this.selectedMessages) {
       this.selectedMessages[index] = false;
     }
   }
 
-  getStorageList(queryParameters: string) {
+  getStorageList(queryParameters: string): Observable<MessageStore> {
     return this.http.get<MessageStore>(this.baseUrl + queryParameters);
   }
 
-  getMessage(messageId: string) {
-    return this.http.get<Message>(this.baseUrl + '/messages/' + messageId);
+  getMessage(messageId: string): Observable<Message> {
+    return this.http.get<Message>(`${this.baseUrl}/messages/${messageId}`);
   }
 
-  postResendMessages(data: FormData) {
+  postResendMessages(data: FormData): Observable<object> {
     return this.http.post(this.baseUrl, data);
   }
 
-  postDownloadMessages(data: FormData) {
-    return this.http.post(this.baseUrl + '/messages/download', data, {
+  postDownloadMessages(data: FormData): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/messages/download`, data, {
       responseType: 'blob',
     });
   }
 
-  postChangeProcessState(data: FormData, targetState: string) {
-    return this.http.post(this.baseUrl + '/move/' + targetState, data);
+  postChangeProcessState(
+    data: FormData,
+    targetState: string,
+  ): Observable<object> {
+    return this.http.post(`${this.baseUrl}/move/${targetState}`, data);
   }
 
-  deleteMessages(data: FormData) {
+  deleteMessages(data: FormData): Observable<object> {
     return this.http.delete(this.baseUrl, { body: data });
   }
 }

@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
 export interface JmsBrowseForm {
@@ -35,21 +36,23 @@ export class JmsService {
     private appService: AppService,
   ) {}
 
-  getJms() {
+  getJms(): Observable<{
+    connectionFactories: string[];
+  }> {
     return this.http.get<{ connectionFactories: string[] }>(
-      this.appService.absoluteApiPath + 'jms',
+      `${this.appService.absoluteApiPath}jms`,
     );
   }
 
-  postJmsBrowse(formData: JmsBrowseForm) {
+  postJmsBrowse(formData: JmsBrowseForm): Observable<JmsBrowseResponse> {
     return this.http.post<JmsBrowseResponse>(
-      this.appService.absoluteApiPath + 'jms/browse',
+      `${this.appService.absoluteApiPath}jms/browse`,
       formData,
     );
   }
-  postJmsMessage(formData: FormData) {
+  postJmsMessage(formData: FormData): Observable<object> {
     return this.http.post(
-      this.appService.absoluteApiPath + 'jms/message',
+      `${this.appService.absoluteApiPath}jms/message`,
       formData,
     );
   }

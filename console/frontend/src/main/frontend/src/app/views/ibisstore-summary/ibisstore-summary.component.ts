@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import {
@@ -35,19 +35,21 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(
       () => {
         this.appConstants = this.appService.APP_CONSTANTS;
-        this.form['datasource'] = this.appConstants['jdbc.datasource.default'];
+        this.form['datasource'] = this.appConstants[
+          'jdbc.datasource.default'
+        ] as string;
       },
     );
     this._subscriptions.add(appConstantsSubscription);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.jdbcService.getJdbc().subscribe((data) => {
       Object.assign(this, data);
       this.form['datasource'] =
         this.appConstants['jdbc.datasource.default'] == undefined
           ? data.datasources[0]
-          : this.appConstants['jdbc.datasource.default'];
+          : (this.appConstants['jdbc.datasource.default'] as string);
     });
     this.route.queryParamMap.subscribe((parameters) => {
       if (parameters.has('datasource'))
@@ -55,25 +57,27 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  fetch(datasource: string) {
+  fetch(datasource: string): void {
     this.jdbcService.postJdbcSummary({ datasource: datasource }).subscribe({
       next: (data) => {
         this.error = '';
         this.result = data.result;
       },
       error: (errorData: HttpErrorResponse) => {
-        var error = errorData.error ? errorData.error.erorr : errorData.message;
-        error = error;
+        const error = errorData.error
+          ? errorData.error.erorr
+          : errorData.message;
+        this.error = error;
         this.result = [];
       },
     }); // TODO no intercept
   }
 
-  submit(formData: JdbcSummaryForm) {
+  submit(formData: JdbcSummaryForm): void {
     if (!formData) formData = { datasource: '' };
 
     if (!formData.datasource) formData.datasource = this.datasources[0] || '';
@@ -84,7 +88,7 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
     this.fetch(formData.datasource);
   }
 
-  reset() {
+  reset(): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { datasource: null },

@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
 export type Monitor = {
@@ -60,14 +61,13 @@ export class MonitorsService {
     private appService: AppService,
   ) {}
 
-  getUrl(selectedConfiguration: string, monitor: Monitor, trigger?: Trigger) {
-    let url =
-      this.appService.absoluteApiPath +
-      'configurations/' +
-      selectedConfiguration +
-      '/monitors/' +
-      monitor.name;
-    if (trigger) url += '/triggers/' + trigger.id;
+  getUrl(
+    selectedConfiguration: string,
+    monitor: Monitor,
+    trigger?: Trigger,
+  ): string {
+    let url = `${this.appService.absoluteApiPath}configurations/${selectedConfiguration}/monitors/${monitor.name}`;
+    if (trigger) url += `/triggers/${trigger.id}`;
     return url;
   }
 
@@ -75,24 +75,17 @@ export class MonitorsService {
     selectedConfiguration: string,
     monitorName: string,
     triggerId: number,
-  ) {
-    return (
-      this.appService.absoluteApiPath +
-      'configurations/' +
-      selectedConfiguration +
-      '/monitors/' +
-      monitorName +
-      '/triggers/' +
-      (triggerId > -1 ? triggerId : '')
-    );
+  ): string {
+    return `${
+      this.appService.absoluteApiPath
+    }configurations/${selectedConfiguration}/monitors/${monitorName}/triggers/${
+      triggerId > -1 ? triggerId : ''
+    }`;
   }
 
-  getMonitors(selectedConfiguration: string) {
+  getMonitors(selectedConfiguration: string): Observable<MonitorsResponse> {
     return this.http.get<MonitorsResponse>(
-      this.appService.absoluteApiPath +
-        'configurations/' +
-        selectedConfiguration +
-        '/monitors',
+      `${this.appService.absoluteApiPath}configurations/${selectedConfiguration}/monitors`,
     );
   }
 
@@ -100,7 +93,7 @@ export class MonitorsService {
     selectedConfiguration: string,
     monitorName: string,
     triggerId: number,
-  ) {
+  ): Observable<TriggerResponse> {
     return this.http.get<TriggerResponse>(
       this.getTriggerUrl(selectedConfiguration, monitorName, triggerId),
     );
@@ -111,7 +104,7 @@ export class MonitorsService {
     monitorName: string,
     triggerId: number,
     trigger: Trigger,
-  ) {
+  ): Observable<object> {
     return this.http.post(
       this.getTriggerUrl(selectedConfiguration, monitorName, triggerId),
       trigger,
@@ -123,7 +116,7 @@ export class MonitorsService {
     selectedConfiguration: string,
     monitor: Monitor,
     trigger?: Trigger,
-  ) {
+  ): Observable<object> {
     return this.http.put(this.getUrl(selectedConfiguration, monitor, trigger), {
       action,
     });
@@ -134,7 +127,7 @@ export class MonitorsService {
     selectedConfiguration: string,
     monitor: Monitor,
     trigger?: Trigger,
-  ) {
+  ): Observable<object> {
     return this.http.put(this.getUrl(selectedConfiguration, monitor, trigger), {
       action: 'edit',
       name: monitor.displayName,
@@ -148,7 +141,7 @@ export class MonitorsService {
     monitorName: string,
     triggerId: number,
     trigger: Trigger,
-  ) {
+  ): Observable<object> {
     return this.http.put(
       this.getTriggerUrl(selectedConfiguration, monitorName, triggerId),
       trigger,
@@ -159,7 +152,7 @@ export class MonitorsService {
     selectedConfiguration: string,
     monitor: Monitor,
     trigger?: Trigger,
-  ) {
+  ): Observable<object> {
     return this.http.delete(
       this.getUrl(selectedConfiguration, monitor, trigger),
     );

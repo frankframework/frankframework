@@ -32,21 +32,15 @@ export class PollerService {
 
   add(
     uri: string,
-    callback?: (data: any) => void,
+    callback?: (data: unknown) => void,
     autoStart?: boolean,
     interval?: number,
   ): PollerObject | void {
     if (!this.data[uri]) {
       this.Debug.log(
-        'Adding new poller [' +
-          uri +
-          '] autoStart [' +
-          !!autoStart +
-          '] interval [' +
-          interval +
-          ']',
+        `Adding new poller [${uri}] autoStart [${!!autoStart}] interval [${interval}]`,
       );
-      let poller = new this.createPollerObject(
+      const poller = new this.createPollerObject(
         uri,
         this.Debug,
         this.appService,
@@ -85,19 +79,20 @@ export class PollerService {
       }
     }
     return {
-      changeInterval: (interval) => {
-        let index = interval || this.appConstants['console.pollerInterval'];
+      changeInterval: (interval): void => {
+        const index =
+          interval ?? (this.appConstants['console.pollerInterval'] as number);
         for (const x in this.data) this.data[x].setInterval(index, false);
       },
-      start: () => {
+      start: (): void => {
         this.Debug.info('starting all Pollers');
         for (const x in this.data) this.data[x].fn();
       },
-      stop: () => {
+      stop: (): void => {
         this.Debug.info('stopping all Pollers');
         for (const x in this.data) this.data[x].stop();
       },
-      remove: () => {
+      remove: (): void => {
         this.Debug.info('removing all Pollers');
         for (const x in this.data) {
           this.data[x].stop();
@@ -105,7 +100,7 @@ export class PollerService {
         }
         this.data = {};
       },
-      list: () => {
+      list: (): string[] => {
         return Object.keys(this.data);
       },
     };
@@ -114,13 +109,15 @@ export class PollerService {
 
 class PollerObject {
   waiting: boolean = true;
-  pollerInterval: number = this.appConstants['console.pollerInterval'];
+  pollerInterval: number = this.appConstants[
+    'console.pollerInterval'
+  ] as number;
   fired: number = 0;
   errorList: { time: number; fired: number }[] = [];
   ai: {
-    list: any[];
+    list: number[];
     avg: number;
-    push: (object: any) => number | undefined;
+    push: (object: number) => number | undefined;
   } = {
     list: [],
     avg: 0,
@@ -147,7 +144,7 @@ class PollerObject {
     private appService: AppService,
     private http: HttpClient,
     private appConstants: AppConstants,
-    private callback?: (data: any) => void,
+    private callback?: (data: unknown) => void,
   ) {}
 
   addError(): void {
@@ -158,8 +155,8 @@ class PollerObject {
     if (this.errorList.length > 10) this.errorList.shift();
   }
 
-  getLastError(): { time: number; fired: number } {
-    return this.errorList.at(-1);
+  getLastError(): { time: number; fired: number } | null {
+    return this.errorList.at(-1) ?? null;
   }
 
   started(): boolean {
@@ -179,46 +176,42 @@ class PollerObject {
 
   fn(runOnce: boolean = false): void {
     this.fired++;
-    this.http.get(this.appService.absoluteApiPath + this.uri).subscribe({
-      next: this.callback,
-      error: () => {
-        this.addError();
+    this.http
+      .get<unknown>(this.appService.absoluteApiPath + this.uri)
+      .subscribe({
+        next: this.callback,
+        error: () => {
+          this.addError();
 
-        let e = 0;
-        for (const x in this.errorList) {
-          let y = this.errorList[x];
-          if (
-            this.fired == y.fired ||
-            this.fired - 1 == y.fired ||
-            this.fired - 2 == y.fired
-          )
-            e++;
-        }
-        this.Debug.info(
-          'Encountered unhandled exception, poller[' +
-            this.uri +
-            '] eventId[' +
-            this.fired +
-            '] retries[' +
-            e +
-            ']',
-        );
-        if (e < 3) return;
+          let errors = 0;
+          for (const x in this.errorList) {
+            const y = this.errorList[x];
+            if (
+              this.fired == y.fired ||
+              this.fired - 1 == y.fired ||
+              this.fired - 2 == y.fired
+            )
+              errors++;
+          }
+          this.Debug.info(
+            `Encountered unhandled exception, poller[${this.uri}] eventId[${this.fired}] retries[${errors}]`,
+          );
+          if (errors < 3) return;
 
-        this.Debug.warn(
-          'Max retries reached. Stopping poller [' + this.uri + ']',
-          this,
-        );
+          this.Debug.warn(
+            `Max retries reached. Stopping poller [${this.uri}]`,
+            this,
+          );
 
-        runOnce = true;
-        this.stop();
-      },
-      complete: () => {
-        if (runOnce) return;
+          runOnce = true;
+          this.stop();
+        },
+        complete: () => {
+          if (runOnce) return;
 
-        if (this.waiting) this.start();
-      },
-    });
+          if (this.waiting) this.start();
+        },
+      });
   }
 
   run(): void {
@@ -229,10 +222,10 @@ class PollerObject {
     if (this.started() && !this.waiting) return;
 
     if (this.waiting) {
-      let now = Date.now();
+      const now = Date.now();
       if (this.lastPolled) {
-        let timeBetweenLastPolledAndNow = now - this.lastPolled;
-        let interval = this.ai.push(timeBetweenLastPolledAndNow);
+        const timeBetweenLastPolledAndNow = now - this.lastPolled;
+        const interval = this.ai.push(timeBetweenLastPolledAndNow);
         if (interval! > 0 && interval! > this.pollerInterval) {
           this.setInterval(interval!, false);
           this.waitForResponse(false);
@@ -247,13 +240,7 @@ class PollerObject {
 
   setInterval(interval: number, restart?: boolean): void {
     this.Debug.info(
-      'Interval for ' +
-        this.uri +
-        ' changed to [' +
-        interval +
-        '] restart [' +
-        restart +
-        ']',
+      `Interval for ${this.uri} changed to [${interval}] restart [${restart}]`,
     );
     this.pollerInterval = interval;
     if (restart) this.restart();
@@ -264,9 +251,7 @@ class PollerObject {
     delete this.lastPolled;
     this.waiting = !!bool;
     if (bool != this.waiting)
-      this.Debug.info(
-        'waitForResponse for ' + this.uri + ' changed to: ' + bool,
-      );
+      this.Debug.info(`waitForResponse for ${this.uri} changed to: ${bool}`);
     this.start();
   }
 

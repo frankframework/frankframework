@@ -6,7 +6,6 @@ import {
   LOCALE_ID,
   OnChanges,
   OnDestroy,
-  SimpleChanges,
 } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { AppConstants, AppService } from '../app.service';
@@ -35,20 +34,21 @@ export class ToDateDirective implements OnChanges, OnDestroy {
     this._subscriptions.add(appConstantsSubscription);
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (isNaN(this.time as number)) this.time = new Date(this.time).getTime();
+  ngOnChanges(): void {
+    if (Number.isNaN(this.time as number))
+      this.time = new Date(this.time).getTime();
 
     const toDate = new Date(
-      (this.time as number) - this.appConstants['timeOffset'],
+      (this.time as number) - (this.appConstants['timeOffset'] as number),
     );
     this.element.nativeElement.textContent = formatDate(
       toDate,
-      this.appConstants['console.dateFormat'],
+      this.appConstants['console.dateFormat'] as string,
       this.locale,
     );
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 }

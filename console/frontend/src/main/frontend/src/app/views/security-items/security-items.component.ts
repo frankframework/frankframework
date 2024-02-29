@@ -33,7 +33,7 @@ export class SecurityItemsComponent implements OnInit {
     for (const adapter of Object.values(this.appService.adapters)) {
       if (adapter.pipes) {
         for (const p in adapter.pipes) {
-          var pipe: Pipe = adapter.pipes[p];
+          const pipe: Pipe = adapter.pipes[p];
 
           if (pipe.certificate) {
             this.certificates.push({

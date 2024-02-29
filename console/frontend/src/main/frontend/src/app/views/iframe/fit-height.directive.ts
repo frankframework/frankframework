@@ -17,12 +17,13 @@ export class FitHeightDirective implements OnInit {
     private sidebar: SidebarService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     window.addEventListener('resize', () => {
       this.height.window = window.innerHeight;
       this.fitHeight();
     });
 
+    // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
     const _this = this;
 
     document
@@ -49,13 +50,13 @@ export class FitHeightDirective implements OnInit {
     this.fitHeight();
   }
 
-  fitHeight() {
-    var offset = this.height.topnavbar + this.height.topinfobar;
-    var height =
+  fitHeight(): void {
+    const offset = this.height.topnavbar + this.height.topinfobar;
+    const height =
       (this.height.window > this.height.min
         ? this.height.window
         : this.height.min) - offset;
-    this.element.nativeElement.style['height'] = height + 'px';
-    this.element.nativeElement.style['minHeight'] = height + 'px';
+    this.element.nativeElement.style['height'] = `${height}px`;
+    this.element.nativeElement.style['minHeight'] = `${height}px`;
   }
 }

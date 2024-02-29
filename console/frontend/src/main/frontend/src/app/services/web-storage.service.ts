@@ -1,6 +1,4 @@
 import { Injectable } from '@angular/core';
-import { DebugService } from './debug.service';
-import { AppService } from '../app.service';
 
 @Injectable({
   providedIn: 'root',
@@ -20,12 +18,12 @@ export class WebStorageService {
     }; */
   }
 
-  get(key: string): any {
+  get(key: string): NonNullable<unknown> {
     const value = this.sessionStorage.getItem(key);
     return value ? JSON.parse(value) : value;
   }
 
-  set(key: string, value: any): void {
+  set(key: string, value: NonNullable<unknown>): void {
     this.sessionStorage.setItem(key, JSON.stringify(value));
   }
 

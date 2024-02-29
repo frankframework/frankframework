@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ParamMap, Params } from '@angular/router';
-import { Subject, catchError, of } from 'rxjs';
+import { Observable, Subject, catchError, of } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
 
@@ -16,14 +15,15 @@ export type RunState =
 export type RunStateRuntime = RunState | 'loading';
 export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
 export type AdapterStatus = 'started' | 'warning' | 'stopped';
+export type TransactionalStores = Record<
+  'DONE' | 'ERROR',
+  { name: string; numberOfMessages: number }
+>;
 
 export type Receiver = {
   isEsbJmsFFListener: boolean;
   name: string;
-  transactionalStores: Record<
-    'DONE' | 'ERROR',
-    { name: string; numberOfMessages: number }
-  >;
+  transactionalStores: TransactionalStores;
   listener: {
     name: string;
     destination: string;
@@ -139,6 +139,8 @@ export type MessageLog = {
   errorStoreCount: number;
   messages: AdapterMessage[];
   messageLevel: MessageLevel;
+  exception?: string;
+  warnings?: string;
 };
 
 export type Summary = Record<Lowercase<RunState>, number>;
@@ -225,7 +227,7 @@ export type ServerEnvironmentVariables = {
   'System Properties': Record<string, string>;
 };
 
-export type AppConstants = Record<string, string | any>;
+export type AppConstants = Record<string, string | number | boolean | object>;
 
 @Injectable({
   providedIn: 'root',
@@ -292,7 +294,7 @@ export class AppService {
     //The settings here are defaults and will be overwritten upon set in any .properties file.
 
     //Server to connect to, defaults to local server.
-    server: server,
+    server: window.server,
 
     //How often the interactive frontend should poll the FF API for new data
     'console.pollerInterval': 30_000,
@@ -315,13 +317,13 @@ export class AppService {
     getString: function (variable: keyof AppConstants) {
       return this[variable];
     },
-    getBoolean: function (variable: keyof AppConstants, dfault: any) {
+    getBoolean: function (variable: keyof AppConstants, dfault: unknown) {
       if (this[variable] != undefined) return this[variable] === 'true';
       return dfault;
     },
   };
 
-  absoluteApiPath = this.getServerPath() + 'iaf/api/';
+  absoluteApiPath = `${this.getServerPath()}iaf/api/`;
 
   private lastUpdated = 0;
   private timeout?: number;
@@ -332,43 +334,43 @@ export class AppService {
     private debugService: DebugService,
   ) {}
 
-  updateLoading(loading: boolean) {
+  updateLoading(loading: boolean): void {
     this.loadingSubject.next(loading);
   }
 
-  customBreadcrumbs(breadcrumbs: string) {
+  customBreadcrumbs(breadcrumbs: string): void {
     this.customBreadcrumbsSubject.next(breadcrumbs);
   }
 
-  triggerAppConstants() {
+  triggerAppConstants(): void {
     this.appConstantsSubject.next();
   }
 
-  triggerGDPR() {
+  triggerGDPR(): void {
     this.GDPRSubject.next();
   }
 
-  updateAdapters(adapters: Record<string, Adapter>) {
+  updateAdapters(adapters: Record<string, Adapter>): void {
     this.adapters = adapters;
     this.adaptersSubject.next(adapters);
   }
 
-  updateAlerts(alerts: Alert[]) {
+  updateAlerts(alerts: Alert[]): void {
     this.alerts = alerts;
     this.alertsSubject.next(alerts);
   }
 
   startupError: string | null = null;
-  updateStartupError(startupError: string) {
+  updateStartupError(startupError: string): void {
     this.startupError = startupError;
     this.startupErrorSubject.next(startupError);
   }
 
   configurations: Configuration[] = [];
-  updateConfigurations(configurations: Configuration[]) {
+  updateConfigurations(configurations: Configuration[]): void {
     const updatedConfigurations: Configuration[] = [];
-    for (let index in configurations) {
-      let config = configurations[index];
+    for (const index in configurations) {
+      const config = configurations[index];
       if (config.name.startsWith('IAF_')) updatedConfigurations.unshift(config);
       else updatedConfigurations.push(config);
     }
@@ -377,39 +379,39 @@ export class AppService {
   }
 
   messageLog: Record<string, MessageLog> = {};
-  updateMessageLog(messageLog: Record<string, MessageLog>) {
+  updateMessageLog(messageLog: Record<string, MessageLog>): void {
     this.messageLog = messageLog;
     this.messageLogSubject.next(messageLog);
   }
 
   instanceName = '';
-  updateInstanceName(instanceName: string) {
+  updateInstanceName(instanceName: string): void {
     this.instanceName = instanceName;
     this.instanceNameSubject.next(instanceName);
   }
 
   dtapStage = '';
-  updateDtapStage(dtapStage: string) {
+  updateDtapStage(dtapStage: string): void {
     this.dtapStage = dtapStage;
     this.dtapStageSubject.next(dtapStage);
   }
 
   databaseSchedulesEnabled = false;
-  updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean) {
+  updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean): void {
     this.databaseSchedulesEnabled = databaseSchedulesEnabled;
     this.databaseSchedulesEnabledSubject.next(databaseSchedulesEnabled);
   }
 
-  updateTitle(title: string) {
+  updateTitle(title: string): void {
     this.title.setTitle(`${this.dtapStage}-${this.instanceName} | ${title}`);
   }
 
-  addAlert(type: string, configuration: string, message: string) {
-    let line = message.match(/line \[(\d+)]/);
-    let isValidationAlert = message.includes('Validation');
-    let link =
+  addAlert(type: string, configuration: string, message: string): void {
+    const line = message.match(/line \[(\d+)]/);
+    const isValidationAlert = message.includes('Validation');
+    const link =
       line && !isValidationAlert
-        ? { name: configuration, '#': 'L' + line[1] }
+        ? { name: configuration, '#': `L${line[1]}` }
         : undefined;
     this.alerts.push({
       link: link,
@@ -419,22 +421,22 @@ export class AppService {
     });
     this.updateAlerts(this.alerts);
   }
-  addWarning(configuration: string, message: string) {
+  addWarning(configuration: string, message: string): void {
     this.addAlert('warning', configuration, message);
   }
-  addException(configuration: string, message: string) {
+  addException(configuration: string, message: string): void {
     this.addAlert('danger', configuration, message);
   }
 
   getServerPath(): string {
-    let absolutePath = this.APP_CONSTANTS['server'];
+    let absolutePath = this.APP_CONSTANTS['server'] as string;
     if (absolutePath && absolutePath.slice(-1) != '/') absolutePath += '/';
     return absolutePath;
   }
 
-  getIafVersions(UID: string) {
+  getIafVersions(UID: string): Observable<IAFRelease[] | never[]> {
     return this.http
-      .get<IAFRelease[]>('https://ibissource.org/iaf/releases/?q=' + UID)
+      .get<IAFRelease[]>(`https://ibissource.org/iaf/releases/?q=${UID}`)
       .pipe(
         catchError((error) => {
           this.debugService.error(
@@ -446,30 +448,30 @@ export class AppService {
       );
   }
 
-  getServerInfo() {
-    return this.http.get<ServerInfo>(this.absoluteApiPath + 'server/info');
+  getServerInfo(): Observable<ServerInfo> {
+    return this.http.get<ServerInfo>(`${this.absoluteApiPath}server/info`);
   }
 
-  getConfigurations() {
+  getConfigurations(): Observable<Configuration[]> {
     return this.http.get<Configuration[]>(
-      this.absoluteApiPath + 'server/configurations',
+      `${this.absoluteApiPath}server/configurations`,
     );
   }
 
-  getAdapters() {
+  getAdapters(): Observable<Record<string, Adapter>> {
     return this.http.get<Record<string, Adapter>>(
-      this.absoluteApiPath + 'adapters',
+      `${this.absoluteApiPath}adapters`,
     );
   }
 
-  getEnvironmentVariables() {
+  getEnvironmentVariables(): Observable<ServerEnvironmentVariables> {
     return this.http.get<ServerEnvironmentVariables>(
-      this.absoluteApiPath + 'environmentvariables',
+      `${this.absoluteApiPath}environmentvariables`,
     );
   }
 
-  getServerHealth() {
-    return this.http.get(this.absoluteApiPath + 'server/health', {
+  getServerHealth(): Observable<string> {
+    return this.http.get(`${this.absoluteApiPath}server/health`, {
       responseType: 'text',
     });
   }
@@ -477,7 +479,7 @@ export class AppService {
   updateAdapterSummary(
     configurationName: string,
     changedConfiguration: boolean,
-  ) {
+  ): void {
     const updated = Date.now();
     if (updated - 3000 < this.lastUpdated && !changedConfiguration) {
       //3 seconds
@@ -543,7 +545,14 @@ export class AppService {
     this.summariesSubject.next();
   }
 
-  getProcessStateIcon(processState: string) {
+  getProcessStateIcon(
+    processState: string,
+  ):
+    | 'fa-server'
+    | 'fa-gears'
+    | 'fa-sign-in'
+    | 'fa-pause-circle'
+    | 'fa-times-circle' {
     switch (processState) {
       case 'Available': {
         return 'fa-server';
@@ -557,14 +566,16 @@ export class AppService {
       case 'Hold': {
         return 'fa-pause-circle';
       }
-      case 'Error':
+      // case 'Error':
       default: {
         return 'fa-times-circle';
       }
     }
   }
 
-  getProcessStateIconColor(processState: string) {
+  getProcessStateIconColor(
+    processState: string,
+  ): 'success' | 'warning' | 'danger' {
     switch (processState) {
       case 'Available': {
         return 'success';
@@ -578,21 +589,21 @@ export class AppService {
       case 'Hold': {
         return 'warning';
       }
-      case 'Error':
+      // case 'Error':
       default: {
         return 'danger';
       }
     }
   }
 
-  getUserLocale() {
+  getUserLocale(): string {
     if (window.navigator.languages) {
       return window.navigator.languages[0];
     }
     return window.navigator.language;
   }
 
-  copyToClipboard(text: string) {
+  copyToClipboard(text: string): void {
     const element = document.createElement('textarea');
     element.value = text;
     element.setAttribute('readonly', '');

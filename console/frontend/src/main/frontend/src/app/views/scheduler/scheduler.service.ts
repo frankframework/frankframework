@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { Adapter, AppService } from 'src/app/app.service';
 
 export type Trigger = {
@@ -42,55 +43,43 @@ export class SchedulerService {
     private appService: AppService,
   ) {}
 
-  getJob(group: string, jobName: string) {
+  getJob(group: string, jobName: string): Observable<JobResponse> {
     return this.http.get<JobResponse>(
-      this.appService.absoluteApiPath +
-        'schedules/' +
-        group +
-        '/jobs/' +
-        jobName,
+      `${this.appService.absoluteApiPath}schedules/${group}/jobs/${jobName}`,
     );
   }
 
-  postSchedule(data: FormData) {
-    return this.http.post(this.appService.absoluteApiPath + 'schedules', data);
+  postSchedule(data: FormData): Observable<object> {
+    return this.http.post(`${this.appService.absoluteApiPath}schedules`, data);
   }
 
-  putSchedulesAction(action: string) {
-    return this.http.put(this.appService.absoluteApiPath + 'schedules', {
+  putSchedulesAction(action: string): Observable<object> {
+    return this.http.put(`${this.appService.absoluteApiPath}schedules`, {
       action,
     });
   }
 
-  putScheduleJobAction(jobGroup: string, jobName: string, action: string) {
+  putScheduleJobAction(
+    jobGroup: string,
+    jobName: string,
+    action: string,
+  ): Observable<object> {
     return this.http.put(
-      this.appService.absoluteApiPath +
-        'schedules/' +
-        jobGroup +
-        '/jobs/' +
-        jobName,
+      `${this.appService.absoluteApiPath}schedules/${jobGroup}/jobs/${jobName}`,
       { action },
     );
   }
 
-  putJob(group: string, jobName: string, data: FormData) {
+  putJob(group: string, jobName: string, data: FormData): Observable<object> {
     return this.http.put(
-      this.appService.absoluteApiPath +
-        'schedules/' +
-        group +
-        '/jobs/' +
-        jobName,
+      `${this.appService.absoluteApiPath}schedules/${group}/jobs/${jobName}`,
       data,
     );
   }
 
-  deleteScheduleJob(jobGroup: string, jobName: string) {
+  deleteScheduleJob(jobGroup: string, jobName: string): Observable<object> {
     return this.http.delete(
-      this.appService.absoluteApiPath +
-        'schedules/' +
-        jobGroup +
-        '/jobs/' +
-        jobName,
+      `${this.appService.absoluteApiPath}schedules/${jobGroup}/jobs/${jobName}`,
     );
   }
 }

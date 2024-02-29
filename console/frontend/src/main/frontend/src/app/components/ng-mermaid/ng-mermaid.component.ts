@@ -8,9 +8,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
   ViewChild,
-  ViewEncapsulation,
 } from '@angular/core';
 import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,7 +29,7 @@ import { v4 as uuidv4 } from 'uuid';
   ],
 })
 export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() nmModel?: any;
+  @Input() nmModel?: string;
   @Input() nmRefreshInterval?: number;
   @Output() nmInitCallback = new EventEmitter();
 
@@ -46,20 +44,20 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor() {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.render();
     this.initialized = true;
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(): void {
     if (this.initialized) this.render();
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.mermaidEl.nativeElement.innerHTML = 'Loading...';
   }
 
-  render() {
+  render(): void {
     if (this.nmRefreshInterval) {
       this.interval = this.nmRefreshInterval || this.interval;
     }
@@ -83,7 +81,7 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
             const uid = `m${uuidv4()}`;
 
             mermaid
-              .render(uid, this.nmModel, mermaidContainer)
+              .render(uid, this.nmModel!, mermaidContainer)
               .then(({ svg, bindFunctions }) => {
                 mermaidContainer.innerHTML = svg;
                 const svgElement = mermaidContainer.firstChild as SVGSVGElement;
@@ -108,15 +106,15 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  getMermaidSvgElement() {
+  getMermaidSvgElement(): SVGSVGElement | null {
     return this.mermaidSvgElement;
   }
 
-  private handleError(e: Error) {
-    console.error(e);
+  private handleError(error: Error): void {
+    console.error(error);
     let errorContainer = '';
     errorContainer += `<div style="display: inline-block; text-align: left; color: red; margin: 8px auto; font-family: Monaco,Consolas,Liberation Mono,Courier New,monospace">`;
-    for (const v of e.message.split('\n')) {
+    for (const v of error.message.split('\n')) {
       errorContainer += `<span>${v}</span><br/>`;
     }
     errorContainer += `</div>`;

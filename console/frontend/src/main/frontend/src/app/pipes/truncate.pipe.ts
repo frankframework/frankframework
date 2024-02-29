@@ -1,4 +1,4 @@
-import { ElementRef, Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform } from '@angular/core';
 import { AppService } from '../app.service';
 
 @Pipe({
@@ -20,11 +20,8 @@ export class TruncatePipe implements PipeTransform {
       });
     }
 
-    return (
-      value.slice(0, Math.max(0, length)) +
-      '... (' +
-      (value.length - length) +
-      ' characters more)'
-    );
+    return `${value.slice(0, Math.max(0, length))}... (${
+      value.length - length
+    } characters more)`;
   }
 }

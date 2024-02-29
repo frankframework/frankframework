@@ -6,6 +6,7 @@ import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
 import {
   Adapter,
+  AdapterMessage,
   AdapterStatus,
   Alert,
   AppService,
@@ -84,7 +85,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     private appService: AppService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.queryParamMap.subscribe((parameters) => {
       this.route.fragment.subscribe((fragment) => {
         const hash = fragment; // let hash = this.$location.hash();
@@ -166,23 +167,23 @@ export class StatusComponent implements OnInit, OnDestroy {
     this._subscriptions.add(adaptersSubscription);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  applyFilter(filterName: keyof Filter) {
+  applyFilter(filterName: keyof Filter): void {
     const filter = { ...this.filter };
     filter[filterName] = !filter[filterName];
     this.filter = filter;
     this.updateQueryParams();
   }
 
-  showContent(adapter: Adapter) {
+  showContent(adapter: Adapter): boolean {
     return this.adapterShowContent[`${adapter.configuration}/${adapter.name}`];
   }
 
-  updateQueryParams() {
-    let filterString = [];
+  updateQueryParams(): void {
+    const filterString: string[] = [];
     let filterCount = 0;
     for (const f in this.filter) {
       if (this.filter[f as keyof Filter]) {
@@ -190,7 +191,7 @@ export class StatusComponent implements OnInit, OnDestroy {
         filterCount += 1;
       }
     }
-    let transitionObject: Record<string, string> = {};
+    const transitionObject: Record<string, string> = {};
     if (filterCount < 3) transitionObject['filter'] = filterString.join('+');
     if (this.selectedConfiguration != 'All')
       transitionObject['configuration'] = this.selectedConfiguration;
@@ -204,33 +205,33 @@ export class StatusComponent implements OnInit, OnDestroy {
     });
   }
 
-  collapseAll() {
+  collapseAll(): void {
     this.loadFlowInline = true;
     for (const adapter of Object.keys(this.adapters)) {
       this.adapterShowContent[adapter] = false;
     }
   }
 
-  expandAll() {
+  expandAll(): void {
     this.loadFlowInline = false;
     for (const adapter of Object.keys(this.adapters)) {
       this.adapterShowContent[adapter] = true;
     }
   }
 
-  stopAll() {
+  stopAll(): void {
     this.statusService
       .updateAdapters('stop', this.getCompiledAdapterList())
       .subscribe();
   }
 
-  startAll() {
+  startAll(): void {
     this.statusService
       .updateAdapters('start', this.getCompiledAdapterList())
       .subscribe();
   }
 
-  reloadConfiguration() {
+  reloadConfiguration(): void {
     if (this.selectedConfiguration == 'All') return;
 
     this.isConfigReloading[this.selectedConfiguration] = true;
@@ -244,7 +245,7 @@ export class StatusComponent implements OnInit, OnDestroy {
         });
       });
   }
-  fullReload() {
+  fullReload(): void {
     this.reloading = true;
     this.Poller.getAll().stop();
     this.statusService.updateConfigurations('reload').subscribe(() => {
@@ -255,15 +256,16 @@ export class StatusComponent implements OnInit, OnDestroy {
     });
   }
 
-  startPollingForConfigurationStateChanges(callback?: () => void) {
+  startPollingForConfigurationStateChanges(callback?: () => void): void {
     this.Poller.add(
       'server/configurations',
-      (configurations) => {
+      (data) => {
+        const configurations = data as Configuration[];
         this.appService.updateConfigurations(configurations);
 
         let ready = true;
-        for (let index in configurations) {
-          let config = configurations[index];
+        for (const index in configurations) {
+          const config = configurations[index];
           //When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
           if (
             config.state != 'STARTED' &&
@@ -283,22 +285,21 @@ export class StatusComponent implements OnInit, OnDestroy {
     );
   }
 
-  showReferences() {
+  showReferences(): void {
     window.open(this.configurationFlowDiagram!);
   }
 
-  updateConfigurationFlowDiagram(configurationName: string) {
-    let flowUrl: string;
-    flowUrl =
-      configurationName == 'All' ? '?flow=true' : configurationName + '/flow';
+  updateConfigurationFlowDiagram(configurationName: string): void {
+    const flowUrl =
+      configurationName == 'All' ? '?flow=true' : `${configurationName}/flow`;
     this.configurationFlowDiagram =
       this.statusService.getConfigurationFlowDiagramUrl(flowUrl);
   }
 
-  check4StubbedConfigs() {
+  check4StubbedConfigs(): void {
     this.configurations = this.appService.configurations;
-    for (let index in this.appService.configurations) {
-      let config = this.appService.configurations[index];
+    for (const index in this.appService.configurations) {
+      const config = this.appService.configurations[index];
       this.isConfigStubbed[config.name] = config.stubbed;
       this.isConfigReloading[config.name] =
         config.state == 'STARTING' || config.state == 'STOPPING'; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
@@ -306,39 +307,41 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   // Commented out in template, so unused
-  closeAlert(index: number) {
+  closeAlert(index: number): void {
     this.appService.alerts.splice(index, 1);
     this.appService.updateAlerts(this.appService.alerts);
   }
 
-  changeConfiguration(name: string) {
+  changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
     this.appService.updateAdapterSummary(name, true);
     this.updateQueryParams();
     this.updateConfigurationFlowDiagram(name);
   }
 
-  getTransactionalStores(receiver: Receiver) {
+  getTransactionalStores(
+    receiver: Receiver,
+  ): { name: string; numberOfMessages: number }[] {
     return Object.values(receiver.transactionalStores);
   }
 
-  getMessageLog(selectedConfiguration: string) {
+  getMessageLog(selectedConfiguration: string): AdapterMessage[] {
     return this.messageLog[selectedConfiguration].messages ?? [];
   }
 
-  startAdapter(adapter: Adapter) {
+  startAdapter(adapter: Adapter): void {
     adapter.state = 'starting';
     this.statusService
       .updateAdapter(adapter.configuration, adapter.name, 'start')
       .subscribe();
   }
-  stopAdapter(adapter: Adapter) {
+  stopAdapter(adapter: Adapter): void {
     adapter.state = 'stopping';
     this.statusService
       .updateAdapter(adapter.configuration, adapter.name, 'stop')
       .subscribe();
   }
-  startReceiver(adapter: Adapter, receiver: Receiver) {
+  startReceiver(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
     this.statusService
       .updateReceiver(
@@ -349,7 +352,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       )
       .subscribe();
   }
-  stopReceiver(adapter: Adapter, receiver: Receiver) {
+  stopReceiver(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
     this.statusService
       .updateReceiver(
@@ -360,7 +363,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       )
       .subscribe();
   }
-  addThread(adapter: Adapter, receiver: Receiver) {
+  addThread(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
     this.statusService
       .updateReceiver(
@@ -371,7 +374,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       )
       .subscribe();
   }
-  removeThread(adapter: Adapter, receiver: Receiver) {
+  removeThread(adapter: Adapter, receiver: Receiver): void {
     receiver.state = 'loading';
     this.statusService
       .updateReceiver(
@@ -383,7 +386,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
-  navigateByAlert(alert: Alert) {
+  navigateByAlert(alert: Alert): void {
     if (alert.link) {
       this.router.navigate(['configuration', alert.link.name], {
         fragment: alert.link['#'],
@@ -391,7 +394,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getCompiledAdapterList() {
+  private getCompiledAdapterList(): string[] {
     const compiledAdapterList: string[] = [];
     const adapters = ConfigurationFilter(
       this.adapters,
@@ -401,12 +404,12 @@ export class StatusComponent implements OnInit, OnDestroy {
     for (const adapter of Object.values(adapters)) {
       const configuration = adapter.configuration;
       const adapterName = adapter.name;
-      compiledAdapterList.push(configuration + '/' + adapterName);
+      compiledAdapterList.push(`${configuration}/${adapterName}`);
     }
     return compiledAdapterList;
   }
 
-  private determineShowContent(adapter: Adapter) {
+  private determineShowContent(adapter: Adapter): boolean {
     if (adapter.status == 'stopped') {
       return true;
     } else if (this.adapterName != '' && adapter.name == this.adapterName) {
@@ -417,7 +420,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     }
   }
 
-  private updateAdapterShownContent() {
+  private updateAdapterShownContent(): void {
     for (const adapter in this.adapters) {
       if (!this.adapterShowContent.hasOwnProperty(adapter))
         this.adapterShowContent[adapter] = this.determineShowContent(

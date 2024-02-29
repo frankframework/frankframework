@@ -12,7 +12,7 @@ export class PagesTitleStrategy extends TitleStrategy {
     super();
   }
 
-  override updateTitle(routerState: RouterStateSnapshot) {
+  override updateTitle(routerState: RouterStateSnapshot): void {
     const title = this.buildTitle(routerState);
     if (title !== undefined) {
       const dtapStage = this.appService.dtapStage;

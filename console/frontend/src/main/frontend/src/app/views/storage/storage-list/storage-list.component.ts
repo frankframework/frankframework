@@ -1,7 +1,6 @@
 import {
   AfterViewInit,
   Component,
-  ElementRef,
   OnInit,
   TemplateRef,
   ViewChild,
@@ -11,7 +10,7 @@ import type {
   ADTSettings,
 } from 'angular-datatables/src/models/settings';
 // import { DataTable } from "simple-datatables"
-import { StorageService } from '../storage.service';
+import { Note, StorageService } from '../storage.service';
 import { DataTableDirective } from 'angular-datatables';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { Subject } from 'rxjs';
@@ -94,10 +93,10 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
   // service bindings
   storageParams = this.storageService.storageParams;
-  closeNote = (index: number) => {
+  closeNote = (index: number): void => {
     this.storageService.closeNote(index);
   };
-  getProcessStateIcon = (processState: string) => {
+  getProcessStateIcon = (processState: string): void => {
     this.appService.getProcessStateIcon(processState);
   };
 
@@ -115,16 +114,15 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     private appService: AppService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.storageService.closeNotes();
 
     this.appService.customBreadcrumbs(
-      'Adapter > ' +
-        (this.storageParams['storageSource'] == 'pipes'
-          ? 'Pipes > ' + this.storageParams['storageSourceName'] + ' > '
-          : '') +
-        this.storageParams['processState'] +
-        ' List',
+      `Adapter > ${
+        this.storageParams['storageSource'] == 'pipes'
+          ? `Pipes > ${this.storageParams['storageSourceName']} > `
+          : ''
+      }${this.storageParams['processState']} List`,
     );
     // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List";
 
@@ -141,20 +139,22 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       order: [[3, 'asc']],
       columns: this.initialColumns,
       // sAjaxDataProp: 'messages',
-      ajax: (data: Record<any, any>, callback, settings) => {
-        const start = data['start'];
-        const length = data['length'];
-        const order = data['order'][0];
-        const direction = order.dir; // asc or desc
+      ajax: (data, callback): void => {
+        const dataRecord = data as Record<string, NonNullable<unknown>>;
+        const start = dataRecord['start'];
+        const length = dataRecord['length'];
+        const order = (dataRecord['order'] as unknown[])[0] as
+          | { dir: 'asc' }
+          | { dir: 'desc' };
+        const direction = order.dir;
 
-        let queryParameters =
-          '?max=' + length + '&skip=' + start + '&sort=' + direction;
+        let queryParameters = `?max=${length}&skip=${start}&sort=${direction}`;
         const search = this.search;
         const searchSession: Record<keyof typeof search, string> = {};
-        for (let column in search) {
-          let text = search[column as keyof typeof search];
+        for (const column in search) {
+          const text = search[column as keyof typeof search];
           if (text) {
-            queryParameters += '&' + column + '=' + text;
+            queryParameters += `&${column}=${text}`;
             searchSession[column as keyof typeof search] = text;
           }
         }
@@ -163,7 +163,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
           next: (response) => {
             this.targetStates = response.targetStates ?? {};
             callback({
-              draw: data['draw'],
+              draw: dataRecord['draw'],
               recordsTotal: response.totalMessages,
               recordsFiltered: response.recordsFiltered,
               data: response.messages,
@@ -174,7 +174,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
               this.storageService.selectedMessages[message.id] = false;
             }
           },
-          error: (error) => {
+          error: () => {
             this.searching = false;
             this.clearSearchLadda = false;
           },
@@ -182,7 +182,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       },
     };
 
-    let searchSession = this.Session.get('search');
+    const searchSession = this.Session.get('search');
 
     this.search = {
       id: searchSession ? searchSession['id'] : '',
@@ -196,10 +196,10 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       message: searchSession ? searchSession['message'] : '',
     };
 
-    let search = this.search;
+    const search = this.search;
     if (search) {
-      for (let column in search) {
-        let value = search[column as keyof typeof search];
+      for (const column in search) {
+        const value = search[column as keyof typeof search];
         if (value && value != '') {
           this.filterBoxExpanded = true;
         }
@@ -207,7 +207,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     this.storageService.dtElement = this.dataTable;
     const columns: ADTColumns[] = [...this.initialColumns];
 
@@ -221,7 +221,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         column['ngTemplateRef'] = {
           ref: this.dateDt,
           context: {
-            captureEvents: () => {}, // required for some weird reason
+            captureEvents: (): void => {}, // required for some weird reason
             userData: {
               column: column.data,
             },
@@ -233,20 +233,20 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     this.dtOptions = {
       ...this.dtOptions,
       stateSave: true,
-      stateSaveCallback: (settings, data: Record<any, any>) => {
-        this.Session.set('DataTable' + this.storageParams.processState, data);
+      stateSaveCallback: (settings, data): void => {
+        this.Session.set(`DataTable${this.storageParams.processState}`, data);
       },
-      stateLoadCallback: (settings) => {
-        return this.Session.get('DataTable' + this.storageParams.processState);
+      stateLoadCallback: (): void => {
+        return this.Session.get(`DataTable${this.storageParams.processState}`);
       },
       columns: columns,
       columnDefs: [
         {
           targets: 0,
           // Targets is index 0 but render function goes over every column
-          render: (data, type, row) => {
+          render: (data, type): unknown => {
             if (type === 'display' && this.truncated) {
-              for (let index in data) {
+              for (const index in data) {
                 if (index == 'id') continue;
                 const columnData = data[index];
                 if (typeof columnData == 'string' && columnData.length > 30) {
@@ -265,10 +265,10 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     };
 
     const filterCookie = this.webStorageService.get(
-      this.storageParams.processState + 'Filter',
+      `${this.storageParams.processState}Filter`,
     );
     if (filterCookie) {
-      for (let column of columns) {
+      for (const column of columns) {
         if (column.name && filterCookie[column.name] === false) {
           column.visible = false;
         }
@@ -313,12 +313,12 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     this.dtTrigger.next(this.dtOptions);
   }
 
-  getNotes() {
+  getNotes(): Note[] {
     return this.storageService.notes;
   }
 
-  getFormData() {
-    let messageIds: string[] = [];
+  getFormData(): FormData {
+    const messageIds: string[] = [];
     for (const index in this.storageService.selectedMessages) {
       if (this.storageService.selectedMessages[index]) {
         messageIds.push(index);
@@ -326,17 +326,17 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       }
     }
 
-    let fd = new FormData();
-    fd.append('messageIds', messageIds as any);
+    const fd = new FormData();
+    fd.append('messageIds', messageIds as unknown as string);
     return fd;
   }
 
-  searchUpdated() {
+  searchUpdated(): void {
     this.searching = true;
     this.storageService.updateTable();
   }
 
-  truncate() {
+  truncate(): void {
     this.truncated = !this.truncated;
     this.truncateButtonText = this.truncated
       ? 'Show original'
@@ -344,21 +344,21 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     this.storageService.updateTable();
   }
 
-  clearSearch() {
+  clearSearch(): void {
     this.clearSearchLadda = true;
     this.Session.remove('search');
     this.search = {};
     this.storageService.updateTable();
   }
 
-  updateFilter(column: string) {
+  updateFilter(column: string): void {
     this.webStorageService.set(
-      this.storageParams.processState + 'Filter',
+      `${this.storageParams.processState}Filter`,
       this.displayColumn,
     );
 
     this.dataTable.dtInstance.then((table) => {
-      let tableColumn = table.column(column + ':name');
+      const tableColumn = table.column(`${column}:name`);
       if (tableColumn && tableColumn.length == 1)
         tableColumn.visible(
           this.displayColumn[column as keyof typeof this.displayColumn],
@@ -367,19 +367,19 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  selectAll() {
+  selectAll(): void {
     for (const index in this.storageService.selectedMessages) {
       this.storageService.selectedMessages[index] = true;
     }
   }
 
-  unselectAll() {
+  unselectAll(): void {
     for (const index in this.storageService.selectedMessages) {
       this.storageService.selectedMessages[index] = false;
     }
   }
 
-  resendMessages() {
+  resendMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesResending = true;
@@ -404,7 +404,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  deleteMessages() {
+  deleteMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesDeleting = true;
@@ -429,7 +429,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  downloadMessages() {
+  downloadMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesDownloading = true;
@@ -461,7 +461,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  changeProcessState(targetState: string) {
+  changeProcessState(targetState: string): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.changingProcessState = true;
@@ -470,7 +470,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
           this.changingProcessState = false;
           this.storageService.addNote(
             'success',
-            'Successfully changed the state of messages to ' + targetState,
+            `Successfully changed the state of messages to ${targetState}`,
           );
           this.storageService.updateTable();
         },
@@ -486,8 +486,8 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  isSelectedMessages(data: FormData) {
-    let selectedMessages = data.get('messageIds') as any as string[];
+  isSelectedMessages(data: FormData): boolean {
+    const selectedMessages = data.get('messageIds') as unknown as string[];
     if (!selectedMessages || selectedMessages.length === 0) {
       this.SweetAlert.Warning('No message selected!');
       return false;

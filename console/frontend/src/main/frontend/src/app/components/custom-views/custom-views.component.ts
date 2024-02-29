@@ -21,19 +21,23 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
     this.appConstants = this.appService.APP_CONSTANTS;
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(
       () => {
         this.appConstants = this.appService.APP_CONSTANTS;
-        let customViews = this.appConstants['customViews.names'];
+        const customViews = this.appConstants['customViews.names'] as string;
         if (customViews == undefined) return;
 
         if (customViews.length > 0) {
-          let views = customViews.split(',');
+          const views = customViews.split(',');
           for (const index in views) {
-            let viewId = views[index];
-            let name = this.appConstants['customViews.' + viewId + '.name'];
-            let url = this.appConstants['customViews.' + viewId + '.url'];
+            const viewId = views[index];
+            const name = this.appConstants[
+              `customViews.${viewId}.name`
+            ] as string;
+            const url = this.appConstants[
+              `customViews.${viewId}.url`
+            ] as string;
             if (name && url)
               this.customViews.push({
                 view: viewId,
@@ -47,7 +51,7 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
     this._subscriptions.add(appConstantsSubscription);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 }

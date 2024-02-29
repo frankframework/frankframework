@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 
@@ -64,14 +65,14 @@ export class AdapterstatisticsService {
     private Misc: MiscService,
   ) {}
 
-  getStatistics(configurationName: string, adapterName: string) {
+  getStatistics(
+    configurationName: string,
+    adapterName: string,
+  ): Observable<Statistics> {
     return this.http.get<Statistics>(
-      this.appService.absoluteApiPath +
-        'configurations/' +
-        this.Misc.escapeURL(configurationName) +
-        '/adapters/' +
-        this.Misc.escapeURL(adapterName) +
-        '/statistics',
+      `${this.appService.absoluteApiPath}configurations/${this.Misc.escapeURL(
+        configurationName,
+      )}/adapters/${this.Misc.escapeURL(adapterName)}/statistics`,
     );
   }
 }
