@@ -14,7 +14,7 @@
 >
   <ng-mermaid
     *ngIf="loadInline; else mermaidModalBtn"
-    [nmModel]="flow.data?.body"
+    [nmModel]="flow.data?.body ?? ''"
     [nmRefreshInterval]="500"
   ></ng-mermaid>
   <ng-template #mermaidModalBtn>

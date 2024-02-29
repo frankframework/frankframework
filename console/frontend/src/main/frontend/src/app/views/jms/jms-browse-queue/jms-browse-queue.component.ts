@@ -30,7 +30,8 @@ export class JmsBrowseQueueComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const browseJmsQueue = this.webStorageService.get('browseJmsQueue');
+    const browseJmsQueue =
+      this.webStorageService.get<JmsBrowseForm>('browseJmsQueue');
     if (browseJmsQueue) this.form = browseJmsQueue;
 
     this.jmsService.getJms().subscribe((data) => {

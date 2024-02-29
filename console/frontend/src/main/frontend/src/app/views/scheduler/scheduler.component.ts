@@ -80,8 +80,12 @@ export class SchedulerComponent implements OnInit, OnDestroy {
     this.pollerService.add(
       'schedules',
       (data) => {
-        this.scheduler = data.scheduler;
-        this.jobs = data.jobs;
+        const result = data as {
+          scheduler: Scheduler;
+          jobs: Record<string, Job[]>;
+        };
+        this.scheduler = result.scheduler;
+        this.jobs = result.jobs;
 
         this.refreshing = false;
         if (!this.initialized) {

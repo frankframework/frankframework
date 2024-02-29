@@ -6,7 +6,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class FormatStatisticsPipe implements PipeTransform {
   transform(
-    input: Record<string, string | number>,
+    input: Record<string, string | number | null>,
     format: Record<string, unknown>,
   ): KeyValue<string, string>[] {
     const formatted: KeyValue<string, string>[] = [];

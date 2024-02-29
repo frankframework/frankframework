@@ -53,7 +53,8 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     );
     this._subscriptions.add(appConstantsSubscription);
 
-    const executeQueryCookie = this.webStorageService.get('executeQuery');
+    const executeQueryCookie =
+      this.webStorageService.get<JdbcQueryForm>('executeQuery');
 
     this.jdbcService.getJdbc().subscribe((data) => {
       Object.assign(this, data);

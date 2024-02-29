@@ -19,6 +19,17 @@ import { SessionService } from 'src/app/services/session.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
 
+type DisplayColumn = {
+  id: boolean;
+  insertDate: boolean;
+  host: boolean;
+  originalId: boolean;
+  correlationId: boolean;
+  comment: boolean;
+  expiryDate: boolean;
+  label: boolean;
+};
+
 @Component({
   selector: 'app-storage-list',
   templateUrl: './storage-list.component.html',
@@ -40,7 +51,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   searching = false;
   clearSearchLadda = false;
   messagesDownloading = false;
-  displayColumn = {
+  displayColumn: DisplayColumn = {
     id: true,
     insertDate: true,
     host: true,
@@ -182,7 +193,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       },
     };
 
-    const searchSession = this.Session.get('search');
+    const searchSession = this.Session.get<Record<string, string>>('search');
 
     this.search = {
       id: searchSession ? searchSession['id'] : '',
@@ -264,12 +275,15 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       ],
     };
 
-    const filterCookie = this.webStorageService.get(
+    const filterCookie = this.webStorageService.get<DisplayColumn>(
       `${this.storageParams.processState}Filter`,
     );
     if (filterCookie) {
       for (const column of columns) {
-        if (column.name && filterCookie[column.name] === false) {
+        if (
+          column.name &&
+          filterCookie[column.name as keyof DisplayColumn] === false
+        ) {
           column.visible = false;
         }
       }

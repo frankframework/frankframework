@@ -18,12 +18,12 @@ export class WebStorageService {
     }; */
   }
 
-  get(key: string): NonNullable<unknown> {
+  get<T>(key: string): T {
     const value = this.sessionStorage.getItem(key);
     return value ? JSON.parse(value) : value;
   }
 
-  set(key: string, value: NonNullable<unknown>): void {
+  set<T>(key: string, value: T): void {
     this.sessionStorage.setItem(key, JSON.stringify(value));
   }
 
