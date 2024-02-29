@@ -111,6 +111,8 @@ public class LarvaTool {
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
 	public static final int RESULT_AUTOSAVED = 2;
+	private static final String LEGACY_PACKAGE_NAME_LARVA = "org.frankframework.testtool.";
+	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
 	private static boolean autoSaveDiffs = false;
@@ -1013,8 +1015,10 @@ public class LarvaTool {
 		if (e.getValue() == null || !propertyName.toString().endsWith(".className")) {
 			return e;
 		}
-		String newClassName = e.getValue().toString().replace(ClassNameRewriter.LEGACY_PACKAGE_NAME, ClassNameRewriter.ORG_FRANKFRAMEWORK_PACKAGE_NAME);
-		newClassName = newClassName.replace(ClassNameRewriter.LEGACY_PACKAGE_NAME_LARVA, ClassNameRewriter.CURRENT_PACKAGE_NAME_LARVA);
+		String newClassName = e.getValue()
+				.toString()
+				.replace(ClassNameRewriter.LEGACY_PACKAGE_NAME, ClassNameRewriter.ORG_FRANKFRAMEWORK_PACKAGE_NAME)
+				.replace(LEGACY_PACKAGE_NAME_LARVA, CURRENT_PACKAGE_NAME_LARVA);
 		return Map.entry(propertyName, newClassName);
 	}
 
