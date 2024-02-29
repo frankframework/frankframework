@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,6 +35,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipException;
 
 import javax.annotation.Nonnull;
@@ -50,6 +52,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
+import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.MessageWrapper;
@@ -575,7 +578,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 				int blobColumnIndex = ++parPos;
 				Object blobHandle = dbmsSupport.getBlobHandle(stmt, blobColumnIndex);
-				try (ObjectOutputStream oos = new ObjectOutputStream(JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, stmt, blobColumnIndex, isBlobsCompressed()))) {
+				try (ObjectOutputStream oos = new ObjectOutputStream(getBlobOutputStream(dbmsSupport, blobHandle, stmt, blobColumnIndex, isBlobsCompressed()))) {
 					oos.writeObject(message);
 				}
 				dbmsSupport.applyBlobParameter(stmt, blobColumnIndex, blobHandle);
@@ -795,12 +798,21 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-
-
 	@Override
 	public RawMessageWrapper<S> getMessage(String storageKey) throws ListenerException {
 		RawMessageWrapper<S> result = browseMessage(storageKey);
 		deleteMessage(storageKey);
+		return result;
+	}
+
+	private static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, PreparedStatement stmt, int columnIndex, boolean compressBlob) throws DbmsException, SQLException {
+		OutputStream result;
+		OutputStream out = dbmsSupport.getBlobOutputStream(stmt, columnIndex, blobUpdateHandle);
+		if (compressBlob) {
+			result = new DeflaterOutputStream(out, true);
+		} else {
+			result = out;
+		}
 		return result;
 	}
 
