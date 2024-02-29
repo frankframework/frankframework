@@ -34,16 +34,12 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.frankframework.core.IPipe;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.IPipe;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -53,11 +49,14 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FilePipe;
 import org.frankframework.senders.FileSender;
 import org.frankframework.stream.Message;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
- * FileHandler, available to the Ibis developer as {@link FileSender} and
- * {@link FilePipe}, allows to write to or read from a file.
+ * FileHandler, available as {@link FileSender} and {@link FilePipe}, allows to write to or read from a file.
  *
  * <p>
  * Actions take place on the file specified by the fileName attribute (or when
@@ -92,7 +91,7 @@ import org.frankframework.stream.Message;
  */
 public class FileHandler implements IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
@@ -113,15 +112,15 @@ public class FileHandler implements IScopeProvider {
 	protected boolean deleteEmptyDirectory = false;
 	protected boolean streamResultToServlet=false;
 
-	protected List transformers;
+	protected List<TransformerAction> transformers;
 	protected byte[] eolArray=null;
 
 	/**
 	 * @see IPipe#configure()
 	 */
 	public void configure() throws ConfigurationException {
-		// translation action seperated string to Transformers
-		transformers = new LinkedList();
+		// translation action separated string to Transformers
+		transformers = new LinkedList<>();
 		if (StringUtils.isEmpty(getActions()))
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 
@@ -163,8 +162,8 @@ public class FileHandler implements IScopeProvider {
 		}
 
 		// configure the transformers
-		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
-			((TransformerAction)it.next()).configure();
+		for (TransformerAction transformer : transformers) {
+		  transformer.configure();
 		}
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
@@ -172,11 +171,11 @@ public class FileHandler implements IScopeProvider {
 	public Object handle(Message input, PipeLineSession session, ParameterList paramList) throws Exception {
 		Object output = null;
 		if (input!=null) {
-			if (input.asObject() instanceof byte[]) {
-				output = input.asObject();
-			} else if (input.asObject() instanceof InputStream) {
+			if (input.isRequestOfType(byte[].class)) {
+				output = input.asByteArray();
+			} else if (input.isRequestOfType(InputStream.class)) {
 				if (transformers.get(0) instanceof TransformerActionWithInputTypeStream) {
-					output = input.asObject();
+					output = input.asInputStream();
 				} else {
 					output = input.asByteArray();
 				}
@@ -184,8 +183,8 @@ public class FileHandler implements IScopeProvider {
 				output = input.asByteArray(charset);
 			}
 		}
-		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
-			TransformerAction transformerAction = (TransformerAction)it.next();
+		for (Iterator<TransformerAction> it = transformers.iterator(); it.hasNext(); ) {
+			TransformerAction transformerAction = it.next();
 			if (!it.hasNext() && "stream".equals(outputType)) {
 				if (transformerAction instanceof TransformerActionWithOutputTypeStream) {
 					output = ((TransformerActionWithOutputTypeStream)transformerAction).go((byte[])output, session, paramList, "stream");

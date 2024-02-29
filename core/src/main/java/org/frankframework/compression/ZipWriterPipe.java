@@ -66,7 +66,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 	@Override
 	protected ZipWriter createCollector(Message input, PipeLineSession session) throws CollectionException {
 		String filename = ParameterValueList.getValue(getParameterValueList(input, session), ZipWriter.PARAMETER_FILENAME, "");
-		if(backwardsCompatibility && input.asObject() instanceof String && StringUtils.isEmpty(filename)) {
+		if(backwardsCompatibility && input.isRequestOfType(String.class) && StringUtils.isEmpty(filename)) {
 			try {
 				filename = input.asString();
 			} catch (IOException e) {

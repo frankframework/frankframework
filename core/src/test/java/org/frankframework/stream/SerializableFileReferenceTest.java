@@ -291,7 +291,7 @@ public class SerializableFileReferenceTest {
 		Message message = new FileMessage(tempFile, "UTF-8");
 
 		// Assert
-		assertTrue(message.asObject() instanceof SerializableFileReference, "Message request should be instance of SerializableFileReference");
+		assertTrue(message.isRequestOfType(SerializableFileReference.class), "Message request should be instance of SerializableFileReference");
 		assertFalse(message.isBinary(), "Should not be binary");
 
 		reference = (SerializableFileReference) message.asObject();
@@ -317,7 +317,7 @@ public class SerializableFileReferenceTest {
 		Message message = new PathMessage(tempFilePath);
 
 		// Assert
-		assertTrue(message.asObject() instanceof SerializableFileReference, "Message request should be instance of SerializableFileReference");
+		assertTrue(message.isRequestOfType(SerializableFileReference.class), "Message request should be instance of SerializableFileReference");
 		assertTrue(message.isBinary(), "Should be binary");
 		String result = message.asString();
 		assertEquals(testDataEnriched, result);

@@ -18,7 +18,6 @@ package org.frankframework.pipes;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -40,12 +39,12 @@ public class IfMultipart extends AbstractPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward;
-		PipeForward pipeForward = null;
+		PipeForward pipeForward;
 
-		if (message == null || message.asObject() == null) {
+		if (message == null || message.isNull()) {
 			forward = elseForwardName;
 		} else {
-			if (!(message.asObject() instanceof HttpServletRequest)) {
+			if (!(message.isRequestOfType(HttpServletRequest.class))) {
 				throw new PipeRunException(this, "expected HttpServletRequest as input, got [" + ClassUtils.nameOf(message) + "]");
 			}
 
