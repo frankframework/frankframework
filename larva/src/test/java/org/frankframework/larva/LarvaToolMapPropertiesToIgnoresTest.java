@@ -8,7 +8,7 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 
-class LarvaToolTest {
+class LarvaToolMapPropertiesToIgnoresTest {
 	@Test
 	void decodeUnzipContentBetweenKeysFromIgnoreMap() {
 		String propertyName = "decodeUnzipContentBetweenKeys";
