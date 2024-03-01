@@ -8,9 +8,8 @@ describe('JmsSendMessageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ JmsSendMessageComponent ]
-    })
-    .compileComponents();
+      declarations: [JmsSendMessageComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(JmsSendMessageComponent);
     component = fixture.componentInstance;

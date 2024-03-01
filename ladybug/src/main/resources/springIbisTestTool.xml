@@ -13,6 +13,11 @@
 	"
 	>
 
+	<!-- enables the usage of (AppConstants) properties in Spring configurations -->
+	<context:property-placeholder />
+
+	<!-- scan both the original and overridden configuration -->
+	<context:component-scan base-package="org.frankframework.ibistesttool"/>
 	<context:component-scan base-package="nl.nn.testtool"/>
 
 	<bean
@@ -156,8 +161,6 @@
 	<util:list id="testerRoles">
 		<value>IbisTester</value>
 	</util:list>
-
-	<bean name="debugger,ibisDebugger" class="org.frankframework.ibistesttool.Debugger" autowire="byName"/>
 
 	<bean name="messageEncoder" class="org.frankframework.ibistesttool.MessageEncoder" autowire="byName"/>
 

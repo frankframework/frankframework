@@ -5,22 +5,22 @@ import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
 
 type TransitionObject = {
-  name?: string
-  loaded?: boolean
-  adapter?: string
-}
+  name?: string;
+  loaded?: boolean;
+  adapter?: string;
+};
 
 @Component({
   selector: 'app-configurations-show',
   templateUrl: './configurations-show.component.html',
-  styleUrls: ['./configurations-show.component.scss']
+  styleUrls: ['./configurations-show.component.scss'],
 })
 export class ConfigurationsShowComponent implements OnInit {
   configurations: Configuration[] = [];
-  configuration: string = "";
-  selectedConfiguration: string = "All"
+  configuration: string = '';
+  selectedConfiguration: string = 'All';
   loadedConfiguration: boolean = false;
-  anchor = "";
+  anchor = '';
 
   private selectedAdapter?: string;
 
@@ -30,70 +30,81 @@ export class ConfigurationsShowComponent implements OnInit {
     private viewportScroller: ViewportScroller,
     private configurationsService: ConfigurationsService,
     private appService: AppService,
-  ) { };
+  ) {}
 
   ngOnInit(): void {
     this.configurations = this.appService.configurations;
-    this.appService.configurations$.subscribe(() => { this.configurations = this.appService.configurations; });
+    this.appService.configurations$.subscribe(() => {
+      this.configurations = this.appService.configurations;
+    });
 
-    this.route.fragment.subscribe(hash => {
-      this.anchor = hash ?? "";
-    })
+    this.route.fragment.subscribe((hash) => {
+      this.anchor = hash ?? '';
+    });
 
-    this.route.queryParamMap.subscribe(params => {
-      this.selectedConfiguration = params.has('name') && params.get('name') != '' ? params.get('name')! : "All";
-      this.loadedConfiguration = !(params.has('loaded') && params.get('loaded') == "false");
-      if(params.has('adapter'))
-        this.selectedAdapter = params.get('adapter')!;
+    this.route.queryParamMap.subscribe((parameters) => {
+      this.selectedConfiguration =
+        parameters.has('name') && parameters.get('name') != ''
+          ? parameters.get('name')!
+          : 'All';
+      this.loadedConfiguration = !(
+        parameters.has('loaded') && parameters.get('loaded') == 'false'
+      );
+      if (parameters.has('adapter'))
+        this.selectedAdapter = parameters.get('adapter')!;
 
       this.getConfiguration();
     });
   }
 
-  update(loaded: boolean) {
+  update(loaded: boolean): void {
     this.loadedConfiguration = loaded;
-    this.anchor = "";
+    this.anchor = '';
     this.getConfiguration();
-  };
+  }
 
-  changeConfiguration(name: string) {
+  changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
     this.selectedAdapter = undefined;
-    this.router.navigate([], { relativeTo: this.route, fragment: "" });
-    this.anchor = ""; //unset hash anchor
+    this.router.navigate([], { relativeTo: this.route, fragment: '' });
+    this.anchor = ''; //unset hash anchor
     this.getConfiguration();
-  };
+  }
 
-  updateQueryParams() {
-    const transitionObj: TransitionObject = {};
-    if (this.selectedConfiguration != "All")
-      transitionObj.name = this.selectedConfiguration;
+  updateQueryParams(): void {
+    const transitionObject: TransitionObject = {};
+    if (this.selectedConfiguration != 'All')
+      transitionObject.name = this.selectedConfiguration;
     if (!this.loadedConfiguration)
-      transitionObj.loaded = this.loadedConfiguration;
-    if(this.selectedAdapter)
-      transitionObj.adapter = this.selectedAdapter;
+      transitionObject.loaded = this.loadedConfiguration;
+    if (this.selectedAdapter) transitionObject.adapter = this.selectedAdapter;
 
-    const fragment = this.anchor != "" ? this.anchor : undefined;
+    const fragment = this.anchor == '' ? undefined : this.anchor;
 
-    this.router.navigate([], { relativeTo: this.route, queryParams: transitionObj, fragment });
-  };
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: transitionObject,
+      fragment,
+    });
+  }
 
-  clipboard() {
+  clipboard(): void {
     if (this.configuration) {
       this.appService.copyToClipboard(this.configuration);
     }
   }
 
-  getConfiguration() {
+  getConfiguration(): void {
     this.updateQueryParams();
 
+    this.configurationsService
+      .getConfiguration(this.selectedConfiguration, this.loadedConfiguration)
+      .subscribe((data) => {
+        this.configuration = data;
 
-    this.configurationsService.getConfiguration(this.selectedConfiguration, this.loadedConfiguration).subscribe((data) => {
-      this.configuration = data;
-
-      if (this.anchor) {
-        this.viewportScroller.scrollToAnchor(this.anchor);
-      }
-    });
-  };
+        if (this.anchor) {
+          this.viewportScroller.scrollToAnchor(this.anchor);
+        }
+      });
+  }
 }

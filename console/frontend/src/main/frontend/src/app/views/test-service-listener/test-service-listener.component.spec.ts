@@ -8,9 +8,8 @@ describe('TestServiceListenerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ TestServiceListenerComponent ]
-    })
-    .compileComponents();
+      declarations: [TestServiceListenerComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TestServiceListenerComponent);
     component = fixture.componentInstance;

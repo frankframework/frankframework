@@ -25,12 +25,18 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.pipes.StreamPipe;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Extension to StreamPipe for API Management.
@@ -51,9 +57,10 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Peter Leeuwenburgh
  */
+@Log4j2
 @Deprecated
 public class ApiStreamPipe extends StreamPipe {
-	private String jmsRealm;
+	@Getter @Setter private String jmsRealm;
 
 	private FixedQuerySender dummyQuerySender;
 
@@ -145,7 +152,7 @@ public class ApiStreamPipe extends StreamPipe {
 		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey + "'";
 		Connection conn = dummyQuerySender.getConnection();
 		try {
-			return JdbcUtil.executeBlobQuery(dummyQuerySender.getDbmsSupport(), conn, query);
+			return executeBlobQuery(dummyQuerySender.getDbmsSupport(), conn, query);
 		} finally {
 			if (conn != null) {
 				try {
@@ -166,12 +173,18 @@ public class ApiStreamPipe extends StreamPipe {
 		}
 	}
 
-	public String getJmsRealm() {
-		return jmsRealm;
-	}
-
-	public void setJmsRealm(String jmsRealm) {
-		this.jmsRealm = jmsRealm;
+	private static String executeBlobQuery(IDbmsSupport dbmsSupport, Connection connection, String query) throws JdbcException {
+		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]", query);
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next()) {
+					return null;
+				}
+				return JdbcUtil.getBlobAsString(dbmsSupport, rs, 1, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query [" + query + "]", e);
+		}
 	}
 
 }

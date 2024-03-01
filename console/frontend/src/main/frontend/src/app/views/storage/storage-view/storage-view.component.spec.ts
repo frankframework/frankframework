@@ -8,9 +8,8 @@ describe('StorageViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ StorageViewComponent ]
-    })
-    .compileComponents();
+      declarations: [StorageViewComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(StorageViewComponent);
     component = fixture.componentInstance;

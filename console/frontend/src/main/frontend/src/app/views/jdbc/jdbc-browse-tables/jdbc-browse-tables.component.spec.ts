@@ -8,9 +8,8 @@ describe('JdbcBrowseTablesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ JdbcBrowseTablesComponent ]
-    })
-    .compileComponents();
+      declarations: [JdbcBrowseTablesComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(JdbcBrowseTablesComponent);
     component = fixture.componentInstance;
