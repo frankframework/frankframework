@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 */
 package org.frankframework.processors;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
-import org.frankframework.core.IExtendedPipe;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -38,71 +39,54 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 	private final Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
-		PipeRunResult pipeRunResult = null;
-
-		IExtendedPipe pe=null;
-
-		if (pipe instanceof IExtendedPipe) {
-			pe = (IExtendedPipe)pipe;
-		}
-
-		long pipeStartTime= System.currentTimeMillis();
-
-		if (log.isDebugEnabled()){  // for performance reasons
-			StringBuilder sb=new StringBuilder();
-			String ownerName=pipeLine.getOwner()==null?"<null>":pipeLine.getOwner().getName();
-			String pipeName=pipe==null?"<null>":pipe.getName();
-			String messageId = pipeLineSession==null?null:pipeLineSession.getMessageId();
-			sb.append("Pipeline of adapter [").append(ownerName).append("] messageId [").append(messageId).append("] is about to call pipe [").append(pipeName).append("]");
-
-			boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
-			if (pipe instanceof AbstractPipe) {
-				AbstractPipe ap = (AbstractPipe) pipe;
-				if (StringUtils.isNotEmpty(ap.getLogIntermediaryResults())) {
-					lir = Boolean.parseBoolean(ap.getLogIntermediaryResults());
-				}
-			}
-			if (lir) {
-				sb.append(" current result ").append(message == null ? "<null>" : "(" + message.getClass().getSimpleName() + ") [" + message + "]").append(" ");
-			}
-
-			log.debug(sb.toString());
-		}
-
-		// start it
-		long pipeDuration = -1;
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
+		long pipeStartTime = System.currentTimeMillis();
+		doDebugLogging(pipeLine, pipe, message, pipeLineSession);
 
 		try {
-			pipeRunResult = chain.apply(message);
+			return chain.apply(message);
 		} catch (PipeRunException pre) {
-			if (pe!=null) {
-				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-			}
+			pipe.throwEvent(IPipe.PIPE_EXCEPTION_MONITORING_EVENT);
 			throw pre;
 		} catch (RuntimeException re) {
-			if (pe!=null) {
-				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-			}
-			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '" + (pipe==null?"null":pipe.getName()) + "'", re);
+			pipe.throwEvent(IPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '" + pipe.getName() + "'", re);
 		} finally {
 			long pipeEndTime = System.currentTimeMillis();
-			pipeDuration = pipeEndTime - pipeStartTime;
+			long pipeDuration = pipeEndTime - pipeStartTime;
 			StatisticsKeeper sk = pipeLine.getPipeStatistics(pipe);
-			if (sk==null) {
-				log.warn("Could not get statistics for pipe [+"+pipe.getName()+"]");
+			if (sk == null) {
+				log.warn("Could not get statistics for pipe [{}]", pipe.getName());
 			} else {
 				sk.addValue(pipeDuration);
 			}
 
-			if (pe!=null && pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
-				durationLog.info("Pipe ["+pe.getName()+"] of ["+pipeLine.getOwner().getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+message+"]");
-				pe.throwEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
+			if (pipe.getDurationThreshold() >= 0 && pipeDuration > pipe.getDurationThreshold()) {
+				durationLog.info("Pipe [" + pipe.getName() + "] of [" + pipeLine.getOwner().getName() + "] duration [" + pipeDuration + "] ms exceeds max [" + pipe.getDurationThreshold() + "], message [" + message + "]");
+				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
 			}
-
 		}
+	}
 
-		return pipeRunResult;
+	private void doDebugLogging(final PipeLine pipeLine, final IPipe pipe, Message message, PipeLineSession pipeLineSession) {
+		if (!log.isDebugEnabled()) {
+			return;
+		}
+		String ownerName = pipeLine.getOwner() == null ? "<null>" : pipeLine.getOwner().getName();
+		StringBuilder sb = new StringBuilder();
+		sb.append("Pipeline of adapter [").append(ownerName).append("] messageId [").append(pipeLineSession.getMessageId()).append("] is about to call pipe [").append(pipe.getName()).append("]");
+
+		boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
+		if (pipe instanceof AbstractPipe) {
+			AbstractPipe ap = (AbstractPipe) pipe;
+			if (StringUtils.isNotEmpty(ap.getLogIntermediaryResults())) {
+				lir = Boolean.parseBoolean(ap.getLogIntermediaryResults());
+			}
+		}
+		if (lir) {
+			sb.append(" current result ").append(message == null ? "<null>" : "(" + message.getClass().getSimpleName() + ") [" + message + "]").append(" ");
+		}
+		log.debug(sb.toString());
 	}
 
 }

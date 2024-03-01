@@ -26,6 +26,9 @@ import org.frankframework.testutil.TestFileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public class InputOutputPipeProcessorTest {
 
 	public static final String PIPE_RUN_RESULT_TEXT = "pipe run result";
@@ -42,12 +45,12 @@ public class InputOutputPipeProcessorTest {
 		processor = new InputOutputPipeProcessor();
 		PipeProcessor chain = new PipeProcessor() {
 			@Override
-			public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+			public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
 				return pipe.doPipe(message, pipeLineSession);
 			}
 
 			@Override
-			public PipeRunResult validate(PipeLine pipeLine, IValidator validator, Message message, PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+			public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
 				return validator.validate(message, pipeLineSession, messageRoot);
 			}
 		};

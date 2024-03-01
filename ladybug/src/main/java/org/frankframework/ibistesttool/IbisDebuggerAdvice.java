@@ -26,9 +26,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.ICorrelatedPullingListener;
-import org.frankframework.core.IExtendedPipe;
-import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
+import org.frankframework.core.INamedObject;
 import org.frankframework.core.ISender;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.IWithParameters;
@@ -151,7 +150,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeAbort(pipeLine, pipe, correlationId, throwable);
 		}
-		if (pipe instanceof IExtendedPipe && ((IExtendedPipe)pipe).isPreserveInput()) {
+		if (pipe.isPreserveInput()) {
 			// signal in the debugger that the result of the pipe has been replaced with the original input
 			pipeRunResult.setResult(ibisDebugger.preserveInput(correlationId, pipeRunResult.getResult()));
 		}
@@ -165,19 +164,16 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	 */
 	public PipeRunResult debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
-			return (PipeRunResult)proceedingJoinPoint.proceed();
+			return (PipeRunResult) proceedingJoinPoint.proceed();
 		}
-		if (pipe instanceof IExtendedPipe) {
-			IExtendedPipe pe = (IExtendedPipe)pipe;
-			String correlationId = getCorrelationId(session);
-			message = debugGetInputFrom(session, correlationId, message,
-					pe.getGetInputFromSessionKey(),
-					pe.getGetInputFromFixedValue(),
-					pe.getEmptyInputReplacement());
-		}
+		String correlationId = getCorrelationId(session);
+		message = debugGetInputFrom(session, correlationId, message,
+				pipe.getGetInputFromSessionKey(),
+				pipe.getGetInputFromFixedValue(),
+				pipe.getEmptyInputReplacement());
 		Object[] args = proceedingJoinPoint.getArgs();
 		args[2] = message;
-		return (PipeRunResult)proceedingJoinPoint.proceed(args); // the PipeRunResult contains the original result, before replacing via preserveInput
+		return (PipeRunResult) proceedingJoinPoint.proceed(args); // the PipeRunResult contains the original result, before replacing via preserveInput
 	}
 
 	public PipeRunResult debugValidatorInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IValidator validator, Message message, PipeLineSession session, String messageRoot) throws Throwable {

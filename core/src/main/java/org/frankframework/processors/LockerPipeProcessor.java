@@ -15,7 +15,9 @@
 */
 package org.frankframework.processors;
 
-import org.frankframework.core.IExtendedPipe;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -31,35 +33,30 @@ import org.frankframework.util.Locker;
 public class LockerPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
-		IExtendedPipe extendedPipe = null;
-		Locker locker = null;
-		String objectId = null;
-		if (pipe instanceof IExtendedPipe) {
-			extendedPipe = (IExtendedPipe)pipe;
-			locker = extendedPipe.getLocker();
+		String objectId;
+		Locker locker = pipe.getLocker();
+		if (locker == null) {
+			return chain.apply(message);
 		}
-		if (locker != null) {
-			try {
-				objectId = locker.acquire();
-			} catch (Exception e) {
-				throw new PipeRunException(pipe, "error while trying to obtain lock ["+locker+"]", e);
-			}
-			if (objectId == null) {
-				throw new PipeRunException(pipe, "could not obtain lock ["+locker+"]");
-			}
-			try {
-				pipeRunResult = chain.apply(message);
-			} finally {
-				try {
-					locker.release(objectId);
-				} catch (Exception e) {
-					throw new PipeRunException(pipe, "error while removing lock", e);
-				}
-			}
-		} else {
+
+		try {
+			objectId = locker.acquire();
+		} catch (Exception e) {
+			throw new PipeRunException(pipe, "error while trying to obtain lock [" + locker + "]", e);
+		}
+		if (objectId == null) {
+			throw new PipeRunException(pipe, "could not obtain lock [" + locker + "]");
+		}
+		try {
 			pipeRunResult = chain.apply(message);
+		} finally {
+			try {
+				locker.release(objectId);
+			} catch (Exception e) {
+				throw new PipeRunException(pipe, "error while removing lock", e);
+			}
 		}
 		return pipeRunResult;
 	}

@@ -85,12 +85,12 @@ public class PipeLineTest {
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		String pipeForwardName = "EchoPipe next pipe";
 
-		IExtendedPipe pipe = configuration.createBean(EchoPipe.class);
+		IPipe pipe = configuration.createBean(EchoPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
-		IExtendedPipe pipe2 = configuration.createBean(EchoPipe.class);
+		IPipe pipe2 = configuration.createBean(EchoPipe.class);
 		pipe2.setName(pipeForwardName);
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
@@ -125,13 +125,13 @@ public class PipeLineTest {
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		String pipeForwardName = "EchoPipe next pipe";
 
-		IExtendedPipe pipe = configuration.createBean(EchoPipe.class);
+		IPipe pipe = configuration.createBean(EchoPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipe.registerForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
-		IExtendedPipe pipe2 = configuration.createBean(EchoPipe.class);
+		IPipe pipe2 = configuration.createBean(EchoPipe.class);
 		pipe2.setName(pipeForwardName);
 		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe2.setPipeLine(pipeline);
@@ -230,13 +230,13 @@ public class PipeLineTest {
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		String pipeForwardName = "EchoPipe next pipe";
 
-		IExtendedPipe pipe = configuration.createBean(NonFixedForwardPipe.class);
+		IPipe pipe = configuration.createBean(NonFixedForwardPipe.class);
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipe.registerForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
-		IExtendedPipe pipe2 = configuration.createBean(NonFixedForwardPipe.class);
+		IPipe pipe2 = configuration.createBean(NonFixedForwardPipe.class);
 		pipe2.setName(pipeForwardName);
 		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe2.setPipeLine(pipeline);
