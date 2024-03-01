@@ -40,7 +40,7 @@ import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
 import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
-import { VariablesFilterPipe } from './pipes/variablesFilter.pipe';
+import { VariablesFilterPipe } from './pipes/variables-filter.pipe';
 import { TimeSinceDirective } from './components/time-since.directive';
 import { FlowComponent } from './views/status/flow/flow.component';
 import { StorageComponent } from './views/storage/storage.component';
@@ -90,8 +90,8 @@ import { FileViewerComponent } from './components/file-viewer/file-viewer.compon
 
 const windowProvider: ValueProvider = {
   provide: Window,
-  useValue: window
-}
+  useValue: window,
+};
 
 @NgModule({
   declarations: [
@@ -185,13 +185,13 @@ const windowProvider: ValueProvider = {
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
     DataTablesModule,
-    NgMermaidComponent
+    NgMermaidComponent,
   ],
   providers: [
     windowProvider,
     { provide: TitleStrategy, useClass: PagesTitleStrategy },
-    httpInterceptorProviders
+    httpInterceptorProviders,
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {}

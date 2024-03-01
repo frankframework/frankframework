@@ -8,9 +8,8 @@ describe('IframeLadybugBetaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ IframeLadybugBetaComponent ]
-    })
-    .compileComponents();
+      declarations: [IframeLadybugBetaComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(IframeLadybugBetaComponent);
     component = fixture.componentInstance;

@@ -8,9 +8,8 @@ describe('JdbcExecuteQueryComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ JdbcExecuteQueryComponent ]
-    })
-    .compileComponents();
+      declarations: [JdbcExecuteQueryComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(JdbcExecuteQueryComponent);
     component = fixture.componentInstance;

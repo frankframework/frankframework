@@ -8,9 +8,8 @@ describe('FileViewerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FileViewerComponent ]
-    })
-    .compileComponents();
+      declarations: [FileViewerComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FileViewerComponent);
     component = fixture.componentInstance;

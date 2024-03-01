@@ -8,9 +8,8 @@ describe('PagesTopinfobarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PagesTopinfobarComponent ]
-    })
-    .compileComponents();
+      declarations: [PagesTopinfobarComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PagesTopinfobarComponent);
     component = fixture.componentInstance;

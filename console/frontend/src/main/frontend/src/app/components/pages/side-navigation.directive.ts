@@ -1,17 +1,13 @@
-import { AfterViewInit, Directive, ElementRef, OnInit } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef } from '@angular/core';
 
 @Directive({
-  selector: '[appSideNavigation]'
+  selector: '[appSideNavigation]',
 })
 export class SideNavigationDirective implements AfterViewInit {
+  constructor(private element: ElementRef<HTMLElement>) {}
 
-  constructor(
-    private element: ElementRef<HTMLElement>
-  ) { }
-
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     // @ts-expect-error metisMenu is not a function
     $(this.element.nativeElement).metisMenu();
   }
-
 }

@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService, Certificate } from 'src/app/app.service';
 
 export interface CertificateList {
@@ -49,16 +50,17 @@ interface SecurityItems {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SecurityItemsService {
-
   constructor(
     private http: HttpClient,
     private appService: AppService,
-  ) { }
+  ) {}
 
-  getSecurityItems() {
-    return this.http.get<SecurityItems>(this.appService.absoluteApiPath + "securityitems");
+  getSecurityItems(): Observable<SecurityItems> {
+    return this.http.get<SecurityItems>(
+      `${this.appService.absoluteApiPath}securityitems`,
+    );
   }
 }

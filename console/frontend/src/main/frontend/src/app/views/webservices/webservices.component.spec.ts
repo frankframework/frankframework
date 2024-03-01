@@ -8,9 +8,8 @@ describe('WebservicesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ WebservicesComponent ]
-    })
-    .compileComponents();
+      declarations: [WebservicesComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(WebservicesComponent);
     component = fixture.componentInstance;
