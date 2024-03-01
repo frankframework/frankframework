@@ -23,6 +23,7 @@ export class SecurityItemsComponent implements OnInit {
   certificates: CertificateList[] = [];
   xmlComponents: Record<string, string> = {};
   datasources: Datasource[] = [];
+  protocols: string[] = [];
 
   constructor(
     private appService: AppService,
@@ -53,6 +54,7 @@ export class SecurityItemsComponent implements OnInit {
       this.sapSystems = data.sapSystems;
       this.securityRoles = data.securityRoles;
       this.xmlComponents = data.xmlComponents;
+      this.protocols = data.protocols;
     });
   }
 }

@@ -47,6 +47,7 @@ interface SecurityItems {
   jmsRealms: JmsRealm[];
   sapSystems: SapSystem[];
   xmlComponents: Record<string, string>;
+  protocols: string[];
 }
 
 @Injectable({
