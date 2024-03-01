@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 /**
  * Interface for handling a transformed record.
@@ -32,7 +33,7 @@ import org.frankframework.doc.FrankDocGroup;
  *
  * @author John Dekker
  */
-@FrankDocGroup(order = 70, name = "Batch")
+@FrankDocGroup(FrankDocGroupValue.BATCH)
 public interface IRecordHandlerManager extends INamedObject {
 
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;

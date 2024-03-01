@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.pipes.FixedResultPipe;
 import org.frankframework.stream.Message;
 
@@ -29,7 +30,7 @@ import org.frankframework.stream.Message;
  *
  * @ff.defaultElement org.frankframework.pipes.SenderPipe
  */
-@FrankDocGroup(order = 10, name = "Pipes")
+@FrankDocGroup(FrankDocGroupValue.PIPES)
 public interface IPipe extends IConfigurable, IForwardTarget {
 
 	/**

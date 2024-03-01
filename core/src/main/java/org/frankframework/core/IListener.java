@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import javax.annotation.Nonnull;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -33,7 +34,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-@FrankDocGroup(order = 30, name = "Listeners")
+@FrankDocGroup(FrankDocGroupValue.LISTENERS)
 @ElementType(ElementTypes.LISTENER)
 public interface IListener<M> extends IConfigurable {
 

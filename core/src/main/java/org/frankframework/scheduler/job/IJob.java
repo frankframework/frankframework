@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ import org.quartz.JobDetail;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.scheduler.ConfiguredJob;
 import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeper;
 
-@FrankDocGroup(name = "Job")
+@FrankDocGroup(FrankDocGroupValue.JOB)
 public interface IJob extends IConfigurable {
 
 	/**
