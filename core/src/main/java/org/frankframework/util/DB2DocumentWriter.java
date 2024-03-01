@@ -174,7 +174,7 @@ public class DB2DocumentWriter {
 						if (rs.wasNull()) {
 							row.add(columnName, (String)null);
 						} else {
-							if (JdbcUtil.isNumeric(rsmeta.getColumnType(i))) {
+							if (JdbcUtil.isSQLTypeNumeric(rsmeta.getColumnType(i))) {
 								row.addNumber(columnName, value);
 							} else {
 								row.add(columnName, value);
@@ -188,7 +188,6 @@ public class DB2DocumentWriter {
 			}
 		}
 	}
-
 
 	public void setDocumentName(String s) {
 		docname = s;

@@ -30,8 +30,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IPeekableListener;
@@ -39,7 +37,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
-
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.MessageWrapper;
@@ -47,6 +44,9 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * JdbcListener base class.
@@ -72,7 +72,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private @Getter boolean blobsCompressed=true;
 	private @Getter boolean blobSmartGet=false;
 
-	private @Getter boolean trace=false;
+	private @Setter @Getter boolean trace=false;
 	private @Getter boolean peekUntransacted=true;
 
 	private Map<ProcessState, String> updateStatusQueries = new HashMap<>();
@@ -261,7 +261,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				switch (getMessageFieldType()) {
 					case CLOB:
 						// TESTCOVERAGE: Untested branch
-						message = new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
+						message = new Message(getDbmsSupport().getClobReader(rs, getMessageField()));
 						break;
 					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
@@ -483,10 +483,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 */
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
-	}
-
-	public void setTrace(boolean trace) {
-		this.trace = trace;
 	}
 
 }

@@ -1,6 +1,7 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <ngb-alert
     *ngFor="let alert of state"
+    data-cy-test-pipeline="runResult"
     [dismissible]="false"
     [type]="alert.type"
     >{{ alert.message }}</ngb-alert
@@ -17,9 +18,10 @@
               <label class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
                 <select
+                  data-cy-test-pipeline="selectConfig"
                   [(ngModel)]="selectedConfiguration"
-                  class="form-control"
                   name="configuration"
+                  class="form-control"
                 >
                   <option
                     *ngFor="let config of configurations"
@@ -36,6 +38,7 @@
               >
               <div class="col-sm-9">
                 <select
+                  data-cy-test-pipeline="selectAdapter"
                   [(ngModel)]="form.adapter"
                   [disabled]="selectedConfiguration === ''"
                   class="form-control"
@@ -68,6 +71,7 @@
               </label>
               <div class="col-sm-4">
                 <input
+                  data-cy-test-pipeline="sessionKeyName"
                   (blur)="updateSessionKeys(test)"
                   [(ngModel)]="test.name"
                   class="form-control"
@@ -78,6 +82,7 @@
               </div>
               <div class="col-sm-5">
                 <input
+                  data-cy-test-pipeline="sessionKeyValue"
                   (blur)="updateSessionKeys(test)"
                   [(ngModel)]="test.value"
                   class="form-control"
@@ -127,6 +132,7 @@
               >
               <div class="col-sm-9">
                 <textarea
+                  data-cy-test-pipeline="message"
                   [(ngModel)]="form.message"
                   class="form-control"
                   name="message"
@@ -138,6 +144,7 @@
             <div class="row form-group">
               <div class="col-sm-offset-3 col-sm-9 m-t-md">
                 <button
+                  data-cy-test-pipeline="send"
                   [ladda]="processingMessage"
                   class="btn btn-primary btn-w-m font-bold"
                   type="submit"
