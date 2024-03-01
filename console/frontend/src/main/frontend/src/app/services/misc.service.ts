@@ -63,7 +63,7 @@ export class MiscService {
 
     const _numberVersion = function (v: string | number): number {
       return v
-        ? Number.isNaN(v as number)
+        ? Number.isNaN(Number(v))
           ? vm[v as keyof typeof vm] || -7
           : Number.parseInt(v as string, 10)
         : 0;

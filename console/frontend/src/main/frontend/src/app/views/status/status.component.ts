@@ -326,7 +326,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   getMessageLog(selectedConfiguration: string): AdapterMessage[] {
-    return this.messageLog[selectedConfiguration].messages ?? [];
+    return this.messageLog[selectedConfiguration]?.messages ?? [];
   }
 
   startAdapter(adapter: Adapter): void {

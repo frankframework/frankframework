@@ -385,10 +385,12 @@ export class AppComponent implements OnInit, OnDestroy {
         delete configurations['messages'];
         delete configurations['totalErrorStoreCount'];
 
-        for (const warning of configurations[
-          'warnings'
-        ] as unknown as string[]) {
-          this.appService.addWarning('', warning);
+        if (configurations['warnings']) {
+          for (const warning of configurations[
+            'warnings'
+          ] as unknown as string[]) {
+            this.appService.addWarning('', warning);
+          }
         }
 
         for (const index in configurations) {
@@ -463,7 +465,7 @@ export class AppComponent implements OnInit, OnDestroy {
             if (pipe.sender) {
               adapter.hasSender = true;
               if (pipe.hasMessageLog) {
-                const count = Number.parseInt(pipe.messageLogCount || '');
+                const count = Number.parseInt(pipe.messageLogCount ?? '');
                 if (!Number.isNaN(count)) {
                   if (pipe.isSenderTransactionalStorage) {
                     adapter.senderTransactionalStorageMessageCount += count;
