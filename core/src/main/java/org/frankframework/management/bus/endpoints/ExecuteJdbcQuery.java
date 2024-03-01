@@ -55,7 +55,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.GET)
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed("IbisTester")
 	public Message<String> getJdbcInfo(Message<?> message) {
 		Map<String, Object> result = new HashMap<>();
 

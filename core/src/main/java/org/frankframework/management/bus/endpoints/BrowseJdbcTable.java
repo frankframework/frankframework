@@ -66,7 +66,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.JDBC)
 	@ActionSelector(BusAction.FIND)
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> handleBrowseDatabase(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String tableName = BusMessageUtils.getHeader(message, "table");

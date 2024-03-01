@@ -41,7 +41,7 @@ import javax.annotation.security.RolesAllowed;
 public class SendJmsMessage extends BusEndpointBase {
 
 	@ActionSelector(BusAction.UPLOAD)
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed("IbisTester")
 	public Message<?> putMessageOnQueue(Message<?> message) {
 		String connectionFactory = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY);
 		if(StringUtils.isEmpty(connectionFactory)) {
