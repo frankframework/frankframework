@@ -59,6 +59,14 @@
     ],
     "sapSystems": [
     ],
+	"protocols": [
+		"TLSv1.3",
+		"TLSv1.2",
+		"TLSv1.1",
+		"TLSv1",
+		"SSLv3",
+		"SSLv2Hello"
+	],
     "xmlComponents": {
         "SAXParserFactory-class": "org.apache.xerces.jaxp.SAXParserFactoryImpl",
         "DocumentBuilderFactory1-class": "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl",
