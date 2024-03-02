@@ -13,12 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.testtool;
+package org.frankframework.larva;
 
-import static org.frankframework.testtool.TestTool.LOG_LEVEL_ORDER;
-import static org.frankframework.testtool.TestTool.RESULT_AUTOSAVED;
-import static org.frankframework.testtool.TestTool.RESULT_ERROR;
-import static org.frankframework.testtool.TestTool.RESULT_OK;
+import static org.frankframework.larva.LarvaTool.LOG_LEVEL_ORDER;
+import static org.frankframework.larva.LarvaTool.RESULT_AUTOSAVED;
+import static org.frankframework.larva.LarvaTool.RESULT_ERROR;
+import static org.frankframework.larva.LarvaTool.RESULT_OK;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +29,8 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.testtool.queues.Queue;
-import org.frankframework.testtool.queues.QueueCreator;
+import org.frankframework.larva.queues.Queue;
+import org.frankframework.larva.queues.QueueCreator;
 import org.frankframework.util.AppConstants;
 
 import lombok.Getter;
@@ -44,7 +44,7 @@ public class ScenarioRunner {
 	private int scenariosFailed;
 	private int scenariosPassed;
 	private int scenariosAutosaved;
-	@Setter private TestTool testTool;
+	@Setter private LarvaTool larvaTool;
 
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
 	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
@@ -66,45 +66,45 @@ public class ScenarioRunner {
 		String shortName = longName.substring(currentScenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
 
 		if (!config.isSilent() && (LOG_LEVEL_ORDER.indexOf("[" + config.getLogLevel() + "]") < LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]"))) {
-			testTool.writeHtml("<br/><br/>", false);
-			testTool.writeHtml("<div class='scenario'>", false);
+			larvaTool.writeHtml("<br/><br/>", false);
+			larvaTool.writeHtml("<div class='scenario'>", false);
 		}
-		testTool.debugMessage("Read property file " + file.getName());
-		Properties properties = testTool.readProperties(appConstants, file);
+		larvaTool.debugMessage("Read property file " + file.getName());
+		Properties properties = larvaTool.readProperties(appConstants, file);
 		List<String> steps;
 
 		if (properties != null) {
-			testTool.debugMessage("Read steps from property file");
-			steps = testTool.getSteps(properties);
-			testTool.debugMessage("Open queues");
-			Map<String, Queue> queues = new QueueCreator(config, testTool).openQueues(scenarioDirectory, properties, ibisContext, correlationId);
+			larvaTool.debugMessage("Read steps from property file");
+			steps = larvaTool.getSteps(properties);
+			larvaTool.debugMessage("Open queues");
+			Map<String, Queue> queues = new QueueCreator(config, larvaTool).openQueues(scenarioDirectory, properties, ibisContext, correlationId);
 			if (queues != null) {
-				testTool.debugMessage("Execute steps");
+				larvaTool.debugMessage("Execute steps");
 				boolean allStepsPassed = true;
 				boolean autoSaved = false;
 				Iterator<String> iterator = steps.iterator();
 				while (allStepsPassed && iterator.hasNext()) {
 					if (evenStep) {
-						testTool.writeHtml("<div class='even'>", false);
+						larvaTool.writeHtml("<div class='even'>", false);
 						evenStep = false;
 					} else {
-						testTool.writeHtml("<div class='odd'>", false);
+						larvaTool.writeHtml("<div class='odd'>", false);
 						evenStep = true;
 					}
 					String step = iterator.next();
 					String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
-					testTool.debugMessage("Execute step '" + stepDisplayName + "'");
-					int stepPassed = testTool.executeStep(step, properties, stepDisplayName, queues, correlationId);
+					larvaTool.debugMessage("Execute step '" + stepDisplayName + "'");
+					int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, queues, correlationId);
 					if (stepPassed == RESULT_OK) {
-						testTool.stepPassedMessage("Step '" + stepDisplayName + "' passed");
+						larvaTool.stepPassedMessage("Step '" + stepDisplayName + "' passed");
 					} else if (stepPassed == RESULT_AUTOSAVED) {
-						testTool.stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave");
+						larvaTool.stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave");
 						autoSaved = true;
 					} else {
-						testTool.stepFailedMessage("Step '" + stepDisplayName + "' failed");
+						larvaTool.stepFailedMessage("Step '" + stepDisplayName + "' failed");
 						allStepsPassed = false;
 					}
-					testTool.writeHtml("</div>", false);
+					larvaTool.writeHtml("</div>", false);
 					config.flushWriters();
 				}
 				if (allStepsPassed) {
@@ -114,16 +114,16 @@ public class ScenarioRunner {
 						scenarioPassed = RESULT_OK;
 					}
 				}
-				testTool.debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up");
+				larvaTool.debugMessage("Wait " + waitBeforeCleanUp + " ms before clean up");
 				try {
 					Thread.sleep(waitBeforeCleanUp);
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
-				testTool.debugMessage("Close queues");
-				boolean remainingMessagesFound = testTool.closeQueues(queues, properties, correlationId);
+				larvaTool.debugMessage("Close queues");
+				boolean remainingMessagesFound = larvaTool.closeQueues(queues, properties, correlationId);
 				if (remainingMessagesFound) {
-					testTool.stepFailedMessage("Found one or more messages on queues or in database after scenario executed");
+					larvaTool.stepFailedMessage("Found one or more messages on queues or in database after scenario executed");
 					scenarioPassed = RESULT_ERROR;
 				}
 			}
@@ -131,7 +131,7 @@ public class ScenarioRunner {
 
 		if (scenarioPassed == RESULT_OK) {
 			scenariosPassed++;
-			testTool.scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFileSize + ")");
+			larvaTool.scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFileSize + ")");
 			if (config.isSilent() && LOG_LEVEL_ORDER.indexOf("[" + logLevel + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
 				try {
 					config.getOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
@@ -140,7 +140,7 @@ public class ScenarioRunner {
 			}
 		} else if (scenarioPassed == RESULT_AUTOSAVED) {
 			scenariosAutosaved++;
-			testTool.scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
+			larvaTool.scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
 			if (config.isSilent()) {
 				try {
 					config.getOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
@@ -149,7 +149,7 @@ public class ScenarioRunner {
 			}
 		} else {
 			scenariosFailed++;
-			testTool.scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFileSize + ")");
+			larvaTool.scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFileSize + ")");
 			if (config.isSilent()) {
 				try {
 					config.getOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
@@ -157,7 +157,7 @@ public class ScenarioRunner {
 				}
 			}
 		}
-		testTool.writeHtml("</div>", false);
+		larvaTool.writeHtml("</div>", false);
 	}
 
 }

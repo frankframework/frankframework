@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.testtool.queues;
+package org.frankframework.larva.queues;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -25,43 +25,26 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.jms.JmsSender;
 
-public class JmsSenderQueue extends HashMap<String, Object> implements Queue {
-
-	private final JmsSender jmsSender;
-
-	public JmsSenderQueue(JmsSender jmsSender, String useCorrelationIdFrom, String jmsCorrelationId) {
-		super();
-		this.jmsSender=jmsSender;
-		put("useCorrelationIdFrom", useCorrelationIdFrom);
-		if (jmsCorrelationId!=null) {
-			put("jmsCorrelationId", jmsCorrelationId);
-		}
-	}
+public class QuerySenderQueue extends HashMap<String, Object> implements Queue {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		jmsSender.configure();
+		// currently handled at creation time;
 	}
 
 	@Override
 	public void open() throws ConfigurationException {
-		try {
-			jmsSender.open();
-		} catch (SenderException e) {
-			throw new ConfigurationException(e);
-		}
+		// currently handled at creation time;
 	}
 
 	@Override
-	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException {
-		throw new NotImplementedException("executeWrite");
+	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException {
+		throw new IllegalStateException("QuerySender has no 'write' step");
 	}
 
 	@Override
 	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException {
 		throw new NotImplementedException("executeRead");
 	}
-
 }

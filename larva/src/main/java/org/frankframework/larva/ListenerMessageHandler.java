@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.testtool;
+package org.frankframework.larva;
 
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -43,7 +43,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(100);
 	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(100);
 
-	private long defaultTimeout = TestTool.globalTimeout;
+	private long defaultTimeout = LarvaTool.globalTimeout;
 
 	@Override
 	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {

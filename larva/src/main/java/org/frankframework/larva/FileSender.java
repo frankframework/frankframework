@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.testtool;
+package org.frankframework.larva;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,7 +67,7 @@ public class FileSender implements IConfigurable {
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException("Could not find scenario root directory", e);
 		}
-		String absPath = TestTool.getAbsolutePath(scenarioDirectory, filename);
+		String absPath = LarvaTool.getAbsolutePath(scenarioDirectory, filename);
 		file = new File(absPath);
 	}
 

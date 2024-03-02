@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.testtool;
+package org.frankframework.larva;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -82,8 +82,8 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.queues.Queue;
-import org.frankframework.testtool.queues.QueueWrapper;
+import org.frankframework.larva.queues.Queue;
+import org.frankframework.larva.queues.QueueWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CaseInsensitiveComparator;
 import org.frankframework.util.DomBuilderException;
@@ -102,15 +102,17 @@ import jakarta.json.JsonException;
 /**
  * @author Jaco de Groot
  */
-public class TestTool {
-	private static final Logger logger = LogUtil.getLogger(TestTool.class);
+public class LarvaTool {
+	private static final Logger logger = LogUtil.getLogger(LarvaTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
-	public static final Message TESTTOOL_DUMMY_MESSAGE = new Message("<TestTool>Dummy message</TestTool>");
+	public static final Message TESTTOOL_DUMMY_MESSAGE = new Message("<LarvaTool>Dummy message</LarvaTool>");
 	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND = -1;
-	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
+	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<LarvaTool>Clean up reply</LarvaTool>";
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
 	public static final int RESULT_AUTOSAVED = 2;
+	private static final String LEGACY_PACKAGE_NAME_LARVA = "org.frankframework.testtool.";
+	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
 	private static boolean autoSaveDiffs = false;
@@ -158,8 +160,8 @@ public class TestTool {
 			}
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-		TestTool testTool = new TestTool();
-		testTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
+		LarvaTool larvaTool = new LarvaTool();
+		larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
@@ -263,7 +265,7 @@ public class TestTool {
 				long startTime = System.currentTimeMillis();
 				debugMessage("Execute scenario('s)");
 				ScenarioRunner scenarioRunner = new ScenarioRunner();
-				scenarioRunner.setTestTool(this);
+				scenarioRunner.setLarvaTool(this);
 				scenarioRunner.runScenario(ibisContext, config, scenarioFiles, currentScenariosRootDirectory, appConstants, evenStep, waitBeforeCleanUp, logLevel);
 				config.flushWriters();
 				scenariosFailed = scenarioRunner.getScenariosFailed();
@@ -1001,7 +1003,7 @@ public class TestTool {
 			return null;
 		}
 		Map<Object, Object> collected = properties.entrySet().stream()
-				.map(TestTool::rewriteClassName)
+				.map(LarvaTool::rewriteClassName)
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 		Properties result = new Properties();
 		result.putAll(collected);
@@ -1013,7 +1015,10 @@ public class TestTool {
 		if (e.getValue() == null || !propertyName.toString().endsWith(".className")) {
 			return e;
 		}
-		String newClassName = e.getValue().toString().replace(ClassNameRewriter.LEGACY_PACKAGE_NAME, ClassNameRewriter.ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+		String newClassName = e.getValue()
+				.toString()
+				.replace(ClassNameRewriter.LEGACY_PACKAGE_NAME, ClassNameRewriter.ORG_FRANKFRAMEWORK_PACKAGE_NAME)
+				.replace(LEGACY_PACKAGE_NAME_LARVA, CURRENT_PACKAGE_NAME_LARVA);
 		return Map.entry(propertyName, newClassName);
 	}
 
@@ -1560,7 +1565,7 @@ public class TestTool {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
 					} else if ("org.frankframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent, config.getTimeout());
-					} else if ("org.frankframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						Map<String, Object> xsltParameters = createParametersMapFromParamProperties(properties, step, false, null);
 						stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 					} else {
@@ -1576,7 +1581,7 @@ public class TestTool {
 
 					if ("org.frankframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsSenderWrite(stepDisplayName, queues, queueName, fileContent, correlationId);
-					} else if ("org.frankframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
+					} else if ("org.frankframework.larva.XsltProviderListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeQueueRead(step, stepDisplayName, properties, queues, queueName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 					} else {
 						stepPassed = executeQueueWrite(stepDisplayName, queues, queueName, fileContent, correlationId, null);

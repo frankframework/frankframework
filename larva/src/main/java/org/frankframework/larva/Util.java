@@ -13,27 +13,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.testtool;
+package org.frankframework.larva;
 
-import java.util.Map;
+import org.frankframework.util.XmlEncodingUtils;
 
-import lombok.Getter;
-import org.frankframework.core.PipeLineSession;
+public class Util {
 
-/**
- * @author Jaco de Groot
- */
-public class ListenerMessage {
-	private @Getter String message;
-	private @Getter Map context;
-
-	public ListenerMessage(String message, Map context) {
-		this.message = message;
-		this.context = context;
-	}
-
-	public String getCorrelationId() {
-		return (String)context.get(PipeLineSession.CORRELATION_ID_KEY);
+	public static String throwableToXml(Throwable throwable) {
+		String xml = "<throwable>";
+		xml = xml + "<class>" + throwable.getClass().getName() + "</class>";
+		xml = xml + "<message>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters((throwable.getMessage()))) + "</message>";
+		Throwable cause = throwable.getCause();
+		if (cause != null) {
+			xml = xml + "<cause>" + throwableToXml(cause) + "</cause>";
+		}
+		xml = xml + "</throwable>";
+		return xml;
 	}
 
 }
