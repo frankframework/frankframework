@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,75 +17,44 @@ package org.frankframework.metrics;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.DoubleAdder;
 import java.util.concurrent.atomic.LongAdder;
 
-import io.micrometer.core.instrument.AbstractDistributionSummary;
 import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.cumulative.CumulativeDistributionSummary;
 import io.micrometer.core.instrument.distribution.CountAtBucket;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
-import io.micrometer.core.instrument.distribution.Histogram;
 import io.micrometer.core.instrument.distribution.HistogramSnapshot;
-import io.micrometer.core.instrument.distribution.TimeWindowFixedBoundaryHistogram;
-import io.micrometer.core.instrument.distribution.TimeWindowMax;
 
-public class LocalDistributionSummary extends AbstractDistributionSummary {
+public class LocalDistributionSummary extends CumulativeDistributionSummary {
 	private static final CountAtBucket[] EMPTY_HISTOGRAM = new CountAtBucket[0];
-	private final LongAdder count;
-	private final DoubleAdder amount;
 	private final AtomicLong min;
-	private final TimeWindowMax max;
 	private final LongAdder sumOfSquares;
 	private final AtomicLong first;
 	private final AtomicLong last;
-	private final Histogram histogram; //Overwrite the default time bound histogram
 
-	public LocalDistributionSummary(Id id, Clock clock, DistributionStatisticConfig distributionStatisticConfig, double scale, boolean supportsAggregablePercentiles) {
-		super(id, clock, distributionStatisticConfig, scale, supportsAggregablePercentiles);
-
-		histogram = new TimeWindowFixedBoundaryHistogram(clock, DistributionStatisticConfig.builder()
-				.expiry(Duration.ofDays(31)) // a month should be enough?
-				.bufferLength(1)
-				.build()
-				.merge(distributionStatisticConfig), true);
+	public LocalDistributionSummary(Id id, Clock clock, DistributionStatisticConfig distributionStatisticConfig, double scale) {
+		super(id, clock, mergeConfig(distributionStatisticConfig), scale, false);
 
 		this.min = new AtomicLong(Long.MAX_VALUE);
 		this.sumOfSquares = new LongAdder();
 		this.first = new AtomicLong(-1);
 		this.last = new AtomicLong();
-		this.count = new LongAdder();
-		this.amount = new DoubleAdder();
-		this.max = new TimeWindowMax(clock, distributionStatisticConfig);
+	}
+
+	private static DistributionStatisticConfig mergeConfig(DistributionStatisticConfig config) {
+		return DistributionStatisticConfig.builder()
+		.expiry(Duration.ofDays(7)) // a week should be enough?
+		.bufferLength(7)
+		.build()
+		.merge(config);
 	}
 
 	@Override
 	protected void recordNonNegative(double amount) {
+		super.recordNonNegative(amount);
 		checkMinMax((long) amount);
 		addSums((long) amount);
 		updateFirstLast((long) amount);
-
-		count.increment();
-		this.amount.add(amount);
-		max.record(amount);
-
-		if(histogram != null) {
-			histogram.recordDouble(amount);
-		}
-	}
-
-	@Override
-	public long count() {
-		return count.longValue();
-	}
-
-	@Override
-	public double totalAmount() {
-		return amount.doubleValue();
-	}
-
-	@Override
-	public double max() {
-		return max.poll();
 	}
 
 	private void updateFirstLast(long value) {
@@ -135,11 +104,6 @@ public class LocalDistributionSummary extends AbstractDistributionSummary {
 		return last.get();
 	}
 
-	public TimeWindowFixedBoundaryHistogram getHistogram() {
-		return (TimeWindowFixedBoundaryHistogram) histogram;
-	}
-
-
 	/**
 	 * For Prometheus we cannot use the histogram counts from HistogramSnapshot, as
 	 * it is based on a rolling histogram. Prometheus requires a histogram that
@@ -147,18 +111,13 @@ public class LocalDistributionSummary extends AbstractDistributionSummary {
 	 *
 	 * @return Cumulative histogram buckets.
 	 */
-	public CountAtBucket[] histogramCounts() {
+	private CountAtBucket[] histogramCounts() {
 		return histogram == null ? EMPTY_HISTOGRAM : histogram.takeSnapshot(0, 0, 0).histogramCounts();
 	}
 
 	@Override
 	public HistogramSnapshot takeSnapshot() {
 		HistogramSnapshot snapshot = super.takeSnapshot();
-
-		if(histogram == null) {
-			return snapshot;
-		}
-
 		return new HistogramSnapshot(snapshot.count(), snapshot.total(), snapshot.max(), snapshot.percentileValues(), histogramCounts(), snapshot::outputSummary);
 	}
 }

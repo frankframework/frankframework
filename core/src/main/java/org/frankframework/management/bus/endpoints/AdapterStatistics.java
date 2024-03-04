@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2016-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.management.bus.TopicSelector;
-import org.springframework.messaging.Message;
-
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
@@ -34,20 +31,48 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.EmptyResponseMessage;
 import org.frankframework.management.bus.JsonResponseMessage;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.metrics.LocalStatisticsRegistry;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.HasStatistics.Action;
 import org.frankframework.statistics.ScalarMetricBase;
 import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.util.DateFormatUtils;
+import org.springframework.messaging.Message;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
 public class AdapterStatistics extends BusEndpointBase {
+	private LocalStatisticsRegistry localRegistry;
+
+	@Override
+	protected void doAfterPropertiesSet() {
+		MeterRegistry metersRegistry = getBean("meterRegistry", MeterRegistry.class);
+		if (metersRegistry instanceof CompositeMeterRegistry) {
+			CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry) metersRegistry;
+			for(MeterRegistry meterRegistry: compositeMeterRegistry.getRegistries()) {
+				if (meterRegistry instanceof LocalStatisticsRegistry) {
+					localRegistry = (LocalStatisticsRegistry)meterRegistry;
+				}
+			}
+		}
+	}
 
 	@ActionSelector(BusAction.STATUS)
 	public Message<String> getStatistics(Message<?> message) {
+		if(BusMessageUtils.getBooleanHeader(message, "newstats", false)) {
+			return getStatisticsOld(message);
+		}
+		return getStatisticsNew(message);
+	}
+
+	public Message<String> getStatisticsOld(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
@@ -182,7 +207,16 @@ public class AdapterStatistics extends BusEndpointBase {
 		@Override
 		public void closeGroup(Object data) {
 		}
-
 	}
 
+	public Message<String> getStatisticsNew(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
+
+		if(localRegistry != null) {
+			return new JsonResponseMessage(localRegistry.scrape(configurationName, adapter));
+		}
+		return new EmptyResponseMessage(404);
+	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2016-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -60,6 +59,19 @@ public final class ShowAdapterStatistics extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.STATUS);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		return callSyncGateway(builder);
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{adapter}/statistics2")
+	@Relation("statistics")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getStatistics2(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.GET);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader("newstats", true);
 		return callSyncGateway(builder);
 	}
 }
