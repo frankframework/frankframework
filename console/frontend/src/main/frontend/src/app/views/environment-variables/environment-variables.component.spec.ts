@@ -8,9 +8,8 @@ describe('EnvironmentVariablesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ EnvironmentVariablesComponent ]
-    })
-    .compileComponents();
+      declarations: [EnvironmentVariablesComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(EnvironmentVariablesComponent);
     component = fixture.componentInstance;

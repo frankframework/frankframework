@@ -8,9 +8,8 @@ describe('IafUpdateComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ IafUpdateComponent ]
-    })
-    .compileComponents();
+      declarations: [IafUpdateComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(IafUpdateComponent);
     component = fixture.componentInstance;

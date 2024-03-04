@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.testtool.queues;
+package org.frankframework.larva.queues;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -23,28 +23,43 @@ import java.util.Properties;
 import org.apache.commons.lang3.NotImplementedException;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.jms.PullingJmsListener;
 
-public class QuerySenderQueue extends HashMap<String, Object> implements Queue {
+public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
+
+	private final PullingJmsListener jmsListener;
+
+	public JmsListenerQueue(PullingJmsListener jmsListener) {
+		super();
+		this.jmsListener=jmsListener;
+		put("jmsListener", jmsListener);
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		// currently handled at creation time;
+		jmsListener.configure();
 	}
 
 	@Override
 	public void open() throws ConfigurationException {
-		// currently handled at creation time;
+		try {
+			jmsListener.open();
+		} catch (ListenerException e) {
+			throw new ConfigurationException(e);
+		}
 	}
 
 	@Override
 	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> xsltParameters) throws TimeoutException, SenderException {
-		throw new IllegalStateException("QuerySender has no 'write' step");
+		throw new NotImplementedException("executeWrite");
 	}
 
 	@Override
 	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException {
 		throw new NotImplementedException("executeRead");
 	}
+
 }

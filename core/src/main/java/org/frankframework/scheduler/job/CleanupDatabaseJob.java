@@ -29,7 +29,6 @@ import lombok.Getter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IAdapter;
-import org.frankframework.core.IExtendedPipe;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ITransactionalStorage;
@@ -223,13 +222,10 @@ public class CleanupDatabaseJob extends JobDef {
 				PipeLine pipeLine = adapter.getPipeLine();
 				if (pipeLine != null) {
 					for (IPipe pipe : pipeLine.getPipes()) {
-						if (pipe instanceof IExtendedPipe) {
-							IExtendedPipe extendedPipe = (IExtendedPipe) pipe;
-							if (extendedPipe.getLocker() != null) {
-								String datasourceName = extendedPipe.getLocker().getDatasourceName();
-								if (StringUtils.isNotEmpty(datasourceName)) {
-									datasourceNames.add(datasourceName);
-								}
+						if (pipe.getLocker() != null) {
+							String datasourceName = pipe.getLocker().getDatasourceName();
+							if (StringUtils.isNotEmpty(datasourceName)) {
+								datasourceNames.add(datasourceName);
 							}
 						}
 					}

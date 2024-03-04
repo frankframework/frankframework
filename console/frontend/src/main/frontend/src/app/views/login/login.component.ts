@@ -3,28 +3,28 @@ import { Alert, AlertService } from 'src/app/services/alert.service';
 import { AuthService } from 'src/app/services/auth.service';
 
 type Credentials = {
-  username: string,
-  password: string
-}
+  username: string;
+  password: string;
+};
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
   credentials: Credentials = {
-    username: "",
-    password: ""
+    username: '',
+    password: '',
   };
   notifications: Alert[] = [];
 
   constructor(
     private alertService: AlertService,
-    private authService: AuthService
-  ){ }
+    private authService: AuthService,
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.authService.loggedin(); //Check whether or not the client is logged in.
 
     window.setTimeout(() => {
@@ -32,7 +32,7 @@ export class LoginComponent implements OnInit {
     }, 500);
   }
 
-  login(credentials: Credentials) {
+  login(credentials: Credentials): void {
     this.authService.login(credentials.username, credentials.password);
   }
 }

@@ -1,64 +1,70 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppService, JobMessage, RunState } from 'src/app/app.service';
+import { AppService, JobMessage } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 
 type Scheduler = {
-  name: string
-  version: string
-  started: boolean
-  state: string
-  runningSince: string
-  jobsExecuted: string[]
-  isSchedulerRemote: boolean
-  instanceId: string
-  jobStoreSupportsPersistence: boolean
-  threadPoolSize: number
-  schedulerClass: string
-  jobStoreClass: string
-}
+  name: string;
+  version: string;
+  started: boolean;
+  state: string;
+  runningSince: string;
+  jobsExecuted: string[];
+  isSchedulerRemote: boolean;
+  instanceId: string;
+  jobStoreSupportsPersistence: boolean;
+  threadPoolSize: number;
+  schedulerClass: string;
+  jobStoreClass: string;
+};
 
-export type JobState = 'NONE' | 'NORMAL' | 'PAUSED' | 'COMPLETE' | 'ERROR' | 'BLOCKED';
+export type JobState =
+  | 'NONE'
+  | 'NORMAL'
+  | 'PAUSED'
+  | 'COMPLETE'
+  | 'ERROR'
+  | 'BLOCKED';
 
 export type Job = {
-  name: string,
-  description: string,
-  state: JobState,
-  type?: string,
-  jobGroupName?: string,
-  stateful?: boolean,
-  durable?: boolean,
-  messages: JobMessage[],
-  triggers: Trigger[]
-}
+  name: string;
+  description: string;
+  state: JobState;
+  type?: string;
+  jobGroupName?: string;
+  stateful?: boolean;
+  durable?: boolean;
+  messages: JobMessage[];
+  triggers: Trigger[];
+};
 
 @Component({
   selector: 'app-scheduler',
   templateUrl: './scheduler.component.html',
-  styleUrls: ['./scheduler.component.scss']
+  styleUrls: ['./scheduler.component.scss'],
 })
 export class SchedulerComponent implements OnInit, OnDestroy {
   jobs: Record<string, Job[]> = {};
   scheduler: Scheduler = {
-    name: "",
-    version: "",
+    name: '',
+    version: '',
     started: false,
-    state: "",
-    runningSince: "",
+    state: '',
+    runningSince: '',
     jobsExecuted: [],
     isSchedulerRemote: false,
-    instanceId: "",
+    instanceId: '',
     jobStoreSupportsPersistence: false,
     threadPoolSize: 0,
-    schedulerClass: "",
-    jobStoreClass: ""
+    schedulerClass: '',
+    jobStoreClass: '',
   };
-  searchFilter: string = "";
+  searchFilter: string = '';
   refreshing: boolean = false;
   databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
-  jobShowContent: Record<keyof typeof this.jobs, boolean> = {}
+  jobShowContent: Record<keyof typeof this.jobs, boolean> = {};
 
   private initialized = false;
 
@@ -67,67 +73,86 @@ export class SchedulerComponent implements OnInit, OnDestroy {
     private pollerService: PollerService,
     private sweetAlertService: SweetalertService,
     private appService: AppService,
-    private schedulerService: SchedulerService
-  ) { };
+    private schedulerService: SchedulerService,
+  ) {}
 
   ngOnInit(): void {
-    this.pollerService.add("schedules", (data) => {
-      this.scheduler = data.scheduler;
-      this.jobs = data.jobs;
+    this.pollerService.add(
+      'schedules',
+      (data) => {
+        const result = data as {
+          scheduler: Scheduler;
+          jobs: Record<string, Job[]>;
+        };
+        this.scheduler = result.scheduler;
+        this.jobs = result.jobs;
 
-      this.refreshing = false;
-      if (!this.initialized) {
-        for (const job of Object.keys(this.jobs)) {
-          this.jobShowContent[job] = true;
+        this.refreshing = false;
+        if (!this.initialized) {
+          for (const job of Object.keys(this.jobs)) {
+            this.jobShowContent[job] = true;
+          }
+          this.initialized = true;
         }
-        this.initialized = true;
-      }
-    }, true, 5000);
+      },
+      true,
+      5000,
+    );
 
     this.appService.databaseSchedulesEnabled$.subscribe(() => {
       this.databaseSchedulesEnabled = this.appService.databaseSchedulesEnabled;
     });
-  };
+  }
 
-  ngOnDestroy() {
-    this.pollerService.remove("schedules");
-  };
+  ngOnDestroy(): void {
+    this.pollerService.remove('schedules');
+  }
 
-  showContent(job: keyof typeof this.jobs) {
+  showContent(job: keyof typeof this.jobs): boolean {
     return this.jobShowContent[job];
   }
 
-  start() {
+  start(): void {
     this.refreshing = true;
-    this.schedulerService.putSchedulesAction("start").subscribe();
-  };
+    this.schedulerService.putSchedulesAction('start').subscribe();
+  }
 
-  pauseScheduler() {
+  pauseScheduler(): void {
     this.refreshing = true;
-    this.schedulerService.putSchedulesAction("pause").subscribe();
-  };
+    this.schedulerService.putSchedulesAction('pause').subscribe();
+  }
 
-  pause(jobGroup: string, jobName: string) {
-    this.schedulerService.putScheduleJobAction(jobGroup, jobName, "pause").subscribe();
-  };
+  pause(jobGroup: string, jobName: string): void {
+    this.schedulerService
+      .putScheduleJobAction(jobGroup, jobName, 'pause')
+      .subscribe();
+  }
 
-  resume(jobGroup: string, jobName: string) {
-    this.schedulerService.putScheduleJobAction(jobGroup, jobName, "resume").subscribe();
-  };
+  resume(jobGroup: string, jobName: string): void {
+    this.schedulerService
+      .putScheduleJobAction(jobGroup, jobName, 'resume')
+      .subscribe();
+  }
 
-  remove(jobGroup: string, jobName: string) {
-    this.sweetAlertService.Confirm({ title: "Please confirm the deletion of '" + jobName + "'" }).then((result) => {
-      if (result.isConfirmed) {
-        this.schedulerService.deleteScheduleJob(jobGroup, jobName).subscribe();
-      }
-    });
-  };
+  remove(jobGroup: string, jobName: string): void {
+    this.sweetAlertService
+      .Confirm({ title: `Please confirm the deletion of '${jobName}'` })
+      .then((result) => {
+        if (result.isConfirmed) {
+          this.schedulerService
+            .deleteScheduleJob(jobGroup, jobName)
+            .subscribe();
+        }
+      });
+  }
 
-  trigger(jobGroup: string, jobName: string) {
-    this.schedulerService.putScheduleJobAction(jobGroup, jobName, "trigger").subscribe();
-  };
+  trigger(jobGroup: string, jobName: string): void {
+    this.schedulerService
+      .putScheduleJobAction(jobGroup, jobName, 'trigger')
+      .subscribe();
+  }
 
-  edit(jobGroup: string, jobName: string) {
+  edit(jobGroup: string, jobName: string): void {
     this.router.navigate(['scheduler', 'edit', jobGroup, jobName]);
-  };
+  }
 }

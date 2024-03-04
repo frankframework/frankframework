@@ -1,7 +1,7 @@
 tr.hasErrorsSummary {
   color: #ed5565;
 
-  &>td+td {
+  & > td + td {
     text-decoration: underline;
     font-weight: bold;
   }

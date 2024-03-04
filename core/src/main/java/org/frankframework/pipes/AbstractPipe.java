@@ -33,7 +33,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.DummyNamedObject;
-import org.frankframework.core.IExtendedPipe;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.PipeForward;
@@ -84,7 +83,7 @@ import org.frankframework.util.SpringUtils;
  *
  * @see PipeLineSession
  */
-public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, ApplicationContextAware, IWithParameters {
+public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 

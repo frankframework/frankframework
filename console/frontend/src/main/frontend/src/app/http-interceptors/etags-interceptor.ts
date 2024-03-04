@@ -1,36 +1,46 @@
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { Observable, tap } from "rxjs";
+import {
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+  HttpResponse,
+} from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 
 @Injectable()
 export class EtagsInterceptor implements HttpInterceptor {
-
   private etags: Record<string, string> = {};
 
   constructor() {}
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-
-    if (this.etags.hasOwnProperty(req.url)) { //If not explicitly disabled (httpOptions==false), check eTag
-      const tag = this.etags[req.url];
-      const matchReq = req.clone({
-        setHeaders: { 'If-None-Match': tag }
+  intercept(
+    request: HttpRequest<unknown>,
+    next: HttpHandler,
+  ): Observable<HttpEvent<unknown>> {
+    if (this.etags.hasOwnProperty(request.url)) {
+      //If not explicitly disabled (httpOptions==false), check eTag
+      const tag = this.etags[request.url];
+      const matchRequest = request.clone({
+        setHeaders: { 'If-None-Match': tag },
       });
-      this.handleResponse(next.handle(matchReq));
+      this.handleResponse(next.handle(matchRequest));
     }
 
-    return this.handleResponse(next.handle(req));
+    return this.handleResponse(next.handle(request));
   }
 
-  handleResponse(handler: Observable<HttpEvent<any>>): Observable<HttpEvent<any>>{
+  handleResponse(
+    handler: Observable<HttpEvent<unknown>>,
+  ): Observable<HttpEvent<unknown>> {
     return handler.pipe(
       tap({
         next: (event) => {
           if (event instanceof HttpResponse && event.headers.has('etag')) {
-            this.etags[event.url ?? ""] = event.headers.get("etag")!;
+            this.etags[event.url ?? ''] = event.headers.get('etag')!;
           }
-        }
-      })
+        },
+      }),
     );
   }
 }

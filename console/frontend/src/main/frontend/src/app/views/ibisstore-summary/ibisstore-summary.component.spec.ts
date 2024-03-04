@@ -8,9 +8,8 @@ describe('IbisstoreSummaryComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ IbisstoreSummaryComponent ]
-    })
-    .compileComponents();
+      declarations: [IbisstoreSummaryComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(IbisstoreSummaryComponent);
     component = fixture.componentInstance;

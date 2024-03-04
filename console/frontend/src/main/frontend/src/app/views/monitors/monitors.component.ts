@@ -1,15 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { AppService, Configuration } from 'src/app/app.service';
 import { Monitor, MonitorsService, Trigger } from './monitors.service';
-import { ActivatedRoute, ParamMap, Params, Router, convertToParamMap } from '@angular/router';
+import {
+  ActivatedRoute,
+  ParamMap,
+  Router,
+  convertToParamMap,
+} from '@angular/router';
 
 @Component({
   selector: 'app-monitors',
   templateUrl: './monitors.component.html',
-  styleUrls: ['./monitors.component.scss']
+  styleUrls: ['./monitors.component.scss'],
 })
 export class MonitorsComponent implements OnInit {
-  selectedConfiguration: string = "";
+  selectedConfiguration: string = '';
   monitors: Monitor[] = [];
   destinations: string[] = [];
   eventTypes: string[] = [];
@@ -23,12 +28,12 @@ export class MonitorsComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private appService: AppService,
-    private monitorsService: MonitorsService
-  ) { };
+    private monitorsService: MonitorsService,
+  ) {}
 
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe( params => {
-      this.routeQueryParams = params;
+    this.route.queryParamMap.subscribe((parameters) => {
+      this.routeQueryParams = parameters;
       this.configurations = this.appService.configurations;
 
       if (this.configurations.length > 0) {
@@ -43,87 +48,125 @@ export class MonitorsComponent implements OnInit {
         this.updateConfigurations();
       }
     });
-  };
+  }
 
-  updateConfigurations() {
+  updateConfigurations(): void {
     let configName = this.routeQueryParams.get('configuration'); // See if the configuration query param is populated
     if (!configName) configName = this.configurations[0].name; // Fall back to the first configuration
     this.changeConfiguration(configName); // Update the view
-  };
+  }
 
-  changeConfiguration(name: string) {
+  changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
-    const configurationQueryParameter = this.routeQueryParams.get('configuration');
+    const configurationQueryParameter =
+      this.routeQueryParams.get('configuration');
 
-    if (configurationQueryParameter == "" || configurationQueryParameter != name) { // Update the URL
-      this.router.navigate([], { relativeTo: this.route, queryParams: { configuration: name }});
+    if (
+      configurationQueryParameter == '' ||
+      configurationQueryParameter != name
+    ) {
+      // Update the URL
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { configuration: name },
+      });
     }
 
     this.update();
-  };
+  }
 
-  update() {
-    this.monitorsService.getMonitors(this.selectedConfiguration).subscribe((data) => {
-      this.destinations = data.destinations;
-      this.eventTypes = data.eventTypes;
-      this.monitors = data.monitors;
+  update(): void {
+    this.monitorsService
+      .getMonitors(this.selectedConfiguration)
+      .subscribe((data) => {
+        this.destinations = data.destinations;
+        this.eventTypes = data.eventTypes;
+        this.monitors = data.monitors;
 
-      this.totalRaised = 0;
-      for (const monitor of this.monitors) {
-        monitor.displayName = monitor.name;
-        if (monitor.raised) this.totalRaised++;
-        monitor.activeDestinations = [];
-        for (const j in this.destinations) {
-          const destination = this.destinations[j];
-          monitor.activeDestinations[j] = (monitor.destinations.indexOf(destination) > -1);
+        this.totalRaised = 0;
+        for (const monitor of this.monitors) {
+          monitor.displayName = monitor.name;
+          if (monitor.raised) this.totalRaised++;
+          monitor.activeDestinations = [];
+          for (const index in this.destinations) {
+            const destination = this.destinations[index];
+            monitor.activeDestinations[index] =
+              monitor.destinations.includes(destination);
+          }
         }
-      }
-    });
-  };
+      });
+  }
 
-  raise(monitor: Monitor, trigger?: Trigger) {
-    this.monitorsService.putMonitorOrTriggerAction("raise", this.selectedConfiguration, monitor, trigger).subscribe(() => {
-      this.update();
-    });
-  };
+  raise(monitor: Monitor, trigger?: Trigger): void {
+    this.monitorsService
+      .putMonitorOrTriggerAction(
+        'raise',
+        this.selectedConfiguration,
+        monitor,
+        trigger,
+      )
+      .subscribe(() => {
+        this.update();
+      });
+  }
 
-  clear(monitor: Monitor, trigger?: Trigger) {
-    this.monitorsService.putMonitorOrTriggerAction("clear", this.selectedConfiguration, monitor, trigger).subscribe(() => {
-      this.update();
-    });
-  };
+  clear(monitor: Monitor, trigger?: Trigger): void {
+    this.monitorsService
+      .putMonitorOrTriggerAction(
+        'clear',
+        this.selectedConfiguration,
+        monitor,
+        trigger,
+      )
+      .subscribe(() => {
+        this.update();
+      });
+  }
 
-  edit(monitor: Monitor, trigger?: Trigger) {
-    let destinations = [];
+  edit(monitor: Monitor, trigger?: Trigger): void {
+    const destinations = [];
 
-    for (const dest in monitor.activeDestinations) {
-      if (monitor.activeDestinations[dest]) {
-        destinations.push(dest);
+    for (const destination in monitor.activeDestinations) {
+      if (monitor.activeDestinations[destination]) {
+        destinations.push(destination);
       }
     }
 
-    this.monitorsService.putMonitorOrTriggerEdit(destinations, this.selectedConfiguration, monitor, trigger).subscribe(() => {
-      this.update();
-    });
-  };
+    this.monitorsService
+      .putMonitorOrTriggerEdit(
+        destinations,
+        this.selectedConfiguration,
+        monitor,
+        trigger,
+      )
+      .subscribe(() => {
+        this.update();
+      });
+  }
 
-  deleteMonitor(monitor: Monitor, trigger?: Trigger) {
-    this.monitorsService.deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger).subscribe(() => {
-      this.update();
-    });
-  };
+  deleteMonitor(monitor: Monitor, trigger?: Trigger): void {
+    this.monitorsService
+      .deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger)
+      .subscribe(() => {
+        this.update();
+      });
+  }
 
-  deleteTrigger(monitor: Monitor, trigger?: Trigger) {
-    this.monitorsService.deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger).subscribe(() => {
-      this.update();
-    });
-  };
+  deleteTrigger(monitor: Monitor, trigger?: Trigger): void {
+    this.monitorsService
+      .deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger)
+      .subscribe(() => {
+        this.update();
+      });
+  }
 
-  downloadXML(monitorName?: string) {
-    let url = this.appService.getServerPath() + "iaf/api/configurations/" + this.selectedConfiguration + "/monitors";
+  downloadXML(monitorName?: string): void {
+    let url = `${this.appService.getServerPath()}iaf/api/configurations/${
+      this.selectedConfiguration
+    }/monitors`;
     if (monitorName) {
-      url += "/" + monitorName;
+      url += `/${monitorName}`;
     }
-    window.open(url + "?xml=true", "_blank");
-  };
+    window.open(`${url}?xml=true`, '_blank');
+  }
 }

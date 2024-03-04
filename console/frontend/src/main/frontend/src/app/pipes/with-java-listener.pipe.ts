@@ -2,10 +2,9 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Adapter } from '../app.service';
 
 @Pipe({
-  name: 'withJavaListener'
+  name: 'withJavaListener',
 })
 export class WithJavaListenerPipe implements PipeTransform {
-
   transform(adapters: Record<string, Adapter>): Adapter[] {
     if (!adapters) return [];
     // let schedulerEligibleAdapters: Record<string, Adapter> = {};
@@ -21,5 +20,4 @@ export class WithJavaListenerPipe implements PipeTransform {
     }
     return schedulerEligibleAdapters;
   }
-
 }

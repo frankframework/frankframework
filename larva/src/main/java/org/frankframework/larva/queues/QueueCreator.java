@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package org.frankframework.testtool.queues;
+package org.frankframework.larva.queues;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,16 +37,16 @@ import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.jms.PullingJmsListener;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.TestConfig;
-import org.frankframework.testtool.TestTool;
+import org.frankframework.larva.LarvaTool;
+import org.frankframework.larva.TestConfig;
 import org.frankframework.util.EnumUtils;
 
 public class QueueCreator {
 
 	private final TestConfig config;
-	private final TestTool testTool;
+	private final LarvaTool testTool;
 
-	public QueueCreator(TestConfig config, TestTool testTool) {
+	public QueueCreator(TestConfig config, LarvaTool testTool) {
 		this.config = config;
 		this.testTool = testTool;
 	}
@@ -66,7 +66,7 @@ public class QueueCreator {
 			DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
 			directoryClassLoader.setDirectory(scenarioDirectory);
 			directoryClassLoader.setBasePath(".");
-			directoryClassLoader.configure(null, "TestTool");
+			directoryClassLoader.configure(null, "LarvaTool");
 
 			Iterator iterator = properties.keySet().iterator();
 			while (iterator.hasNext()) {
@@ -268,7 +268,7 @@ public class QueueCreator {
 
 						deleteQuerySender.configure();
 						deleteQuerySender.open();
-						deleteQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, null).close();
+						deleteQuerySender.sendMessageOrThrow(LarvaTool.TESTTOOL_DUMMY_MESSAGE, null).close();
 						deleteQuerySender.close();
 					} catch(ConfigurationException e) {
 						closeQueues(queues, properties, correlationId);
@@ -315,7 +315,7 @@ public class QueueCreator {
 					if (queues != null) {
 						try (PipeLineSession session = new PipeLineSession()) {
 							session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-							Message message = prePostFixedQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, session);
+							Message message = prePostFixedQuerySender.sendMessageOrThrow(LarvaTool.TESTTOOL_DUMMY_MESSAGE, session);
 							String result = message.asString();
 							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 							querySendersInfo.put("prePostQueryResult", result);
