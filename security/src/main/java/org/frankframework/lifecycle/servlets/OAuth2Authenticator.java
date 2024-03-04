@@ -102,6 +102,7 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 		http.oauth2Login()
 			.clientRegistrationRepository(clientRepository) //explicitly set, but can also be implicitly implied.
 			.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
+			.failureUrl(oauthBaseUrl + "/oauth2/failure/")
 			.authorizationEndpoint()
 				.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI).and()
 			.userInfoEndpoint()
