@@ -563,11 +563,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 
 		if (result instanceof Message) { //we just need to check if the message is null or not!
-			if (Message.isNull((Message) result)) {
+			Message resultMessage = (Message) result;
+			if (Message.isNull(resultMessage)) {
 				result = null;
-			} else if (((Message) result).isRequestOfType(String.class)) { //Used by getMinLength and getMaxLength
+			} else if (resultMessage.isRequestOfType(String.class)) { //Used by getMinLength and getMaxLength
 				try {
-					result = ((Message) result).asString();
+					result = resultMessage.asString();
 				} catch (IOException ignored) {
 					// Already checked for String, so this should never happen
 				}
@@ -843,10 +844,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 					if (substitutionValueMessage instanceof String) {
 						substitutionValue = substitutionValueMessage;
 					} else {
-						try {
-							Message message = Message.asMessage(substitutionValueMessage);
+						try (Message message = Message.asMessage(substitutionValueMessage)) {
 							substitutionValue = message.asString();
-							message.close();
 						} catch (IOException e) {
 							throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name, e);
 						}
