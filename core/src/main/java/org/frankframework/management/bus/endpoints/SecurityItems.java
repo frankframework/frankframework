@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.security.RolesAllowed;
 import javax.naming.NamingException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
@@ -67,6 +68,7 @@ public class SecurityItems extends BusEndpointBase {
 	private List<String> securityRoles;
 
 	@TopicSelector(BusTopic.SECURITY_ITEMS)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getSecurityItems(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("securityRoles", getSecurityRoles());

@@ -42,11 +42,14 @@ import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.util.DateFormatUtils;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
 public class AdapterStatistics extends BusEndpointBase {
 
 	@ActionSelector(BusAction.STATUS)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getStatistics(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);

@@ -31,6 +31,8 @@ import org.frankframework.util.FileUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
+import javax.annotation.security.RolesAllowed;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +44,7 @@ public class FileViewer extends BusEndpointBase {
 	public static final String permissionRules = AppConstants.getInstance().getProperty("FileViewer.permission.rules");
 
 	@ActionSelector(BusAction.GET)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<?> getFileContent(Message<?> message) {
 		String resultType = BusMessageUtils.getHeader(message, "resultType");
 		String fileName = BusMessageUtils.getHeader(message, "fileName");

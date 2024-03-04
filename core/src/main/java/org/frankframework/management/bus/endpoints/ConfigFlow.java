@@ -34,11 +34,14 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.EmptyResponseMessage;
 import org.frankframework.util.flow.FlowDiagramManager;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 public class ConfigFlow extends BusEndpointBase {
 	private @Setter FlowDiagramManager flowDiagramManager;
 
 	@TopicSelector(BusTopic.FLOW)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<?> getFlowDiagram(Message<?> message) throws IOException {
 		InputStream flow = getFlow(message);
 		if(flow != null) {

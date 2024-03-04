@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.PermitAll;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -43,6 +44,7 @@ import org.frankframework.util.RunState;
 public class HealthCheck extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.HEALTH)
+	@PermitAll
 	public Message<String> getHealth(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		if(StringUtils.isNotEmpty(configurationName)) {

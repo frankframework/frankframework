@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 
+import javax.annotation.security.RolesAllowed;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -75,6 +76,7 @@ public class WebServices extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.GET)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getWebServices(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
 
@@ -86,6 +88,7 @@ public class WebServices extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.DOWNLOAD)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<?> getService(Message<?> message) {
 		ServiceType type = BusMessageUtils.getEnumHeader(message, "type", ServiceType.class);
 		if(type == ServiceType.OPENAPI) {
