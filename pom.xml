@@ -50,7 +50,7 @@
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.10.0</mockito.version>
+		<mockito.version>5.11.0</mockito.version>
 		<junit.version>5.10.2</junit.version>
 	</properties>
 
