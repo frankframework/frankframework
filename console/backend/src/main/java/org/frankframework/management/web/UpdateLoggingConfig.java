@@ -18,7 +18,6 @@ package org.frankframework.management.web;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

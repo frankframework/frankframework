@@ -39,7 +39,6 @@ import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
