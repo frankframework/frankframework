@@ -47,7 +47,7 @@ import org.frankframework.util.RequestUtils;
 public class UpdateLoggingConfig extends FrankApiBase {
 
 	@GET
-	@PermitAll
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/server/logging")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLogConfiguration() {

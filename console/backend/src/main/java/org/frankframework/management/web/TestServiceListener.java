@@ -50,7 +50,7 @@ import org.frankframework.util.XmlEncodingUtils;
 public class TestServiceListener extends FrankApiBase {
 
 	@GET
-	@RolesAllowed("IbisTester")
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/test-servicelistener")
 	@Relation("servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)

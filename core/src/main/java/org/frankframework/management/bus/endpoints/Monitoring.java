@@ -110,7 +110,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> addMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null); //when present update Trigger
@@ -139,7 +139,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.DELETE)
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> deleteMonitor(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null);
@@ -161,7 +161,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.MANAGE)
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> updateMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY);

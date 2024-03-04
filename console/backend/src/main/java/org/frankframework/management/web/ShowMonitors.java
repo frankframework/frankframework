@@ -58,7 +58,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@POST
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -87,7 +87,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@PUT
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -106,7 +106,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@DELETE
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName) {
@@ -129,7 +129,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@POST
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -156,7 +156,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@PUT
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -171,7 +171,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@DELETE
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteTrigger(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int id) {

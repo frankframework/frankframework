@@ -49,7 +49,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 	private static final String TESTTOOL_ENABLED_PROPERTY = "testtool.enabled";
 
 	@ActionSelector(BusAction.GET)
-	@PermitAll
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> getLogConfiguration(Message<?> message) {
 		Map<String, Object> logSettings = new HashMap<>(3);
 		LoggerContext logContext = LoggerContext.getContext(false);

@@ -43,7 +43,7 @@ public class ServiceListener extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.SERVICE_LISTENER)
 	@ActionSelector(BusAction.GET)
-	@RolesAllowed("IbisTester")
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> getServiceListeners(Message<?> message) {
 		Map<String, Object> returnData = new HashMap<>();
 
