@@ -24,6 +24,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 public class TestUpdateLogSettings extends BusTestBase {
 
 	@Test
+	@WithMockUser(roles = { "IbisTester" })
 	public void getLogSettings() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_CONFIGURATION, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
