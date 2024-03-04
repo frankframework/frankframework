@@ -15,19 +15,19 @@
 */
 package org.frankframework.larva;
 
-import java.util.Map;
+import org.frankframework.core.PipeLineSession;
 
 import lombok.Getter;
-import org.frankframework.core.PipeLineSession;
 
 /**
  * @author Jaco de Groot
  */
+@Getter
 public class ListenerMessage {
-	private @Getter String message;
-	private @Getter Map context;
+	private final String message;
+	private final PipeLineSession context;
 
-	public ListenerMessage(String message, Map context) {
+	public ListenerMessage(String message, PipeLineSession context) {
 		this.message = message;
 		this.context = context;
 	}

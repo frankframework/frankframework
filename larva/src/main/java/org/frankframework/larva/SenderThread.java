@@ -18,7 +18,6 @@ package org.frankframework.larva;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -26,6 +25,8 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.XmlEncodingUtils;
+
 /**
  * @author Jaco de Groot
  */
@@ -66,21 +67,21 @@ public class SenderThread extends Thread {
 			result.getResult().close();
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
-				response = Util.throwableToXml(e);
+				response = throwableToXml(e);
 			} else {
 				log.error("SenderException for ISender '" + name + "'", e);
 				senderException = e;
 			}
 		} catch(IOException e) {
 			if (convertExceptionToMessage) {
-				response = Util.throwableToXml(e);
+				response = throwableToXml(e);
 			} else {
 				log.error("IOException for ISender '" + name + "'", e);
 				ioException = e;
 			}
 		} catch(TimeoutException e) {
 			if (convertExceptionToMessage) {
-				response = Util.throwableToXml(e);
+				response = throwableToXml(e);
 			} else {
 				log.error("timeoutException for ISender '" + name + "'", e);
 				timeoutException = e;
@@ -128,5 +129,17 @@ public class SenderThread extends Thread {
         }
         return timeoutException;
     }
+
+	static String throwableToXml(Throwable throwable) {
+		StringBuilder xml = new StringBuilder("<throwable>");
+		xml.append("<class>").append(throwable.getClass().getName()).append("</class>");
+		xml.append("<message>").append(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(throwable.getMessage()))).append("</message>");
+		Throwable cause = throwable.getCause();
+		if (cause != null) {
+			xml = new StringBuilder(xml + "<cause>" + throwableToXml(cause) + "</cause>");
+		}
+		xml.append("</throwable>");
+		return xml.toString();
+	}
 
 }
