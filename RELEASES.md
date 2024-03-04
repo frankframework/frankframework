@@ -8,7 +8,7 @@ Upcoming (8.1)
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/v8.0.0...HEAD)
 
-Requires JDK 17
+Requires JDK 17 or later
 
 ### Non backwards compatible changes
 - Larva package is renamed from `testtool` to `larva`. References inside the Larva property files to the `testtool` package should be updated to larva. Such as: `org.frankframework.testtool.FileSender` -> `org.frankframework.larva.FileSender`. It still works with the old package name in 8.1, as a compatibility feature. 
