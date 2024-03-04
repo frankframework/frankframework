@@ -843,8 +843,15 @@ public class Parameter implements IConfigurable, IWithParameters {
 					if (substitutionValueMessage instanceof String) {
 						substitutionValue = substitutionValueMessage;
 					} else {
-						throw new ParameterException(getName(), "Cannot get substitution value");
+						try {
+							Message message = Message.asMessage(substitutionValueMessage);
+							substitutionValue = message.asString();
+							message.close();
+						} catch (IOException e) {
+							throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name, e);
+						}
 					}
+					if (substitutionValue == null) throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name);
 				}
 			}
 		}
