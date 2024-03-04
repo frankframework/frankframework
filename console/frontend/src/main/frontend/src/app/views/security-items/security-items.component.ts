@@ -8,6 +8,7 @@ import {
   SapSystem,
   SecurityItemsService,
   SecurityRole,
+  supportedConnectionOptions,
 } from './security-items.service';
 
 @Component({
@@ -23,7 +24,10 @@ export class SecurityItemsComponent implements OnInit {
   certificates: CertificateList[] = [];
   xmlComponents: Record<string, string> = {};
   datasources: Datasource[] = [];
-  protocols: string[] = [];
+  supportedConnectionOptions: supportedConnectionOptions = {
+    protocols: [],
+    cyphers: [],
+  };
 
   constructor(
     private appService: AppService,
@@ -54,7 +58,7 @@ export class SecurityItemsComponent implements OnInit {
       this.sapSystems = data.sapSystems;
       this.securityRoles = data.securityRoles;
       this.xmlComponents = data.xmlComponents;
-      this.protocols = data.protocols;
+      this.supportedConnectionOptions = data.supportedConnectionOptions;
     });
   }
 }
