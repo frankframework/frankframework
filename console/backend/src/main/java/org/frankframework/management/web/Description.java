@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2017 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,12 +19,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Retention annotation to specify the relation between two or more resources
- *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * Retention annotation for the FF API to describe what an endpoint does
  */
-
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
 	String value() default "";
