@@ -37,10 +37,13 @@ import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 public class ConnectionOverview extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.CONNECTION_OVERVIEW)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getAllConnections(Message<?> message) {
 		List<Object> connectionsIncoming = new LinkedList<>();
 

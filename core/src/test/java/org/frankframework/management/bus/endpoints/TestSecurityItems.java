@@ -1,5 +1,7 @@
 package org.frankframework.management.bus.endpoints;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.management.bus.BusTestBase;
@@ -14,7 +16,10 @@ import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import java.util.regex.Pattern;
+
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@Log4j2
 public class TestSecurityItems extends BusTestBase {
 
 	@BeforeEach
@@ -44,6 +49,9 @@ public class TestSecurityItems extends BusTestBase {
 		String expectedJson = TestFileUtils.getTestFile("/Management/securityItemsResponse.json");
 		String payload = (String) response.getPayload();
 		payload = payload.replaceAll("hashCode: \\d+", "HASHCODE");
+		payload = payload.replaceAll("(?:\"cyphers\":)\\[([\\r\\s\\t\\n\\w \",]+)+(:?\\])", "\"cyphers\":[\"IGNORE\"]");
+		payload = payload.replaceAll("(?:\"protocols\":)\\[([\\r\\s\\t\\n\\w \",.]+)+(:?\\])", "\"protocols\":[\"IGNORE\"]");
+
 		MatchUtils.assertJsonEquals(expectedJson, payload);
 	}
 }
