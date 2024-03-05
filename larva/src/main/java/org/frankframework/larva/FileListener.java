@@ -39,7 +39,7 @@ import lombok.Setter;
  * @author Jaco de Groot
  */
 public class FileListener implements IConfigurable, AutoCloseable {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
 
