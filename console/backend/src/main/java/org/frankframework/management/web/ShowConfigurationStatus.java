@@ -70,7 +70,7 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
-	public Response getAdaptersOld(@PathParam("name") String name, @QueryParam("configuration") String configuration, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
+	public Response getAdapterOld(@PathParam("name") String name, @QueryParam("configuration") String configuration, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
 		if(StringUtils.isNotEmpty(configuration)) {
 			return getAdapter(configuration, name, expanded, showPendingMsgCount);
 		}
