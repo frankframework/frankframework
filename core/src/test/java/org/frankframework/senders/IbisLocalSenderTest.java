@@ -333,6 +333,16 @@ class IbisLocalSenderTest {
 		}
 	}
 
+	@Test
+	public void testSendMessageWithManualRetry() throws Exception {
+		// Arrange
+
+		// Act
+
+		// Assert
+
+	}
+
 	private JavaListener<?> setupJavaListener(TestConfiguration configuration, PipeLine pipeline, boolean callByServiceName) throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
 		Receiver<String> receiver = new Receiver<>();
