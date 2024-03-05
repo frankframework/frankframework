@@ -471,7 +471,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			if (transformerPool != null && xhtml != null) {
 				log.debug("transforming result [{}]", xhtml);
 				try {
-					xhtml = transformerPool.transform(Message.asSource(xhtml));
+					xhtml = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(xhtml));
 				} catch (Exception e) {
 					throw new SenderException("Exception on transforming input", e);
 				}

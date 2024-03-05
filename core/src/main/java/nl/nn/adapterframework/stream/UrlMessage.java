@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.stream;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
@@ -25,10 +26,14 @@ public class UrlMessage extends Message {
 	private static final long serialVersionUID = -8984775227930282095L;
 
 	public UrlMessage(URL url) {
-		this(url, new MessageContext());
+		this(url, Collections.emptyMap());
 	}
 
-	public UrlMessage(URL url, Map<String,Object> context) {
+	public UrlMessage(URL url, Map<String, Object> context) {
 		super(url::openStream, new MessageContext(context).withName(FilenameUtils.getName(url.toString())).withLocation(url.toString()), url.getClass());
+	}
+
+	public UrlMessage(URL url, String charset) {
+		super(url::openStream, new MessageContext().withCharset(charset), url.getClass());
 	}
 }

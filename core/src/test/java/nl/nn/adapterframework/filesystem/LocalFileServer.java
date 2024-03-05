@@ -237,7 +237,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 		FTPConfigSection config = new FTPConfigSection(serverConfig);
 		config.setFTPDebug(DEBUG ? EnumSet.allOf(FTPSrvSession.Dbg.class) : EnumSet.noneOf(FTPSrvSession.Dbg.class));
 		config.setFTPPort(port);
-		config.setFTPRootPath(shareName);
+		config.setFTPRootPath("/" + shareName);
 		config.setFTPBindAddress(host);
 		serverConfig.addConfigSection(config);
 		return new FTPServer(serverConfig);

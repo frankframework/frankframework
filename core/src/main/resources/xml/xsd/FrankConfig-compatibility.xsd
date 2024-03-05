@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.1">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -2383,7 +2383,7 @@
   <xs:attributeGroup name="JdbcSenderBaseDeclaredAttributeGroup">
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The number of seconds the driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited Default: 0</xs:documentation>
+        <xs:documentation>The number of seconds the JDBC driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -5384,7 +5384,7 @@
   <xs:attributeGroup name="SftpFileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
       <xs:annotation>
-        <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
+        <xs:documentation>Path of the file or directory to start working. Default: Home folder of the sftp user</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="host" type="xs:string">
@@ -7914,7 +7914,7 @@
   <xs:attributeGroup name="SftpFileSystemListenerDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
       <xs:annotation>
-        <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
+        <xs:documentation>Path of the file or directory to start working. Default: Home folder of the sftp user</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="host" type="xs:string">
@@ -14211,7 +14211,7 @@
   <xs:attributeGroup name="JwtPipeDeclaredAttributeGroup">
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Alias for the SharedSecret to be used when signing the JWT (using the HmacSHA256 algorithm)</xs:documentation>
+        <xs:documentation>Auth Alias for the SharedSecret to be used when signing the JWT (using the HmacSHA256 algorithm)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sharedSecret" type="xs:string">
@@ -14620,7 +14620,12 @@
   <xs:attributeGroup name="LogContextPipeDeclaredAttributeGroup">
     <xs:attribute name="export" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the ThreadContext parameters will be exported from the current PipeLine up in the call tree. Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; the ThreadContext parameters will be exported from the current PipeLine up in the call tree. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="continueOnError" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set {@code true} the pipe will never forward to the {@code ExceptionForward} even if an error occurred during execution. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.http;
-
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -35,25 +33,14 @@ public class PartMessage extends Message {
 	private final transient Part part;
 
 	public PartMessage(Part part) throws MessagingException {
-		this(new MessageContext(), part);
+		this(part, new MessageContext());
 	}
 
 	public PartMessage(Part part, String charset) throws MessagingException {
-		this(new MessageContext(charset), part);
+		this(part, new MessageContext(charset));
 	}
 
-	public PartMessage(Part part, Map<String, Object> context) throws MessagingException {
-		this(toMessageContext(context), part);
-	}
-
-	private static MessageContext toMessageContext(Map<String, Object> context) {
-		if(context instanceof MessageContext) {
-			return (MessageContext)context;
-		}
-		return (context == null) ? new MessageContext() : new MessageContext(context);
-	}
-
-	private PartMessage(MessageContext context, Part part) throws MessagingException {
+	public PartMessage(Part part, MessageContext context) throws MessagingException {
 		super(part::getInputStream, context.withName(part.getFileName()), part.getClass());
 		this.part = part;
 

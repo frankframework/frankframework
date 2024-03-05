@@ -45,6 +45,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Produces a fixed result that does not depend on the input message. It may return the contents of a file
@@ -191,7 +192,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 		if (transformerPool != null) {
 			try{
-				result = transformerPool.transform(Message.asSource(result));
+				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
 			} catch (SAXException e) {
 				throw new PipeRunException(this, "got error converting string [" + result + "] to source", e);
 			} catch (IOException | TransformerException e) {
