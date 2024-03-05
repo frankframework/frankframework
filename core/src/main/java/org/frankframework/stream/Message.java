@@ -774,6 +774,14 @@ public class Message implements Serializable, Closeable {
 		return request == null;
 	}
 
+	/** @return true if the request is or extends of the specified type at parameter clazz */
+	public boolean isRequestOfType(Class<?> clazz) {
+		if (request == null) {
+			return false;
+		}
+		return clazz.equals(request.getClass()) || clazz.isAssignableFrom(request.getClass());
+	}
+
 	/**
 	 * Check if a message is empty. If message size cannot be determined, return {@code false} to be on the safe side although this
 	 * might not be strictly correct.

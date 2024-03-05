@@ -77,13 +77,13 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.jms.PullingJmsListener;
+import org.frankframework.larva.queues.Queue;
+import org.frankframework.larva.queues.QueueWrapper;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
-import org.frankframework.larva.queues.Queue;
-import org.frankframework.larva.queues.QueueWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CaseInsensitiveComparator;
 import org.frankframework.util.DomBuilderException;
@@ -122,7 +122,7 @@ public class LarvaTool {
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
-	private static final boolean allowReadlineSteps = false;
+	protected static final boolean allowReadlineSteps = false;
 	protected static int globalTimeout=AppConstants.getInstance().getInt("larva.timeout", 10_000);
 
 	private static final String TR_STARTING_TAG="<tr>";
@@ -732,36 +732,6 @@ public class LarvaTool {
 		return commands.toString();
 	}
 
-	public void stepPassedMessage(String message) {
-		String method = "step passed/failed";
-		writeLog("<h3 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
-	}
-
-	public void stepAutosavedMessage(String message) {
-		String method = "step passed/failed";
-		writeLog("<h3 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
-	}
-
-	public void stepFailedMessage(String message) {
-		String method = "step passed/failed";
-		writeLog("<h3 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
-	}
-
-	public void scenarioPassedMessage(String message) {
-		String method = "scenario passed/failed";
-		writeLog("<h2 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
-	}
-
-	public void scenarioAutosavedMessage(String message) {
-		String method = "scenario passed/failed";
-		writeLog("<h2 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
-	}
-
-	public void scenarioFailedMessage(String message) {
-		String method = "scenario failed";
-		writeLog("<h2 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
-	}
-
 	public void scenariosTotalMessage(String message) {
 		if (config.isSilent()) {
 			try {
@@ -1073,33 +1043,7 @@ public class LarvaTool {
 		properties.putAll(absolutePathProperties);
 	}
 
-	public List<String> getSteps(Properties properties) {
-		List<String> steps = new ArrayList<>();
-		int i = 1;
-		boolean lastStepFound = false;
-		while (!lastStepFound) {
-			boolean stepFound = false;
-			Enumeration<?> enumeration = properties.propertyNames();
-			while (enumeration.hasMoreElements()) {
-				String key = (String)enumeration.nextElement();
-				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (allowReadlineSteps && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
-					if (!stepFound) {
-						steps.add(key);
-						stepFound = true;
-						debugMessage("Added step '" + key + "'");
-					} else {
-						errorMessage("More than one step" + i + " properties found, already found '" + steps.get(steps.size() - 1) + "' before finding '" + key + "'");
-					}
-				}
-			}
-			if (!stepFound) {
-				lastStepFound = true;
-			}
-			i++;
-		}
-		debugMessage(steps.size() + " steps found");
-		return steps;
-	}
+
 
 	public boolean closeQueues(Map<String, Queue> queues, Properties properties, String correlationId) {
 		boolean remainingMessagesFound = false;
@@ -1445,10 +1389,8 @@ public class LarvaTool {
 				} else {
 					result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, queueName);
 					if (result!=RESULT_OK) {
-						// Send a clean up reply because there is probably a
-						// thread waiting for a reply
-						Map<?, ?> context = new HashMap<Object, Object>();
-						listenerMessage = new ListenerMessage(TESTTOOL_CLEAN_UP_REPLY, context);
+						// Send a cleanup reply because there is probably a thread waiting for a reply
+						listenerMessage = new ListenerMessage(TESTTOOL_CLEAN_UP_REPLY, new PipeLineSession());
 						listenerMessageHandler.putResponseMessage(listenerMessage);
 					}
 				}
@@ -1527,7 +1469,7 @@ public class LarvaTool {
 		return result;
 	}
 
-	public int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, String correlationId) {
+	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, String correlationId) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
