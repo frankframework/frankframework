@@ -13,8 +13,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
@@ -44,9 +42,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 class IbisLocalSenderTest {
 	public static final String SERVICE_NAME = "TEST-SERVICE";
-	private final Logger log = LogManager.getLogger(this);
 
 	public static final long EXPECTED_BYTE_COUNT = 1_000L;
 
@@ -331,16 +331,6 @@ class IbisLocalSenderTest {
 			assertFalse(result.isSuccess(), "Result not expected to be success");
 			assertEquals("<error>No service with name [invalid] has been registered</error>", result.getResult().asString());
 		}
-	}
-
-	@Test
-	public void testSendMessageWithManualRetry() throws Exception {
-		// Arrange
-
-		// Act
-
-		// Assert
-
 	}
 
 	private JavaListener<?> setupJavaListener(TestConfiguration configuration, PipeLine pipeline, boolean callByServiceName) throws Exception {
