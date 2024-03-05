@@ -32,6 +32,24 @@ import org.bson.codecs.Encoder;
 import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
+import org.xml.sax.SAXException;
+
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertManyResult;
+import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
+import com.mongodb.connection.ServerDescription;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import lombok.Getter;
+import lombok.Lombok;
+import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
@@ -53,24 +71,6 @@ import org.frankframework.stream.document.INodeBuilder;
 import org.frankframework.stream.document.ObjectBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
-import org.xml.sax.SAXException;
-
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.InsertManyResult;
-import com.mongodb.client.result.InsertOneResult;
-import com.mongodb.client.result.UpdateResult;
-import com.mongodb.connection.ServerDescription;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import lombok.Getter;
-import lombok.Lombok;
-import lombok.Setter;
 
 /**
  * Sender to perform action on a MongoDB database.

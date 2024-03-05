@@ -30,11 +30,11 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
-
-import lombok.Getter;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.

@@ -15,15 +15,15 @@
  */
 package org.frankframework.extensions.cmis;
 
+import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
+
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.util.EnumUtils;
-
-import lombok.Getter;
 
 public class CmisEventListener extends PushingListenerAdapter implements HasPhysicalDestination {
 

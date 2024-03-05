@@ -20,15 +20,9 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.extensions.sap.ISapFunctionFacade;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.extensions.sap.jco3.handlers.Handler;
-import org.frankframework.parameters.ParameterValue;
-import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlUtils;
 import org.springframework.context.ApplicationContext;
 
 import com.sap.conn.jco.JCoFunction;
@@ -38,6 +32,12 @@ import com.sap.conn.jco.JCoStructure;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.parameters.ParameterValue;
+import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.stream.Message;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.XmlUtils;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  *

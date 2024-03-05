@@ -16,14 +16,14 @@
 package org.frankframework.http;
 
 import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.http.rest.ApiListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
-
-import lombok.Getter;
 
 /**
  * Implementation of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}

@@ -43,6 +43,14 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+
+import jcifs.ntlmssp.NtlmFlags;
+import jcifs.ntlmssp.Type1Message;
+import jcifs.ntlmssp.Type2Message;
+import jcifs.ntlmssp.Type3Message;
+import jcifs.util.Base64;
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
@@ -54,13 +62,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
-
-import jcifs.ntlmssp.NtlmFlags;
-import jcifs.ntlmssp.Type1Message;
-import jcifs.ntlmssp.Type2Message;
-import jcifs.ntlmssp.Type3Message;
-import jcifs.util.Base64;
-import lombok.Getter;
 
 /**
  * Sender that sends a message via a WebService based on NTLM authentication.
