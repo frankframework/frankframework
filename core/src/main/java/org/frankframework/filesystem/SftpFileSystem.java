@@ -51,7 +51,7 @@ import lombok.Getter;
 public class SftpFileSystem extends SftpSession implements IWritableFileSystem<SftpFileRef> {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "FTP";
+	private final @Getter String domain = "FTP";
 	private String remoteDirectory = "";
 
 	private ChannelSftp ftpClient;

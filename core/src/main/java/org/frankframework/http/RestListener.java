@@ -20,8 +20,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.core.HasPhysicalDestination;
@@ -34,6 +32,8 @@ import org.frankframework.pipes.JsonPipe;
 import org.frankframework.pipes.JsonPipe.Direction;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
+
+import lombok.Getter;
 
 /**
  * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
@@ -51,7 +51,7 @@ import org.frankframework.stream.Message;
  */
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
 	private @Getter String method;
 	private @Getter String etagSessionKey;

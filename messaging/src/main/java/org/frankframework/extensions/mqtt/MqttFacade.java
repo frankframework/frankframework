@@ -22,22 +22,22 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.util.CredentialFactory;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
-	private final @Getter(onMethod = @__(@Override)) String domain = "MQTT";
-	private @Getter(onMethod = @__(@Override)) ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter(onMethod = @__(@Override)) @Setter ApplicationContext applicationContext;
+	private final @Getter String domain = "MQTT";
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
 	private @Getter int timeout = 3000;

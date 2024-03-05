@@ -26,8 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.HasSpecialDefaultValues;
@@ -41,9 +39,10 @@ import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
+
+import lombok.Getter;
 
 /**
  * Listener that allows a {@link Receiver} to receive messages as a SOAP webservice.
@@ -68,7 +67,7 @@ import org.frankframework.util.XmlBuilder;
  */
 public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private final @Getter String domain = "Http";
 	private @Getter boolean soap = true;
 	private @Getter String serviceNamespaceURI;
 	private SoapWrapper soapWrapper = null;

@@ -16,23 +16,22 @@
 package org.frankframework.scheduler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.scheduler.job.IJob;
-import org.quartz.JobDetail;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.TransactionAttributes;
-
+import org.frankframework.scheduler.job.IJob;
 import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
+import org.quartz.JobDetail;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -298,7 +297,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private @Getter String cronExpression;
 	private @Getter long interval = -1;
 
-	private @Getter(onMethod = @__(@Override)) Locker locker = null;
+	private @Getter Locker locker = null;
 	private @Getter int numThreads = 1;
 	private int countThreads = 0;
 

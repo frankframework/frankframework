@@ -20,7 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Map;
 
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
@@ -28,15 +27,15 @@ import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
-
-import org.frankframework.doc.ReferTo;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.doc.ReferTo;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.StringIteratorPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
-
 import org.frankframework.util.SpringUtils;
+
+import lombok.Getter;
 
 
 /**
@@ -47,7 +46,7 @@ import org.frankframework.util.SpringUtils;
  */
 public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
+	private final @Getter String domain = "JDBC";
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
 	protected class MixedQuerySender extends DirectQuerySender {

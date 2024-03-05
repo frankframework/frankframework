@@ -65,7 +65,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	private static final String MULTIPART_RESPONSE_CONTENT_TYPE = "application/octet-stream";
 	private static final String MULTIPART_RESPONSE_CHARSET = "UTF-8";
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
+	private final @Getter String domain = "JVM";
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;

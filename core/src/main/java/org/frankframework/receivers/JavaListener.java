@@ -65,7 +65,7 @@ import nl.nn.adapterframework.dispatcher.RequestProcessor;
 @Category("Basic")
 public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
+	private final @Getter String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

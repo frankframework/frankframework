@@ -26,15 +26,6 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-import org.springframework.util.MimeTypeUtils;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.helpers.XMLFilterImpl;
-
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
-import lombok.Getter;
 import org.frankframework.align.Json2Xml;
 import org.frankframework.align.Xml2Json;
 import org.frankframework.align.XmlAligner;
@@ -61,6 +52,15 @@ import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.xml.NamespaceRemovingFilter;
 import org.frankframework.xml.RootElementToSessionKeyFilter;
 import org.frankframework.xml.XmlWriter;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.helpers.XMLFilterImpl;
+
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+import lombok.Getter;
 
 /**
  *<code>Pipe</code> that validates the XML or JSON input message against a XML Schema and returns either XML or JSON.
@@ -69,7 +69,7 @@ import org.frankframework.xml.XmlWriter;
  */
 public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "XML Schema";
+	private final @Getter String domain = "XML Schema";
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputFormat ";
 
 	private @Getter boolean compactJsonArrays=true;

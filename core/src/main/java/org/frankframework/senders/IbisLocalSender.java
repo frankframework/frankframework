@@ -105,14 +105,14 @@ import org.frankframework.stream.ThreadLifeCycleEventListener;
 @Category("Basic")
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator{
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
+	private final @Getter String domain = "Local";
 
 	private Configuration configuration;
 	private @Getter String serviceName;
 	private @Getter String javaListener;
 	private @Getter String javaListenerSessionKey;
 	private @Getter boolean isolated=false;
-	private @Getter(onMethod = @__({@Override})) boolean synchronous=true;
+	private @Getter boolean synchronous=true;
 	private @Getter boolean checkDependency=true;
 	private @Getter int dependencyTimeOut=60;
 	private @Getter String returnedSessionKeys=""; // do not initialize with null, returned session keys must be set explicitly

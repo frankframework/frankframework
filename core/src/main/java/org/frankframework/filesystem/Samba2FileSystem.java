@@ -85,7 +85,7 @@ import lombok.Getter;
  *
  */
 public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWritableFileSystem<SmbFileRef> {
-	private final @Getter(onMethod = @__(@Override)) String domain = "SMB";
+	private final @Getter String domain = "SMB";
 
 	private @Getter Samba2AuthType authType = Samba2AuthType.SPNEGO;
 	private @Getter String share = null;

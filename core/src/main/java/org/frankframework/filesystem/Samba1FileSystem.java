@@ -24,6 +24,9 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.stream.Message;
+import org.frankframework.util.CredentialFactory;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -32,9 +35,6 @@ import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.stream.Message;
-import org.frankframework.util.CredentialFactory;
 
 /**
  * Uses the (old) SMB 1 protocol.
@@ -42,7 +42,7 @@ import org.frankframework.util.CredentialFactory;
  * Only supports NTLM authentication.
  */
 public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritableFileSystem<SmbFile> {
-	private final @Getter(onMethod = @__(@Override)) String domain = "SMB";
+	private final @Getter String domain = "SMB";
 
 	private @Getter String share = null;
 	private @Getter String username = null;

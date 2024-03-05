@@ -60,7 +60,7 @@ import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
-	private final @Getter(onMethod = @__(@Override)) String domain = "IMAP";
+	private final @Getter String domain = "IMAP";
 
 	private @Getter String host;
 	private @Getter int port = 993;
