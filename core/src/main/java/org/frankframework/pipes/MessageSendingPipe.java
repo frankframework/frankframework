@@ -751,8 +751,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				throw new InterruptedException();
 			}
 			Message sendResultMessage = sendResult.getResult();
-			if (sendResultMessage.asObject() instanceof String) {
-				String result = (String)sendResultMessage.asObject();
+			if (sendResultMessage.isRequestOfType(String.class)) {
+				String result = sendResultMessage.asString();
 				if (StringUtils.isNotEmpty(getTimeoutOnResult()) && getTimeoutOnResult().equals(result)) {
 					exitState = TIMEOUT_FORWARD;
 					throw new TimeoutException("timeoutOnResult ["+ getTimeoutOnResult()+"]");

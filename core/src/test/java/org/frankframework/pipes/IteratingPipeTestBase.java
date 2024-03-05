@@ -34,14 +34,14 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		return new ElementRenderer();
 	}
 
-	/** If a line contains the word 'error' an exception will be thrown and the line wont be logged */
-	private SenderResult resultCollector(Message message, PipeLineSession session) throws SenderException {
+	/** If a line contains the word 'error' an exception will be thrown and the line won't be logged */
+	private SenderResult resultCollector(Message message) throws SenderException {
 		try {
 			if (message.asString().contains("exception")) {
 				throw new SenderException("Exception triggered");
 			}
 			String result = "["+message.asString()+"]";
-			resultLog.append(result+"\n");
+			resultLog.append(result).append("\n");
 			if (message.asString().contains("error")) {
 				return new SenderResult(Message.asMessage(result), "Error triggered");
 			}
@@ -66,7 +66,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		@Override
 		public SenderResult sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException {
-			return resultCollector(message, session);
+			return resultCollector(message);
 		}
 	}
 
@@ -74,7 +74,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		@Override
 		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
-			return resultCollector(message, session);
+			return resultCollector(message);
 		}
 	}
 

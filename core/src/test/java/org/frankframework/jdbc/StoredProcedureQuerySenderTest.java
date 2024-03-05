@@ -4,6 +4,7 @@ import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -447,9 +448,9 @@ public class StoredProcedureQuerySenderTest {
 
 		// Assert
 		assertTrue(result.isSuccess());
-		Object resultData = result.getResult().asObject();
-		assertTrue(resultData instanceof byte[]);
-		byte[] bytes = (byte[]) resultData;
+		assertTrue(result.getResult().isRequestOfType(byte[].class));
+		byte[] bytes = result.getResult().asByteArray();
+		assertNotNull(bytes);
 		assertEquals(0, bytes.length);
 		assertEquals("", result.getResult().asString());
 	}

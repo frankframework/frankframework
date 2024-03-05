@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -403,7 +404,11 @@ class IbisLocalSenderTest {
 			session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
 			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter1")), "param1");
 			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter2")), "param2");
-			return session.getMessage(message.asObject().toString());
+			try {
+				return session.getMessage(message.asString());
+			} catch (IOException e) {
+				throw new ListenerException(e);
+			}
 		}));
 		IbisLocalSender sender = new IbisLocalSender();
 		sender.setServiceName(SERVICE_NAME);

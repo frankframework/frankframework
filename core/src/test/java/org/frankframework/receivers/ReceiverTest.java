@@ -659,7 +659,7 @@ public class ReceiverTest {
 			// Assert
 			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
 			assertTrue(result.requiresStream(), "Result message should be a stream");
-			assertTrue(result.asObject() instanceof Reader, "Result message should be a stream");
+			assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
 			assertEquals("TEST", result.asString());
 		} finally {
 			configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
