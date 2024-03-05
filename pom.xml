@@ -754,6 +754,18 @@
 							<version>1.18.30</version>
 						</dependency>
 					</dependencies>
+					<executions>
+						<execution>
+							<phase>generate-sources</phase>
+							<goals>
+								<goal>delombok</goal>
+							</goals>
+							<configuration>
+								<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+								<addOutputDirectory>false</addOutputDirectory>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.glassfish.copyright</groupId>
@@ -1320,8 +1332,15 @@
 			<build>
 				<plugins>
 					<plugin>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
+						<configuration>
+							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>
@@ -1353,7 +1372,6 @@
 						<version>1.0</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
-							<includeDeLombokSources>false</includeDeLombokSources>
 							<doclint>none</doclint>
 							<quiet>true</quiet>
 							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
