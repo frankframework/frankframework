@@ -134,7 +134,7 @@ public class ReceiverSubAdapterTest {
 		// hardcode a parameter with same name as the session uses to store the message-id.
 		// Therefore each call to the sub-adapter will use the same message id, and the Frank!Framework
 		// keeps track of the failure of each attempt internally until max-retries is reached.
-		Parameter idParam = new Parameter("mid", "my-id");
+		Parameter idParam = new Parameter(PipeLineSession.MESSAGE_ID_KEY, "my-id");
 		sender.addParameter(idParam);
 
 		SenderPipe pipe = new SenderPipe();
