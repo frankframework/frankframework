@@ -37,7 +37,7 @@ import org.frankframework.util.RequestUtils;
 public final class BrowseJdbcTable extends FrankApiBase {
 
 	@POST
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/browse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)

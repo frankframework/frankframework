@@ -35,10 +35,13 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Environment;
 import org.frankframework.util.StringUtil;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 public class EnvironmentVariables extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.ENVIRONMENT)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getEnvironmentVariables(Message<?> message) {
 		List<String> propsToHide = new ArrayList<>();
 		String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);

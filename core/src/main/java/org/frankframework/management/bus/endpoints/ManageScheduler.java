@@ -48,6 +48,8 @@ import org.frankframework.scheduler.IbisJobDetail;
 import org.frankframework.scheduler.IbisJobDetail.JobType;
 import org.frankframework.scheduler.SchedulerHelper;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)
 public class ManageScheduler extends BusEndpointBase {
@@ -75,6 +77,7 @@ public class ManageScheduler extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.MANAGE)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> manageScheduler(Message<?> message) {
 		String issuedBy = BusMessageUtils.getHeader(message, "issuedBy");
 		String jobName = BusMessageUtils.getHeader(message, "job");
@@ -184,6 +187,7 @@ public class ManageScheduler extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.DELETE)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> deleteJob(Message<?> message) {
 		String issuedBy = BusMessageUtils.getHeader(message, "issuedBy");
 		String jobName = BusMessageUtils.getHeader(message, "job");
