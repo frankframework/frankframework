@@ -15,8 +15,8 @@
 */
 package org.frankframework.management.bus;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,11 +47,12 @@ public class JsonResponseMessage extends StringResponseMessage {
 	}
 
 	private static String jsonStructureToString(JsonStructure payload) {
-		ByteArrayOutputStream boas = new ByteArrayOutputStream();
-		try (JsonWriter jsonWriter = WRITER_FACTORY.createWriter(boas)) {
+		Writer writer = new StringWriter();
+
+		try (JsonWriter jsonWriter = WRITER_FACTORY.createWriter(writer)) {
 			jsonWriter.write(payload);
 		}
 
-		return new String(boas.toByteArray(), StandardCharsets.UTF_8);
+		return writer.toString();
 	}
 }

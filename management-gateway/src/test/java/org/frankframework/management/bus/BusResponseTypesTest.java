@@ -7,10 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 
+import org.frankframework.util.StreamUtil;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.util.StreamUtil;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 
 public class BusResponseTypesTest {
 
@@ -57,6 +59,17 @@ public class BusResponseTypesTest {
 
 		BusException e = assertThrows(BusException.class, () -> new JsonResponseMessage(stream));
 		assertThat(e.getMessage(), Matchers.startsWith("unable to convert response to JSON: (InvalidDefinitionException) No serializer found for class java.io.ByteArrayInputStream"));
+	}
+
+	@Test
+	public void testJsonStructure() {
+		JsonObjectBuilder json = Json.createObjectBuilder();
+		json.add("key", "value");
+		JsonResponseMessage message = new JsonResponseMessage(json.build());
+
+		assertEquals("{\"key\":\"value\"}", message.getPayload().replaceAll("\s", "").replaceAll("\n", ""));
+		assertEquals("application/json", BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals(200, BusMessageUtils.getIntHeader(message, ResponseMessageBase.STATUS_KEY, 0));
 	}
 
 	@Test
