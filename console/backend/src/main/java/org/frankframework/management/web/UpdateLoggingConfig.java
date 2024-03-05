@@ -49,6 +49,8 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/server/logging")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("logging")
+	@Description("view the application log configuration")
 	public Response getLogConfiguration() {
 		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.GET));
 	}
@@ -58,6 +60,8 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@Path("/server/logging")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("logging")
+	@Description("update the application log configuration")
 	public Response updateLogConfiguration(Map<String, Object> json) {
 		Level loglevel = Level.toLevel(RequestUtils.getValue(json, "loglevel"), null);
 		Boolean logIntermediaryResults = RequestUtils.getBooleanValue(json, "logIntermediaryResults");
@@ -76,8 +80,9 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/server/logging/settings")
 	@Relation("logging")
+	@Description("view the log definitions, default loggers and their corresponding levels")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogSettings(@QueryParam("filter") String filter) {
+	public Response getLogDefinitions(@QueryParam("filter") String filter) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.LOG_DEFINITIONS, BusAction.GET);
 		request.addHeader("filter", filter);
 		return callSyncGateway(request);
@@ -87,7 +92,9 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/server/logging/settings")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updateLogger(Map<String, Object> json) {
+	@Relation("logging")
+	@Description("update the loglevel of a specific logger")
+	public Response updateLogDefinition(Map<String, Object> json) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 
 		for (Entry<String, Object> entry : json.entrySet()) {

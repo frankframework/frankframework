@@ -65,7 +65,7 @@ public final class CompatibilityShowScheduler extends FrankApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
-	public Response triggerOld(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, Map<String, Object> json) {
+	public Response getTriggerOld(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.MANAGE);
 		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
 		builder.addHeader("job", jobName);
