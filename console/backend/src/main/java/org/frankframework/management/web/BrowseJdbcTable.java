@@ -41,7 +41,9 @@ public final class BrowseJdbcTable extends FrankApiBase {
 	@Path("/jdbc/browse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(Map<String, Object> json) {
+	@Relation("jdbc")
+	@Description("view a specific JDBC table")
+	public Response browseJdbcTable(Map<String, Object> json) {
 		String datasource = RequestUtils.getValue(json, "datasource");
 		String tableName = RequestUtils.getValue(json, "table");
 		String where = RequestUtils.getValue(json, "where");

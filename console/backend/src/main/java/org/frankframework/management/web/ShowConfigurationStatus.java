@@ -56,6 +56,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("adapter")
+	@Description("view a list of all adapters")
 	public Response getAdapters(@QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.GET);
 		builder.addHeader("showPendingMsgCount", showPendingMsgCount);
@@ -68,7 +70,7 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Path("/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
-	public Response getAdapterOld(@PathParam("name") String name, @QueryParam("configuration") String configuration, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
+	public Response getAdaptersOld(@PathParam("name") String name, @QueryParam("configuration") String configuration, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
 		if(StringUtils.isNotEmpty(configuration)) {
 			return getAdapter(configuration, name, expanded, showPendingMsgCount);
 		}
@@ -79,6 +81,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/adapters/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("adapter")
+	@Description("view an adapter receivers/pipes/messages")
 	public Response getAdapter(@PathParam("configuration") String configuration, @PathParam("name") String name, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
@@ -96,7 +100,7 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Deprecated
 	public Response getIbisHealthOld(@PathParam("name") String name, @QueryParam("configuration") String configuration) {
 		if(StringUtils.isNotEmpty(configuration)) {
-			return getIbisHealth(configuration, name);
+			return getAdapterHealth(configuration, name);
 		}
 		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+name+"/health", Status.BAD_REQUEST);
 	}
@@ -105,7 +109,9 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@PermitAll
 	@Path("/configurations/{configuration}/adapters/{name}/health")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getIbisHealth(@PathParam("configuration") String configuration, @PathParam("name") String name) {
+	@Relation("adapter")
+	@Description("view an adapter health")
+	public Response getAdapterHealth(@PathParam("configuration") String configuration, @PathParam("name") String name) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.HEALTH);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, name);
@@ -119,6 +125,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Path("/adapters/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("adapter")
+	@Description("start/stop multiple adapters")
 	public Response updateAdapters(Map<String, Object> json) {
 
 		IbisAction action = null;
@@ -186,6 +194,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Path("/configurations/{configuration}/adapters/{adapter}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("adapter")
+	@Description("start/stop an adapter")
 	public Response updateAdapter(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter, Map<String, Object> json) {
 		Object value = json.get("action");
 		if(value instanceof String) {
@@ -225,6 +235,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Path("/configurations/{configuration}/adapters/{adapter}/receivers/{receiver}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("adapter")
+	@Description("start/stop an adapter receivers")
 	public Response updateReceiver(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter, @PathParam("receiver") String receiver, Map<String, Object> json) {
 		Object value = json.get("action");
 		if(value instanceof String) {
@@ -264,6 +276,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/adapters/{adapter}/flow")
+	@Relation("adapter")
+	@Description("view an adapter flow")
 	public Response getAdapterFlow(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);

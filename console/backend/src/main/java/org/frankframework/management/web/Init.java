@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -47,10 +48,6 @@ import org.apache.cxf.jaxrs.model.OperationResourceInfo;
 @Path("/")
 public class Init extends FrankApiBase {
 
-	private String getHATEOASImplementation() {
-		return getProperty("iaf-api.hateoasImplementation", "default");
-	}
-
 	private boolean isMonitoringEnabled() {
 		return getProperty("monitoring.enabled", false);
 	}
@@ -59,17 +56,20 @@ public class Init extends FrankApiBase {
 	@PermitAll
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllResources(@QueryParam("allowedRoles") boolean displayAllowedRoles) {
+	public Response getAllResources(@QueryParam("allowedRoles") boolean displayAllowedRoles, @QueryParam("hateoas") @DefaultValue("default") String hateoasImpl) {
 		List<Object> JSONresources = new ArrayList<>();
 		Map<String, Object> HALresources = new HashMap<>();
 		Map<String, Object> resources = new HashMap<>(1);
 
-		StringBuffer requestPath = getServletRequest().getRequestURL();
-		if(requestPath.substring(requestPath.length()-1).equals("/"))
-			requestPath.setLength(requestPath.length()-1);
+		String requestPath = getServletRequest().getRequestURL().toString();
+		if(requestPath.endsWith("/")) {
+			requestPath = requestPath.substring(0, requestPath.length()-1);
+		}
 
 		for (ClassResourceInfo cri : getJAXRSService().getClassResourceInfo()) {
 			MethodDispatcher methods = cri.getMethodDispatcher();
+			Path basePathAnnotation = cri.getPath();
+			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "/";
 			for (OperationResourceInfo operation : methods.getOperationResourceInfos()) {
 				Method method = operation.getMethodToInvoke();
 				String relation = null;
@@ -82,7 +82,8 @@ public class Init extends FrankApiBase {
 				}
 				boolean deprecated = method.getAnnotation(Deprecated.class) != null;
 
-				Map<String, Object> resource = new HashMap<>(4);
+				Map<String, Object> resource = new HashMap<>(6);
+				resource.put("name", method.getName());
 
 				if(deprecated) {
 					if(!allowDeprecatedEndpoints()) continue; // Skip all
@@ -101,17 +102,19 @@ public class Init extends FrankApiBase {
 
 				Path path = method.getAnnotation(Path.class);
 				if(path != null) {
-					String p = path.value();
-					if(!p.startsWith("/")) p = "/" + p;
-					resource.put("href", requestPath + p);
+					resource.put("href", computePath(requestPath, basePath, path.value()));
 				}
 
 				RolesAllowed rolesAllowed = method.getAnnotation(RolesAllowed.class);
 				if(rolesAllowed != null && displayAllowedRoles) {
-					resource.put("allowed", rolesAllowed.value());
+					resource.put("roles", rolesAllowed.value());
+				}
+				Description description = method.getAnnotation(Description.class);
+				if(description != null) {
+					resource.put("description", description.value());
 				}
 
-				if(("hal".equalsIgnoreCase(getHATEOASImplementation()))) {
+				if("hal".equalsIgnoreCase(hateoasImpl)) {
 					if(method.isAnnotationPresent(Relation.class))
 						relation = method.getAnnotation(Relation.class).value();
 
@@ -142,11 +145,25 @@ public class Init extends FrankApiBase {
 			}
 		}
 
-		if("hal".equalsIgnoreCase(getHATEOASImplementation()))
+		if("hal".equalsIgnoreCase(hateoasImpl))
 			resources.put("_links", HALresources);
 		else
 			resources.put("links", JSONresources);
 
 		return Response.status(Response.Status.CREATED).entity(resources).build();
+	}
+
+	/**
+	 * The basepath is usually a '/', but path may also start with a slash.
+	 * Ensure a valid path is returned without double slashes.
+	 */
+	private static String computePath(String requestPath, String basePath, String path) {
+		StringBuilder pathToUse = new StringBuilder(requestPath);
+		if(!basePath.startsWith("/")) {
+			pathToUse.append("/");
+		}
+		pathToUse.append(basePath);
+		pathToUse.append( (basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
+		return pathToUse.toString();
 	}
 }
