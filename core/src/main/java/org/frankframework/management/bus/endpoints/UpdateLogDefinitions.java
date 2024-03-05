@@ -49,6 +49,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_DEFINITIONS)
 public class UpdateLogDefinitions {
@@ -57,6 +59,7 @@ public class UpdateLogDefinitions {
 	private static final String FF_PACKAGE_PREFIX = "org.frankframework";
 
 	@ActionSelector(BusAction.GET)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getLoggersAndDefinitions(Message<?> message) {
 		String filter = BusMessageUtils.getHeader(message, "filter", null);
 		LoggerContext logContext = LoggerContext.getContext(false);
@@ -122,6 +125,7 @@ public class UpdateLogDefinitions {
 	}
 
 	@ActionSelector(BusAction.MANAGE)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> updateLogConfiguration(Message<?> message) {
 		String loglevelStr = BusMessageUtils.getHeader(message, "level", null);
 		Level level = Level.toLevel(loglevelStr, null);

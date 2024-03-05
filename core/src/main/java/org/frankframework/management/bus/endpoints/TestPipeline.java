@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.security.RolesAllowed;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +67,7 @@ public class TestPipeline extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
+	@RolesAllowed("IbisTester")
 	public BinaryResponseMessage runTestPipeline(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");

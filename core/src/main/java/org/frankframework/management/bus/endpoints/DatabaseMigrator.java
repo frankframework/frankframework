@@ -24,6 +24,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
@@ -53,6 +54,7 @@ import org.frankframework.util.StreamUtil;
 public class DatabaseMigrator extends BusEndpointBase {
 
 	@ActionSelector(BusAction.DOWNLOAD)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public BinaryResponseMessage downloadMigrationScript(Message<?> message) throws IOException {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
@@ -110,6 +112,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public StringResponseMessage getMigrationChanges(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		Configuration configuration = getConfigurationByName(configurationName);

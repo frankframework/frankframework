@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2024 WeAreFrank!
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import static org.frankframework.larva.LarvaTool.RESULT_OK;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,7 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.queues.Queue;
 import org.frankframework.larva.queues.QueueCreator;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.XmlEncodingUtils;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -52,8 +55,9 @@ public class ScenarioRunner {
 
 	public void runScenario(IbisContext ibisContext, TestConfig config, List<File> scenarioFiles, String currentScenariosRootDirectory, AppConstants appConstants, boolean evenStep, int waitBeforeCleanUp, String logLevel) {
 		for (File file : scenarioFiles) {
-				runOneFile(ibisContext, config, file, currentScenariosRootDirectory, appConstants, evenStep, waitBeforeCleanUp, logLevel, scenarioFiles.size());
+			runOneFile(ibisContext, config, file, currentScenariosRootDirectory, appConstants, evenStep, waitBeforeCleanUp, logLevel, scenarioFiles.size());
 		}
+		log.info("Summary Larva run Scenario's: {} passed, {} failed. Total: {}", scenariosPassed, scenariosFailed, scenarioFiles.size());
 	}
 
 	private void runOneFile(IbisContext ibisContext, TestConfig config, File file, String currentScenariosRootDirectory, AppConstants appConstants, boolean evenStep, int waitBeforeCleanUp, String logLevel, int scenarioFileSize) {
@@ -75,7 +79,7 @@ public class ScenarioRunner {
 
 		if (properties != null) {
 			larvaTool.debugMessage("Read steps from property file");
-			steps = larvaTool.getSteps(properties);
+			steps = getSteps(properties);
 			larvaTool.debugMessage("Open queues");
 			Map<String, Queue> queues = new QueueCreator(config, larvaTool).openQueues(scenarioDirectory, properties, ibisContext, correlationId);
 			if (queues != null) {
@@ -96,12 +100,12 @@ public class ScenarioRunner {
 					larvaTool.debugMessage("Execute step '" + stepDisplayName + "'");
 					int stepPassed = larvaTool.executeStep(step, properties, stepDisplayName, queues, correlationId);
 					if (stepPassed == RESULT_OK) {
-						larvaTool.stepPassedMessage("Step '" + stepDisplayName + "' passed");
+						stepPassedMessage("Step '" + stepDisplayName + "' passed");
 					} else if (stepPassed == RESULT_AUTOSAVED) {
-						larvaTool.stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave");
+						stepAutosavedMessage("Step '" + stepDisplayName + "' passed after autosave");
 						autoSaved = true;
 					} else {
-						larvaTool.stepFailedMessage("Step '" + stepDisplayName + "' failed");
+						stepFailedMessage("Step '" + stepDisplayName + "' failed");
 						allStepsPassed = false;
 					}
 					larvaTool.writeHtml("</div>", false);
@@ -123,7 +127,7 @@ public class ScenarioRunner {
 				larvaTool.debugMessage("Close queues");
 				boolean remainingMessagesFound = larvaTool.closeQueues(queues, properties, correlationId);
 				if (remainingMessagesFound) {
-					larvaTool.stepFailedMessage("Found one or more messages on queues or in database after scenario executed");
+					stepFailedMessage("Found one or more messages on queues or in database after scenario executed");
 					scenarioPassed = RESULT_ERROR;
 				}
 			}
@@ -131,33 +135,91 @@ public class ScenarioRunner {
 
 		if (scenarioPassed == RESULT_OK) {
 			scenariosPassed++;
-			larvaTool.scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFileSize + ")");
+			scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFileSize + ")");
 			if (config.isSilent() && LOG_LEVEL_ORDER.indexOf("[" + logLevel + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
 				try {
-					config.getOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
+					config.getSilentOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
 				} catch (IOException e) {
 				}
 			}
 		} else if (scenarioPassed == RESULT_AUTOSAVED) {
 			scenariosAutosaved++;
-			larvaTool.scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
+			scenarioAutosavedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
 			if (config.isSilent()) {
 				try {
-					config.getOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
+					config.getSilentOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed after autosave");
 				} catch (IOException e) {
 				}
 			}
 		} else {
 			scenariosFailed++;
-			larvaTool.scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFileSize + ")");
+			scenarioFailedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFileSize + ")");
 			if (config.isSilent()) {
 				try {
-					config.getOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
+					config.getSilentOut().write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' failed");
 				} catch (IOException e) {
 				}
 			}
 		}
 		larvaTool.writeHtml("</div>", false);
+	}
+
+	private List<String> getSteps(Properties properties) {
+		List<String> steps = new ArrayList<>();
+		int i = 1;
+		boolean lastStepFound = false;
+		while (!lastStepFound) {
+			boolean stepFound = false;
+			Enumeration<?> enumeration = properties.propertyNames();
+			while (enumeration.hasMoreElements()) {
+				String key = (String) enumeration.nextElement();
+				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (larvaTool.allowReadlineSteps && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
+					if (!stepFound) {
+						steps.add(key);
+						stepFound = true;
+						larvaTool.debugMessage("Added step '" + key + "'");
+					} else {
+						larvaTool.errorMessage("More than one step" + i + " properties found, already found '" + steps.get(steps.size() - 1) + "' before finding '" + key + "'");
+					}
+				}
+			}
+			if (!stepFound) {
+				lastStepFound = true;
+			}
+			i++;
+		}
+		larvaTool.debugMessage(steps.size() + " steps found");
+		return steps;
+	}
+
+	private void stepPassedMessage(String message) {
+		String method = "step passed/failed";
+		larvaTool.writeLog("<h3 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
+	}
+
+	private void stepAutosavedMessage(String message) {
+		String method = "step passed/failed";
+		larvaTool.writeLog("<h3 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
+	}
+
+	private void stepFailedMessage(String message) {
+		String method = "step passed/failed";
+		larvaTool.writeLog("<h3 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, true);
+	}
+
+	private void scenarioPassedMessage(String message) {
+		String method = "scenario passed/failed";
+		larvaTool.writeLog("<h2 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
+	}
+
+	private void scenarioAutosavedMessage(String message) {
+		String method = "scenario passed/failed";
+		larvaTool.writeLog("<h2 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
+	}
+
+	private void scenarioFailedMessage(String message) {
+		String method = "scenario failed";
+		larvaTool.writeLog("<h2 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, true);
 	}
 
 }

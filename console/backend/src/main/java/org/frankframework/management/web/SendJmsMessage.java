@@ -53,7 +53,7 @@ import org.frankframework.util.XmlEncodingUtils;
 public class SendJmsMessage extends FrankApiBase {
 
 	@POST
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed("IbisTester")
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

@@ -20,16 +20,16 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import org.springframework.context.ApplicationContext;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.Resource;
 import org.frankframework.util.TransformerPool;
+import org.springframework.context.ApplicationContext;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * XSLT provider listener for the Test Tool.
@@ -37,13 +37,13 @@ import org.frankframework.util.TransformerPool;
  * @author Jaco de Groot
  */
 public class XsltProviderListener implements IConfigurable, AutoCloseable {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
 
-	private String filename;
-	private int xsltVersion=0; // set to 0 for auto-detect.
-	private boolean namespaceAware = true;
+	private @Setter String filename;
+	private @Setter int xsltVersion=0; // set to 0 for auto-detect.
+	private @Setter boolean namespaceAware = true;
 	private TransformerPool transformerPool = null;
 	private String result;
 
@@ -63,7 +63,7 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable {
 		}
 	}
 
-	public void processRequest(String message, Map parameters) throws ListenerException {
+	public void processRequest(String message, Map<String, Object> parameters) throws ListenerException {
 		try {
 			result = transformerPool.transform(message, parameters, namespaceAware);
 		} catch (IOException e) {
@@ -81,27 +81,12 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable {
 		return result;
 	}
 
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
-
-	public void setXsltVersion(int xsltVersion) {
-		this.xsltVersion=xsltVersion;
-	}
-
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto-detected. Or use xsltVersion.
 	 */
 	@Deprecated
 	public void setXslt2(boolean b) {
 		xsltVersion=b?2:1;
-	}
-
-	/**
-	 * Set namespace aware.
-	 */
-	public void setNamespaceAware(boolean namespaceAware) {
-		this.namespaceAware = namespaceAware;
 	}
 
 	@Override

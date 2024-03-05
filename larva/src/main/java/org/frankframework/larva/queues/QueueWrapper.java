@@ -40,10 +40,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.WebServiceListener;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.senders.DelaySender;
-import org.frankframework.stream.FileMessage;
-import org.frankframework.stream.Message;
 import org.frankframework.larva.FileListener;
 import org.frankframework.larva.FileSender;
 import org.frankframework.larva.HttpServletResponseMock;
@@ -52,6 +48,10 @@ import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.larva.SenderThread;
 import org.frankframework.larva.XsltProviderListener;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.senders.DelaySender;
+import org.frankframework.stream.FileMessage;
+import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
@@ -326,7 +326,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			ISender sender = (ISender)get();
 			Boolean convertExceptionToMessage = (Boolean)get(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
 			PipeLineSession session = getSession();
-			SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue(), correlationId);
+			SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage, correlationId);
 			senderThread.start();
 			put(SENDER_THREAD_KEY, senderThread);
 			setSenderThread(senderThread); // 'put' and 'set' do something similar
@@ -337,7 +337,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			if (listenerMessageHandler == null) {
 				throw new NoSuchElementException("No ListenerMessageHandler found");
 			}
-			Map<?, ?> context = new HashMap<>();
+			PipeLineSession context = new PipeLineSession();
 			ListenerMessage requestListenerMessage = (ListenerMessage)get("listenerMessage");
 			if (requestListenerMessage != null) {
 				context = requestListenerMessage.getContext();

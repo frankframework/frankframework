@@ -146,7 +146,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
-			<version>2.11.0</version>
+			<version>2.12.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>jakarta.transaction</groupId>
@@ -528,7 +528,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>9.43.3</version>
+			<version>9.43.4</version>
 		</dependency>
 
 		<!-- TransactionManagers: BTM + NARAYANA -->

@@ -16,6 +16,7 @@
 package org.frankframework.management.bus.endpoints;
 
 import java.lang.reflect.Method;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,7 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.security.RolesAllowed;
 import javax.naming.NamingException;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
@@ -64,6 +68,7 @@ public class SecurityItems extends BusEndpointBase {
 	private List<String> securityRoles;
 
 	@TopicSelector(BusTopic.SECURITY_ITEMS)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getSecurityItems(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("securityRoles", getSecurityRoles());
@@ -72,6 +77,7 @@ public class SecurityItems extends BusEndpointBase {
 		returnMap.put("sapSystems", addSapSystems());
 		returnMap.put("authEntries", addAuthEntries());
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
+		returnMap.put("supportedConnectionOptions", getSupportedProtocolsAndCyphers());
 
 		return new JsonResponseMessage(returnMap);
 	}
@@ -221,8 +227,8 @@ public class SecurityItems extends BusEndpointBase {
 
 			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, (Object[])null);
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
-		} catch (Throwable t) {
-			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());
+		} catch (Exception e) {
+			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + e.getMessage());
 		}
 
 		if (sapSystems!=null) {
@@ -303,4 +309,17 @@ public class SecurityItems extends BusEndpointBase {
 
 		return authEntries;
 	}
+
+	private Map<String, String[]> getSupportedProtocolsAndCyphers() {
+		Map<String, String[]> supportedOptions = new HashMap<>();
+        try {
+			SSLParameters supportedSSLParameters = SSLContext.getDefault().getSupportedSSLParameters();
+            supportedOptions.put("protocols", supportedSSLParameters.getProtocols());
+			supportedOptions.put("cyphers",  supportedSSLParameters.getCipherSuites());
+        } catch (NoSuchAlgorithmException e) {
+			supportedOptions.put("protocols", new String[0]);
+			supportedOptions.put("cyphers", new String[0]);
+        }
+		return supportedOptions;
+    }
 }

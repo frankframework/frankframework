@@ -46,6 +46,8 @@ import org.springframework.messaging.Message;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
 public class AdapterStatistics extends BusEndpointBase {
@@ -65,6 +67,7 @@ public class AdapterStatistics extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.STATUS)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getStatistics(Message<?> message) {
 		if(BusMessageUtils.getBooleanHeader(message, "newstats", false)) {
 			return getStatisticsOld(message);
