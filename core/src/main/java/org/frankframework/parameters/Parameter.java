@@ -845,7 +845,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 						substitutionValue = substitutionValueMessage;
 					} else {
 						try {
-							Message message = Message.asMessage(substitutionValueMessage); // Do not close Message from session here; might be reused later
+							Message message = Message.asMessage(substitutionValueMessage); // Do not close object from session here; might be reused later
 							substitutionValue = message.asString();
 						} catch (IOException e) {
 							throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name, e);
