@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2016, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,17 @@
 package org.frankframework.receivers;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ReferTo;
+import org.frankframework.encryption.HasKeystore;
+import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.ExchangeAttachmentReference;
 import org.frankframework.filesystem.ExchangeFileSystem;
 import org.frankframework.filesystem.ExchangeMessageReference;
+import org.frankframework.filesystem.MailFileSystemBase;
 import org.frankframework.filesystem.MailListener;
 
 /**
@@ -96,7 +98,7 @@ public class ExchangeMailListener extends MailListener<ExchangeMessageReference,
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(MailFileSystemBase.class)
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
@@ -106,7 +108,7 @@ public class ExchangeMailListener extends MailListener<ExchangeMessageReference,
 		getFileSystem().setFilter(filter);
 	}
 
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(MailFileSystemBase.class)
 	public void setReplyAddressFields(String replyAddressFields) {
 		getFileSystem().setReplyAddressFields(replyAddressFields);
 	}
@@ -145,68 +147,68 @@ public class ExchangeMailListener extends MailListener<ExchangeMessageReference,
 	public void setMailboxObjectSeparator(String separator) {
 		getFileSystem().setMailboxObjectSeparator(separator);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystore(String keystore) {
 		getFileSystem().setKeystore(keystore);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreType(KeystoreType keystoreType) {
 		getFileSystem().setKeystoreType(keystoreType);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		getFileSystem().setKeystoreAuthAlias(keystoreAuthAlias);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystorePassword(String keystorePassword) {
 		getFileSystem().setKeystorePassword(keystorePassword);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		getFileSystem().setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAlias(String keystoreAlias) {
 		getFileSystem().setKeystoreAlias(keystoreAlias);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		getFileSystem().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		getFileSystem().setKeystoreAliasPassword(keystoreAliasPassword);
 	}
 
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasTruststore.class)
 	public void setTruststore(String truststore) {
 		getFileSystem().setTruststore(truststore);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasTruststore.class)
 	public void setTruststoreType(KeystoreType truststoreType) {
 		getFileSystem().setTruststoreType(truststoreType);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasTruststore.class)
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		getFileSystem().setTruststoreAuthAlias(truststoreAuthAlias);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasTruststore.class)
 	public void setTruststorePassword(String truststorePassword) {
 		getFileSystem().setTruststorePassword(truststorePassword);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasTruststore.class)
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		getFileSystem().setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasTruststore.class)
 	public void setVerifyHostname(boolean verifyHostname) {
 		getFileSystem().setVerifyHostname(verifyHostname);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasTruststore.class)
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		getFileSystem().setAllowSelfSignedCertificates(allowSelfSignedCertificates);
 	}
-	@ReferTo(ExchangeFileSystem.class)
+	@ReferTo(HasTruststore.class)
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		getFileSystem().setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
