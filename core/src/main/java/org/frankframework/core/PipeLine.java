@@ -261,7 +261,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
 
 		inputMessageConsumedMultipleTimes |= pipes.stream()
-				.anyMatch(p -> p.consumesSessionVariable("originalMessage"));
+				.anyMatch(p -> p.consumesSessionVariable(PipeLineSession.ORIGINAL_MESSAGE_KEY));
 
 		super.configure();
 		log.debug("successfully configured");
