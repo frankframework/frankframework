@@ -3,6 +3,7 @@ import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { DataTableDirective } from 'angular-datatables';
 import { ADTSettings } from 'angular-datatables/src/models/settings';
 import { AppService } from 'src/app/app.service';
+import { copyToClipboard } from 'src/app/utils';
 
 type Connections = {
   data: {
@@ -103,8 +104,6 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
-      // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
-      const _this = this;
       dtInstance.columns([0, 1, 3]).every(function () {
         // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
         const column = this;
@@ -112,7 +111,7 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
         column.nodes().on('click', (event) => {
           const target = event.target as HTMLElement;
           if (target.title != '') {
-            _this.appService.copyToClipboard(target.title);
+            copyToClipboard(target.title);
           }
         });
 

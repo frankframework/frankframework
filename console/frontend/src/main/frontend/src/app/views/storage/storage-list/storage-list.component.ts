@@ -18,6 +18,7 @@ import { AppService } from 'src/app/app.service';
 import { SessionService } from 'src/app/services/session.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
+import { getProcessStateIcon } from 'src/app/utils';
 
 type DisplayColumn = {
   id: boolean;
@@ -107,8 +108,8 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   closeNote = (index: number): void => {
     this.storageService.closeNote(index);
   };
-  getProcessStateIcon = (processState: string): void => {
-    this.appService.getProcessStateIcon(processState);
+  getProcessStateIconFn = (processState: string): string => {
+    return getProcessStateIcon(processState);
   };
 
   // @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;

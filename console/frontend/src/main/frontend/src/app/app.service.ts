@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject, catchError, of } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
+import { computeServerPath } from './utils';
 
 export type RunState =
   | 'ERROR'
@@ -294,7 +295,7 @@ export class AppService {
     //The settings here are defaults and will be overwritten upon set in any .properties file.
 
     //Server to connect to, defaults to local server.
-    server: window.server,
+    server: computeServerPath(),
 
     //How often the interactive frontend should poll the FF API for new data
     'console.pollerInterval': 30_000,
@@ -543,75 +544,5 @@ export class AppService {
     this.messageSummary = messageSummary;
     this.lastUpdated = updated;
     this.summariesSubject.next();
-  }
-
-  getProcessStateIcon(
-    processState: string,
-  ):
-    | 'fa-server'
-    | 'fa-gears'
-    | 'fa-sign-in'
-    | 'fa-pause-circle'
-    | 'fa-times-circle' {
-    switch (processState) {
-      case 'Available': {
-        return 'fa-server';
-      }
-      case 'InProcess': {
-        return 'fa-gears';
-      }
-      case 'Done': {
-        return 'fa-sign-in';
-      }
-      case 'Hold': {
-        return 'fa-pause-circle';
-      }
-      // case 'Error':
-      default: {
-        return 'fa-times-circle';
-      }
-    }
-  }
-
-  getProcessStateIconColor(
-    processState: string,
-  ): 'success' | 'warning' | 'danger' {
-    switch (processState) {
-      case 'Available': {
-        return 'success';
-      }
-      case 'InProcess': {
-        return 'success';
-      }
-      case 'Done': {
-        return 'success';
-      }
-      case 'Hold': {
-        return 'warning';
-      }
-      // case 'Error':
-      default: {
-        return 'danger';
-      }
-    }
-  }
-
-  getUserLocale(): string {
-    if (window.navigator.languages) {
-      return window.navigator.languages[0];
-    }
-    return window.navigator.language;
-  }
-
-  copyToClipboard(text: string): void {
-    const element = document.createElement('textarea');
-    element.value = text;
-    element.setAttribute('readonly', '');
-    element.style.position = 'absolute';
-    element.style.left = '-9999px';
-    document.body.append(element);
-    element.select();
-    document.execCommand('copy'); // TODO: soon deprecated but no real solution yet
-    element.remove();
   }
 }

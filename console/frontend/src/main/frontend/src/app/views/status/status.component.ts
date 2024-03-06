@@ -17,6 +17,7 @@ import {
   Summary,
 } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
+import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -71,8 +72,8 @@ export class StatusComponent implements OnInit, OnDestroy {
   messageLog: Record<string, MessageLog> = {};
 
   // functions
-  getProcessStateIcon = this.appService.getProcessStateIcon;
-  getProcessStateIconColor = this.appService.getProcessStateIconColor;
+  getProcessStateIconFn = getProcessStateIcon;
+  getProcessStateIconColorFn = getProcessStateIconColor;
 
   private _subscriptions = new Subscription();
 
