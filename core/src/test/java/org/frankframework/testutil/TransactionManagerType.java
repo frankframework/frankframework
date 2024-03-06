@@ -47,6 +47,16 @@ public enum TransactionManagerType {
 		return ac.getBean(URLDataSourceFactory.class, "dataSourceFactory");
 	}
 
+	/**
+	 * Create a new, fresh {@link TestConfiguration} instance. You can choose to have {@link TestConfiguration#configure()} run
+	 * automatically after creation, or not.
+	 *
+	 * @param autoConfigure If you do not need to modify the configuration, pass {@code true}. If you
+	 *                      need to add extra adapters and other beans after creating the configuration, then
+	 *                      pass {@code false} so you do not have to {@link TestConfiguration#stop()} the configuration
+	 *                      before adding these adapters.
+	 * @return New {@link TestConfiguration} instance.
+	 */
 	public TestConfiguration create(boolean autoConfigure) {
 		return create(autoConfigure, "H2"); //only used to satisfy Spring startup
 	}

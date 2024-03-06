@@ -29,6 +29,7 @@ import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.TimeUnit;
 
+import org.frankframework.configuration.AdapterManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -45,7 +46,6 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.RunState;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -58,19 +58,17 @@ public class TestReceiverOnError {
 	private static final TestConfiguration configuration = TransactionManagerType.DATASOURCE.create(false);
 	private TestAppender appender;
 
-	@BeforeEach
-	void setup() throws Exception {
-		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); //Meters are cached...
-		log.info("!> Configuration Context for [{}] has been created.", TransactionManagerType.DATASOURCE);
-	}
-
 	@AfterEach
-	void tearDown() {
+	void tearDown() throws Exception {
 		log.info("!> tearing down test");
 		if (appender != null) {
 			TestAppender.removeAppender(appender);
 			appender = null;
 		}
+		configuration.stop();
+		configuration.getBean("adapterManager", AdapterManager.class).close();
+		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); //Meters are cached...
+		log.info("!> Configuration Context for [{}] has been cleaned up.", TransactionManagerType.DATASOURCE);
 	}
 
 	private <T extends MockListenerBase> T createListener(Class<T> listenerClass) {
