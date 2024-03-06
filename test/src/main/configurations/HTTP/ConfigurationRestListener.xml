@@ -13,7 +13,6 @@
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
-					queryType="insert"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true">
 					<param name="TVARCHAR" sessionKey="fileName" />
 					<param name="message" sessionKey="file" type="inputstream" />

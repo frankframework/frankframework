@@ -37,7 +37,7 @@
 			</pipe>
 
 			<pipe name="fixedInsert" className="org.frankframework.pipes.SenderPipe" transactionAttribute="Required">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="EXIT" />

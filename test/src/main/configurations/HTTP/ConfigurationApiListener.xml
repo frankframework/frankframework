@@ -19,7 +19,7 @@
 			</exits>
 
 			<pipe name="FixedInsert" className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
@@ -50,7 +50,7 @@
 			</exits>
 
 			<pipe name="FixedInsert" className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
@@ -79,7 +79,7 @@
 			</exits>
 
 			<pipe name="FixedInsert" className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
