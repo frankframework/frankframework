@@ -165,7 +165,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
 		private final @Getter int acknowledgeMode;
 
-		private AcknowledgeMode(int acknowledgeMode) {
+		AcknowledgeMode(int acknowledgeMode) {
 			this.acknowledgeMode = acknowledgeMode;
 		}
 	}

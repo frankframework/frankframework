@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.ParameterException;
@@ -153,10 +154,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		/** For queries that return no data */
 		OTHER,
 		/** Deprecated: Use OTHER instead */
+		@ConfigurationWarning("Use queryType 'OTHER' instead")
 		@Deprecated(since = "8.1") INSERT,
 		/** Deprecated: Use OTHER instead */
+		@ConfigurationWarning("Use queryType 'OTHER' instead")
 		@Deprecated(since = "8.1") DELETE,
 		/** Deprecated: Use OTHER instead */
+		@ConfigurationWarning("Use queryType 'OTHER' instead")
 		@Deprecated(since = "8.1") UPDATE
 	}
 
