@@ -23,9 +23,6 @@ import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -46,6 +43,9 @@ import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.IThreadCreator;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.ThreadLifeCycleEventListener;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &lt;<code>exit</code>&gt;
@@ -236,8 +236,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult result;
 		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
-			if (session.getCorrelationId() != null) {
-				subAdapterSession.put(PipeLineSession.CORRELATION_ID_KEY, session.getCorrelationId());
+			subAdapterSession.put(PipeLineSession.MANUAL_RETRY_KEY, session.get(PipeLineSession.MANUAL_RETRY_KEY, false));
+			String correlationId = session.getCorrelationId();
+			if (correlationId != null) {
+				subAdapterSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			}
 			if (paramList != null) {
 				try {
