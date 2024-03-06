@@ -318,7 +318,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 						}
 					}
 				} else {
-					if (rawMessageWrapper.getRawMessage() != null && getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+					if (rawMessageWrapper.getRawMessage() != null && getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 						if (plr.getState() != ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
 							log.debug(getLogPrefix() + "acknowledging message");
 							rawMessageWrapper.getRawMessage().acknowledge();
@@ -335,7 +335,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 	@Override
 	public boolean messageWillBeRedeliveredOnExitStateError(PipeLineSession pipeLineSession) {
-		return isTransacted() || isJmsTransacted() || getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE;
+		return isTransacted() || isJmsTransacted() || getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE;
 	}
 
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws ListenerException, JMSException, IOException, SenderException {
