@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { QuickSubmitFormDirective } from './quick-submit-form.directive';
 
 @Component({
-  standalone: true,
+  // standalone: true,
   template: `<!-- TODO -->`,
   imports: [QuickSubmitFormDirective],
 })
@@ -13,9 +13,15 @@ describe('QuickSubmitFormDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [QuickSubmitFormDirective, TestComponent],
+      imports: [],
+      declarations: [TestComponent, QuickSubmitFormDirective],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding
+  });
+
+  // temporatory, remove when making actual tests
+  it('parent component should exist', () => {
+    expect(fixture).toBeTruthy();
   });
 });

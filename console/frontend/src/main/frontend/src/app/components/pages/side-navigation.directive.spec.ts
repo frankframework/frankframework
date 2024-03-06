@@ -3,7 +3,7 @@ import { SideNavigationDirective } from './side-navigation.directive';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
-  standalone: true,
+  // standalone: true,
   template: `
     <ul>
       <li>
@@ -32,7 +32,8 @@ describe('SideNavigationDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [SideNavigationDirective, TestComponent],
+      imports: [],
+      declarations: [TestComponent, SideNavigationDirective],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding
@@ -40,4 +41,9 @@ describe('SideNavigationDirective', () => {
 
   // TODO figure out a way to test metismenu
   // https://angular.io/guide/testing-attribute-directives
+
+  // temporatory, remove when making actual tests
+  it('parent component should exist', () => {
+    expect(fixture).toBeTruthy();
+  });
 });

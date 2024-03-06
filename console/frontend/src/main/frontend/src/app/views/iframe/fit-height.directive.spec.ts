@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FitHeightDirective } from './fit-height.directive';
 
 @Component({
-  standalone: true,
+  // standalone: true,
   template: `<!-- TODO -->`,
   imports: [FitHeightDirective],
 })
@@ -13,9 +13,15 @@ describe('FitHeightDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [FitHeightDirective, TestComponent],
+      imports: [],
+      declarations: [TestComponent, FitHeightDirective],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding
+  });
+
+  // temporatory, remove when making actual tests
+  it('parent component should exist', () => {
+    expect(fixture).toBeTruthy();
   });
 });

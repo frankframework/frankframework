@@ -3,7 +3,7 @@ import { ThSortableDirective } from './th-sortable.directive';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
-  standalone: true,
+  // standalone: true,
   template: `<!-- TODO -->`,
   imports: [ThSortableDirective],
 })
@@ -13,9 +13,15 @@ describe('ThSortableDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [ThSortableDirective, TestComponent],
+      imports: [],
+      declarations: [ThSortableDirective, TestComponent],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding
+  });
+
+  // temporatory, remove when making actual tests
+  it('parent component should exist', () => {
+    expect(fixture).toBeTruthy();
   });
 });
