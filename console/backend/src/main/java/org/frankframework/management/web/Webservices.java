@@ -44,8 +44,9 @@ public final class Webservices extends FrankApiBase {
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/webservices")
-	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("webservices")
+	@Description("view a list of all available webservices")
 	public Response getWebServices() {
 		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.GET));
 	}
@@ -54,6 +55,8 @@ public final class Webservices extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/webservices/openapi.json")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("webservices")
+	@Description("view OpenAPI specificiation")
 	public Response getOpenApiSpec(@QueryParam("uri") String uri) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.addHeader("type", "openapi");
@@ -66,8 +69,9 @@ public final class Webservices extends FrankApiBase {
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/webservices/{configuration}/{resourceName}")
-	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_XML)
+	@Relation("webservices")
+	@Description("view WDSL specificiation")
 	public Response getWsdl(
 			@PathParam("configuration") String configuration,
 			@PathParam("resourceName") String resourceName,

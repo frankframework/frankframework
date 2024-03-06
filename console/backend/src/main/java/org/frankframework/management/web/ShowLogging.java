@@ -41,6 +41,7 @@ public class ShowLogging extends FrankApiBase {
 	@Path("/logging")
 	@Relation("logging")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Description("view files/folders inside the log directory")
 	public Response getLogDirectory(@QueryParam("directory") String directory, @QueryParam("wildcard") String wildcard) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOGGING, BusAction.GET);
 		builder.addHeader("directory", directory);

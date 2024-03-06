@@ -37,6 +37,8 @@ public class ClassInfo extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/classinfo/{className}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("debug")
+	@Description("view a specific class introspection")
 	public Response getClassInfo(@PathParam("className") String className, @QueryParam("base") String baseClassName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.DEBUG, BusAction.GET);
 		builder.addHeader("className", className);

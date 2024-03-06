@@ -31,7 +31,9 @@ public final class ShowInlineMessageStoreOverview extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("inlinestores/overview")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute() {
+	@Relation("messagebrowser")
+	@Description("view available messagebrowsers")
+	public Response getMessageBrowsers() {
 		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.INLINESTORAGE_SUMMARY));
 	}
 }
