@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { PagesTopinfobarComponent } from './pages-topinfobar.component';
 
@@ -8,6 +10,7 @@ describe('PagesTopinfobarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [RouterTestingModule, HttpClientTestingModule],
       declarations: [PagesTopinfobarComponent],
     }).compileComponents();
 
