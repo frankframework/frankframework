@@ -29,6 +29,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.management.bus.TopicSelector;
 import org.springframework.messaging.Message;
 import org.xml.sax.SAXException;
@@ -100,7 +101,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			qs.setName("BrowseTable QuerySender");
 			qs.setDatasourceName(datasource);
 
-			qs.setQueryType("select");
+			qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 			qs.setSqlDialect("Oracle");
 			qs.setBlobSmartGet(true);
 			qs.setIncludeFieldDefinition(true);

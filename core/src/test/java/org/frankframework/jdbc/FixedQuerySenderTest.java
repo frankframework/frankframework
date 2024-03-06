@@ -132,7 +132,7 @@ public class FixedQuerySenderTest {
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 
 		fixedQuerySender.setQuery("SELECT tVARCHAR FROM " + TABLE_NAME + " WHERE tKEY='3'");
-		fixedQuerySender.setQueryType("select");
+		fixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
 		fixedQuerySender.setScalar(true);
 
 		result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
@@ -260,7 +260,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM, null as NULLCOL FROM " + TABLE_NAME + " WHERE 1=0");
 		fixedQuerySender.setOutputFormat(outputFormat);
 		fixedQuerySender.setIncludeFieldDefinition(includeFieldDefinition);
-		fixedQuerySender.setQueryType("select");
+		fixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
 
