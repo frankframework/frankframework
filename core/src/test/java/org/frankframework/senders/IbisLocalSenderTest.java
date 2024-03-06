@@ -98,9 +98,7 @@ class IbisLocalSenderTest {
 	@DisplayName("Test IbisLocalSender.sendMessage()")
 	void sendMessage(boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws Exception {
 		// Arrange
-		TestConfiguration configuration = new TestConfiguration();
-		configuration.stop();
-		configuration.getAdapterManager().close();
+		TestConfiguration configuration = new TestConfiguration(false);
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 

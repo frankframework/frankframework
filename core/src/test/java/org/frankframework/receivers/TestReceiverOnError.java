@@ -29,7 +29,6 @@ import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.TimeUnit;
 
-import org.frankframework.configuration.AdapterManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -56,13 +55,11 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class TestReceiverOnError {
-	private static TestConfiguration configuration = TransactionManagerType.DATASOURCE.create();
+	private static final TestConfiguration configuration = TransactionManagerType.DATASOURCE.create(false);
 	private TestAppender appender;
 
 	@BeforeEach
 	void setup() throws Exception {
-		configuration.stop();
-		configuration.getBean("adapterManager", AdapterManager.class).close();
 		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); //Meters are cached...
 		log.info("!> Configuration Context for [{}] has been created.", TransactionManagerType.DATASOURCE);
 	}

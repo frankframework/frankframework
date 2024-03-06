@@ -61,7 +61,6 @@ import javax.jms.Destination;
 import javax.jms.TextMessage;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.AdapterManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IListenerConnector;
@@ -257,13 +256,11 @@ public class ReceiverTest {
 	private static TestConfiguration buildConfiguration(TransactionManagerType txManagerType) {
 		TestConfiguration configuration;
 		if (txManagerType != null) {
-			configuration = txManagerType.create();
+			configuration = txManagerType.create(false);
 		} else {
-			configuration = new TestConfiguration();
+			configuration = new TestConfiguration(false);
 		}
 
-		configuration.stop();
-		configuration.getBean("adapterManager", AdapterManager.class).close();
 		LOG.info("!Configuration Context for [{}] has been created.", txManagerType);
 		return configuration;
 	}
