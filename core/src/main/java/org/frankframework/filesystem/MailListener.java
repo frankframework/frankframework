@@ -61,8 +61,8 @@ import org.frankframework.xml.XmlWriter;
  */
 public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends FileSystemListener<M,S> {
 
-	public final String EMAIL_MESSAGE_TYPE="email";
-	public final String MIME_MESSAGE_TYPE="mime";
+	public static final String EMAIL_MESSAGE_TYPE="email";
+	public static final String MIME_MESSAGE_TYPE="mime";
 
 	private @Getter String storeEmailAsStreamInSessionKey;
 	private @Getter boolean simple = false;

@@ -45,8 +45,8 @@ public class TransactionManagerMock implements PlatformTransactionManager {
 	}
 
 	public abstract static class DummyTransactionStatus implements TransactionStatus {
-		private @Getter(onMethod = @__(@Override)) boolean rollbackOnly = false;
-		private @Getter(onMethod = @__(@Override)) boolean completed = false;
+		private @Getter boolean rollbackOnly = false;
+		private @Getter boolean completed = false;
 		public static DummyTransactionStatus newMock() {
 			return mock(DummyTransactionStatus.class, CALLS_REAL_METHODS);
 		}

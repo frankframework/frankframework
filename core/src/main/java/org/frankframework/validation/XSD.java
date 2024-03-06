@@ -83,7 +83,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	private final @Getter Set<String> importedNamespaces = new HashSet<>();
 	private @Getter String xsdTargetNamespace;
 	private @Getter String xsdDefaultNamespace;
-	private @Getter(onMethod_ = {@Nullable, @Override}) @Setter IXSD importParent;
+	private @Setter IXSD importParent;
 
 	protected XSD() {
 		super();
@@ -439,4 +439,9 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		}
 	}
 
+	@Nullable
+	@Override
+	public IXSD getImportParent() {
+		return importParent;
+	}
 }

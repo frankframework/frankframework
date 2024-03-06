@@ -27,7 +27,7 @@ import org.frankframework.util.EnumUtils;
 
 public class CmisEventListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "CMIS Event";
+	private final @Getter String domain = "CMIS Event";
 	private CmisEvent cmisEvent = null;
 
 	@Override

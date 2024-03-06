@@ -42,7 +42,7 @@ import org.frankframework.util.CredentialFactory;
  * Only supports NTLM authentication.
  */
 public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritableFileSystem<SmbFile> {
-	private final @Getter(onMethod = @__(@Override)) String domain = "SMB";
+	private final @Getter String domain = "SMB";
 
 	private @Getter String share = null;
 	private @Getter String username = null;

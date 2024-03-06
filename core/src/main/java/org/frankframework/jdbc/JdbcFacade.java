@@ -63,7 +63,7 @@ import lombok.Setter;
  * @since 	4.1
  */
 public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
-	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
+	private final @Getter String domain = "JDBC";
 	private String datasourceName = null;
 	@Getter private String authAlias = null;
 	@Getter private String username = null;
