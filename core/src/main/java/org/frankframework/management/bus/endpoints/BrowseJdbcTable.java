@@ -101,7 +101,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			qs.setName("BrowseTable QuerySender");
 			qs.setDatasourceName(datasource);
 
-			qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
+			qs.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
 			qs.setSqlDialect("Oracle");
 			qs.setBlobSmartGet(true);
 			qs.setIncludeFieldDefinition(true);
