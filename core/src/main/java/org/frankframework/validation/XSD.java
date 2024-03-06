@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -82,7 +83,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	private final @Getter Set<String> importedNamespaces = new HashSet<>();
 	private @Getter String xsdTargetNamespace;
 	private @Getter String xsdDefaultNamespace;
-	private @Getter @Setter IXSD importParent;
+	private @Setter IXSD importParent;
 
 	protected XSD() {
 		super();
@@ -438,4 +439,9 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		}
 	}
 
+	@Nullable
+	@Override
+	public IXSD getImportParent() {
+		return importParent;
+	}
 }
