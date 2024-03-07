@@ -1047,12 +1047,13 @@
 										<message>Prevent the use of both javax and jakarta packages</message>
 									</bannedDependencies>
 									<bannedDependencies>
-										<!-- the jms api now finally officially exists -->
+										<!-- the jms api now finally officially exists, no need to use geronimo anymore -->
+										<!-- also excludes version 3 which uses the jakarta namespaces -->
 										<excludes>
 											<exclude>jakarta.jms:jakarta.jms-api:3.*</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec</exclude>
 										</excludes>
-										<message>Don't use geronimo anymore</message>
+										<message>Don't use geronimo anymore, ensure javax namespace is used</message>
 									</bannedDependencies>
 									<bannedDependencies>
 										<excludes>
