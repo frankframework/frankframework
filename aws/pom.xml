@@ -97,7 +97,7 @@
 		</dependency>
 	</dependencies>
 
-	<!-- The sqs messaging lib is locked to Java 8, these dependencies are required by CloudWatch (MicroMeter) -->
+	<!-- ensure that all AWS SDK libraries use the same version -->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
