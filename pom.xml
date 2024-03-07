@@ -1052,6 +1052,7 @@
 										<excludes>
 											<exclude>jakarta.jms:jakarta.jms-api:3.*</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec</exclude>
+											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec</exclude>
 										</excludes>
 										<message>Don't use geronimo anymore, ensure javax namespace is used</message>
 									</bannedDependencies>
