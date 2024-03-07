@@ -145,6 +145,10 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
+	public IAdapter getAdapter() {
+		return this;
+	}
+
 	/*
 	 * This function is called by Configuration.registerAdapter,
 	 * to make configuration information available to the Adapter. <br/><br/>

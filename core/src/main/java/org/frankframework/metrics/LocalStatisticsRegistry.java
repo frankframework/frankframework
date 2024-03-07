@@ -35,13 +35,13 @@ import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.statistics.FrankMeterType;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Meter.Id;
-import io.micrometer.core.instrument.Meter.Type;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.distribution.CountAtBucket;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
@@ -55,7 +55,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
-import lombok.Getter;
 
 public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	private static final NumberFormat DECIMAL_FORMAT = new DecimalFormat("#");
@@ -151,17 +150,14 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 
 	private JsonArrayBuilder getReceivers(IAdapter adapter, Collection<Meter> meters) {
 		JsonArrayBuilder receivers = Json.createArrayBuilder();
-		Map<String, Double> received = getCounter(meters, FrankMeterType.RECEIVER_RECEIVED, "receiver");
-		Map<String, Double> rejected = getCounter(meters, FrankMeterType.RECEIVER_REJECTED, "receiver");
-		Map<String, Double> retried = getCounter(meters, FrankMeterType.RECEIVER_RETRIED, "receiver");
 
 		for (Receiver<?> receiver: adapter.getReceivers()) {
 			JsonObjectBuilder receiverMap = Json.createObjectBuilder();
 
 			receiverMap.add("name", receiver.getName());
-			receiverMap.add("messagesReceived", received.get(receiver.getName()));
-			receiverMap.add("messagesRejected", rejected.get(receiver.getName()));
-			receiverMap.add("messagesRetried", retried.get(receiver.getName()));
+			receiverMap.add("messagesReceived", receiver.getMessagesReceived());
+			receiverMap.add("messagesRejected", receiver.getMessagesRejected());
+			receiverMap.add("messagesRetried", receiver.getMessagesRetried());
 
 //			receiverMap.put("processing", null); //TBD
 //			receiverMap.put("idle", null); //TBD
@@ -191,34 +187,6 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 			return name;
 		}
 		throw new IllegalStateException("tag ["+groupByTagName+"] not found. tags found "+meter.getId().getTags());
-	}
-
-	enum FrankMeterType {
-		TOTAL_MESSAGES_IN_ERROR("frank.messagesInError", Meter.Type.COUNTER),
-		TOTAL_MESSAGES_PROCESSED("frank.messagesProcessed", Meter.Type.COUNTER),
-		TOTAL_MESSAGES_REJECTED("frank.messagesRejected", Meter.Type.COUNTER),
-
-		PIPE_DURATION("frank.pipe.duration", Meter.Type.DISTRIBUTION_SUMMARY),
-		PIPE_SIZE("frank.pipe.msgsize", Meter.Type.DISTRIBUTION_SUMMARY),
-
-		PIPELINE_DURATION("frank.pipeline.duration", Meter.Type.DISTRIBUTION_SUMMARY),
-		PIPELINE_IN_ERROR("frank.pipeline.messagesInError", Meter.Type.COUNTER),
-		PIPELINE_PROCESSED("frank.pipeline.messagesProcessed", Meter.Type.COUNTER),
-
-		RECEIVER_RECEIVED("frank.receiver.messagesReceived", Meter.Type.COUNTER),
-		RECEIVER_REJECTED("frank.receiver.messagesRejected", Meter.Type.COUNTER),
-		RECEIVER_RETRIED("frank.receiver.messagesRetried", Meter.Type.COUNTER);
-
-		private final @Getter String meterName;
-		private final Type type;
-		private FrankMeterType(String meterName, Type type) {
-			this.meterName = meterName;
-			this.type = type;
-		}
-
-		boolean isOfType(Meter meter) {
-			return type == meter.getId().getType() && meterName.equals(meter.getId().getName());
-		}
 	}
 
 	private List<String> getPotentialMeters(PipeLine pipeline) {

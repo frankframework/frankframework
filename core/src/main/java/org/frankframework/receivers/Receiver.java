@@ -89,8 +89,9 @@ import org.frankframework.jms.JMSFacade;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
-import org.frankframework.statistics.CounterStatistic;
+import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.stream.Message;
@@ -110,8 +111,6 @@ import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -200,7 +199,7 @@ import lombok.Setter;
  *
  */
 @Category("Basic")
-public class Receiver<M> extends TransactionAttributes implements IManagable, IReceiverStatistics, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable, BeanFactoryAware {
+public class Receiver<M> extends TransactionAttributes implements IManagable, IReceiverStatistics, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -290,7 +289,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private boolean suspensionMessagePending=false;
 	private boolean configurationSucceeded = false;
-	private BeanFactory beanFactory;
 
 	protected final RunStateManager runState = new RunStateManager();
 	private PullingListenerContainer<M> listenerContainer;
@@ -300,9 +298,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private long lastMessageDate = 0;
 
 	// number of messages received
-	private final CounterStatistic numReceived = new CounterStatistic(0);
-	private final CounterStatistic numRetried = new CounterStatistic(0);
-	private final CounterStatistic numRejected = new CounterStatistic(0);
+	private io.micrometer.core.instrument.Counter numReceived;
+	private io.micrometer.core.instrument.Counter numRetried;
+	private io.micrometer.core.instrument.Counter numRejected;
 
 	private final List<StatisticsKeeper> processStatistics = new ArrayList<>();
 	private final List<StatisticsKeeper> idleStatistics = new ArrayList<>();
@@ -323,6 +321,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private TransformerPool correlationIDTp=null;
 	private TransformerPool labelTp=null;
 
+	private @Setter MetricsInitializer configurationMetrics;
 
 	private @Getter @Setter PlatformTransactionManager txManager;
 
@@ -330,7 +329,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private final Set<ProcessState> knownProcessStates = new LinkedHashSet<>();
 	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
-
 
 	/**
 	 * The processResultCache acts as a sort of poor-mans error
@@ -566,6 +564,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if(getName().contains("/")) {
 				throw new ConfigurationException("It is not allowed to have '/' in receiver name ["+getName()+"]");
 			}
+
+			numReceived = configurationMetrics.createCounter(this, FrankMeterType.RECEIVER_RECEIVED);
+			numRetried = configurationMetrics.createCounter(this, FrankMeterType.RECEIVER_RETRIED);
+			numRejected = configurationMetrics.createCounter(this, FrankMeterType.RECEIVER_REJECTED);
 
 			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
 			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
@@ -1217,7 +1219,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message result = null;
 			PipeLineResult pipeLineResult = null;
 			try {
-				numReceived.increase();
+				numReceived.increment();
 				showProcessingContext(messageId, businessCorrelationId, session);
 	//			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 				try {
@@ -1392,7 +1394,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					IListener<M> origin = getListener();
 					moveInProcessToErrorAndDoPostProcessing(origin, messageWrapper, session, prci, "too many redeliveries or retries");
 				}
-				numRejected.increase();
+				numRejected.increment();
 				setExitState(session, ExitState.REJECTED, 500);
 				return true;
 			}
@@ -1402,7 +1404,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				return true;
 			}
 			if (cachedProcessResult.isPresent()) {
-				numRetried.increase();
+				numRetried.increment();
 			}
 		} catch (Exception e) {
 			String msg="exception while checking history";
@@ -1678,12 +1680,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object recData=hski.openGroup(data,getName(),"receiver");
 		try {
-			hski.handleScalar(recData,"messagesReceived", numReceived);
-			hski.handleScalar(recData,"messagesRetried", numRetried);
-			hski.handleScalar(recData,"messagesRejected", numRejected);
-			hski.handleScalar(recData,"messagesReceivedThisInterval", numReceived.getIntervalValue());
-			hski.handleScalar(recData,"messagesRetriedThisInterval", numRetried.getIntervalValue());
-			hski.handleScalar(recData,"messagesRejectedThisInterval", numRejected.getIntervalValue());
 			messageExtractionStatistics.performAction(action);
 			Object pstatData=hski.openGroup(recData,null,"procStats");
 			for(StatisticsKeeper pstat:getProcessStatistics()) {
@@ -1860,15 +1856,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return l;
 	}
 
-	public BeanFactory getBeanFactory() {
-		return beanFactory;
-	}
-
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) {
-		this.beanFactory = beanFactory;
-	}
-
 	public PullingListenerContainer<M> getListenerContainer() {
 		return listenerContainer;
 	}
@@ -1879,7 +1866,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	public PullingListenerContainer<M> createListenerContainer() {
 		@SuppressWarnings("unchecked")
-		PullingListenerContainer<M> plc = (PullingListenerContainer<M>) beanFactory.getBean("listenerContainer");
+		PullingListenerContainer<M> plc = applicationContext.getBean("listenerContainer", PullingListenerContainer.class);
 		plc.setReceiver(this);
 		plc.configure();
 		return plc;
@@ -1946,22 +1933,22 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * get the number of messages received by this receiver.
 	 */
-	public long getMessagesReceived() {
-		return numReceived.getValue();
+	public double getMessagesReceived() {
+		return numReceived.count();
 	}
 
 	/**
 	 * get the number of duplicate messages received this receiver.
 	 */
-	public long getMessagesRetried() {
-		return numRetried.getValue();
+	public double getMessagesRetried() {
+		return numRetried.count();
 	}
 
 	/**
 	 * Get the number of messages rejected (discarded or put in errorStorage).
 	 */
-	public long getMessagesRejected() {
-		return numRejected.getValue();
+	public double getMessagesRejected() {
+		return numRejected.count();
 	}
 
 	public long getLastMessageDate() {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,24 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.statistics;
+package org.frankframework.core;
 
-import org.frankframework.core.SenderException;
+import org.springframework.beans.factory.Aware;
 
-/**
- * Interface to be implemented by objects like Pipes or Senders that maintain additional statistics themselves.
- *
- * @author  Gerrit van Brakel
- * @since   4.9
- */
-public interface HasStatistics {
+public interface AdapterAware extends Aware {
 
-	public enum Action {
-		SUMMARY,
-		FULL,
-		MARK_MAIN,
-		MARK_FULL
-	}
-
-	public <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException;
+	void setAdapter(IAdapter adapter);
 }

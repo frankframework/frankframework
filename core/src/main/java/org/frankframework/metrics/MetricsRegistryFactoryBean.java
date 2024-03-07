@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,14 @@ package org.frankframework.metrics;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.Misc;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -38,47 +41,35 @@ import io.micrometer.core.instrument.binder.logging.Log4j2Metrics;
 import io.micrometer.core.instrument.binder.system.DiskSpaceMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.Misc;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Singleton bean that keeps track of a Spring Application's uptime.
  *
  */
+@Log4j2
 public class MetricsRegistryFactoryBean implements InitializingBean, DisposableBean, FactoryBean<MeterRegistry> {
 
 	private static final String CONFIGURATOR_CLASS_SUFFIX = ".configurator";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	private final Logger log = LogUtil.getLogger(this);
-	private final MeterRegistry registry;
+	private MeterRegistry registry;
 	private @Nullable JvmGcMetrics jvmGcMetrics;
 	private @Nullable Log4j2Metrics log4j2Metrics;
 
-	public MetricsRegistryFactoryBean() {
+	private void createRegistry() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
+		Properties metricProperties = AppConstants.getInstance().getAppConstants(MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX);
 
-		for(Object keyObj:APP_CONSTANTS.keySet()) {
+		for(Object keyObj:metricProperties.keySet()) {
 			String key = (String)keyObj;
-			if (key.startsWith(MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX) && key.endsWith(".enabled")) {
+			if (key.endsWith(".enabled")) {
 				String tail = key.substring(MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX.length());
 				String[] tailArr = tail.split("\\.");
 				if (tailArr.length==2 && APP_CONSTANTS.getBoolean(key, false)) {
-					String product=tailArr[0];
-					String configuratorClassNamePropertyKey = MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX+product+CONFIGURATOR_CLASS_SUFFIX;
-					String configuratorClassName = APP_CONSTANTS.get(configuratorClassNamePropertyKey);
-					if (StringUtils.isEmpty(configuratorClassName)) {
-						log.warn("did not find value for property ["+configuratorClassNamePropertyKey+"] to enable configuration of enabled meter registy product ["+product+"]");
-						continue;
-					}
-					log.debug("using class ["+configuratorClassName+"] to configure enabled meter registy product ["+product+"]");
-					try {
-						Class<MetricsRegistryConfiguratorBase> configuratorClass = (Class<MetricsRegistryConfiguratorBase>) Class.forName(configuratorClassName);
-						MetricsRegistryConfiguratorBase configurator = configuratorClass.newInstance();
-						configurator.registerAt(compositeRegistry);
-					} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-						log.warn("Cannot configure meter registy product ["+product+"]", e);
+					MetricsRegistryConfiguratorBase<?> config = loadMeterRegistry(metricProperties, tailArr[0]);
+					if(config != null) {
+						config.registerAt(compositeRegistry);
 					}
 				}
 			}
@@ -87,8 +78,26 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 		this.registry = compositeRegistry;
 	}
 
+	private MetricsRegistryConfiguratorBase<?> loadMeterRegistry(Properties metricProperties, String product) {
+		final String configuratorClassNamePropertyKey = MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX+product+CONFIGURATOR_CLASS_SUFFIX;
+		final String configuratorClassName = metricProperties.getProperty(configuratorClassNamePropertyKey);
+		if (StringUtils.isEmpty(configuratorClassName)) {
+			log.warn("did not find value for property [{}] to enable configuration of enabled meter registy product [{}]", configuratorClassNamePropertyKey, product);
+			return null;
+		}
+
+		log.debug("using class [{}] to configure MeterRegistry [{}]", configuratorClassName, product);
+		try {
+			return (MetricsRegistryConfiguratorBase<?>) ClassUtils.newInstance(configuratorClassName);
+		} catch (Exception e) {
+			log.warn("cannot configure MeterRegistry ["+product+"]", e);
+		}
+		return null;
+	}
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		createRegistry();
 		Assert.notNull(registry, "unable to create registry");
 
 		setupCommonTags();

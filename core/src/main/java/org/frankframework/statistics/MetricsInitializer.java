@@ -15,12 +15,25 @@
 */
 package org.frankframework.statistics;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeLine;
+import org.frankframework.core.SenderException;
+import org.frankframework.monitoring.EventThrowing;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.util.LogUtil;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -30,14 +43,15 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Meter.Type;
 import io.micrometer.core.instrument.binder.cache.EhCache2Metrics;
 import io.micrometer.core.instrument.search.Search;
 import lombok.Setter;
 import net.sf.ehcache.Ehcache;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
 
 public class MetricsInitializer implements StatisticsKeeperIterationHandler<MetricsInitializer.NodeConfig>, InitializingBean, DisposableBean, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
@@ -69,6 +83,60 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 		List<Tag> tags = new LinkedList<>();
 		tags.add(Tag.of("type", "application"));
 		root = new NodeConfig("frank", tags, 0);
+	}
+
+	public Counter createCounter(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
+		if(type.getMeterType() == Type.COUNTER) {
+			return (Counter) createMeter(frankElement, type);
+		}
+		return null;
+	}
+
+	public Meter createMeter(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
+		if(frankElement instanceof EventThrowing) { //TODO implement a nice interface with getAdapter instead of misusing the EventThrowing interface
+			EventThrowing elm = (EventThrowing) frankElement;
+			if(elm.getAdapter() != null) {
+				return createMeter(frankElement, type, elm.getAdapter());
+			}
+		}
+		return createMeter(frankElement, type, null);
+	}
+
+	private Meter createMeter(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type, @Nullable Adapter adapter) {
+		Objects.requireNonNull(frankElement.getName());
+
+		String elementType;
+		if(frankElement instanceof Receiver) {
+			elementType = "receiver";
+		} else if(frankElement instanceof PipeLine) {
+			elementType = "pipeline";
+		} else if(frankElement instanceof IPipe) {
+			elementType = "pipe";
+		} else if(frankElement instanceof Adapter) {
+			elementType = "adapter";
+		} else {
+			throw new IllegalStateException("meter type not configured");
+		}
+
+		ApplicationContext configuration = frankElement.getApplicationContext();
+		List<Tag> tags = new ArrayList<>(4);
+		if(adapter != null) {
+			tags.add(Tag.of("adapter", adapter.getAdapter().getName()));
+		}
+		tags.add(Tag.of("configuration", configuration.getId()));
+		tags.add(Tag.of("name", frankElement.getName()));
+		tags.add(Tag.of("type", elementType));
+
+		//new Meter.Id(name, tags, baseUnit, description, Type.COUNTER)
+		switch (type.getMeterType()) {
+		case COUNTER:
+			return Counter.builder(type.getMeterName()).tags(tags).register(registry);
+		case DISTRIBUTION_SUMMARY:
+			throw new IllegalStateException("tbd");
+//			return DistributionSummary.builder(type.getMeterName()).tags(tags).register(registry);
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + type.getMeterType());
+		}
 	}
 
 	@Override

@@ -34,6 +34,7 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.AdapterAware;
 import org.frankframework.core.DestinationValidator;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.HasSender;
@@ -223,6 +224,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 
 			try {
+				if(sender instanceof AdapterAware) {
+					((AdapterAware) sender).setAdapter(getAdapter());
+				}
 				//In order to be able to suppress 'xxxSender may cause potential SQL injections!' config warnings
 				if(sender instanceof DirectQuerySender) {
 					((DirectQuerySender) getSender()).configure(getAdapter());
