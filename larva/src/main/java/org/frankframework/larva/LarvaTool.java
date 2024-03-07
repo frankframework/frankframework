@@ -116,7 +116,7 @@ public class LarvaTool {
 	// dirty solution by Marco de Reus:
 	private static String zeefVijlNeem = "";
 	private static boolean autoSaveDiffs = false;
-	private TestConfig config;
+	private final TestConfig config = new TestConfig();
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
@@ -174,7 +174,6 @@ public class LarvaTool {
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
 			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
-		config = new TestConfig();
 		config.setTimeout(timeout);
 		config.setSilent(silent);
 		AppConstants appConstants = AppConstants.getInstance();

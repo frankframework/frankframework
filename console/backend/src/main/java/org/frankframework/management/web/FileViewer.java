@@ -42,6 +42,8 @@ public class FileViewer extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/file-viewer")
 	@Produces({"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
+	@Relation("logging")
+	@Description("view or download a (log)file")
 	public Response getFileContent(@QueryParam("file") String file, @HeaderParam("Accept") String acceptHeader) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
 		if (StringUtils.isEmpty(acceptHeader)) acceptHeader = "*/*";
@@ -59,14 +61,14 @@ public class FileViewer extends FrankApiBase {
 	private Response processHtmlMessage(RequestMessageBuilder builder) {
 		Message<?> fileContentsMessage = sendSyncMessage(builder);
 		StreamingOutput stream = outputStream -> {
-            BufferedReader fileContentsReader = new BufferedReader(new InputStreamReader((InputStream) fileContentsMessage.getPayload()));
-            String line;
-            while ((line = fileContentsReader.readLine()) != null) {
-                String formattedLine = StringUtils.replace(line, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
-                outputStream.write((formattedLine + "<br>").getBytes());
-            }
-            outputStream.flush();
-        };
+			BufferedReader fileContentsReader = new BufferedReader(new InputStreamReader((InputStream) fileContentsMessage.getPayload()));
+			String line;
+			while ((line = fileContentsReader.readLine()) != null) {
+				String formattedLine = StringUtils.replace(line, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
+				outputStream.write((formattedLine + "<br>").getBytes());
+			}
+			outputStream.flush();
+		};
 		return ResponseUtils.convertToJaxRsStreamingResponse(fileContentsMessage, stream).build();
 	}
 

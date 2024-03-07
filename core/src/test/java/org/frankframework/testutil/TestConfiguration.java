@@ -25,18 +25,27 @@ public class TestConfiguration extends Configuration {
 	public static final String TEST_CONFIGURATION_NAME = "TestConfiguration";
 	public static final String TEST_CONFIGURATION_FILE = "testConfigurationContext.xml";
 	public static final String TEST_DATABASE_ENABLED_CONFIGURATION_FILE = "testDatabaseEnabledConfigurationContext.xml";
-	private QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
+	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
+	private final boolean autoConfigure;
 
 	//Configures a standalone configuration.
 	public TestConfiguration() {
-		this(TEST_CONFIGURATION_FILE);
+		this(true);
+	}
 
+	public TestConfiguration(boolean autoConfigure) {
+		this(autoConfigure, TEST_CONFIGURATION_FILE);
 		refresh();
 	}
 
 	public TestConfiguration(String... configurationFiles) {
+		this(true, configurationFiles);
+	}
+
+	public TestConfiguration(boolean autoConfigure, String... configurationFiles) {
 		super();
 		setAutoStart(false);
+		this.autoConfigure = autoConfigure;
 
 		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); //Add ability to retrieve classes from src/test/resources
 		setClassLoader(classLoader); //Add the test classpath
@@ -52,10 +61,12 @@ public class TestConfiguration extends Configuration {
 		qsPostProcessor.setApplicationContext(this);
 		getBeanFactory().addBeanPostProcessor(qsPostProcessor);
 
-		try {
-			configure();
-		} catch (ConfigurationException e) {
-			throw new IllegalStateException("unable to configure configuration", e);
+		if (autoConfigure) {
+			try {
+				configure();
+			} catch (ConfigurationException e) {
+				throw new IllegalStateException("unable to configure configuration", e);
+			}
 		}
 
 		if(!TEST_CONFIGURATION_NAME.equals(AppConstants.getInstance().getProperty("instance.name"))) {

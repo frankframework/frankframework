@@ -61,7 +61,6 @@ import javax.jms.Destination;
 import javax.jms.TextMessage;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.AdapterManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IListenerConnector;
@@ -257,13 +256,11 @@ public class ReceiverTest {
 	private static TestConfiguration buildConfiguration(TransactionManagerType txManagerType) {
 		TestConfiguration configuration;
 		if (txManagerType != null) {
-			configuration = txManagerType.create();
+			configuration = txManagerType.create(false);
 		} else {
-			configuration = new TestConfiguration();
+			configuration = new TestConfiguration(false);
 		}
 
-		configuration.stop();
-		configuration.getBean("adapterManager", AdapterManager.class).close();
 		LOG.info("!Configuration Context for [{}] has been created.", txManagerType);
 		return configuration;
 	}
@@ -659,7 +656,7 @@ public class ReceiverTest {
 			// Assert
 			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
 			assertTrue(result.requiresStream(), "Result message should be a stream");
-			assertTrue(result.asObject() instanceof Reader, "Result message should be a stream");
+			assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
 			assertEquals("TEST", result.asString());
 		} finally {
 			configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);

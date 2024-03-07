@@ -1,6 +1,8 @@
 package org.frankframework.stream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.OutputStream;
@@ -21,7 +23,7 @@ public class MessageStreamCapTest {
 		INamedObject owner = new Owner();
 		IForwardTarget forward = null;
 		String responseMessage = "fakeResponseMessage";
-		StringWriter captureWriter = null;
+		StringWriter captureWriter;
 		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			captureWriter = cap.captureCharacterStream();
 			try (Writer capWriter = cap.asWriter()) {
@@ -45,7 +47,7 @@ public class MessageStreamCapTest {
 		INamedObject owner = new Owner();
 		IForwardTarget forward = null;
 		byte[] responseMessage = "fakeResponseMessage".getBytes();
-		StringWriter captureWriter = null;
+		StringWriter captureWriter;
 		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			captureWriter = cap.captureCharacterStream();
 			try (OutputStream capStream = cap.asStream()) {
@@ -59,8 +61,8 @@ public class MessageStreamCapTest {
 			}
 			PipeRunResult result = cap.getPipeRunResult();
 
-			assertEquals(responseMessage.getClass(),result.getResult().asObject().getClass());
-			assertEquals(new String(responseMessage),new String((byte[])result.getResult().asObject()));
+			assertTrue(result.getResult().getRequestClass().equalsIgnoreCase("byte[]"));
+			assertArrayEquals(responseMessage, result.getResult().asByteArray());
 		}
 		assertEquals(new String(responseMessage),captureWriter.toString());
 	}
@@ -73,14 +75,13 @@ public class MessageStreamCapTest {
 		INamedObject owner = new Owner();
 		IForwardTarget forward = null;
 		String expectedResponseMessage = "<root/>";
-		StringWriter captureWriter = null;
+		StringWriter captureWriter;
 		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
 			captureWriter = cap.captureCharacterStream();
 			ContentHandler capContentHandler = cap.asContentHandler();
 
 			Object capNative = cap.asNative();
-
-			assertTrue(capNative instanceof Writer);
+      		assertInstanceOf(Writer.class, capNative);
 
 			capContentHandler.startDocument();
 			capContentHandler.startElement("", "root", "root", new AttributesImpl());

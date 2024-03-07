@@ -83,7 +83,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 	@RolesAllowed({"IbisTester"})
 	public StringResponseMessage executeJdbcQuery(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
-		String queryType = BusMessageUtils.getHeader(message, "queryType", "select");
+		QueryType queryType = BusMessageUtils.getEnumHeader(message, "queryType", QueryType.class, QueryType.SELECT);
 		String query = BusMessageUtils.getHeader(message, "query");
 		boolean trimSpaces = BusMessageUtils.getBooleanHeader(message, "trimSpaces", false);
 		boolean avoidLocking = BusMessageUtils.getBooleanHeader(message, "avoidLocking", false);
@@ -92,7 +92,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		return doExecute(datasource, queryType, query, trimSpaces, avoidLocking, resultType);
 	}
 
-	private StringResponseMessage doExecute(String datasource, String queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
+	private StringResponseMessage doExecute(String datasource, QueryType queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
 		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
 		DirectQuerySender qs = createBean(DirectQuerySender.class);

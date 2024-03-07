@@ -28,7 +28,6 @@ import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.FileUtils;
@@ -71,7 +70,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 		for (IOutputField outputField : outputFields) {
 			// if outputfields are to be seperator with delimiter
-			if (outputSeparator != null && output.length() > 0) {
+			if (outputSeparator != null && !output.isEmpty()) {
 				output.append(outputSeparator);
 			}
 
@@ -94,7 +93,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 				}
 			}
 		}
-		if (output.length() > 0) {
+		if (!output.isEmpty()) {
 			return output.toString();
 		}
 		return null;
@@ -165,7 +164,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * translates a functiondeclaration to an function instance
+	 * translates a function declaration to a function instance
 	 */
 	public void addOutputField(String fieldDef) throws ConfigurationException {
 		StringTokenizer st = new StringTokenizer(fieldDef, "(),");
@@ -181,24 +180,24 @@ public class RecordTransformer extends AbstractRecordHandler {
 				addOutputInput(Integer.parseInt(nextToken(st, "In function expects a numeric value")));
 				break;
 			case "INDATE": {
-				int field = Integer.parseInt(nextToken(st, "Indate function expects a fieldnummer"));
-				addDateOutput(field, nextToken(st, "Indate function expects an in and outformat, seperated with ~"), nextToken(st, "Indate function expects an in and outformat, seperated with ~"));
+				int field = Integer.parseInt(nextToken(st, "Indate function expects a field number"));
+				addDateOutput(field, nextToken(st, "Indate function expects an in and outformat, separated with ~"), nextToken(st, "Indate function expects an in and outformat, separated with ~"));
 				break;
 			}
 			case "FILL": {
-				int length = Integer.parseInt(nextToken(st, "Fill function expects a fieldlength"));
+				int length = Integer.parseInt(nextToken(st, "Fill function expects a field length"));
 				char fillChar = nextToken(st, "Fill function expects a fillcharacter").charAt(0);
 				addFillOutput(length, fillChar);
 				break;
 			}
 			case "LOOKUP": {
-				int field = Integer.parseInt(nextToken(st, "Lookup function expects a fieldnummer"));
+				int field = Integer.parseInt(nextToken(st, "Lookup function expects a field number"));
 				Map<String, String> keyValues = convertToKeyValueMap(st, '=');
 				addLookup(field, keyValues);
 				break;
 			}
 			case "SUBSTR": {
-				int field = Integer.parseInt(nextToken(st, "Substr function expects a fieldnummer"));
+				int field = Integer.parseInt(nextToken(st, "Substr function expects a field number"));
 				int startIndex = Integer.parseInt(nextToken(st, "Substr function expects a startindex"));
 				int endIndex = Integer.parseInt(nextToken(st, "Substr function expects an endindex"));
 				addSubstring(field, startIndex, endIndex);
@@ -206,14 +205,14 @@ public class RecordTransformer extends AbstractRecordHandler {
 			}
 			case "ALIGN": {
 				String fixedValue = nextToken(st, "Align function expects a fixed value");
-				int length = Integer.parseInt(nextToken(st, "Align function expects a fieldlength"));
+				int length = Integer.parseInt(nextToken(st, "Align function expects a field length"));
 				boolean leftAlign = "LEFT".equalsIgnoreCase(nextToken(st, "Align function expects alignment left"));
 				char fillChar = nextToken(st, "Align function expects a fillcharacter").charAt(0);
 				addAlignedOutput(fixedValue, length, leftAlign, fillChar);
 				break;
 			}
 			case "INALIGN": {
-				int field = Integer.parseInt(nextToken(st, "Inalign function expects a fieldnumber"));
+				int field = Integer.parseInt(nextToken(st, "Inalign function expects a field number"));
 				int length = Integer.parseInt(nextToken(st, "Inalign function expects a fieldlength"));
 				boolean leftAlign = "LEFT".equalsIgnoreCase(nextToken(st, "Inalign function expects alignment left"));
 				char fillChar = nextToken(st, "Inalign function expects a fillcharacter").charAt(0);
@@ -221,21 +220,21 @@ public class RecordTransformer extends AbstractRecordHandler {
 				break;
 			}
 			case "EXTERNAL": {
-				int field = Integer.parseInt(nextToken(st, "External function expects a fieldnumber"));
+				int field = Integer.parseInt(nextToken(st, "External function expects a field number"));
 				String delegateName = nextToken(st, "External function expects a type name for the delegate");
 				String params = nextToken(st, "External function expects a parameter string");
 				addExternal(field, delegateName, params);
 				break;
 			}
 			case "IF": {
-				int field = Integer.parseInt(nextToken(st, "If function expects a fieldnummer"));
+				int field = Integer.parseInt(nextToken(st, "If function expects a field number"));
 				String comparator = nextToken(st, "If function expects a comparator (EQ | NE | SW | NS)");
 				String compareValue = nextToken(st, "If function expects a compareValue");
 				addIf(field, comparator, compareValue);
 				break;
 			}
 			case "ELSEIF": {
-				int field = Integer.parseInt(nextToken(st, "If function expects a fieldnummer"));
+				int field = Integer.parseInt(nextToken(st, "If function expects a field number"));
 				String comparator = nextToken(st, "If function expects a comparator (EQ | NE | SW | NS)");
 				String compareValue = nextToken(st, "If function expects a compareValue");
 				addElseIf(field, comparator, compareValue);

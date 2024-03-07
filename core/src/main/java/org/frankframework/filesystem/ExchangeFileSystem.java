@@ -121,7 +121,7 @@ import org.frankframework.xml.SaxElementBuilder;
  * @author Gerrit van Brakel
  */
 public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageReference, ExchangeAttachmentReference, ExchangeService> implements HasKeystore, HasTruststore {
-	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
+	private final @Getter String domain = "Exchange";
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter String name = "ExchangeFileSystem";

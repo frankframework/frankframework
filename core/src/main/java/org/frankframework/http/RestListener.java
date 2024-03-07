@@ -51,7 +51,7 @@ import org.frankframework.stream.Message;
  */
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
 	private @Getter String method;
 	private @Getter String etagSessionKey;

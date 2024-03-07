@@ -12,7 +12,7 @@
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
-		<saxon.version>10.9</saxon.version>
+		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
 	</properties>
 
 	<dependencies>
@@ -129,19 +129,13 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.messaginghub</groupId>
 			<artifactId>pooled-jms</artifactId>
-			<version>1.2.7</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jms_2.0_spec</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.0.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -793,12 +787,12 @@
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
-			<version>72.1</version>
+			<version>74.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j-charset</artifactId>
-			<version>72.1</version>
+			<version>74.2</version>
 		</dependency>
 
 		<!-- Test scoped dependencies -->

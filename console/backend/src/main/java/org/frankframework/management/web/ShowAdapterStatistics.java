@@ -45,9 +45,9 @@ public final class ShowAdapterStatistics extends FrankApiBase {
 	@Relation("statistics")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
-	public Response getStatisticsOld(@PathParam("adapter") String adapter, @QueryParam("configuration") String configuration) {
+	public Response getAdapterStatisticsOld(@PathParam("adapter") String adapter, @QueryParam("configuration") String configuration) {
 		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
-		return getStatistics(config, adapter);
+		return getAdapterStatistics(config, adapter);
 	}
 
 	@GET
@@ -55,7 +55,8 @@ public final class ShowAdapterStatistics extends FrankApiBase {
 	@Path("/configurations/{configuration}/adapters/{adapter}/statistics")
 	@Relation("statistics")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getStatistics(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter) {
+	@Description("view adapter processing statistics")
+	public Response getAdapterStatistics(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.STATUS);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);

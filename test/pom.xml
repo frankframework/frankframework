@@ -20,9 +20,8 @@
 	<dependencies>
 		<!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<scope>provided</scope>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 
 		<!-- This dependency is here because of the IbisMetricsPipe -->

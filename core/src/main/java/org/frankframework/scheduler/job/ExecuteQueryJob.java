@@ -24,6 +24,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.stream.Message;
@@ -48,7 +49,7 @@ public class ExecuteQueryJob extends JobDef {
 		} else {
 			qs.setDatasourceName(getDatasourceName());
 		}
-		qs.setQueryType("other");
+		qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 		qs.setTimeout(getQueryTimeout());
 		qs.configure();
 	}

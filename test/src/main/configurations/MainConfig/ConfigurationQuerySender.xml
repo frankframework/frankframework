@@ -31,7 +31,7 @@
 			</pipe>
 			<!-- fixedInsert -->
 			<pipe name="fixedInsert">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -41,7 +41,7 @@
 				<forward name="success" path="doDirectInsert" />
 			</pipe>
 			<pipe name="doDirectInsert">
-				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="insert" />
+				<sender className="org.frankframework.jdbc.DirectQuerySender" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- directInsertWithNamedParams -->
@@ -49,7 +49,7 @@
 				<forward name="success" path="doDirectInsertWithNamedParams" />
 			</pipe>
 			<pipe name="doDirectInsertWithNamedParams">
-				<sender className="org.frankframework.jdbc.DirectQuerySender" queryType="insert" useNamedParams="true">
+				<sender className="org.frankframework.jdbc.DirectQuerySender" useNamedParams="true">
 					<param name="dummy1" value="value1" />
 					<param name="value" sessionKey="originalMessage" xpathExpression="request/value" />
 					<param name="lastmodby" sessionKey="originalMessage" xpathExpression="request/lastmodby" />
@@ -60,17 +60,17 @@
 			</pipe>
 			<!-- fixedInsertRollback -->
 			<pipe name="fixedInsertRollback">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="fixedInsertRollback2" />
 			</pipe>
 			<pipe name="fixedInsertRollback2">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME','Peter',NULL,NULL)" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME','Peter',NULL,NULL)" />
 				<forward name="success" path="fixedInsertRollback3" />
 			</pipe>
 			<pipe name="fixedInsertRollback3">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" />
 				<forward name="success" path="generateException" />
 			</pipe>
 			<pipe name="generateException" className="org.frankframework.pipes.ExceptionPipe">

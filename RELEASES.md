@@ -4,9 +4,22 @@ Frank!Framework release notes
 [Tags](https://github.com/frankframework/frankframework/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
-Upcoming (8.0)
+Upcoming (8.1)
 --------------
-[Commits](https://github.com/frankframework/frankframework/compare/v7.9-RC1...HEAD)
+[Commits](https://github.com/frankframework/frankframework/compare/v8.0.0...HEAD)
+
+Requires JDK 17 or later, tested on JDK 17 and 21.
+
+### Non backwards compatible changes
+- Larva package is renamed from `testtool` to `larva`. References inside the Larva property files to the `testtool` package should be updated to larva. Such as: `org.frankframework.testtool.FileSender` -> `org.frankframework.larva.FileSender`. It still works with the old package name in 8.1, as a compatibility feature. 
+
+8.0
+--------------
+[Commits](https://github.com/frankframework/frankframework/compare/v7.9-RC1...v7.9.0)
+
+Requires JDK 11 or later, tested on JDK 11, 17 and 21.
+Package `nl.nn.adapterframework` is renamed to `org.frankframework`.
+Removed many deprecated features.
 
 ### Non backwards compatible changes
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
@@ -14,10 +27,19 @@ Upcoming (8.0)
 - IbisTester class has been moved from the CORE module to LARVA
 - IteratingPipes with `parallel=true` now throws exceptions. In order to suppress this behaviour please set `ignoreExceptions=true`.
 - Remove support for Maven Jetty plugin
+- Inside Larva configuration XML files, the `nl.nn.adapterframework.` package should be replaced with `org.frankframework.`. This is due to the package name change in the framework. Still works in 8.0 as a compatibility feature.
+
+7.9.1
+---
+[Commits](https://github.com/frankframework/frankframework/compare/v7.9.0...v7.9.1)
+
+Improved Connection Pooling mechanism for JMS and JDBC connections.
+Reduced default JMS connection amount.
+Front-end Console fixes.
 
 7.9
 ---
-[Commits](https://github.com/frankframework/frankframework/compare/v7.8-RC1...v7.9-RC1)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.8-RC1...v7.9.0)
 
 ### Non backwards compatible changes
 

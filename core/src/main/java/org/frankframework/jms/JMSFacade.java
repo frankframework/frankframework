@@ -89,7 +89,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	public static final String JMS_MESSAGECLASS_KEY = "jms.messageClass.default";
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "JMS";
+	private final @Getter String domain = "JMS";
 	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
 	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGECLASS_KEY, MessageClass.AUTO);
 	private @Getter MessageClass messageClass = messageClassDefault;
@@ -98,7 +98,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter boolean jmsTransacted = false;
 	private @Getter SubscriberType subscriberType = SubscriberType.DURABLE;
 
-	private AcknowledgeMode acknowledgeMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
+	private @Getter AcknowledgeMode acknowledgeMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
 	private @Getter boolean persistent;
 	private @Getter long messageTimeToLive = 0;
 	private @Getter String destinationName;
@@ -165,7 +165,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
 		private final @Getter int acknowledgeMode;
 
-		private AcknowledgeMode(int acknowledgeMode) {
+		AcknowledgeMode(int acknowledgeMode) {
 			this.acknowledgeMode = acknowledgeMode;
 		}
 	}
@@ -297,7 +297,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	protected Session createSession() throws JmsException {
 		try {
-			return getMessagingSource().createSession(isJmsTransacted(), getAcknowledgeModeEnum().getAcknowledgeMode());
+			return getMessagingSource().createSession(isJmsTransacted(), getAcknowledgeMode().getAcknowledgeMode());
 		} catch (JmsException e) {
 			throw e;
 		} catch (Exception e) {
@@ -809,7 +809,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			sb.append("[queueName=").append(destinationName).append("]");
 			sb.append("[queueConnectionFactoryName=").append(queueConnectionFactoryName).append("]");
 		}
-		sb.append("[ackMode=").append(getAcknowledgeModeEnum()).append("]");
+		sb.append("[ackMode=").append(getAcknowledgeMode()).append("]");
 		sb.append("[persistent=").append(isPersistent()).append("]");
 		sb.append("[transacted=").append(transacted).append("]");
 		return sb.toString();
@@ -835,16 +835,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * If not transacted, the way the application informs the JMS provider that it has successfully received a message.
 	 * @ff.default auto
 	 */
-	public void setAcknowledgeMode(String acknowledgeMode) {
-		try {
-			this.acknowledgeMode = EnumUtils.parse(AcknowledgeMode.class, acknowledgeMode, true);
-		} catch (IllegalArgumentException e) {
-			ConfigurationWarnings.add(this, log, "invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge", e);
-			this.acknowledgeMode = AcknowledgeMode.NOT_SET;
-		}
-	}
-	public AcknowledgeMode getAcknowledgeModeEnum() {
-		return acknowledgeMode;
+	public void setAcknowledgeMode(AcknowledgeMode acknowledgeMode) {
+		this.acknowledgeMode = acknowledgeMode;
 	}
 
 	/**

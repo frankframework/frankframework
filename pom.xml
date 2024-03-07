@@ -44,7 +44,7 @@
 		<mongodb.driver.version>4.11.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>5.17.6</activemq.driver.version> <!-- this minor version is the last using the javax api -->
+		<activemq.driver.version>5.18.3</activemq.driver.version> <!-- this minor version is the last using the javax api -->
 		<artemis.driver.version>2.32.0</artemis.driver.version>
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
@@ -467,9 +467,9 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.geronimo.specs</groupId>
-				<artifactId>geronimo-jms_1.1_spec</artifactId>
-				<version>1.1.1</version>
+				<groupId>jakarta.jms</groupId>
+				<artifactId>jakarta.jms-api</artifactId>
+				<version>2.0.3</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -532,12 +532,6 @@
 				<artifactId>lombok</artifactId>
 				<version>1.18.30</version>
 				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.junit.vintage</groupId>
-				<artifactId>junit-vintage-engine</artifactId>
-				<version>${junit.version}</version>
-				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
@@ -618,6 +612,7 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
 			<plugin>
@@ -752,6 +747,13 @@
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
 					<version>1.18.20.0</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.30</version>
+						</dependency>
+					</dependencies>
 					<executions>
 						<execution>
 							<phase>generate-sources</phase>
@@ -921,7 +923,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>9.3</version>
+							<version>10.14.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -1047,6 +1049,16 @@
 										<message>Prevent the use of both javax and jakarta packages</message>
 									</bannedDependencies>
 									<bannedDependencies>
+										<!-- the jms api now finally officially exists, no need to use geronimo anymore -->
+										<!-- also excludes version 3 which uses the jakarta namespaces -->
+										<excludes>
+											<exclude>jakarta.jms:jakarta.jms-api:3.*</exclude>
+											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec</exclude>
+											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec</exclude>
+										</excludes>
+										<message>Don't use geronimo anymore, ensure javax namespace is used</message>
+									</bannedDependencies>
+									<bannedDependencies>
 										<excludes>
 											<exclude>javax.xml.stream:stax-api</exclude>
 											<exclude>xml-apis:xml-apis</exclude>
@@ -1088,6 +1100,7 @@
 									<bannedDependencies>
 										<excludes>
 											<exclude>ant:ant</exclude>
+											<exclude>jakarta.jms:jakarta.jms-api:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.javamail:geronimo-javamail_1.4_mail:*:jar:compile</exclude>

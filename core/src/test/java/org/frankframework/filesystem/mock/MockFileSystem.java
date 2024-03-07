@@ -27,7 +27,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ApplicationContextAware {
-	private final @Getter(onMethod = @__(@Override)) String domain = "MockFilesystem";
+	private final @Getter String domain = "MockFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private boolean configured=false;

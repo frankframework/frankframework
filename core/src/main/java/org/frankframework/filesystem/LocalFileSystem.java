@@ -43,7 +43,7 @@ import org.frankframework.stream.PathMessage;
  *
  */
 public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path> {
-	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
+	private final @Getter String domain = "LocalFilesystem";
 
 	private String root;
 

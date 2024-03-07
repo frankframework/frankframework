@@ -37,7 +37,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -1040,9 +1039,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String correlationId = rawMessage.getCorrelationId() != null ? rawMessage.getCorrelationId() : session.getCorrelationId();
 			MessageWrapper<M> messageWrapper = rawMessage instanceof MessageWrapper ? (MessageWrapper<M>) rawMessage : new MessageWrapper<>(rawMessage, message, messageId, correlationId);
 
+			boolean manualRetry = session.get(PipeLineSession.MANUAL_RETRY_KEY, false);
+
 			final Message result;
 			try {
-				result = processMessageInAdapter(messageWrapper, session, -1, false, false);
+				result = processMessageInAdapter(messageWrapper, session, -1, manualRetry, manualRetry); // If manual retry, history is checked by original caller
 			} catch (ListenerException e) {
 				exceptionThrown("exception processing message", e);
 				throw e;
@@ -1133,6 +1134,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry storageKey ["+storageKey+"]");
 		}
 		try (PipeLineSession session = new PipeLineSession()) {
+			session.put(PipeLineSession.MANUAL_RETRY_KEY, true);
 			if (getErrorStorage()==null) {
 				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 				// then the management of the errorStorage is left to the listener.
@@ -1183,8 +1185,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/*
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	@Nullable
-	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean historyAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session)) {
@@ -1200,7 +1201,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			MessageWrapper<M> businessMessage = new MessageWrapper<>(messageWrapper, message, messageId, businessCorrelationId);
 
 			final String label = extractLabel(message);
-			boolean exitWithoutProcessing = checkMessageHistory(businessMessage, session, manualRetry, historyAlreadyChecked);
+			boolean exitWithoutProcessing = checkMessageHistory(businessMessage, session, manualRetry, duplicatesAlreadyChecked);
 			if (exitWithoutProcessing) {
 				return Message.nullMessage();
 			}
@@ -1328,7 +1329,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						}
 					} finally {
 						getAdapter().logToMessageLogWithMessageContentsOrSize(Level.INFO, "Adapter "+(!messageInError ? "Success" : "Error"), "result", result);
-						if (messageInError && !historyAlreadyChecked) {
+						if (messageInError && !duplicatesAlreadyChecked) {
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
 							increaseRetryIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");

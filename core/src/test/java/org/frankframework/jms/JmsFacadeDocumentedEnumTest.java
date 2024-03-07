@@ -15,7 +15,7 @@ public class JmsFacadeDocumentedEnumTest {
 	@Test
 	public void testDefaults() {
 		JMSFacade jms = new JMSFacade();
-		assertEquals(AcknowledgeMode.AUTO_ACKNOWLEDGE, jms.getAcknowledgeModeEnum());
+		assertEquals(AcknowledgeMode.AUTO_ACKNOWLEDGE, jms.getAcknowledgeMode());
 		assertEquals(DestinationType.QUEUE, jms.getDestinationType());
 		assertEquals(SubscriberType.DURABLE, jms.getSubscriberType());
 	}
@@ -23,14 +23,12 @@ public class JmsFacadeDocumentedEnumTest {
 	@Test
 	public void testAckMode() {
 		JMSFacade jms = new JMSFacade();
-		jms.setAcknowledgeMode(AcknowledgeMode.NOT_SET.name());
-		assertEquals(AcknowledgeMode.NOT_SET, jms.getAcknowledgeModeEnum());
-		jms.setAcknowledgeMode("dups");
-		assertEquals(AcknowledgeMode.DUPS_OK_ACKNOWLEDGE, jms.getAcknowledgeModeEnum());
-		jms.setAcknowledgeMode(AcknowledgeMode.CLIENT_ACKNOWLEDGE.name());
-		assertEquals(AcknowledgeMode.CLIENT_ACKNOWLEDGE, jms.getAcknowledgeModeEnum());
-		jms.setAcknowledgeMode("");
-		assertEquals(AcknowledgeMode.NOT_SET, jms.getAcknowledgeModeEnum());
+		jms.setAcknowledgeMode(AcknowledgeMode.NOT_SET);
+		assertEquals(AcknowledgeMode.NOT_SET, jms.getAcknowledgeMode());
+		jms.setAcknowledgeMode(AcknowledgeMode.DUPS_OK_ACKNOWLEDGE);
+		assertEquals(AcknowledgeMode.DUPS_OK_ACKNOWLEDGE, jms.getAcknowledgeMode());
+		jms.setAcknowledgeMode(AcknowledgeMode.CLIENT_ACKNOWLEDGE);
+		assertEquals(AcknowledgeMode.CLIENT_ACKNOWLEDGE, jms.getAcknowledgeMode());
 	}
 
 	@Test
@@ -41,7 +39,6 @@ public class JmsFacadeDocumentedEnumTest {
 		assertEquals(DestinationType.TOPIC, jms.getDestinationType());
 		assertTrue(jms.isUseTopicFunctions());
 	}
-
 
 	@Test
 	public void testDeliveryMode() {

@@ -32,6 +32,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jdbc.JdbcQuerySenderBase;
+import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.JMSFacade.DeliveryMode;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsSender;
@@ -138,7 +140,7 @@ public class QueueCreator {
 				jmsSender.setName("Test Tool JmsSender");
 				jmsSender.setDestinationName(queue);
 				jmsSender.setDestinationType(DestinationType.QUEUE);
-				jmsSender.setAcknowledgeMode("auto");
+				jmsSender.setAcknowledgeMode(JMSFacade.AcknowledgeMode.AUTO_ACKNOWLEDGE);
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
 					jmsSender.setJmsRealm(jmsRealm);
@@ -200,7 +202,7 @@ public class QueueCreator {
 				pullingJmsListener.setName("Test Tool JmsListener");
 				pullingJmsListener.setDestinationName(queue);
 				pullingJmsListener.setDestinationType(DestinationType.QUEUE);
-				pullingJmsListener.setAcknowledgeMode("auto");
+				pullingJmsListener.setAcknowledgeMode(JMSFacade.AcknowledgeMode.AUTO_ACKNOWLEDGE);
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
 					pullingJmsListener.setJmsRealm(jmsRealm);
@@ -263,7 +265,7 @@ public class QueueCreator {
 
 					try {
 						QueueUtils.invokeSetters(deleteQuerySender, queueProperties);
-						deleteQuerySender.setQueryType("delete");
+						deleteQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 						deleteQuerySender.setQuery("delete from " + preDelete);
 
 						deleteQuerySender.configure();
@@ -296,7 +298,7 @@ public class QueueCreator {
 					try {
 						QueueUtils.invokeSetters(prePostFixedQuerySender, queueProperties);
 						prePostFixedQuerySender.setQuery(prePostQuery);
-						prePostFixedQuerySender.setQueryType("select");
+						prePostFixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
 						prePostFixedQuerySender.configure();
 					} catch(Exception e) {
 						closeQueues(queues, properties, correlationId);
@@ -339,7 +341,7 @@ public class QueueCreator {
 					readQueryFixedQuerySender.setName("Test Tool query sender");
 
 					try {
-						readQueryFixedQuerySender.setQueryType("select");
+						readQueryFixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
 						QueueUtils.invokeSetters(readQueryFixedQuerySender, queueProperties);
 						readQueryFixedQuerySender.setQuery(readQuery);
 						readQueryFixedQuerySender.configure();
