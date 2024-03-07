@@ -20,6 +20,10 @@
 			<artifactId>frankframework-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-filesystem</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
@@ -51,6 +55,7 @@
 			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 
+		<!-- Test scoped and provided dependencies -->
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-core</artifactId>
@@ -59,8 +64,14 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- Test scoped and provided dependencies -->
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-filesystem</artifactId>
+			<classifier>tests</classifier>
+			<type>test-jar</type>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>io.findify</groupId>
 			<artifactId>s3mock_2.13</artifactId>

@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,6 +26,7 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.doc.Protected;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
+import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -367,19 +367,19 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		// Assert
 		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
-		assertEquals(4, configurationWarnings.getWarnings().size());
 		assertThat(configurationWarnings.getWarnings(), not(anyOf(
-			hasItem(containsString("DeprecatedPipe1InAdapter1")),
-			hasItem(containsString("DeprecatedPipe2InAdapter1")),
-			hasItem(containsString("DeprecatedPipe1InAdapter3")),
-			hasItem(containsString("DeprecatedPipe2InAdapter3"))
+				IsIterableContaining.hasItem(containsString("DeprecatedPipe1InAdapter1")),
+				IsIterableContaining.hasItem(containsString("DeprecatedPipe2InAdapter1")),
+				IsIterableContaining.hasItem(containsString("DeprecatedPipe1InAdapter3")),
+				IsIterableContaining.hasItem(containsString("DeprecatedPipe2InAdapter3"))
 		)));
 		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
-			containsString("DeprecatedPipe1InAdapter2"),
-			containsString("DeprecatedPipe2InAdapter2"),
-			containsString("DeprecatedPipe1InAdapter4"),
-			containsString("DeprecatedPipe2InAdapter4")
+				containsString("DeprecatedPipe1InAdapter2"),
+				containsString("DeprecatedPipe2InAdapter2"),
+				containsString("DeprecatedPipe1InAdapter4"),
+				containsString("DeprecatedPipe2InAdapter4")
 		));
+		assertEquals(4, configurationWarnings.getWarnings().size());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -398,18 +398,18 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 			// Assert
 			ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
-			assertEquals(4, configurationWarnings.getWarnings().size());
 			assertThat(configurationWarnings.getWarnings(), not(anyOf(
-				hasItem(containsString("[DeprecatedPipe1InAdapter1]")),
-				hasItem(containsString("[DeprecatedPipe2InAdapter1]")),
-				hasItem(containsString("[DeprecatedPipe1InAdapter3]")),
-				hasItem(containsString("[DeprecatedPipe2InAdapter3]"))
+					IsIterableContaining.hasItem(containsString("[DeprecatedPipe1InAdapter1]")),
+					IsIterableContaining.hasItem(containsString("[DeprecatedPipe2InAdapter1]")),
+					IsIterableContaining.hasItem(containsString("[DeprecatedPipe1InAdapter3]")),
+					IsIterableContaining.hasItem(containsString("[DeprecatedPipe2InAdapter3]"))
 			)));
+			assertEquals(4, configurationWarnings.getWarnings().size());
 			assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
-				containsString("[DeprecatedPipe1InAdapter2] on line [35] column [87]"),
-				containsString("[DeprecatedPipe2InAdapter2] on line [42] column [6]"),
-				containsString("[DeprecatedPipe1InAdapter4] on line [79] column [24]"),
-				containsString("[DeprecatedPipe2InAdapter4] on line [84] column [6]")
+					containsString("[DeprecatedPipe1InAdapter2] on line [35] column [87]"),
+					containsString("[DeprecatedPipe2InAdapter2] on line [42] column [6]"),
+					containsString("[DeprecatedPipe1InAdapter4] on line [77] column [66]"),
+					containsString("[DeprecatedPipe2InAdapter4] on line [82] column [6]")
 			));
 
 		} finally {

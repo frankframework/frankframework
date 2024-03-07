@@ -277,6 +277,11 @@
 				<artifactId>frankframework-batch</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-filesystem</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 
 			<dependency>
@@ -1270,6 +1275,7 @@
 				<module>credentialProvider</module>
 				<module>management-gateway</module>
 				<module>core</module>
+				<module>filesystem</module>
 				<module>console</module>
 				<module>larva</module>
 				<module>ladybug</module>
