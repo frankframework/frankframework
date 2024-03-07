@@ -628,7 +628,7 @@
 				<artifactId>maven-source-plugin</artifactId>
 			</plugin>
 			<plugin>
-				<groupId>org.commonjava.maven.plugins</groupId>
+				<groupId>com.github.hazendaz.maven</groupId>
 				<artifactId>directory-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
@@ -747,7 +747,7 @@
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
 					<version>1.18.20.0</version>
-					<dependencies>
+					<dependencies><!-- This specified version of Lombok can be removed when the lombok-maven-plugin is updated >= 1.18.30 -->
 						<dependency>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
@@ -792,9 +792,9 @@
 					</configuration>
 				</plugin>
 				<plugin>
-					<groupId>org.commonjava.maven.plugins</groupId>
+					<groupId>com.github.hazendaz.maven</groupId>
 					<artifactId>directory-maven-plugin</artifactId>
-					<version>1.0</version>
+					<version>1.1.1</version>
 					<executions>
 						<execution>
 							<id>find-project-root-directory</id>
@@ -977,9 +977,9 @@
 								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>org.commonjava.maven.plugins</groupId>
+										<groupId>com.github.hazendaz.maven</groupId>
 										<artifactId>directory-maven-plugin</artifactId>
-										<versionRange>[1.0,)</versionRange>
+										<versionRange>[1,)</versionRange>
 										<goals>
 											<goal>directory-of</goal>
 										</goals>
