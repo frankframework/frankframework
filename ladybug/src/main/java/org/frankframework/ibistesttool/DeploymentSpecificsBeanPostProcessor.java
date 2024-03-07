@@ -96,10 +96,8 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 		if (bean instanceof SpringLiquibase) {
 			boolean active = APP_CONSTANTS.getBoolean("ladybug.jdbc.migrator.active",
 					APP_CONSTANTS.getBoolean("jdbc.migrator.active", false));
-			if (!active) {
-				SpringLiquibase springLiquibase = (SpringLiquibase)bean;
-				springLiquibase.setShouldRun(active);
-			}
+			SpringLiquibase springLiquibase = (SpringLiquibase)bean;
+			springLiquibase.setShouldRun(active);
 		}
 		return bean;
 	}
