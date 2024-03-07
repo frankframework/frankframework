@@ -86,8 +86,7 @@ public class FileUtilsTest {
 	void testCopyFile() throws Exception {
 		File sourceFile = getFile("fileToAppend.txt");
 		File destFile = getFile("copyFile.txt");
-		boolean b = FileUtils.copyFile(sourceFile, destFile, true);
-		assertEquals(true, b);
+    	assertTrue(FileUtils.copyFile(sourceFile, destFile, true));
 	}
 
 	@Test
