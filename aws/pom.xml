@@ -47,9 +47,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<scope>provided</scope>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 
 		<dependency>
@@ -98,7 +97,7 @@
 		</dependency>
 	</dependencies>
 
-	<!-- The sqs messaging lib is locked to Java 8, these dependencies are required by CloudWatch (MicroMeter) -->
+	<!-- ensure that all AWS SDK libraries use the same version -->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
