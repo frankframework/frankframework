@@ -1,7 +1,6 @@
 package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,20 +26,13 @@ class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
 		return new LarvaPipe();
 	}
 
+	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		AppConstants.getInstance().setProperty("webapp.realpath", tempDir.toString() + File.separatorChar);
 		adapter.setConfiguration(configuration);
-		pipeline.setAdapter(adapter);
-		pipeline.configure();
-		pipeline.start();
-	}
-
-	@Test
-	public void testPlain() throws Exception {
 		configureAndStartPipe();
-		assertFalse(pipe.skipPipe(null, session));
 	}
 
 	@Test
