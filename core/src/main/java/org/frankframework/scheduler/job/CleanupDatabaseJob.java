@@ -37,6 +37,7 @@ import org.frankframework.core.SenderException;
 
 import org.frankframework.dbms.Dbms;
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.Parameter.ParameterType;
@@ -110,7 +111,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
 				qs.setDatasourceName(datasourceName);
 				qs.setName("cleanupDatabase-IBISLOCK");
-				qs.setQueryType("other");
+				qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
@@ -155,7 +156,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
 				qs.setDatasourceName(mlo.getDatasourceName());
 				qs.setName("cleanupDatabase-" + mlo.getTableName());
-				qs.setQueryType("other");
+				qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 

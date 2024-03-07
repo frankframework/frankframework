@@ -38,7 +38,7 @@
 			</pipe>
 
 			<pipe name="fixedInsert" className="org.frankframework.pipes.SenderPipe" transactionAttribute="Required">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)" queryType="insert">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="Send transacted message to required subadapter with exception" />
@@ -58,7 +58,7 @@
 			</pipe>
 
 			<pipe name="fixedInsertRollback2" className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" />
 				<forward name="success" path="this should fail because of a tx error" />
 			</pipe>
 
