@@ -123,7 +123,7 @@ public class LarvaTool {
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
 	protected static final boolean allowReadlineSteps = false;
-	protected static int globalTimeout=AppConstants.getInstance().getInt("larva.timeout", 10_000);
+	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
 
 	private static final String TR_STARTING_TAG="<tr>";
 	private static final String TR_CLOSING_TAG="</tr>";
@@ -132,7 +132,7 @@ public class LarvaTool {
 	private static final String TABLE_CLOSING_TAG="</table>";
 
 	public static void setTimeout(int newTimeout) {
-		globalTimeout=newTimeout;
+		globalTimeoutMillis = newTimeout;
 	}
 
 	private static IbisContext getIbisContext(ServletContext application) {
@@ -151,7 +151,7 @@ public class LarvaTool {
 		String paramExecute = request.getParameter("execute");
 		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
 		String paramGlobalTimeout = request.getParameter("timeout");
-		int timeout=globalTimeout;
+		int timeout = globalTimeoutMillis;
 		if(paramGlobalTimeout != null) {
 			try {
 				timeout = Integer.parseInt(paramGlobalTimeout);
@@ -400,7 +400,7 @@ public class LarvaTool {
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TR_STARTING_TAG, false);
 		writeHtml(TD_STARTING_TAG, false);
-		writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", false);
+		writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeoutMillis ? timeout : globalTimeoutMillis) + "\" title=\"Global timeout for larva scenarios.\">", false);
 		writeHtml(TD_CLOSING_TAG, false);
 		writeHtml(TR_CLOSING_TAG, false);
 		writeHtml(TABLE_CLOSING_TAG, false);
@@ -816,75 +816,75 @@ public class LarvaTool {
 		String currentScenariosRootDirectory = null;
 		if (realPath == null) {
 			errorMessage("Could not read webapp real path");
-		} else {
-			if (!realPath.endsWith(File.separator)) {
-				realPath = realPath + File.separator;
-			}
-			Map<String, String> scenariosRoots = new HashMap<>();
-			Map<String, String> scenariosRootsBroken = new HashMap<>();
-			int j = 1;
-			String directory = appConstants.getProperty("scenariosroot" + j + ".directory");
-			String description = appConstants.getProperty("scenariosroot" + j + ".description");
-			while (directory != null) {
-				if (description == null) {
-					errorMessage("Could not find description for root directory '" + directory + "'");
-				} else if (scenariosRoots.get(description) != null) {
-					errorMessage("A root directory named '" + description + "' already exist");
-				} else {
-					String parent = realPath;
-					String m2eFileName = appConstants.getProperty("scenariosroot" + j + ".m2e.pom.properties");
-					if (m2eFileName != null) {
-						File m2eFile = new File(realPath, m2eFileName);
-						if (m2eFile.exists()) {
-							debugMessage("Read m2e pom.properties: " + m2eFileName);
-							Properties m2eProperties = readProperties(null, m2eFile, false);
-							parent = m2eProperties.getProperty("m2e.projectLocation");
-							debugMessage("Use m2e parent: " + parent);
-						}
-					}
-					directory = getAbsolutePath(parent, directory, true);
-					if (new File(directory).exists()) {
-						debugMessage("directory for ["+description+"] exists: " + directory);
-						scenariosRoots.put(description, directory);
-					} else {
-						debugMessage("directory ["+directory+"] for ["+description+"] does not exist, parent ["+parent+"]");
-						scenariosRootsBroken.put(description, directory);
-					}
-				}
-				j++;
-				directory = appConstants.getProperty("scenariosroot" + j + ".directory");
-				description = appConstants.getProperty("scenariosroot" + j + ".description");
-			}
-			TreeSet<String> treeSet = new TreeSet<>(new CaseInsensitiveComparator());
-			treeSet.addAll(scenariosRoots.keySet());
-			Iterator<String> iterator = treeSet.iterator();
-			while (iterator.hasNext()) {
-				description = iterator.next();
-				scenariosRootDescriptions.add(description);
-				scenariosRootDirectories.add(scenariosRoots.get(description));
-			}
-			treeSet.clear();
-			treeSet.addAll(scenariosRootsBroken.keySet());
-			iterator = treeSet.iterator();
-			while (iterator.hasNext()) {
-				description = iterator.next();
-				scenariosRootDescriptions.add("X " + description);
-				scenariosRootDirectories.add(scenariosRootsBroken.get(description));
-			}
-			debugMessage("Read scenariosrootdirectory parameter");
-			debugMessage("Get current scenarios root directory");
-			if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.isEmpty()) {
-				String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");
-				if (scenariosRootDefault != null) {
-					currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
-				}
-				if (currentScenariosRootDirectory == null
-						&& !scenariosRootDirectories.isEmpty()) {
-					currentScenariosRootDirectory = scenariosRootDirectories.get(0);
-				}
+			return null;
+		}
+		if (!realPath.endsWith(File.separator)) {
+			realPath = realPath + File.separator;
+		}
+		Map<String, String> scenariosRoots = new HashMap<>();
+		Map<String, String> scenariosRootsBroken = new HashMap<>();
+		int j = 1;
+		String directory = appConstants.getProperty("scenariosroot" + j + ".directory");
+		String description = appConstants.getProperty("scenariosroot" + j + ".description");
+		while (directory != null) {
+			if (description == null) {
+				errorMessage("Could not find description for root directory '" + directory + "'");
+			} else if (scenariosRoots.get(description) != null) {
+				errorMessage("A root directory named '" + description + "' already exist");
 			} else {
-				currentScenariosRootDirectory = paramScenariosRootDirectory;
+				String parent = realPath;
+				String m2eFileName = appConstants.getProperty("scenariosroot" + j + ".m2e.pom.properties");
+				if (m2eFileName != null) {
+					File m2eFile = new File(realPath, m2eFileName);
+					if (m2eFile.exists()) {
+						debugMessage("Read m2e pom.properties: " + m2eFileName);
+						Properties m2eProperties = readProperties(null, m2eFile, false);
+						parent = m2eProperties.getProperty("m2e.projectLocation");
+						debugMessage("Use m2e parent: " + parent);
+					}
+				}
+				directory = getAbsolutePath(parent, directory, true);
+				if (new File(directory).exists()) {
+					debugMessage("directory for [" + description + "] exists: " + directory);
+					scenariosRoots.put(description, directory);
+				} else {
+					debugMessage("directory [" + directory + "] for [" + description + "] does not exist, parent [" + parent + "]");
+					scenariosRootsBroken.put(description, directory);
+				}
 			}
+			j++;
+			directory = appConstants.getProperty("scenariosroot" + j + ".directory");
+			description = appConstants.getProperty("scenariosroot" + j + ".description");
+		}
+		TreeSet<String> treeSet = new TreeSet<>(new CaseInsensitiveComparator());
+		treeSet.addAll(scenariosRoots.keySet());
+		Iterator<String> iterator = treeSet.iterator();
+		while (iterator.hasNext()) {
+			description = iterator.next();
+			scenariosRootDescriptions.add(description);
+			scenariosRootDirectories.add(scenariosRoots.get(description));
+		}
+		treeSet.clear();
+		treeSet.addAll(scenariosRootsBroken.keySet());
+		iterator = treeSet.iterator();
+		while (iterator.hasNext()) {
+			description = iterator.next();
+			scenariosRootDescriptions.add("X " + description);
+			scenariosRootDirectories.add(scenariosRootsBroken.get(description));
+		}
+		debugMessage("Read scenariosrootdirectory parameter");
+		debugMessage("Get current scenarios root directory");
+		if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.isEmpty()) {
+			String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");
+			if (scenariosRootDefault != null) {
+				currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
+			}
+			if (currentScenariosRootDirectory == null
+					&& !scenariosRootDirectories.isEmpty()) {
+				currentScenariosRootDirectory = scenariosRootDirectories.get(0);
+			}
+		} else {
+			currentScenariosRootDirectory = paramScenariosRootDirectory;
 		}
 		return currentScenariosRootDirectory;
 	}

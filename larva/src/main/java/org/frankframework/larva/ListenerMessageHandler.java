@@ -43,7 +43,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(100);
 	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(100);
 
-	private long defaultTimeout = LarvaTool.globalTimeout;
+	private long defaultTimeout = LarvaTool.globalTimeoutMillis;
 
 	@Override
 	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {
