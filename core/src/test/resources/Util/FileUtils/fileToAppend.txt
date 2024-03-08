@@ -1,1 +1,0 @@
-will be copied to copyFIle.txt and appended to destinationFile.txt

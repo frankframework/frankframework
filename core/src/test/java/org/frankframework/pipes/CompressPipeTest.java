@@ -71,7 +71,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setCompress(true);
 		pipe.setFilenamePattern("blaat-{now,date,yyyy}.zip");
 		configureAndStartPipe();
-		String file = "/Util/FileUtils/copyFile.txt";
+		String file = "/Pipes/CompressPipe/copyFile.txt";
 		String input = TestFileUtils.getTestFilePath(file);
 		assertNotNull(input);
 
@@ -114,6 +114,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 		assertEquals(PipeForward.EXCEPTION_FORWARD_NAME, prr.getPipeForward().getName());
 	}
+
 	@Test
 	public void testBothMessageAndResultIsContentWithNonRepeatableMessage() throws Exception {
 		pipe.setMessageIsContent(true);
@@ -158,7 +159,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setResultIsContent(true);
 		pipe.setCompress(true);
 		configureAndStartPipe();
-		String input=TestFileUtils.getTestFilePath("/Util/FileUtils/copyFile.txt")+";"+TestFileUtils.getTestFilePath("/Util/FileUtils/copyFrom.txt");
+		String input = TestFileUtils.getTestFilePath("/Pipes/CompressPipe/copyFile.txt") + ";" + TestFileUtils.getTestFilePath("/Pipes/CompressPipe/copyFrom.txt");
 		PipeRunResult prr = doPipe(input);
 		assertEquals("success", prr.getPipeForward().getName());
 
@@ -167,7 +168,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 			assertNotNull(entry);
 			assertEquals("copyFile.txt", entry.getName());
 
-			URL url = TestFileUtils.getTestFileURL("/Util/FileUtils/"+entry.getName());
+			URL url = TestFileUtils.getTestFileURL("/Pipes/CompressPipe/" + entry.getName());
 			assertNotNull(url);
 			assertEquals(Message.asString(url), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
 
@@ -175,7 +176,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 			assertNotNull(entry);
 			assertEquals("copyFrom.txt", entry.getName());
 
-			URL url2 = TestFileUtils.getTestFileURL("/Util/FileUtils/"+entry.getName());
+			URL url2 = TestFileUtils.getTestFileURL("/Pipes/CompressPipe/" + entry.getName());
 			assertNotNull(url2);
 			assertEquals(Message.asString(url2), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
 		}
@@ -185,22 +186,22 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	public void testGetterSetterMessageIsContent() {
 		pipe.setMessageIsContent(true);
 		boolean checkBoolean = pipe.isMessageIsContent();
-		assertEquals(true, checkBoolean);
+		assertTrue(checkBoolean);
 
 		pipe.setMessageIsContent(false);
 		checkBoolean = pipe.isMessageIsContent();
-		assertEquals(false, checkBoolean);
+		assertFalse(checkBoolean);
 	}
 
 	@Test
 	public void testGetterSetterResultIsContent() {
 		pipe.setResultIsContent(true);
 		boolean checkBoolean = pipe.isResultIsContent();
-		assertEquals(true, checkBoolean);
+		assertTrue(checkBoolean);
 
 		pipe.setResultIsContent(false);
 		checkBoolean = pipe.isResultIsContent();
-		assertEquals(false, checkBoolean);
+		assertFalse(checkBoolean);
 	}
 
 	@Test
@@ -228,11 +229,11 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	public void testGetterSetterCompress() {
 		pipe.setCompress(true);
 		boolean checkBoolean = pipe.isCompress();
-		assertEquals(true, checkBoolean);
+		assertTrue(checkBoolean);
 
 		pipe.setCompress(false);
 		checkBoolean = pipe.isCompress();
-		assertEquals(false, checkBoolean);
+		assertFalse(checkBoolean);
 	}
 
 	@Test
@@ -270,6 +271,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 		assertEquals(DUMMY_STRING_SEMI_COLON, message);
 	}
+
 	@Test
 	public void testResultIsContentIncorrectFormat() throws Exception {
 		pipe.setMessageIsContent(true);

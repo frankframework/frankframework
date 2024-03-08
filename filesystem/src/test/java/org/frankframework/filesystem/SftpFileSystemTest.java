@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.random.RandomGenerator;
 
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
@@ -15,7 +16,6 @@ import org.apache.sshd.server.auth.hostbased.StaticHostBasedAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.frankframework.filesystem.ftp.SftpFileRef;
-import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,8 +33,6 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 	private final String host = "localhost";
 	private int port = 22;
 	private String remoteDirectory = "/home/frankframework/sftp";
-	protected TestAppender testAppender;
-
 	private SshServer sshd;
 
 	@Override
@@ -49,6 +47,7 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
 			sshd = createSshServer(username, password);
+			log.info("Starting SSH daemon at port {}", sshd.getPort());
 			sshd.start();
 			port = sshd.getPort();
 		}
@@ -57,6 +56,7 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 	static SshServer createSshServer(String username, String password) throws IOException {
 		SshServer sshd = SshServer.setUpDefaultServer();
 		sshd.setHost("localhost");
+		sshd.setPort(RandomGenerator.getDefault().nextInt(1024, 65535));
 		sshd.setPasswordAuthenticator((uname, psswrd, session) -> username.equals(uname) && password.equals(psswrd));
 		sshd.setHostBasedAuthenticator(new StaticHostBasedAuthenticator(true));
 

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.random.RandomGenerator;
 
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
@@ -39,7 +40,7 @@ class SftpFileSystemActorTest extends FileSystemActorTest<SftpFileRef, SftpFileS
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
 			sshd = createSshServer(username, password);
-
+			log.info("Starting SSH daemon at port {}", sshd.getPort());
 			sshd.start();
 			port = sshd.getPort();
 		}
@@ -50,6 +51,7 @@ class SftpFileSystemActorTest extends FileSystemActorTest<SftpFileRef, SftpFileS
 	static SshServer createSshServer(String username, String password) throws IOException {
 		SshServer sshd = SshServer.setUpDefaultServer();
 		sshd.setHost("localhost");
+		sshd.setPort(RandomGenerator.getDefault().nextInt(1024, 65535));
 		sshd.setPasswordAuthenticator((uname, psswrd, session) -> username.equals(uname) && password.equals(psswrd));
 		sshd.setHostBasedAuthenticator(new StaticHostBasedAuthenticator(true));
 
