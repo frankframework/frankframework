@@ -16,7 +16,7 @@ describe('WithJavaListenerPipe', () => {
     expect(pipe.transform({})).toEqual([]);
   });
 
-  it('gives back an array of adapters that has a java listener', () => {
+  it('returns an array of adapters that has a java listener', () => {
     const inputAdapters: Record<string, Adapter> = {
       test1: {
         configuration: 'test',
