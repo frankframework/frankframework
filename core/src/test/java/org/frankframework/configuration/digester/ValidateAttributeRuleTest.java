@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,7 +27,6 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.doc.Protected;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
-import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -368,10 +368,10 @@ public class ValidateAttributeRuleTest extends Mockito {
 		// Assert
 		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
 		assertThat(configurationWarnings.getWarnings(), not(anyOf(
-				IsIterableContaining.hasItem(containsString("DeprecatedPipe1InAdapter1")),
-				IsIterableContaining.hasItem(containsString("DeprecatedPipe2InAdapter1")),
-				IsIterableContaining.hasItem(containsString("DeprecatedPipe1InAdapter3")),
-				IsIterableContaining.hasItem(containsString("DeprecatedPipe2InAdapter3"))
+				hasItem(containsString("DeprecatedPipe1InAdapter1")),
+				hasItem(containsString("DeprecatedPipe2InAdapter1")),
+				hasItem(containsString("DeprecatedPipe1InAdapter3")),
+				hasItem(containsString("DeprecatedPipe2InAdapter3"))
 		)));
 		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
 				containsString("DeprecatedPipe1InAdapter2"),
@@ -399,10 +399,10 @@ public class ValidateAttributeRuleTest extends Mockito {
 			// Assert
 			ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
 			assertThat(configurationWarnings.getWarnings(), not(anyOf(
-					IsIterableContaining.hasItem(containsString("[DeprecatedPipe1InAdapter1]")),
-					IsIterableContaining.hasItem(containsString("[DeprecatedPipe2InAdapter1]")),
-					IsIterableContaining.hasItem(containsString("[DeprecatedPipe1InAdapter3]")),
-					IsIterableContaining.hasItem(containsString("[DeprecatedPipe2InAdapter3]"))
+					hasItem(containsString("[DeprecatedPipe1InAdapter1]")),
+					hasItem(containsString("[DeprecatedPipe2InAdapter1]")),
+					hasItem(containsString("[DeprecatedPipe1InAdapter3]")),
+					hasItem(containsString("[DeprecatedPipe2InAdapter3]"))
 			)));
 			assertEquals(4, configurationWarnings.getWarnings().size());
 			assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
