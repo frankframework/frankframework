@@ -30,10 +30,13 @@ import org.frankframework.logging.IbisPatternLayout;
 import org.frankframework.logging.IbisThreadFilter;
 import org.frankframework.util.LogUtil;
 
+import lombok.Setter;
+
 public class TestAppender extends AbstractAppender {
 	private final List<String> logMessages = new ArrayList<>();
 	private final List<LogEvent> logEvents = new ArrayList<>();
 	private Level minLogLevel = Level.DEBUG;
+	@Setter private boolean leakDetectionFilter = true; // Filter out leak detection log messages by default
 
 	public static <B extends Builder<B>> B newBuilder() {
 		return new Builder<B>().asBuilder().setName("jUnit-Test-Appender");
@@ -76,6 +79,9 @@ public class TestAppender extends AbstractAppender {
 	@Override
 	public void append(LogEvent logEvent) {
 		if (this.minLogLevel != null && !logEvent.getLevel().isMoreSpecificThan(this.minLogLevel)) {
+			return;
+		}
+		if (logEvent.getMessage() == null || leakDetectionFilter && logEvent.getMessage().getFormattedMessage().contains("Leak detection")) {
 			return;
 		}
 		logMessages.add((String) this.toSerializable(logEvent));
