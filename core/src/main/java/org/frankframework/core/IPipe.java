@@ -30,7 +30,7 @@ import org.frankframework.stream.Message;
  *
  * @ff.defaultElement org.frankframework.pipes.SenderPipe
  */
-@FrankDocGroup(FrankDocGroupValue.PIPES)
+@FrankDocGroup(FrankDocGroupValue.PIPE)
 public interface IPipe extends IConfigurable, IForwardTarget {
 
 	/**

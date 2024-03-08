@@ -28,7 +28,7 @@ import org.frankframework.stream.Message;
  *
  * @author  Gerrit van Brakel
  */
-@FrankDocGroup(FrankDocGroupValue.SENDERS)
+@FrankDocGroup(FrankDocGroupValue.SENDER)
 @ElementType(ElementTypes.ENDPOINT)
 public interface ISender extends IConfigurable {
 

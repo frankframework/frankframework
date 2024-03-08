@@ -32,7 +32,7 @@ import org.frankframework.receivers.Receiver;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
-@FrankDocGroup(FrankDocGroupValue.TRANSACTIONAL_STORAGES)
+@FrankDocGroup(FrankDocGroupValue.TRANSACTIONAL_STORAGE)
 public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
 	int MAXCOMMENTLEN = 1000;

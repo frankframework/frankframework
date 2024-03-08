@@ -27,7 +27,7 @@ import org.frankframework.stream.Message;
  *
  * @author Gerrit van Brakel
  */
-@FrankDocGroup(FrankDocGroupValue.VALIDATORS)
+@FrankDocGroup(FrankDocGroupValue.VALIDATOR)
 @ElementType(ElementTypes.VALIDATOR)
 public interface IValidator extends IPipe {
 

@@ -25,7 +25,7 @@ import org.frankframework.doc.Optional;
  * Marker interface for Wrappers
  * @author Gerrit van Brakel
  */
-@FrankDocGroup(FrankDocGroupValue.WRAPPERS)
+@FrankDocGroup(FrankDocGroupValue.WRAPPER)
 @ElementType(ElementTypes.WRAPPER)
 public interface IWrapperPipe extends IPipe {
 

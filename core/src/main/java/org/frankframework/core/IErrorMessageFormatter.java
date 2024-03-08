@@ -26,7 +26,7 @@ import org.frankframework.stream.Message;
  *
  * @author Johan Verrips
  */
-@FrankDocGroup(FrankDocGroupValue.ERROR_MESSAGE_FORMATTERS)
+@FrankDocGroup(FrankDocGroupValue.ERROR_MESSAGE_FORMATTER)
 public interface IErrorMessageFormatter {
 
 	Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);

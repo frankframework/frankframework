@@ -34,7 +34,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-@FrankDocGroup(FrankDocGroupValue.LISTENERS)
+@FrankDocGroup(FrankDocGroupValue.LISTENER)
 @ElementType(ElementTypes.LISTENER)
 public interface IListener<M> extends IConfigurable {
 
