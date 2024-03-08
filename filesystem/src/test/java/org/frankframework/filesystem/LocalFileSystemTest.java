@@ -5,11 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
@@ -107,8 +107,9 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		URL testFile = TestFileUtils.getTestFileURL("/Util/MessageUtils/iso-8859-1.txt");
 		assertNotNull(testFile);
 
-		Message result = fileSystem.readFile(new File(testFile.toURI()).toPath(), "auto");
-		assertEquals(StreamUtil.streamToString(testFile.openStream(), "iso-8859-1"), result.asString());
+		try (Message result = fileSystem.readFile(Paths.get(testFile.toURI()), "auto")) {
+			assertEquals(StreamUtil.streamToString(testFile.openStream(), "iso-8859-1"), result.asString());
+		}
 	}
 
 }
