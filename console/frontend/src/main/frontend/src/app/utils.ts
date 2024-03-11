@@ -40,12 +40,8 @@ export function getProcessStateIconColor(
   processState: string,
 ): 'success' | 'warning' | 'danger' {
   switch (processState) {
-    case 'Available': {
-      return 'success';
-    }
-    case 'InProcess': {
-      return 'success';
-    }
+    case 'Available':
+    case 'InProcess':
     case 'Done': {
       return 'success';
     }
