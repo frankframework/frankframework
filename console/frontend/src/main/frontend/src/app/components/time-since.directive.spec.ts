@@ -1,27 +1,53 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component, DebugElement } from '@angular/core';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TimeSinceDirective } from './time-since.directive';
-import { Component } from '@angular/core';
+import { By } from '@angular/platform-browser';
 
 @Component({
   // standalone: true,
-  template: `<!-- TODO -->`,
+  template: `
+    <span appTimeSince [time]="fiveMinAgo"></span>
+    <span appTimeSince [time]="oneHourAgo"></span>
+    <span appTimeSince [time]="oneDayAgo"></span>
+  `,
   imports: [TimeSinceDirective],
 })
-class TestComponent {}
+class TestComponent {
+  protected fiveMinAgo = Date.now() - 3e3;
+  protected oneHourAgo = Date.now() - 36e5; // 3600000
+  protected oneDayAgo = Date.now() - 864e5; // 86400000
+}
 
 describe('TimeSinceDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
+  let directiveElements: DebugElement[];
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [],
+      imports: [HttpClientTestingModule],
       declarations: [TestComponent, TimeSinceDirective],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding
+
+    // all elements with an attached HighlightDirective
+    directiveElements = fixture.debugElement.queryAll(
+      By.directive(TimeSinceDirective),
+    );
   });
 
-  // temporatory, remove when making actual tests
-  it('parent component should exist', () => {
-    expect(fixture).toBeTruthy();
+  it('get time since 5 minutes ago', () => {
+    const timeString = directiveElements[0].nativeElement.textContent;
+    expect(timeString).toBe('5m');
+  });
+
+  it('get time since 5 minutes ago', () => {
+    const timeString = directiveElements[0].nativeElement.textContent;
+    expect(timeString).toBe('1h');
+  });
+
+  it('get time since 5 minutes ago', () => {
+    const timeString = directiveElements[0].nativeElement.textContent;
+    expect(timeString).toBe('1d');
   });
 });
