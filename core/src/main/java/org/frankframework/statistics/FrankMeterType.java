@@ -24,6 +24,8 @@ public enum FrankMeterType {
 	TOTAL_MESSAGES_PROCESSED("frank.messagesProcessed", Meter.Type.COUNTER),
 	TOTAL_MESSAGES_REJECTED("frank.messagesRejected", Meter.Type.COUNTER),
 
+	JOB_DURATION("frank.job.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
+
 	PIPE_DURATION("frank.pipe.duration", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.TIME_UNIT),
 	PIPE_SIZE_IN("frank.pipe.size.in", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.SIZE_UNIT),
 	PIPE_SIZE_OUT("frank.pipe.size.out", Meter.Type.DISTRIBUTION_SUMMARY, FrankMeterType.SIZE_UNIT),

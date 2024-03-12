@@ -32,7 +32,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.metrics.LocalDistributionSummary;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Guard;
@@ -41,7 +40,6 @@ import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 import org.xml.sax.SAXException;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 
 /**

@@ -478,6 +478,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return statisticsMap.computeIfAbsent(name, ignored -> configurationMetrics.createSubDistributionSummary(this, name, FrankMeterType.PIPE_DURATION));
 	}
 
+	@Override
+	public void setSender(ISender sender) {
+		super.setSender(sender);
+	}
+
 	protected TransformerPool getStopConditionTp() {
 		return stopConditionTp;
 	}

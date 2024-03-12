@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.scheduler.job.IJob;
-import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
@@ -46,6 +45,7 @@ import org.quartz.impl.matchers.GroupMatcher;
  * @author  Johan Verrips
  * @since 4.0
   */
+@Deprecated
 public class SchedulerAdapter {
 	protected Logger log=LogUtil.getLogger(this);
 
@@ -101,8 +101,6 @@ public class SchedulerAdapter {
 					}
 					XmlBuilder ms = getJobMessages(jobDef);
 					jn.addSubElement(ms);
-					XmlBuilder jrs= getJobRunStatistics(jobDef);
-					jn.addSubElement(jrs);
 				}
 				el.addSubElement(jb);
 				xbRoot.addSubElement(el);
@@ -140,19 +138,6 @@ public class SchedulerAdapter {
 			}
 		}
 		return jobMessages;
-	}
-
-	public XmlBuilder getJobRunStatistics(IJob jobdef) {
-		XmlBuilder jobRunStatistics = new XmlBuilder("jobRunStatistics");
-		if (jobdef != null) {
-			StatisticsKeeper statsKeeper = jobdef.getStatisticsKeeper();
-			if (statsKeeper != null) {
-//				XmlBuilder jobRunDuration = statsKeeper.toXml("jobRunDuration",
-//						false, tf, pf);
-//				jobRunStatistics.addSubElement(jobRunDuration);
-			}
-		}
-		return jobRunStatistics;
 	}
 
 	public XmlBuilder getSchedulerCalendarNamesToXml(Scheduler theScheduler) {
