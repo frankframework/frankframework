@@ -29,7 +29,7 @@ public class BlackBoxTest {
 				checkpointsAfterFilter.add(checkpoint);
 			}
 		}
-
+		assertEquals(expectedResult.length, checkpointsAfterFilter.size());
 		for (int index = 0; index < checkpointsAfterFilter.size(); index++) {
 			assertEquals(expectedResult[index], checkpointsAfterFilter.get(index).getUid());
 		}
