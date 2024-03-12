@@ -16,6 +16,15 @@
         <emptyLine />
         <package name="javax" withSubpackages="true" static="false" />
         <emptyLine />
+        <package name="jakarta" withSubpackages="true" static="false" />
+        <emptyLine />
+        <package name="com.mockrunner" withSubpackages="true" static="false" />
+        <emptyLine />
+        <package name="org.awaitility" withSubpackages="true" static="false" />
+        <package name="org.hamcrest" withSubpackages="true" static="false" />
+        <package name="org.junit" withSubpackages="true" static="false" />
+        <package name="org.mockito" withSubpackages="true" static="false" />
+        <emptyLine />
         <package name="org" withSubpackages="false" static="false" />
         <emptyLine />
         <package name="com" withSubpackages="true" static="false" />
@@ -25,14 +34,6 @@
         <package name="nl.nn" withSubpackages="true" static="false" />
         <emptyLine />
         <package name="org.adapterframework" withSubpackages="true" static="false" />
-        <emptyLine />
-        <emptyLine />
-        <package name="com.mockrunner" withSubpackages="true" static="false" />
-        <emptyLine />
-        <package name="org.awaitility" withSubpackages="true" static="false" />
-        <package name="org.hamcrest" withSubpackages="true" static="false" />
-        <package name="org.junit" withSubpackages="true" static="false" />
-        <package name="org.mockito" withSubpackages="true" static="false" />
       </value>
     </option>
     <option name="RECORD_COMPONENTS_WRAP" value="5" />
