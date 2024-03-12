@@ -31,8 +31,6 @@ import org.frankframework.core.IConfigurable;
 import org.frankframework.core.Resource;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.Protected;
-import org.frankframework.filesystem.FileSystemListener;
-import org.frankframework.filesystem.FileSystemSender;
 import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.util.StringUtil;
@@ -67,6 +65,8 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 	private static final String ADAPTER2MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
 	private static final String CONFIGURATION2MERMAID_XSLT = "/xml/xsl/configuration2mermaid.xsl";
+	// List that contains all class patterns that extend FileSystemListener or FileSystemSender
+	private static final List<String> extendsFileSystem = List.of("FileSystem", "Directory", "Samba", "Ftp", "Imap", "Sftp", "S3", "Exchange", "Mail");
 
 	private final List<String> resourceMethods;
 	private Document frankElements;
@@ -141,13 +141,14 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	 */
 	private int deduceModifier(Class<?> clazz) {
 		String packageName = clazz.getPackageName();
+		String className = clazz.getSimpleName();
 		if (packageName.contains(".http")) {
 			return 0;
 		} else if (packageName.contains(".jms") || packageName.contains(".esb")) {
 			return 1;
 		} else if (packageName.contains(".jdbc")) {
 			return 2;
-		} else if (FileSystemListener.class.isAssignableFrom(clazz) || FileSystemSender.class.isAssignableFrom(clazz)) {
+		} else if (extendsFileSystem.stream().anyMatch(className::contains)) {
 			return 3;
 		} else if (IbisJavaSender.class.isAssignableFrom(clazz) || IbisLocalSender.class.isAssignableFrom(clazz)) {
 			return 4;

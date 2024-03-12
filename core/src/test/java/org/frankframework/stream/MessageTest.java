@@ -1306,9 +1306,10 @@ public class MessageTest {
 	}
 
 	@Test
-	void testMessageNotClosedByUser() throws IOException {
+	void testMessageNotClosedByUser() {
 		TestAppender appender = TestAppender.newBuilder().build();
 		TestAppender.addToRootLogger(appender);
+		appender.setLeakDetectionFilter(false);
 		try {
 			createMessageInShortLivedScope();
 			// GC should clean up the message object
