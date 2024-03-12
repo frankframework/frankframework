@@ -103,7 +103,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Getter boolean removeCompactMsgNamespaces = true;
 	private @Getter boolean restoreMovedElements=false;
 
-	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
+	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", true);
 	private @Getter Locker locker;
 	private @Getter String emptyInputReplacement=null;
 	private @Getter boolean writeToSecLog = false;
@@ -400,12 +400,14 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 
-
+	/**
+	 * Collect and aggregate Message size statistics
+	 */
 	public void setSizeStatistics(boolean sizeStatistics) {
 		this.sizeStatistics = sizeStatistics;
 	}
 	@Override
-	public boolean hasSizeStatistics() {
+	public boolean sizeStatisticsEnabled() {
 		return sizeStatistics;
 	}
 

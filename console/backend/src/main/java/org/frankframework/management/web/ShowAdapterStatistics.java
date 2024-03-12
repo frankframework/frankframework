@@ -62,17 +62,4 @@ public final class ShowAdapterStatistics extends FrankApiBase {
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		return callSyncGateway(builder);
 	}
-
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/adapters/{adapter}/statistics2")
-	@Relation("statistics")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getStatistics2(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.GET);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader("newstats", true);
-		return callSyncGateway(builder);
-	}
 }

@@ -15,18 +15,18 @@
 */
 package org.frankframework.senders;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.statistics.HasStatistics;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.stream.Message;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
@@ -49,6 +49,9 @@ public class SenderWrapper extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if(sender instanceof AdapterAware) {
+			((AdapterAware) sender).setAdapter(adapter);
+		}
 		getSender().configure();
 	}
 	@Override
@@ -65,13 +68,6 @@ public class SenderWrapper extends SenderWrapperBase {
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return sender.sendMessage(message, session);
-	}
-
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		if (getSender() instanceof HasStatistics) {
-			((HasStatistics)getSender()).iterateOverStatistics(hski,data,action);
-		}
 	}
 
 	@Override

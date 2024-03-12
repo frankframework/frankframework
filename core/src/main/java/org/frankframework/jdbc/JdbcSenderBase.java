@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,17 +20,25 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.AdapterAware;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.HasStatistics;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Base class for building JDBC-senders.
@@ -38,7 +46,10 @@ import lombok.Getter;
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
-public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnabledSender<H> {
+public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnabledSender<H>, HasStatistics, AdapterAware {
+	private DistributionSummary connectionStatistics;
+	private @Setter MetricsInitializer configurationMetrics;
+	private @Getter @Setter Adapter adapter;
 
 	@Getter private int timeout = 0;
 
@@ -65,6 +76,11 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if(configurationMetrics != null) {
+			//The metrics are not always autowired, as this class is also (ab)used by ConfigurationUtils.
+			connectionStatistics = configurationMetrics.createSubDistributionSummary(this, "getConnection", FrankMeterType.PIPE_DURATION);
+		}
+
 		if (paramList!=null) {
 			paramList.configure();
 		}
@@ -99,6 +115,19 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 		} finally {
 			connection = null;
 			super.close();
+		}
+	}
+
+	/* Only here for statistic purposes */
+	@Override
+	public Connection getConnection() throws JdbcException {
+		long t0 = System.currentTimeMillis();
+		try {
+			return super.getConnection();
+		} finally {
+			if(connectionStatistics != null) {
+				connectionStatistics.record(System.currentTimeMillis() - t0);
+			}
 		}
 	}
 

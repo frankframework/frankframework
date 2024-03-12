@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,9 +28,10 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
-import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Semaphore;
+
+import io.micrometer.core.instrument.DistributionSummary;
 
 /**
  * @author Jaco de Groot
@@ -50,8 +51,8 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 				long startWaiting = System.currentTimeMillis();
 				s.acquire();
 				waitingDuration = System.currentTimeMillis() - startWaiting;
-				StatisticsKeeper sk = pipeLine.getPipeWaitingStatistics(pipe);
-				sk.addValue(waitingDuration);
+				DistributionSummary summary = pipeLine.getPipeWaitStatistics(pipe);
+				summary.record(waitingDuration);
 				pipeRunResult = chain.apply(message);
 			} catch(InterruptedException e) {
 				throw new PipeRunException(pipe, "Interrupted acquiring semaphore", e);

@@ -15,7 +15,8 @@
 */
 package org.frankframework.statistics;
 
-import org.frankframework.core.SenderException;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.IConfigurationAware;
 
 /**
  * Interface to be implemented by objects like Pipes or Senders that maintain additional statistics themselves.
@@ -23,14 +24,7 @@ import org.frankframework.core.SenderException;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public interface HasStatistics {
+public interface HasStatistics extends IConfigurationAware {
 
-	public enum Action {
-		SUMMARY,
-		FULL,
-		MARK_MAIN,
-		MARK_FULL
-	}
-
-	public <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException;
+	Adapter getAdapter(); //Allows the statistic to be grouped by Adapter
 }

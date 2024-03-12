@@ -64,7 +64,6 @@ import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IPushingListener;
-import org.frankframework.core.IReceiverStatistics;
 import org.frankframework.core.IRedeliveringListener;
 import org.frankframework.core.ISender;
 import org.frankframework.core.IThreadCountControllable;
@@ -92,8 +91,6 @@ import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
@@ -118,6 +115,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -199,7 +197,7 @@ import lombok.Setter;
  *
  */
 @Category("Basic")
-public class Receiver<M> extends TransactionAttributes implements IManagable, IReceiverStatistics, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
+public class Receiver<M> extends TransactionAttributes implements IManagable, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, IThreadCountControllable {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -302,10 +300,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private io.micrometer.core.instrument.Counter numRetried;
 	private io.micrometer.core.instrument.Counter numRejected;
 
-	private final List<StatisticsKeeper> processStatistics = new ArrayList<>();
-	private final List<StatisticsKeeper> idleStatistics = new ArrayList<>();
-
-	private final StatisticsKeeper messageExtractionStatistics = new StatisticsKeeper("request extraction");
+	private final List<DistributionSummary> processStatistics = new ArrayList<>();
+	private final List<DistributionSummary> idleStatistics = new ArrayList<>();
 
 	// the adapter that handles the messages and initiates this listener
 	private @Getter @Setter Adapter adapter;
@@ -868,7 +864,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			int threadCount = (int) threadsProcessing.getValue();
 
 			if (waitingDuration>=0) {
-				getIdleStatistics(threadCount).addValue(waitingDuration);
+				getIdleStatistics(threadCount).record(waitingDuration);
 			}
 			threadsProcessing.increase();
 		}
@@ -880,7 +876,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		log.trace("{} finishProcessingMessage -- synchronize (lock) on Receiver threadsProcessing[{}]", this::getLogPrefix, threadsProcessing::toString);
 		synchronized (threadsProcessing) {
 			int threadCount = (int) threadsProcessing.decrease();
-			getProcessStatistics(threadCount).addValue(processingDuration);
+			getProcessStatistics(threadCount).record(processingDuration);
 		}
 		log.trace("{} finishProcessingMessage -- lock on Receiver threadsProcessing[{}] released", this::getLogPrefix, threadsProcessing::toString);
 		log.debug("{} finishes processing message", this::getLogPrefix);
@@ -1082,7 +1078,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 		Objects.requireNonNull(session, "Session can not be null");
 		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
-			long startExtractingMessage = System.currentTimeMillis();
 			if(isForceRetryFlag()) {
 				session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
 			}
@@ -1106,9 +1101,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					throw new ListenerException(e);
 				}
 			}
-
-			long endExtractingMessage = System.currentTimeMillis();
-			messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
 
 			Message output = processMessageInAdapter(messageWrapper, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
 			try { //Only catch IOExceptions on Message#close, processMessageInAdapter throws Exceptions, which should not be caught!!
@@ -1675,30 +1667,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		Object recData=hski.openGroup(data,getName(),"receiver");
-		try {
-			messageExtractionStatistics.performAction(action);
-			Object pstatData=hski.openGroup(recData,null,"procStats");
-			for(StatisticsKeeper pstat:getProcessStatistics()) {
-				hski.handleStatisticsKeeper(pstatData,pstat);
-				pstat.performAction(action);
-			}
-			hski.closeGroup(pstatData);
-
-			Object istatData=hski.openGroup(recData,null,"idleStats");
-			for(StatisticsKeeper istat:getIdleStatistics()) {
-				hski.handleStatisticsKeeper(istatData,istat);
-				istat.performAction(action);
-			}
-			hski.closeGroup(istatData);
-		} finally {
-			hski.closeGroup(recData);
-		}
-	}
-
 	@Override
 	public boolean isThreadCountReadable() {
 		if (getListener() instanceof IThreadCountControllable) {
@@ -1872,8 +1840,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return plc;
 	}
 
-	protected synchronized StatisticsKeeper getProcessStatistics(int threadsProcessing) {
-		StatisticsKeeper result;
+	protected synchronized DistributionSummary getProcessStatistics(int threadsProcessing) {
+		DistributionSummary result;
 		try {
 			result = processStatistics.get(threadsProcessing);
 		} catch (IndexOutOfBoundsException e) {
@@ -1881,8 +1849,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 
 		if (result==null) {
-			while (processStatistics.size()<threadsProcessing+1){
-				result = new StatisticsKeeper((processStatistics.size()+1)+" threads processing");
+			while (processStatistics.size()<threadsProcessing+1) {
+				int threadNumber = processStatistics.size()+1;
+				result = configurationMetrics.createThreadBasedDistributionSummary(this, FrankMeterType.RECEIVER_DURATION, threadNumber);
 				processStatistics.add(processStatistics.size(), result);
 			}
 		}
@@ -1890,8 +1859,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return processStatistics.get(threadsProcessing);
 	}
 
-	protected synchronized StatisticsKeeper getIdleStatistics(int threadsProcessing) {
-		StatisticsKeeper result;
+	protected synchronized DistributionSummary getIdleStatistics(int threadsProcessing) {
+		DistributionSummary result;
 		try {
 			result = idleStatistics.get(threadsProcessing);
 		} catch (IndexOutOfBoundsException e) {
@@ -1899,8 +1868,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 
 		if (result==null) {
-			while (idleStatistics.size()<threadsProcessing+1){
-			result = new StatisticsKeeper((idleStatistics.size())+" threads processing");
+			while (idleStatistics.size()<threadsProcessing+1) {
+				int threadNumber = idleStatistics.size()+1;
+				result = configurationMetrics.createThreadBasedDistributionSummary(this, FrankMeterType.RECEIVER_IDLE, threadNumber);
 				idleStatistics.add(idleStatistics.size(), result);
 			}
 		}
@@ -1911,8 +1881,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * Returns an iterator over the process-statistics
 	 * @return iterator
 	 */
-	@Override
-	public Iterable<StatisticsKeeper> getProcessStatistics() {
+	public Iterable<DistributionSummary> getProcessStatistics() {
 		return processStatistics;
 	}
 
@@ -1920,8 +1889,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * Returns an iterator over the idle-statistics
 	 * @return iterator
 	 */
-	@Override
-	public Iterable<StatisticsKeeper> getIdleStatistics() {
+	public Iterable<DistributionSummary> getIdleStatistics() {
 		return idleStatistics;
 	}
 
@@ -1934,21 +1902,21 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * get the number of messages received by this receiver.
 	 */
 	public double getMessagesReceived() {
-		return numReceived.count();
+		return (numReceived == null) ? 0 : numReceived.count();
 	}
 
 	/**
 	 * get the number of duplicate messages received this receiver.
 	 */
 	public double getMessagesRetried() {
-		return numRetried.count();
+		return (numRetried == null) ? 0 : numRetried.count();
 	}
 
 	/**
 	 * Get the number of messages rejected (discarded or put in errorStorage).
 	 */
 	public double getMessagesRejected() {
-		return numRejected.count();
+		return (numRejected == null) ? 0 : numRejected.count();
 	}
 
 	public long getLastMessageDate() {

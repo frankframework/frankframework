@@ -401,8 +401,8 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 		}
 
 		@Override
-		public boolean hasSizeStatistics() {
-			return owner.hasSizeStatistics();
+		public boolean sizeStatisticsEnabled() {
+			return owner.sizeStatisticsEnabled();
 		}
 	}
 

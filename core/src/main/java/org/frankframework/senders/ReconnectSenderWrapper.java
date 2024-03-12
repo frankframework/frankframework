@@ -16,13 +16,12 @@
 package org.frankframework.senders;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.statistics.HasStatistics;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.stream.Message;
 
 import lombok.Setter;
@@ -56,6 +55,10 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		sender.configure();
+		if(sender instanceof AdapterAware) {
+			((AdapterAware) sender).setAdapter(adapter);
+		}
+
 		super.configure();
 	}
 
@@ -76,13 +79,6 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 			return sender.sendMessage(message, session);
 		} finally {
 			sender.close();
-		}
-	}
-
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		if (sender instanceof HasStatistics) {
-			((HasStatistics) sender).iterateOverStatistics(hski,data,action);
 		}
 	}
 

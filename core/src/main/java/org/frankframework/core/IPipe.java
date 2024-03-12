@@ -184,5 +184,5 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 
 	void throwEvent(String event, Message eventMessage);
 
-	boolean hasSizeStatistics();
+	boolean sizeStatisticsEnabled();
 }

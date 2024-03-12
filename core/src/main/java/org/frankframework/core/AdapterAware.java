@@ -19,5 +19,5 @@ import org.springframework.beans.factory.Aware;
 
 public interface AdapterAware extends Aware {
 
-	void setAdapter(IAdapter adapter);
+	void setAdapter(Adapter adapter);
 }

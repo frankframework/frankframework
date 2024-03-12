@@ -31,14 +31,12 @@ import javax.annotation.Nonnull;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.IPipe;
-import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 
 import io.micrometer.core.instrument.Clock;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Meter.Id;
@@ -85,49 +83,67 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 
 		JsonObjectBuilder root = Json.createObjectBuilder();
 
-		Map<String, JsonObjectBuilder> listOfAllMeters = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_DURATION);
-		JsonArrayBuilder jsonArray = Json.createArrayBuilder();
-		for(String meterName : pipelineMeterOrder) {
-			JsonObjectBuilder meterJsonDing = listOfAllMeters.remove(meterName);
-			if(meterJsonDing != null) {
-				jsonArray.add(meterJsonDing);
-			}
-		}
-		listOfAllMeters.values().stream().forEach(jsonArray::add);
-		root.add("durationPerPipe", jsonArray);
+		Map<String, JsonObjectBuilder> pipeDuration = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_DURATION, "");
+		JsonObjectBuilder pipelineSize = readSummary(adapterScopedMeters, FrankMeterType.PIPELINE_SIZE); //called "- pipeline in"
+		Map<String, JsonObjectBuilder> pipeSizeIn = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_SIZE_IN, " (in)");
+		Map<String, JsonObjectBuilder> pipeSizeOut = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_SIZE_OUT, " (out)");
+		JsonObjectBuilder pipelineWaitTime = readSummary(adapterScopedMeters, FrankMeterType.PIPELINE_WAIT_TIME); //called "- pipeline in"
+		Map<String, JsonObjectBuilder> pipeWaitTime = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_WAIT_TIME, "");
 
-		Map<String, JsonObjectBuilder> listOfAllMeters2 = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_SIZE);
-		JsonArrayBuilder jsonArray2 = Json.createArrayBuilder();
-		jsonArray2.add(listOfAllMeters2.remove("- pipeline in"));
+		JsonArrayBuilder durationStatistics = Json.createArrayBuilder();
+		JsonArrayBuilder sizeStatistics = Json.createArrayBuilder();
+		JsonArrayBuilder waitStatistics = Json.createArrayBuilder();
+		if(pipelineSize != null) {
+			sizeStatistics.add(pipelineSize);
+		}
+		if(pipelineWaitTime != null) {
+			waitStatistics.add(pipelineWaitTime);
+		}
 		for(String meterName : pipelineMeterOrder) {
-			JsonObjectBuilder inStat = listOfAllMeters2.remove(meterName + " (in)");
-			JsonObjectBuilder outStat = listOfAllMeters2.remove(meterName + " (out)");
-			if(inStat != null) {
-				jsonArray2.add(inStat);
+			JsonObjectBuilder meterJsonDing = pipeDuration.remove(meterName);
+			if(meterJsonDing != null) {
+				durationStatistics.add(meterJsonDing);
 			}
+			JsonObjectBuilder inStat = pipeSizeIn.remove(meterName);
+			if(inStat != null) {
+				sizeStatistics.add(inStat);
+			}
+			JsonObjectBuilder outStat = pipeSizeOut.remove(meterName);
 			if(outStat != null) {
-				jsonArray2.add(outStat);
+				sizeStatistics.add(outStat);
+			}
+			JsonObjectBuilder waitTime = pipeWaitTime.remove(meterName);
+			if(waitTime != null) {
+				waitStatistics.add(waitTime);
 			}
 		}
-		root.add("sizePerPipe", jsonArray2);
+		pipeDuration.values().stream().forEach(durationStatistics::add);
+
+		root.add("durationPerPipe", durationStatistics);
+		root.add("sizePerPipe", sizeStatistics);
+		root.add("waitTimePerPipe", waitStatistics);
 
 		root.add("receivers", getReceivers(adapter, adapterScopedMeters));
 		root.add("hourly", getHourlyStatistics((Adapter) adapter));
 
-		root.add("totalMessageProccessingTime", getTotalMessageProccessingTime(adapterScopedMeters));
+		JsonObjectBuilder totalMessageProcessingTime = readSummary(adapterScopedMeters, FrankMeterType.PIPELINE_DURATION);
+		if(totalMessageProcessingTime != null) {
+			root.add("totalMessageProccessingTime", totalMessageProcessingTime);
+		}
 
 		return root.build();
 	}
 
-	private JsonObjectBuilder getTotalMessageProccessingTime(Collection<Meter> meters) {
-		List<LocalDistributionSummary> duration = meters.stream().filter(FrankMeterType.PIPELINE_DURATION::isOfType).map(LocalDistributionSummary.class::cast).toList();
+	private JsonObjectBuilder readSummary(Collection<Meter> meters, FrankMeterType type) {
+		List<LocalDistributionSummary> duration = meters.stream().filter(type::isOfType).map(LocalDistributionSummary.class::cast).toList();
 		if(duration.size() > 1) {
-			throw new IllegalStateException("found more then 1 "+FrankMeterType.PIPELINE_DURATION+" statistic");
+			throw new IllegalStateException("found more then 1 "+type+" statistic");
 		}
 		if(duration.isEmpty()) {
-			throw new IllegalStateException("did not find any "+FrankMeterType.PIPELINE_DURATION+" statistic");
+			return null;
 		}
-		return readSummary(duration.get(0));
+		LocalDistributionSummary summary = duration.get(0);
+		return readSummary(summary, extractNameFromTag(summary, "name"));
 	}
 
 	private JsonArrayBuilder getHourlyStatistics(Adapter adapter) {
@@ -152,6 +168,8 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		JsonArrayBuilder receivers = Json.createArrayBuilder();
 
 		for (Receiver<?> receiver: adapter.getReceivers()) {
+			if(!receiver.configurationSucceeded()) continue;
+
 			JsonObjectBuilder receiverMap = Json.createObjectBuilder();
 
 			receiverMap.add("name", receiver.getName());
@@ -159,26 +177,30 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 			receiverMap.add("messagesRejected", receiver.getMessagesRejected());
 			receiverMap.add("messagesRetried", receiver.getMessagesRetried());
 
-//			receiverMap.put("processing", null); //TBD
-//			receiverMap.put("idle", null); //TBD
+			receiverMap.add("processing", getDistributionSummaryByThread(meters, FrankMeterType.RECEIVER_DURATION));
+			receiverMap.add("idle", getDistributionSummaryByThread(meters, FrankMeterType.RECEIVER_IDLE));
 
 			receivers.add(receiverMap);
 		}
 		return receivers;
 	}
 
-	private Map<String, JsonObjectBuilder> getDistributionSummary(Collection<Meter> meters, FrankMeterType meterType) {
+	private Map<String, JsonObjectBuilder> getDistributionSummary(Collection<Meter> meters, FrankMeterType meterType, String nameSuffix) {
 		return meters.stream()
 				.filter(meterType::isOfType)
 				.map(LocalDistributionSummary.class::cast)
-				.collect(Collectors.toMap(e->extractNameFromTag(e, "name"), LocalStatisticsRegistry::readSummary));
+				.collect(Collectors.toMap(e -> extractNameFromTag(e, "name"), e -> readSummary(e, extractNameFromTag(e, "name")+ nameSuffix)));
 	}
+	private JsonArrayBuilder getDistributionSummaryByThread(Collection<Meter> meters, FrankMeterType meterType) {
+		JsonArrayBuilder threadsStats = Json.createArrayBuilder();
 
-	private Map<String, Double> getCounter(Collection<Meter> meters, FrankMeterType meterType, String groupByTagName) {
-		return meters.stream()
+		meters.stream()
 				.filter(meterType::isOfType)
-				.map(Counter.class::cast)
-				.collect(Collectors.toMap(e->extractNameFromTag(e, groupByTagName), Counter::count));
+				.map(LocalDistributionSummary.class::cast)
+				.map(e -> readSummary(e, extractNameFromTag(e, "thread") +" threads processing"))
+				.forEach(threadsStats::add);
+
+		return threadsStats;
 	}
 
 	private static @Nonnull String extractNameFromTag(Meter meter, String groupByTagName) {
@@ -191,29 +213,47 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 
 	private List<String> getPotentialMeters(PipeLine pipeline) {
 		List<String> potentialMeterNames = new LinkedList<>();
-		IValidator inputValidator = pipeline.getInputValidator();
-		if(inputValidator != null) {
-			potentialMeterNames.add(inputValidator.getName());
+		if(pipeline.getInputValidator() != null) {
+			potentialMeterNames.add(pipeline.getInputValidator().getName());
 		}
-		IValidator outputValidator = pipeline.getOutputValidator();
-		if(outputValidator != null) {
-			potentialMeterNames.add(outputValidator.getName());
+		if(pipeline.getOutputValidator() != null) {
+			potentialMeterNames.add(pipeline.getOutputValidator().getName());
+		}
+		if(pipeline.getInputWrapper() != null) {
+			potentialMeterNames.add(pipeline.getInputWrapper().getName());
+		}
+		if(pipeline.getOutputWrapper() != null) {
+			potentialMeterNames.add(pipeline.getOutputWrapper().getName());
 		}
 
 //		pipes.addAll(pipeLine.getPipes()); //ensure this is sorted
 		for(IPipe pipe : pipeline.getPipes()) {
-			//TODO validators/wrappers
-//			String pipeName = pipe.getName();
+			String pipeName = pipe.getName();
 			if(pipe instanceof MessageSendingPipe) {
-				potentialMeterNames.add("getConnection for "+((MessageSendingPipe) pipe).getSender().getName()); //TODO implement getStatisticName
+				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
+				if (messageSendingPipe.getInputValidator() != null) {
+					potentialMeterNames.add(messageSendingPipe.getInputValidator().getName());
+				}
+				if (messageSendingPipe.getOutputValidator() != null) {
+					potentialMeterNames.add(messageSendingPipe.getOutputValidator().getName());
+				}
+				if (messageSendingPipe.getInputWrapper() != null) {
+					potentialMeterNames.add(messageSendingPipe.getInputWrapper().getName());
+				}
+				if (messageSendingPipe.getOutputWrapper() != null) {
+					potentialMeterNames.add(messageSendingPipe.getOutputWrapper().getName());
+				}
+				if (messageSendingPipe.getMessageLog() != null) {
+					potentialMeterNames.add(messageSendingPipe.getMessageLog().getName());
+				}
+				potentialMeterNames.add("getConnection for "+messageSendingPipe.getSender().getName()); //TODO implement getStatisticName
 			}
-			potentialMeterNames.add(pipe.getName());
+			potentialMeterNames.add(pipeName);
 		}
 		return potentialMeterNames;
 	}
 
-	private static JsonObjectBuilder readSummary(LocalDistributionSummary summary) {
-		String name = extractNameFromTag(summary, "name");
+	private static JsonObjectBuilder readSummary(LocalDistributionSummary summary, String name) {
 		JsonObjectBuilder jsonSummary = Json.createObjectBuilder();
 		String unit = summary.getId().getBaseUnit();
 		HistogramSnapshot snapshot = summary.takeSnapshot();//abstractTimeWindowHistogram
@@ -228,7 +268,6 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		jsonSummary.add("sum", format(summary.totalAmount()));
 		jsonSummary.add("first", summary.getFirst());
 		jsonSummary.add("last", summary.getLast());
-		jsonSummary.add("unit", unit);
 
 		//le tags, 100ms/1000ms/2000ms/10000ms
 		for (CountAtBucket bucket : snapshot.histogramCounts()) {

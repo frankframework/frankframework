@@ -23,10 +23,10 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
-import org.frankframework.pipes.AbstractPipe;
-import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Misc;
+
+import io.micrometer.core.instrument.DistributionSummary;
 
 /**
  * @author Jaco de Groot
@@ -45,21 +45,14 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 
 	private void checkMessageSize(long messageLength, PipeLine pipeLine, IPipe pipe, boolean input) {
 		if(messageLength > -1) {
-			if (pipe instanceof AbstractPipe) {
-				AbstractPipe aPipe = (AbstractPipe) pipe;
-				StatisticsKeeper sizeStat = null;
+			if (pipe.sizeStatisticsEnabled()) {
+				DistributionSummary sizeStat = null;
 				if (input) {
-					if (aPipe.getInSizeStatDummyObject() != null) {
-						sizeStat = pipeLine.getPipeSizeStatistics(aPipe.getInSizeStatDummyObject());
-					}
+					sizeStat = pipeLine.getPipeSizeInStatistics(pipe);
 				} else {
-					if (aPipe.getOutSizeStatDummyObject() != null) {
-						sizeStat = pipeLine.getPipeSizeStatistics(aPipe.getOutSizeStatDummyObject());
-					}
+					sizeStat = pipeLine.getPipeSizeOutStatistics(pipe);
 				}
-				if (sizeStat!=null) {
-					sizeStat.addValue(messageLength);
-				}
+				sizeStat.record(messageLength);
 			}
 
 			if (pipeLine.getMessageSizeWarnNum() >= 0 && messageLength >= pipeLine.getMessageSizeWarnNum()) {

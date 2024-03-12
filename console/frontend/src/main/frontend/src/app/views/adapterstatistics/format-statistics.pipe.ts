@@ -16,9 +16,6 @@ export class FormatStatisticsPipe implements PipeTransform {
         // if no value, return a dash
         value = '-';
       }
-      if ((key.endsWith('ms') || key.endsWith('B')) && value != '-') {
-        value += '%';
-      }
       formatted.push({ key, value: value as string });
     }
     // Uncomment if really needed, but figure out how angular2+ handles this first

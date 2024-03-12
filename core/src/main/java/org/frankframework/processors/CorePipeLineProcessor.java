@@ -19,9 +19,6 @@ package org.frankframework.processors;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.AdapterManager;
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.IForwardTarget;
@@ -36,11 +33,12 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.pipes.AbstractPipe;
-import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * @author Jaco de Groot
@@ -112,7 +110,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		long size = message.size();
 		if (size > 0) {
-			pipeLine.getRequestSizeStats().addValue(size);
+			pipeLine.getRequestSizeStats().record(size);
 		}
 
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
@@ -217,14 +215,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					IPipe pipeToRun=(IPipe)forwardTarget;
 					PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
 					message = pipeRunResult.getResult();
-
-					// TODO: this should be moved to a StatisticsPipeProcessor
-					if (!(pipeToRun instanceof AbstractPipe) && !message.isEmpty()) {
-						StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
-						if (sizeStat!=null) {
-							sizeStat.addValue(message.size());
-						}
-					}
 
 					PipeForward pipeForward=pipeRunResult.getPipeForward();
 					// get the next pipe to run

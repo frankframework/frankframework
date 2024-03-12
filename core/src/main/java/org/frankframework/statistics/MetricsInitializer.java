@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,24 +16,25 @@
 package org.frankframework.statistics;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IConfigurationAware;
+import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
+import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
-import org.frankframework.core.SenderException;
-import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -44,33 +45,27 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.DistributionSummary.Builder;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Meter.Type;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Meter.Type;
-import io.micrometer.core.instrument.binder.cache.EhCache2Metrics;
 import io.micrometer.core.instrument.search.Search;
 import lombok.Setter;
-import net.sf.ehcache.Ehcache;
 
-public class MetricsInitializer implements StatisticsKeeperIterationHandler<MetricsInitializer.NodeConfig>, InitializingBean, DisposableBean, ApplicationContextAware {
+public class MetricsInitializer implements InitializingBean, DisposableBean, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
 
+	private boolean publishPercentiles;
+	private boolean publishHistograms;
+	private int percentilePrecision;
+	private List<String> percentiles;
+	private List<String> timeSLO; //ServiceLevelObjectives
+	private List<String> sizeSLO;
+
 	private MeterRegistry registry;
-	private NodeConfig root;
-
-	protected static class NodeConfig {
-		public final String name;
-		public final List<Tag> tags;
-		public final int groupLevel;
-
-		NodeConfig(String name, List<Tag> tags, int groupLevel) {
-			this.name = name;
-			this.tags = tags!=null ? tags : new LinkedList<>();
-			this.groupLevel = groupLevel;
-		}
-	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -80,140 +75,141 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 			throw new IllegalStateException("unable to initialize MetricsInitializer, no registry set", e);
 		}
 
-		List<Tag> tags = new LinkedList<>();
-		tags.add(Tag.of("type", "application"));
-		root = new NodeConfig("frank", tags, 0);
+		AppConstants appConstants = AppConstants.getInstance();
+		publishPercentiles = appConstants.getBoolean("Statistics.percentiles.publish", false);
+		percentilePrecision = appConstants.getInt("Statistics.percentiles.precision", 1);
+		publishHistograms = appConstants.getBoolean("Statistics.histograms.publish", false);
+		percentiles = appConstants.getListProperty("Statistics.percentiles"); //50,90,95,98
+		timeSLO = appConstants.getListProperty("Statistics.boundaries"); //100,1000,2000,10000
+		sizeSLO = appConstants.getListProperty("Statistics.size.boundaries"); //100000,1000000
 	}
 
 	public Counter createCounter(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
-		if(type.getMeterType() == Type.COUNTER) {
-			return (Counter) createMeter(frankElement, type);
-		}
-		return null;
+		return createCounter(type, getTags(frankElement, frankElement.getName(), null));
 	}
 
-	public Meter createMeter(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
-		if(frankElement instanceof EventThrowing) { //TODO implement a nice interface with getAdapter instead of misusing the EventThrowing interface
-			EventThrowing elm = (EventThrowing) frankElement;
-			if(elm.getAdapter() != null) {
-				return createMeter(frankElement, type, elm.getAdapter());
+	/** This DistributionSummary is suffixed under a pipe */
+	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull INamedObject subFrankElement, @Nonnull FrankMeterType type) {
+		String name = (StringUtils.isNotEmpty(subFrankElement.getName()) ? subFrankElement.getName():ClassUtils.nameOf(subFrankElement));
+		return createSubDistributionSummary(parentFrankElement, name, type);
+	}
+	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull String subFrankElement, @Nonnull FrankMeterType type) {
+		List<Tag> tags = getTags(parentFrankElement, parentFrankElement.getName() + " -> " + subFrankElement, null);
+		return createDistributionSummary(type, tags);
+	}
+	public DistributionSummary createDistributionSummary(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
+		List<Tag> tags = getTags(frankElement, frankElement.getName(), null);
+		return createDistributionSummary(type, tags);
+	}
+	public DistributionSummary createThreadBasedDistributionSummary(Receiver<?> receiver, FrankMeterType type, int threadNumber) {
+		List<Tag> tags = getTags(receiver, receiver.getName(), Collections.singletonList(Tag.of("thread", ""+threadNumber)));
+		return createDistributionSummary(type, tags);
+	}
+
+	public Gauge createGauge(@Nonnull Adapter frankElement, @Nonnull FrankMeterType type, Supplier<Number> numberSupplier) {
+		return createGauge(type, getTags(frankElement, frankElement.getName(), null), numberSupplier);
+	}
+
+	private Counter createCounter(@Nonnull FrankMeterType type, List<Tag> tags) {
+		if(type.getMeterType() != Type.COUNTER) {
+			throw new IllegalStateException("MeterType ["+type+"] must be of type [Counter]");
+		}
+		return Counter.builder(type.getMeterName()).tags(tags).baseUnit(type.getBaseUnit()).register(registry);
+	}
+
+	private Gauge createGauge(@Nonnull FrankMeterType type, List<Tag> tags, Supplier<Number> numberSupplier) {
+		if(type.getMeterType() != Type.GAUGE) {
+			throw new IllegalStateException("MeterType ["+type+"] must be of type [Gauge]");
+		}
+		return Gauge.builder(type.getMeterName(), numberSupplier).tags(tags).baseUnit(type.getBaseUnit()).register(registry);
+	}
+
+	private DistributionSummary createDistributionSummary(@Nonnull FrankMeterType type, List<Tag> tags) {
+		if(type.getMeterType() != Type.DISTRIBUTION_SUMMARY) {
+			throw new IllegalStateException("MeterType ["+type+"] must be of type [DistributionSummary]");
+		}
+
+		Builder builder = DistributionSummary.builder(type.getMeterName()).tags(tags).baseUnit(type.getBaseUnit());
+		if(publishPercentiles || publishHistograms) {
+			builder.percentilePrecision(percentilePrecision);
+			builder.publishPercentiles(getPercentiles());
+			if(FrankMeterType.TIME_UNIT.equals(type.getBaseUnit())) {
+				builder.serviceLevelObjectives(timeSLO.stream().mapToDouble(Double::parseDouble).toArray());
+			} else if(FrankMeterType.SIZE_UNIT.equals(type.getBaseUnit())) {
+				builder.serviceLevelObjectives(sizeSLO.stream().mapToDouble(Double::parseDouble).toArray());
+			}
+
+			if(publishHistograms) {
+				builder.publishPercentileHistogram();
 			}
 		}
-		return createMeter(frankElement, type, null);
+		return builder.register(registry);
 	}
 
-	private Meter createMeter(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type, @Nullable Adapter adapter) {
+
+
+	private List<Tag> getTags(@Nonnull IConfigurationAware frankElement, @Nonnull String name, @Nullable List<Tag> extraTags) {
 		Objects.requireNonNull(frankElement.getName());
 
-		String elementType;
-		if(frankElement instanceof Receiver) {
-			elementType = "receiver";
-		} else if(frankElement instanceof PipeLine) {
-			elementType = "pipeline";
-		} else if(frankElement instanceof IPipe) {
-			elementType = "pipe";
-		} else if(frankElement instanceof Adapter) {
-			elementType = "adapter";
-		} else {
-			throw new IllegalStateException("meter type not configured");
-		}
-
 		ApplicationContext configuration = frankElement.getApplicationContext();
-		List<Tag> tags = new ArrayList<>(4);
+		List<Tag> tags = new ArrayList<>(5);
+		Adapter adapter = getAdapter(frankElement);
 		if(adapter != null) {
 			tags.add(Tag.of("adapter", adapter.getAdapter().getName()));
 		}
 		tags.add(Tag.of("configuration", configuration.getId()));
-		tags.add(Tag.of("name", frankElement.getName()));
-		tags.add(Tag.of("type", elementType));
-
-		//new Meter.Id(name, tags, baseUnit, description, Type.COUNTER)
-		switch (type.getMeterType()) {
-		case COUNTER:
-			return Counter.builder(type.getMeterName()).tags(tags).register(registry);
-		case DISTRIBUTION_SUMMARY:
-			throw new IllegalStateException("tbd");
-//			return DistributionSummary.builder(type.getMeterName()).tags(tags).register(registry);
-		default:
-			throw new IllegalArgumentException("Unexpected value: " + type.getMeterType());
+		tags.add(Tag.of("name", name));
+		tags.add(Tag.of("type", getElementType(frankElement)));
+		if(extraTags != null) {
+			tags.addAll(extraTags);
 		}
+
+		return tags;
+	}
+
+	private Adapter getAdapter(@Nonnull IConfigurationAware frankElement) {
+		if(frankElement instanceof Adapter) {
+			return (Adapter) frankElement;
+		}
+		if(frankElement instanceof HasStatistics) {
+			HasStatistics elm = (HasStatistics) frankElement;
+			if(elm.getAdapter() != null) {
+				return elm.getAdapter();
+			}
+		}
+		return null;
+	}
+
+	private String getElementType(@Nonnull IConfigurationAware frankElement) {
+		if(frankElement instanceof Receiver) {
+			return "receiver";
+		} else if(frankElement instanceof PipeLine) {
+			return "pipeline";
+		} else if(frankElement instanceof IPipe) {
+			return "pipe";
+		} else if(frankElement instanceof Adapter) {
+			return "adapter";
+		} else if(frankElement instanceof ISender) {
+			return "sender";
+		} else {
+			throw new IllegalStateException("meter type not configured");
+		}
+	}
+
+	private double[] getPercentiles() {
+		if(percentiles.size() > 4) {
+			log.warn("using more than 4 percentiles is heavily discouraged");
+		}
+		//Validate must be whole number between 50 and 100.
+		return percentiles.stream().mapToDouble(Double::parseDouble).map(e -> e / 100).toArray();
 	}
 
 	@Override
 	public void destroy() throws Exception {
 		Search search = Search.in(registry).tag("configuration", applicationContext.getId());
-		search.counters().parallelStream().forEach(e -> {
-			registry.remove(e);
-		});
-		search.gauges().parallelStream().forEach(e -> {
-			registry.remove(e);
-		});
-	}
-
-	@Override
-	public void configure() throws ConfigurationException {
-		//not used
-	}
-
-	@Override
-	public NodeConfig start(Date now, Date mainMark, Date detailMark) throws SenderException {
-		return root;
-	}
-
-	@Override
-	public void end(NodeConfig data) throws SenderException {
-		//not used
-	}
-
-	@Override
-	public void handleStatisticsKeeper(NodeConfig data, StatisticsKeeper sk) throws SenderException {
-		if (sk==null) {
-			log.warn("StatisticsKeeper is null");
-			return;
-		}
-		if (data==null) {
-			log.warn("NodeConfig data is null, sk="+sk.getName());
-			sk.initMetrics(registry, sk.getName(), null);
-			return;
-		}
-		sk.initMetrics(registry, data.name, data.tags);
-	}
-
-	@Override
-	public void handleScalar(NodeConfig data, String scalarName, ScalarMetricBase<?> meter) throws SenderException {
-		meter.initMetrics(registry, data.name, data.tags, scalarName);
-	}
-
-	@Override
-	public void handleScalar(NodeConfig data, String scalarName, long value) throws SenderException {
-		//not used
-	}
-
-	@Override
-	public void handleScalar(NodeConfig data, String scalarName, Date value) throws SenderException {
-		//not used
-	}
-
-	@Override
-	public NodeConfig openGroup(NodeConfig parentData, String dimensionName, String type) throws SenderException {
-		String nodeName = parentData.name;
-		List<Tag> tags = new LinkedList<>(parentData.tags);
-		int groupLevel = parentData.groupLevel;
-		if (StringUtils.isNotEmpty(dimensionName)) {
-			tags.add(Tag.of(type, dimensionName));
-		} else {
-			nodeName=nodeName+"."+type;
-		}
-		return new NodeConfig(nodeName, tags, groupLevel);
-	}
-
-	@Override
-	public void closeGroup(NodeConfig data) throws SenderException {
-		//not used
-	}
-
-	public void configureCache(Ehcache cache) {
-		new EhCache2Metrics(cache, root.tags).bindTo(registry);
+		search.counters().parallelStream().forEach(registry::remove);
+		search.gauges().parallelStream().forEach(registry::remove);
+		search.summaries().parallelStream().forEach(registry::remove);
 	}
 
 }

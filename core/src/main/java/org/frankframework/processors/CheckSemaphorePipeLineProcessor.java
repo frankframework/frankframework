@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,9 +23,10 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
-import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Semaphore;
+
+import io.micrometer.core.instrument.DistributionSummary;
 
 /**
  * @author Gerrit van Brakel
@@ -46,8 +47,9 @@ public class CheckSemaphorePipeLineProcessor extends PipeLineProcessorBase {
 				long startWaiting = System.currentTimeMillis();
 				s.acquire();
 				waitingDuration = System.currentTimeMillis() - startWaiting;
-				StatisticsKeeper sk = pipeLine.getPipeWaitingStatistics(pipe);
-				sk.addValue(waitingDuration);
+				DistributionSummary summary = pipeLine.getPipelineWaitStatistics();
+				summary.record(waitingDuration);
+
 				pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 			} catch(InterruptedException e) {
 				throw new PipeRunException(pipe, "Interrupted acquiring PipeLine semaphore", e);

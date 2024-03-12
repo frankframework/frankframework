@@ -27,10 +27,11 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.pipes.AbstractPipe;
-import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
+
+import io.micrometer.core.instrument.DistributionSummary;
 
 /**
  * @author Jaco de Groot
@@ -52,14 +53,9 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			pipe.throwEvent(IPipe.PIPE_EXCEPTION_MONITORING_EVENT);
 			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '" + pipe.getName() + "'", re);
 		} finally {
-			long pipeEndTime = System.currentTimeMillis();
-			long pipeDuration = pipeEndTime - pipeStartTime;
-			StatisticsKeeper sk = pipeLine.getPipeStatistics(pipe);
-			if (sk == null) {
-				log.warn("Could not get statistics for pipe [{}]", pipe.getName());
-			} else {
-				sk.addValue(pipeDuration);
-			}
+			long pipeDuration = System.currentTimeMillis() - pipeStartTime;
+			DistributionSummary summary = pipeLine.getPipeStatistics(pipe);
+			summary.record(pipeDuration);
 
 			if (pipe.getDurationThreshold() >= 0 && pipeDuration > pipe.getDurationThreshold()) {
 				durationLog.info("Pipe [" + pipe.getName() + "] of [" + pipeLine.getOwner().getName() + "] duration [" + pipeDuration + "] ms exceeds max [" + pipe.getDurationThreshold() + "], message [" + message + "]");
