@@ -30,7 +30,7 @@ import lombok.Setter;
 /**
  * Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
  * This prevents (long) open connections inside Senders and possible connection failures.
- * 
+ *
  * <b>Example:</b>
  * <pre><code>
  *   &lt;SenderPipe&gt;
@@ -44,6 +44,8 @@ import lombok.Setter;
  * @author  Niels Meijer
  */
 public class ReconnectSenderWrapper extends SenderWrapperBase {
+
+	public static final String EMBEDDED_SENDER_KEY = "embeddedSender";
 
 	/** specification of sender to send messages with */
 	private @Setter ISender sender;
@@ -65,20 +67,36 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 			sender.open();
 			super.open();
 		} finally {
+			super.close();
 			sender.close(); //Only open to test the connection, close afterwards if all is ok.
 		}
 	}
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		try {
-			sender.open();
-			return sender.sendMessage(message, session);
-		} finally {
-			sender.close();
-		}
+		sender.open();
+		session.put(EMBEDDED_SENDER_KEY, new AutoCloseableSenderWrapper(sender));
+		return sender.sendMessage(message, session);
 	}
 
+	public class AutoCloseableSenderWrapper implements AutoCloseable {
+		private final ISender sender;
+
+		public AutoCloseableSenderWrapper(ISender sender) {
+			this.sender = sender;
+		}
+
+		@Override
+		public void close() {
+			try {
+				log.debug("Closing sender after use: [{}]", sender.getName());
+				sender.close();
+			} catch (SenderException e) {
+				log.warn("Error closing sender: [{}]", sender.getName(), e);
+			}
+		}
+
+	}
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		if (sender instanceof HasStatistics) {
