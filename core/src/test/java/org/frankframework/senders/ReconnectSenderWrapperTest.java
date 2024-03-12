@@ -1,7 +1,6 @@
 package org.frankframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,7 +34,6 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 		Message message = new Message(input);
 		String result = sender.sendMessageOrThrow(message, session).asString();
 		assertEquals(input, result);
-		assertInstanceOf(ReconnectSenderWrapper.AutoCloseableSenderWrapper.class, session.get(ReconnectSenderWrapper.EMBEDDED_SENDER_KEY));
 	}
 
 	@Test

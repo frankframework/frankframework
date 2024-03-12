@@ -45,8 +45,6 @@ import lombok.Setter;
  */
 public class ReconnectSenderWrapper extends SenderWrapperBase {
 
-	public static final String EMBEDDED_SENDER_KEY = "embeddedSender";
-
 	/** specification of sender to send messages with */
 	private @Setter ISender sender;
 
@@ -75,7 +73,7 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		sender.open();
-		session.put(EMBEDDED_SENDER_KEY, new AutoCloseableSenderWrapper(sender));
+		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender), ReconnectSenderWrapper.class.getSimpleName());
 		return sender.sendMessage(message, session);
 	}
 
