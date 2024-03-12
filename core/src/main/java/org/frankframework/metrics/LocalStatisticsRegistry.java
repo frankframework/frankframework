@@ -226,27 +226,19 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 			potentialMeterNames.add(pipeline.getOutputWrapper().getName());
 		}
 
-//		pipes.addAll(pipeLine.getPipes()); //ensure this is sorted
 		for(IPipe pipe : pipeline.getPipes()) {
 			String pipeName = pipe.getName();
 			if(pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
-				if (messageSendingPipe.getInputValidator() != null) {
-					potentialMeterNames.add(messageSendingPipe.getInputValidator().getName());
+				if (messageSendingPipe.getInputValidator() != null || messageSendingPipe.getInputWrapper() != null) {
+					potentialMeterNames.add(messageSendingPipe.getName() + " -> PreProcessing");
 				}
-				if (messageSendingPipe.getOutputValidator() != null) {
-					potentialMeterNames.add(messageSendingPipe.getOutputValidator().getName());
-				}
-				if (messageSendingPipe.getInputWrapper() != null) {
-					potentialMeterNames.add(messageSendingPipe.getInputWrapper().getName());
-				}
-				if (messageSendingPipe.getOutputWrapper() != null) {
-					potentialMeterNames.add(messageSendingPipe.getOutputWrapper().getName());
+				if (messageSendingPipe.getOutputValidator() != null || messageSendingPipe.getOutputWrapper() != null) {
+					potentialMeterNames.add(messageSendingPipe.getName() + " -> PostProcessing");
 				}
 				if (messageSendingPipe.getMessageLog() != null) {
-					potentialMeterNames.add(messageSendingPipe.getMessageLog().getName());
+					potentialMeterNames.add(messageSendingPipe.getName() + " -> MessageLog");
 				}
-				potentialMeterNames.add("getConnection for "+messageSendingPipe.getSender().getName()); //TODO implement getStatisticName
 			}
 			potentialMeterNames.add(pipeName);
 		}
