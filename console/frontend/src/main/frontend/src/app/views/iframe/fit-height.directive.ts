@@ -1,50 +1,49 @@
 import { Directive, ElementRef, OnInit } from '@angular/core';
-import { SidebarService } from 'src/app/components/pages/sidebar.service';
 
 @Directive({
   selector: '[appFitHeight]',
 })
 export class FitHeightDirective implements OnInit {
-  height = {
+  private height = {
     topnavbar: 0,
     topinfobar: 0,
     window: 0,
     min: 800,
   };
 
-  constructor(
-    private element: ElementRef<HTMLElement>,
-    private sidebar: SidebarService,
-  ) {}
+  constructor(private element: ElementRef<HTMLElement>) {}
 
   ngOnInit(): void {
+    // TODO rewrite since this is only used for iframes (to fill the page properly? maybe a css solution is better)
+
     window.addEventListener('resize', () => {
       this.height.window = window.innerHeight;
       this.fitHeight();
     });
 
-    // eslint-disable-next-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
-    const _this = this;
-
     document
       .querySelector<HTMLElement>('nav.navbar-default')
-      ?.addEventListener('resize', function () {
-        _this.height.min = this.clientHeight;
-        _this.fitHeight();
+      ?.addEventListener('resize', (event: Event): void => {
+        this.height.min = (event.currentTarget as HTMLElement).clientHeight;
+        this.fitHeight();
       });
 
     document
       .querySelector<HTMLElement>('.topnavbar')
-      ?.addEventListener('resize', function () {
-        _this.height.topnavbar = this.clientHeight;
-        _this.fitHeight();
+      ?.addEventListener('resize', (event: Event): void => {
+        this.height.topnavbar = (
+          event.currentTarget as HTMLElement
+        ).clientHeight;
+        this.fitHeight();
       });
 
     document
       .querySelector<HTMLElement>('.topinfobar')
-      ?.addEventListener('resize', function () {
-        _this.height.topinfobar = this.clientHeight;
-        _this.fitHeight();
+      ?.addEventListener('resize', (event: Event): void => {
+        this.height.topinfobar = (
+          event.currentTarget as HTMLElement
+        ).clientHeight;
+        this.fitHeight();
       });
 
     this.fitHeight();

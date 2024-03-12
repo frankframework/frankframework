@@ -1,16 +1,26 @@
-import { Component } from '@angular/core';
+import { Component, DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { QuickSubmitFormDirective } from './quick-submit-form.directive';
+import { By } from '@angular/platform-browser';
 
 @Component({
   // standalone: true,
-  template: `<!-- TODO -->`,
+  template: `<textarea
+    appQuickSubmitForm
+    (quickSubmit)="changeTrigger()"
+  ></textarea>`,
   imports: [QuickSubmitFormDirective],
 })
-class TestComponent {}
+class TestComponent {
+  triggered = false;
+  changeTrigger(): void {
+    this.triggered = true;
+  }
+}
 
 describe('QuickSubmitFormDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
+  let directiveElement: DebugElement;
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
       imports: [],
@@ -18,10 +28,19 @@ describe('QuickSubmitFormDirective', () => {
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding
+
+    directiveElement = fixture.debugElement.query(
+      By.directive(QuickSubmitFormDirective),
+    );
   });
 
-  // temporatory, remove when making actual tests
-  it('parent component should exist', () => {
-    expect(fixture).toBeTruthy();
+  it('emits event when ctrl+enter is pressed', () => {
+    const event = new KeyboardEvent('keydown', {
+      ctrlKey: true,
+      key: 'Enter',
+    });
+    directiveElement.nativeElement.dispatchEvent(event);
+
+    expect(fixture.componentInstance.triggered).toBe(true);
   });
 });

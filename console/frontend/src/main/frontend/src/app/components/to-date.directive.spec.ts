@@ -25,7 +25,6 @@ describe('ToDateDirective', () => {
 
     fixture.detectChanges(); // initial binding
 
-    // all elements with an attached HighlightDirective
     directiveElements = fixture.debugElement.queryAll(
       By.directive(ToDateDirective),
     );

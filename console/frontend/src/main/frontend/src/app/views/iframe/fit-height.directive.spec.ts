@@ -24,4 +24,6 @@ describe('FitHeightDirective', () => {
   it('parent component should exist', () => {
     expect(fixture).toBeTruthy();
   });
+
+  // TODO test if height gets set properly, somehow
 });

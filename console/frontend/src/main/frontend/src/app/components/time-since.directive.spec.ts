@@ -14,7 +14,7 @@ import { By } from '@angular/platform-browser';
   imports: [TimeSinceDirective],
 })
 class TestComponent {
-  protected fiveMinAgo = Date.now() - 3e3;
+  protected fiveMinAgo = Date.now() - 3e5;
   protected oneHourAgo = Date.now() - 36e5; // 3600000
   protected oneDayAgo = Date.now() - 864e5; // 86400000
 }
@@ -30,7 +30,6 @@ describe('TimeSinceDirective', () => {
 
     fixture.detectChanges(); // initial binding
 
-    // all elements with an attached HighlightDirective
     directiveElements = fixture.debugElement.queryAll(
       By.directive(TimeSinceDirective),
     );
@@ -42,12 +41,12 @@ describe('TimeSinceDirective', () => {
   });
 
   it('get time since 5 minutes ago', () => {
-    const timeString = directiveElements[0].nativeElement.textContent;
+    const timeString = directiveElements[1].nativeElement.textContent;
     expect(timeString).toBe('1h');
   });
 
   it('get time since 5 minutes ago', () => {
-    const timeString = directiveElements[0].nativeElement.textContent;
+    const timeString = directiveElements[2].nativeElement.textContent;
     expect(timeString).toBe('1d');
   });
 });
