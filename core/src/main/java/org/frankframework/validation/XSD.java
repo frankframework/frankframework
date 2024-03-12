@@ -62,7 +62,7 @@ import lombok.Setter;
  * The representation of a XSD.
  *
  * @author Michiel Meeuwissen
- * @author  Jaco de Groot
+ * @author Jaco de Groot
  */
 public abstract class XSD implements IXSD, Comparable<XSD> {
 	private static final Logger LOG = LogUtil.getLogger(XSD.class);
@@ -110,13 +110,13 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	protected void initNamespace(String namespace, IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
-		this.namespace=namespace;
-		this.scopeProvider=scopeProvider;
+		this.namespace = namespace;
+		this.scopeProvider = scopeProvider;
 		resourceTarget = resourceRef;
 		toString = resourceRef;
 		if (resourceInternalReference != null) {
 			resourceTarget = resourceTarget + "-" + resourceInternalReference + ".xsd";
-			toString =  toString + "!" + resourceInternalReference;
+			toString = toString + "!" + resourceInternalReference;
 		}
 		resourceTarget = FilenameUtils.normalize(resourceTarget, true);
 		if (parentLocation == null) {
@@ -126,17 +126,17 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	public void initFromXsds(String namespace, IScopeProvider scopeProvider, Set<IXSD> sourceXsds) throws ConfigurationException {
-		this.namespace=namespace;
-		this.scopeProvider=scopeProvider;
+		this.namespace = namespace;
+		this.scopeProvider = scopeProvider;
 		this.resourceTarget = FilenameUtils.normalize(
-			sourceXsds.stream()
-			.map(IXSD::getResourceTarget)
-			.map(xsd -> xsd.replace("/", "_"))
-			.collect(Collectors.joining(", ", "[", "].xsd"))
+				sourceXsds.stream()
+						.map(IXSD::getResourceTarget)
+						.map(xsd -> xsd.replace("/", "_"))
+						.collect(Collectors.joining(", ", "[", "].xsd"))
 		);
 		this.toString = namespace + ":" + sourceXsds.stream()
-			.map(Objects::toString)
-			.collect(Collectors.joining(", ", "[", "]"));
+				.map(Objects::toString)
+				.collect(Collectors.joining(", ", "[", "]"));
 		if (parentLocation == null) {
 			this.parentLocation = "";
 		}
@@ -277,7 +277,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		// First add all XSDs to a map and ensure the keys used are unique, before recursively loading more.
 		// All top level XSDs need to be added, with a unique systemId. If they come from a WSDL, they all have the same systemId,
 		// so we use (normalized!) resourceTarget which appears to be unique and stable.
-		for (IXSD xsd: xsds) {
+		for (IXSD xsd : xsds) {
 			String xsdKey = getXsdLoadingMapKey(xsd);
 			if (xsdsRecursive.containsKey(xsdKey)) {
 				throw new IllegalStateException("XSD key [" + xsdKey + "] already in map which is supposed to be unique, input XSDs: [" + xsds + "]");
@@ -310,8 +310,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				}
 				StartElement el = e.asStartElement();
 				if (!el.getName().equals(SchemaUtils.IMPORT) &&
-					!el.getName().equals(SchemaUtils.INCLUDE) &&
-					(!el.getName().equals(SchemaUtils.REDEFINE) || !supportRedefine)
+						!el.getName().equals(SchemaUtils.INCLUDE) &&
+						(!el.getName().equals(SchemaUtils.REDEFINE) || !supportRedefine)
 				) {
 					continue;
 				}
@@ -323,8 +323,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				String namespace;
 				if (el.getName().equals(SchemaUtils.IMPORT)) {
 					if (namespaceAttribute == null
-						&& StringUtils.isEmpty(xsd.getXsdDefaultNamespace())
-						&& StringUtils.isNotEmpty(xsd.getXsdTargetNamespace())) {
+							&& StringUtils.isEmpty(xsd.getXsdDefaultNamespace())
+							&& StringUtils.isNotEmpty(xsd.getXsdTargetNamespace())) {
 						// TODO: concerning import without namespace when in head xsd default namespace doesn't exist and targetNamespace does)
 						namespace = null;
 					} else {
@@ -340,9 +340,9 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 
 				// ignore import without namespace when in head xsd default namespace and targetNamespace exists
 				if (el.getName().equals(SchemaUtils.IMPORT)
-					&& namespaceAttribute == null
-					&& StringUtils.isNotEmpty(xsd.getXsdDefaultNamespace())
-					&& StringUtils.isNotEmpty(xsd.getXsdTargetNamespace())) {
+						&& namespaceAttribute == null
+						&& StringUtils.isNotEmpty(xsd.getXsdDefaultNamespace())
+						&& StringUtils.isNotEmpty(xsd.getXsdTargetNamespace())) {
 
 					// Skip
 					continue;
@@ -360,7 +360,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 					}
 				}
 				if (StringUtils.isNotEmpty(namespace)
-					&& xsd.getImportedNamespacesToIgnore().contains(namespace)) {
+						&& xsd.getImportedNamespacesToIgnore().contains(namespace)) {
 					// Skip
 					continue;
 				}

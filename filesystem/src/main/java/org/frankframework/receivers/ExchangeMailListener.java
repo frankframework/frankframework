@@ -35,16 +35,16 @@ import org.frankframework.filesystem.MailListener;
  * @author Gerrit van Brakel
  */
 @Category("Advanced")
-public class ExchangeMailListener extends MailListener<ExchangeMessageReference, ExchangeAttachmentReference,ExchangeFileSystem> {
+public class ExchangeMailListener extends MailListener<ExchangeMessageReference, ExchangeAttachmentReference, ExchangeFileSystem> {
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		String separator = getFileSystem().getMailboxObjectSeparator();
 		if (StringUtils.isNotEmpty(getInputFolder()) && getInputFolder().contains(separator) ||
-			StringUtils.isNotEmpty(getInProcessFolder()) && getInProcessFolder().contains(separator)){
+				StringUtils.isNotEmpty(getInProcessFolder()) && getInProcessFolder().contains(separator)) {
 			throw new ConfigurationException("Moving items across mailboxes is not supported by ExchangeMailListener for attributes [inputFolder,inProcessFolder]. " +
-				"Please do not use dynamic mailboxes / folders separated by ["+separator+"].");
+					"Please do not use dynamic mailboxes / folders separated by [" + separator + "].");
 		}
 	}
 
@@ -147,34 +147,42 @@ public class ExchangeMailListener extends MailListener<ExchangeMessageReference,
 	public void setMailboxObjectSeparator(String separator) {
 		getFileSystem().setMailboxObjectSeparator(separator);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystore(String keystore) {
 		getFileSystem().setKeystore(keystore);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreType(KeystoreType keystoreType) {
 		getFileSystem().setKeystoreType(keystoreType);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		getFileSystem().setKeystoreAuthAlias(keystoreAuthAlias);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystorePassword(String keystorePassword) {
 		getFileSystem().setKeystorePassword(keystorePassword);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		getFileSystem().setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreAlias(String keystoreAlias) {
 		getFileSystem().setKeystoreAlias(keystoreAlias);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		getFileSystem().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		getFileSystem().setKeystoreAliasPassword(keystoreAliasPassword);
@@ -184,30 +192,37 @@ public class ExchangeMailListener extends MailListener<ExchangeMessageReference,
 	public void setTruststore(String truststore) {
 		getFileSystem().setTruststore(truststore);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setTruststoreType(KeystoreType truststoreType) {
 		getFileSystem().setTruststoreType(truststoreType);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		getFileSystem().setTruststoreAuthAlias(truststoreAuthAlias);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setTruststorePassword(String truststorePassword) {
 		getFileSystem().setTruststorePassword(truststorePassword);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		getFileSystem().setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setVerifyHostname(boolean verifyHostname) {
 		getFileSystem().setVerifyHostname(verifyHostname);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		getFileSystem().setAllowSelfSignedCertificates(allowSelfSignedCertificates);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		getFileSystem().setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);

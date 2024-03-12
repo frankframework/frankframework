@@ -35,14 +35,6 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.filesystem.smb.SambaFileSystemUtils;
-import org.frankframework.filesystem.smb.SmbFileRef;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageContext;
-import org.frankframework.util.CredentialFactory;
-
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.FileAttributes;
@@ -70,11 +62,17 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.smb.SambaFileSystemUtils;
+import org.frankframework.filesystem.smb.SmbFileRef;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
+import org.frankframework.util.CredentialFactory;
 
 /**
- *
  * Uses the (newer) SMB 2 and 3 protocol.
- *
+ * <p>
  * Possible error codes:
  * <br/>
  * Pre-authentication information was invalid (24) / Idenitfier doesn't match expected value (906):  login information is incorrect
@@ -82,7 +80,6 @@ import lombok.Getter;
  *
  * @author Ali Sihab
  * @author Niels Meijer
- *
  */
 public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWritableFileSystem<SmbFileRef> {
 	private final @Getter String domain = "SMB";
@@ -118,18 +115,18 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		}
 
 		switch (authType) {
-		case NTLM:
-			if(StringUtils.isBlank(domainName)) {
-				throw new ConfigurationException("attribute domainName is required for NTLM authentication");
-			}
-			break;
-		case SPNEGO:
-			if(StringUtils.isBlank(kdc) || StringUtils.isBlank(realm)) {
-				throw new ConfigurationException("attribute kdc and realm are both required for SPNEGO authentication");
-			}
-			break;
-		default:
-			break;
+			case NTLM:
+				if (StringUtils.isBlank(domainName)) {
+					throw new ConfigurationException("attribute domainName is required for NTLM authentication");
+				}
+				break;
+			case SPNEGO:
+				if (StringUtils.isBlank(kdc) || StringUtils.isBlank(realm)) {
+					throw new ConfigurationException("attribute kdc and realm are both required for SPNEGO authentication");
+				}
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -143,20 +140,20 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 			client = new SMBClient(config);
 
 			connection = client.connect(hostname, port);
-			if(connection.isConnected()) {
-				log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
+			if (connection.isConnected()) {
+				log.debug("successfully created connection to [" + connection.getRemoteHostname() + "]");
 			}
 
 			AuthenticationContext authContext = createAuthenticationContext();
 			log.debug("creating connection using authentication context [{}]", authContext::getClass);
 			session = connection.authenticate(authContext);
-			if(session == null) {
+			if (session == null) {
 				throw new FileSystemException("Cannot create session for " + authContext);
 			}
 
 			diskShare = (DiskShare) session.connectShare(getShare());
-			if(diskShare == null) {
-				throw new FileSystemException("Cannot connect to the share ["+ getShare() +"]");
+			if (diskShare == null) {
+				throw new FileSystemException("Cannot connect to the share [" + getShare() + "]");
 			}
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot connect to samba server", e);
@@ -186,21 +183,21 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	private @Nonnull AuthenticationContext createAuthenticationContext() throws FileSystemException {
 		CredentialFactory credentialFactory = new CredentialFactory(authAlias, username, password);
-		if(StringUtils.isNotEmpty(credentialFactory.getUsername())) {
+		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
 			switch (authType) {
-			case NTLM:
-				String cfPassword = credentialFactory.getPassword();
-				char[] passwordChars = cfPassword != null ? cfPassword.toCharArray() : new char[0];
-				return new AuthenticationContext(credentialFactory.getUsername(), passwordChars, getDomainName());
-			case SPNEGO:
-				if(!StringUtils.isEmpty(kdc) && !StringUtils.isEmpty(realm)) {
-					System.setProperty("java.security.krb5.kdc", kdc);
-					System.setProperty("java.security.krb5.realm", realm);
-				}
+				case NTLM:
+					String cfPassword = credentialFactory.getPassword();
+					char[] passwordChars = cfPassword != null ? cfPassword.toCharArray() : new char[0];
+					return new AuthenticationContext(credentialFactory.getUsername(), passwordChars, getDomainName());
+				case SPNEGO:
+					if (!StringUtils.isEmpty(kdc) && !StringUtils.isEmpty(realm)) {
+						System.setProperty("java.security.krb5.kdc", kdc);
+						System.setProperty("java.security.krb5.realm", realm);
+					}
 
-				return SambaFileSystemUtils.createGSSAuthenticationContext(credentialFactory);
-			case ANONYMOUS:
-				return AuthenticationContext.anonymous();
+					return SambaFileSystemUtils.createGSSAuthenticationContext(credentialFactory);
+				case ANONYMOUS:
+					return AuthenticationContext.anonymous();
 			}
 		}
 		return AuthenticationContext.anonymous();
@@ -246,11 +243,12 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		return new FilterOutputStream(stream) {
 
 			boolean isOpen = true;
+
 			@Override
 			public void close() throws IOException {
-				if(isOpen) {
+				if (isOpen) {
 					super.close();
-					isOpen=false;
+					isOpen = false;
 				}
 				file.close();
 			}
@@ -261,11 +259,12 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		return new FilterInputStream(file.getInputStream()) {
 
 			boolean isOpen = true;
+
 			@Override
 			public void close() throws IOException {
-				if(isOpen) {
+				if (isOpen) {
 					super.close();
-					isOpen=false;
+					isOpen = false;
 				}
 				file.close();
 			}
@@ -300,7 +299,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	public SmbFileRef moveFile(SmbFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			SmbFileRef destination = toFile(destinationFolder, f.getName());
-			if(exists(destination)) {
+			if (exists(destination)) {
 				throw new FileSystemException("target already exists");
 			}
 
@@ -313,7 +312,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	@Override
 	public SmbFileRef copyFile(SmbFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		if(createFolder && !folderExists(destinationFolder)) {
+		if (createFolder && !folderExists(destinationFolder)) {
 			createFolder(destinationFolder);
 		}
 
@@ -322,7 +321,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 			try (File destinationFile = getFile(destination, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_SUPERSEDE)) {
 				file.remoteCopyTo(destinationFile);
 			} catch (TransportException | BufferException | SMBApiException e) {
-				throw new FileSystemException("cannot copy file ["+f+"] to ["+destinationFolder+"]",e);
+				throw new FileSystemException("cannot copy file [" + f + "] to [" + destinationFolder + "]", e);
 			}
 			return destination;
 		}
@@ -332,7 +331,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	public Map<String, Object> getAdditionalFileProperties(SmbFileRef f) {
 		Map<String, Object> attributes = new HashMap<>();
 		FileAllInformation attrs = getFileAttributes(f);
-		if(attrs != null) {
+		if (attrs != null) {
 			attributes.put("ctime", attrs.getBasicInformation().getCreationTime());
 			attributes.put("atime", attrs.getBasicInformation().getLastAccessTime());
 			attributes.put("fileAttributes", attrs.getBasicInformation().getFileAttributes());
@@ -347,7 +346,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		try {
 			return diskShare.folderExists(folder);
 		} catch (SMBApiException e) {
-			if(NtStatus.STATUS_OBJECT_NAME_COLLISION == NtStatus.valueOf(e.getStatusCode())) {
+			if (NtStatus.STATUS_OBJECT_NAME_COLLISION == NtStatus.valueOf(e.getStatusCode())) {
 				return false;
 			}
 			throw e;
@@ -369,7 +368,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		}
 		try {
 			diskShare.rmdir(folder, removeNonEmptyFolder);
-		} catch(SMBApiException e) {
+		} catch (SMBApiException e) {
 			throw new FileSystemException("Cannot remove folder [" + folder + "]", e);
 		}
 	}
@@ -388,7 +387,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	private FileAllInformation getFileAttributes(SmbFileRef f) {
-		if(f.getAttributes() == null) {
+		if (f.getAttributes() == null) {
 			try {
 				f.setAttributes(getAttributes(f));
 			} catch (SMBApiException e) {
@@ -409,7 +408,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	@Override
 	public String getName(SmbFileRef file) {
-		if(file == null) {
+		if (file == null) {
 			return null;
 		}
 		return file.getFilename();
@@ -433,11 +432,12 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "host "+authType.name()+":["+hostname+"/"+getShare()+"]";
+		return "host " + authType.name() + ":[" + hostname + "/" + getShare() + "]";
 	}
 
 	/**
 	 * May not contain '\\' characters. The destination share, aka smb://xxx/yyy share.
+	 *
 	 * @ff.optional
 	 */
 	public void setShare(String share) {
@@ -467,13 +467,15 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	/**
 	 * Type of the authentication either 'NTLM' or 'SPNEGO'.
 	 * When setting SPNEGO, the host must use the FQDN, and must be registered on the KDC with a valid SPN.
+	 *
 	 * @ff.default SPNEGO
 	 */
 	public void setAuthType(Samba2AuthType authType) {
 		this.authType = authType;
 	}
 
-	/** SPNEGO only:
+	/**
+	 * SPNEGO only:
 	 * Key Distribution Center, typically hosted on a domain controller.
 	 * Stored in <code>java.security.krb5.kdc</code>
 	 */
@@ -493,6 +495,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	/**
 	 * Hostname of the SMB share.
+	 *
 	 * @ff.mandatory
 	 */
 	public void setHostname(String hostname) {
@@ -501,6 +504,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	/**
 	 * Port to connect to.
+	 *
 	 * @ff.default 445
 	 */
 	public void setPort(int port) {
@@ -509,6 +513,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	/**
 	 * controls whether hidden files are seen or not
+	 *
 	 * @ff.default false
 	 */
 	public void setListHiddenFiles(boolean listHiddenFiles) {
@@ -533,8 +538,8 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 							files.add(file);
 						}
 					} catch (SMBApiException e) {
-						if(NtStatus.STATUS_DELETE_PENDING == NtStatus.valueOf(e.getStatusCode())) {
-							log.debug("delete pending for file ["+ file.getName()+"]");
+						if (NtStatus.STATUS_DELETE_PENDING == NtStatus.valueOf(e.getStatusCode())) {
+							log.debug("delete pending for file [" + file.getName() + "]");
 						} else {
 							throw e;
 						}
@@ -551,7 +556,9 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		}
 
 		private boolean allowHiddenFile(SmbFileRef file) {
-			boolean isHidden = EnumWithValue.EnumUtils.isSet(file.getAttributes().getBasicInformation().getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_HIDDEN);
+			boolean isHidden = EnumWithValue.EnumUtils.isSet(file.getAttributes()
+					.getBasicInformation()
+					.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_HIDDEN);
 			return (isListHiddenFiles() || !isHidden);
 		}
 
@@ -562,7 +569,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 		@Override
 		public SmbFileRef next() {
-			if(!hasNext()) {
+			if (!hasNext()) {
 				throw new NoSuchElementException();
 			}
 			return files.get(i++);

@@ -30,14 +30,10 @@ import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.xerces.xs.XSModel;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.xml.sax.helpers.XMLFilterImpl;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.xerces.xs.XSModel;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.HasSpecialDefaultValues;
@@ -74,20 +70,22 @@ import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.validation.xsd.ResourceXsd;
 import org.frankframework.xml.RootElementToSessionKeyFilter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 
 /**
  * Pipe that validates the input message against an XML Schema.
  *
+ * @author Johan Verrips IOS
+ * @author Jaco de Groot
  * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
  * @ff.forward failure The document is not valid according to the configured schema.
  * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
  * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
  * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
  * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
- *
- * @author Johan Verrips IOS
- * @author Jaco de Groot
  */
 @Category("Basic")
 public class XmlValidator extends ValidatorBase implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
@@ -127,12 +125,13 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	/**
 	 * Configure the XmlValidator
+	 *
 	 * @throws ConfigurationException when:
-	 * <ul><li>the schema cannot be found</li>
-	 * <ul><li><{@link #isThrowException()} is false and there is no forward defined
-	 * for "failure"</li>
-	 * <li>when the parser does not accept setting the properties for validating</li>
-	 * </ul>
+	 *                                <ul><li>the schema cannot be found</li>
+	 *                                <ul><li><{@link #isThrowException()} is false and there is no forward defined
+	 *                                for "failure"</li>
+	 *                                <li>when the parser does not accept setting the properties for validating</li>
+	 *                                </ul>
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
@@ -146,7 +145,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				// call an adapter with XmlValidator which should validate both.
 				// ConfigurationWarnings.getInstance().add(log, "Using XmlValidator with soapNamespace for Soap validation is deprecated. Please use " + SoapValidator.class.getName());
 				String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
-				String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
+				String extractBodyXPath = "/soapenv:Envelope/soapenv:Body/*";
 				try {
 					transformerPoolExtractSoapBody = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, OutputType.XML));
 				} catch (TransformerConfigurationException te) {
@@ -168,12 +167,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			validator.setSchemasProvider(this);
 
 			//do initial schema check
-			if (getSchemasId()!=null) {
+			if (getSchemasId() != null) {
 				getSchemas(true);
 			}
 
 			validator.configure(this);
-		} catch(ConfigurationException e) {
+		} catch (ConfigurationException e) {
 			configurationException = e;
 			throw e;
 		}
@@ -239,14 +238,14 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context;
-		if(StringUtils.isNotEmpty(messageRoot)) {
+		if (StringUtils.isNotEmpty(messageRoot)) {
 			context = validator.createValidationContext(session, createRootValidation(messageRoot), getInvalidRootNamespaces());
 		} else {
 			context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 		}
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session, context);
 		XMLFilterImpl storeRootFilter = StringUtils.isNotEmpty(getRootElementSessionKey()) ? new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey(), null) : null;
-		if (storeRootFilter!=null) {
+		if (storeRootFilter != null) {
 			validatorHandler.setContentHandler(storeRootFilter);
 		}
 		ValidationResult resultEvent = validator.validate(messageToValidate, session, validatorHandler, storeRootFilter, context);
@@ -258,8 +257,8 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode) throws PipeRunException {
-		return determineForward(validationResult, session, responseMode, ()-> {
-			String errorMessage=session.get(getReasonSessionKey(), null);
+		return determineForward(validationResult, session, responseMode, () -> {
+			String errorMessage = session.get(getReasonSessionKey(), null);
 			if (StringUtils.isEmpty(errorMessage)) {
 				errorMessage = session.get(getXmlReasonSessionKey(), "unknown error");
 			}
@@ -328,7 +327,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	@Override
 	protected boolean isConfiguredForMixedValidation() {
-		return responseRootValidations!=null;
+		return responseRootValidations != null;
 	}
 
 	public String getMessageRoot(boolean responseMode) {
@@ -354,8 +353,9 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			xsd.initNoNamespace(this, getNoNamespaceSchemaLocation());
 			xsds.add(xsd);
 		} else {
-			String[] split =  getSchemaLocation().trim().split("\\s+");
-			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + getSchemaLocation());
+			String[] split = getSchemaLocation().trim().split("\\s+");
+			if (split.length % 2 != 0)
+				throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + getSchemaLocation());
 			for (int i = 0; i < split.length; i += 2) {
 				ResourceXsd xsd = new ResourceXsd();
 				xsd.setAddNamespaceToSchema(isAddNamespaceToSchema());
@@ -406,7 +406,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			try {
 				Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
-			} catch(Exception e) {
+			} catch (Exception e) {
 				throw new ConfigurationException("could not merge schema's", e);
 			}
 		}
@@ -740,7 +740,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			try {
 				xsd.initNoNamespace(this, schemaLocation);
 			} catch (ConfigurationException e) {
-				throw new PipeRunException(this, "Could not init xsd ["+schemaLocation+"]", e);
+				throw new PipeRunException(this, "Could not init xsd [" + schemaLocation + "]", e);
 			}
 			xsds.add(xsd);
 			return xsds;
@@ -750,7 +750,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	@Override
 	public Object getSpecialDefaultValue(String attributeName,
-			Object defaultValue, Map<String, String> attributes) {
+										 Object defaultValue, Map<String, String> attributes) {
 		// Different default value for ignoreUnknownNamespaces when using
 		// noNamespaceSchemaLocation.
 		if ("ignoreUnknownNamespaces".equals(attributeName)) {
@@ -788,8 +788,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	/**
-	 *
-	 * @param path to the element from where to start validating namespaces
+	 * @param path                  to the element from where to start validating namespaces
 	 * @param invalidRootNamespaces XML namespace that is not allowed on the current element
 	 */
 	protected void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
@@ -820,6 +819,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setSchema(String schema) {
 		setNoNamespaceSchemaLocation(schema);
 	}
+
 	@Override
 	public String getSchema() {
 		return getNoNamespaceSchemaLocation();
@@ -849,6 +849,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			addRequestRootValidation(new RootValidation(root));
 		}
 	}
+
 	/** Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used */
 	@Override
 	public void setResponseRoot(String responseRoot) {
@@ -867,6 +868,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		validator.setFullSchemaChecking(fullSchemaChecking);
 	}
+
 	public boolean isFullSchemaChecking() {
 		return validator.isFullSchemaChecking();
 	}
@@ -875,6 +877,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setThrowException(boolean throwException) {
 		validator.setThrowException(throwException);
 	}
+
 	@Override
 	public boolean isThrowException() {
 		return validator.isThrowException();
@@ -884,6 +887,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setReasonSessionKey(String reasonSessionKey) {
 		validator.setReasonSessionKey(reasonSessionKey);
 	}
+
 	public String getReasonSessionKey() {
 		return validator.getReasonSessionKey();
 	}
@@ -892,6 +896,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		validator.setXmlReasonSessionKey(xmlReasonSessionKey);
 	}
+
 	public String getXmlReasonSessionKey() {
 		return validator.getXmlReasonSessionKey();
 	}
@@ -900,6 +905,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setValidateFile(boolean b) {
 		validator.setValidateFile(b);
 	}
+
 	public boolean isValidateFile() {
 		return validator.isValidateFile();
 	}
@@ -908,12 +914,14 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setCharset(String string) {
 		validator.setCharset(string);
 	}
+
 	public String getCharset() {
-		return  validator.getCharset();
+		return validator.getCharset();
 	}
 
 	/**
 	 * If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace
+	 *
 	 * @ff.default false
 	 */
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
@@ -927,6 +935,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	/**
 	 * If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path
+	 *
 	 * @ff.default false
 	 */
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
@@ -948,6 +957,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setIgnoreUnknownNamespaces(Boolean ignoreUnknownNamespaces) {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
+
 	public Boolean getIgnoreUnknownNamespaces() {
 		return validator.getIgnoreUnknownNamespaces();
 	}
@@ -967,12 +977,14 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	 * the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate.
 	 * Please note that this functionality is deprecated, using {@link SoapValidator} is now the preferred solution in case a SOAP
 	 * message needs to be validated, in other cases give this property an empty value.
+	 *
 	 * @ff.default http://schemas.xmlsoap.org/soap/envelope/
 	 */
 	@Deprecated
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
 	}
+
 	@Deprecated
 	public String getSoapNamespace() {
 		return soapNamespace;

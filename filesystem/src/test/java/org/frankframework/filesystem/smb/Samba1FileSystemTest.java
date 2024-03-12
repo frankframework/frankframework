@@ -1,5 +1,8 @@
 package org.frankframework.filesystem.smb;
 
+import org.junit.jupiter.api.BeforeEach;
+
+import jcifs.smb.SmbFile;
 import org.frankframework.filesystem.FileSystemTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
@@ -7,9 +10,6 @@ import org.frankframework.filesystem.Samba1FileSystem;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
-import org.junit.jupiter.api.BeforeEach;
-
-import jcifs.smb.SmbFile;
 
 public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSystem> {
 
@@ -32,7 +32,7 @@ public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSyst
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
-		if("localhost".equals(host)) {
+		if ("localhost".equals(host)) {
 			fs.startServer(FileSystemType.SMB1);
 			port = fs.getPort();
 		}
@@ -42,7 +42,7 @@ public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSyst
 	@Override
 	public Samba1FileSystem createFileSystem() {
 		Samba1FileSystem result = new Samba1FileSystem();
-		result.setShare("smb://localhost:"+port+"/"+shareName);
+		result.setShare("smb://localhost:" + port + "/" + shareName);
 		result.setUsername(username);
 		result.setPassword(password);
 		result.setDomainName(domain);

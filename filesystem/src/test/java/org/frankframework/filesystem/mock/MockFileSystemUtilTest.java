@@ -3,7 +3,7 @@ package org.frankframework.filesystem.mock;
 import org.frankframework.filesystem.FileSystemUtilsTest;
 import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 
-public class MockFileSystemUtilTest extends FileSystemUtilsTest <MockFile,MockFileSystem<MockFile>>{
+public class MockFileSystemUtilTest extends FileSystemUtilsTest<MockFile, MockFileSystem<MockFile>> {
 
 
 	@Override
@@ -13,7 +13,7 @@ public class MockFileSystemUtilTest extends FileSystemUtilsTest <MockFile,MockFi
 
 	@Override
 	protected MockFileSystem<MockFile> createFileSystem() {
-		return ((MockFileSystemTestHelper<MockFile>)helper).getFileSystem();
+		return ((MockFileSystemTestHelper<MockFile>) helper).getFileSystem();
 	}
 
 }

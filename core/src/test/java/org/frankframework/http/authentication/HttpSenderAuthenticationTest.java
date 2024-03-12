@@ -24,6 +24,7 @@ import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -46,7 +47,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 	private Message result;
 
-	String RESULT_STATUS_CODE_SESSIONKEY= "ResultStatusCodeSessionKey";
+	String RESULT_STATUS_CODE_SESSIONKEY = "ResultStatusCodeSessionKey";
 
 	@RegisterExtension
 	public static WireMockExtension tokenServer = WireMockExtension.newInstance().options(wireMockConfig().dynamicPort()).build();
@@ -71,11 +72,11 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 	public String getTokenEndpoint() {
-		return useMockServer ? "http://localhost:"+tokenServer.getPort() : KEYCLOAK_SERVER;
+		return useMockServer ? "http://localhost:" + tokenServer.getPort() : KEYCLOAK_SERVER;
 	}
 
 	public String getServiceEndpoint() {
-		return useMockServer ? "http://localhost:"+authenticatedService.getPort() : KEYCLOAK_SERVER;
+		return useMockServer ? "http://localhost:" + authenticatedService.getPort() : KEYCLOAK_SERVER;
 	}
 
 	@Override
@@ -90,14 +91,15 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 	//Send non-repeatable message
 	private Message sendNonRepeatableMessage() throws SenderException, TimeoutException, IOException {
-		if(sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
+		if (sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
 		InputStream is = new Message("dummy-string").asInputStream();
-		return sendMessage(Message.asMessage(new FilterInputStream(is) {}));
+		return sendMessage(Message.asMessage(new FilterInputStream(is) {
+		}));
 	}
 
 	//Send repeatable message
 	private Message sendRepeatableMessage() throws SenderException, TimeoutException, IOException {
-		if(sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
+		if (sender.getHttpMethod() == HttpMethod.GET) fail("method not allowed when using no HttpEntity");
 		return sendMessage(Message.asMessage(new Message("dummy-string").asByteArray()));
 	}
 
@@ -145,7 +147,6 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 
-
 	@Test
 	void testOAuthAuthentication() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
@@ -184,7 +185,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
 
-		ConfigurationException exception = assertThrows(ConfigurationException.class, ()->sender.configure());
+		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> sender.configure());
 		assertThat(exception.getMessage(), containsString("clientAuthAlias or ClientId and ClientSecret must be specifie"));
 	}
 
@@ -320,7 +321,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 
-	@Test //Mocking a Repeatable Message
+	@Test
+		//Mocking a Repeatable Message
 	void testRetryRepeatablePayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -342,7 +344,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 
-	@Test //Mocking a Non-Repeatable Message (avoids a NonRepeatableRequestException)
+	@Test
+		//Mocking a Non-Repeatable Message (avoids a NonRepeatableRequestException)
 	void testRetryNonRepeatablePayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -359,11 +362,12 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		authenticatedService.setScenarioState(MockAuthenticatedService.SCENARIO_CONNECTION_RESET, MockAuthenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
 		SenderException exception = assertThrows(SenderException.class, this::sendNonRepeatableMessage);
-    	assertInstanceOf(SocketException.class, exception.getCause());
+		assertInstanceOf(SocketException.class, exception.getCause());
 		assertEquals("(SocketException) Connection reset", exception.getMessage());
 	}
 
-	@Test //Mocking a Repeatable Multipart Message
+	@Test
+		//Mocking a Repeatable Multipart Message
 	void testRetryRepeatableMultipartPayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -397,7 +401,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 
-	@Test //Mocking a Non-Repeatable Multipart Message (avoids a NonRepeatableRequestException)
+	@Test
+		//Mocking a Non-Repeatable Multipart Message (avoids a NonRepeatableRequestException)
 	void testRetryNonRepeatableMultipartPayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -405,7 +410,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setClientId(MockTokenServer.CLIENT_ID);
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
 
-		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
+		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {
+		});
 		session.put("binaryPart", nonRepeatableMessage);
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
@@ -464,7 +470,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {});
+		Message nonRepeatableMessage = Message.asMessage(new FilterInputStream(new Message("dummy-string").asInputStream()) {
+		});
 		session.put("binaryPart", nonRepeatableMessage);
 		sender.addParameter(ParameterBuilder.create("xml-part", "<ik><ben/><xml/></ik>"));
 		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));

@@ -36,6 +36,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.Test;
 
 class Base64PipeTest extends PipeTestBase<Base64Pipe> {
@@ -101,7 +102,8 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		Message in = new Message(inputBytes, "auto"); //Saving it with a different charset
 
 		assertEquals(utf8Input, in.asString()); // read the message which should update the auto field in the MessageContext
-		assertEquals("UTF-8", in.getContext().get(MessageContext.METADATA_CHARSET)); //base64#charset attribute should be ignored because of explicit value in the MessageContext.
+		assertEquals("UTF-8", in.getContext()
+				.get(MessageContext.METADATA_CHARSET)); //base64#charset attribute should be ignored because of explicit value in the MessageContext.
 
 		// Act
 		Message result = doPipe(pipe, in, session).getResult();

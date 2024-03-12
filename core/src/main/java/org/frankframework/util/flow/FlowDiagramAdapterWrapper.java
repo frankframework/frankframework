@@ -33,7 +33,7 @@ public class FlowDiagramAdapterWrapper extends AdapterLifecycleWrapperBase {
 			try {
 				flowDiagramManager.generate(adapter);
 			} catch (IOException e) { //Exception is already logged when loglevel equals debug (see FlowDiagramManager#generateFlowDiagram(String, String, File))
-				if(!suppressWarnings) {
+				if (!suppressWarnings) {
 					ConfigurationWarnings.add(adapter, log, "error generating flow diagram", e);
 				}
 			}

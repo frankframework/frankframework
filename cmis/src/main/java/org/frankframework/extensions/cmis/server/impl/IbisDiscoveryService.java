@@ -23,15 +23,13 @@ import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.DiscoveryService;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
-import org.w3c.dom.Element;
-
 import org.frankframework.core.PipeLineSession;
-
 import org.frankframework.extensions.cmis.CmisUtils;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
 
 /**
  * Wrapper that delegates when a matching CmisEvent is present.
@@ -52,7 +50,7 @@ public class IbisDiscoveryService implements DiscoveryService {
 	private XmlBuilder buildXml(String name, Object value) {
 		XmlBuilder filterXml = new XmlBuilder(name);
 
-		if(value != null)
+		if (value != null)
 			filterXml.setValue(value.toString());
 
 		return filterXml;
@@ -60,14 +58,13 @@ public class IbisDiscoveryService implements DiscoveryService {
 
 	@Override
 	public ObjectList query(String repositoryId, String statement,
-			Boolean searchAllVersions, Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter,
-			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
+							Boolean searchAllVersions, Boolean includeAllowableActions,
+							IncludeRelationships includeRelationships, String renditionFilter,
+							BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.QUERY)) {
+		if (!eventDispatcher.contains(CmisEvent.QUERY)) {
 			return discoveryService.query(repositoryId, statement, searchAllVersions, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("statement", statement));
@@ -89,9 +86,9 @@ public class IbisDiscoveryService implements DiscoveryService {
 
 	@Override
 	public ObjectList getContentChanges(String repositoryId,
-			Holder<String> changeLogToken, Boolean includeProperties,
-			String filter, Boolean includePolicyIds, Boolean includeAcl,
-			BigInteger maxItems, ExtensionsData extension) {
+										Holder<String> changeLogToken, Boolean includeProperties,
+										String filter, Boolean includePolicyIds, Boolean includeAcl,
+										BigInteger maxItems, ExtensionsData extension) {
 		return discoveryService.getContentChanges(repositoryId, changeLogToken, includeProperties, filter, includePolicyIds, includeAcl, maxItems, extension);
 	}
 

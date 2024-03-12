@@ -45,6 +45,7 @@ import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.RunState;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -94,7 +95,7 @@ public class TestReceiverOnError {
 
 		doAnswer(invocation -> {
 			Message m = invocation.getArgument(1);
-			if(m.asString().equals("processMessageException")) {
+			if (m.asString().equals("processMessageException")) {
 				throw new ListenerException(m.asString());
 			}
 			return invocation.callRealMethod();
@@ -138,12 +139,12 @@ public class TestReceiverOnError {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		log.info("Adapter RunState "+adapter.getRunState());
+		log.info("Adapter RunState " + adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitWhileInState(receiver, RunState.STOPPED); //Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
 		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
-		log.info("Receiver RunState "+receiver.getRunState());
+		log.info("Receiver RunState " + receiver.getRunState());
 
 		assertEquals(RunState.STARTED, receiver.getRunState());
 		log.info("!> started the receiver, lets do some testing!");
@@ -159,9 +160,9 @@ public class TestReceiverOnError {
 		// Act
 		listener.offerMessage("Test Message");
 		await()
-			.atMost(30, TimeUnit.SECONDS)
-			.pollInterval(100, TimeUnit.MILLISECONDS)
-			.until(() -> receiver.getMessagesReceived() > 0);
+				.atMost(30, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> receiver.getMessagesReceived() > 0);
 
 		// Assert the receiver is still in state started and has processed a message
 		assertEquals(RunState.STARTED, receiver.getRunState());
@@ -172,9 +173,9 @@ public class TestReceiverOnError {
 
 	@ParameterizedTest
 	@CsvSource({
-		"getRawMessageException, Receiver [receiver] caught Exception retrieving message, will continue retrieving messages",
-		"extractMessageException, Receiver [receiver] caught Exception processing message, will continue processing next message",
-		"processMessageException, Receiver [receiver] Exception in message processing"
+			"getRawMessageException, Receiver [receiver] caught Exception retrieving message, will continue retrieving messages",
+			"extractMessageException, Receiver [receiver] caught Exception processing message, will continue processing next message",
+			"processMessageException, Receiver [receiver] Exception in message processing"
 	})
 	public void testPullingListenerWithExceptionAndOnErrorContinue(final String message, final String logMessage) throws Exception {
 		MockListenerBase listener = createListener(MockPullingListener.class);
@@ -187,9 +188,9 @@ public class TestReceiverOnError {
 		// Act
 		listener.offerMessage(message);
 		await()
-			.atMost(30, TimeUnit.SECONDS)
-			.pollInterval(100, TimeUnit.MILLISECONDS)
-			.until(() -> appender.contains(logMessage));
+				.atMost(30, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> appender.contains(logMessage));
 
 		// Assert the Receiver state
 		assertEquals(RunState.STARTED, receiver.getRunState());
@@ -198,9 +199,9 @@ public class TestReceiverOnError {
 
 	@ParameterizedTest
 	@CsvSource({
-		"getRawMessageException, Receiver [receiver] exception occurred while retrieving message, stopping receiver",
-		"extractMessageException, Receiver [receiver] caught Exception processing message",
-		"processMessageException, Receiver [receiver] exception occurred while processing message, stopping receiver",
+			"getRawMessageException, Receiver [receiver] exception occurred while retrieving message, stopping receiver",
+			"extractMessageException, Receiver [receiver] caught Exception processing message",
+			"processMessageException, Receiver [receiver] exception occurred while processing message, stopping receiver",
 	})
 	public void testPullingListenerWithExceptionAndOnErrorClose(final String message, final String logMessage) throws Exception {
 		MockListenerBase listener = createListener(MockPullingListener.class);
@@ -213,9 +214,9 @@ public class TestReceiverOnError {
 		// Act
 		listener.offerMessage(message);
 		await()
-			.atMost(30, TimeUnit.SECONDS)
-			.pollInterval(100, TimeUnit.MILLISECONDS)
-			.until(() -> appender.contains(logMessage));
+				.atMost(30, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> appender.contains(logMessage));
 
 		// Assert the Receiver state
 		waitWhileInState(receiver, RunState.STARTED);

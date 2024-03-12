@@ -25,13 +25,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.MimeType;
-
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
-
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
@@ -47,21 +44,20 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.StreamUtil;
+import org.springframework.util.MimeType;
 
 /**
  * Stream an input stream to an output stream.
  *
- * @ff.parameter inputStream 		the input stream object to use instead of an input stream object taken from pipe input
- * @ff.parameter outputStream		the output stream object to use unless httpResponse parameter is specified
- * @ff.parameter httpResponse		an HttpServletResponse object to stream to (the output stream is retrieved by calling getOutputStream() on the HttpServletResponse object)
- * @ff.parameter httpRequest		an HttpServletRequest object to stream from. Each part is put in a session key and the result of this pipe is a xml with info about these parts and the name of the session key
- * @ff.parameter contentType		the Content-Type header to set in case httpResponse was specified
- * @ff.parameter contentDisposition	the Content-Disposition header to set in case httpResponse was specified
- * @ff.parameter redirectLocation	the redirect location to set in case httpResponse was specified
- *
- * @ff.forward antiVirusFailed the virus checking indicates a problem with the message
- *
  * @author Jaco de Groot
+ * @ff.parameter inputStream        the input stream object to use instead of an input stream object taken from pipe input
+ * @ff.parameter outputStream        the output stream object to use unless httpResponse parameter is specified
+ * @ff.parameter httpResponse        an HttpServletResponse object to stream to (the output stream is retrieved by calling getOutputStream() on the HttpServletResponse object)
+ * @ff.parameter httpRequest        an HttpServletRequest object to stream from. Each part is put in a session key and the result of this pipe is a xml with info about these parts and the name of the session key
+ * @ff.parameter contentType        the Content-Type header to set in case httpResponse was specified
+ * @ff.parameter contentDisposition    the Content-Disposition header to set in case httpResponse was specified
+ * @ff.parameter redirectLocation    the redirect location to set in case httpResponse was specified
+ * @ff.forward antiVirusFailed the virus checking indicates a problem with the message
  */
 public class StreamPipe extends FixedForwardPipe {
 	public static final String ANTIVIRUS_FAILED_FORWARD = "antiVirusFailed";
@@ -102,7 +98,7 @@ public class StreamPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object result = message;
-		Map<String,Object> parameters = null;
+		Map<String, Object> parameters = null;
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
 			try {
@@ -151,7 +147,7 @@ public class StreamPipe extends FixedForwardPipe {
 				StringBuilder partsString = new StringBuilder("<parts>");
 				String firstStringPart = null;
 				List<AntiVirusObject> antiVirusObjects = new ArrayList<>();
-				if(MultipartUtils.isMultipart(httpRequest)) {
+				if (MultipartUtils.isMultipart(httpRequest)) {
 					log.debug("request with content type [{}] and length [{}] contains multipart content", httpRequest.getContentType(), httpRequest.getContentLength());
 					InputStreamDataSource dataSource = new InputStreamDataSource(httpRequest.getContentType(), httpRequest.getInputStream()); //the entire InputStream will be read here!
 					MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
@@ -283,6 +279,7 @@ public class StreamPipe extends FixedForwardPipe {
 
 	/**
 	 * (only used for parameter <code>httprequest</code>) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe)
+	 *
 	 * @ff.default false
 	 */
 	public void setExtractFirstStringPart(boolean b) {
@@ -299,6 +296,7 @@ public class StreamPipe extends FixedForwardPipe {
 
 	/**
 	 * (only used when <code>extractfirststringpart=true</code>) the session key to put the xml in with info about the stored parts
+	 *
 	 * @ff.default <code>multipartxml</code>
 	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
@@ -307,6 +305,7 @@ public class StreamPipe extends FixedForwardPipe {
 
 	/**
 	 * (only used for parameter <code>httprequest</code>) when true parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part)
+	 *
 	 * @ff.default false
 	 */
 	public void setCheckAntiVirus(boolean b) {
@@ -323,6 +322,7 @@ public class StreamPipe extends FixedForwardPipe {
 
 	/**
 	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan status parts
+	 *
 	 * @ff.default <code>antivirus_rc</code>
 	 */
 	public void setAntiVirusPartName(String antiVirusPartName) {
@@ -335,6 +335,7 @@ public class StreamPipe extends FixedForwardPipe {
 
 	/**
 	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan message parts
+	 *
 	 * @ff.default <code>antivirus_msg</code>
 	 */
 	public void setAntiVirusMessagePartName(String antiVirusMessagePartName) {
@@ -347,6 +348,7 @@ public class StreamPipe extends FixedForwardPipe {
 
 	/**
 	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) message of antivirus scan parts which indicates the antivirus scan passed
+	 *
 	 * @ff.default <code>pass</code>
 	 */
 	public void setAntiVirusPassedMessage(String antiVirusPassedMessage) {
@@ -355,6 +357,7 @@ public class StreamPipe extends FixedForwardPipe {
 
 	/**
 	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) when true and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message
+	 *
 	 * @ff.default false
 	 */
 	public void setAntiVirusFailureAsSoapFault(boolean b) {

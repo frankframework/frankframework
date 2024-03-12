@@ -12,6 +12,7 @@ import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
+
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,8 +47,8 @@ public class PipeLineTest {
 
 		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
 		assertEquals(1, warnings.size());
-		String lastWarning = warnings.get(warnings.size()-1);
-		assertThat(lastWarning,StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
+		String lastWarning = warnings.get(warnings.size() - 1);
+		assertThat(lastWarning, StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
 	}
 
 	@Test
@@ -56,7 +57,7 @@ public class PipeLineTest {
 		String pipeForwardName = "EchoPipe next pipe";
 
 		EchoPipe pipe = configuration.createBean(EchoPipe.class);
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipe.setName(pipe.getClass().getSimpleName() + " under test");
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
@@ -86,7 +87,7 @@ public class PipeLineTest {
 		String pipeForwardName = "EchoPipe next pipe";
 
 		IPipe pipe = configuration.createBean(EchoPipe.class);
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipe.setName(pipe.getClass().getSimpleName() + " under test");
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
 
@@ -126,7 +127,7 @@ public class PipeLineTest {
 		String pipeForwardName = "EchoPipe next pipe";
 
 		IPipe pipe = configuration.createBean(EchoPipe.class);
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipe.setName(pipe.getClass().getSimpleName() + " under test");
 		pipe.registerForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
@@ -157,7 +158,7 @@ public class PipeLineTest {
 		String pipeForwardName = "EchoPipe next pipe";
 
 		EchoPipe pipe = configuration.createBean(EchoPipe.class);
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipe.setName(pipe.getClass().getSimpleName() + " under test");
 		pipe.registerForward(new PipeForward("success", pipeForwardName));
 		pipe.registerForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
@@ -193,7 +194,7 @@ public class PipeLineTest {
 		String pipeForwardName = "EchoPipe next pipe";
 
 		EchoPipe pipe = configuration.createBean(EchoPipe.class);
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipe.setName(pipe.getClass().getSimpleName() + " under test");
 		pipe.registerForward(new PipeForward("success", "the next pipe"));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);
@@ -212,7 +213,9 @@ public class PipeLineTest {
 		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
 		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] has a forward of which the pipe to execute [the next pipe] is not defined"));
 		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
-		assertEquals("the next pipe", pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should exist even though next pipe doesn't exist");
+		assertEquals("the next pipe", pipe.getForwards()
+				.get(PipeForward.SUCCESS_FORWARD_NAME)
+				.getPath(), "pipe1 forward should exist even though next pipe doesn't exist");
 
 		assertEquals(1, pipe2.getForwards().size(), "pipe2 should only have 1 pipe-forward");
 		assertEquals("special exit name", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
@@ -231,7 +234,7 @@ public class PipeLineTest {
 		String pipeForwardName = "EchoPipe next pipe";
 
 		IPipe pipe = configuration.createBean(NonFixedForwardPipe.class);
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipe.setName(pipe.getClass().getSimpleName() + " under test");
 		pipe.registerForward(new PipeForward("success", pipeForwardName));
 		pipe.setPipeLine(pipeline);
 		pipeline.addPipe(pipe);

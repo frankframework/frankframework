@@ -14,8 +14,10 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.mock.FixedQuerySenderMock;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import org.frankframework.util.LogUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -30,7 +32,7 @@ public class BusTestBase {
 	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
 	private ApplicationContext getParentContext() {
-		if(parentContext == null) {
+		if (parentContext == null) {
 			ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
 			applicationContext.setConfigLocation("testBusApplicationContext.xml");
 			applicationContext.setDisplayName("Parent [testBusApplicationContext]");
@@ -47,21 +49,22 @@ public class BusTestBase {
 	}
 
 	protected final Configuration getConfiguration() {
-		if(configuration == null) {
+		if (configuration == null) {
 			Configuration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
 			try {
 				getParentContext().getAutowireCapableBeanFactory().autowireBeanProperties(config, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-				configuration = (Configuration) getParentContext().getAutowireCapableBeanFactory().initializeBean(config, TestConfiguration.TEST_CONFIGURATION_NAME);
+				configuration = (Configuration) getParentContext().getAutowireCapableBeanFactory()
+						.initializeBean(config, TestConfiguration.TEST_CONFIGURATION_NAME);
 			} catch (Exception e) {
-				LogUtil.getLogger(this).error("unable to create "+TestConfiguration.TEST_CONFIGURATION_NAME, e);
-				fail("unable to create "+TestConfiguration.TEST_CONFIGURATION_NAME);
+				LogUtil.getLogger(this).error("unable to create " + TestConfiguration.TEST_CONFIGURATION_NAME, e);
+				fail("unable to create " + TestConfiguration.TEST_CONFIGURATION_NAME);
 			}
 
 			try {
 				configuration.configure();
 			} catch (ConfigurationException e) {
-				LogUtil.getLogger(this).error("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME, e);
-				fail("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME);
+				LogUtil.getLogger(this).error("unable to configure " + TestConfiguration.TEST_CONFIGURATION_NAME, e);
+				fail("unable to configure " + TestConfiguration.TEST_CONFIGURATION_NAME);
 			}
 
 			configuration.setLoadedConfiguration("<loaded authAlias=\"test\" />"); //AuthAlias is used in BusTopic.SECURITY_ITEMS
@@ -100,12 +103,12 @@ public class BusTestBase {
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {
 		OutboundGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		Message<?> response = gateway.sendSyncMessage(input.build());
-		if(response != null) {
+		if (response != null) {
 			return response;
 		}
 		String topic = input.getHeader("topic", String.class);
 		String action = input.getHeader("action", String.class);
-		throw new IllegalStateException("expected a reply while sending a message to topic ["+topic+"] action ["+action+"]");
+		throw new IllegalStateException("expected a reply while sending a message to topic [" + topic + "] action [" + action + "]");
 	}
 
 	public final void callAsyncGateway(MessageBuilder<?> input) {
@@ -120,7 +123,7 @@ public class BusTestBase {
 	protected final <T> MessageBuilder<T> createRequestMessage(T payload, BusTopic topic, BusAction action) {
 		MessageBuilder<T> builder = spy(new MessageBuilder<>(payload));
 		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
-		if(action != null) {
+		if (action != null) {
 			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
 
@@ -130,6 +133,7 @@ public class BusTestBase {
 	public static class MessageBuilder<T> {
 		private final T payload;
 		private Map<String, Object> headers = new HashMap<>();
+
 		public MessageBuilder(T payload) {
 			this.payload = payload;
 		}
@@ -139,8 +143,8 @@ public class BusTestBase {
 		}
 
 		public void setHeader(String headerName, Object headerValue) {
-			if(!"topic".equals(headerName) && !"action".equals(headerName)) {
-				headerName = "meta-"+headerName;
+			if (!"topic".equals(headerName) && !"action".equals(headerName)) {
+				headerName = "meta-" + headerName;
 			}
 			headers.put(headerName, headerValue);
 		}

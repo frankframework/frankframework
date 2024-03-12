@@ -11,15 +11,15 @@ import java.util.List;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.jupiter.api.Test;
+
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.ResponseMessageBase;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.ResponseMessageBase;
-
-public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScript>{
+public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScript> {
 
 	@Override
 	public ShowLiquibaseScript createJaxRsResource() {
@@ -105,7 +105,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("dummy".getBytes()), "script.zip"));
 
-		ApiException ex = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/jdbc/liquibase", attachments));
+		ApiException ex = assertThrows(ApiException.class, () -> dispatcher.dispatchRequest(HttpMethod.POST, "/jdbc/liquibase", attachments));
 		assertEquals("uploading zip files is not supported!", ex.getMessage());
 	}
 }

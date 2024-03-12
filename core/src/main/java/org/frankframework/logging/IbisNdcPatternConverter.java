@@ -37,8 +37,8 @@ public class IbisNdcPatternConverter extends LogEventPatternConverter {
 
 	@Override
 	public void format(final LogEvent event, final StringBuilder stringBuilder) {
-		if(!event.getContextData().isEmpty()) {
-			for(Entry<String, String> entry : event.getContextData().toMap().entrySet()) {
+		if (!event.getContextData().isEmpty()) {
+			for (Entry<String, String> entry : event.getContextData().toMap().entrySet()) {
 				String key = convertKey(entry.getKey());
 				stringBuilder.append(key);
 				stringBuilder.append(" [");
@@ -48,7 +48,7 @@ public class IbisNdcPatternConverter extends LogEventPatternConverter {
 
 			// Remove the last space
 			int lenght = stringBuilder.length();
-			if(stringBuilder.charAt(lenght-1) == ' ') {
+			if (stringBuilder.charAt(lenght - 1) == ' ') {
 				stringBuilder.deleteCharAt(lenght - 1);
 			}
 		}

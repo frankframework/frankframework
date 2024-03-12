@@ -12,9 +12,7 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 
 /**
- *
  * @author alisihab
- *
  */
 public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTestBase<IMailSender> {
 	private final String correlationID = "fakeCorrelationID";
@@ -24,11 +22,11 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 	public abstract M createSender();
 
 	@Override
-		public void setup() throws Exception {
-			super.setup();
-			session = new PipeLineSession();
-			session.put("messageId", correlationID);
-		}
+	public void setup() throws Exception {
+		super.setup();
+		session = new PipeLineSession();
+		session.put("messageId", correlationID);
+	}
 
 	@Test
 	public void testCompleteXMLFile() throws Exception {

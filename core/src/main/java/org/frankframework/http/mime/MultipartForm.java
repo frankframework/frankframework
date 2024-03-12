@@ -84,7 +84,7 @@ public class MultipartForm {
 	/**
 	 * Creates an instance with the specified settings.
 	 *
-	 * @param charset the character set to use. May be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. US-ASCII - is used.
+	 * @param charset  the character set to use. May be {@code null}, in which case {@link MIME#DEFAULT_CHARSET} - i.e. US-ASCII - is used.
 	 * @param boundary to use  - must not be {@code null}
 	 * @throws IllegalArgumentException if charset is null or boundary is null
 	 */
@@ -101,7 +101,7 @@ public class MultipartForm {
 
 	void doWriteTo(final OutputStream out, final boolean writeContent) throws IOException {
 		final ByteArrayBuffer boundaryEncoded = encode(this.charset, this.boundary);
-		for (final FormBodyPart part: getBodyParts()) {
+		for (final FormBodyPart part : getBodyParts()) {
 			writeBytes(TWO_DASHES, out);
 			writeBytes(boundaryEncoded, out);
 			writeBytes(CR_LF, out);
@@ -122,12 +122,12 @@ public class MultipartForm {
 	}
 
 	/**
-	  * Write the multipart header fields; depends on the style.
-	  */
+	 * Write the multipart header fields; depends on the style.
+	 */
 	protected void formatMultipartHeader(final FormBodyPart part, final OutputStream out) throws IOException {
 		// For strict, we output all fields with MIME-standard encoding.
 		final Header header = part.getHeader();
-		for (final MinimalField field: header) {
+		for (final MinimalField field : header) {
 			writeField(field, out);
 		}
 	}
@@ -156,7 +156,7 @@ public class MultipartForm {
 	 */
 	public long getTotalLength() {
 		long contentLen = 0;
-		for (final FormBodyPart part: getBodyParts()) {
+		for (final FormBodyPart part : getBodyParts()) {
 			final ContentBody body = part.getBody();
 			final long len = body.getContentLength();
 			if (len >= 0) {
@@ -177,9 +177,9 @@ public class MultipartForm {
 	}
 
 	public boolean isRepeatable() {
-		for (final FormBodyPart part: getBodyParts()) {
+		for (final FormBodyPart part : getBodyParts()) {
 			final ContentBody contentBody = part.getBody();
-			if(!(contentBody instanceof StringBody) && !(contentBody instanceof MessageContentBody && ((MessageContentBody) contentBody).isRepeatable())) {
+			if (!(contentBody instanceof StringBody) && !(contentBody instanceof MessageContentBody && ((MessageContentBody) contentBody).isRepeatable())) {
 				return false;
 			}
 		}

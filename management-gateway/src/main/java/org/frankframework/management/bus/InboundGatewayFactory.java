@@ -20,9 +20,11 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -33,10 +35,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.IntegrationPattern;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.util.ClassUtils;
-
-import lombok.Setter;
-
-import org.frankframework.util.SpringUtils;
 
 /**
  * Allows the creation of inbound integration gateways.
@@ -54,14 +52,14 @@ public class InboundGatewayFactory implements InitializingBean, ApplicationConte
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		Set<String> gateways = getInboundGateways();
-		if(gateways.isEmpty()) {
+		if (gateways.isEmpty()) {
 			log.info("did not find any inbound gateways to initialize");
 			return;
 		}
 
 		log.info("found the following inbound gateways {}", gateways::toString);
 
-		for(String gateway : gateways) {
+		for (String gateway : gateways) {
 			try {
 				IntegrationPattern ipGw = createGateway(gateway);
 				ConfigurableBeanFactory beanFactory = (ConfigurableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
@@ -79,7 +77,7 @@ public class InboundGatewayFactory implements InitializingBean, ApplicationConte
 	 * Also always adds the local bus for internal traffic as well as the Frank!Console backend.
 	 */
 	private Set<String> getInboundGateways() {
-		if(StringUtils.isBlank(gatewayClassnames)) {
+		if (StringUtils.isBlank(gatewayClassnames)) {
 			return Collections.singleton(LOCAL_GATEWAY_CLASSNAME);
 		}
 
@@ -95,18 +93,18 @@ public class InboundGatewayFactory implements InitializingBean, ApplicationConte
 	 */
 	private IntegrationPattern createGateway(String gatewayClassname) {
 		Class<?> gatewayClass = ClassUtils.resolveClassName(gatewayClassname, applicationContext.getClassLoader());
-		if(!IntegrationPattern.class.isAssignableFrom(gatewayClass)) {
-			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] does not implement type IntegrationPattern");
+		if (!IntegrationPattern.class.isAssignableFrom(gatewayClass)) {
+			throw new IllegalArgumentException("gateway [" + gatewayClassname + "] does not implement type IntegrationPattern");
 		}
 
 		IntegrationPattern gateway = (IntegrationPattern) SpringUtils.createBean(applicationContext, gatewayClass);
 
 		IntegrationPatternType type = gateway.getIntegrationPatternType();
-		if(IntegrationPatternType.inbound_gateway == type) {
+		if (IntegrationPatternType.inbound_gateway == type) {
 			return gateway;
 		}
 
 		applicationContext.getAutowireCapableBeanFactory().destroyBean(gateway);
-		throw new IllegalArgumentException("gateway ["+gatewayClassname+"] must be of an Inbound Gateway");
+		throw new IllegalArgumentException("gateway [" + gatewayClassname + "] must be of an Inbound Gateway");
 	}
 }

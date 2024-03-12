@@ -12,8 +12,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Unit tests of methods {@link Misc#addToSortedListNonUnique(List, Object)} and {@link Misc#addToSortedListUnique(List, Object)}.
- * @author martijn
  *
+ * @author martijn
  */
 public class MiscBinarySearchTest {
 
@@ -23,11 +23,11 @@ public class MiscBinarySearchTest {
 	public List<String> afterAddUnique;
 
 	public static Collection<Object[]> data() {
-		return asList(new Object[][] {
-			{asList(), "A", asList("A"), asList("A")},
-			{asList("A"), "A", asList("A", "A"), asList("A")},
-			{asList("A", "C"), "B", asList("A", "B", "C"), asList("A", "B", "C")},
-			{asList("A", "B", "C"), "B", asList("A", "B", "B", "C"), asList("A", "B", "C")}
+		return asList(new Object[][]{
+				{asList(), "A", asList("A"), asList("A")},
+				{asList("A"), "A", asList("A", "A"), asList("A")},
+				{asList("A", "C"), "B", asList("A", "B", "C"), asList("A", "B", "C")},
+				{asList("A", "B", "C"), "B", asList("A", "B", "B", "C"), asList("A", "B", "C")}
 		});
 	}
 

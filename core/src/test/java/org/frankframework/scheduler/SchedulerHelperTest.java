@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.text.ParseException;
 
 import org.junit.jupiter.api.Test;
+
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
@@ -73,7 +74,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void testScheduleCronJob() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob"+Math.random());
+		JobDetail jobDetail = createServiceJob("testJob" + Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, "0 0 1 * * ?");
 		assertTrue(schedulerHelper.contains(jobDetail.getKey().getName()));
@@ -81,7 +82,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void testScheduleIntervalJob() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob"+Math.random());
+		JobDetail jobDetail = createServiceJob("testJob" + Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, 0);
 		assertTrue(schedulerHelper.contains(jobDetail.getKey().getName()));
@@ -102,10 +103,10 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 		JobDetail jobDetail = createServiceJob("testJob");
 		String jobName = jobDetail.getKey().getName();
 
-		schedulerHelper.scheduleJob(jobDetail, null, 3600*1000, false);
+		schedulerHelper.scheduleJob(jobDetail, null, 3600 * 1000, false);
 		assertTrue(schedulerHelper.contains(jobName));
 
-		schedulerHelper.scheduleJob(jobDetail, null, 3600*1000, true);
+		schedulerHelper.scheduleJob(jobDetail, null, 3600 * 1000, true);
 		assertTrue(schedulerHelper.contains(jobName));
 
 		Trigger trigger = schedulerHelper.getTrigger(jobName);
@@ -114,7 +115,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void testScheduleJobWithoutSchedule() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob"+Math.random());
+		JobDetail jobDetail = createServiceJob("testJob" + Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, null, -1, false);
 		assertFalse(schedulerHelper.contains(jobDetail.getKey().getName()));
@@ -122,7 +123,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	@Test
 	public void testScheduleDuplicateJob() throws SchedulerException, ParseException {
-		JobDetail jobDetail = createServiceJob("testJob"+Math.random());
+		JobDetail jobDetail = createServiceJob("testJob" + Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, "0 0 1 * * ?");
 		assertThrows(SchedulerException.class, () -> schedulerHelper.scheduleJob(jobDetail, 0));

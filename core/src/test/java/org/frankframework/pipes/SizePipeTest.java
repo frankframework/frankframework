@@ -5,20 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.ArrayList;
 
 import org.frankframework.core.PipeRunResult;
+
 import org.junit.jupiter.api.Test;
 
 /**
-* SizePipe Tester.
-*
-* @author <Sina Sen>
-*/
-public class SizePipeTest extends PipeTestBase<SizePipe>{
+ * SizePipe Tester.
+ *
+ * @author <Sina Sen>
+ */
+public class SizePipeTest extends PipeTestBase<SizePipe> {
 
 
 	/**
-	 *
 	 * Method: doPipe(Object input, PipeLineSession session)
-	 *
 	 */
 	@Test
 	void testDoPipeSuccess() throws Exception {

@@ -34,7 +34,7 @@ import org.frankframework.util.Misc;
 public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		checkMessageSize(message.size(), pipeLine, pipe, true);
 		PipeRunResult pipeRunResult = chain.apply(message);
 
@@ -44,7 +44,7 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 	}
 
 	private void checkMessageSize(long messageLength, PipeLine pipeLine, IPipe pipe, boolean input) {
-		if(messageLength > -1) {
+		if (messageLength > -1) {
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe aPipe = (AbstractPipe) pipe;
 				StatisticsKeeper sizeStat = null;
@@ -57,13 +57,14 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 						sizeStat = pipeLine.getPipeSizeStatistics(aPipe.getOutSizeStatDummyObject());
 					}
 				}
-				if (sizeStat!=null) {
+				if (sizeStat != null) {
 					sizeStat.addValue(messageLength);
 				}
 			}
 
 			if (pipeLine.getMessageSizeWarnNum() >= 0 && messageLength >= pipeLine.getMessageSizeWarnNum()) {
-				log.warn("pipe [{}] of adapter [{}], {} message size [{}] exceeds [{}]", pipe.getName(), pipeLine.getOwner().getName(), (input ? "input" : "result"), Misc.toFileSize(messageLength), Misc.toFileSize(pipeLine.getMessageSizeWarnNum()));
+				log.warn("pipe [{}] of adapter [{}], {} message size [{}] exceeds [{}]", pipe.getName(), pipeLine.getOwner()
+						.getName(), (input ? "input" : "result"), Misc.toFileSize(messageLength), Misc.toFileSize(pipeLine.getMessageSizeWarnNum()));
 				pipe.throwEvent(IPipe.MESSAGE_SIZE_MONITORING_EVENT);
 			}
 		}

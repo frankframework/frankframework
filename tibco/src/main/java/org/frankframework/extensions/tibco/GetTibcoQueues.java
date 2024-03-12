@@ -35,8 +35,6 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.tibco.tibjms.admin.ACLEntry;
 import com.tibco.tibjms.admin.BridgeTarget;
 import com.tibco.tibjms.admin.ConnectionInfo;
@@ -48,6 +46,7 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
 import com.tibco.tibjms.admin.TibjmsAdminInvalidNameException;
 import com.tibco.tibjms.admin.UserInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
@@ -61,7 +60,6 @@ import org.frankframework.pipes.TimeoutGuardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
-
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.XmlBuilder;
@@ -76,6 +74,7 @@ import org.frankframework.util.XmlUtils;
  * <ul><li>one message on a specific Tibco queue including information about this message is returned (without removing it)</li></ul>
  * </p>
  *
+ * @author Peter Leeuwenburgh
  * @ff.parameter url When a parameter with name url is present, it is used instead of the url specified by the attribute
  * @ff.parameter authAlias When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute
  * @ff.parameter username When a parameter with name userName is present, it is used instead of the userName specified by the attribute
@@ -85,8 +84,6 @@ import org.frankframework.util.XmlUtils;
  * @ff.parameter showAge When set to <code>true</code> and <code>pendingMsgCount&gt;0</code> and <code>receiverCount=0</code>, the age of the current first message in the queue is shown in the queues overview (default is false)
  * @ff.parameter countOnly When set to <code>true</code> and <code>queueName</code> is filled, only the number of pending messages is returned (default is false)
  * @ff.parameter ldapUrl When present, principal descriptions are retrieved from this LDAP server
- *
- * @author Peter Leeuwenburgh
  */
 
 public class GetTibcoQueues extends TimeoutGuardPipe {
@@ -281,7 +278,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						StringBuilder sb = new StringBuilder("");
 						Enumeration<?> propertyNames = msg.getPropertyNames();
 						while (propertyNames.hasMoreElements()) {
-							String propertyName = (String) propertyNames .nextElement();
+							String propertyName = (String) propertyNames.nextElement();
 							Object object = msg.getObjectProperty(propertyName);
 							if (sb.length() > 0) {
 								sb.append("; ");
@@ -485,7 +482,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String listToString(LinkedList<String> list) {
 		String string = null;
 		if (list != null) {
-			for (Iterator<String> it = list.iterator(); it.hasNext();) {
+			for (Iterator<String> it = list.iterator(); it.hasNext(); ) {
 				if (string == null) {
 					string = it.next();
 				} else {
@@ -549,7 +546,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		try (Message message = ldapSender.sendMessageOrThrow(ldapRequest, null)) {
 			String ldapResult = message.asString();
 			if (ldapResult != null) {
-				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult,"attributes/attribute[@name='description']/@value");
+				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult, "attributes/attribute[@name='description']/@value");
 				if (c != null && c.size() > 0) {
 					principalDescription = c.iterator().next();
 				}
@@ -655,7 +652,9 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return skipTemporaryQueues;
 	}
 
-	/** when set to <code>true</code>, temporary queues are skipped
+	/**
+	 * when set to <code>true</code>, temporary queues are skipped
+	 *
 	 * @ff.default false
 	 */
 	public void setSkipTemporaryQueues(boolean b) {
@@ -666,7 +665,9 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return hideMessage;
 	}
 
-	/** when set to <code>true</code>, the length of the queue message is returned instead of the queue message self (when parameter <code>queueName</code> is not empty)
+	/**
+	 * when set to <code>true</code>, the length of the queue message is returned instead of the queue message self (when parameter <code>queueName</code> is not empty)
+	 *
 	 * @ff.default false
 	 */
 	public void setHideMessage(boolean b) {

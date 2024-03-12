@@ -39,6 +39,14 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.testautomationguru.utility.CompareMode;
+import com.testautomationguru.utility.ImageUtil;
+import com.testautomationguru.utility.PDFUtil;
+
 import org.apache.commons.io.FileUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -54,14 +62,7 @@ import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.util.MimeType;
-
-import com.testautomationguru.utility.CompareMode;
-import com.testautomationguru.utility.ImageUtil;
-import com.testautomationguru.utility.PDFUtil;
 
 /**
  * Executes defined tests against the PdfPipe to ensure the correct working of this pipe.
@@ -93,7 +94,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@AfterEach
 	public void tearDown() throws Exception {
-		synchronized(pdfOutputLocation) {
+		synchronized (pdfOutputLocation) {
 			Files.walk(pdfOutputLocation).forEach(PdfPipeTest::removeFile); //Remove each individual file
 
 			Files.deleteIfExists(pdfOutputLocation); //Remove root folder
@@ -103,12 +104,12 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	private static void removeFile(Path file) {
-		if(Files.isRegularFile(file)) {
+		if (Files.isRegularFile(file)) {
 			try {
 				Files.delete(file);
 			} catch (IOException e) {
 				LogUtil.getLogger(PdfPipeTest.class).error("unable to delete file", e);
-				fail("unable to delete: "+ e.getMessage());
+				fail("unable to delete: " + e.getMessage());
 			}
 		}
 	}
@@ -123,22 +124,21 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		Pattern convertedDocumentPattern = Pattern.compile(REGEX_PATH_IGNORE);
 		Matcher convertedDocumentMatcher = convertedDocumentPattern.matcher(documentMetadata);
 
-		if(convertedDocumentMatcher.find()) { //Find converted document location
+		if (convertedDocumentMatcher.find()) { //Find converted document location
 			String convertedFilePath = convertedDocumentMatcher.group();
 			log.debug("found converted file [{}]", convertedFilePath);
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
-			assertNotNull(expectedFileUrl, "cannot find expected file ["+expectedFile+"]");
+			assertNotNull(expectedFileUrl, "cannot find expected file [" + expectedFile + "]");
 			File file = new File(expectedFileUrl.toURI());
 			String expectedFilePath = file.getPath();
-			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
+			log.debug("converted relative path [" + expectedFile + "] to absolute file [" + expectedFilePath + "]");
 
 			PDFUtil pdfUtil = createPdfUtil(CompareMode.VISUAL_MODE);
 			double compare = pdfUtil.compare(convertedFilePath, expectedFilePath);
 			updateExpectedSource(convertedFilePath, expectedFilePath, expectedFile);
-			assertEquals(0d, compare, pdfUtil.getAllowedRGBDeviation(), "pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match");
-		}
-		else {
+			assertEquals(0d, compare, pdfUtil.getAllowedRGBDeviation(), "pdf files [" + convertedFilePath + "] and [" + expectedFilePath + "] should match");
+		} else {
 			fail("failed to extract converted file from documentMetadata xml");
 		}
 	}
@@ -224,9 +224,9 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		return session.getString(pipe.getConversionResultDocumentSessionKey());
 	}
 
-	public String applyIgnores(String input){
+	public String applyIgnores(String input) {
 		String result = input;
-		for(String ignore : REGEX_IGNORES){
+		for (String ignore : REGEX_IGNORES) {
 			result = result.replaceAll(ignore, "IGNORE");
 		}
 		return result;
@@ -554,7 +554,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		List<Message> inputs = new ArrayList<>();
 		URL url = TestFileUtils.getTestFileURL("/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg");
 		assertNotNull(url, "unable to find test file");
-		for(int i = 0; i<5; i++) {
+		for (int i = 0; i < 5; i++) {
 			inputs.add(new UrlMessage(url));
 		}
 		String expected = MessageTestUtils.getMessage("/PdfPipe/xml-results/mailWithWordAttachment.xml").asString();
@@ -565,7 +565,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 				MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(result.asString()), true);
 			} catch (Exception e) {
 				log.error("failed to execute test", e);
-				fail("Failed to execute test ("+e.getClass()+"): " + e.getMessage());
+				fail("Failed to execute test (" + e.getClass() + "): " + e.getMessage());
 			}
 		});
 	}
@@ -600,7 +600,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test
-	public void attachFileToMainDoc() throws Exception{
+	public void attachFileToMainDoc() throws Exception {
 		pipe.setAction(DocumentAction.COMBINE);
 		pipe.setMainDocumentSessionKey("mainDoc");
 		pipe.setFilenameToAttachSessionKey("attachedFilename");

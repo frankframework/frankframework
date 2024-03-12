@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
@@ -42,8 +44,6 @@ import org.frankframework.util.UUIDUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -72,7 +72,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(testTool == null) {
+		if (testTool == null) {
 			APPLICATION_LOG.info("No TestTool found on classpath, skipping testtool wireing.");
 		}
 	}
@@ -145,7 +145,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable){
+	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable) {
 		testTool.abortpoint(correlationId, sender.getClass().getName(), getCheckpointNameForINamedObject("Sender ", sender), throwable);
 		return throwable;
 	}
@@ -161,7 +161,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable){
+	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable) {
 		testTool.abortpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), throwable);
 		return throwable;
 	}
@@ -247,7 +247,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private List<IAdapter> getRegisteredAdapters() {
 		List<IAdapter> registeredAdapters = new ArrayList<>();
 		for (Configuration configuration : ibisManager.getConfigurations()) {
-			if(configuration.isActive()) {
+			if (configuration.isActive()) {
 				registeredAdapters.addAll(configuration.getRegisteredAdapters());
 			}
 		}
@@ -280,7 +280,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 				if (adapter != null) {
 					RunState runState = adapter.getRunState();
 					if (runState == RunState.STARTED) {
-						synchronized(inRerun) {
+						synchronized (inRerun) {
 							inRerun.add(correlationId);
 						}
 						try {
@@ -309,7 +309,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 								adapter.processMessage(messageId, inputMessage, pipeLineSession);
 							}
 						} finally {
-							synchronized(inRerun) {
+							synchronized (inRerun) {
 								inRerun.remove(correlationId);
 							}
 						}
@@ -363,7 +363,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private boolean stubINamedObject(String checkpointNamePrefix, INamedObject namedObject, String correlationId) {
 		boolean stub = false;
 		boolean rerun;
-		synchronized(inRerun) {
+		synchronized (inRerun) {
 			rerun = inRerun.contains(correlationId);
 		}
 		if (rerun) {
@@ -372,7 +372,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 //				stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, getDefaultStubStrategy());
 				// TODO zou ook gewoon het orginele report kunnen gebruiken (via opslaan in iets als inRerun) of inRerun ook via testTool doen?
 				Report reportInProgress = testTool.getReportInProgress(correlationId);
-				stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
+				stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress == null ? null : reportInProgress.getStubStrategy()));
 			} else {
 				if (originalEndpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
 					stub = stub(originalEndpoint, originalEndpoint.getReport().getStubStrategy());
@@ -399,10 +399,10 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			return (checkpointName.startsWith("Sender ") || checkpointName.startsWith("Listener ")) && isEndpoint;
 		}
 		if (TestTool.STUB_STRATEGY_ALWAYS.equals(stubStrategy)
-			// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from PipeLineSession and
-			// use it as correlationId parameter for checkpoints, hence these checkpoint will not be correlated to
-			// the report with the correlationId used by the rerun method
-			&& !"SessionKey messageId".equals(checkpointName)) {
+				// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from PipeLineSession and
+				// use it as correlationId parameter for checkpoints, hence these checkpoint will not be correlated to
+				// the report with the correlationId used by the rerun method
+				&& !"SessionKey messageId".equals(checkpointName)) {
 			return true;
 		}
 		return false;
@@ -445,7 +445,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
-		if (testTool != null && event.getSource()!=this) {
+		if (testTool != null && event.getSource() != this) {
 			testTool.setReportGeneratorEnabled(event.isEnabled());
 		}
 	}

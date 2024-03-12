@@ -26,7 +26,7 @@ import java.util.Map;
  * value"). At this time the set methods and the configure method aren't called
  * yet but the values specified in the Ibis configuration are known. To make use
  * of these values this interface should be implemented.
- *
+ * <p>
  * Please note that the normal get method of the attribute should return an
  * object or when it returns a primitive should not return a null value. I.e.
  * when the return type is boolean but a Boolean null value is returned a

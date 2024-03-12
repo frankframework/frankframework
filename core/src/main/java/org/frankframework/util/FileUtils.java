@@ -95,8 +95,7 @@ public class FileUtils {
 			p.setPattern(filenamePattern);
 			p.configure();
 			pl.add(p);
-		}
-		catch(ConfigurationException e) {
+		} catch (ConfigurationException e) {
 			throw new ParameterException("file", e);
 		}
 
@@ -135,17 +134,17 @@ public class FileUtils {
 
 	public static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int numberOfAttempts, long waitTime) throws InterruptedException, IOException {
 		if (orgFile.exists()) {
-			if (numBackups>0) {
-				makeBackups(rename2File,numBackups);
+			if (numBackups > 0) {
+				makeBackups(rename2File, numBackups);
 			} else {
 				if (overwrite && rename2File.exists()) {
 					rename2File.delete();
 				}
 			}
 		}
-		String result=moveFile(orgFile, rename2File, numberOfAttempts, waitTime);
-		if (result==null) {
-			throw new IOException("Could not move file ["+orgFile.getPath()+"] to ["+rename2File.getPath()+"]");
+		String result = moveFile(orgFile, rename2File, numberOfAttempts, waitTime);
+		if (result == null) {
+			throw new IOException("Could not move file [" + orgFile.getPath() + "] to [" + rename2File.getPath() + "]");
 		}
 		return result;
 	}
@@ -161,14 +160,14 @@ public class FileUtils {
 			// doesn't work (for example when running on Linux and the file
 			// needs to be moved to another filesystem).
 			if (!success) {
-				log.debug("Could not move file ["+orgFile.getPath()+"] to ["+rename2File.getPath()+"], now trying alternate move (copy and delete)");
+				log.debug("Could not move file [" + orgFile.getPath() + "] to [" + rename2File.getPath() + "], now trying alternate move (copy and delete)");
 				success = copyFile(orgFile, rename2File, false);
 				if (success) {
 					success = orgFile.delete();
 					if (!success) {
-						log.debug("Could not delete source file ["+orgFile.getPath()+"] after copying it to ["+rename2File.getPath()+"]");
+						log.debug("Could not delete source file [" + orgFile.getPath() + "] after copying it to [" + rename2File.getPath() + "]");
 						if (!rename2FileExists) {
-							log.debug("Deleting destination file ["+rename2File.getPath()+"]: " + rename2File.delete());
+							log.debug("Deleting destination file [" + rename2File.getPath() + "]: " + rename2File.delete());
 						}
 					}
 				} else {
@@ -188,7 +187,7 @@ public class FileUtils {
 		return null;
 	}
 
-	public static File getFreeFile(File file)  {
+	public static File getFreeFile(File file) {
 		if (file.exists()) {
 			String extension = FileUtils.getFileNameExtension(file.getPath());
 			int count = 1;
@@ -200,7 +199,7 @@ public class FileUtils {
 				} else {
 					countStr = "" + count;
 				}
-				if (extension!=null) {
+				if (extension != null) {
 					newFileName = StringUtils.substringBeforeLast(file.getPath(), ".") + "_" + countStr + "." + extension;
 				} else {
 					newFileName = file.getPath() + "_" + countStr;
@@ -259,7 +258,7 @@ public class FileUtils {
 	 * Creates a temporary file inside the ${ibis.tmpdir} using the specified extension.
 	 */
 	public static File createTempFile(final String extension) throws IOException {
-		final File directory = new File( getTempDirectory() );
+		final File directory = new File(getTempDirectory());
 		final String suffix = StringUtils.isNotEmpty(extension) ? extension : ".tmp";
 		final String prefix = "frank";
 		log.debug("creating tempfile prefix [{}] suffix [{}] directory [{}]", prefix, suffix, directory);
@@ -268,6 +267,7 @@ public class FileUtils {
 
 	/**
 	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
+	 *
 	 * @return The absolute path of ${ibis.tmpdir} or IOException if it cannot be resolved
 	 */
 	public static @Nonnull String getTempDirectory() {
@@ -279,19 +279,19 @@ public class FileUtils {
 				String absPath = new File("").getAbsolutePath();
 				file = new File(absPath, directory);
 			}
-			if(!file.exists()) {
+			if (!file.exists()) {
 				file.mkdirs();
 			}
 			String fileDir = file.getPath();
-			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"]");
+			if (StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
+				throw new IllegalStateException("unknown or invalid path [" + ((StringUtils.isEmpty(fileDir)) ? "NULL" : fileDir) + "]");
 			}
 			directory = file.getAbsolutePath();
 		}
 		log.debug("resolved temp directory to [{}]", directory);
 
 		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
-		if(StringUtils.isEmpty(directory)) {
+		if (StringUtils.isEmpty(directory)) {
 			log.error("unable to determine ibis temp directory, falling back to [java.io.tmpdir]");
 			return System.getProperty("java.io.tmpdir");
 		}
@@ -300,7 +300,7 @@ public class FileUtils {
 
 	/**
 	 * @return the ${ibis.tmpdir}/folder or IOException if it cannot be resolved.
-	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
+	 * 		If the ${ibis.tmpdir} is relative it will turn it into an absolute path
 	 */
 	public static File getTempDirectory(String folder) throws IOException {
 		String tempDir = getTempDirectory();
@@ -323,36 +323,36 @@ public class FileUtils {
 		return path.toFile();
 	}
 
-	public static void makeBackups(File targetFile, int numBackups)  {
-		if (numBackups<=0 || !targetFile.exists()) {
+	public static void makeBackups(File targetFile, int numBackups) {
+		if (numBackups <= 0 || !targetFile.exists()) {
 			return;
 		}
-		if (numBackups>1) {
-			File curFile=null;
-			int i=1;
+		if (numBackups > 1) {
+			File curFile = null;
+			int i = 1;
 			// check for currently available backup files
-			for (;i<=numBackups; i++) {
-				String filename=targetFile.getPath()+"."+i;
-				curFile=new File(filename);
-				if (!curFile.exists())  {
+			for (; i <= numBackups; i++) {
+				String filename = targetFile.getPath() + "." + i;
+				curFile = new File(filename);
+				if (!curFile.exists()) {
 					break;
 				}
 			}
 			// delete the oldest backup file
-			if (i>numBackups) {
+			if (i > numBackups) {
 				curFile.delete();
 			}
 			// move all backup files one step up
-			for(;i>1;i--) {
-				String srcFilename=targetFile.getPath()+"."+(i-1);
-				File srcFile=new File(srcFilename);
+			for (; i > 1; i--) {
+				String srcFilename = targetFile.getPath() + "." + (i - 1);
+				File srcFile = new File(srcFilename);
 				srcFile.renameTo(curFile);
-				curFile=srcFile;
+				curFile = srcFile;
 			}
 		}
 		// move current file to back up
-		String backupFilename=targetFile.getPath()+".1";
-		File backupFile=new File(backupFilename);
+		String backupFilename = targetFile.getPath() + ".1";
+		File backupFile = new File(backupFilename);
 		targetFile.renameTo(backupFile);
 	}
 
@@ -366,7 +366,7 @@ public class FileUtils {
 			excludeFilter = new WildCardFilter(excludeWildcard);
 		}
 
-		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
+		long lastChangedAllowed = minStability > 0 ? new Date().getTime() - minStability : 0;
 
 		List<File> result = new ArrayList<>();
 		int count = (files == null ? 0 : files.length);
@@ -375,10 +375,10 @@ public class FileUtils {
 			if (!file.isFile()) {
 				continue;
 			}
-			if (excludeFilter!=null && excludeFilter.accept(dir, file.getName())) {
+			if (excludeFilter != null && excludeFilter.accept(dir, file.getName())) {
 				continue;
 			}
-			if (minStability>0 && file.lastModified()>lastChangedAllowed) {
+			if (minStability > 0 && file.lastModified() > lastChangedAllowed) {
 				continue;
 			}
 			result.add(file);
@@ -401,6 +401,7 @@ public class FileUtils {
 		}
 		return null;
 	}
+
 	public static File getFirstFile(String directory, long minStability) {
 		File dir = new File(directory);
 		String[] fileNames = dir.list();
@@ -413,7 +414,7 @@ public class FileUtils {
 		for (String fileName : fileNames) {
 			File file = new File(directory, fileName);
 			if (file.isFile() && (minStability > 0 && file.lastModified() <= lastChangedAllowed)) {
-					return file;
+				return file;
 			}
 		}
 		return null;
@@ -493,7 +494,7 @@ public class FileUtils {
 
 	public static String getFileNameExtension(String fileName) {
 		int idx = fileName.lastIndexOf('.');
-		if (idx<0) {
+		if (idx < 0) {
 			return null;
 		}
 		idx++;
@@ -507,7 +508,7 @@ public class FileUtils {
 		File file = new File(fileName);
 		String fname = file.getName();
 		int idx = fname.lastIndexOf('.');
-		if (idx<0) {
+		if (idx < 0) {
 			return null;
 		}
 		return fname.substring(0, idx);
@@ -515,7 +516,7 @@ public class FileUtils {
 
 	public static boolean extensionEqualsIgnoreCase(String fileName, String extension) {
 		String fileNameExtension = getFileNameExtension(fileName);
-		if (fileNameExtension==null) {
+		if (fileNameExtension == null) {
 			return false;
 		}
 		return fileNameExtension.equalsIgnoreCase(extension);
@@ -535,14 +536,14 @@ public class FileUtils {
 			try {
 				Files.delete(tmpFile.toPath());
 			} catch (Exception t) {
-				log.warn("Exception while deleting temporary file [" + tmpFile.getName() + "] in directory [" + directory + "]",t);
+				log.warn("Exception while deleting temporary file [" + tmpFile.getName() + "] in directory [" + directory + "]", t);
 			}
 			return true;
 		} catch (IOException ioe) {
-			log.debug("Exception while creating a temporary file in directory [" + directory + "]",ioe);
+			log.debug("Exception while creating a temporary file in directory [" + directory + "]", ioe);
 			return false;
 		} catch (SecurityException se) {
-			log.debug("Exception while testing if the application is allowed to write to directory [" + directory + "]",se);
+			log.debug("Exception while testing if the application is allowed to write to directory [" + directory + "]", se);
 			return false;
 		}
 	}
@@ -554,8 +555,8 @@ public class FileUtils {
 		for (int i = 0; i < len; i++) {
 			char c = fileName.charAt(i);
 			if ((c >= '0' && c <= '9')
-				|| (c >= 'a' && c <= 'z')
-				|| (c >= 'A' && c <= 'Z'))
+					|| (c >= 'a' && c <= 'z')
+					|| (c >= 'A' && c <= 'Z'))
 				encodedFileName.append(c);
 			else {
 				int imark = mark.indexOf(c);
@@ -610,7 +611,7 @@ public class FileUtils {
 
 	public static boolean readAllowed(String rules, String fileName, Authenticator authenticator) {
 		String[] rulesList = rules.split("\\|");
-		for (String rule: rulesList) {
+		for (String rule : rulesList) {
 			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
 			if (parts.size() != 3) {
 				log.debug("invalid rule '" + rule + "' contains " + parts.size() + " part(s): " + parts);
@@ -618,7 +619,7 @@ public class FileUtils {
 				String canonicalFileName = null;
 				try {
 					canonicalFileName = new File(fileName).getCanonicalPath();
-				} catch(Exception e) {
+				} catch (Exception e) {
 					log.error("cannot determine canonical path for file name '" + fileName + "'", e);
 				}
 				String canonicalPath = null;
@@ -627,7 +628,7 @@ public class FileUtils {
 				} else {
 					try {
 						canonicalPath = new File(parts.get(0)).getCanonicalPath();
-					} catch(Exception e) {
+					} catch (Exception e) {
 						log.error("cannot determine canonical path for first part '" + parts.get(0) + "' of rule", e);
 					}
 				}

@@ -25,29 +25,28 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
-
 import com.tibco.tibjms.TibjmsMapMessage;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.jms.JmsListener;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.DateFormatUtils;
+import org.xml.sax.SAXException;
 
 public class TibcoLogJmsListener extends JmsListener {
 
-	private static final int[] LOGLEVELS = { 5, 10, 30, 50, 70, 90 };
-	private static final String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
+	private static final int[] LOGLEVELS = {5, 10, 30, 50, 70, 90};
+	private static final String[] LOGLEVELS_TEXT = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 
 	@Override
-	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(javax.jms.Message rawMessage, Map<String, Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		TibjmsMapMessage tjmMessage;
 		try {
 			tjmMessage = (TibjmsMapMessage) rawMessage;
 		} catch (ClassCastException e) {
-			log.error("message received by listener on [" + getDestinationName() + "] was not of type TibjmsMapMessage, but [" + rawMessage.getClass().getName() + "]", e);
+			log.error("message received by listener on [" + getDestinationName() + "] was not of type TibjmsMapMessage, but [" + rawMessage.getClass()
+					.getName() + "]", e);
 			return null;
 		}
 		Enumeration enumeration = tjmMessage.getMapNames();

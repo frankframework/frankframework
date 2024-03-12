@@ -16,7 +16,7 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 
 	public LocalFileSystemTestHelper(Path folder2) {
-		this.folder=folder2;
+		this.folder = folder2;
 	}
 
 	@Override
@@ -32,16 +32,17 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 	protected Path getFileHandle(String filename) {
 		return Paths.get(folder.toAbsolutePath().toString(), filename);
 	}
+
 	protected Path getFileHandle(String subfolder, String filename) {
-		if (subfolder==null) {
+		if (subfolder == null) {
 			return getFileHandle(filename);
 		}
-		return Paths.get(folder.toAbsolutePath()+"/"+subfolder, filename);
+		return Paths.get(folder.toAbsolutePath() + "/" + subfolder, filename);
 	}
 
 	@Override
 	public boolean _fileExists(String subfolder, String filename) {
-		return Files.exists(getFileHandle(subfolder,filename));
+		return Files.exists(getFileHandle(subfolder, filename));
 	}
 
 	@Override
@@ -53,13 +54,13 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 	public OutputStream _createFile(String folder, String filename) throws IOException {
 		Path f = getFileHandle(folder, filename);
 		try {
-			if(folder != null && !Files.exists(f.getParent())) {
+			if (folder != null && !Files.exists(f.getParent())) {
 				Files.createDirectories(f.getParent());
 			}
 
 			Files.createFile(f);
 		} catch (IOException e) {
-			throw new IOException("Cannot create file ["+f.toString()+"]",e);
+			throw new IOException("Cannot create file [" + f.toString() + "]", e);
 		}
 		return Files.newOutputStream(f);
 	}
@@ -77,7 +78,7 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public boolean _folderExists(String folderName) throws Exception {
-		return _fileExists(null,folderName);
+		return _fileExists(null, folderName);
 	}
 
 	@Override

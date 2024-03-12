@@ -27,7 +27,7 @@ public class CleanupFileSystemJob extends JobDef {
 
 	@Override
 	public void execute() {
-		for (DirectoryCleaner directoryCleaner: directoryCleaners) {
+		for (DirectoryCleaner directoryCleaner : directoryCleaners) {
 			directoryCleaner.cleanup();
 		}
 	}

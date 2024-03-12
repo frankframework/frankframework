@@ -79,18 +79,19 @@ import org.frankframework.xml.XmlWriter;
  * </p>
  * Example:
  * <code><pre>
-&lt;?xml version="1.0"?&gt;
-&lt;!DOCTYPE configuration
-[
-&lt;!ENTITY HelloWorld SYSTEM "./ConfigurationHelloWorld.xml"&gt;
-]&gt;
-
-&lt;configuration name="HelloWorld"&gt;
-
-&HelloWorld;
-
-&lt;/configuration&gt;
-</pre></code>
+ * &lt;?xml version="1.0"?&gt;
+ * &lt;!DOCTYPE configuration
+ * [
+ * &lt;!ENTITY HelloWorld SYSTEM "./ConfigurationHelloWorld.xml"&gt;
+ * ]&gt;
+ *
+ * &lt;configuration name="HelloWorld"&gt;
+ *
+ * &HelloWorld;
+ *
+ * &lt;/configuration&gt;
+ * </pre></code>
+ *
  * @author Johan Verrips
  * @see Configuration
  */
@@ -108,8 +109,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private final boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
 	private final boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
 
-	private class XmlErrorHandler implements ErrorHandler  {
+	private class XmlErrorHandler implements ErrorHandler {
 		private String schema;
+
 		public XmlErrorHandler(String schema) {
 			this.schema = schema;
 		}
@@ -118,19 +120,21 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		public void warning(SAXParseException exception) {
 			logErrorMessage("Validation warning", exception);
 		}
+
 		@Override
 		public void error(SAXParseException exception) {
 			logErrorMessage("Validation error", exception);
 		}
+
 		@Override
 		public void fatalError(SAXParseException exception) {
 			logErrorMessage("Fatal validation error", exception);
 		}
 
 		private void logErrorMessage(String prefix, SAXParseException exception) {
-			String msg = prefix+" in ["+exception.getSystemId()+"] at line ["+exception.getLineNumber()+"] when validating against schema ["+schema+"]: " + exception.getMessage();
+			String msg = prefix + " in [" + exception.getSystemId() + "] at line [" + exception.getLineNumber() + "] when validating against schema [" + schema + "]: " + exception.getMessage();
 			if (!suppressValidationWarnings) {
-				configurationWarnings.add((Object)null, log, msg);
+				configurationWarnings.add((Object) null, log, msg);
 			} else {
 				log.debug(msg);
 			}
@@ -145,6 +149,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			public SAXException createSAXException(String message, Exception e) {
 				return SaxException.createSaxException(message, getDocumentLocator(), e);
 			}
+
 			@Override
 			public SAXException createSAXException(Exception e) {
 				return SaxException.createSaxException(null, getDocumentLocator(), e);
@@ -162,8 +167,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			digester.setNamespaceAware(true);
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
 			URL xsdUrl = ClassLoaderUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
-			if (xsdUrl==null) {
-				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
+			if (xsdUrl == null) {
+				throw new ConfigurationException("cannot get URL from [" + CONFIGURATION_VALIDATION_SCHEMA + "]");
 			}
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
 			XmlErrorHandler xeh = new XmlErrorHandler(CONFIGURATION_VALIDATION_SCHEMA);
@@ -182,10 +187,10 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	public void digest() throws ConfigurationException {
-		if(!(applicationContext instanceof Configuration)) {
+		if (!(applicationContext instanceof Configuration)) {
 			throw new IllegalStateException("no suitable Configuration found");
 		}
-		Configuration configurationContext = (Configuration)applicationContext;
+		Configuration configurationContext = (Configuration) applicationContext;
 
 		digestConfiguration(configurationContext);
 	}
@@ -196,13 +201,13 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 		Resource configurationResource = Resource.getResource(configuration, configurationFile);
 		if (configurationResource == null) {
-			throw new ConfigurationException("Configuration file ["+configurationFile+"] not found in ClassLoader ["+configuration.getClassLoader()+"]");
+			throw new ConfigurationException("Configuration file [" + configurationFile + "] not found in ClassLoader [" + configuration.getClassLoader() + "]");
 		}
 
 		try {
 			digester = getDigester(configuration);
 
-			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
+			if (log.isDebugEnabled()) log.debug("digesting configuration [" + configuration.getName() + "] configurationFile [" + configurationFile + "]");
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			parseAndResolveEntitiesAndProperties(digester, configuration, configurationResource, appConstants);
@@ -211,12 +216,12 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
 			String currentElementName = null;
-			if (digester != null ) {
+			if (digester != null) {
 				currentElementName = digester.getCurrentElementName();
 			}
 			Locator locator = digester.getDocumentLocator();
-			String location = locator!=null ? " systemId ["+locator.getSystemId()+"] line ["+locator.getLineNumber()+"] column ["+locator.getColumnNumber()+"]":"";
-			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] "+location+" with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
+			String location = locator != null ? " systemId [" + locator.getSystemId() + "] line [" + locator.getLineNumber() + "] column [" + locator.getColumnNumber() + "]" : "";
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] " + location + " with digester-rules-file [" + getDigesterRuleFile() + "] in element [" + currentElementName + "]", t);
 		}
 	}
 
@@ -278,7 +283,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(namespacedContentsRemovingFilter);
 			return new InitialCapsFilter(skipContainersFilter);
 		} catch (SAXException e) {
-			throw new IOException("Cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);
+			throw new IOException("Cannot get canonicalizer using [" + ConfigurationUtils.FRANK_CONFIG_XSD + "]", e);
 		}
 	}
 
@@ -293,8 +298,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 			TransformerFilter filter = tp.getTransformerFilter(null, handler);
 
-			Map<String,Object> parameters = new HashMap<>();
-			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
+			Map<String, Object> parameters = new HashMap<>();
+			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, "false")));
 
 			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
 

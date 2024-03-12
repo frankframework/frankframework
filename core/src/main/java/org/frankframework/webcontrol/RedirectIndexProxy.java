@@ -32,10 +32,9 @@ public class RedirectIndexProxy extends HttpServletBase {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String consoleLocation = AppConstants.getInstance().getProperty("console.location");
-		if(StringUtils.isNotEmpty(consoleLocation)) {
+		if (StringUtils.isNotEmpty(consoleLocation)) {
 			response.sendRedirect(consoleLocation);
-		}
-		else {
+		} else {
 			response.sendRedirect("iaf/gui/");
 		}
 	}

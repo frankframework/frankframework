@@ -45,10 +45,10 @@ import org.frankframework.util.SpringUtils;
  * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
  * 2. It then loops through all records found in the database.
  * 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job.
- *    Only if they differ, it overwrites the current job.
- *    If it is not present it add the job to the scheduler.
+ * Only if they differ, it overwrites the current job.
+ * If it is not present it add the job to the scheduler.
  * 4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
- *    Since they have been removed from the database, remove them from the Quartz Scheduler
+ * Since they have been removed from the database, remove them from the Quartz Scheduler
  *
  * @author Niels Meijer
  */
@@ -64,9 +64,9 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 			// Fill the databaseJobDetails Map with all IbisJobDetails that have been stored in the database
 			Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.anyJobGroup());
-			for(JobKey jobKey : jobKeys) {
+			for (JobKey jobKey : jobKeys) {
 				IbisJobDetail detail = (IbisJobDetail) scheduler.getJobDetail(jobKey);
-				if(detail.getJobType() == JobType.DATABASE) {
+				if (detail.getJobType() == JobType.DATABASE) {
 					databaseJobDetails.put(detail.getKey(), detail);
 				}
 			}
@@ -85,7 +85,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 			try (Connection conn = qs.getConnection()) {
 				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 					try (ResultSet rs = stmt.executeQuery()) {
-						while(rs.next()) {
+						while (rs.next()) {
 							String jobName = rs.getString("JOBNAME");
 							String jobGroup = rs.getString("JOBGROUP");
 							String adapterName = rs.getString("ADAPTER");
@@ -102,7 +102,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							try {
 								adapter = findAdapter(adapterName);
 							} catch (IllegalStateException e) {
-								getMessageKeeper().add("unable to add schedule ["+key+"]: " + e.getMessage());
+								getMessageKeeper().add("unable to add schedule [" + key + "]: " + e.getMessage());
 								continue;
 							}
 
@@ -116,7 +116,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							jobdef.setJavaListener(javaListener);
 							jobdef.setMessage(message);
 
-							if(hasLocker) {
+							if (hasLocker) {
 								Locker locker = SpringUtils.createBean(getApplicationContext(), Locker.class);
 
 								locker.setName(lockKey);
@@ -128,29 +128,29 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							try {
 								jobdef.configure();
 							} catch (ConfigurationException e) {
-								getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
+								getMessageKeeper().add("unable to configure DatabaseJobDef [" + jobdef + "] with key [" + key + "]", e);
 							}
 
 							// If the job is found, find out if it is different from the existing one and update if necessarily
-							if(databaseJobDetails.containsKey(key)) {
+							if (databaseJobDetails.containsKey(key)) {
 								IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
-								if(!oldJobDetails.compareWith(jobdef)) {
-									log.debug("updating DatabaseSchedule ["+key+"]");
+								if (!oldJobDetails.compareWith(jobdef)) {
+									log.debug("updating DatabaseSchedule [" + key + "]");
 									try {
 										sh.scheduleJob(jobdef);
 									} catch (SchedulerException e) {
-										getMessageKeeper().add("unable to update schedule ["+key+"]", e);
+										getMessageKeeper().add("unable to update schedule [" + key + "]", e);
 									}
 								}
 								// Remove the key that has been found from the databaseJobDetails Map
 								databaseJobDetails.remove(key);
 							} else {
 								// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
-								log.debug("add DatabaseSchedule ["+key+"]");
+								log.debug("add DatabaseSchedule [" + key + "]");
 								try {
 									sh.scheduleJob(jobdef);
 								} catch (SchedulerException e) {
-									getMessageKeeper().add("unable to add schedule ["+key+"]", e);
+									getMessageKeeper().add("unable to add schedule [" + key + "]", e);
 								}
 							}
 						}
@@ -164,12 +164,12 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 		}
 
 		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!
-		for(JobKey key : databaseJobDetails.keySet()) {
-			log.debug("delete DatabaseSchedule ["+key+"]");
+		for (JobKey key : databaseJobDetails.keySet()) {
+			log.debug("delete DatabaseSchedule [" + key + "]");
 			try {
 				scheduler.deleteJob(key);
 			} catch (SchedulerException e) {
-				getMessageKeeper().add("unable to remove schedule ["+key+"]", e);
+				getMessageKeeper().add("unable to remove schedule [" + key + "]", e);
 			}
 		}
 	}
@@ -177,9 +177,9 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 	//Loops through all configurations
 	private Adapter findAdapter(String adapterName) {
 		List<Adapter> adapters = new ArrayList<>();
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			if(config.isActive()) {
-				for(Adapter adapter : config.getRegisteredAdapters()) {
+		for (Configuration config : getIbisManager().getConfigurations()) {
+			if (config.isActive()) {
+				for (Adapter adapter : config.getRegisteredAdapters()) {
 					if (adapterName.equals(adapter.getName())) {
 						adapters.add(adapter);
 					}
@@ -187,11 +187,11 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 			}
 		}
 
-		if(adapters.isEmpty()) {
-			throw new IllegalStateException("adapter ["+adapterName+"] not found");
+		if (adapters.isEmpty()) {
+			throw new IllegalStateException("adapter [" + adapterName + "] not found");
 		}
-		if(adapters.size() > 1) {
-			throw new IllegalStateException("found more then 1 adapter matching name ["+adapterName+"]");
+		if (adapters.size() > 1) {
+			throw new IllegalStateException("found more then 1 adapter matching name [" + adapterName + "]");
 		}
 		return adapters.get(0);
 	}

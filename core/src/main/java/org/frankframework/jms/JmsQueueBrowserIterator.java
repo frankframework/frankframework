@@ -24,7 +24,6 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
@@ -32,25 +31,25 @@ import org.frankframework.core.ListenerException;
 /**
  * Helper class for browsing queues.
  *
- * @author  Gerrit van Brakel
- * @since   4.3
+ * @author Gerrit van Brakel
+ * @since 4.3
  */
 public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 
-	private final JMSFacade    facade;
+	private final JMSFacade facade;
 	private final Session session;
 	private final QueueBrowser queueBrowser;
-	private final Enumeration  enm;
+	private final Enumeration enm;
 
 	public JmsQueueBrowserIterator(JMSFacade facade, Queue destination, String selector) throws JMSException, JmsException {
-		this.facade=facade;
-		this.session=facade.createSession();
+		this.facade = facade;
+		this.session = facade.createSession();
 		if (StringUtils.isEmpty(selector)) {
-			this.queueBrowser=session.createBrowser(destination);
+			this.queueBrowser = session.createBrowser(destination);
 		} else {
-			this.queueBrowser=session.createBrowser(destination, selector);
+			this.queueBrowser = session.createBrowser(destination, selector);
 		}
-		this.enm=queueBrowser.getEnumeration();
+		this.enm = queueBrowser.getEnumeration();
 	}
 
 	@Override
@@ -60,7 +59,7 @@ public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 
 	@Override
 	public IMessageBrowsingIteratorItem next() {
-		return new JmsMessageBrowserIteratorItem((Message)enm.nextElement());
+		return new JmsMessageBrowserIteratorItem((Message) enm.nextElement());
 	}
 
 	@Override
@@ -68,7 +67,7 @@ public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 		try {
 			queueBrowser.close();
 		} catch (JMSException e) {
-			throw new ListenerException("error closing queuebrowser",e);
+			throw new ListenerException("error closing queuebrowser", e);
 		}
 		facade.closeSession(session);
 	}

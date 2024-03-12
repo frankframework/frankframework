@@ -31,12 +31,12 @@ import org.xml.sax.SAXException;
  */
 public class Xml2Map<V> extends XmlTo<MapContentContainer<V>> {
 
-	public Xml2Map(XmlAligner aligner, Map<String,List<V>> data) {
+	public Xml2Map(XmlAligner aligner, Map<String, List<V>> data) {
 		super(aligner, new MapContentContainer<V>(data));
 	}
 
-	public static Map<String,String> translate(String xml, URL schemaURL) throws SAXException, IOException {
-		Map<String,List<String>> map = new LinkedHashMap<>();
+	public static Map<String, String> translate(String xml, URL schemaURL) throws SAXException, IOException {
+		Map<String, List<String>> map = new LinkedHashMap<>();
 		MapContentContainer<String> documentContainer = new MapContentContainer<>(map);
 		translate(xml, schemaURL, documentContainer);
 		return documentContainer.flattenedHorizontal();

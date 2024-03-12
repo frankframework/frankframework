@@ -28,22 +28,20 @@ import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
-
-import org.frankframework.doc.ReferTo;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.doc.ReferTo;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.StringIteratorPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
-
 import org.frankframework.util.SpringUtils;
 
 
 /**
  * Base class for JDBC iterating pipes.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
@@ -57,7 +55,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		@Override
 		public void configure() throws ConfigurationException {
 			//In case a query is specified, pass true as argument to suppress the SQL Injection warning else pass the Adapter
-			if(query!=null) {
+			if (query != null) {
 				super.configure(true);
 			} else {
 				super.configure(getAdapter());
@@ -66,7 +64,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 		@Override
 		protected String getQuery(Message message) throws SenderException {
-			if (query!=null) {
+			if (query != null) {
 				return query;
 			}
 			return super.getQuery(message);
@@ -82,7 +80,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		super.configure();
 
 		SpringUtils.autowireByName(getApplicationContext(), querySender);
-		querySender.setName("source of "+getName());
+		querySender.setName("source of " + getName());
 		querySender.configure();
 	}
 
@@ -106,17 +104,17 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException;
 
 	@Override
-	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
 		Connection connection = null;
-		PreparedStatement statement=null;
-		ResultSet rs=null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
 		try {
 			connection = querySender.getConnection();
 			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message);
-			statement=queryExecutionContext.getStatement();
+			statement = queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			rs = statement.executeQuery();
-			if (rs==null) {
+			if (rs == null) {
 				throw new SenderException("resultset is null");
 			}
 			if (!rs.next()) {
@@ -126,7 +124,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 			return getIterator(querySender.getDbmsSupport(), connection, rs);
 		} catch (Throwable t) {
 			try {
-				if (rs!=null) {
+				if (rs != null) {
 					JdbcUtil.fullClose(connection, rs);
 				} else {
 					JdbcUtil.fullClose(connection, statement);

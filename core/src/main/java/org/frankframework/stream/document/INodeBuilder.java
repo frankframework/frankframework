@@ -20,10 +20,15 @@ import org.xml.sax.SAXException;
 public interface INodeBuilder extends AutoCloseable {
 
 	public ArrayBuilder startArray(String elementName) throws SAXException;
+
 	public ObjectBuilder startObject() throws SAXException;
+
 	public void setValue(String value) throws SAXException;
+
 	public void setValue(Number value) throws SAXException;
+
 	public void setValue(boolean value) throws SAXException;
+
 	public void setNumberValue(String value) throws SAXException;
 
 	@Override

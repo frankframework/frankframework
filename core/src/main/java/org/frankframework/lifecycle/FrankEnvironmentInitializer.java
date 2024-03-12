@@ -42,7 +42,7 @@ import lombok.extern.log4j.Log4j2;
  * Programmatically load the Frank!Framework Web Environment.
  * It's important this is loaded first, and before any programmatic listeners have been added.
  * The EnvironmentContext will load servlets and filters.
- *
+ * <p>
  * Uses the same order as well as delegation as the SpringBootServletInitializer used in the Frank!Console WAR.
  *
  * @author Niels Meijer
@@ -125,12 +125,11 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 
 		//has it explicitly been set? if not, set the property
 		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-		String serverCustomization = System.getProperty(AppConstants.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY,"");
+		String serverCustomization = System.getProperty(AppConstants.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY, "");
 		if (autoDeterminedApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
 			log.info("property [{}] already has a default value [{}]", AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
-		}
-		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
-			APPLICATION_LOG.info("Determined ApplicationServer [{}]{}", autoDeterminedApplicationServerType, (StringUtils.isNotEmpty(serverCustomization) ? " customization ["+serverCustomization+"]":""));
+		} else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
+			APPLICATION_LOG.info("Determined ApplicationServer [{}]{}", autoDeterminedApplicationServerType, (StringUtils.isNotEmpty(serverCustomization) ? " customization [" + serverCustomization + "]" : ""));
 			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
 		}
 	}

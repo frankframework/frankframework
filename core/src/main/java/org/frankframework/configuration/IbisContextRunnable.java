@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.util.LogUtil;
 
 public class IbisContextRunnable implements Runnable {
-	private static final int IBIS_INIT_EXCEPTION_TIMEOUT = 60*1000;
+	private static final int IBIS_INIT_EXCEPTION_TIMEOUT = 60 * 1000;
 	private final Logger log = LogUtil.getLogger(this);
 	private IbisContext ibisContext;
 
@@ -33,10 +33,9 @@ public class IbisContextRunnable implements Runnable {
 		try {
 			log.trace("Starting IbisContextRunnable thread...");
 			Thread.sleep(IBIS_INIT_EXCEPTION_TIMEOUT);
-			if(ibisContext.getIbisManager() != null) {
+			if (ibisContext.getIbisManager() != null) {
 				log.debug("Tried to initialize the ibisContext but has already been initialized, cancelling...");
-			}
-			else {
+			} else {
 				ibisContext.init();
 			}
 		} catch (InterruptedException e) {

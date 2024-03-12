@@ -18,6 +18,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 	public MailSender createSender() throws Exception {
 		MailSender mailSender = new MailSender() {
 			Session mailSession;
+
 			@Override
 			protected Session createSession() throws SenderException {
 				try {
@@ -26,7 +27,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 					mailSession.setProvider(provider);
 
 					return mailSession;
-				} catch(Exception e) {
+				} catch (Exception e) {
 					log.error("unable to create mail Session", e);
 					throw new SenderException(e);
 				}

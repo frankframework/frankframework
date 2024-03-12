@@ -21,12 +21,12 @@ import org.frankframework.receivers.RawMessageWrapper;
 
 
 /**
- * @author  Gerrit van Brakel
- * @since   4.3
+ * @author Gerrit van Brakel
+ * @since 4.3
  */
 public interface IMessageBrowser<M> extends IXAEnabled {
 
-	enum SortOrder { NONE, ASC, DESC }
+	enum SortOrder {NONE, ASC, DESC}
 
 	enum StorageType {
 		NONE(null),
@@ -58,6 +58,7 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.
 	 */
 	IMessageBrowsingIterator getIterator() throws ListenerException;
+
 	IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException;
 
 	/**
@@ -71,28 +72,33 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	 * (as passed to storeMessage).
 	 */
 	boolean containsMessageId(String originalMessageId) throws ListenerException;
+
 	boolean containsCorrelationId(String correlationId) throws ListenerException;
 
 	/**
 	 * Retrieves the message, but does not delete.
-	 *
 	 */
 	RawMessageWrapper<M> browseMessage(String storageKey) throws ListenerException;
+
 	/**
 	 * Deletes the message.
 	 */
 	void deleteMessage(String storageKey) throws ListenerException;
+
 	int getMessageCount() throws ListenerException; // may return -1 when the count cannot be determined
 
 	/** Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt; */
 	void setHideRegex(String hideRegex);
+
 	String getHideRegex();
 
 	/**
 	 * (Only used when hideRegex is not empty) Specifies the way to hide
+	 *
 	 * @ff.default ALL
 	 */
 	void setHideMethod(HideMethod hideMethod);
+
 	HideMethod getHideMethod();
 
 }

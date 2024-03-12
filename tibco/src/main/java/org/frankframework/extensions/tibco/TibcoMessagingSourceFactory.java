@@ -32,16 +32,16 @@ import org.frankframework.jms.MessagingSource;
 
 /**
  * Factory for {@link TibcoMessagingSource}s, to share them for Tibco Objects that can use the same.
- *
+ * <p>
  * Tibco related IBIS objects can obtain a MessagingSource from this class. The physical connection is shared
  * between all IBIS objects that have the same (Tibco)connectionFactoryName.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class TibcoMessagingSourceFactory extends JmsMessagingSourceFactory {
 
-	private static final Map<String,MessagingSource> TIBCO_MESSAGING_SOURCE_MAP = new HashMap<>();
+	private static final Map<String, MessagingSource> TIBCO_MESSAGING_SOURCE_MAP = new HashMap<>();
 	private final boolean useTopic;
 
 	@Override
@@ -51,13 +51,13 @@ public class TibcoMessagingSourceFactory extends JmsMessagingSourceFactory {
 
 	public TibcoMessagingSourceFactory(JMSFacade jmsFacade, boolean useTopic) {
 		super(jmsFacade);
-		this.useTopic=useTopic;
+		this.useTopic = useTopic;
 	}
 
 	@Override
 	protected MessagingSource createMessagingSource(String serverUrl, String authAlias, boolean createDestination) throws IbisException {
 		ConnectionFactory connectionFactory = getConnectionFactory(null, serverUrl, createDestination);
-		return new TibcoMessagingSource(serverUrl, null, connectionFactory, getMessagingSourceMap(),authAlias);
+		return new TibcoMessagingSource(serverUrl, null, connectionFactory, getMessagingSourceMap(), authAlias);
 	}
 
 	@Override

@@ -58,7 +58,6 @@ import org.frankframework.util.StringUtil;
  * Authentication base URL: -servlet-name- {@value OAuth2AuthorizationRequestRedirectFilter#DEFAULT_AUTHORIZATION_REQUEST_BASE_URI}
  *
  * @author Niels Meijer
- *
  */
 public class OAuth2Authenticator extends ServletAuthenticatorBase {
 
@@ -100,26 +99,26 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 		configure();
 
 		http.oauth2Login()
-			.clientRegistrationRepository(clientRepository) //explicitly set, but can also be implicitly implied.
-			.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
-			.failureUrl(oauthBaseUrl + "/oauth2/failure/")
-			.authorizationEndpoint()
+				.clientRegistrationRepository(clientRepository) //explicitly set, but can also be implicitly implied.
+				.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
+				.failureUrl(oauthBaseUrl + "/oauth2/failure/")
+				.authorizationEndpoint()
 				.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI).and()
-			.userInfoEndpoint()
+				.userInfoEndpoint()
 				.userAuthoritiesMapper(new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties())).and()
-			.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*");
+				.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*");
 
 		return http.build();
 	}
 
 	private void configure() throws FileNotFoundException {
-		if(StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret)) {
+		if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret)) {
 			throw new IllegalStateException("clientId and clientSecret must be set");
 		}
 
 		roleMappingURL = ClassUtils.getResourceURL(roleMappingFile);
-		if(roleMappingURL == null) {
-			throw new FileNotFoundException("unable to find OAUTH role-mapping file ["+roleMappingFile+"]");
+		if (roleMappingURL == null) {
+			throw new FileNotFoundException("unable to find OAUTH role-mapping file [" + roleMappingFile + "]");
 		}
 		log.info("found rolemapping file [{}]", roleMappingURL);
 
@@ -180,11 +179,11 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 
 	private String computeBaseUrl() {
 		String baseUrl = getPrivateEndpoints().stream().findFirst().orElse("");
-		if(baseUrl.endsWith("*")) { //Strip the '*' if the url ends with it
-			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
+		if (baseUrl.endsWith("*")) { //Strip the '*' if the url ends with it
+			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
 		}
-		if(baseUrl.endsWith("/")) { //Ensure the url does not end with a slash
-			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
+		if (baseUrl.endsWith("/")) { //Ensure the url does not end with a slash
+			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
 		}
 
 		return baseUrl;

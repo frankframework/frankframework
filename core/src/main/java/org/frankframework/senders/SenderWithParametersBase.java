@@ -33,7 +33,7 @@ import org.frankframework.stream.Message;
  * Provides a base class for senders with parameters.
  *
  * @author Gerrit van Brakel
- * @since  4.3
+ * @since 4.3
  */
 public abstract class SenderWithParametersBase extends SenderBase implements ISenderWithParameters {
 
@@ -42,7 +42,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList!=null) {
+		if (paramList != null) {
 			paramList.setNamesMustBeUnique(parameterNamesMustBeUnique);
 			paramList.configure();
 		}
@@ -50,8 +50,8 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 
 	@Override
 	public void addParameter(Parameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
+		if (paramList == null) {
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}
@@ -65,20 +65,20 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	}
 
 	protected void checkStringAttributeOrParameter(String attributeName, String attributeValue, String parameterName) throws ConfigurationException {
-		if (StringUtils.isEmpty(attributeValue) && (getParameterList()==null || getParameterList().findParameter(parameterName)==null)) {
-			throw new ConfigurationException("either attribute "+attributeName+" or parameter "+parameterName+" must be specified");
+		if (StringUtils.isEmpty(attributeValue) && (getParameterList() == null || getParameterList().findParameter(parameterName) == null)) {
+			throw new ConfigurationException("either attribute " + attributeName + " or parameter " + parameterName + " must be specified");
 		}
 	}
 
 	protected String getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, String attributeValue) {
-		if (pvl!=null && pvl.contains(parameterName)) {
+		if (pvl != null && pvl.contains(parameterName)) {
 			return pvl.get(parameterName).asStringValue(attributeValue);
 		}
 		return attributeValue;
 	}
 
 	protected int getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, int attributeValue) {
-		if (pvl!=null && pvl.contains(parameterName)) {
+		if (pvl != null && pvl.contains(parameterName)) {
 			return pvl.get(parameterName).asIntegerValue(attributeValue);
 		}
 		return attributeValue;
@@ -86,7 +86,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 
 	protected @Nullable ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws SenderException {
 		try {
-			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+			return getParameterList() != null ? getParameterList().getValues(input, session) : null;
 		} catch (ParameterException e) {
 			throw new SenderException("cannot determine parameter values", e);
 		}
@@ -95,7 +95,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
-		return getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+		return getParameterList() != null && getParameterList().consumesSessionVariable(sessionKey);
 	}
 
 }

@@ -22,19 +22,20 @@ import org.frankframework.util.StringUtil;
 /**
  * Exception thrown when the <code>doPipe()</code> method
  * of a {@link IPipe Pipe} runs in error.
- * @author  Johan Verrips
+ *
+ * @author Johan Verrips
  */
 public class PipeRunException extends IbisException {
 
 	private @Getter IPipe pipeInError = null;
 
 	public PipeRunException(IPipe pipe, String msg) {
-		super(StringUtil.concatStrings(pipe!=null ? "Pipe ["+pipe.getName()+"]" : null, " ", msg));
+		super(StringUtil.concatStrings(pipe != null ? "Pipe [" + pipe.getName() + "]" : null, " ", msg));
 		pipeInError = pipe;
 	}
 
 	public PipeRunException(IPipe pipe, String msg, Throwable e) {
-		super(StringUtil.concatStrings(pipe!=null ? "Pipe ["+pipe.getName()+"]" : null, " ", msg), e);
+		super(StringUtil.concatStrings(pipe != null ? "Pipe [" + pipe.getName() + "]" : null, " ", msg), e);
 		pipeInError = pipe;
 	}
 

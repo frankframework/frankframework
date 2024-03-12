@@ -45,9 +45,9 @@ public class ApiMemcached implements IApiCache {
 	final ConnectionObserver obs = new ConnectionObserver() {
 		@Override
 		public void connectionEstablished(SocketAddress sa, int reconnectCount) {
-			String msg = "successfully established a memcache connection to ["+sa+"]";
-			if(reconnectCount > 1)
-				msg += " after ["+reconnectCount+"] retries";
+			String msg = "successfully established a memcache connection to [" + sa + "]";
+			if (reconnectCount > 1)
+				msg += " after [" + reconnectCount + "] retries";
 			log.info(msg);
 		}
 
@@ -68,16 +68,16 @@ public class ApiMemcached implements IApiCache {
 		List<InetSocketAddress> addresses = AddrUtil.getAddresses(address);
 
 		ConnectionFactoryBuilder connectionFactoryBuilder = new ConnectionFactoryBuilder()
-			.setProtocol(Protocol.BINARY)
-			.setOpTimeout(timeout)
-			.setInitialObservers(Collections.singleton(obs));
+				.setProtocol(Protocol.BINARY)
+				.setOpTimeout(timeout)
+				.setInitialObservers(Collections.singleton(obs));
 
-		if(addresses.size()  > 1)
+		if (addresses.size() > 1)
 			connectionFactoryBuilder.setFailureMode(FailureMode.Redistribute);
 		else
 			connectionFactoryBuilder.setFailureMode(FailureMode.Retry);
 
-		if(!username.isEmpty())
+		if (!username.isEmpty())
 			connectionFactoryBuilder.setAuthDescriptor(AuthDescriptor.typical(username, password));
 
 		ConnectionFactory cf = connectionFactoryBuilder.build();
@@ -96,8 +96,7 @@ public class ApiMemcached implements IApiCache {
 	public Object get(String key) {
 		try {
 			return client.get(key);
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
 	}

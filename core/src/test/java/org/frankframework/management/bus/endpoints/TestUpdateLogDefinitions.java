@@ -15,8 +15,10 @@ import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.ResponseMessageBase;
 import org.frankframework.testutil.SpringRootInitializer;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 
@@ -29,7 +31,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  * In the Log4J4Ibis.xml is a org.frankframework.management.bus definition which we use here to test the BUS responses.
  */
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-@WithMockUser(roles = { "IbisTester" })
+@WithMockUser(roles = {"IbisTester"})
 @SuppressWarnings("unchecked") //can be removed once we implement a DAO
 public class TestUpdateLogDefinitions extends BusTestBase {
 	private static final String LOG_DEFINITION_PACKAGE = "org.frankframework.management.bus";
@@ -45,17 +47,17 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		Map<String, Object> responseMap = mapper.readValue(json, Map.class);
 
 		Object loggersObj = responseMap.get("loggers");
-		if(loggersObj instanceof Map) {
+		if (loggersObj instanceof Map) {
 			Map<String, Object> loggers = (Map<String, Object>) loggersObj;
 			assertEquals("DEBUG", loggers.get(LOG_DEFINITION_PACKAGE));
 		}
 
 		boolean foundTestDefinition = false;
 		Object definitionsObj = responseMap.get("definitions");
-		if(definitionsObj instanceof List) {
+		if (definitionsObj instanceof List) {
 			List<Map<String, ?>> definitions = (List<Map<String, ?>>) definitionsObj;
-			for(Map<String, ?> definition : definitions) {
-				if(LOG_DEFINITION_PACKAGE.equals(definition.get("name"))) {
+			for (Map<String, ?> definition : definitions) {
+				if (LOG_DEFINITION_PACKAGE.equals(definition.get("name"))) {
 					foundTestDefinition = true;
 					assertEquals("DEBUG", definition.get("level"));
 				}
@@ -76,7 +78,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		Map<String, Object> responseMap = mapper.readValue(json, Map.class);
 
 		Object loggersObj = responseMap.get("loggers");
-		if(loggersObj instanceof Map) {
+		if (loggersObj instanceof Map) {
 			Map<String, String> loggers = (Map<String, String>) loggersObj;
 			assertEquals("DEBUG", loggers.get("org.frankframework.management.bus.endpoints"));
 		}

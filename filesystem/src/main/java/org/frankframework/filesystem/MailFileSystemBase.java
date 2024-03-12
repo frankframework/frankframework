@@ -21,20 +21,19 @@ import lombok.Getter;
  * Baseclass for {@link IMailFileSystem MailFileSystems}.
  *
  * @author Gerrit van Brakel
- *
  */
-public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends ConnectedFileSystemBase<M,C> implements IMailFileSystem<M,A> {
+public abstract class MailFileSystemBase<M, A, C extends AutoCloseable> extends ConnectedFileSystemBase<M, C> implements IMailFileSystem<M, A> {
 
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
 	private @Getter String baseFolder;
-	private @Getter boolean readMimeContents=false;
+	private @Getter boolean readMimeContents = false;
 	private @Getter String replyAddressFields = REPLY_ADDRESS_FIELDS_DEFAULT;
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "baseFolder ["+getBaseFolder()+"]";
+		return "baseFolder [" + getBaseFolder() + "]";
 	}
 
 	/**
@@ -64,6 +63,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 
 	/**
 	 * If set <code>true</code>, the contents will be read in MIME format
+	 *
 	 * @ff.default false
 	 */
 	public void setReadMimeContents(boolean readMimeContents) {
@@ -72,6 +72,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 
 	/**
 	 * Comma separated list of fields to try as response address
+	 *
 	 * @ff.default {@value #REPLY_ADDRESS_FIELDS_DEFAULT}
 	 */
 	public void setReplyAddressFields(String replyAddressFields) {

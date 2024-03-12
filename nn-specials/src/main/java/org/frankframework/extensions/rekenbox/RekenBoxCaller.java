@@ -21,7 +21,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -34,7 +33,7 @@ import org.frankframework.util.StreamUtil;
 
 /**
  * Perform a call to a RekenBox.
- *
+ * <p>
  * The inputmessage is written to a temporary file and passed as inputfile to the rekenbox. The contents of the outputfile of the
  * rekenbox is returned as output message. The name of the rekenbox, as determined from the inputfile, is optionally written to
  * the pipeLineSession.
@@ -53,17 +52,17 @@ import org.frankframework.util.StreamUtil;
 @Category("NN-Special")
 public class RekenBoxCaller extends FixedForwardPipe {
 
-	private String runPath="";
-	private String executableExtension="exe"; //bat, com or exe
+	private String runPath = "";
+	private String executableExtension = "exe"; //bat, com or exe
 	private String inputOutputDirectory;
 	private String templateDir;
 	private String rekenBoxName; // can be set for fixed rekenbox
-	private boolean cleanup=true;
-	private String commandLineType="straight";
-	private String rekenboxSessionKey=null; // output-property to communicate the name of the rekenbox to adios2Xml converter
+	private boolean cleanup = true;
+	private String commandLineType = "straight";
+	private String rekenboxSessionKey = null; // output-property to communicate the name of the rekenbox to adios2Xml converter
 
-	private String dataFilenamePrefix ="rb";
-	private long maxRequestNumber=1000;
+	private String dataFilenamePrefix = "rb";
+	private long maxRequestNumber = 1000;
 	private NumberFormat formatter;
 	private static Counter requestCounter = new Counter(0);
 
@@ -73,44 +72,44 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getCommandLineType()) ||
-			!(getCommandLineType().equals("straight") ||
-			getCommandLineType().equals("switches") ||
-			getCommandLineType().equals("redirected"))) {
-				throw new ConfigurationException("commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
-			}
-		inputOutputDir= new File(getInputOutputDirectory());
+				!(getCommandLineType().equals("straight") ||
+						getCommandLineType().equals("switches") ||
+						getCommandLineType().equals("redirected"))) {
+			throw new ConfigurationException("commandLineType [" + getCommandLineType() + "] must be one of 'straigth', 'switches' or 'redirected'");
+		}
+		inputOutputDir = new File(getInputOutputDirectory());
 		if (!inputOutputDir.exists()) {
-			throw new ConfigurationException("inputOutputDirectory ["+getInputOutputDirectory()+"] does not exist");
+			throw new ConfigurationException("inputOutputDirectory [" + getInputOutputDirectory() + "] does not exist");
 		}
 		if (!inputOutputDir.isDirectory()) {
-			throw new ConfigurationException("inputOutputDirectory ["+getInputOutputDirectory()+"] is not a directory");
+			throw new ConfigurationException("inputOutputDirectory [" + getInputOutputDirectory() + "] is not a directory");
 		}
-		formatter = new DecimalFormat("000000000000".substring(0,Long.toString(getMaxRequestNumber()).length()));
-		String baseFileName=getBaseFileName();
+		formatter = new DecimalFormat("000000000000".substring(0, Long.toString(getMaxRequestNumber()).length()));
+		String baseFileName = getBaseFileName();
 		log.debug("first filename will be [{}]", baseFileName);
 		requestCounter.decrease();
 	}
 
-	protected boolean inputFileExists(long requestno,String extension) {
-		return new File(inputOutputDir,makeFileName(requestno,extension)).exists();
+	protected boolean inputFileExists(long requestno, String extension) {
+		return new File(inputOutputDir, makeFileName(requestno, extension)).exists();
 	}
 
 	protected String makeFileName(long requestno, String extension) {
-		return getDataFilenamePrefix() + formatter.format(requestno)+extension;
+		return getDataFilenamePrefix() + formatter.format(requestno) + extension;
 	}
 
 	public String getBaseFileName() {
 		long requestno;
-		for(requestno=requestCounter.increase(); inputFileExists(requestno,".INV"); requestno=requestCounter.increase()) {
-			if (requestno>=getMaxRequestNumber()) {
-				synchronized (requestCounter){
-					if (requestCounter.getValue()>=getMaxRequestNumber())	{
+		for (requestno = requestCounter.increase(); inputFileExists(requestno, ".INV"); requestno = requestCounter.increase()) {
+			if (requestno >= getMaxRequestNumber()) {
+				synchronized (requestCounter) {
+					if (requestCounter.getValue() >= getMaxRequestNumber()) {
 						requestCounter.decrease(getMaxRequestNumber());
 					}
 				}
 			}
 		}
-		return makeFileName(requestno,"");
+		return makeFileName(requestno, "");
 	}
 
 	/**
@@ -125,32 +124,32 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		String rekenboxName=getRekenBoxName();
+		String rekenboxName = getRekenBoxName();
 		if (StringUtils.isEmpty(rekenboxName)) {
 			rekenboxName = sInput;
-			if (rekenboxName.length()>=8)
-				rekenboxName=rekenboxName.substring(0,8);
+			if (rekenboxName.length() >= 8)
+				rekenboxName = rekenboxName.substring(0, 8);
 			// find end or position of first colon.
-			rekenboxName = (rekenboxName+":").substring(0, (rekenboxName+":").indexOf(":")).trim();
+			rekenboxName = (rekenboxName + ":").substring(0, (rekenboxName + ":").indexOf(":")).trim();
 		}
 
 		if (rekenboxName.equals("")) {
-			throw new PipeRunException(this, "cannot determine rekenboxName from ["+sInput+"]");
+			throw new PipeRunException(this, "cannot determine rekenboxName from [" + sInput + "]");
 		}
 
-		int i=rekenboxName.length();
-		int n=sInput.length();
-		while(i < n && " :;".indexOf(sInput.charAt(i)) >= 0) {
+		int i = rekenboxName.length();
+		int n = sInput.length();
+		while (i < n && " :;".indexOf(sInput.charAt(i)) >= 0) {
 			i++;
 		}
 		String rekenboxInput = sInput.substring(i);
 
 		String exeName = runPath + rekenboxName + "." + executableExtension;
-		if(!(new File(exeName).exists())) {
+		if (!(new File(exeName).exists())) {
 			throw new PipeRunException(this, "executable file [" + exeName + "] does not exist; requestmessage: [" + sInput + "]");
 		}
 
-		if(getRekenboxSessionKey() != null) {
+		if (getRekenboxSessionKey() != null) {
 			session.put(getRekenboxSessionKey(), rekenboxName);
 		}
 
@@ -160,11 +159,11 @@ public class RekenBoxCaller extends FixedForwardPipe {
 
 		String callAndArgs;
 		String callType = getCommandLineType();
-		if((callType==null) || (callType.equals("switches")))  {
+		if ((callType == null) || (callType.equals("switches"))) {
 			callAndArgs = exeName + " /I" + inputFileName + " /U" + outputFileName + " /P" + templateDir;
-		} else if(callType.equals("straight")) {
+		} else if (callType.equals("straight")) {
 			callAndArgs = exeName + " " + inputFileName + " " + outputFileName + " " + templateDir;
-		} else if(callType.equals("redirected")) {
+		} else if (callType.equals("redirected")) {
 			callAndArgs = exeName + " " + inputFileName + " " + templateDir;
 		} else
 			throw new PipeRunException(this, "unknown commandLineType: " + callType);
@@ -185,7 +184,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			Process child = rt.exec(callAndArgs);
 			String result;
 
-			if(callType.equals("redirected")) {
+			if (callType.equals("redirected")) {
 				result = StreamUtil.streamToString(child.getInputStream(), "\n", true);
 
 			} else {
@@ -203,7 +202,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			throw new PipeRunException(this, "got Exception executing rekenbox", e);
 		} finally {
 			// cleanup
-			if(isCleanup()){
+			if (isCleanup()) {
 				new File(inputFileName).delete();
 				new File(outputFileName).delete();
 			}
@@ -214,6 +213,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setRekenBoxName(String string) {
 		rekenBoxName = string;
 	}
+
 	public String getRekenBoxName() {
 		return rekenBoxName;
 	}
@@ -222,6 +222,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setRunPath(String newRunPath) {
 		runPath = newRunPath;
 	}
+
 	public String getRunPath() {
 		return runPath;
 	}
@@ -230,6 +231,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setTemplateDir(String newTemplateDir) {
 		templateDir = newTemplateDir;
 	}
+
 	public String getTemplateDir() {
 		return templateDir;
 	}
@@ -238,6 +240,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setInputOutputDirectory(String newInputOutputDirectory) {
 		inputOutputDirectory = newInputOutputDirectory;
 	}
+
 	public String getInputOutputDirectory() {
 		return inputOutputDirectory;
 	}
@@ -251,6 +254,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setCommandLineType(String newCommandLineType) {
 		commandLineType = newCommandLineType;
 	}
+
 	public String getCommandLineType() {
 		return commandLineType;
 	}
@@ -259,6 +263,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setExecutableExtension(String newExecutableExtension) {
 		executableExtension = newExecutableExtension;
 	}
+
 	public String getExecutableExtension() {
 		return executableExtension;
 	}
@@ -267,6 +272,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setCleanup(boolean newCleanup) {
 		cleanup = newCleanup;
 	}
+
 	public boolean isCleanup() {
 		return cleanup;
 	}
@@ -275,6 +281,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setRekenboxSessionKey(String newRekenboxSessionKey) {
 		rekenboxSessionKey = newRekenboxSessionKey;
 	}
+
 	public String getRekenboxSessionKey() {
 		return rekenboxSessionKey;
 	}
@@ -283,6 +290,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setDataFilenamePrefix(String string) {
 		dataFilenamePrefix = string;
 	}
+
 	public String getDataFilenamePrefix() {
 		return dataFilenamePrefix;
 	}
@@ -291,6 +299,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void setMaxRequestNumber(long l) {
 		maxRequestNumber = l;
 	}
+
 	public long getMaxRequestNumber() {
 		return maxRequestNumber;
 	}

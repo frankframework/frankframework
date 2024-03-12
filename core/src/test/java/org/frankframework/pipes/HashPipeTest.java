@@ -9,6 +9,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.HashPipe.HashAlgorithm;
 import org.frankframework.pipes.HashPipe.HashEncoding;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void noSecret() throws Exception {
 		configureAndStartPipe();
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(""));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(""));
 		assertThat(e.getMessage(), Matchers.endsWith("empty secret, unable to hash"));
 	}
 
@@ -32,7 +33,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("KZAvcWh5wSTeoBWty9MHZl+L4ApUjbWnJNaVq6xftAo=", hash);
 	}
 
@@ -43,7 +44,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("TwGD5U8BwKoLn8u/F+4R/g==", hash);
 	}
 
@@ -54,7 +55,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("56V9GhAPU9NPP76zJ5KVLrfMaCherC8JcY16PTPEO3W+yxNnoXwmLS+Ic61J3gqZyeUfc0VZzzgg23WqesXm2g==", hash);
 	}
 
@@ -65,7 +66,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("29902f716879c124dea015adcbd307665f8be00a548db5a724d695abac5fb40a", hash);
 	}
 
@@ -77,7 +78,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("4f0183e54f01c0aa0b9fcbbf17ee11fe", hash);
 	}
 
@@ -89,7 +90,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("e7a57d1a100f53d34f3fbeb32792952eb7cc68285eac2f09718d7a3d33c43b75becb1367a17c262d2f8873ad49de0a99c9e51f734559cf3820db75aa7ac5e6da", hash);
 	}
 
@@ -101,7 +102,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("e7a57d1a100f53d34f3fbeb32792952eb7cc68285eac2f09718d7a3d33c43b75becb1367a17c262d2f8873ad49de0a99c9e51f734559cf3820db75aa7ac5e6da", hash);
 	}
 
@@ -114,7 +115,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "Potato", session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("beb37d574dce469b92b4494daf92f2065dede3c0b14b7a5d5f0390d4829b580a2867c4d2af3d937757dbcfd083811682eed108d6b0fdf6f760e150f1dfeeb8e3", hash);
 	}
 
@@ -124,7 +125,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, getResource("largeInput.txt"), session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("M7Z60BhL72SMyCEUVesQOuvBRUcokJPyy95lSQODDZU=", hash);
 	}
 
@@ -135,7 +136,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, getResource("largeInput.txt"), session);
-		String hash=prr.getResult().asString();
+		String hash = prr.getResult().asString();
 		assertEquals("33b67ad0184bef648cc8211455eb103aebc14547289093f2cbde654903830d95", hash);
 	}
 }

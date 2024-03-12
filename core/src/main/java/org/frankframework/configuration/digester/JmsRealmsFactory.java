@@ -18,12 +18,11 @@ package org.frankframework.configuration.digester;
 /**
  * Factory for the JMS Realms instance, which holds all JMS Realm definitions
  * found in the Configuration File.
- *
+ * <p>
  * This bean is a singleton, not a prototype, which is why the GenericFactory
  * can not be used.
  *
  * @author Tim van der Leeuw
- *
  */
 public class JmsRealmsFactory extends AbstractSpringPoweredDigesterFactory {
 

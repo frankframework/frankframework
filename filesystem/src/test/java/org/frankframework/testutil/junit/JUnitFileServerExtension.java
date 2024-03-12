@@ -37,8 +37,8 @@ public class JUnitFileServerExtension implements BeforeAllCallback, BeforeEachCa
 	@Override
 	public void beforeEach(ExtensionContext context) {
 		context.getRequiredTestInstances()
-			.getAllInstances()
-			.forEach(instance -> injectInstanceFields(context, instance));
+				.getAllInstances()
+				.forEach(instance -> injectInstanceFields(context, instance));
 	}
 
 	private void injectStaticFields(ExtensionContext context, Class<?> testClass) {
@@ -46,7 +46,7 @@ public class JUnitFileServerExtension implements BeforeAllCallback, BeforeEachCa
 	}
 
 	private void injectInstanceFields(ExtensionContext context, Object instance) {
-		if(getFileSystemBuilder(context) != null) {
+		if (getFileSystemBuilder(context) != null) {
 			injectFields(context, instance, instance.getClass(), ReflectionUtils::isNotStatic);
 		}
 	}
@@ -62,8 +62,7 @@ public class JUnitFileServerExtension implements BeforeAllCallback, BeforeEachCa
 				LocalFileServer fsb = new LocalFileServer(name, mfs.username(), mfs.password());
 				context.getRoot().getStore(NAMESPACE).put(FS_INSTANCE, fsb);
 				makeAccessible(field).set(testInstance, fsb);
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				ExceptionUtils.throwAsUncheckedException(t);
 			}
 		});
@@ -76,7 +75,7 @@ public class JUnitFileServerExtension implements BeforeAllCallback, BeforeEachCa
 	}
 
 	private void assertSupportedType(Class<?> type) {
-		if(!LocalFileServer.class.isAssignableFrom(type)) {
+		if (!LocalFileServer.class.isAssignableFrom(type)) {
 			throw new ExtensionConfigurationException("Can only resolve @MockFileSystem field of type "
 					+ LocalFileServer.class.getName() + " but was: " + type.getName());
 		}

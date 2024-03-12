@@ -23,7 +23,6 @@ import org.frankframework.core.PipeLineSession;
  * Utility interface to allow the debugger to inspect XML in the middle of a streaming execution.
  *
  * @author Gerrit van Brakel
- *
  */
 public interface IXmlDebugger {
 

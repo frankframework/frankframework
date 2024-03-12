@@ -25,27 +25,28 @@ import org.frankframework.receivers.RawMessageWrapper;
  * Defines listening behaviour of pulling receivers.
  * Pulling receivers are receivers that poll for a message, as opposed to pushing receivers
  * that are 'message driven'
- * @param <M> the raw message type
  *
- * @author  Gerrit van Brakel
+ * @param <M> the raw message type
+ * @author Gerrit van Brakel
  */
 public interface IPullingListener<M> extends IListener<M> {
 
 	/**
 	 * Prepares a thread for receiving messages.
 	 * Called once for each thread that will listen for messages.
+	 *
 	 * @return the threadContext for this thread. The threadContext is a Map in which
-	 * thread-specific data can be stored. May not be {@code null}, must be a mutable map type.
+	 * 		thread-specific data can be stored. May not be {@code null}, must be a mutable map type.
 	 */
 	@Nonnull
-	Map<String,Object> openThread() throws ListenerException;
+	Map<String, Object> openThread() throws ListenerException;
 
 	/**
 	 * Finalizes a message receiving thread.
 	 * Called once for each thread that listens for messages, just before
 	 * {@link #close()} is called.
 	 */
-	void closeThread(@Nonnull Map<String,Object> threadContext) throws ListenerException;
+	void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException;
 
 	/**
 	 * Retrieves messages from queue or other channel, but does no processing on it.
@@ -53,6 +54,6 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
 	 */
-	RawMessageWrapper<M> getRawMessage(@Nonnull Map<String,Object> threadContext) throws ListenerException;
+	RawMessageWrapper<M> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException;
 
 }

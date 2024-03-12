@@ -22,36 +22,36 @@ import io.micrometer.core.instrument.Tag;
 /**
  * Counter value that is maintained with statistics.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class CounterStatistic extends ScalarMetricBase<Counter> {
 
 	long mark;
 
 	public CounterStatistic(int startValue) {
-		mark=startValue;
+		mark = startValue;
 	}
 
 	@Override
 	public void initMetrics(MeterRegistry registry, String groupName, Iterable<Tag> tags, String scalarname) {
-		meter = Counter.builder(groupName+"."+scalarname).tags(tags).register(registry);
+		meter = Counter.builder(groupName + "." + scalarname).tags(tags).register(registry);
 		meter.increment(mark);
 	}
 
 	public void performAction(HasStatistics.Action action) {
 		switch (action) {
-		case FULL:
-		case SUMMARY:
-			return;
-		case MARK_FULL:
-		case MARK_MAIN:
-			synchronized (this) {
-				mark=getValue();
-			}
-			return;
-		default:
-			throw new IllegalArgumentException("unknown Action ["+action+"]");
+			case FULL:
+			case SUMMARY:
+				return;
+			case MARK_FULL:
+			case MARK_MAIN:
+				synchronized (this) {
+					mark = getValue();
+				}
+				return;
+			default:
+				throw new IllegalArgumentException("unknown Action [" + action + "]");
 		}
 	}
 
@@ -61,12 +61,12 @@ public class CounterStatistic extends ScalarMetricBase<Counter> {
 
 	@Override
 	public long getValue() {
-		if (meter==null) return 0;
-		return (long)meter.count();
+		if (meter == null) return 0;
+		return (long) meter.count();
 	}
 
 	public synchronized long getIntervalValue() {
-		return getValue()-mark;
+		return getValue() - mark;
 	}
 
 }

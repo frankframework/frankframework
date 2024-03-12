@@ -15,19 +15,20 @@ public class MockFile {
 	private MockFolder owner;
 	private byte[] contents;
 	private Date lastModified = new Date();
-	private Map<String,Object> additionalProperties;
+	private Map<String, Object> additionalProperties;
 
 	public MockFile(String name, MockFolder owner) {
 		super();
 		this.name = name;
-		this.owner=owner;
+		this.owner = owner;
 		additionalProperties = new LinkedHashMap<>();
-		additionalProperties.put("id", "[id:"+getName()+"]");
+		additionalProperties.put("id", "[id:" + getName() + "]");
 	}
 
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -36,33 +37,34 @@ public class MockFile {
 	public MockFolder getOwner() {
 		return owner;
 	}
+
 	public void setOwner(MockFolder owner) {
 		this.owner = owner;
 	}
 
 	public OutputStream getOutputStream(boolean truncate) throws IOException {
 
-		OutputStream result=new ByteArrayOutputStream() {
+		OutputStream result = new ByteArrayOutputStream() {
 
 			@Override
 			public void close() throws IOException {
 				super.close();
 				contents = toByteArray();
-				lastModified =new Date();
+				lastModified = new Date();
 			}
 
 			@Override
 			public void flush() throws IOException {
 				super.flush();
 				contents = toByteArray();
-				lastModified =new Date();
+				lastModified = new Date();
 			}
 
 		};
 		if (truncate) {
-			contents=null;
+			contents = null;
 		} else {
-			if (contents!=null) {
+			if (contents != null) {
 				result.write(contents);
 			}
 		}
@@ -76,6 +78,7 @@ public class MockFile {
 	public Date getLastModified() {
 		return lastModified;
 	}
+
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
@@ -89,8 +92,8 @@ public class MockFile {
 	}
 
 	public void addProperty(String key, Object value) {
-		if(additionalProperties == null) {
-			additionalProperties=new LinkedHashMap<>();
+		if (additionalProperties == null) {
+			additionalProperties = new LinkedHashMap<>();
 		}
 		additionalProperties.put(key, value);
 	}
@@ -98,6 +101,7 @@ public class MockFile {
 	public Map<String, Object> getAdditionalProperties() {
 		return additionalProperties;
 	}
+
 	public void setAdditionalProperties(Map<String, Object> additionalProperties) {
 		this.additionalProperties = additionalProperties;
 	}

@@ -17,7 +17,9 @@ import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.frankframework.configuration.IbisManager;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -32,9 +34,8 @@ import org.springframework.util.Assert;
 /**
  * We're using AnnotationUtils.findAnnotation(method, Deprecated.class);
  * This class has been rewritten in Spring 5 breaking inherited-native java-annotation lookups on interfaces.
- *
+ * <p>
  * Explicitly test all classes for occurrences of inherited-native java-annotations on interfaces.
- *
  */
 public class TestAnnotationUtils {
 
@@ -151,7 +152,10 @@ public class TestAnnotationUtils {
 
 		@MyDeprecated
 		@Deprecated
-		public void testMethod() {};
+		public void testMethod() {
+		}
+
+		;
 	}
 
 	@MyDeprecated
@@ -160,7 +164,8 @@ public class TestAnnotationUtils {
 
 		@MyDeprecated
 		@Deprecated
-		public void testMethod() {}
+		public void testMethod() {
+		}
 	}
 
 	static class SubClass extends SuperClass {
@@ -172,7 +177,8 @@ public class TestAnnotationUtils {
 	static class ClassWithInterface implements DeprecatedInterface {
 
 		@Override
-		public void testMethod() {}
+		public void testMethod() {
+		}
 	}
 
 	@MyDeprecated
@@ -181,7 +187,8 @@ public class TestAnnotationUtils {
 
 		@MyDeprecated
 		@Deprecated
-		public void testMethod() {}
+		public void testMethod() {
+		}
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
@@ -219,10 +226,11 @@ public class TestAnnotationUtils {
 		Set<Class<?>> interfazes = new HashSet<>();
 		String[] names = scanner.getRegistry().getBeanDefinitionNames();
 		for (String beanName : names) {
-			if(beanName.contains(this.getClass().getCanonicalName())
+			if (beanName.contains(this.getClass().getCanonicalName())
 					|| beanName.startsWith("org.frankframework.credentialprovider")
 					|| beanName.endsWith(".UnloadableClass")
-			) continue; //Ignore this class, the "unloadable" test-class, and also credential provider classes because they use optional dependencies not on our classpath.
+			)
+				continue; //Ignore this class, the "unloadable" test-class, and also credential provider classes because they use optional dependencies not on our classpath.
 
 			List<Class<?>> interfaces = ClassUtils.getAllInterfaces(Class.forName(beanName));
 			interfazes.addAll(interfaces);
@@ -232,12 +240,12 @@ public class TestAnnotationUtils {
 		interfacesToSkip.add(IbisManager.class.getCanonicalName());
 
 		for (Class<?> interfaze : interfazes) {
-			if(interfaze.getCanonicalName().startsWith(frankFrameworkPackage)
+			if (interfaze.getCanonicalName().startsWith(frankFrameworkPackage)
 					&& !interfacesToSkip.contains(interfaze.getCanonicalName())) {
-				for(Method method : interfaze.getDeclaredMethods()) {
-					for(Annotation annotation : method.getAnnotations()) {
-						if(AnnotationFilter.PLAIN.matches(annotation) || AnnotationUtils.isInJavaLangAnnotationPackage(annotation)) {
-							fail("Found java annotation ["+annotation+"] on interface ["+interfaze.getTypeName()+"], is not seen by digester because it uses Spring AnnotationUtils");
+				for (Method method : interfaze.getDeclaredMethods()) {
+					for (Annotation annotation : method.getAnnotations()) {
+						if (AnnotationFilter.PLAIN.matches(annotation) || AnnotationUtils.isInJavaLangAnnotationPackage(annotation)) {
+							fail("Found java annotation [" + annotation + "] on interface [" + interfaze.getTypeName() + "], is not seen by digester because it uses Spring AnnotationUtils");
 						}
 					}
 				}

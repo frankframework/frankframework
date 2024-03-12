@@ -32,8 +32,7 @@ import org.frankframework.util.FileUtils;
 /**
  * Resulthandler that writes the transformed record to a file.
  *
- *
- * @author  John Dekker
+ * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
 public class Result2Filewriter extends ResultWriter {
@@ -52,13 +51,13 @@ public class Result2Filewriter extends ResultWriter {
 
 	@Override
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
-		log.debug("create writer ["+streamId+"]");
+		log.debug("create writer [" + streamId + "]");
 		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), getFilenamePattern());
 		File outputFile = new File(outputDirectory, outputFilename);
 		if (outputFile.exists() && outputFile.isFile()) {
 			log.warn("Outputfile " + outputFilename + " exists in " + outputDirectory);
 		}
-		openFiles.put(streamId,outputFile);
+		openFiles.put(streamId, outputFile);
 		return new FileWriter(outputFile, false);
 	}
 
@@ -69,12 +68,12 @@ public class Result2Filewriter extends ResultWriter {
 
 	@Override
 	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
-		log.debug("finalizeResult ["+streamId+"]");
-		super.finalizeResult(session,streamId, error);
-		super.closeDocument(session,streamId);
+		log.debug("finalizeResult [" + streamId + "]");
+		super.finalizeResult(session, streamId, error);
+		super.closeDocument(session, streamId);
 
 		File file = openFiles.get(streamId);
-		if (file==null) {
+		if (file == null) {
 			return null;
 		}
 		if (error) {

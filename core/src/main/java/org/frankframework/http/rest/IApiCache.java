@@ -20,50 +20,49 @@ import org.frankframework.http.RestListener;
 /**
  * Etag (key-value) Cache interface, allows {@link RestListener RestListeners} and {@link ApiListener ApiListeners} to save and retrieve etags.
  *
- * @author	Niels Meijer
- * @since	7.0-B2
- *
+ * @author Niels Meijer
+ * @since 7.0-B2
  */
 public interface IApiCache {
 
 	/**
 	 * Retrieve an object from the cache
 	 *
-	 * @param key		name of the object to fetch
-	 * @return			null or value of the stored object
+	 * @param key name of the object to fetch
+	 * @return null or value of the stored object
 	 */
 	public Object get(String key);
 
 	/**
 	 * Place an object in the cache
 	 *
-	 * @param key		name of the object to store
-	 * @param value		value of the object
+	 * @param key   name of the object to store
+	 * @param value value of the object
 	 */
 	public void put(String key, Object value);
 
 	/**
 	 * Place an object in the cache
 	 *
-	 * @param key		name of the object to store
-	 * @param value		value of the object
-	 * @param ttl		time to live, when the object expires
+	 * @param key   name of the object to store
+	 * @param value value of the object
+	 * @param ttl   time to live, when the object expires
 	 */
 	public void put(String key, Object value, int ttl);
 
 	/**
 	 * Remove an object from the cache
 	 *
-	 * @param key		name of the object to remove
-	 * @return			returns true when successfully removed the object
+	 * @param key name of the object to remove
+	 * @return returns true when successfully removed the object
 	 */
 	public boolean remove(String key);
 
 	/**
 	 * Checks whether or not an object has previously been stored in the cache
 	 *
-	 * @param key		name of the object to find
-	 * @return			true when found
+	 * @param key name of the object to find
+	 * @return true when found
 	 */
 	public boolean containsKey(String key);
 

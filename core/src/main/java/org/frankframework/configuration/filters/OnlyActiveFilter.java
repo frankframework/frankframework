@@ -49,13 +49,13 @@ public class OnlyActiveFilter extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (suppressLevel>0) {
+		if (suppressLevel > 0) {
 			suppressLevel++;
 			return;
 		}
 
 		String active = atts.getValue(ACTIVE_ATTRIBUTE);
-		if(active != null && properties != null) {
+		if (active != null && properties != null) {
 			active = StringResolver.substVars(active, properties);
 		}
 
@@ -70,7 +70,7 @@ public class OnlyActiveFilter extends FullXmlFilter {
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		if (suppressLevel>0) {
+		if (suppressLevel > 0) {
 			return;
 		}
 		super.characters(ch, start, length);
@@ -78,7 +78,7 @@ public class OnlyActiveFilter extends FullXmlFilter {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (suppressLevel>0) {
+		if (suppressLevel > 0) {
 			suppressLevel--;
 			return;
 		}

@@ -34,7 +34,7 @@ public class TestFileUtils {
 	public static URL getTestFileURL(String file) {
 		String normalizedFilename = FilenameUtils.normalize(file, true);
 		URL url = TestFileUtils.class.getResource(normalizedFilename);
-		if(url == null) LOG.warn("unable to find testfile [{}]", normalizedFilename);
+		if (url == null) LOG.warn("unable to find testfile [{}]", normalizedFilename);
 		return url;
 	}
 

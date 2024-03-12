@@ -32,9 +32,9 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 
 	private final boolean attributesConsideredContent = false;
 	private final List<Element> pendingElements = new ArrayList<>();
-	private Map<String,String> pendingNamespaceMappings = new LinkedHashMap<>();
+	private Map<String, String> pendingNamespaceMappings = new LinkedHashMap<>();
 
-	private boolean nonWhitespaceCharactersSeen=false;
+	private boolean nonWhitespaceCharactersSeen = false;
 	private boolean elementSkipped;
 
 	private final StringBuilder pendingWhitespace = new StringBuilder();
@@ -45,8 +45,8 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 
 	public void handlePendingStartElements() throws SAXException {
 		log.trace("handlePendingStartElements()");
-		for(Element e:pendingElements) {
-			for (Entry<String,String> entry: e.namespaceMappings.entrySet()) {
+		for (Element e : pendingElements) {
+			for (Entry<String, String> entry : e.namespaceMappings.entrySet()) {
 				super.startPrefixMapping(entry.getKey(), entry.getValue());
 			}
 			super.startElement(e.uri, e.localName, e.qName, e.atts);
@@ -62,21 +62,21 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		log.trace("startElement({},{},{})", uri, localName, qName);
 		pendingWhitespace.setLength(0);
-		if (attributesConsideredContent && atts.getLength()>0) {
+		if (attributesConsideredContent && atts.getLength() > 0) {
 			handlePendingStartElements();
 			super.startElement(uri, localName, qName, atts);
 		} else {
 			Element e = new Element();
-			e.uri=uri;
-			e.localName=localName;
-			e.qName=qName;
-			e.atts=new AttributesImpl(atts);
-			e.namespaceMappings=pendingNamespaceMappings;
-			pendingNamespaceMappings=new LinkedHashMap<>();
+			e.uri = uri;
+			e.localName = localName;
+			e.qName = qName;
+			e.atts = new AttributesImpl(atts);
+			e.namespaceMappings = pendingNamespaceMappings;
+			pendingNamespaceMappings = new LinkedHashMap<>();
 			pendingElements.add(e);
-			e.comments=new StringWriter();
+			e.comments = new StringWriter();
 		}
-		nonWhitespaceCharactersSeen=false;
+		nonWhitespaceCharactersSeen = false;
 	}
 
 	@Override
@@ -84,30 +84,30 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 		log.trace("endElement({},{},{})", uri, localName, qName);
 		if (pendingElements.isEmpty()) {
 			super.endElement(uri, localName, qName);
-			elementSkipped=false;
+			elementSkipped = false;
 		} else {
-			pendingElements.remove(pendingElements.size()-1);
+			pendingElements.remove(pendingElements.size() - 1);
 			pendingWhitespace.setLength(0);
-			elementSkipped=true;
+			elementSkipped = true;
 		}
-		nonWhitespaceCharactersSeen=false;
+		nonWhitespaceCharactersSeen = false;
 	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		if (!nonWhitespaceCharactersSeen) {
-			boolean nonWhitspaceFound=false;
-			for (int i=0;i<length;i++) {
-				if (!Character.isWhitespace(ch[i+start])) {
-					nonWhitspaceFound=true;
+			boolean nonWhitspaceFound = false;
+			for (int i = 0; i < length; i++) {
+				if (!Character.isWhitespace(ch[i + start])) {
+					nonWhitspaceFound = true;
 					break;
 				}
 			}
 			if (!nonWhitspaceFound) {
-				pendingWhitespace.append(ch,start,length);
+				pendingWhitespace.append(ch, start, length);
 				return;
 			}
-			nonWhitespaceCharactersSeen=true;
+			nonWhitespaceCharactersSeen = true;
 		}
 		handlePendingStartElements();
 		pendingWhitespace.setLength(0);
@@ -118,7 +118,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 	public void startCDATA() throws SAXException {
 		handlePendingStartElements();
 		super.startCDATA();
-		nonWhitespaceCharactersSeen=true;
+		nonWhitespaceCharactersSeen = true;
 	}
 
 	private class Element {
@@ -126,7 +126,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 		public String localName;
 		public String qName;
 		public Attributes atts;
-		public Map<String,String> namespaceMappings;
+		public Map<String, String> namespaceMappings;
 		public StringWriter comments;
 	}
 
@@ -149,7 +149,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 		if (pendingElements.isEmpty()) {
 			super.comment(ch, start, length);
 		} else {
-			pendingElements.get(pendingElements.size()-1).comments.write(ch,start,length);
+			pendingElements.get(pendingElements.size() - 1).comments.write(ch, start, length);
 		}
 	}
 

@@ -31,10 +31,8 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
@@ -42,15 +40,15 @@ import org.frankframework.util.XmlEncodingUtils;
 /**
  * Test Service Listeners.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
 public class TestServiceListener extends FrankApiBase {
 
 	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/test-servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Relation("testing")
@@ -68,7 +66,7 @@ public class TestServiceListener extends FrankApiBase {
 	@Relation("testing")
 	@Description("send a message to a service listeners, triggering an adapter to process the message")
 	public Response postServiceListener(MultipartBody inputDataMap) throws ApiException {
-		if(inputDataMap == null) {
+		if (inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
@@ -78,13 +76,13 @@ public class TestServiceListener extends FrankApiBase {
 		builder.addHeader("service", RequestUtils.resolveStringFromMap(inputDataMap, "service"));
 		String fileEncoding = RequestUtils.resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		Attachment filePart = inputDataMap.getAttachment("file");
-		if(filePart != null) {
+		if (filePart != null) {
 			InputStream file = filePart.getObject(InputStream.class);
 
 			try {
 				message = XmlEncodingUtils.readXml(file, fileEncoding);
 			} catch (UnsupportedEncodingException e) {
-				throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+				throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 			} catch (IOException e) {
 				throw new ApiException("error reading file", e);
 			}
@@ -92,7 +90,7 @@ public class TestServiceListener extends FrankApiBase {
 			message = RequestUtils.resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
-		if(StringUtils.isEmpty(message)) {
+		if (StringUtils.isEmpty(message)) {
 			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 

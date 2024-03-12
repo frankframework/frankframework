@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -65,8 +64,8 @@ import org.frankframework.util.ProcessUtil;
  * <br/>
  * There are of course more solutions to get the job done, but this is the solution we can guarantee.
  *
- * @author  Jaco de Groot
- * @since   4.11
+ * @author Jaco de Groot
+ * @since 4.11
  */
 public class XfbSender extends SenderWithParametersBase {
 	private String script;
@@ -80,10 +79,10 @@ public class XfbSender extends SenderWithParametersBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getScript())) {
-			throw new ConfigurationException("XfbSender ["+getName()+"] attribute script must be specified");
+			throw new ConfigurationException("XfbSender [" + getName() + "] attribute script must be specified");
 		}
 		if (StringUtils.isEmpty(getFlow())) {
-			throw new ConfigurationException("XfbSender ["+getName()+"] attribute flow must be specified");
+			throw new ConfigurationException("XfbSender [" + getName() + "] attribute flow must be specified");
 		}
 		if (StringUtils.isEmpty(getAppli())) {
 			throw new ConfigurationException("XfbSender [" + getName() + "] attribute appli must be specified");
@@ -111,15 +110,15 @@ public class XfbSender extends SenderWithParametersBase {
 					throw new SenderException("Could not copy file");
 				}
 			}
-			String command = getScript() + " ft=" +getFt() + " flow=" +getFlow() + " appli="+getAppli();
+			String command = getScript() + " ft=" + getFt() + " flow=" + getFlow() + " appli=" + getAppli();
 			if (StringUtils.isNotEmpty(getNoname())) {
-				command = command + " noname=" +getNoname();
+				command = command + " noname=" + getNoname();
 			}
-			command = command + " filename=" +file.getAbsolutePath();
+			command = command + " filename=" + file.getAbsolutePath();
 			String output = ProcessUtil.executeCommand(command);
 			return new SenderResult(output);
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(),e);
+			throw new SenderException(getLogPrefix(), e);
 		}
 	}
 

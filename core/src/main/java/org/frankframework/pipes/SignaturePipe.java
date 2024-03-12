@@ -25,10 +25,9 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
+import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
@@ -47,14 +46,13 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
 /**
- *
  * @ff.parameter signature the signature to verify
  * @ff.forward failure used when verification fails
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
-	public static final String PARAMETER_SIGNATURE="signature";
+	public static final String PARAMETER_SIGNATURE = "signature";
 	public static final String ALGORITHM_DEFAULT = "SHA256withRSA";
 
 
@@ -64,13 +62,13 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	private @Getter boolean signatureBase64 = true;
 
 	private @Getter String keystore;
-	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
+	private @Getter KeystoreType keystoreType = KeystoreType.PKCS12;
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
 	private @Getter String keystoreAlias;
 	private @Getter String keystoreAliasAuthAlias;
 	private @Getter String keystoreAliasPassword;
-	private @Getter String keyManagerAlgorithm=null;
+	private @Getter String keyManagerAlgorithm = null;
 
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
@@ -96,11 +94,11 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
 		if (getAction() == Action.VERIFY) {
-			if (getParameterList().findParameter(PARAMETER_SIGNATURE)==null) {
+			if (getParameterList().findParameter(PARAMETER_SIGNATURE) == null) {
 				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specfied for action [" + action + "]");
 			}
 			failureForward = findForward("failure");
-			if (failureForward==null)  {
+			if (failureForward == null) {
 				throw new ConfigurationException("Forward [failure] must be specfied for action [" + action + "]");
 			}
 		}
@@ -110,22 +108,22 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	public void start() throws PipeStartException {
 		super.start();
 		switch (getAction()) {
-		case SIGN:
-			try {
-				privateKey = PkiUtil.getPrivateKey(this, "Keys for action ["+getAction()+"]");
-			} catch (EncryptionException e) {
-				throw new PipeStartException(e);
-			}
-			break;
-		case VERIFY:
-			try {
-				publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(this), "Keys for action ["+getAction()+"]");
-			} catch (EncryptionException e) {
-				throw new PipeStartException(e);
-			}
-			break;
-		default:
-			throw new IllegalStateException("Unknown action ["+getAction()+"]");
+			case SIGN:
+				try {
+					privateKey = PkiUtil.getPrivateKey(this, "Keys for action [" + getAction() + "]");
+				} catch (EncryptionException e) {
+					throw new PipeStartException(e);
+				}
+				break;
+			case VERIFY:
+				try {
+					publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(this), "Keys for action [" + getAction() + "]");
+				} catch (EncryptionException e) {
+					throw new PipeStartException(e);
+				}
+				break;
+			default:
+				throw new IllegalStateException("Unknown action [" + getAction() + "]");
 		}
 	}
 
@@ -143,7 +141,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 					message.preserve();
 					break;
 				default:
-					throw new IllegalStateException("Unknown action ["+getAction()+"]");
+					throw new IllegalStateException("Unknown action [" + getAction() + "]");
 			}
 			try (BufferedInputStream bufin = new BufferedInputStream(message.asInputStream())) {
 				byte[] buffer = new byte[1024];
@@ -154,26 +152,27 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 			}
 			switch (getAction()) {
 				case SIGN:
-					return new PipeRunResult(getSuccessForward(), isSignatureBase64() ? Base64.encodeBase64String(dsa.sign()):dsa.sign());
+					return new PipeRunResult(getSuccessForward(), isSignatureBase64() ? Base64.encodeBase64String(dsa.sign()) : dsa.sign());
 				case VERIFY:
 					ParameterValueList pvl = getParameterList().getValues(message, session);
 					Message signatureMsg = Message.asMessage(pvl.getValueMap().get(PARAMETER_SIGNATURE));
-					byte[] signature = isSignatureBase64() ? Base64.decodeBase64(signatureMsg.asString()):signatureMsg.asByteArray();
+					byte[] signature = isSignatureBase64() ? Base64.decodeBase64(signatureMsg.asString()) : signatureMsg.asByteArray();
 
 					boolean verified = dsa.verify(signature);
 					PipeForward forward = verified ? getSuccessForward() : failureForward;
 
 					return new PipeRunResult(forward, message);
 				default:
-					throw new IllegalStateException("Unknown action ["+getAction()+"]");
+					throw new IllegalStateException("Unknown action [" + getAction() + "]");
 			}
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException | IOException | ParameterException e) {
-			throw new PipeRunException(this, "Could not execute action ["+getAction()+"]", e);
+			throw new PipeRunException(this, "Could not execute action [" + getAction() + "]", e);
 		}
 	}
 
 	/**
 	 * Action to be taken when pipe is executed.
+	 *
 	 * @ff.default SIGN
 	 */
 	public void setAction(Action action) {
@@ -182,6 +181,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 	/**
 	 * The signing algorithm
+	 *
 	 * @ff.default ALGORITHM_DEFAULT
 	 */
 	public void setAlgorithm(String algorithm) {
@@ -193,7 +193,9 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		this.provider = provider;
 	}
 
-	/** if true, the signature is (expected to be) base64 encoded
+	/**
+	 * if true, the signature is (expected to be) base64 encoded
+	 *
 	 * @ff.default true
 	 */
 	public void setSignatureBase64(boolean signatureBase64) {
@@ -201,7 +203,9 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	}
 
 
-	/** Keystore to obtain signing key
+	/**
+	 * Keystore to obtain signing key
+	 *
 	 * @ff.mandatory
 	 */
 	@Override
@@ -209,7 +213,9 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		keystore = string;
 	}
 
-	/** Type of keystore, can be pkcs12 or pem
+	/**
+	 * Type of keystore, can be pkcs12 or pem
+	 *
 	 * @ff.default pkcs12
 	 */
 	@Override
@@ -235,7 +241,9 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		keystoreAlias = string;
 	}
 
-	/** Alias used to obtain keystoreAlias password
+	/**
+	 * Alias used to obtain keystoreAlias password
+	 *
 	 * @ff default same as <code>keystoreAuthAlias</code>
 	 */
 	@Override
@@ -243,7 +251,9 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		keystoreAliasAuthAlias = string;
 	}
 
-	/** KeystoreAlias password
+	/**
+	 * KeystoreAlias password
+	 *
 	 * @ff default same as <code>keystorePassword</code>
 	 */
 	@Override

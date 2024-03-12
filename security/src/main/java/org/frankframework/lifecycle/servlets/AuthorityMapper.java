@@ -27,13 +27,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.util.StringResolver;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-
-import lombok.extern.log4j.Log4j2;
-import org.frankframework.util.StringResolver;
 
 @Log4j2
 public class AuthorityMapper implements GrantedAuthoritiesMapper {
@@ -41,22 +40,22 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 
 	public AuthorityMapper(URL roleMappingURL, Set<String> roles, Properties properties) throws IOException {
 		Properties roleMappingProperties = new Properties();
-		try(InputStream stream = roleMappingURL.openStream()) {
+		try (InputStream stream = roleMappingURL.openStream()) {
 			roleMappingProperties.load(stream);
 		} catch (IOException e) {
-			throw new IOException("unable to open role-mapping file ["+roleMappingURL+"]", e);
+			throw new IOException("unable to open role-mapping file [" + roleMappingURL + "]", e);
 		}
 
-		for(String role : roles) {
+		for (String role : roles) {
 			String value = roleMappingProperties.getProperty(role);
-			if(StringUtils.isEmpty(value)) {
+			if (StringUtils.isEmpty(value)) {
 				log.warn("role [{}] has not been mapped to anything, ignoring this role", role);
 				continue;
 			}
 
 			String resolvedValue = StringResolver.substVars(value, properties);
-			if(StringUtils.isNotEmpty(resolvedValue)) {
-				GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("ROLE_"+role);
+			if (StringUtils.isNotEmpty(resolvedValue)) {
+				GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("ROLE_" + role);
 				roleToAuthorityMapping.put(grantedAuthority, resolvedValue);
 				log.info("mapped role [{}] to [{}]", resolvedValue, grantedAuthority);
 			}
@@ -69,7 +68,7 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 		List<String> canonicalRoleNames = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
 
 		roleToAuthorityMapping.forEach((authority, key) -> {
-			if(canonicalRoleNames.contains(key)) {
+			if (canonicalRoleNames.contains(key)) {
 				mappedAuthorities.add(authority);
 			}
 		});

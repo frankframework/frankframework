@@ -29,7 +29,6 @@ import org.frankframework.util.MessageKeeper;
  * <code>IReceiver</code>s as well as the <code>PipeLine</code> and statistics.
  * The Adapter is the class that is responsible for configuring, initializing and
  * accessing/activating IReceivers, Pipelines, statistics etc.
- *
  **/
 public interface IAdapter extends IManagable, HasStatistics {
 
@@ -49,15 +48,23 @@ public interface IAdapter extends IManagable, HasStatistics {
 	 * the web-functions.
 	 */
 	MessageKeeper getMessageKeeper();
+
 	Receiver<?> getReceiverByName(String receiverName);
+
 	Iterable<Receiver<?>> getReceivers();
+
 	PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession);
+
 	PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException;
 
 	void setPipeLine(PipeLine pipeline) throws ConfigurationException;
+
 	PipeLine getPipeLine();
+
 	void setConfiguration(Configuration configuration);
+
 	Configuration getConfiguration();
+
 	boolean isAutoStart();
 
 	Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime);

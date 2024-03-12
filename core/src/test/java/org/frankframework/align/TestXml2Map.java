@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.Map;
 
 import org.frankframework.testutil.MatchUtils;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -17,28 +18,28 @@ public class TestXml2Map extends AlignTestBase {
 
 	@Override
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
-		URL schemaUrl=getSchemaURL(schemaFile);
-		String xmlString=getTestFile(inputFile+".xml");
-		String mapString=getTestFile(inputFile+".properties");
+		URL schemaUrl = getSchemaURL(schemaFile);
+		String xmlString = getTestFile(inputFile + ".xml");
+		String mapString = getTestFile(inputFile + ".properties");
 
 
-		boolean expectValid=expectedFailureReason==null;
+		boolean expectValid = expectedFailureReason == null;
 		// check the validity of the input XML
 		assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "valid XML");
 
 		LOG.debug("input xml [{}]", xmlString);
-		Map<String,String> result;
+		Map<String, String> result;
 		try {
-			result= Xml2Map.translate(xmlString, schemaUrl);
-			for (String key: result.keySet()) {
-				String value=result.get(key);
+			result = Xml2Map.translate(xmlString, schemaUrl);
+			for (String key : result.keySet()) {
+				String value = result.get(key);
 				LOG.debug("key [{}] => [{}]", key, value);
 			}
 			if (!expectValid) {
 				fail("expected to fail");
 			}
-			if (mapString==null) {
-				fail("no .properties file for ["+inputFile+"]!");
+			if (mapString == null) {
+				fail("no .properties file for [" + inputFile + "]!");
 			}
 			assertEquals(mapString.trim(), MatchUtils.mapToString(result).trim());
 		} catch (Exception e) {

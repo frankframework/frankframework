@@ -44,7 +44,7 @@ public class PartMessage extends Message {
 		super(part::getInputStream, context.withName(part.getFileName()), part.getClass());
 		this.part = part;
 
-		String charset = (String)context.get(MessageContext.METADATA_CHARSET);
+		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
 		if (StringUtils.isEmpty(charset)) { //if not explicitly set
 			try {
 				context.withMimeType(part.getContentType());
@@ -56,7 +56,7 @@ public class PartMessage extends Message {
 
 	@Override
 	public long size() {
-		if (part!=null) {
+		if (part != null) {
 			try {
 				return part.getSize();
 			} catch (MessagingException e) {

@@ -35,16 +35,16 @@ import org.frankframework.util.LogUtil;
 /**
  * Common manager for caching.
  *
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
 public class IbisCacheManager {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private static final String CACHE_DIR_KEY="cache.dir";
+	private static final String CACHE_DIR_KEY = "cache.dir";
 
 	private static IbisCacheManager self;
-	private CacheManager cacheManager=null;
+	private CacheManager cacheManager = null;
 
 	private IbisCacheManager() {
 		Configuration cacheManagerConfig = new Configuration();
@@ -57,23 +57,23 @@ public class IbisCacheManager {
 		}
 		CacheConfiguration defaultCacheConfig = new CacheConfiguration();
 		cacheManagerConfig.addDefaultCache(defaultCacheConfig);
-		cacheManager= new CacheManager(cacheManagerConfig);
+		cacheManager = new CacheManager(cacheManagerConfig);
 	}
 
 	public static synchronized IbisCacheManager getInstance() {
-		if (self==null) {
-			self=new IbisCacheManager();
+		if (self == null) {
+			self = new IbisCacheManager();
 		}
 		return self;
 	}
 
 	public static synchronized void shutdown() {
-		if (self!=null) {
+		if (self != null) {
 			self.log.debug("shutting down cacheManager...");
 			self.cacheManager.shutdown();
 			self.log.info("cacheManager shutdown");
-			self.cacheManager=null;
-			self=null;
+			self.cacheManager = null;
+			self = null;
 		}
 	}
 
@@ -93,15 +93,15 @@ public class IbisCacheManager {
 	}
 
 	public static <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException {
-		if (self==null) {
+		if (self == null) {
 			return;
 		}
 		String[] cacheNames = self.cacheManager.getCacheNames();
-		for (int i=0;i<cacheNames.length;i++) {
-			D subdata=hski.openGroup(data, cacheNames[i], "cache");
-			Ehcache cache=self.cacheManager.getEhcache(cacheNames[i]);
+		for (int i = 0; i < cacheNames.length; i++) {
+			D subdata = hski.openGroup(data, cacheNames[i], "cache");
+			Ehcache cache = self.cacheManager.getEhcache(cacheNames[i]);
 			if (hski instanceof MetricsInitializer) {
-				((MetricsInitializer)hski).configureCache(cache);
+				((MetricsInitializer) hski).configureCache(cache);
 			} else {
 				StatisticsGateway stats = cache.getStatistics();
 				hski.handleScalar(subdata, "CacheHits", stats.cacheHitCount());

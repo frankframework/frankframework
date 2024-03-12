@@ -19,5 +19,6 @@ import org.frankframework.configuration.ConfigurationException;
 
 public interface DestinationValidator {
 	void validateListenerDestinations(PipeLine pipeLine) throws ConfigurationException;
+
 	void validateSenderDestination(ISender sender) throws ConfigurationException;
 }

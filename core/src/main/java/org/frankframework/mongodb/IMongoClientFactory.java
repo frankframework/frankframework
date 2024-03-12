@@ -34,6 +34,7 @@ public interface IMongoClientFactory {
 	/**
 	 * Set the JNDI environment to use for JNDI lookups.
 	 * <p>Uses a Spring JndiTemplate with the given environment settings.
+	 *
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 */
 	public MongoClient getMongoClient(String dataSourceName, Properties jndiEnvironment) throws NamingException;

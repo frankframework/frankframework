@@ -17,10 +17,6 @@ package org.frankframework.extensions.rekenbox;
 
 import javax.xml.parsers.DocumentBuilder;
 
-import org.w3c.dom.Document;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -28,6 +24,9 @@ import org.frankframework.doc.Category;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Document;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * Transforms between ascii and an XML representation.
@@ -35,16 +34,16 @@ import org.frankframework.util.XmlUtils;
  * <p>
  * Sample xml:<br/><code><pre>
  * 	&lt;CALCBOXMESSAGE&gt;
-		&lt;OPDRACHT&gt;
-			&lt;OPDRACHTSOORT&gt;ONTTREK_RISICO_EN_KOSTEN&lt;/OPDRACHTSOORT&gt;
-			&lt;BASISRENDEMENTSOORT&gt;NVT&lt;/BASISRENDEMENTSOORT&gt;
-			&lt;BEDRAG&gt;625&lt;/BEDRAG&gt;
-			&lt;DATUM&gt;20071201&lt;/DATUM&gt;
+ * &lt;OPDRACHT&gt;
+ * &lt;OPDRACHTSOORT&gt;ONTTREK_RISICO_EN_KOSTEN&lt;/OPDRACHTSOORT&gt;
+ * &lt;BASISRENDEMENTSOORT&gt;NVT&lt;/BASISRENDEMENTSOORT&gt;
+ * &lt;BEDRAG&gt;625&lt;/BEDRAG&gt;
+ * &lt;DATUM&gt;20071201&lt;/DATUM&gt;
  *
  *          ...
  * 	&lt;/CALCBOXMESSAGE&gt;
  * </pre></code> <br/>
- *
+ * <p>
  * Sample ascii:<br/><code><pre>
  * 	OPDRACHT : #SAMENGESTELD
  * 	OPDRACHT.OPDRACHTSOORT :ONTTREK_RISICO_EN_KOSTEN
@@ -67,12 +66,13 @@ import org.frankframework.util.XmlUtils;
  * </ul></td><td>Xml2Label</td></tr>
  * </table>
  * </p>
+ *
  * @author Gerrit van Brakel
  */
 @Category("NN-Special")
 public class LabelFormat extends FixedForwardPipe {
 
-	private String direction=null;
+	private String direction = null;
 	private static final String DIRECTION_XML2LABEL = "Xml2Label";
 
 	@Override
@@ -86,16 +86,14 @@ public class LabelFormat extends FixedForwardPipe {
 
 				result = XmlToLabelFormat.doTransformation(document);
 				return new PipeRunResult(getSuccessForward(), result);
-			}
-			else {
+			} else {
 				XMLReader reader = XMLReaderFactory.createXMLReader("org.frankframework.extensions.rekenbox.CalcboxOutputReader");
 				CalcboxContentHandler handler = new CalcboxContentHandler(message.asString());
 				reader.setContentHandler(handler);
 
 				return new PipeRunResult(getSuccessForward(), handler.getStringResult());
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new PipeRunException(this, "cannot transform", e);
 		}
 	}
@@ -111,6 +109,7 @@ public class LabelFormat extends FixedForwardPipe {
 	public void setDirection(String newDirection) {
 		direction = newDirection;
 	}
+
 	public String getDirection() {
 		return direction;
 	}

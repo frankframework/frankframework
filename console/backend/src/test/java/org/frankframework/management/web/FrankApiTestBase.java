@@ -46,14 +46,18 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mockito;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
+import org.frankframework.util.ClassUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -61,14 +65,11 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.frankframework.util.ClassUtils;
-
 public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 	public static final String STUBBED_SPRING_BUS_CONFIGURATION = "stubbedBusApplicationContext.xml";
 
 	private final Logger log = LogManager.getLogger(FrankApiTestBase.class);
+
 	public enum IbisRole {
 		IbisWebService, IbisObserver, IbisDataAdmin, IbisAdmin, IbisTester;
 	}
@@ -98,7 +99,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 	}
 
 	private final ApplicationContext getApplicationContext() {
-		if(FrankApiTestBase.applicationContext == null) {
+		if (FrankApiTestBase.applicationContext == null) {
 			ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
 			applicationContext.setConfigLocation(STUBBED_SPRING_BUS_CONFIGURATION);
 			applicationContext.setDisplayName("STUB [stubbed-frank-management-bus]");
@@ -113,12 +114,12 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 	//This has to happen before it's proxied by Mockito (spy method)
 	public void checkContextFields(M resource) {
-		for(Field field : resource.getClass().getDeclaredFields()) {
+		for (Field field : resource.getClass().getDeclaredFields()) {
 			Context context = AnnotationUtils.findAnnotation(field, Context.class); //Injected JAX-WS Resources
 
-			if(context != null) {
+			if (context != null) {
 				field.setAccessible(true);
-				if(field.getType().isAssignableFrom(Request.class)) {
+				if (field.getType().isAssignableFrom(Request.class)) {
 					Request request = new MockHttpRequest();
 					try {
 						field.set(resource, request);
@@ -126,7 +127,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 						e.printStackTrace();
 						fail("unable to inject Request");
 					}
-				} else if(field.getType().isAssignableFrom(SecurityContext.class)) {
+				} else if (field.getType().isAssignableFrom(SecurityContext.class)) {
 					try {
 						field.set(resource, securityContext);
 					} catch (IllegalArgumentException | IllegalAccessException e) {
@@ -148,16 +149,16 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			Method[] classMethods = jaxRsResource.getClass().getDeclaredMethods();
 			Path basePathAnnotation = AnnotationUtils.findAnnotation(jaxRsResource.getClass(), Path.class);
 			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "/";
-			for(Method classMethod : classMethods) {
+			for (Method classMethod : classMethods) {
 				int modifiers = classMethod.getModifiers();
 				if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
 					Path path = AnnotationUtils.findAnnotation(classMethod, Path.class);
 					HttpMethod httpMethod = AnnotationUtils.findAnnotation(classMethod, HttpMethod.class);
-					if(path != null && httpMethod != null) {
+					if (path != null && httpMethod != null) {
 						String compiledPath = getPath(basePath, path.value());
 						String rsResourceKey = compileKey(httpMethod.value(), compiledPath);
 
-						log.info("adding new JAX-RS resource key [{}] method [{}] path [{}]", ()->rsResourceKey, classMethod::getName, ()->compiledPath);
+						log.info("adding new JAX-RS resource key [{}] method [{}] path [{}]", () -> rsResourceKey, classMethod::getName, () -> compiledPath);
 						rsRequests.put(rsResourceKey, classMethod);
 					}
 					//Ignore security for now
@@ -169,11 +170,11 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		// Ensure a valid path is returned.
 		private String getPath(String basePath, String path) {
 			StringBuilder pathToUse = new StringBuilder();
-			if(!basePath.startsWith("/")) {
+			if (!basePath.startsWith("/")) {
 				pathToUse.append("/");
 			}
 			pathToUse.append(basePath);
-			pathToUse.append( (basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
+			pathToUse.append((basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
 			return pathToUse.toString();
 		}
 
@@ -190,11 +191,11 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		 */
 		private String getPath(String path) {
 			String url = path;
-			if(!url.startsWith("/")) {
-				url = "/"+url;
+			if (!url.startsWith("/")) {
+				url = "/" + url;
 			}
 			int questionMark = url.indexOf("?");
-			if(questionMark != -1) {
+			if (questionMark != -1) {
 				url = url.substring(0, questionMark);
 			}
 			return url;
@@ -202,13 +203,14 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 		/**
 		 * Tries to find the correct JAX-RS method (with optional path parameter)
+		 *
 		 * @param rsResourceKey unique key to identify all JAX-RS resources in the given resource class
 		 * @return JAX-RS method or `null` when no resource is found
 		 */
 		private Method findRequest(String rsResourceKey) {
 			String[] uriSegments = rsResourceKey.split("/");
 
-			for (Iterator<String> it = rsRequests.keySet().iterator(); it.hasNext();) {
+			for (Iterator<String> it = rsRequests.keySet().iterator(); it.hasNext(); ) {
 				String pattern = it.next();
 				String[] patternSegments = pattern.split("/");
 
@@ -218,13 +220,13 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 				int matches = 0;
 				for (int i = 0; i < uriSegments.length; i++) {
-					if(patternSegments[i].equals(uriSegments[i]) || (patternSegments[i].startsWith("{") && patternSegments[i].endsWith("}"))) {
+					if (patternSegments[i].equals(uriSegments[i]) || (patternSegments[i].startsWith("{") && patternSegments[i].endsWith("}"))) {
 						matches++;
 					} else {
 						continue;
 					}
 				}
-				if(matches == uriSegments.length) {
+				if (matches == uriSegments.length) {
 					return rsRequests.get(pattern);
 				}
 			}
@@ -245,32 +247,33 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 		/**
 		 * Dispatches the mocked request.
-		 * @param httpMethod GET PUT POST DELETE
-		 * @param url the relative path of the FF! API
+		 *
+		 * @param httpMethod     GET PUT POST DELETE
+		 * @param url            the relative path of the FF! API
 		 * @param jsonOrFormdata when using PUT/POST requests, a json string of formdata object
-		 * @param role IbisRole if you want to test authorization as well
-		 * @param headers Map of header parameters where the key is the header name and the value is the header value
+		 * @param role           IbisRole if you want to test authorization as well
+		 * @param headers        Map of header parameters where the key is the header name and the value is the header value
 		 */
 		public Response dispatchRequest(String httpMethod, String url, Object jsonOrFormdata, IbisRole role, Map<String, String> headers) {
 
 			String rsResourceKey = compileKey(httpMethod, url);
 			log.info("trying to dispatch request to [{}]", rsResourceKey);
 
-			if(httpMethod.equalsIgnoreCase("GET") && jsonOrFormdata != null) {
+			if (httpMethod.equalsIgnoreCase("GET") && jsonOrFormdata != null) {
 				fail("can't use arguments on a GET request");
 			}
 			applyIbisRole(role);
 
 			Method method = findRequest(rsResourceKey);
-			if(method == null) {
-				fail("can't find resource ["+url+"] method ["+httpMethod+"]");
+			if (method == null) {
+				fail("can't find resource [" + url + "] method [" + httpMethod + "]");
 			}
 
 			Path basePathAnnotation = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Path.class);
 			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "";
 			final String methodPath = basePath + method.getAnnotation(Path.class).value();
 
-			log.debug("found JAX-RS resource [{}]", ()->compileKey(httpMethod, methodPath));
+			log.debug("found JAX-RS resource [{}]", () -> compileKey(httpMethod, methodPath));
 
 			try {
 				Parameter[] parameters = method.getParameters(); //find all parameters in the JAX-RS method, and try to populate them.
@@ -283,13 +286,13 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 					boolean isQueryParameter = parameter.isAnnotationPresent(QueryParam.class);
 					boolean isHeaderParameter = parameter.isAnnotationPresent(HeaderParam.class);
 
-					if(isPathParameter) {
+					if (isPathParameter) {
 						String pathValue = findPathParameter(parameter, methodPath, url);
 
 						Object value = ClassUtils.convertToType(parameter.getType(), pathValue);
 						log.debug("setting method argument [{}] to value [{}]", i, value);
 						methodArguments[i] = value;
-					} else if(isQueryParameter) {
+					} else if (isQueryParameter) {
 						Object value = findQueryParameter(parameter, url);
 						log.debug("setting method argument [{}] to value [{}]", i, value);
 						methodArguments[i] = value;
@@ -299,27 +302,27 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 						methodArguments[i] = value;
 					} else {
 						Consumes consumes = AnnotationUtils.findAnnotation(method, Consumes.class);
-						if(consumes == null) {
+						if (consumes == null) {
 							fail("found additional argument without consumes!");
 						}
-						if(jsonOrFormdata == null) {
-							fail("found unset parameter ["+parameter+"] on method!");
+						if (jsonOrFormdata == null) {
+							fail("found unset parameter [" + parameter + "] on method!");
 						}
 
 						String mediaType = consumes.value()[0];
-						if(mediaType.equals(MediaType.APPLICATION_JSON)) { //We need to convert our input to json
+						if (mediaType.equals(MediaType.APPLICATION_JSON)) { //We need to convert our input to json
 							Object value = convertInputToParameterType(parameter, jsonOrFormdata);
 
 							log.debug("setting method argument [{}] to value [{}] with type [{}]", i, value, value.getClass().getSimpleName());
 							methodArguments[i] = value;
-						} else if(mediaType.equals(MediaType.MULTIPART_FORM_DATA)){
-							if(jsonOrFormdata instanceof List<?>) {
+						} else if (mediaType.equals(MediaType.MULTIPART_FORM_DATA)) {
+							if (jsonOrFormdata instanceof List<?>) {
 								@SuppressWarnings("unchecked")
 								MultipartBody multipartBody = new MultipartBody((List<Attachment>) jsonOrFormdata);
 								methodArguments[i] = multipartBody;
 							}
 						} else {
-							fail("mediaType ["+mediaType+"] not yet implemented"); //TODO: figure out how to deal with MultipartRequests
+							fail("mediaType [" + mediaType + "] not yet implemented"); //TODO: figure out how to deal with MultipartRequests
 						}
 					}
 				}
@@ -330,12 +333,12 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 				MultivaluedMap<String, Object> meta = response.getMetadata();
 
 				Produces produces = AnnotationUtils.findAnnotation(method, Produces.class);
-				if(produces != null) {
+				if (produces != null) {
 					String mediaType = produces.value()[0];
 					MediaType type = MediaType.valueOf(mediaType);
 					meta.add(HttpHeaders.CONTENT_TYPE, type);
 
-					if(mediaType.equals(MediaType.APPLICATION_JSON)) {
+					if (mediaType.equals(MediaType.APPLICATION_JSON)) {
 						ObjectMapper objectMapper = new ObjectMapper();
 						String json = objectMapper.writeValueAsString(response.getEntity());
 						response.setEntity(json, null);
@@ -347,15 +350,15 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			} catch (InvocationTargetException e) {
 				//Directly throw AssertionError so JUnit can analyze the StackTrace
 				//Directly throw ApiExceptions so they can be asserted in JUnit tests
-				if(e.getCause() instanceof RuntimeException) {
+				if (e.getCause() instanceof RuntimeException) {
 					throw (RuntimeException) e.getCause();
 				}
 				log.fatal("unexpected InvocationTargetException, failing test", e);
-				return fail("error dispatching request ["+rsResourceKey+"] " + e.getMessage());
+				return fail("error dispatching request [" + rsResourceKey + "] " + e.getMessage());
 			} catch (Exception e) {
 				//Handle all other 'unexpected' exceptions by logging the exception and failing the test
 				log.fatal("unexpected exception, failing test", e);
-				return fail("error dispatching request ["+rsResourceKey+"] " + e.getMessage());
+				return fail("error dispatching request [" + rsResourceKey + "] " + e.getMessage());
 			}
 		}
 
@@ -363,7 +366,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		 * If set, apply the IbisRole to the mocked request.
 		 */
 		protected void applyIbisRole(IbisRole role) {
-			if(role != null) {
+			if (role != null) {
 				doReturn(true).when(securityContext).isUserInRole(role.name());
 			}
 		}
@@ -376,13 +379,14 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			try {
 				return objectMapper.readValue((String) jsonOrFormdata, parameter.getType());
 			} catch (Throwable e) {
-				fail("error transforming json to type ["+parameter.getType()+"]");
+				fail("error transforming json to type [" + parameter.getType() + "]");
 				return null;
 			}
 		}
 
 		/**
 		 * If a path parameter is used, try to find it
+		 *
 		 * @return the resolved path parameter value
 		 */
 		private String findPathParameter(Parameter parameter, String methodPath, String url) {
@@ -395,44 +399,45 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			String pathValue = null;
 			for (int j = 0; j < pathSegments.length; j++) {
 				String segment = pathSegments[j];
-				if(segment.equals(path)) {
+				if (segment.equals(path)) {
 					pathValue = urlSegments[j];
 					break;
 				}
 			}
-			if(pathValue == null) {
-				fail("unable to populate path param ["+path+"]");
+			if (pathValue == null) {
+				fail("unable to populate path param [" + path + "]");
 			}
 			return pathValue;
 		}
 
 		/**
 		 * If a query parameter is used, try to find it
+		 *
 		 * @return the resolved query parameter value
 		 */
 		private Object findQueryParameter(Parameter parameter, String url) {
 			QueryParam queryParameter = parameter.getAnnotation(QueryParam.class);
 			int questionMark = url.indexOf("?");
-			if(questionMark == -1) {
+			if (questionMark == -1) {
 				log.info("found query parameter [{}] on method but it was not present in the URL [{}]", queryParameter.value(), url);
 			}
 
-			String urlQueryParameters = url.substring(questionMark +1);
+			String urlQueryParameters = url.substring(questionMark + 1);
 			String[] urlQuerySegments = urlQueryParameters.split("&");
 			String queryValue = null;
 			for (String querySegment : urlQuerySegments) {
-				if(querySegment.startsWith(queryParameter.value()+"=")) {
-					queryValue = querySegment.substring(querySegment.indexOf("=")+1);
+				if (querySegment.startsWith(queryParameter.value() + "=")) {
+					queryValue = querySegment.substring(querySegment.indexOf("=") + 1);
 					break;
 				}
 			}
-			if(queryValue == null) {
+			if (queryValue == null) {
 				DefaultValue defaultValue = parameter.getAnnotation(DefaultValue.class);
-				if(defaultValue != null) {
+				if (defaultValue != null) {
 					queryValue = defaultValue.value();
 				}
 			}
-			if(queryValue == null) {
+			if (queryValue == null) {
 				return null;
 			}
 
@@ -443,19 +448,20 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 		/**
 		 * If a header parameter is used, try to find it
+		 *
 		 * @return the resolved header parameter value
 		 */
 		private Object findHeaderParameter(Parameter parameter, Map<String, String> headers) {
 			HeaderParam headerParameter = parameter.getAnnotation(HeaderParam.class);
 			String headerValue = headers.get(headerParameter.value());
 
-			if(headerValue == null) {
+			if (headerValue == null) {
 				DefaultValue defaultValue = parameter.getAnnotation(DefaultValue.class);
-				if(defaultValue != null) {
+				if (defaultValue != null) {
 					headerValue = defaultValue.value();
 				}
 			}
-			if(headerValue == null) {
+			if (headerValue == null) {
 				return null;
 			}
 
@@ -470,7 +476,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		private void validateIfAllArgumentsArePresent(Object[] methodArguments, Parameter[] parameters) {
 			for (int j = 0; j < methodArguments.length; j++) {
 				Object object = methodArguments[j];
-				if(object == null) {
+				if (object == null) {
 					log.warn("missing argument [{}] for method, expecting type [{}]", j, parameters[j]);
 				}
 			}
@@ -482,7 +488,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		private InputStream stream;
 
 		public FileAttachment(String id, InputStream stream, String filename) {
-			super(id, (InputStream) null, new ContentDisposition("attachment;filename="+filename));
+			super(id, (InputStream) null, new ContentDisposition("attachment;filename=" + filename));
 			this.stream = stream;
 		}
 

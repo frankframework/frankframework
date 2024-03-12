@@ -36,7 +36,6 @@ import org.frankframework.util.RunState;
  * Container for jobs that are scheduled for periodic execution.
  *
  * @author Niels Meijer
- *
  */
 /*
  * Configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
@@ -49,8 +48,8 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(!inState(RunState.STOPPED)) {
-			log.warn("unable to configure [{}] while in state [{}]", ()->this, this::getState);
+		if (!inState(RunState.STOPPED)) {
+			log.warn("unable to configure [{}] while in state [{}]", () -> this, this::getState);
 			return;
 		}
 		updateState(RunState.STARTING);
@@ -70,13 +69,13 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	 */
 	@Override
 	public void start() {
-		if(!inState(RunState.STARTING)) {
-			log.warn("unable to start [{}] while in state [{}]", ()->this, this::getState);
+		if (!inState(RunState.STARTING)) {
+			log.warn("unable to start [{}] while in state [{}]", () -> this, this::getState);
 			return;
 		}
 
 		for (IJob jobdef : getSchedulesList()) {
-			if(jobdef.isConfigured()) {
+			if (jobdef.isConfigured()) {
 				try {
 					schedulerHelper.scheduleJob(jobdef);
 					log.info("job scheduled with properties: {}", jobdef::toString);
@@ -103,20 +102,19 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	 */
 	@Override
 	public void stop() {
-		if(!inState(RunState.STARTED)) {
-			log.warn("forcing [{}] to stop while in state [{}]", ()->this, this::getState);
+		if (!inState(RunState.STARTED)) {
+			log.warn("forcing [{}] to stop while in state [{}]", () -> this, this::getState);
 		}
 		updateState(RunState.STOPPING);
 
-		log.info("stopping all jobs in ScheduleManager [{}]", ()->this);
+		log.info("stopping all jobs in ScheduleManager [{}]", () -> this);
 		List<IJob> scheduledJobs = getSchedulesList();
 		Collections.reverse(scheduledJobs);
 		for (IJob jobDef : scheduledJobs) {
 			log.info("removing trigger for JobDef [{}]", jobDef::getName);
 			try {
 				getSchedulerHelper().deleteTrigger(jobDef);
-			}
-			catch (SchedulerException se) {
+			} catch (SchedulerException se) {
 				log.error("unable to remove scheduled job [{}]", jobDef, se);
 			}
 		}
@@ -126,7 +124,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 
 	@Override
 	public void close() throws Exception {
-		if(!inState(RunState.STOPPED)) {
+		if (!inState(RunState.STOPPED)) {
 			stop(); //Call this just in case...
 		}
 
@@ -141,15 +139,15 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	 * or from outside the configuration through the Frank!Console.
 	 */
 	public void registerScheduledJob(IJob job) {
-		if(!inState(RunState.STOPPED)) {
+		if (!inState(RunState.STOPPED)) {
 			log.warn("cannot add JobDefinition, manager in state [{}]", this::getState);
 		}
 
-		log.debug("registering JobDef [{}] with ScheduleManager [{}]", ()->job, ()->this);
-		if(job.getName() == null) {
+		log.debug("registering JobDef [{}] with ScheduleManager [{}]", () -> job, () -> this);
+		if (job.getName() == null) {
 			throw new IllegalStateException("JobDef has no name");
 		}
-		if(schedules.containsKey(job.getName())) {
+		if (schedules.containsKey(job.getName())) {
 			throw new IllegalStateException("JobDef [" + job.getName() + "] already registered.");
 		}
 
@@ -160,7 +158,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		String name = job.getName();
 
 		schedules.remove(name);
-		log.debug("unregistered JobDef [{}] from ScheduleManager [{}]", ()->name, ()->this);
+		log.debug("unregistered JobDef [{}] from ScheduleManager [{}]", () -> name, () -> this);
 	}
 
 	public final Map<String, IJob> getSchedules() {
@@ -179,10 +177,10 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
-		builder.append(" state ["+getState()+"]");
-		builder.append(" schedules ["+schedules.size()+"]");
-		if(applicationContext != null) {
-			builder.append(" applicationContext ["+applicationContext.getDisplayName()+"]");
+		builder.append(" state [" + getState() + "]");
+		builder.append(" schedules [" + schedules.size() + "]");
+		if (applicationContext != null) {
+			builder.append(" applicationContext [" + applicationContext.getDisplayName() + "]");
 		}
 		return builder.toString();
 	}

@@ -47,7 +47,7 @@ public class NarayanaTransactionHelper extends TransactionHelperImpl {
 	 * This mechanism however, will prevent the connection from being closed, causing a connection-leak to occur.
 	 * <p>
 	 * NOTE:
-	 *
+	 * <p>
 	 * This problem is caused because in the {@link TransactionImple#getStatus()} the {@link ActionStatus internal connection status} is
 	 * {@link StatusConverter#convert(int) converted} to a {@link Status javax.transaction.Status}. Because of the conversion the actual state is lost, and
 	 * {@link ActionStatus#ABORTED} connections are marked as {@link Status#STATUS_ROLLEDBACK STATUS_ROLLEDBACK}.

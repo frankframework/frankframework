@@ -44,7 +44,7 @@ public class HttpRequestRetryHandler extends DefaultHttpRequestRetryHandler {
 	public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
 		final HttpClientContext clientContext = HttpClientContext.adapt(context);
 		final HttpRequest request = clientContext.getRequest();
-		if(isRepeatable(request)) {
+		if (isRepeatable(request)) {
 			log.info("attempt to retry message to [{}] count [{}]", request.getRequestLine(), executionCount);
 			return super.retryRequest(exception, executionCount, context);
 		}
@@ -55,11 +55,11 @@ public class HttpRequestRetryHandler extends DefaultHttpRequestRetryHandler {
 
 	/**
 	 * Only attempt to retry the request if the request supports it!
-	 *
+	 * <p>
 	 * See org.apache.http.impl.execchain.RequestEntityProxy#isRepeatable(HttpRequest)
 	 */
 	public boolean isRepeatable(HttpRequest request) {
-		if(request instanceof HttpEntityEnclosingRequest) {
+		if (request instanceof HttpEntityEnclosingRequest) {
 			final HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
 			return entity.isRepeatable();
 		}

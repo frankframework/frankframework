@@ -10,6 +10,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.Test;
 
 public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
@@ -17,8 +18,13 @@ public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
 	@Override
 	public MessageStoreSender createSender() throws Exception {
 		return new MessageStoreSender() {
-			@Override public void configure() { } //Suppress configure as it's will do a JNDI lookup
-			@Override public void open() { } //Suppress open as it's will do a JNDI lookup
+			@Override
+			public void configure() {
+			} //Suppress configure as it's will do a JNDI lookup
+
+			@Override
+			public void open() {
+			} //Suppress open as it's will do a JNDI lookup
 
 			@Override
 			public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, String message) throws SenderException {
@@ -51,6 +57,6 @@ public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
 		String input = "<dummy/>";
 		Message message = new Message(input);
 		String result = sender.sendMessageOrThrow(message, session).asString();
-		assertEquals(input+",value1,value2,value3", result);
+		assertEquals(input + ",value1,value2,value3", result);
 	}
 }

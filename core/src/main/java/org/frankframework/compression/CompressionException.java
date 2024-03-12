@@ -20,8 +20,8 @@ import org.frankframework.core.IbisException;
 /**
  * Wrapper for compression related exceptions.
  *
- * @author  Gerrit van Brakel
- * @since   4.9.10
+ * @author Gerrit van Brakel
+ * @since 4.9.10
  */
 public class CompressionException extends IbisException {
 

@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.PipeLineSession;
@@ -36,23 +35,23 @@ import org.frankframework.util.DateFormatUtils;
 /**
  * Puts the system date/time under a key in the {@link PipeLineSession pipeLineSession}.
  *
- * @author  Johan Verrips
- * @author  Jaco de Groot (***@dynasol.nl)
- * @since   4.2c
+ * @author Johan Verrips
+ * @author Jaco de Groot (***@dynasol.nl)
+ * @since 4.2c
  */
 @ElementType(ElementTypes.SESSION)
 public class PutSystemDateInSession extends FixedForwardPipe {
 	public static final Object OBJECT = new Object();
-	public static final String FIXEDDATETIME  ="2001-12-17 09:30:47";
-	public static final String FIXEDDATE_STUB4TESTTOOL_KEY  ="stub4testtool.fixeddate";
+	public static final String FIXEDDATETIME = "2001-12-17 09:30:47";
+	public static final String FIXEDDATE_STUB4TESTTOOL_KEY = "stub4testtool.fixeddate";
 
-	private String sessionKey="systemDate";
-	private String dateFormat= DateFormatUtils.FORMAT_FULL_ISO;
+	private String sessionKey = "systemDate";
+	private String dateFormat = DateFormatUtils.FORMAT_FULL_ISO;
 	private DateTimeFormatter formatter;
-	private boolean returnFixedDate=false;
+	private boolean returnFixedDate = false;
 	private long sleepWhenEqualToPrevious = -1;
-	private TimeZone timeZone=null;
-	private ZoneId zoneId=null;
+	private TimeZone timeZone = null;
+	private ZoneId zoneId = null;
 	private String previousFormattedDate;
 	private boolean getCurrentTimeStampInMillis = false;
 
@@ -76,7 +75,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 			throw new ConfigurationException("returnFixedDate only allowed in stub mode");
 		}
 
-		if(isGetCurrentTimeStampInMillis() && isReturnFixedDate()) {
+		if (isGetCurrentTimeStampInMillis() && isReturnFixedDate()) {
 			throw new ConfigurationException("returnFixedDate cannot be used to get current time stamp in millis");
 		}
 		if (timeZone == null) {
@@ -87,7 +86,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		// check the dateformat
 		try {
 			formatter = DateTimeFormatter.ofPattern(getDateFormat()).withZone(zoneId);
-		} catch (IllegalArgumentException ex){
+		} catch (IllegalArgumentException ex) {
 			throw new ConfigurationException("has an illegal value for dateFormat", ex);
 		}
 	}
@@ -96,8 +95,8 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		String formattedDate;
-		if(isGetCurrentTimeStampInMillis()) {
-			formattedDate = System.currentTimeMillis()+"";
+		if (isGetCurrentTimeStampInMillis()) {
+			formattedDate = System.currentTimeMillis() + "";
 		} else {
 			if (isReturnFixedDate()) {
 				DateTimeFormatter formatterFrom = DateFormatUtils.GENERIC_DATETIME_FORMATTER.withZone(zoneId);
@@ -109,19 +108,19 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 				try {
 					instant = Instant.from(formatterFrom.parse(fixedDateTime));
 				} catch (Exception e) {
-					throw new PipeRunException(this,"cannot parse fixed date ["+fixedDateTime+"] with format ["+ DateFormatUtils.FORMAT_DATETIME_GENERIC +"]",e);
+					throw new PipeRunException(this, "cannot parse fixed date [" + fixedDateTime + "] with format [" + DateFormatUtils.FORMAT_DATETIME_GENERIC + "]", e);
 				}
 				formattedDate = formatter.format(instant);
 			} else {
 				if (sleepWhenEqualToPrevious > -1) {
 					// Synchronize on a static value to generate unique value's for the
 					// whole virtual machine.
-					synchronized(OBJECT) {
+					synchronized (OBJECT) {
 						formattedDate = formatter.format(Instant.now());
 						while (formattedDate.equals(previousFormattedDate)) {
 							try {
 								OBJECT.wait(sleepWhenEqualToPrevious);
-							} catch(InterruptedException e) {
+							} catch (InterruptedException e) {
 								log.debug("interrupted");
 								Thread.currentThread().interrupt();
 							}
@@ -142,28 +141,33 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	/**
 	 * Key of session variable to store systemdate in
+	 *
 	 * @ff.default systemDate
 	 */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
+
 	public String getSessionKey() {
 		return sessionKey;
 	}
 
 	/**
 	 * Format to store date in
+	 *
 	 * @ff.default full ISO format: DateUtils.fullIsoFormat
 	 */
 	public void setDateFormat(String rhs) {
 		dateFormat = rhs;
 	}
+
 	public String getDateFormat() {
 		return dateFormat;
 	}
 
 	/**
 	 * Time zone to use for the formatter
+	 *
 	 * @ff.default the default time zone for the JVM
 	 */
 	public void setTimeZone(String timeZone) {
@@ -176,6 +180,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	 * timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back.
 	 * <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use
 	 * &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link Parameter}.
+	 *
 	 * @ff.default -1
 	 */
 	public void setSleepWhenEqualToPrevious(long sleepWhenEqualToPrevious) {
@@ -184,22 +189,26 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	/**
 	 * If <code>true</code>, the date/time returned will always be {@value #FIXEDDATETIME} (for testing purposes only). It is overridden by the value of the pipelinesession key <code>stub4testtool.fixeddate</code> when it exists
+	 *
 	 * @ff.default false
 	 */
 	public void setReturnFixedDate(boolean b) {
 		returnFixedDate = b;
 	}
+
 	public boolean isReturnFixedDate() {
 		return returnFixedDate;
 	}
 
 	/**
 	 * If set to 'true' then current time stamp in millisecond will be stored in the sessionKey
+	 *
 	 * @ff.default false
 	 */
 	public void setGetCurrentTimeStampInMillis(boolean getCurrentTimeStampInMillis) {
 		this.getCurrentTimeStampInMillis = getCurrentTimeStampInMillis;
 	}
+
 	public boolean isGetCurrentTimeStampInMillis() {
 		return getCurrentTimeStampInMillis;
 	}

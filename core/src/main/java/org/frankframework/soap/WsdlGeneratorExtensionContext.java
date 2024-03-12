@@ -25,14 +25,20 @@ import org.frankframework.jms.JmsListener;
 
 public interface WsdlGeneratorExtensionContext {
 	List<String> getWarnings();
+
 	String getFilename();
+
 	String getTNS();
 
 	boolean hasSOAPActionName();
+
 	String getSOAPActionName();
 
 	void setExtensionNamespacePrefixes(XMLStreamWriter w) throws XMLStreamException;
+
 	void addExtensionNamespaces(XMLStreamWriter w) throws XMLStreamException;
+
 	void addJmsBindingInfo(XMLStreamWriter w, WsdlGenerator wsdlGenerator, PipeLine pipeLine) throws XMLStreamException;
+
 	void addJmsServiceInfo(XMLStreamWriter w, JmsListener listener) throws XMLStreamException;
 }

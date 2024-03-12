@@ -26,6 +26,7 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -270,47 +271,47 @@ public class FixedQuerySenderTest {
 
 	@TxManagerTest
 	public void testOutputFormatDefault() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default.xml");
-		testOutputFormat(null, true, r-> assertXmlEquals(expected, r));
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-default.xml");
+		testOutputFormat(null, true, r -> assertXmlEquals(expected, r));
 	}
 
 	@TxManagerTest
 	public void testOutputFormatXml() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml.xml");
-		testOutputFormat(DocumentFormat.XML, true, r-> assertXmlEquals(expected, r));
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-xml.xml");
+		testOutputFormat(DocumentFormat.XML, true, r -> assertXmlEquals(expected, r));
 	}
 
 	@TxManagerTest
 	public void testOutputFormatJson() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json.json");
-		testOutputFormat(DocumentFormat.JSON, true, r-> assertJsonEquals(expected, r));
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-json.json");
+		testOutputFormat(DocumentFormat.JSON, true, r -> assertJsonEquals(expected, r));
 	}
 
 	@TxManagerTest
 	public void testOutputFormatDefaultNoFieldDefinitions() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default-nofielddef.xml");
-		testOutputFormat(null, false, r-> assertXmlEquals(expected, r));
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-default-nofielddef.xml");
+		testOutputFormat(null, false, r -> assertXmlEquals(expected, r));
 	}
 
 	@TxManagerTest
 	public void testOutputFormatXmlNoFieldDefinitions() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml-nofielddef.xml");
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-xml-nofielddef.xml");
 		testOutputFormat(DocumentFormat.XML, false, r -> assertXmlEquals(expected, r));
 	}
 
 	@TxManagerTest
 	public void testOutputFormatJsonNoFieldDefinitions() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json-nofielddef.json");
-		testOutputFormat(DocumentFormat.JSON, false, r-> assertJsonEquals(expected, r));
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-json-nofielddef.json");
+		testOutputFormat(DocumentFormat.JSON, false, r -> assertJsonEquals(expected, r));
 	}
 
 	public String getLongString(int sizeInK) {
-		StringBuilder result=new StringBuilder();
-		for(int i=0; i<16; i++) {
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < 16; i++) {
 			result.append("0123456789ABCDEF");
 		}
-		String block=result.toString();
-		for(int i=1; i<sizeInK; i++) {
+		String block = result.toString();
+		for (int i = 1; i < sizeInK; i++) {
 			result.append(block);
 		}
 		return result.toString();

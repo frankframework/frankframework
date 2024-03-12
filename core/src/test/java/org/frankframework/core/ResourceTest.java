@@ -14,8 +14,10 @@ import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.ClassLoaderURIResolver;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXException;
 
 public class ResourceTest {
@@ -30,13 +32,13 @@ public class ResourceTest {
 
 	private void testUri(IScopeProvider cl, String ref, String allowedProtocol, String expectedContents, String expectedSystemId) throws TransformerException, SAXException, IOException {
 		Resource resource = Resource.getResource(cl, ref, allowedProtocol);
-		assertNotNull(resource, "<null> resource: "+ref);
-		if (expectedContents!=null) {
+		assertNotNull(resource, "<null> resource: " + ref);
+		if (expectedContents != null) {
 			assertEquals(expectedContents, XmlUtils.source2String(resource.asSource()));
 		} else {
-			assertNotNull( XmlUtils.source2String(resource.asSource()));
+			assertNotNull(XmlUtils.source2String(resource.asSource()));
 		}
-		assertEquals(expectedSystemId,resource.getSystemId());
+		assertEquals(expectedSystemId, resource.getSystemId());
 	}
 
 	@Test
@@ -53,7 +55,7 @@ public class ResourceTest {
 	public void localClassLoaderFileRef() throws Exception {
 		URL url = ClassLoaderUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
-		String ref=url.toExternalForm();
+		String ref = url.toExternalForm();
 		testUri(null, ref, "file", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", ref);
 	}
 
@@ -71,7 +73,7 @@ public class ResourceTest {
 	public void bytesClassLoaderFileRef() throws Exception {
 		URL url = ClassLoaderUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
-		String ref=url.toExternalForm();
+		String ref = url.toExternalForm();
 		testUri(getBytesClassLoaderProvider(), ref, "file", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", ref);
 	}
 
@@ -181,7 +183,7 @@ public class ResourceTest {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
-		assertNotNull(file, "jar url ["+JAR_FILE+"] not found");
+		assertNotNull(file, "jar url [" + JAR_FILE + "] not found");
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull(jarFile, "jar file not found");
 

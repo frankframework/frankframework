@@ -6,7 +6,9 @@ import java.io.StringWriter;
 import org.frankframework.stream.json.JsonUtils;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXException;
 
 import jakarta.json.Json;
@@ -17,8 +19,8 @@ import jakarta.json.JsonValue;
 public class DocumentUtilsTest {
 
 	protected void testBuild(String json, String expected) throws Exception {
-		try(JsonReader jr = Json.createReader(new StringReader(json))) {
-			JsonValue jValue=jr.read();
+		try (JsonReader jr = Json.createReader(new StringReader(json))) {
+			JsonValue jValue = jr.read();
 			testBuild(jValue, expected);
 		}
 
@@ -30,16 +32,16 @@ public class DocumentUtilsTest {
 
 	protected void testBuild(JsonValue jValue, String expected) throws SAXException {
 		StringWriter writer = new StringWriter();
-		try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root",writer, false)) {
+		try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer, false)) {
 			DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 		}
 		MatchUtils.assertXmlEquals(expected, writer.toString());
 	}
 
 	protected JsonValue getJsonValue(String value) {
-		String object = "{ \"v\":"+value+"}";
-		try(JsonReader jr = Json.createReader(new StringReader(object))) {
-			JsonObject jObject = (JsonObject)jr.read();
+		String object = "{ \"v\":" + value + "}";
+		try (JsonReader jr = Json.createReader(new StringReader(object))) {
+			JsonObject jObject = (JsonObject) jr.read();
 			return jObject.get("v");
 		}
 	}
@@ -86,31 +88,33 @@ public class DocumentUtilsTest {
 
 	@Test
 	public void testNestedObjectDocument() throws Exception {
-		testBuild("{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7.2},[1,2,3.9]]}}",
-				"<root>"+
-					"<items>"+
-						"<numeric>1</numeric>"+
-						"<chars>waarde</chars>"+
-						"<welles>true</welles>"+
-						"<nietes>false</nietes>"+
-						"<rij>a</rij>"+
-						"<rij>2</rij>"+
-						"<rij>true</rij>"+
-						"<rij>false</rij>"+
-						"<rij nil=\"true\"/>"+
-						"<rij><a>1</a><b>7.2</b></rij>"+
-						"<rij>"+
-							"<item>1</item>"+
-							"<item>2</item>"+
-							"<item>3.9</item>"+
-						"</rij>"+
-					"</items>"+
-				"</root>");
+		testBuild(
+				"{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7.2},[1,2,3.9]]}}",
+				"<root>" +
+						"<items>" +
+						"<numeric>1</numeric>" +
+						"<chars>waarde</chars>" +
+						"<welles>true</welles>" +
+						"<nietes>false</nietes>" +
+						"<rij>a</rij>" +
+						"<rij>2</rij>" +
+						"<rij>true</rij>" +
+						"<rij>false</rij>" +
+						"<rij nil=\"true\"/>" +
+						"<rij><a>1</a><b>7.2</b></rij>" +
+						"<rij>" +
+						"<item>1</item>" +
+						"<item>2</item>" +
+						"<item>3.9</item>" +
+						"</rij>" +
+						"</items>" +
+						"</root>"
+		);
 	}
 
 	@Test
 	public void testSimple() throws Exception {
-			testBuild("{\"a\":1,\"b\":{\"c\":2}}","<root><a>1</a><b><c>2</c></b></root>");
+		testBuild("{\"a\":1,\"b\":{\"c\":2}}", "<root><a>1</a><b><c>2</c></b></root>");
 	}
 
 

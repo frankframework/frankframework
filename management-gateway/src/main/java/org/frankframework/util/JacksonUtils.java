@@ -17,14 +17,13 @@ package org.frankframework.util;
 
 import java.io.IOException;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.management.bus.BusException;
 
 public class JacksonUtils {
@@ -47,12 +46,12 @@ public class JacksonUtils {
 
 	public static <T> T convertToDTO(Object payload, Class<T> dto) {
 		try {
-			if(payload instanceof String) {
+			if (payload instanceof String) {
 				return MAPPER.readValue((String) payload, dto);
-			} else if(payload instanceof byte[]) {
+			} else if (payload instanceof byte[]) {
 				return MAPPER.readValue((byte[]) payload, dto);
 			} else {
-				throw new NotImplementedException("unhandled payload type ["+payload.getClass()+"]");
+				throw new NotImplementedException("unhandled payload type [" + payload.getClass() + "]");
 			}
 		} catch (JacksonException e) {
 			throw new BusException("unable to convert payload", e);

@@ -28,6 +28,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -37,14 +39,11 @@ import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
-import org.springframework.mock.web.DelegatingServletOutputStream;
-
-import jakarta.mail.BodyPart;
-import jakarta.mail.internet.MimeMultipart;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.mime.MultipartEntityBuilder;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
+import org.springframework.mock.web.DelegatingServletOutputStream;
 
 public class MtomResponseWrapper extends HttpServletResponseWrapper {
 	protected Logger log = LogUtil.getLogger(this);
@@ -63,10 +62,10 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 	public ServletOutputStream getOutputStream() throws IOException {
 
 		contentType = ContentType.parse(getContentType());
-		if(log.isTraceEnabled()) log.trace("recieved response with ContentType ["+contentType+"]");
+		if (log.isTraceEnabled()) log.trace("recieved response with ContentType [" + contentType + "]");
 
 		// Als mimeType == text/html dan geen multipart doen :)
-		if(!contentType.getMimeType().contains("multipart")) {
+		if (!contentType.getMimeType().contains("multipart")) {
 			return super.getOutputStream();
 		}
 		return new DelegatingServletOutputStream(new MtomOutputStream(super.getOutputStream()));
@@ -102,7 +101,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 
 				HttpEntity entity;
 
-				if(count == 1) { //only mtom when there is more then 1 part.
+				if (count == 1) { //only mtom when there is more then 1 part.
 					BodyPart bodyPart = mimeMultipart.getBodyPart(0);
 
 					ContentType parsedContentType = parseContentType(bodyPart.getContentType());
@@ -113,11 +112,11 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 					MultipartEntityBuilder multipart = MultipartEntityBuilder.create();
 					multipart.setMtomMultipart();
 
-					for(int i = 0; i < count; i++) {
+					for (int i = 0; i < count; i++) {
 						BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 
 						ContentType parsedContentType = null;
-						if(i == 0) //Apparently with IBM CMIS the first part always returns this header, ala SWA but other parts are MTOM!?
+						if (i == 0) //Apparently with IBM CMIS the first part always returns this header, ala SWA but other parts are MTOM!?
 							parsedContentType = ContentType.create("text/xml");
 						else
 							parsedContentType = parseContentType(bodyPart.getContentType());
@@ -125,13 +124,12 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 						FormBodyPartBuilder fbpb = FormBodyPartBuilder.create();
 
 						String[] partName = bodyPart.getHeader("content-id");
-						if(partName != null && partName.length > 0) {
+						if (partName != null && partName.length > 0) {
 							String contentId = partName[0];
-							contentId = contentId.substring(1, contentId.length()-1); //Remove pre and post-fix: < & >
+							contentId = contentId.substring(1, contentId.length() - 1); //Remove pre and post-fix: < & >
 							fbpb.setName(contentId);
-						}
-						else
-							fbpb.setName("part"+i);
+						} else
+							fbpb.setName("part" + i);
 
 						fbpb.setBody(new InputStreamBody(bodyPart.getInputStream(), parsedContentType, bodyPart.getFileName()));
 
@@ -141,7 +139,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 				}
 
 				Header determinedContentType = entity.getContentType();
-				if(log.isTraceEnabled()) log.trace("writing response with ContentType ["+determinedContentType.getValue()+"]");
+				if (log.isTraceEnabled()) log.trace("writing response with ContentType [" + determinedContentType.getValue() + "]");
 
 				setContentType(determinedContentType.getValue());
 				entity.writeTo(out);
@@ -159,11 +157,10 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 
 			List<String> nameValuePairs = StringUtil.split(contentType, "; ");
 			for (String nameValuePair : nameValuePairs) {
-				if(nameValuePair.contains("=")) {
+				if (nameValuePair.contains("=")) {
 					String[] pair = nameValuePair.split("=");
 					params.add(new BasicNameValuePair(pair[0], pair[1].replace("\"", "")));
-				}
-				else {
+				} else {
 					mimeType = nameValuePair;
 				}
 			}

@@ -38,9 +38,8 @@ import org.frankframework.util.XmlBuilder;
 /**
  * A Trigger that has its type configured at startup. Either use type = ALARM or type = CLEARING.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
- *
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class Trigger implements ITrigger {
 	protected Logger log = LogUtil.getLogger(this);
@@ -64,7 +63,7 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(monitor == null) {
+		if (monitor == null) {
 			throw new ConfigurationException("no monitor autowired");
 		}
 
@@ -73,7 +72,7 @@ public class Trigger implements ITrigger {
 		}
 
 		if (threshold > 0) {
-			if(period < 1) {
+			if (period < 1) {
 				throw new ConfigurationException("you must define a period when using threshold > 0");
 			}
 			if (eventDates == null) {
@@ -93,17 +92,17 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void onApplicationEvent(FireMonitorEvent event) {
-		if(configured && eventCodes.contains(event.getEventCode())) {
+		if (configured && eventCodes.contains(event.getEventCode())) {
 			evaluateEvent(event);
 		}
 	}
 
 	protected void evaluateEvent(FireMonitorEvent event) {
-		if(evaluateAdapterFilters(event.getSource())) {
+		if (evaluateAdapterFilters(event.getSource())) {
 			try {
 				changeState(event);
 			} catch (MonitorException e) {
-				throw new IllegalStateException("unable to evaluate trigger for event ["+event.getEventCode()+"]", e);
+				throw new IllegalStateException("unable to evaluate trigger for event [" + event.getEventCode() + "]", e);
 			}
 		}
 	}
@@ -117,7 +116,7 @@ public class Trigger implements ITrigger {
 		boolean alarm = isAlarm();
 		log.debug("evaluating MonitorEvent [{}]", event::getEventSourceName);
 
-		if (getThreshold()>0) {
+		if (getThreshold() > 0) {
 			cleanUpEvents(event.getEventTime());
 			eventDates.add(event.getEventTime());
 			if (eventDates.size() >= getThreshold()) {
@@ -130,17 +129,17 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void clearEvents() {
-		if (eventDates!=null) {
+		if (eventDates != null) {
 			eventDates.clear();
 		}
 	}
 
 	protected void cleanUpEvents(Instant now) {
-		while(!eventDates.isEmpty()) {
+		while (!eventDates.isEmpty()) {
 			Instant firstDate = eventDates.getFirst();
 			if ((now.toEpochMilli() - firstDate.toEpochMilli()) > getPeriod() * 1000) {
 				eventDates.removeFirst();
-				if (log.isDebugEnabled()) log.debug("removed element dated ["+ DateFormatUtils.format(firstDate)+"]");
+				if (log.isDebugEnabled()) log.debug("removed element dated [" + DateFormatUtils.format(firstDate) + "]");
 			} else {
 				break;
 			}
@@ -149,35 +148,35 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void toXml(XmlBuilder monitor) {
-		XmlBuilder trigger=new XmlBuilder("trigger");
+		XmlBuilder trigger = new XmlBuilder("trigger");
 		trigger.addAttribute("className", isAlarm() ? CLASS_NAME_ALARM : CLASS_NAME_CLEARING);
 		monitor.addSubElement(trigger);
-		if (getSeverity()!=null) {
+		if (getSeverity() != null) {
 			trigger.addAttribute("severity", getSeverity().name());
 		}
-		if (getThreshold()>0) {
-			trigger.addAttribute("threshold",getThreshold());
+		if (getThreshold() > 0) {
+			trigger.addAttribute("threshold", getThreshold());
 		}
-		if (getPeriod()>0) {
-			trigger.addAttribute("period",getPeriod());
+		if (getPeriod() > 0) {
+			trigger.addAttribute("period", getPeriod());
 		}
-		for (int i=0; i<eventCodes.size(); i++) {
-			XmlBuilder event=new XmlBuilder("event");
+		for (int i = 0; i < eventCodes.size(); i++) {
+			XmlBuilder event = new XmlBuilder("event");
 			trigger.addSubElement(event);
 			event.setValue(eventCodes.get(i));
 		}
-		if (getAdapterFilters()!=null && getSourceFiltering() != SourceFiltering.NONE) {
-			for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
+		if (getAdapterFilters() != null && getSourceFiltering() != SourceFiltering.NONE) {
+			for (Iterator<String> it = getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
 				String adapterName = it.next();
 				AdapterFilter af = getAdapterFilters().get(adapterName);
 				XmlBuilder adapter = new XmlBuilder("adapterfilter");
 				trigger.addSubElement(adapter);
-				adapter.addAttribute("adapter",adapterName);
+				adapter.addAttribute("adapter", adapterName);
 				if (isFilterOnLowerLevelObjects()) {
-					List<String> subobjectList=af.getSubObjectList();
-					if (subobjectList!=null) {
-						for(String subObjectName : subobjectList) {
-							XmlBuilder sourceXml=new XmlBuilder("source");
+					List<String> subobjectList = af.getSubObjectList();
+					if (subobjectList != null) {
+						for (String subObjectName : subobjectList) {
+							XmlBuilder sourceXml = new XmlBuilder("source");
 							adapter.addSubElement(sourceXml);
 							sourceXml.setValue(subObjectName);
 						}
@@ -200,6 +199,7 @@ public class Trigger implements ITrigger {
 	private void clearEventCodes() {
 		eventCodes.clear();
 	}
+
 	public void addEventCode(String code) {
 		eventCodes.add(code);
 	}
@@ -243,8 +243,8 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void registerAdapterFilter(AdapterFilter af) {
-		adapterFilters.put(af.getAdapter(),af);
-		if(af.isFilteringToLowerLevelObjects()) {
+		adapterFilters.put(af.getAdapter(), af);
+		if (af.isFilteringToLowerLevelObjects()) {
 			setSourceFiltering(SourceFiltering.SOURCE);
 		} else if (getSourceFiltering() == SourceFiltering.NONE) {
 			setSourceFiltering(SourceFiltering.ADAPTER);
@@ -254,13 +254,14 @@ public class Trigger implements ITrigger {
 	public boolean isFilterOnLowerLevelObjects() {
 		return sourceFiltering == SourceFiltering.SOURCE;
 	}
+
 	public boolean isFilterOnAdapters() {
 		return sourceFiltering == SourceFiltering.ADAPTER;
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		log.info("removing trigger ["+this+"]");
+		log.info("removing trigger [" + this + "]");
 	}
 
 }

@@ -11,10 +11,10 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttachments<F,A>> extends HelperedBasicFileSystemTest<F,FS> {
+public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttachments<F, A>> extends HelperedBasicFileSystemTest<F, FS> {
 
 	protected IFileSystemWithAttachmentsTestHelper<A> getHelper() {
-		return (IFileSystemWithAttachmentsTestHelper<A>)helper;
+		return (IFileSystemWithAttachmentsTestHelper<A>) helper;
 	}
 
 	@BeforeEach
@@ -27,11 +27,11 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 	@Test
 	public void fileSystemWithAttachmentsTestList() throws Exception {
 		String filename = "testAttachmentBasics" + FILE1;
-		String attachmentName="testAttachmentName";
-		String attachmentFileName="testAttachmentFileName";
-		String attachmentContentType="testAttachmentContentType";
-		String attachmentContents="attachmentContents";
-		byte[] attachmentContentsBytes=attachmentContents.getBytes("UTF-8");
+		String attachmentName = "testAttachmentName";
+		String attachmentFileName = "testAttachmentFileName";
+		String attachmentContentType = "testAttachmentContentType";
+		String attachmentContents = "attachmentContents";
+		byte[] attachmentContentsBytes = attachmentContents.getBytes("UTF-8");
 
 		fileSystem.configure();
 		fileSystem.open();
@@ -52,9 +52,9 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		assertFalse(attachmentIterator.hasNext());
 		assertNotNull(attachmentRetrieved);
 
-		assertEquals(attachmentName,fileSystem.getAttachmentName(attachmentRetrieved));
-		assertEquals(attachmentFileName,fileSystem.getAttachmentFileName(attachmentRetrieved));
-		assertEquals(attachmentContentType,fileSystem.getAttachmentContentType(attachmentRetrieved));
+		assertEquals(attachmentName, fileSystem.getAttachmentName(attachmentRetrieved));
+		assertEquals(attachmentFileName, fileSystem.getAttachmentFileName(attachmentRetrieved));
+		assertEquals(attachmentContentType, fileSystem.getAttachmentContentType(attachmentRetrieved));
 
 		assertEquals(attachmentContents, fileSystem.readAttachment(attachmentRetrieved).asString());
 	}
@@ -62,15 +62,15 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 	@Test
 	public void fileSystemWithAttachmentsTestListProperties() throws Exception {
 		String filename = "testAttachmentBasics" + FILE1;
-		String attachmentName="testAttachmentName";
-		String attachmentFileName="testAttachmentFileName";
-		String attachmentContentType="testAttachmentContentType";
-		String attachmentContents="attachmentContents";
-		byte[] attachmentContentsBytes=attachmentContents.getBytes("UTF-8");
-		String propname1="propname1";
-		String propname2="propname2";
-		String propvalue1="propvalue1";
-		String propvalue2="propvalue2";
+		String attachmentName = "testAttachmentName";
+		String attachmentFileName = "testAttachmentFileName";
+		String attachmentContentType = "testAttachmentContentType";
+		String attachmentContents = "attachmentContents";
+		byte[] attachmentContentsBytes = attachmentContents.getBytes("UTF-8");
+		String propname1 = "propname1";
+		String propname2 = "propname2";
+		String propvalue1 = "propvalue1";
+		String propvalue2 = "propvalue2";
 
 		fileSystem.configure();
 		fileSystem.open();
@@ -93,16 +93,16 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		assertFalse(attachmentIterator.hasNext());
 		assertNotNull(attachmentRetrieved);
 
-		assertEquals(attachmentName,fileSystem.getAttachmentName(attachmentRetrieved));
-		assertEquals(attachmentFileName,fileSystem.getAttachmentFileName(attachmentRetrieved));
-		assertEquals(attachmentContentType,fileSystem.getAttachmentContentType(attachmentRetrieved));
+		assertEquals(attachmentName, fileSystem.getAttachmentName(attachmentRetrieved));
+		assertEquals(attachmentFileName, fileSystem.getAttachmentFileName(attachmentRetrieved));
+		assertEquals(attachmentContentType, fileSystem.getAttachmentContentType(attachmentRetrieved));
 
 		assertEquals(attachmentContents, fileSystem.readAttachment(attachmentRetrieved).asString());
 
-		Map<String,Object> retrievedProperties = fileSystem.getAdditionalAttachmentProperties(attachmentRetrieved);
+		Map<String, Object> retrievedProperties = fileSystem.getAdditionalAttachmentProperties(attachmentRetrieved);
 		assertNotNull(retrievedProperties);
-		assertEquals(propvalue1,retrievedProperties.get(propname1));
-		assertEquals(propvalue2,retrievedProperties.get(propname2));
+		assertEquals(propvalue1, retrievedProperties.get(propname1));
+		assertEquals(propvalue2, retrievedProperties.get(propname2));
 	}
 
 

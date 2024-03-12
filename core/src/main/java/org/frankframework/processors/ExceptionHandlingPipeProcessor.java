@@ -35,16 +35,16 @@ import org.frankframework.stream.Message;
 public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		try {
 			return chain.apply(message);
 		} catch (Exception e) {
 			Map<String, PipeForward> forwards = pipe.getForwards();
-			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
+			if (forwards != null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
 
 				Instant tsReceivedDate = pipeLineSession.getTsReceived();
 				long tsReceivedLong = 0L;
-				if(tsReceivedDate != null) {
+				if (tsReceivedDate != null) {
 					tsReceivedLong = tsReceivedDate.toEpochMilli();
 				}
 

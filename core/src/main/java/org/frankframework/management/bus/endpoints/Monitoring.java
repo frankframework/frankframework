@@ -72,7 +72,7 @@ public class Monitoring extends BusEndpointBase {
 
 	private Monitor getMonitor(MonitorManager mm, String monitorName) {
 		Monitor monitor = mm.findMonitor(monitorName);
-		if(monitor == null) {
+		if (monitor == null) {
 			throw new BusException("monitor not found");
 		}
 		return monitor;
@@ -80,14 +80,14 @@ public class Monitoring extends BusEndpointBase {
 
 	private ITrigger getTrigger(Monitor monitor, int triggerId) {
 		ITrigger trigger = monitor.getTrigger(triggerId);
-		if(trigger == null) {
+		if (trigger == null) {
 			throw new BusException("trigger not found");
 		}
 		return trigger;
 	}
 
 	@ActionSelector(BusAction.GET)
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getMonitors(Message<?> message) {
 		boolean showConfigAsXml = BusMessageUtils.getBooleanHeader(message, "xml", false);
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
@@ -96,12 +96,12 @@ public class Monitoring extends BusEndpointBase {
 
 		MonitorManager mm = getMonitorManager(configurationName);
 
-		if(monitorName == null) {
+		if (monitorName == null) {
 			return getMonitors(mm, showConfigAsXml);
 		}
 
 		Monitor monitor = getMonitor(mm, monitorName);
-		if(triggerId != null) {
+		if (triggerId != null) {
 			ITrigger trigger = getTrigger(monitor, triggerId);
 			return getTrigger(mm, trigger);
 		}
@@ -110,7 +110,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> addMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null); //when present update Trigger
@@ -118,7 +118,7 @@ public class Monitoring extends BusEndpointBase {
 		MonitorManager mm = getMonitorManager(configurationName);
 
 		Monitor monitor;
-		if(name != null) {
+		if (name != null) {
 			monitor = getMonitor(mm, name);
 			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 			updateTrigger(trigger, message);
@@ -139,7 +139,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.DELETE)
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> deleteMonitor(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null);
@@ -148,7 +148,7 @@ public class Monitoring extends BusEndpointBase {
 		MonitorManager mm = getMonitorManager(configurationName);
 		Monitor monitor = getMonitor(mm, monitorName);
 
-		if(triggerId != null) {
+		if (triggerId != null) {
 			ITrigger trigger = getTrigger(monitor, triggerId);
 			log.info("removing trigger [{}]", trigger);
 			monitor.removeTrigger(trigger);
@@ -161,7 +161,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.MANAGE)
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> updateMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY);
@@ -170,12 +170,12 @@ public class Monitoring extends BusEndpointBase {
 		MonitorManager mm = getMonitorManager(configurationName);
 		Monitor monitor = getMonitor(mm, monitorName);
 
-		if(triggerId != null) {
+		if (triggerId != null) {
 			ITrigger trigger = getTrigger(monitor, triggerId);
 			updateTrigger(trigger, message);
 		} else {
 			String state = BusMessageUtils.getHeader(message, "state", "edit"); // raise / clear / edit
-			if("edit".equals(state)) {
+			if ("edit".equals(state)) {
 				updateMonitor(monitor, message);
 			} else {
 				changeMonitorState(monitor, "raise".equals(state));
@@ -188,37 +188,37 @@ public class Monitoring extends BusEndpointBase {
 	private void updateTrigger(ITrigger trigger, Message<?> message) {
 		TriggerDTO dto = JacksonUtils.convertToDTO(message.getPayload(), TriggerDTO.class);
 
-		if(dto.getEvents() != null) {
+		if (dto.getEvents() != null) {
 			trigger.setEventCodes(dto.getEvents());
 		}
-		if(dto.getType() != null) {
+		if (dto.getType() != null) {
 			trigger.setTriggerType(dto.getType());
 		}
-		if(dto.getSeverity() != null) {
+		if (dto.getSeverity() != null) {
 			trigger.setSeverity(dto.getSeverity());
 		}
-		if(dto.getThreshold() != null) {
+		if (dto.getThreshold() != null) {
 			trigger.setThreshold(dto.getThreshold());
 		}
-		if(dto.getPeriod() != null) {
+		if (dto.getPeriod() != null) {
 			trigger.setPeriod(dto.getPeriod());
 		}
-		if(dto.getFilter() != null) {
+		if (dto.getFilter() != null) {
 			trigger.setSourceFiltering(dto.getFilter());
 		}
 
 		trigger.clearAdapterFilters();
-		if(SourceFiltering.ADAPTER == dto.getFilter()) {
-			for(String adapter : dto.getAdapters()) {
+		if (SourceFiltering.ADAPTER == dto.getFilter()) {
+			for (String adapter : dto.getAdapters()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(adapter);
 				trigger.registerAdapterFilter(adapterFilter);
 			}
-		} else if(SourceFiltering.SOURCE == dto.getFilter()) {
-			for(Map.Entry<String, List<String>> entry : dto.getSources().entrySet()) {
+		} else if (SourceFiltering.SOURCE == dto.getFilter()) {
+			for (Map.Entry<String, List<String>> entry : dto.getSources().entrySet()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(entry.getKey());
-				for(String subObject : entry.getValue()) {
+				for (String subObject : entry.getValue()) {
 					adapterFilter.registerSubObject(subObject);
 				}
 				trigger.registerAdapterFilter(adapterFilter);
@@ -228,7 +228,7 @@ public class Monitoring extends BusEndpointBase {
 
 	private void changeMonitorState(Monitor monitor, boolean raiseMonitor) {
 		try {
-			log.info("{} monitor [{}]", ()->((raiseMonitor)?"raising":"clearing"), monitor::getName);
+			log.info("{} monitor [{}]", () -> ((raiseMonitor) ? "raising" : "clearing"), monitor::getName);
 			String userPrincipalName = BusMessageUtils.getUserPrincipalName();
 			monitor.changeState(raiseMonitor, Severity.WARNING, new ConsoleMonitorEvent(userPrincipalName));
 		} catch (MonitorException e) {
@@ -238,25 +238,25 @@ public class Monitoring extends BusEndpointBase {
 
 	private void updateMonitor(Monitor monitor, Message<?> message) {
 		MonitorDTO dto = JacksonUtils.convertToDTO(message.getPayload(), MonitorDTO.class);
-		if(StringUtils.isNotBlank(dto.getName())) {
+		if (StringUtils.isNotBlank(dto.getName())) {
 			monitor.setName(dto.getName());
 		}
-		if(dto.getType() != null) {
+		if (dto.getType() != null) {
 			monitor.setType(dto.getType());
 		}
-		if(dto.getDestinations() != null) {
+		if (dto.getDestinations() != null) {
 			monitor.setDestinations(String.join(",", dto.getDestinations()));
 		}
 	}
 
 	private Message<String> getMonitors(MonitorManager mm, boolean showConfigAsXml) {
-		if(showConfigAsXml) {
+		if (showConfigAsXml) {
 			String xml = mm.toXml().toXML();
 			return new StringResponseMessage(xml, MediaType.APPLICATION_XML);
 		}
 
 		List<Map<String, Object>> monitors = new ArrayList<>();
-		for(int i = 0; i < mm.getMonitors().size(); i++) {
+		for (int i = 0; i < mm.getMonitors().size(); i++) {
 			Monitor monitor = mm.getMonitor(i);
 
 			monitors.add(mapMonitor(monitor));
@@ -280,7 +280,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	private Message<String> getMonitor(MonitorManager manager, Monitor monitor, boolean showConfigAsXml) {
-		if(showConfigAsXml) {
+		if (showConfigAsXml) {
 			String xml = monitor.toXml().toXML();
 			return new StringResponseMessage(xml, MediaType.APPLICATION_XML);
 		}
@@ -305,13 +305,13 @@ public class Monitoring extends BusEndpointBase {
 		monitorMap.put("changed", monitor.getStateChanged() != null ? monitor.getStateChanged().toEpochMilli() : null);
 		monitorMap.put("hits", monitor.getAdditionalHitCount());
 
-		if(isRaised) {
+		if (isRaised) {
 			Map<String, Object> alarm = new HashMap<>();
 			alarm.put("severity", monitor.getAlarmSeverity());
 			EventThrowing source = monitor.getRaisedBy();
-			if(source != null) {
+			if (source != null) {
 				String name = "";
-				if(source.getAdapter() != null) {
+				if (source.getAdapter() != null) {
 					name = String.format("%s / %s", source.getAdapter().getName(), source.getEventSourceName());
 				} else {
 					name = source.getEventSourceName();
@@ -323,7 +323,7 @@ public class Monitoring extends BusEndpointBase {
 
 		List<Map<String, Object>> triggers = new ArrayList<>();
 		List<ITrigger> listOfTriggers = monitor.getTriggers();
-		for(ITrigger trigger : listOfTriggers) {
+		for (ITrigger trigger : listOfTriggers) {
 
 			Map<String, Object> map = mapTrigger(trigger);
 			map.put("id", listOfTriggers.indexOf(trigger));
@@ -344,10 +344,10 @@ public class Monitoring extends BusEndpointBase {
 		triggerMap.put("threshold", trigger.getThreshold());
 		triggerMap.put("period", trigger.getPeriod());
 
-		if(trigger.getAdapterFilters() != null) {
+		if (trigger.getAdapterFilters() != null) {
 			Map<String, List<String>> sources = new HashMap<>();
-			if(trigger.getSourceFiltering() != SourceFiltering.NONE) {
-				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
+			if (trigger.getSourceFiltering() != SourceFiltering.NONE) {
+				for (Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext(); ) {
 					String adapterName = it1.next();
 
 					AdapterFilter af = trigger.getAdapterFilters().get(adapterName);

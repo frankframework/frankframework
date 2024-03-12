@@ -32,7 +32,7 @@ import org.frankframework.util.LogUtil;
 
 /**
  * This bean creates an (CXF) endpoint with the /rpcrouter mapping for older SOAP based requests.
- *
+ * <p>
  * When a {@link WebServiceListener} is registered without the `address` attribute, the listener uses
  * the `serviceNamespaceURI` or `name` attribute to register the service in the {@link ServiceDispatcher}.
  * </br/>
@@ -44,7 +44,6 @@ import org.frankframework.util.LogUtil;
  * See {@link NamespaceUriProvider} for more information.
  *
  * @author Niels Meijer
- *
  */
 @IbisInitializer
 public class NamespaceUriProviderBean implements ApplicationContextAware, InitializingBean, DisposableBean {
@@ -60,7 +59,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 
 	@Override
 	public void destroy() throws Exception {
-		if(namespaceRouter != null && namespaceRouter.isPublished()) {
+		if (namespaceRouter != null && namespaceRouter.isPublished()) {
 			namespaceRouter.stop();
 		}
 
@@ -71,20 +70,20 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 	public void afterPropertiesSet() throws Exception {
 		//TODO look into NamespaceHandlerResolver
 		Bus bus = (Bus) applicationContext.getBean("cxf");
-		if(bus instanceof SpringBus) {
-			log.debug("default CXF SpringBus ["+bus.getId()+"]");
+		if (bus instanceof SpringBus) {
+			log.debug("default CXF SpringBus [" + bus.getId() + "]");
 
 			log.info("registering NamespaceURI Provider with JAX-WS CXF Dispatcher");
 			namespaceRouter = new EndpointImpl(bus, new NamespaceUriProvider());
 			namespaceRouter.publish("/rpcrouter");
 
-			if(namespaceRouter.isPublished()) {
-				log.info("published NamespaceURI Provider on CXF endpoint [rpcrouter] on SpringBus ["+namespaceRouter.getBus().getId()+"]");
+			if (namespaceRouter.isPublished()) {
+				log.info("published NamespaceURI Provider on CXF endpoint [rpcrouter] on SpringBus [" + namespaceRouter.getBus().getId() + "]");
 			} else {
 				throw new IllegalStateException("unable to NamespaceURI Service Provider on CXF endpoint [rpcrouter]");
 			}
 		} else {
-			throw new IllegalStateException("CXF bus ["+bus+"] not instance of [SpringBus]");
+			throw new IllegalStateException("CXF bus [" + bus + "] not instance of [SpringBus]");
 		}
 	}
 }

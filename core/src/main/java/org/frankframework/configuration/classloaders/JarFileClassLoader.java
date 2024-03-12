@@ -30,7 +30,7 @@ public class JarFileClassLoader extends JarBytesClassLoader {
 
 	@Override
 	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
-		if(jarFileName == null)
+		if (jarFileName == null)
 			throw new ClassLoaderException("jar file not set");
 
 		try {

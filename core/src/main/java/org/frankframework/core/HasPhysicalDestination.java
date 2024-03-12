@@ -24,5 +24,6 @@ package org.frankframework.core;
  */
 public interface HasPhysicalDestination {
 	String getPhysicalDestinationName();
+
 	String getDomain();
 }

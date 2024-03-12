@@ -24,8 +24,8 @@ import org.frankframework.core.ISecurityHandler;
 /**
  * SecurityHandler that delegates its implementation to the corresponding methods in the HttpServlet.
  *
- * @author  Gerrit van Brakel
- * @since   4.3
+ * @author Gerrit van Brakel
+ * @since 4.3
  */
 public class HttpSecurityHandler implements ISecurityHandler {
 
@@ -33,7 +33,7 @@ public class HttpSecurityHandler implements ISecurityHandler {
 
 	public HttpSecurityHandler(HttpServletRequest request) {
 		super();
-		this.request=request;
+		this.request = request;
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class HttpSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public Principal getPrincipal(){
+	public Principal getPrincipal() {
 		return request.getUserPrincipal();
 	}
 

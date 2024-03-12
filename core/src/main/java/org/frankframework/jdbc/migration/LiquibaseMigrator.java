@@ -54,9 +54,8 @@ import org.frankframework.util.LogUtil;
 /**
  * LiquiBase implementation for IAF
  *
- * @author	Niels Meijer
- * @since	7.0-B4
- *
+ * @author Niels Meijer
+ * @since 7.0-B4
  */
 public class LiquibaseMigrator extends DatabaseMigratorBase {
 
@@ -71,15 +70,15 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 
 		ClassLoader classLoader = getConfigurationClassLoader();
 		if (classLoader instanceof ClassLoaderBase) {
-			URL url = ((ClassLoaderBase)classLoader).getLocalResource(changeLogFile);
-			if (url==null) {
+			URL url = ((ClassLoaderBase) classLoader).getLocalResource(changeLogFile);
+			if (url == null) {
 				log.debug("database changelog file [{}] not found as local resource of classLoader [{}]", changeLogFile, classLoader);
 				return null;
 			}
 		}
 
 		Resource resource = Resource.getResource(this, changeLogFile);
-		if(resource == null) {
+		if (resource == null) {
 			log.debug("unable to find database changelog file [{}] in classLoader [{}]", changeLogFile, classLoader);
 			return null;
 		}
@@ -91,7 +90,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	}
 
 	private Liquibase createMigrator(Resource resource) throws SQLException, LiquibaseException {
-		if(resource == null) {
+		if (resource == null) {
 			throw new LiquibaseException("no resource provided");
 		}
 
@@ -111,19 +110,16 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	@Override
 	public boolean validate() {
 		try {
-			if(hasMigrationScript()) {
+			if (hasMigrationScript()) {
 				doValidate();
 				return true;
 			}
-		}
-		catch (ValidationFailedException e) {
-			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
-		}
-		catch (LiquibaseException e) {
+		} catch (ValidationFailedException e) {
+			ConfigurationWarnings.add(this, log, "liquibase validation failed: " + e.getMessage(), e);
+		} catch (LiquibaseException e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
-		}
-		catch (SQLException e) {
-			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
+		} catch (SQLException e) {
+			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database [" + getDatasourceName() + "]", e);
 		}
 		return false;
 	}
@@ -136,10 +132,10 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			lockService.waitForLock();
 
 			List<RanChangeSet> alreadyExecutedChangeSets = database.getRanChangeSetList();
-			for(RanChangeSet ranChangeSet : alreadyExecutedChangeSets) {
+			for (RanChangeSet ranChangeSet : alreadyExecutedChangeSets) {
 				CheckSum checkSum = ranChangeSet.getLastCheckSum();
-				if(checkSum != null && checkSum.getVersion() < CheckSum.getCurrentVersion()) {
-					migrationLog.warn("checksum ["+checkSum+"] for changeset ["+ranChangeSet+"] is outdated and will be updated");
+				if (checkSum != null && checkSum.getVersion() < CheckSum.getCurrentVersion()) {
+					migrationLog.warn("checksum [" + checkSum + "] for changeset [" + ranChangeSet + "] is outdated and will be updated");
 				}
 			}
 
@@ -173,28 +169,26 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		try (Liquibase liquibase = createMigrator()) {
 			List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts, labelExpression);
 			for (ChangeSet changeSet : changeSets) {
-				changes.add("LiquiBase applying change ["+changeSet.getId()+":"+changeSet.getAuthor()+"] description ["+changeSet.getDescription()+"]");
+				changes.add("LiquiBase applying change [" + changeSet.getId() + ":" + changeSet.getAuthor() + "] description [" + changeSet.getDescription() + "]");
 			}
 
-			if(!changeSets.isEmpty()) {
+			if (!changeSets.isEmpty()) {
 				liquibase.update(contexts);
 
-				ChangeSet lastChange = changeSets.get(changeSets.size()-1);
+				ChangeSet lastChange = changeSets.get(changeSets.size() - 1);
 				String tag = lastChange.getId() + ":" + lastChange.getAuthor();
 				liquibase.tag(tag);
 
-				if(changes.size() > 1) {
-					logConfigurationMessage("LiquiBase applied ["+changes.size()+"] change(s) and added tag ["+tag+"]");
-				}
-				else {
+				if (changes.size() > 1) {
+					logConfigurationMessage("LiquiBase applied [" + changes.size() + "] change(s) and added tag [" + tag + "]");
+				} else {
 					for (String change : changes) {
-						logConfigurationMessage(change + " tag ["+tag+"]");
+						logConfigurationMessage(change + " tag [" + tag + "]");
 					}
 				}
 			}
-		}
-		catch (Exception e) {
-			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
+		} catch (Exception e) {
+			String errorMsg = "Error running LiquiBase update. Failed to execute [" + changes.size() + "] change(s): ";
 			errorMsg += e.getMessage();
 			ConfigurationWarnings.add(this, log, errorMsg, e);
 		}

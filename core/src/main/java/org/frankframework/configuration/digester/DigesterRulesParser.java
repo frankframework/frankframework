@@ -47,7 +47,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 
 	@Override
 	protected void handle(DigesterRule rule) {
-		if(log.isTraceEnabled()) log.trace("adding digesterRule " + rule.toString());
+		if (log.isTraceEnabled()) log.trace("adding digesterRule " + rule.toString());
 
 		String pattern = rule.getPattern();
 
@@ -62,23 +62,23 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(pattern);
 
 
-		if(rule.getRegisterTextMethod() != null) { //set the register method (callMethod with the element body as parameter)
+		if (rule.getRegisterTextMethod() != null) { //set the register method (callMethod with the element body as parameter)
 			ruleBuilder.callMethod(rule.getRegisterTextMethod()).usingElementBodyAsArgument();
 			return;
 		}
 
 		ObjectCreationFactory<Object> factory = getFactory(rule.getFactory());
-		if(factory instanceof IDigesterRuleAware) {
-			((IDigesterRuleAware)factory).setDigesterRule(rule);
+		if (factory instanceof IDigesterRuleAware) {
+			((IDigesterRuleAware) factory).setDigesterRule(rule);
 		}
-		if(factory != null) {
+		if (factory != null) {
 			factory.setDigester(digester); //When using a custom factory you have to inject the digester manually... Sigh
 			ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object
 		}
-		if(rule.getRegisterMethod() != null) { //set the register method (set-next-rule)
+		if (rule.getRegisterMethod() != null) { //set the register method (set-next-rule)
 			ruleBuilder.setNext(rule.getRegisterMethod());
 		}
-		if(rule.getSelfRegisterMethod() != null) { //set the register method (set-top-rule)
+		if (rule.getSelfRegisterMethod() != null) { //set the register method (set-top-rule)
 			ruleBuilder.setTop(rule.getSelfRegisterMethod());
 		}
 		ruleBuilder.addRule(getAttributeChecker()); //Add the attribute checker, which implements the set-properties-rule
@@ -88,39 +88,39 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	 * Return the specified factory or the default factory when empty.
 	 * The factory should be Spring wired
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	private ObjectCreationFactory<Object> getFactory(String factory) {
-		if("null".equals(factory)) { //Check against a null-string when you don't want to use the default factory
-			if(log.isTraceEnabled()) log.trace("NULL factory specified, skip factory registration");
+		if ("null".equals(factory)) { //Check against a null-string when you don't want to use the default factory
+			if (log.isTraceEnabled()) log.trace("NULL factory specified, skip factory registration");
 			return null;
-		} else if(StringUtils.isNotEmpty(factory)) {
+		} else if (StringUtils.isNotEmpty(factory)) {
 			Object object;
 			try {
-				if(log.isTraceEnabled()) log.trace("attempting to create new factory of class ["+factory+"]");
+				if (log.isTraceEnabled()) log.trace("attempting to create new factory of class [" + factory + "]");
 				Class<?> clazz = ClassUtils.loadClass(factory);
 				object = autoWireAndInitializeBean(clazz); //Wire the factory through Spring
 			} catch (Exception e) {
-				throw new IllegalArgumentException("factory ["+factory+"] not found", e);
+				throw new IllegalArgumentException("factory [" + factory + "] not found", e);
 			}
-			if(object instanceof ObjectCreationFactory) {
+			if (object instanceof ObjectCreationFactory) {
 				return (ObjectCreationFactory) object;
 			}
 			throw new IllegalArgumentException("factory type must implement ObjectCreationFactory");
 		}
-		if(log.isTraceEnabled()) log.trace("no factory specified, returing default ["+GenericFactory.class.getCanonicalName()+"]");
+		if (log.isTraceEnabled()) log.trace("no factory specified, returing default [" + GenericFactory.class.getCanonicalName() + "]");
 		return autoWireAndInitializeBean(GenericFactory.class); //Wire the factory through Spring
 	}
 
 	//TODO get rid of this and autowire it
 	private Rule getAttributeChecker() {
-		if(attributeChecker == null) {
+		if (attributeChecker == null) {
 			attributeChecker = autoWireAndInitializeBean(ValidateAttributeRule.class);
 		}
 		return attributeChecker;
 	}
 
 	protected <T> T autoWireAndInitializeBean(Class<T> clazz) {
-		if(applicationContext != null) {
+		if (applicationContext != null) {
 			return SpringUtils.createBean(applicationContext, clazz); //Wire the factory through Spring
 		}
 		throw new IllegalStateException("ApplicationContext not set");

@@ -25,7 +25,7 @@ public class TransactionManagerMock implements PlatformTransactionManager {
 
 	@Override
 	public void commit(TransactionStatus status) throws TransactionException {
-		if(status instanceof DummyTransactionStatus) {
+		if (status instanceof DummyTransactionStatus) {
 			((DummyTransactionStatus) status).completed = true;
 		}
 	}
@@ -40,6 +40,7 @@ public class TransactionManagerMock implements PlatformTransactionManager {
 	public static void reset() {
 		items = new ConcurrentLinkedQueue<>();
 	}
+
 	public static synchronized DummyTransactionStatus peek() {
 		return (DummyTransactionStatus) items.peek();
 	}
@@ -47,6 +48,7 @@ public class TransactionManagerMock implements PlatformTransactionManager {
 	public abstract static class DummyTransactionStatus implements TransactionStatus {
 		private @Getter boolean rollbackOnly = false;
 		private @Getter boolean completed = false;
+
 		public static DummyTransactionStatus newMock() {
 			return mock(DummyTransactionStatus.class, CALLS_REAL_METHODS);
 		}
@@ -62,7 +64,7 @@ public class TransactionManagerMock implements PlatformTransactionManager {
 
 		@Override
 		public String toString() {
-			return "txStatus rollbackOnly["+rollbackOnly+"] completed["+completed+"]";
+			return "txStatus rollbackOnly[" + rollbackOnly + "] completed[" + completed + "]";
 		}
 	}
 }

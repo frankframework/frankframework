@@ -45,12 +45,13 @@ public class PipeLineExit implements IForwardTarget {
 	private @Getter boolean skipWrapping = false;
 
 	public boolean isSuccessExit() {
-		return getState()==ExitState.SUCCESS;
+		return getState() == ExitState.SUCCESS;
 	}
 
 	/**
 	 * The name of the Exit that can be referenced by a {@link PipeForward}'s <code>path</code> attribute. When a Pipeline doesn't have an Exits
 	 * element configured it will be initialized with one Exit having name {@value PipeLine#DEFAULT_SUCCESS_EXIT_NAME} (and state {@link PipeLine.ExitState#SUCCESS SUCCESS})
+	 *
 	 * @ff.mandatory ignoreInCompatibilityMode
 	 */
 	public void setName(String name) {
@@ -66,6 +67,7 @@ public class PipeLineExit implements IForwardTarget {
 	/**
 	 * The state of the Pipeline that is returned to the Receiver for this Exit. When a Pipeline doesn't have an Exits
 	 * element configured it will be initialized with one Exit having state {@link PipeLine.ExitState#SUCCESS SUCCESS} (and name {@value PipeLine#DEFAULT_SUCCESS_EXIT_NAME})
+	 *
 	 * @ff.mandatory
 	 */
 	public void setState(ExitState value) {
@@ -74,6 +76,7 @@ public class PipeLineExit implements IForwardTarget {
 
 	/**
 	 * HTTP statusCode e.g. <code>500</code>
+	 *
 	 * @ff.default 200
 	 */
 	public void setCode(int code) {
@@ -89,6 +92,7 @@ public class PipeLineExit implements IForwardTarget {
 
 	/**
 	 * If using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool
+	 *
 	 * @ff.default <code>false</code>
 	 */
 	public void setEmpty(boolean b) {
@@ -97,6 +101,7 @@ public class PipeLineExit implements IForwardTarget {
 
 	/**
 	 * If set to <code>true</code>, the output will not be wrapped by the OutputWrapper.
+	 *
 	 * @ff.default <code>false</code>
 	 */
 	public void setSkipWrapping(boolean b) {
@@ -105,6 +110,7 @@ public class PipeLineExit implements IForwardTarget {
 
 	/**
 	 * If set to <code>true</code>, the output will not be validated or transformed by the validator.
+	 *
 	 * @ff.default <code>false</code>
 	 */
 	public void setSkipValidation(boolean b) {

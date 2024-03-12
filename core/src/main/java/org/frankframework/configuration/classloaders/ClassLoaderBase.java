@@ -39,7 +39,7 @@ import org.frankframework.util.StreamUtil;
 
 /**
  * Abstract base class for for IBIS Configuration ClassLoaders.
- *
+ * <p>
  * Appends a BasePath to every resource when set. This allows the use of sub config's in src/main/resources
  * When a file with prepended BasePath cannot be found it will traverse through it's classpath to find it.
  *
@@ -73,31 +73,32 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
 
-		if(StringUtils.isEmpty(configurationFile)) {
+		if (StringUtils.isEmpty(configurationFile)) {
 			throw new ClassLoaderException("unable to determine configurationFile");
 		}
 
-		if(basePath == null) {
+		if (basePath == null) {
 			int i = configurationFile.lastIndexOf('/');
 			if (i != -1) { //Configuration file contains a path, derive the BasePath from the path
 				setBasePath(configurationFile.substring(0, i + 1));
 				setConfigurationFile(configurationFile.substring(i + 1));
-				log.info("derived basepath ["+getBasePath()+"] from configurationFile ["+configurationFile+"]");
-			} else if(!(getConfigurationName().equalsIgnoreCase(instanceName) && this instanceof WebAppClassLoader)) {
+				log.info("derived basepath [" + getBasePath() + "] from configurationFile [" + configurationFile + "]");
+			} else if (!(getConfigurationName().equalsIgnoreCase(instanceName) && this instanceof WebAppClassLoader)) {
 				setBasePath(getConfigurationName());
 			}
 		}
 
-		log.info("["+getConfigurationName()+"] created classloader ["+this.toString()+"] basepath ["+getBasePath()+"]");
+		log.info("[" + getConfigurationName() + "] created classloader [" + this.toString() + "] basepath [" + getBasePath() + "]");
 	}
 
 	/**
 	 * Sets the path prefix used when {@link ClassLoaderBase#getLocalResource(String) getLocalResource()} is called.
+	 *
 	 * @param basePath path to use, defaults to the configuration name
 	 */
 	public void setBasePath(String basePath) {
-		if(StringUtils.isNotEmpty(basePath)) {
-			if(!basePath.endsWith("/"))
+		if (StringUtils.isNotEmpty(basePath)) {
+			if (!basePath.endsWith("/"))
 				basePath += "/";
 
 			this.basePath = FilenameUtils.normalize(basePath, true);
@@ -125,6 +126,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	public String getConfigurationFile() {
 		return configurationFile;
 	}
+
 	public void setConfigurationFile(String configurationFile) {
 		this.configurationFile = configurationFile;
 	}
@@ -141,9 +143,8 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	public void setReportLevel(String level) {
 		try {
 			this.reportLevel = ReportLevel.valueOf(level.toUpperCase());
-		}
-		catch (IllegalArgumentException e) {
-			ApplicationWarnings.add(log, "invalid reportLevel ["+level+"], using default [ERROR]");
+		} catch (IllegalArgumentException e) {
+			ApplicationWarnings.add(log, "invalid reportLevel [" + level + "], using default [ERROR]");
 		}
 	}
 
@@ -167,17 +168,17 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	@Override
 	public final URL getResource(String name) {
 		if (name == null || name.startsWith("/")) { // Resources retrieved from ClassLoaders should never start with a leading slash
-			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path ["+name+"]")); // Use an exception so we can 'trace the stack'
+			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path [" + name + "]")); // Use an exception so we can 'trace the stack'
 			return null;
 		}
 
 		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent classloader
-		if(name.startsWith("META-INF/")) {
+		if (name.startsWith("META-INF/")) {
 			return getParent().getResource(name);
 		}
 
 		//The configurationFile (Configuration.xml) should only be found in the current and not it's parent classloader
-		if(getBasePath() != null && name.equals(getConfigurationFile())) {
+		if (getBasePath() != null && name.equals(getConfigurationFile())) {
 			return getResource(name, false); //Search for the resource in the local ClassLoader only
 		}
 
@@ -192,24 +193,27 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	/**
 	 * In case of the {@link #getResources(String)} we only want the local paths and not the parent path
-	 * @param name of the file to retrieve
+	 *
+	 * @param name      of the file to retrieve
 	 * @param useParent only use local classpath or also traverse down the classpath
 	 * @return the URL of the file if found in the ClassLoader or <code>NULL</code>
 	 */
 	public URL getResource(String name, boolean useParent) {
 		URL url = null;
 		String normalizedFilename = FilenameUtils.normalize(name, true);
-		if(normalizedFilename == null) {
+		if (normalizedFilename == null) {
 			return null; //if the path after normalization equals null, return null
 		}
 
 		url = getLocalResource(normalizedFilename);
-		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
+		if (log.isTraceEnabled())
+			log.trace("[" + getConfigurationName() + "] " + (url == null ? "failed to retrieve" : "retrieved") + " local resource [" + normalizedFilename + "]");
 
 		//URL without basepath cannot be found, follow parent hierarchy
-		if(url == null && useParent) {
+		if (url == null && useParent) {
 			url = getParent().getResource(name);
-			if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" resource ["+name+"] from parent");
+			if (log.isTraceEnabled())
+				log.trace("[" + getConfigurationName() + "] " + (url == null ? "failed to retrieve" : "retrieved") + " resource [" + name + "] from parent");
 		}
 
 		return url;
@@ -218,7 +222,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	@Override
 	public final Enumeration<URL> getResources(String name) throws IOException {
 		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent
-		if(name.startsWith("META-INF/services")) {
+		if (name.startsWith("META-INF/services")) {
 			return getParent().getResources(name);
 		}
 
@@ -233,22 +237,22 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		//Add all files found in the classpath's parent
 		urls.addAll(Collections.list(getParent().getResources(name)));
 
-		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] retrieved files ["+name+"] found urls " + urls);
+		if (log.isTraceEnabled()) log.trace("[" + getConfigurationName() + "] retrieved files [" + name + "] found urls " + urls);
 
 		return urls.elements();
 	}
 
 	@Override
 	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-		if(name == null) {
+		if (name == null) {
 			throw new IllegalArgumentException("classname to load may not be null");
 		}
 
 		//This is required because when using an external WebAppClassloader (ClassPath) inner classes may be retrieved from the wrong ClassLoader
 		int dollar = name.lastIndexOf("$");
-		if(dollar > 0) {
+		if (dollar > 0) {
 			String baseClass = name.substring(0, dollar);
-			if(loadedCustomClasses.contains(baseClass)) {
+			if (loadedCustomClasses.contains(baseClass)) {
 				return defineClass(name, resolve);
 			}
 		}
@@ -271,25 +275,25 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	/**
 	 * This method will only be called for classes that have not been previously loaded yet.
 	 * Custom code will not update if you change the configuration.
-	 *
+	 * <p>
 	 * Introspector#findExplicitBeanInfo/BeanInfoFinder#find attempts to lookup classes with the 'BeanInfo' postfix.
 	 * Introspector#findCustomizerClass attempts to lookup classes with the 'Customizer' postfix.
 	 */
 	private Class<?> defineClass(String name, boolean resolve) throws ClassNotFoundException {
-		if(getAllowCustomClasses()) {
+		if (getAllowCustomClasses()) {
 			synchronized (getClassLoadingLock(name)) {
 				String path = name.replace(".", "/").concat(".class");
 				log.trace("attempting to load custom class [{}] path [{}]", name, path);
 
 				URL url = getResource(path);
-				if(url != null) {
+				if (url != null) {
 					log.debug("found custom class url [{}] from classloader [{}] with path [{}]", url, this, path);
 
 					try {
 						byte[] bytes = StreamUtil.streamToBytes(url.openStream());
 						Class<?> clazz = super.defineClass(name, bytes, 0, bytes.length);
 
-						if(resolve) {
+						if (resolve) {
 							resolveClass(clazz);
 						}
 
@@ -297,25 +301,25 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 						return clazz;
 					} catch (Exception e) {
-						throw new ClassNotFoundException("failed to load class ["+path+"] in classloader ["+this+"]", e);
+						throw new ClassNotFoundException("failed to load class [" + path + "] in classloader [" + this + "]", e);
 					}
 				}
 			}
 		}
 
-		throw new ClassNotFoundException("class ["+name+"] not found in classloader ["+this+"]"); // Throw ClassNotFoundException when nothing was found
+		throw new ClassNotFoundException("class [" + name + "] not found in classloader [" + this + "]"); // Throw ClassNotFoundException when nothing was found
 	}
 
 	@Override
 	public void reload() throws ClassLoaderException {
-		log.debug("reloading classloader ["+getConfigurationName()+"]");
+		log.debug("reloading classloader [" + getConfigurationName() + "]");
 
 		AppConstants.removeInstance(this);
 	}
 
 	@Override
 	public void destroy() {
-		log.debug("removing classloader ["+this.toString()+"]");
+		log.debug("removing classloader [" + this.toString() + "]");
 
 		AppConstants.removeInstance(this);
 	}

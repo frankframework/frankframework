@@ -30,39 +30,39 @@ import org.frankframework.util.XmlBuilder;
 /**
  * IMonitorAdapter that uses a {@link ISender sender} to send its message.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class SenderMonitorAdapter extends MonitorDestinationBase {
 
 	private @Getter @Setter ISender sender;
-	private boolean senderConfigured=false;
+	private boolean senderConfigured = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getSender()==null) {
+		if (getSender() == null) {
 			throw new ConfigurationException("No sender found");
 		}
 		if (StringUtils.isEmpty(getSender().getName())) {
-			getSender().setName("sender of "+getName());
+			getSender().setName("sender of " + getName());
 		}
 
 		super.configure();
 
 		if (!senderConfigured) {
 			getSender().configure();
-			senderConfigured=true;
+			senderConfigured = true;
 		} else {
 			try {
 				getSender().close();
 			} catch (SenderException e) {
-				log.error("cannot close sender",e);
+				log.error("cannot close sender", e);
 			}
 		}
 		try {
 			getSender().open();
 		} catch (SenderException e) {
-			throw new ConfigurationException("cannot open sender",e);
+			throw new ConfigurationException("cannot open sender", e);
 		}
 	}
 
@@ -70,10 +70,10 @@ public class SenderMonitorAdapter extends MonitorDestinationBase {
 	public void fireEvent(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
 		try (PipeLineSession session = new PipeLineSession()) {
 			Message message = event.getEventMessage();
-			if(!Message.isNull(message)) {
+			if (!Message.isNull(message)) {
 				Message newMessage = message.copyMessage();
 				session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, newMessage);
-				session.scheduleCloseOnSessionExit(newMessage, "Event fired by "+ monitorName);
+				session.scheduleCloseOnSessionExit(newMessage, "Event fired by " + monitorName);
 			}
 			getSender().sendMessageOrThrow(new Message(makeXml(monitorName, eventType, severity, eventCode, event)), session); // close() disables unit testing Message result
 		} catch (Exception e) {
@@ -83,8 +83,8 @@ public class SenderMonitorAdapter extends MonitorDestinationBase {
 
 	@Override
 	public XmlBuilder toXml() {
-		XmlBuilder result=super.toXml();
-		XmlBuilder senderXml=new XmlBuilder("sender");
+		XmlBuilder result = super.toXml();
+		XmlBuilder senderXml = new XmlBuilder("sender");
 		senderXml.addAttribute("className", getUserClass(getSender()).getCanonicalName());
 		result.addSubElement(senderXml);
 		return result;

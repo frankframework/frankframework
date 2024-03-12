@@ -22,24 +22,23 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
 
 /**
  * Baseclass for resulthandlers that write the transformed record to a writer.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public abstract class ResultWriter extends AbstractResultHandler {
 
-	private @Getter String onOpenDocument="<document name=\"#name#\">";
-	private @Getter String onCloseDocument="</document>";
-	private @Getter String onOpenBlock="<#name#>";
-	private @Getter String onCloseBlock="</#name#>";
-	private @Getter String blockNamePattern="#name#";
+	private @Getter String onOpenDocument = "<document name=\"#name#\">";
+	private @Getter String onCloseDocument = "</document>";
+	private @Getter String onOpenBlock = "<#name#>";
+	private @Getter String onCloseBlock = "</#name#>";
+	private @Getter String blockNamePattern = "#name#";
 
 	private final Map<String, Writer> openWriters = Collections.synchronizedMap(new HashMap<>());
 
@@ -49,7 +48,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	public void openDocument(PipeLineSession session, String streamId) throws Exception {
 		super.openDocument(session, streamId);
 		getWriter(session, streamId, true);
-		write(session,streamId,replacePattern(getOnOpenDocument(),streamId));
+		write(session, streamId, replacePattern(getOnOpenDocument(), streamId));
 	}
 
 	@Override
@@ -57,15 +56,15 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		try (Writer w = openWriters.remove(streamId)) {
 			// just close the writer
 		} catch (IOException e) {
-			log.error("Exception closing ["+streamId+"]",e);
+			log.error("Exception closing [" + streamId + "]", e);
 		}
-		super.closeDocument(session,streamId);
+		super.closeDocument(session, streamId);
 	}
 
 	@Override
 	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
-		log.debug("finalizeResult ["+streamId+"]");
-		write(session,streamId,replacePattern(getOnCloseDocument(),streamId));
+		log.debug("finalizeResult [" + streamId + "]");
+		write(session, streamId, replacePattern(getOnCloseDocument(), streamId));
 		return null;
 	}
 
@@ -76,17 +75,17 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	protected void writeNewLine(Writer w) throws IOException {
 		if (w instanceof BufferedWriter) {
-			((BufferedWriter)w).newLine();
+			((BufferedWriter) w).newLine();
 		} else {
 			w.write("\n");
 		}
 	}
 
 	private void write(PipeLineSession session, String streamId, String line) throws Exception {
-		if (line!=null) {
+		if (line != null) {
 			Writer w = getWriter(session, streamId, false);
-			if (w==null) {
-				throw new NullPointerException("No Writer Found for stream ["+streamId+"]");
+			if (w == null) {
+				throw new NullPointerException("No Writer Found for stream [" + streamId + "]");
 			}
 			w.write(line);
 			writeNewLine(w);
@@ -96,7 +95,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	@Override
 	public void openRecordType(PipeLineSession session, String streamId) throws Exception {
 		Writer w = getWriter(session, streamId, false);
-		if (w != null && ! StringUtils.isEmpty(getPrefix())) {
+		if (w != null && !StringUtils.isEmpty(getPrefix())) {
 			write(session, streamId, getPrefix());
 		}
 	}
@@ -104,7 +103,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	@Override
 	public void closeRecordType(PipeLineSession session, String streamId) throws Exception {
 		Writer w = getWriter(session, streamId, false);
-		if (w != null && ! StringUtils.isEmpty(getSuffix())) {
+		if (w != null && !StringUtils.isEmpty(getSuffix())) {
 			write(session, streamId, getSuffix());
 		}
 	}
@@ -116,19 +115,19 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		if (StringUtils.isEmpty(getBlockNamePattern())) {
 			return target;
 		}
-		String result=target.replaceAll(getBlockNamePattern(),blockName);
+		String result = target.replaceAll(getBlockNamePattern(), blockName);
 		//if (log.isDebugEnabled()) log.debug("target ["+target+"] pattern ["+getBlockNamePattern()+"] value ["+blockName+"] result ["+result+"]");
 		return result;
 	}
 
 	@Override
-	public void openBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception  {
-		write(session,streamId, replacePattern(getOnOpenBlock(),blockName));
+	public void openBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception {
+		write(session, streamId, replacePattern(getOnOpenBlock(), blockName));
 	}
 
 	@Override
 	public void closeBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception {
-		write(session,streamId, replacePattern(getOnCloseBlock(),blockName));
+		write(session, streamId, replacePattern(getOnCloseBlock(), blockName));
 	}
 
 	protected Writer getWriter(PipeLineSession session, String streamId, boolean create) throws Exception {
@@ -141,16 +140,17 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		if (!create) {
 			return null;
 		}
-		writer = createWriter(session,streamId);
-		if (writer==null) {
-			throw new IOException("cannot get writer for stream ["+streamId+"]");
+		writer = createWriter(session, streamId);
+		if (writer == null) {
+			throw new IOException("cannot get writer for stream [" + streamId + "]");
 		}
-		openWriters.put(streamId,writer);
+		openWriters.put(streamId, writer);
 		return writer;
 	}
 
 	/**
 	 * string that is written before any data of results is written
+	 *
 	 * @ff.default &lt;document name=&quot;#name#&quot;&gt;
 	 */
 	public void setOnOpenDocument(String line) {
@@ -159,6 +159,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	/**
 	 * string that is written after all data of results is written
+	 *
 	 * @ff.default &lt;/document&gt;
 	 */
 	public void setOnCloseDocument(String line) {
@@ -167,6 +168,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	/**
 	 * string that is written before the start of each logical block, as defined in the flow
+	 *
 	 * @ff.default &lt;#name#&gt;
 	 */
 	public void setOnOpenBlock(String line) {
@@ -175,6 +177,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	/**
 	 * string that is written after the end of each logical block, as defined in the flow
+	 *
 	 * @ff.default &lt;/#name#&gt;
 	 */
 	public void setOnCloseBlock(String line) {
@@ -183,6 +186,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	/**
 	 * string that is replaced by name of block or name of stream in above strings
+	 *
 	 * @ff.default #name#
 	 */
 	public void setBlockNamePattern(String pattern) {

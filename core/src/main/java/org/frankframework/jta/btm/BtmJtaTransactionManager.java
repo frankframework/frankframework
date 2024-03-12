@@ -30,7 +30,7 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 
 	@Override
 	protected UserTransaction retrieveUserTransaction() throws TransactionSystemException {
-		return (BitronixTransactionManager)retrieveTransactionManager();
+		return (BitronixTransactionManager) retrieveTransactionManager();
 	}
 
 	@Override
@@ -43,8 +43,8 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 
 	@Override
 	protected boolean shutdownTransactionManager() {
-		BitronixTransactionManager transactionManager = (BitronixTransactionManager)getTransactionManager();
-		if(transactionManager == null) { //TM was never created?
+		BitronixTransactionManager transactionManager = (BitronixTransactionManager) getTransactionManager();
+		if (transactionManager == null) { //TM was never created?
 			return true;
 		}
 

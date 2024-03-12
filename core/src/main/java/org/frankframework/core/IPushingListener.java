@@ -19,8 +19,8 @@ import org.frankframework.receivers.RawMessageWrapper;
 
 /**
  * Defines listening behaviour of message driven receivers.
- * @param <M> the raw message type
  *
+ * @param <M> the raw message type
  * @author Gerrit van Brakel
  * @since 4.2
  */
@@ -45,7 +45,7 @@ public interface IPushingListener<M> extends IListener<M> {
 	 * from the message.
 	 *
 	 * @param rawMessage The raw message data, unwrapped
-	 * @param session {@link PipeLineSession} to populate with properties from the message.
+	 * @param session    {@link PipeLineSession} to populate with properties from the message.
 	 * @return Wrapped raw message
 	 * @throws ListenerException If any exception occurs during wrapping, a {@link ListenerException} is thrown.
 	 */

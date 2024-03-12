@@ -17,12 +17,6 @@ package org.frankframework.extensions.cmis.server;
 
 import java.lang.reflect.Method;
 
-import org.frankframework.extensions.cmis.CmisSessionBuilder;
-import org.frankframework.extensions.cmis.CmisSessionException;
-import org.frankframework.extensions.cmis.server.impl.IbisDiscoveryService;
-import org.frankframework.extensions.cmis.server.impl.IbisNavigationService;
-import org.frankframework.extensions.cmis.server.impl.IbisObjectService;
-import org.frankframework.extensions.cmis.server.impl.IbisRepositoryService;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
@@ -37,7 +31,12 @@ import org.apache.chemistry.opencmis.commons.spi.RelationshipService;
 import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.apache.chemistry.opencmis.commons.spi.VersioningService;
 import org.apache.logging.log4j.Logger;
-
+import org.frankframework.extensions.cmis.CmisSessionBuilder;
+import org.frankframework.extensions.cmis.CmisSessionException;
+import org.frankframework.extensions.cmis.server.impl.IbisDiscoveryService;
+import org.frankframework.extensions.cmis.server.impl.IbisNavigationService;
+import org.frankframework.extensions.cmis.server.impl.IbisObjectService;
+import org.frankframework.extensions.cmis.server.impl.IbisRepositoryService;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
@@ -50,7 +49,7 @@ public class BridgedCmisService extends FilterCmisService {
 	private static final long serialVersionUID = 2L;
 	private final Logger log = LogUtil.getLogger(this);
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	public static final boolean CMIS_BRIDGE_CLOSE_CONNECTION = APP_CONSTANTS.getBoolean(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"closeConnection", false);
+	public static final boolean CMIS_BRIDGE_CLOSE_CONNECTION = APP_CONSTANTS.getBoolean(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX + "closeConnection", false);
 
 	private CmisBinding clientBinding;
 
@@ -59,9 +58,9 @@ public class BridgedCmisService extends FilterCmisService {
 	}
 
 	public CmisBinding getCmisBinding() {
-		if(clientBinding == null) {
+		if (clientBinding == null) {
 			clientBinding = createCmisBinding();
-			log.info("initialized "+toString());
+			log.info("initialized " + toString());
 		}
 
 		return clientBinding;
@@ -70,36 +69,36 @@ public class BridgedCmisService extends FilterCmisService {
 	public CmisBinding createCmisBinding() {
 
 		//Make sure cmisbridge properties are defined
-		if(APP_CONSTANTS.getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"url") == null)
+		if (APP_CONSTANTS.getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX + "url") == null)
 			throw new CmisConnectionException("no bridge properties found");
 
 		CmisSessionBuilder sessionBuilder = new CmisSessionBuilder();
-		for(Method method: sessionBuilder.getClass().getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+		for (Method method : sessionBuilder.getClass().getMethods()) {
+			if (!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;
 
 			//Remove set from the method name
 			String setter = firstCharToLower(method.getName().substring(3));
-			String value = APP_CONSTANTS.getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter);
-			if(value == null)
+			String value = APP_CONSTANTS.getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX + setter);
+			if (value == null)
 				continue;
 
 			//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = getCastValue(method.getParameterTypes()[0], value);
-			log.debug("trying to set property ["+RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+sessionBuilder+"]");
+			log.debug("trying to set property [" + RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX + setter + "] with value [" + value + "] of type [" + castValue.getClass()
+					.getCanonicalName() + "] on [" + sessionBuilder + "]");
 
 			try {
 				method.invoke(sessionBuilder, castValue);
 			} catch (Exception e) {
-				throw new CmisConnectionException("error while calling method ["+setter+"] on CmisSessionBuilder ["+sessionBuilder.toString()+"]", e);
+				throw new CmisConnectionException("error while calling method [" + setter + "] on CmisSessionBuilder [" + sessionBuilder.toString() + "]", e);
 			}
 		}
 
 		try {
 			Session session = sessionBuilder.build();
 			return session.getBinding();
-		}
-		catch (CmisSessionException e) {
+		} catch (CmisSessionException e) {
 			log.error("unable to create cmis session", e);
 			throw new CmisConnectionException(e.getMessage());
 		}
@@ -111,9 +110,9 @@ public class BridgedCmisService extends FilterCmisService {
 
 	private Object getCastValue(Class<?> class1, String value) {
 		String className = class1.getName().toLowerCase();
-		if("boolean".equals(className))
+		if ("boolean".equals(className))
 			return Boolean.parseBoolean(value);
-		else if("int".equals(className) || "integer".equals(className))
+		else if ("int".equals(className) || "integer".equals(className))
 			return Integer.parseInt(value);
 		else
 			return value;
@@ -166,15 +165,16 @@ public class BridgedCmisService extends FilterCmisService {
 
 	/**
 	 * Returns Class SimpleName + hash + attribute info
+	 *
 	 * @return BridgedCmisService@abc12345 close[xxx] session[xxx]
 	 */
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
-		builder.append(" close ["+CMIS_BRIDGE_CLOSE_CONNECTION+"]");
-		if(clientBinding != null) {
-			builder.append(" session ["+clientBinding.getSessionId()+"]");
+		builder.append(" close [" + CMIS_BRIDGE_CLOSE_CONNECTION + "]");
+		if (clientBinding != null) {
+			builder.append(" session [" + clientBinding.getSessionId() + "]");
 		}
 		return builder.toString();
 	}
@@ -183,9 +183,9 @@ public class BridgedCmisService extends FilterCmisService {
 	public void close() {
 		super.close();
 
-		if(CMIS_BRIDGE_CLOSE_CONNECTION) {
+		if (CMIS_BRIDGE_CLOSE_CONNECTION) {
 			clientBinding = null;
-			log.info("closed "+toString());
+			log.info("closed " + toString());
 		}
 	}
 }

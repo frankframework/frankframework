@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
 import org.frankframework.statistics.HasStatistics.Action;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -23,14 +24,14 @@ public class StatisticsKeeperTest {
 
 	private static Stream<Arguments> data() {
 		return Stream.of(
-			Arguments.of(Basics.class),
-			Arguments.of(MicroMeterBasics.class)
+				Arguments.of(Basics.class),
+				Arguments.of(MicroMeterBasics.class)
 		);
 	}
 
 	public StatisticsKeeper createStatisticsKeeper(Class<IBasics> clazz, boolean publishPercentiles, boolean publishHistograms, boolean calculatePercentiles) {
 		try {
-			StringTokenizer boundariesTokenizer = new StringTokenizer("100,1000,2000,10000",",");
+			StringTokenizer boundariesTokenizer = new StringTokenizer("100,1000,2000,10000", ",");
 			return new StatisticsKeeper("test", clazz.newInstance(), boundariesTokenizer, publishPercentiles, publishHistograms, calculatePercentiles, 2);
 		} catch (InstantiationException | IllegalAccessException e) {
 			fail(e.getMessage());
@@ -43,7 +44,7 @@ public class StatisticsKeeperTest {
 	}
 
 	public void testLineair(StatisticsKeeper sk) {
-		for (int i=0; i<100; i++) {
+		for (int i = 0; i < 100; i++) {
 			sk.addValue(i);
 		}
 
@@ -65,20 +66,20 @@ public class StatisticsKeeperTest {
 		int count = 10000;
 		int limit = 100;
 
-		long sumsq=0;
+		long sumsq = 0;
 
 		Random rand = new Random();
-		for (int i=0; i<count; i++) {
+		for (int i = 0; i < count; i++) {
 			int value = rand.nextInt(100);
-			sumsq += value*value;
+			sumsq += value * value;
 			sk.addValue(value);
 		}
 
 		assertEquals(count, sk.getCount());
 		assertEquals(0, sk.getMin());
 		assertEquals(99, sk.getMax());
-		assertEquals((limit-1)/2.0, sk.getAvg(), 1.5);
-		assertEquals((limit-1)*(count/2), sk.getTotal(), count*1.2);
+		assertEquals((limit - 1) / 2.0, sk.getAvg(), 1.5);
+		assertEquals((limit - 1) * (count / 2), sk.getTotal(), count * 1.2);
 		assertEquals(842.0, sk.getVariance(), 50.0);
 		assertEquals(sumsq, sk.getTotalSquare(), 0.001);
 		assertEquals(29.0, sk.getStdDev(), 1.0);
@@ -149,7 +150,7 @@ public class StatisticsKeeperTest {
 
 
 	double getItemValueByName(StatisticsKeeper sk, String name) {
-		return (double)sk.getItemValue(sk.getItemIndex(name));
+		return (double) sk.getItemValue(sk.getItemIndex(name));
 	}
 
 	@ParameterizedTest
@@ -165,7 +166,7 @@ public class StatisticsKeeperTest {
 		assertEquals(0L, sk.getIntervalItemValue(4), sk.getIntervalItemName(4)); // sum
 		assertEquals(0L, sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
 
-		for (int i=0; i<100; i++) {
+		for (int i = 0; i < 100; i++) {
 			sk.addValue(i);
 		}
 
@@ -193,7 +194,7 @@ public class StatisticsKeeperTest {
 		assertEquals(0L, sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
 
 
-		for (int i=200; i<300; i++) {
+		for (int i = 200; i < 300; i++) {
 			sk.addValue(i);
 		}
 
@@ -219,11 +220,11 @@ public class StatisticsKeeperTest {
 		StatisticsKeeper sk = createStatisticsKeeper(clazz);
 		sk.initMetrics(new SimpleMeterRegistry(), "group", new ArrayList<>());
 
-		for (int i=0; i<100; i++) {
-			sk.addValue(i*100);
+		for (int i = 0; i < 100; i++) {
+			sk.addValue(i * 100);
 		}
 
-		Map<String,Object> map = sk.asMap();
+		Map<String, Object> map = sk.asMap();
 		assertMapValue(map, "name", "test");
 		assertMapValue(map, "count", "100");
 		assertMapValue(map, "min", "0");
@@ -240,14 +241,14 @@ public class StatisticsKeeperTest {
 //		assertMapValue(map, "p98", "9750.0");
 	}
 
-	public void assertMapValue(Map<String,Object> map, String key, String value) {
+	public void assertMapValue(Map<String, Object> map, String key, String value) {
 		assertEquals(value, map.get(key).toString());
 	}
 
 	@Test
 	public void testLabelsAndTypes() {
 		List<String> labels = StatisticsKeeper.getLabels();
-		List<String> types  = StatisticsKeeper.getTypes();
+		List<String> types = StatisticsKeeper.getTypes();
 
 		assertEquals("name", labels.get(0));
 		assertEquals("STRING", types.get(0));

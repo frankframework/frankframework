@@ -18,12 +18,6 @@ package org.frankframework.extensions.cmis.server.impl;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.frankframework.extensions.cmis.CmisUtils;
-import org.frankframework.extensions.cmis.server.CmisEvent;
-import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
-import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlUtils;
-
 import org.apache.chemistry.opencmis.commons.data.ExtensionsData;
 import org.apache.chemistry.opencmis.commons.data.ObjectData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderContainer;
@@ -33,6 +27,11 @@ import org.apache.chemistry.opencmis.commons.data.ObjectParentData;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.NavigationService;
+import org.frankframework.extensions.cmis.CmisUtils;
+import org.frankframework.extensions.cmis.server.CmisEvent;
+import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
+import org.frankframework.util.XmlBuilder;
+import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -54,7 +53,7 @@ public class IbisNavigationService implements NavigationService {
 	private XmlBuilder buildXml(String name, Object value) {
 		XmlBuilder filterXml = new XmlBuilder(name);
 
-		if(value != null)
+		if (value != null)
 			filterXml.setValue(value.toString());
 
 		return filterXml;
@@ -62,15 +61,14 @@ public class IbisNavigationService implements NavigationService {
 
 	@Override
 	public ObjectInFolderList getChildren(String repositoryId, String folderId,
-			String filter, String orderBy, Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter,
-			Boolean includePathSegment, BigInteger maxItems,
-			BigInteger skipCount, ExtensionsData extension) {
+										  String filter, String orderBy, Boolean includeAllowableActions,
+										  IncludeRelationships includeRelationships, String renditionFilter,
+										  Boolean includePathSegment, BigInteger maxItems,
+										  BigInteger skipCount, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_CHILDREN)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_CHILDREN)) {
 			return navigationService.getChildren(repositoryId, folderId, filter, orderBy, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, maxItems, skipCount, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("folderId", folderId));
@@ -92,27 +90,27 @@ public class IbisNavigationService implements NavigationService {
 
 	@Override
 	public List<ObjectInFolderContainer> getDescendants(String repositoryId,
-			String folderId, BigInteger depth, String filter,
-			Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter,
-			Boolean includePathSegment, ExtensionsData extension) {
+														String folderId, BigInteger depth, String filter,
+														Boolean includeAllowableActions,
+														IncludeRelationships includeRelationships, String renditionFilter,
+														Boolean includePathSegment, ExtensionsData extension) {
 		return navigationService.getDescendants(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, extension);
 	}
 
 	@Override
 	public List<ObjectInFolderContainer> getFolderTree(String repositoryId,
-			String folderId, BigInteger depth, String filter,
-			Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter,
-			Boolean includePathSegment, ExtensionsData extension) {
+													   String folderId, BigInteger depth, String filter,
+													   Boolean includeAllowableActions,
+													   IncludeRelationships includeRelationships, String renditionFilter,
+													   Boolean includePathSegment, ExtensionsData extension) {
 		return navigationService.getFolderTree(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, extension);
 	}
 
 	@Override
 	public List<ObjectParentData> getObjectParents(String repositoryId,
-			String objectId, String filter, Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter,
-			Boolean includeRelativePathSegment, ExtensionsData extension) {
+												   String objectId, String filter, Boolean includeAllowableActions,
+												   IncludeRelationships includeRelationships, String renditionFilter,
+												   Boolean includeRelativePathSegment, ExtensionsData extension) {
 		return navigationService.getObjectParents(repositoryId, objectId, filter, includeAllowableActions, includeRelationships, renditionFilter, includeRelativePathSegment, extension);
 	}
 
@@ -123,9 +121,9 @@ public class IbisNavigationService implements NavigationService {
 
 	@Override
 	public ObjectList getCheckedOutDocs(String repositoryId, String folderId,
-			String filter, String orderBy, Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter,
-			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
+										String filter, String orderBy, Boolean includeAllowableActions,
+										IncludeRelationships includeRelationships, String renditionFilter,
+										BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 		return navigationService.getCheckedOutDocs(repositoryId, folderId, filter, orderBy, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, extension);
 	}
 }

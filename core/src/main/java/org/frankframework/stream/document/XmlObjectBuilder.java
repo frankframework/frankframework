@@ -16,9 +16,8 @@
 package org.frankframework.stream.document;
 
 import org.frankframework.util.XmlUtils;
-import org.xml.sax.SAXException;
-
 import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
 
 public class XmlObjectBuilder extends ObjectBuilder {
 
@@ -51,10 +50,12 @@ public class XmlObjectBuilder extends ObjectBuilder {
 	public void addAttribute(String name, Number value) throws SAXException {
 		addAttribute(name, value.toString());
 	}
+
 	@Override
 	public void addAttribute(String name, boolean value) throws SAXException {
 		addAttribute(name, Boolean.toString(value));
 	}
+
 	@Override
 	public void addNumberAttribute(String name, String value) throws SAXException {
 		addAttribute(name, value);

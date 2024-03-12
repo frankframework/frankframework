@@ -21,7 +21,7 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Target;
 
 @Target(TYPE)
-@Label(name="Category")
+@Label(name = "Category")
 @Documented
 public @interface Category {
 	@LabelValue String value();

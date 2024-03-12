@@ -27,7 +27,6 @@ import org.frankframework.pipes.WsdlXmlValidator;
  * queue)). When sending files (direction=send) the message is validated against
  * the StartTransfer WSDL (ESB service provided by Tibco).
  *
- *
  * @author Jaco de Groot
  */
 public class FxfXmlValidator extends WsdlXmlValidator {
@@ -35,13 +34,13 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 	private @Getter String fxfVersion = "3.1";
 
 	public enum Direction {
-		SEND,RECEIVE
+		SEND, RECEIVE
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		setThrowException(true);
-		if(direction == Direction.RECEIVE) {
+		if (direction == Direction.RECEIVE) {
 			setWsdl("xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl");
 			setSoapBody("OnCompletedTransferNotify_Action");
 		} else {
@@ -65,6 +64,7 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 
 	/**
 	 * either 3.1 or 3.2
+	 *
 	 * @ff.default 3.1
 	 */
 	public void setFxfVersion(String fxfVersion) {

@@ -45,8 +45,8 @@ import lombok.Getter;
 
 public class JwtValidator<C extends SecurityContext> {
 
-	private @Getter int connectTimeout=2000;
-	private @Getter int readTimeout=2000;
+	private @Getter int connectTimeout = 2000;
+	private @Getter int readTimeout = 2000;
 
 	private @Getter ConfigurableJWTProcessor<C> jwtProcessor = null;
 
@@ -67,14 +67,14 @@ public class JwtValidator<C extends SecurityContext> {
 		// Set up a JWT processor to parse the tokens and then check their signature
 		// and validity time window (bounded by the "iat", "nbf" and "exp" claims)
 		if (StringUtils.isNotEmpty(requiredIssuer)) {
-			DefaultJWTClaimsVerifier<C> verifier=new DefaultJWTClaimsVerifier<>() {
+			DefaultJWTClaimsVerifier<C> verifier = new DefaultJWTClaimsVerifier<>() {
 
 				@Override
 				public void verify(JWTClaimsSet claimsSet, C context) throws BadJWTException {
 					super.verify(claimsSet, context);
-					String issuer=claimsSet.getIssuer();
+					String issuer = claimsSet.getIssuer();
 					if (!requiredIssuer.equals(issuer)) {
-						throw new BadJWTException("illegal issuer ["+issuer+"], must be ["+requiredIssuer+"]");
+						throw new BadJWTException("illegal issuer [" + issuer + "], must be [" + requiredIssuer + "]");
 					}
 				}
 			};
@@ -87,7 +87,7 @@ public class JwtValidator<C extends SecurityContext> {
 
 	protected JWKSource<C> getKeySource(URL jwksURL) throws IOException, ParseException {
 		JWKSource<C> keySource = null;
-		if(jwksURL.getProtocol().equals("file") || jwksURL.getProtocol().equals("jar")) {
+		if (jwksURL.getProtocol().equals("file") || jwksURL.getProtocol().equals("jar")) {
 			JWKSet set = JWKSet.load(jwksURL.openStream());
 			keySource = new ImmutableJWKSet<>(set);
 			return keySource;

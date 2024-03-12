@@ -14,26 +14,26 @@ import org.frankframework.util.XmlBuilder;
 
 public class MailSendingTestHelper implements IFileSystemTestHelper {
 
-	private String senderDestination="";
-	private String senderSmtpHost="";
-	private String senderUserId="";
-	private String senderPassword="";
+	private String senderDestination = "";
+	private String senderSmtpHost = "";
+	private String senderUserId = "";
+	private String senderPassword = "";
 
 	private MailSender mailSender;
 
 	private MockFile currentFile;
 
 	public MailSendingTestHelper(String senderDestination, String senderSmtpHost, int senderSmtpPort, boolean senderSsl, String senderUserId, String senderPassword) {
-		this.senderDestination=senderDestination;
-		this.senderSmtpHost=senderSmtpHost;
-		this.senderUserId=senderUserId;
-		this.senderPassword=senderPassword;
+		this.senderDestination = senderDestination;
+		this.senderSmtpHost = senderSmtpHost;
+		this.senderUserId = senderUserId;
+		this.senderPassword = senderPassword;
 	}
 
 	@Before
 	public void setUp() {
 //		mailSender=new SendGridSender();
-		mailSender=new MailSender();
+		mailSender = new MailSender();
 		mailSender.setName("MailSendingTestHelper");
 		mailSender.setSmtpHost(senderSmtpHost);
 		//mailSender.setProperties(properties);
@@ -71,7 +71,7 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public OutputStream _createFile(String folder, String filename) {
-		currentFile=new MockFile(filename, null);
+		currentFile = new MockFile(filename, null);
 		return currentFile.getOutputStream(true);
 	}
 
@@ -114,32 +114,32 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 //</email>
 
 	public void _commitFile() throws Exception {
-		XmlBuilder email=new XmlBuilder("email");
-		XmlBuilder recipients=new XmlBuilder("recipients");
+		XmlBuilder email = new XmlBuilder("email");
+		XmlBuilder recipients = new XmlBuilder("recipients");
 		email.addSubElement(recipients);
-		XmlBuilder recipient=new XmlBuilder("recipient");
+		XmlBuilder recipient = new XmlBuilder("recipient");
 		recipients.addSubElement(recipient);
 		recipient.addAttribute("type", "to");
 		recipient.setValue(senderDestination);
 
-		XmlBuilder from=new XmlBuilder("from");
+		XmlBuilder from = new XmlBuilder("from");
 		email.addSubElement(from);
 		from.setValue("gerrit@integrationparners.nl");
 
-		XmlBuilder subject=new XmlBuilder("subject");
+		XmlBuilder subject = new XmlBuilder("subject");
 		email.addSubElement(subject);
 		subject.setValue(currentFile.getName());
 
-		XmlBuilder threadTopic=new XmlBuilder("threadTopic");
+		XmlBuilder threadTopic = new XmlBuilder("threadTopic");
 		email.addSubElement(threadTopic);
 		threadTopic.setValue("integrationtests");
 
-		XmlBuilder message=new XmlBuilder("message");
+		XmlBuilder message = new XmlBuilder("message");
 		email.addSubElement(message);
 		message.setValue(StreamUtil.streamToString(currentFile.getInputStream()));
 
-		Message msg=new Message(email.toXML());
-		System.out.println("email: ["+msg+"]");
+		Message msg = new Message(email.toXML());
+		System.out.println("email: [" + msg + "]");
 		mailSender.sendMessageOrThrow(msg, null);
 		Thread.sleep(5000);
 	}

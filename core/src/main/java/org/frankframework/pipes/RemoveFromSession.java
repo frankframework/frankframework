@@ -18,9 +18,8 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -35,7 +34,6 @@ import org.frankframework.util.StringUtil;
  * from the {@link PipeLineSession pipeLineSession}.
  *
  * @author Peter Leeuwenburgh
- *
  * @see PipeLineSession
  */
 @ElementType(ElementTypes.SESSION)
@@ -78,7 +76,7 @@ public class RemoveFromSession extends FixedForwardPipe {
 			result = StringUtil.splitToStream(sessionKeys)
 					.map(sk -> {
 						Object skResult = session.remove(sk);
-						if (skResult==null) {
+						if (skResult == null) {
 							log.warn("key [{}] not found", sk);
 							return "[null]";
 						} else {
@@ -105,6 +103,7 @@ public class RemoveFromSession extends FixedForwardPipe {
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
+
 	public String getSessionKey() {
 		return sessionKey;
 	}

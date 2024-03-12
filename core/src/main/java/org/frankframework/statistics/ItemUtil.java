@@ -21,8 +21,9 @@ import org.frankframework.util.XmlBuilder;
 
 /**
  * Utility functions to process statistics items.
- * @author  Gerrit van Brakel
- * @since   4.9.9
+ *
+ * @author Gerrit van Brakel
+ * @since 4.9.9
  */
 public class ItemUtil {
 
@@ -33,15 +34,16 @@ public class ItemUtil {
 		item.addAttribute("value", value);
 		xml.addSubElement(item);
 	}
+
 	public static void addItem(XmlBuilder xml, String name, Long value) {
-		addItem(xml,name,""+value);
+		addItem(xml, name, "" + value);
 	}
 
 	public static XmlBuilder getSummaryContainer(XmlBuilder parent, String name) {
-		if (parent==null) {
+		if (parent == null) {
 			throw new NullPointerException("parent XmlBuilder cannot be null");
 		}
-		if (name!=null) {
+		if (name != null) {
 			parent.addAttribute("name", name);
 		}
 		XmlBuilder stats = new XmlBuilder("summary");
@@ -57,16 +59,16 @@ public class ItemUtil {
 		XmlBuilder container = new XmlBuilder(elementName);
 		XmlBuilder stats = getSummaryContainer(container, name);
 
-		for (int i=0; i<il.getItemCount(); i++) {
+		for (int i = 0; i < il.getItemCount(); i++) {
 			Object item = il.getItemValue(i);
-			if (item==null) {
+			if (item == null) {
 				addItem(stats, il.getItemName(i), ItemList.ITEM_VALUE_NAN);
 			} else {
 				String value;
 				switch (il.getItemType(i)) {
 					case INTEGER:
-						if (countFormat==null) {
-							value = ""+ item;
+						if (countFormat == null) {
+							value = "" + item;
 						} else {
 							value = countFormat.format(item);
 						}
@@ -75,7 +77,7 @@ public class ItemUtil {
 						value = timeFormat.format(item);
 						break;
 					case FRACTION:
-						value = percentageFormat.format((Double) item *100)+ "%";
+						value = percentageFormat.format((Double) item * 100) + "%";
 						break;
 					default:
 						value = "";
@@ -88,17 +90,17 @@ public class ItemUtil {
 
 	public static String getItemValueFormatted(ItemList il, int index) {
 		Object item = il.getItemValue(index);
-		if (item==null) {
+		if (item == null) {
 			return ItemList.ITEM_VALUE_NAN;
 		}
 		switch (il.getItemType(index)) {
 			case INTEGER:
-				return ""+ item;
+				return "" + item;
 			case TIME:
-				DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
+				DecimalFormat df = new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
 				return df.format(item);
 			case FRACTION:
-				DecimalFormat pf=new DecimalFormat(ItemList.ITEM_FORMAT_PERC);
+				DecimalFormat pf = new DecimalFormat(ItemList.ITEM_FORMAT_PERC);
 				return pf.format((Double) item * 100);
 			default:
 				return item.toString();

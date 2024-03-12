@@ -6,7 +6,9 @@ import java.io.IOException;
 
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -18,30 +20,30 @@ public class SkipEmptyTagsFilterTest {
 		ppf.setIndent("");
 		filter.setContentHandler(ppf);
 		XmlUtils.parseXml(input, filter);
-		assertEquals(expected,xmlWriter.toString());
+		assertEquals(expected, xmlWriter.toString());
 	}
 
 	@Test
 	public void testSkipEmptyTagsFilter() throws Exception {
-		String input =    TestFileUtils.getTestFile("/SkipEmptyTags/in.xml");
+		String input = TestFileUtils.getTestFile("/SkipEmptyTags/in.xml");
 		String expected = TestFileUtils.getTestFile("/SkipEmptyTags/SkipEmptyTagsTestOut.xml");
 		SkipEmptyTagsFilter filter = new SkipEmptyTagsFilter(null);
-		testXmlWriter(filter,input,expected);
+		testXmlWriter(filter, input, expected);
 	}
 
 	@Test
 	public void testSkipEmptyTagsFilterWithNamespaces1() throws Exception {
-		String input =    TestFileUtils.getTestFile("/SkipEmptyTags/inWithNamespaces1.xml");
+		String input = TestFileUtils.getTestFile("/SkipEmptyTags/inWithNamespaces1.xml");
 		String expected = TestFileUtils.getTestFile("/SkipEmptyTags/outWithNamespaces1.xml");
 		SkipEmptyTagsFilter filter = new SkipEmptyTagsFilter(null);
-		testXmlWriter(filter,input,expected);
+		testXmlWriter(filter, input, expected);
 	}
 
 	@Test
 	public void testSkipEmptyTagsFilterWithNamespaces2() throws Exception {
-		String input =    TestFileUtils.getTestFile("/SkipEmptyTags/inWithNamespaces2.xml");
+		String input = TestFileUtils.getTestFile("/SkipEmptyTags/inWithNamespaces2.xml");
 		String expected = TestFileUtils.getTestFile("/SkipEmptyTags/outWithNamespaces2.xml");
 		SkipEmptyTagsFilter filter = new SkipEmptyTagsFilter(null);
-		testXmlWriter(filter,input,expected);
+		testXmlWriter(filter, input, expected);
 	}
 }

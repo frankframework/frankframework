@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.bus;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,8 +26,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.util.ClassUtils;
-
-import lombok.Setter;
 
 /**
  * Allows the creation of outbound integration gateways.
@@ -43,21 +42,21 @@ public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationC
 	@Override
 	@SuppressWarnings("unchecked")
 	public void afterPropertiesSet() throws Exception {
-		if(StringUtils.isBlank(gatewayClassname)) {
-			throw new IllegalStateException("no outbound gateway class specified. Please set ["+GATEWAY_CLASS_KEY+"]");
+		if (StringUtils.isBlank(gatewayClassname)) {
+			throw new IllegalStateException("no outbound gateway class specified. Please set [" + GATEWAY_CLASS_KEY + "]");
 		}
 		log.info("attempting to initialize using gateway class [{}]", gatewayClassname);
 
 		Class<?> gatewayClass = ClassUtils.resolveClassName(gatewayClassname, applicationContext.getClassLoader());
 
-		if(!OutboundGateway.class.isAssignableFrom(gatewayClass)) {
-			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] does not implement type IntegrationGateway");
+		if (!OutboundGateway.class.isAssignableFrom(gatewayClass)) {
+			throw new IllegalArgumentException("gateway [" + gatewayClassname + "] does not implement type IntegrationGateway");
 		}
 
 		gateway = (OutboundGateway<T>) SpringUtils.createBean(applicationContext, gatewayClass);
 		IntegrationPatternType type = gateway.getIntegrationPatternType();
-		if(IntegrationPatternType.outbound_gateway != type) {
-			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] must be of an Outbound Gateway");
+		if (IntegrationPatternType.outbound_gateway != type) {
+			throw new IllegalArgumentException("gateway [" + gatewayClassname + "] must be of an Outbound Gateway");
 		}
 
 		log.info("created gateway [{}]", gateway);

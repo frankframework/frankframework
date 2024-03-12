@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.ListenerException;
@@ -68,6 +67,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			return null;
 		}
 	}
+
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
 	public ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(requestMessages, timeout, "request");
@@ -76,11 +76,11 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeoutException {
 		try {
 			ListenerMessage requestMessage = queue.poll(timeout, TimeUnit.MILLISECONDS);
-			if(requestMessage != null) {
+			if (requestMessage != null) {
 				return requestMessage;
 			}
 		} catch (InterruptedException e) {
-			log.error("interrupted while waiting for "+messageType+" message", e);
+			log.error("interrupted while waiting for " + messageType + " message", e);
 			Thread.currentThread().interrupt();
 		}
 
@@ -95,6 +95,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			return null;
 		}
 	}
+
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
 	public ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(responseMessages, timeout, "response");

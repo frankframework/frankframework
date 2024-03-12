@@ -88,7 +88,7 @@ public class PoolingDataSourceJDBCAccess implements JDBCAccess {
 			DataSource dataSource = ObjectLocator.lookup(jndiName, null, DataSource.class);
 			this.datasource = augmentDataSource(dataSource);
 		} catch (NamingException e) {
-			throw new FatalError("unable to lookup datasource ["+jndiName+"]", e);
+			throw new FatalError("unable to lookup datasource [" + jndiName + "]", e);
 		}
 	}
 }

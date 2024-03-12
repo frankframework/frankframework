@@ -113,7 +113,8 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		List<String> columnsUC = columns.stream().map(String::toUpperCase).collect(Collectors.toList());
 		return doHasIndexOnColumns(conn, "PUBLIC", tableName.toUpperCase(), columnsUC,
 				"INFORMATION_SCHEMA.INDEXES", "INFORMATION_SCHEMA.INDEX_COLUMNS",
-				"TABLE_SCHEMA", "TABLE_NAME", "INDEX_NAME", "COLUMN_NAME", "ORDINAL_POSITION");
+				"TABLE_SCHEMA", "TABLE_NAME", "INDEX_NAME", "COLUMN_NAME", "ORDINAL_POSITION"
+		);
 	}
 
 }

@@ -7,7 +7,7 @@ import java.util.Set;
 
 import javax.xml.ws.handler.MessageContext;
 
-public class MessageContextStub implements MessageContext{
+public class MessageContextStub implements MessageContext {
 
 	private final Map map = new HashMap();
 
@@ -33,7 +33,7 @@ public class MessageContextStub implements MessageContext{
 
 	@Override
 	public Object get(Object key) {
-		if(MessageContext.HTTP_REQUEST_METHOD.equals(key.toString())) {
+		if (MessageContext.HTTP_REQUEST_METHOD.equals(key.toString())) {
 			return "POST";
 		}
 		return map.get(key);

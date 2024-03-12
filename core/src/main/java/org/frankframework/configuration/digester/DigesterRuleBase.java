@@ -94,7 +94,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * Add a warning message to the current configuration, unless the suppression key is
 	 * supporessed in the configuration.
 	 *
-	 * @param msg Message to add
+	 * @param msg            Message to add
 	 * @param suppressionKey {@link SuppressKeys} to check.
 	 */
 	protected final void addSuppressableWarning(String msg, SuppressKeys suppressionKey) {
@@ -106,7 +106,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			return "";
 		}
 		Locator loc = getDigester().getDocumentLocator();
-		return "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] ";
+		return "on line [" + loc.getLineNumber() + "] column [" + loc.getColumnNumber() + "] ";
 
 	}
 
@@ -114,7 +114,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * @return an {@link IConfigurationClassLoader}.
 	 */
 	protected final ClassLoader getClassLoader() {
-		if(applicationContext == null) {
+		if (applicationContext == null) {
 			throw new IllegalStateException("ApplicationContext not set");
 		}
 
@@ -141,7 +141,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 */
 	protected final String resolveValue(String value) {
 		String result = StringResolver.substVars(value, AppConstants.getInstance(getClassLoader()));
-		log.trace("resolved [{}] to [{}] using ClassLoader [{}]", ()->value, ()->result, ()->getClassLoader());
+		log.trace("resolved [{}] to [{}] using ClassLoader [{}]", () -> value, () -> result, () -> getClassLoader());
 		return result;
 	}
 
@@ -150,9 +150,9 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		Object top = getBean();
 
 		Map<String, String> map = copyAttrsToMap(attributes);
-		if(top instanceof INamedObject) { //We must set the name first, to improve logging and configuration warnings
+		if (top instanceof INamedObject) { //We must set the name first, to improve logging and configuration warnings
 			String name = map.remove("name");
-			if(StringUtils.isNotEmpty(name)) {
+			if (StringUtils.isNotEmpty(name)) {
 				ClassUtils.invokeSetter(top, "setName", name);
 			}
 		}
@@ -163,26 +163,26 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 
 		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
 		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
-		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof IbisActionJob)) {
+		if (top instanceof IJob && !(top instanceof Job) && !(top instanceof IbisActionJob)) {
 			map.remove("function");
 		}
 
 		handleBean();
 
-		if(top instanceof CanUseSharedResource && map.containsKey("sharedResourceName")) {
+		if (top instanceof CanUseSharedResource && map.containsKey("sharedResourceName")) {
 			String sharedResourceName = SharedResource.SHARED_RESOURCE_PREFIX + map.get("sharedResourceName");
-			if(applicationContext.containsBean(sharedResourceName)) {
+			if (applicationContext.containsBean(sharedResourceName)) {
 				SharedResource<?> container = applicationContext.getBean(sharedResourceName, SharedResource.class);
 				dontSetSharedResourceAttributes(container, map);
 			} else {
-				addLocalWarning("shared resource ["+map.get("sharedResourceName")+"] does not exist");
+				addLocalWarning("shared resource [" + map.get("sharedResourceName") + "] does not exist");
 			}
 		}
 
 		for (Entry<String, String> entry : map.entrySet()) {
 			String attribute = entry.getKey();
 			if (log.isTraceEnabled()) {
-				log.trace("checking attribute ["+attribute+"] on bean ["+getObjectName()+"]");
+				log.trace("checking attribute [" + attribute + "] on bean [" + getObjectName() + "]");
 			}
 			handleAttribute(attribute, entry.getValue(), map);
 		}
@@ -191,10 +191,10 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	/** Check if attribute-'map' contains attributes (methods) that also exist in 'sharedResource'. */
 	private void dontSetSharedResourceAttributes(SharedResource<?> sharedResource, Map<String, String> map) {
 		PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(sharedResource.getClass());
-		for(PropertyDescriptor pd : pds) {
+		for (PropertyDescriptor pd : pds) {
 			String attributeName = pd.getName();
-			if(map.containsKey(attributeName)) {
-				addLocalWarning("ignoring attribute ["+attributeName+"] as it is managed by the shared resource ["+sharedResource.getName()+"]");
+			if (map.containsKey(attributeName)) {
+				addLocalWarning("ignoring attribute [" + attributeName + "] as it is managed by the shared resource [" + sharedResource.getName() + "]");
 			}
 		}
 	}
@@ -213,7 +213,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			if ("".equals(name)) {
 				name = attrs.getQName(i);
 			}
-			if(name != null && !name.equals("className")) {
+			if (name != null && !name.equals("className")) {
 				String value = attrs.getValue(i);
 				map.put(name, value);
 			}

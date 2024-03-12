@@ -135,8 +135,8 @@ import org.frankframework.util.StringUtil;
  * please check password or authAlias configuration of the corresponding certificate.
  * </p>
  *
- * @author	Niels Meijer
- * @since	7.0
+ * @author Niels Meijer
+ * @since 7.0
  */
 public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeystore, HasTruststore {
 	protected final Logger log = LogUtil.getLogger(this);
@@ -149,7 +149,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private @Getter int timeout = 10000;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
-	private @Getter boolean staleChecking=true;
+	private @Getter boolean staleChecking = true;
 	private @Getter int staleTimeout = 5000; // [ms]
 	private @Getter int connectionTimeToLive = 900; // [s]
 	private @Getter int connectionIdleTimeout = 10; // [s]
@@ -163,7 +163,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private @Getter String password;
 	private @Getter String authDomain;
 	private @Getter String tokenEndpoint;
-	private @Getter int tokenExpiry=-1;
+	private @Getter int tokenExpiry = -1;
 	private @Getter String clientAuthAlias;
 	private @Getter String clientId;
 	private @Getter String clientSecret;
@@ -172,34 +172,34 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/* PROXY */
 	private @Getter String proxyHost;
-	private @Getter int    proxyPort=80;
+	private @Getter int proxyPort = 80;
 	private @Getter String proxyAuthAlias;
 	private @Getter String proxyUsername;
 	private @Getter String proxyPassword;
-	private @Getter String proxyRealm=null;
+	private @Getter String proxyRealm = null;
 	private @Getter boolean prefillProxyAuthCache;
 
 	/* SSL */
 	private @Getter String keystore;
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
-	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
+	private @Getter KeystoreType keystoreType = KeystoreType.PKCS12;
 	private @Getter String keystoreAlias;
 	private @Getter String keystoreAliasAuthAlias;
 	private @Getter String keystoreAliasPassword;
-	private @Getter String keyManagerAlgorithm=null;
+	private @Getter String keyManagerAlgorithm = null;
 
-	private @Getter String truststore=null;
+	private @Getter String truststore = null;
 	private @Getter String truststoreAuthAlias;
-	private @Getter String truststorePassword=null;
-	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
-	private @Getter String trustManagerAlgorithm=null;
+	private @Getter String truststorePassword = null;
+	private @Getter KeystoreType truststoreType = KeystoreType.JKS;
+	private @Getter String trustManagerAlgorithm = null;
 	private @Getter boolean allowSelfSignedCertificates = false;
-	private @Getter boolean verifyHostname=true;
-	private @Getter boolean ignoreCertificateExpiredException=false;
+	private @Getter boolean verifyHostname = true;
+	private @Getter boolean ignoreCertificateExpiredException = false;
 
-	private @Getter boolean followRedirects=true;
-	private @Getter boolean ignoreRedirects=false;
+	private @Getter boolean followRedirects = true;
+	private @Getter boolean ignoreRedirects = false;
 
 	private String protocol;
 	private String supportedCipherSuites = null;
@@ -217,18 +217,18 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	protected URI getURI(String url) throws URISyntaxException {
 		URIBuilder uri = new URIBuilder(url);
 
-		if(uri.getScheme() == null) {
+		if (uri.getScheme() == null) {
 			throw new URISyntaxException("", "must use an absolute url starting with http(s)://");
 		}
 		if (!uri.getScheme().matches("(?i)https?")) {
 			throw new IllegalArgumentException(ClassUtils.nameOf(this) + " only supports web based schemes. (http or https)");
 		}
 
-		if (uri.getPath()==null) {
+		if (uri.getPath() == null) {
 			uri.setPath("/");
 		}
 
-		log.info("created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
+		log.info("created uri: scheme=[" + uri.getScheme() + "] host=[" + uri.getHost() + "] path=[" + uri.getPath() + "]");
 		return uri.build();
 	}
 
@@ -240,7 +240,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 //		httpClientBuilder.disableAuthCaching();
 
 		if (getMaxConnections() <= 0) {
-			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
+			throw new ConfigurationException("maxConnections is set to [" + getMaxConnections() + "], which is not enough for adequate operation");
 		}
 
 		validateProtocolsAndCiphers();
@@ -252,11 +252,11 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			credentials = user_cf;
 		}
 		client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
-		if (credentials==null) {
+		if (credentials == null) {
 			credentials = client_cf;
 		}
 		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
-			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
+			throw new ConfigurationException("To obtain accessToken at tokenEndpoint [" + getTokenEndpoint() + "] a clientAuthAlias or ClientId and ClientSecret must be specified");
 		}
 
 
@@ -284,7 +284,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 		httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler(getMaxExecuteRetries()));
 
-		if(areCookiesDisabled()) {
+		if (areCookiesDisabled()) {
 			httpClientBuilder.disableCookieManagement();
 		}
 		httpClientBuilder.evictIdleConnections((long) getConnectionIdleTimeout(), TimeUnit.SECONDS);
@@ -302,30 +302,30 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			log.warn("no default SSLContext available", e);
 		}
 
-		if(StringUtils.isNotEmpty(protocol)) {
+		if (StringUtils.isNotEmpty(protocol)) {
 			try {
 				SSLContext.getInstance(protocol);
 			} catch (NoSuchAlgorithmException e) {
-				String errorMessage = "unknown protocol ["+protocol+"]";
-				if(sslParams != null) {
-					errorMessage += ", must be one of ["+Stream.of(sslParams.getProtocols()).collect(Collectors.joining(", "))+"]";
+				String errorMessage = "unknown protocol [" + protocol + "]";
+				if (sslParams != null) {
+					errorMessage += ", must be one of [" + Stream.of(sslParams.getProtocols()).collect(Collectors.joining(", ")) + "]";
 				}
 				throw new ConfigurationException(errorMessage, e);
 			}
 		}
 
-		if(sslParams != null && StringUtils.isNotEmpty(supportedCipherSuites)) {
+		if (sslParams != null && StringUtils.isNotEmpty(supportedCipherSuites)) {
 			List<String> allowedCipherSuites = Arrays.asList(sslParams.getCipherSuites());
-			if(Collections.indexOfSubList(allowedCipherSuites, StringUtil.split(supportedCipherSuites)) == -1) {
-				throw new ConfigurationException("Unsupported CipherSuite(s), must be one (or more) of "+allowedCipherSuites);
+			if (Collections.indexOfSubList(allowedCipherSuites, StringUtil.split(supportedCipherSuites)) == -1) {
+				throw new ConfigurationException("Unsupported CipherSuite(s), must be one (or more) of " + allowedCipherSuites);
 			}
 		}
 	}
 
 	/** The redirect strategy used to only redirect GET, DELETE and HEAD. */
 	private void configureRedirectStrategy() {
-		if(isFollowRedirects()) {
-			httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy(new String[] { HttpGet.METHOD_NAME, HttpHead.METHOD_NAME, HttpDelete.METHOD_NAME }));
+		if (isFollowRedirects()) {
+			httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy(new String[]{HttpGet.METHOD_NAME, HttpHead.METHOD_NAME, HttpDelete.METHOD_NAME}));
 		} else {
 			httpClientBuilder.disableRedirectHandling();
 		}
@@ -338,14 +338,14 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	 */
 	public void configureConnectionManager() {
 		int timeToLive = getConnectionTimeToLive();
-		if (timeToLive<=0) {
+		if (timeToLive <= 0) {
 			timeToLive = -1;
 		}
 
 		Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
-			.register("http", PlainConnectionSocketFactory.getSocketFactory())
-			.register("https", sslSocketFactory)
-			.build();
+				.register("http", PlainConnectionSocketFactory.getSocketFactory())
+				.register("https", sslSocketFactory)
+				.build();
 
 		PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, null, null, timeToLive, TimeUnit.SECONDS);
 		log.debug("created PoolingHttpClientConnectionManager with custom SSLConnectionSocketFactory");
@@ -354,7 +354,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		connectionManager.setDefaultMaxPerRoute(getMaxConnections());
 
 		if (isStaleChecking()) {
-			log.info("set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
+			log.info("set up connectionManager, setting stale checking [" + isStaleChecking() + "]");
 			connectionManager.setValidateAfterInactivity(getStaleTimeout());
 		}
 
@@ -383,7 +383,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	@Override
 	public void stop() {
 		//Close the HttpClient and ConnectionManager to release resources and potential open connections
-		if(httpClient != null) {
+		if (httpClient != null) {
 			try {
 				httpClient.close();
 			} catch (IOException e) {
@@ -403,12 +403,12 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			requestConfigBuilder.setAuthenticationEnabled(true);
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
-				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, user_cf==null, isAuthenticatedTokenRequest(), this, getTokenExpiry());
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, user_cf == null, isAuthenticatedTokenRequest(), this, getTokenExpiry());
 				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
 		}
-		if (proxy!=null) {
+		if (proxy != null) {
 			AuthScope authScope = new AuthScope(proxy, proxyRealm, AuthScope.ANY_SCHEME);
 
 
@@ -418,11 +418,11 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			}
 			log.trace("setting credentialProvider [{}]", credentialsProvider);
 
-			if(isPrefillProxyAuthCache()) {
+			if (isPrefillProxyAuthCache()) {
 				requestConfigBuilder.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
 
 				AuthCache authCache = httpClientContext.getAuthCache();
-				if(authCache == null)
+				if (authCache == null)
 					authCache = new BasicAuthCache();
 
 				authCache.put(proxy, new BasicScheme());
@@ -437,7 +437,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	protected void preAuthenticate() {
 		if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
 			AuthState authState = httpClientContext.getTargetAuthState();
-			if (authState==null) {
+			if (authState == null) {
 				authState = new AuthState();
 				httpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
@@ -466,9 +466,9 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		SSLConnectionSocketFactory sslConnectionSocketFactory;
 		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
 
-		final String[] supportedProtocols = StringUtils.isBlank(protocol) ? null : new String[] { protocol };
+		final String[] supportedProtocols = StringUtils.isBlank(protocol) ? null : new String[]{protocol};
 		final String[] cipherSuites;
-		if(StringUtils.isNotBlank(supportedCipherSuites)) {
+		if (StringUtils.isNotBlank(supportedCipherSuites)) {
 			cipherSuites = StringUtil.splitToStream(supportedCipherSuites).toArray(String[]::new);
 		} else {
 			cipherSuites = null;
@@ -495,6 +495,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Timeout in ms of obtaining a connection/result. 0 means no timeout
+	 *
 	 * @ff.default 10000
 	 */
 	public void setTimeout(int i) {
@@ -503,6 +504,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * The maximum number of concurrent connections
+	 *
 	 * @ff.default 10
 	 */
 	public void setMaxConnections(int i) {
@@ -511,6 +513,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * The maximum number of times the execution is retried
+	 *
 	 * @ff.default 1 (for repeatable messages) else 0
 	 */
 	public void setMaxExecuteRetries(int i) {
@@ -556,20 +559,24 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	public void setTokenEndpoint(String string) {
 		tokenEndpoint = string;
 	}
+
 	/**
 	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token
 	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response,
 	 * or when the regular server returns a 401 status with a challenge.
 	 * If not specified, and the accessTokens lifetime is not found in the token response, the accessToken will not be refreshed preemptively.
+	 *
 	 * @ff.default -1
 	 */
 	public void setTokenExpiry(int value) {
 		tokenExpiry = value;
 	}
+
 	/** Alias used to obtain client_id and client_secret for authentication to <code>tokenEndpoint</code> */
 	public void setClientAlias(String clientAuthAlias) {
 		this.clientAuthAlias = clientAuthAlias;
 	}
+
 	/** Client_id used in authentication to <code>tokenEndpoint</code> */
 	public void setClientId(String clientId) {
 		this.clientId = clientId;
@@ -579,10 +586,12 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	public void setClientSecret(String clientSecret) {
 		this.clientSecret = clientSecret;
 	}
+
 	/** Space or comma separated list of scope items requested for accessToken, e.g. <code>read write</code>. Only used when <code>tokenEndpoint</code> is specified */
 	public void setScope(String string) {
 		scope = string;
 	}
+
 	/** if set true, clientId and clientSecret will be added as Basic Authentication header to the tokenRequest, instead of as request parameters */
 	public void setAuthenticatedTokenRequest(boolean authenticatedTokenRequest) {
 		this.authenticatedTokenRequest = authenticatedTokenRequest;
@@ -596,6 +605,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Proxy port
+	 *
 	 * @ff.default 80
 	 */
 	public void setProxyPort(int i) {
@@ -609,6 +619,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Proxy username
+	 *
 	 * @ff.default
 	 */
 	public void setProxyUsername(String string) {
@@ -617,6 +628,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Proxy password
+	 *
 	 * @ff.default
 	 */
 	public void setProxyPassword(String string) {
@@ -625,6 +637,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Proxy realm
+	 *
 	 * @ff.default
 	 */
 	public void setProxyRealm(String string) {
@@ -640,11 +653,13 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Disables the use of cookies, making the sender completely stateless
+	 *
 	 * @ff.default false
 	 */
 	public void setDisableCookies(boolean disableCookies) {
 		this.disableCookies = disableCookies;
 	}
+
 	public boolean areCookiesDisabled() {
 		return disableCookies;
 	}
@@ -680,10 +695,12 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	public void setKeystoreAlias(String string) {
 		keystoreAlias = string;
 	}
+
 	@Override
 	public void setKeystoreAliasAuthAlias(String string) {
 		keystoreAliasAuthAlias = string;
 	}
+
 	@Override
 	public void setKeystoreAliasPassword(String string) {
 		keystoreAliasPassword = string;
@@ -732,6 +749,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * If <code>true</code>, a redirect request will be honoured, e.g. to switch to HTTPS
+	 *
 	 * @ff.default true
 	 */
 	public void setFollowRedirects(boolean b) {
@@ -740,6 +758,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful
+	 *
 	 * @ff.default false
 	 */
 	public void setIgnoreRedirects(boolean b) {
@@ -749,6 +768,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Controls whether connections checked to be stale, i.e. appear open, but are not.
+	 *
 	 * @ff.default true
 	 */
 	public void setStaleChecking(boolean b) {
@@ -757,6 +777,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Used when StaleChecking=<code>true</code>. Timeout after which an idle connection will be validated before being used.
+	 *
 	 * @ff.default 5000 ms
 	 */
 	public void setStaleTimeout(int timeout) {
@@ -765,6 +786,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value.
+	 *
 	 * @ff.default 900 s
 	 */
 	public void setConnectionTimeToLive(int timeToLive) {
@@ -773,6 +795,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool
+	 *
 	 * @ff.default 10 s
 	 */
 	public void setConnectionIdleTimeout(int idleTimeout) {
@@ -781,8 +804,9 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated.
-	 * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">Supported Protocols</a>.
+	 *
 	 * @ff.default TLSv1.2
+	 * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">Supported Protocols</a>.
 	 */
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;

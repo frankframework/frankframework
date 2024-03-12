@@ -35,6 +35,7 @@ import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
@@ -758,9 +759,9 @@ public class DbmsSupportTest {
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 
 		log.debug("executing translated query [{}]", translatedQuery);
-		if (queryType==QueryType.SELECT) {
-			if(!selectForUpdate) {
-				return  connection.prepareStatement(translatedQuery);
+		if (queryType == QueryType.SELECT) {
+			if (!selectForUpdate) {
+				return connection.prepareStatement(translatedQuery);
 			}
 			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}

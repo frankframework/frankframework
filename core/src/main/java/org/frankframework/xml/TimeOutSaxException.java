@@ -23,12 +23,15 @@ public class TimeOutSaxException extends SaxException {
 	public TimeOutSaxException() {
 		super();
 	}
+
 	public TimeOutSaxException(String message) {
 		super(message);
 	}
+
 	public TimeOutSaxException(String message, Exception e) {
 		super(message, e);
 	}
+
 	public TimeOutSaxException(Exception e) {
 		super(e);
 	}

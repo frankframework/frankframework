@@ -58,28 +58,28 @@ public class SenderThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			if (session==null) {
+			if (session == null) {
 				session = new PipeLineSession();
 			}
 			session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			SenderResult result = sender.sendMessage(new Message(request), session);
 			response = result.getResult().asString();
 			result.getResult().close();
-		} catch(SenderException e) {
+		} catch (SenderException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
 				log.error("SenderException for ISender '" + name + "'", e);
 				senderException = e;
 			}
-		} catch(IOException e) {
+		} catch (IOException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
 				log.error("IOException for ISender '" + name + "'", e);
 				ioException = e;
 			}
-		} catch(TimeoutException e) {
+		} catch (TimeoutException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);
 			} else {
@@ -89,51 +89,53 @@ public class SenderThread extends Thread {
 		}
 	}
 
-    public String getResponse() {
-    	log.debug("Getting response for Sender: " + name);
-        while (this.isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch(InterruptedException e) {
-            }
-        }
-        return response;
-    }
+	public String getResponse() {
+		log.debug("Getting response for Sender: " + name);
+		while (this.isAlive()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
+		return response;
+	}
 
-    public SenderException getSenderException() {
-        while (this.isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch(InterruptedException e) {
-            }
-        }
-        return senderException;
-    }
+	public SenderException getSenderException() {
+		while (this.isAlive()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
+		return senderException;
+	}
 
-    public IOException getIOException() {
-        while (this.isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch(InterruptedException e) {
-            }
-        }
-        return ioException;
-    }
+	public IOException getIOException() {
+		while (this.isAlive()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
+		return ioException;
+	}
 
-    public TimeoutException getTimeoutException() {
-        while (this.isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch(InterruptedException e) {
-            }
-        }
-        return timeoutException;
-    }
+	public TimeoutException getTimeoutException() {
+		while (this.isAlive()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
+		return timeoutException;
+	}
 
 	static String throwableToXml(Throwable throwable) {
 		StringBuilder xml = new StringBuilder("<throwable>");
 		xml.append("<class>").append(throwable.getClass().getName()).append("</class>");
-		xml.append("<message>").append(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(throwable.getMessage()))).append("</message>");
+		xml.append("<message>")
+				.append(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(throwable.getMessage())))
+				.append("</message>");
 		Throwable cause = throwable.getCause();
 		if (cause != null) {
 			xml = new StringBuilder(xml + "<cause>" + throwableToXml(cause) + "</cause>");

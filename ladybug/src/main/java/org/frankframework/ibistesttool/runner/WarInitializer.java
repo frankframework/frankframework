@@ -83,12 +83,12 @@ public class WarInitializer extends SpringBootServletInitializer {
 		String file = AppConstants.getInstance().getProperty("ibistesttool.springConfigFile", "springIbisTestTool.xml");
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		URL fileURL = classLoader.getResource(file);
-		if(fileURL == null) {
+		if (fileURL == null) {
 			APPLICATION_LOG.warn("unable to locate TestTool configuration [{}] using classloader [{}]", file, classLoader);
 			return null;
 		} else {
-			if(file.indexOf(":") == -1) {
-				file = ResourceUtils.CLASSPATH_URL_PREFIX+file;
+			if (file.indexOf(":") == -1) {
+				file = ResourceUtils.CLASSPATH_URL_PREFIX + file;
 			}
 
 			APPLICATION_LOG.info("loading TestTool configuration [{}]", file);

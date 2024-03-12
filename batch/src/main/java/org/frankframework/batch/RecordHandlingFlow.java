@@ -17,10 +17,9 @@ package org.frankframework.batch;
 
 import java.util.Map;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.util.LogUtil;
@@ -29,8 +28,7 @@ import org.frankframework.util.LogUtil;
  * The flow contains the handlers to handle records of a specific type.
  * Each flow is registered to a manager using the recordHandlerManagerRef.
  *
- *
- * @author  John Dekker
+ * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
 @FrankDocGroup(name = "Batch")
@@ -43,25 +41,25 @@ public final class RecordHandlingFlow {
 	private @Getter String nextRecordHandlerManagerRef;
 	private @Getter String resultHandlerRef;
 
-	private @Getter String openBlockBeforeLine=null;
-	private @Getter String closeBlockBeforeLine=null;
-	private @Getter String openBlockAfterLine=null;
-	private @Getter String closeBlockAfterLine=null;
-	private @Getter boolean autoCloseBlock=true;
-	private @Getter int openBlockBeforeLineNumber=0;
+	private @Getter String openBlockBeforeLine = null;
+	private @Getter String closeBlockBeforeLine = null;
+	private @Getter String openBlockAfterLine = null;
+	private @Getter String closeBlockAfterLine = null;
+	private @Getter boolean autoCloseBlock = true;
+	private @Getter int openBlockBeforeLineNumber = 0;
 
 	private @Getter IRecordHandler recordHandler;
 	private @Getter IRecordHandlerManager nextRecordHandlerManager;
 	private @Getter IResultHandler resultHandler;
 
-	public void configure(IRecordHandlerManager manager, Map<String,IRecordHandlerManager> registeredManagers, Map<String,IRecordHandler> registeredRecordHandlers, Map<String,IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
-		if (getOpenBlockBeforeLineNumber()>0 && StringUtils.isEmpty(getOpenBlockBeforeLine())) {
-					throw new ConfigurationException("openBlockBeforeLine must be set when openBlockBeforeLineNumber > 0");
-			}
+	public void configure(IRecordHandlerManager manager, Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
+		if (getOpenBlockBeforeLineNumber() > 0 && StringUtils.isEmpty(getOpenBlockBeforeLine())) {
+			throw new ConfigurationException("openBlockBeforeLine must be set when openBlockBeforeLineNumber > 0");
+		}
 
 		if (StringUtils.isNotEmpty(getRecordHandlerManagerRef()) &&
-			!getRecordHandlerManagerRef().equals(manager.getName())) {
-				throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
+				!getRecordHandlerManagerRef().equals(manager.getName())) {
+			throw new ConfigurationException("recordHandlerManagerRef [" + getRecordHandlerManagerRef() + "] should be either equal to name of manager [" + manager.getName() + "], or left unspecified");
 		}
 		// obtain the named manager that is to be used after a specified record
 		IRecordHandlerManager nextManager = null;
@@ -70,7 +68,7 @@ public final class RecordHandlingFlow {
 		} else {
 			nextManager = registeredManagers.get(getNextRecordHandlerManagerRef());
 			if (nextManager == null) {
-				throw new ConfigurationException("cannot find nextRecordHandlerManager [" + getNextRecordHandlerManagerRef() + "] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
+				throw new ConfigurationException("cannot find nextRecordHandlerManager [" + getNextRecordHandlerManagerRef() + "] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key [" + getRecordKey() + "]");
 			}
 		}
 		setNextRecordHandlerManager(nextManager);
@@ -78,13 +76,13 @@ public final class RecordHandlingFlow {
 		// obtain the recordHandler
 		if (StringUtils.isNotEmpty(getRecordHandlerRef())) {
 			IRecordHandler recordHandler = registeredRecordHandlers.get(getRecordHandlerRef());
-			if (recordHandler!=null) {
+			if (recordHandler != null) {
 				setRecordHandler(recordHandler);
 			} else {
-				throw new ConfigurationException("cannot find recordhandler ["+getRecordHandlerRef()+"] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
+				throw new ConfigurationException("cannot find recordhandler [" + getRecordHandlerRef() + "] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key [" + getRecordKey() + "]");
 			}
 		} else {
-			log.debug("no recordhandler defined for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
+			log.debug("no recordhandler defined for flow of manager [" + getNextRecordHandlerManagerRef() + "], key [" + getRecordKey() + "]");
 		}
 
 		// obtain the named resultHandler
@@ -161,6 +159,7 @@ public final class RecordHandlingFlow {
 
 	/**
 	 * If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)
+	 *
 	 * @ff.default true
 	 */
 	public void setAutoCloseBlock(boolean b) {
@@ -170,6 +169,7 @@ public final class RecordHandlingFlow {
 
 	/**
 	 * If &gt;0 the <code>openBlockBeforeLine</code> instruction is only performed when the current line number is a multiple of this value
+	 *
 	 * @ff.default 0
 	 */
 	public void setOpenBlockBeforeLineNumber(int i) {

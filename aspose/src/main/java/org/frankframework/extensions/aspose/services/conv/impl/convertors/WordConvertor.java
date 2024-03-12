@@ -24,10 +24,6 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.springframework.http.MediaType;
-
 import com.aspose.words.Document;
 import com.aspose.words.HtmlLoadOptions;
 import com.aspose.words.IncorrectPasswordException;
@@ -37,12 +33,14 @@ import com.aspose.words.SaveFormat;
 import com.aspose.words.SaveOptions;
 
 import lombok.extern.log4j.Log4j2;
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
+import org.springframework.http.MediaType;
 
 /**
  * Converts the files which are required and supported by the aspose words
  * library.
- *
  */
 @Log4j2
 class WordConvertor extends AbstractConvertor {
@@ -57,14 +55,14 @@ class WordConvertor extends AbstractConvertor {
 		map.put(new MediaType("application", "vnd.ms-word.document.macroenabled.12"), null);
 
 		// The string value is defined in com.aspose.words.LoadFormat.
-		map.put(new MediaType("text", "plain"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		map.put(new MediaType("text", "x-log"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		map.put(new MediaType("text", "csv"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "plain"), () -> new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "x-log"), () -> new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "csv"), () -> new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
 
 		// The string value is defined in com.aspose.words.LoadFormat.
-		map.put(new MediaType("application", "rtf"), ()->new LoadOptions(LoadFormat.fromName("RTF"), null, null));
+		map.put(new MediaType("application", "rtf"), () -> new LoadOptions(LoadFormat.fromName("RTF"), null, null));
 
-		map.put(new MediaType("application", "xml"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("application", "xml"), () -> new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
 		map.put(new MediaType("text", "html"), HtmlLoadOptions::new);
 		map.put(new MediaType("application", "xhtml+xml"), HtmlLoadOptions::new);
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
@@ -104,7 +102,7 @@ class WordConvertor extends AbstractConvertor {
 			return null;
 		}
 		LoadOptions loadOptions = loadOptionsSupplier.get();
-		if(!configuration.isLoadExternalResources()){
+		if (!configuration.isLoadExternalResources()) {
 			loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 		}
 		return loadOptions;

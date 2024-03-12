@@ -22,12 +22,11 @@ import org.xml.sax.Attributes;
  * AttributesWrapper that removes all attributes that have a namespace, or are of a specific namespace
  *
  * @author Gerrit van Brakel
- *
  */
 public class NamespacedContentsRemovingAttributesWrapper extends AttributesWrapper {
 
 	public NamespacedContentsRemovingAttributesWrapper(Attributes source) {
-		super(source,i->StringUtils.isEmpty(source.getURI(i)),false,null);
+		super(source, i -> StringUtils.isEmpty(source.getURI(i)), false, null);
 	}
 
 }

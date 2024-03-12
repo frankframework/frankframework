@@ -32,6 +32,7 @@ public class JndiContextPrefixFactory implements InitializingBean {
 		DEFAULT(JndiLocatorSupport.CONTAINER_PREFIX);
 
 		private String prefix = "";
+
 		ContextPrefix(String prefix) {
 			this.prefix = prefix;
 		}
@@ -44,7 +45,7 @@ public class JndiContextPrefixFactory implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws IllegalStateException {
 		String applicationServerType = AppConstants.getInstance().getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-		if(applicationServerType == null) {
+		if (applicationServerType == null) {
 			throw new IllegalStateException("Unable to determine application server type");
 		}
 
@@ -52,7 +53,7 @@ public class JndiContextPrefixFactory implements InitializingBean {
 		try {
 			prefix = ContextPrefix.valueOf(applicationServerType);
 		} catch (IllegalArgumentException e) {
-			log.warn("unable to determine JndiContextPrefix, reverting to default ["+ContextPrefix.DEFAULT.name()+"]");
+			log.warn("unable to determine JndiContextPrefix, reverting to default [" + ContextPrefix.DEFAULT.name() + "]");
 		}
 
 		jndiContextPrefix = prefix.getPrefix();

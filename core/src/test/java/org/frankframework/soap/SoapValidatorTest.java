@@ -11,19 +11,20 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.ValidatorTestBase;
+
 import org.junit.jupiter.api.Test;
 
 class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 
-	public String SCHEMALOCATION_SET_GPBDB = ValidatorTestBase.SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
-			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_GPBDB+" "+
-			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_RESPONSE+" "+
+	public String SCHEMALOCATION_SET_GPBDB = ValidatorTestBase.SCHEMA_LOCATION_GPBDB_MESSAGE + " " +
+			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_GPBDB + " " +
+			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_RESPONSE + " " +
 			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_REQUEST;
-	public String INPUT_FILE_GPBDB_VALID_SOAP					=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/valid_soap.xml";
-	public String INPUT_FILE_GPBDB_VALID_SOAP_1_2				=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/valid_soap_1.2.xml";
-	public String INPUT_FILE_GPBDB_INVALID_SOAP					=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap.xml";
-	public String INPUT_FILE_GPBDB_INVALID_SOAP_BODY			=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap_body.xml";
-	public String INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY	=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/unknown_namespace_soap_body.xml";
+	public String INPUT_FILE_GPBDB_VALID_SOAP = ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/valid_soap.xml";
+	public String INPUT_FILE_GPBDB_VALID_SOAP_1_2 = ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/valid_soap_1.2.xml";
+	public String INPUT_FILE_GPBDB_INVALID_SOAP = ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/invalid_soap.xml";
+	public String INPUT_FILE_GPBDB_INVALID_SOAP_BODY = ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/invalid_soap_body.xml";
+	public String INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY = ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/unknown_namespace_soap_body.xml";
 
 	@Override
 	public SoapValidator createPipe() {

@@ -28,22 +28,21 @@ import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
 
 /**
- *<code>Pipe</code> that checks the well-formedness of the input message.
+ * <code>Pipe</code> that checks the well-formedness of the input message.
  *
+ * @author Tom van der Heijden
  * @ff.forward failure if a validation error occurred, probably caused by non-well-formed JSON
- *
- * @author  Tom van der Heijden
  */
 @ElementType(ElementTypes.VALIDATOR)
 public class JsonWellFormedChecker extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if(Message.isEmpty(message)) {
+		if (Message.isEmpty(message)) {
 			return new PipeRunResult(findForward("failure"), message);
 		}
 
-		try(JsonReader jr = Json.createReader(message.asReader())) {
+		try (JsonReader jr = Json.createReader(message.asReader())) {
 			jr.read();
 		} catch (JsonException e) {
 			return new PipeRunResult(findForward("failure"), message);

@@ -14,6 +14,7 @@ import java.util.jar.JarFile;
 import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.testutil.TestScopeProvider;
+
 import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -166,20 +167,20 @@ public class ClassLoaderUtilsTest {
 	}
 
 
-	public void testUri(IScopeProvider cl, String uri, String expected, String allowedProtocol) throws IOException  {
+	public void testUri(IScopeProvider cl, String uri, String expected, String allowedProtocol) throws IOException {
 		URL url = ClassLoaderUtils.getResourceURL(cl, uri, allowedProtocol);
 		verifyUrl(url, uri, expected);
 	}
 
-	public void testUri(IScopeProvider cl, String uri, String expected) throws IOException  {
+	public void testUri(IScopeProvider cl, String uri, String expected) throws IOException {
 		URL url = ClassLoaderUtils.getResourceURL(cl, uri);
 		verifyUrl(url, uri, expected);
 	}
 
-	public void verifyUrl(URL url, String uri, String expected) throws IOException  {
-		assertNotNull(url, "URL for ["+uri+"] should not be null");
+	public void verifyUrl(URL url, String uri, String expected) throws IOException {
+		assertNotNull(url, "URL for [" + uri + "] should not be null");
 
-		if (expected!=null) {
+		if (expected != null) {
 			assertEquals(expected, StreamUtil.streamToString(url.openStream()));
 		}
 	}
@@ -187,44 +188,44 @@ public class ClassLoaderUtilsTest {
 
 	@Test
 	public void localClassLoader1FromRoot() throws IOException {
-		testUri(scopeProvider, "/ClassLoaderTestFile","-- /ClassLoaderTestFile --");
+		testUri(scopeProvider, "/ClassLoaderTestFile", "-- /ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void localClassLoader2FromRootNoSlash() throws IOException {
-		testUri(scopeProvider, "ClassLoaderTestFile","-- /ClassLoaderTestFile --");
+		testUri(scopeProvider, "ClassLoaderTestFile", "-- /ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void localClassLoader3FromFolder() throws IOException {
-		testUri(scopeProvider, "/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(scopeProvider, "/ClassLoader/ClassLoaderTestFile", "-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void localClassLoader4FromFolderNoSlash() throws IOException {
-		testUri(scopeProvider,"ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(scopeProvider, "ClassLoader/ClassLoaderTestFile", "-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void localClassLoader5UrlWithFileScheme() throws Exception {
-		String resource="/ClassLoader/ClassLoaderTestFile";
+		String resource = "/ClassLoader/ClassLoaderTestFile";
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, resource);
-		String resourceAsFileUrl=url.toExternalForm();
+		String resourceAsFileUrl = url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
-		testUri(scopeProvider, resourceAsFileUrl,"-- /ClassLoader/ClassLoaderTestFile --","file");
+		testUri(scopeProvider, resourceAsFileUrl, "-- /ClassLoader/ClassLoaderTestFile --", "file");
 	}
 
 	@Test
 	public void localClassLoader6Overrideable() throws IOException {
-		testUri(scopeProvider, "/ClassLoader/overridablefile","local:/overrideablefile");
+		testUri(scopeProvider, "/ClassLoader/overridablefile", "local:/overrideablefile");
 	}
 
 	@Test
 	public void localClassLoader6UrlWithFileSchemeButNotAllowed() {
-		String resource="/ClassLoader/ClassLoaderTestFile";
+		String resource = "/ClassLoader/ClassLoaderTestFile";
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, resource);
-		String resourceAsFileUrl=url.toExternalForm();
+		String resourceAsFileUrl = url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
 		URL actual = ClassLoaderUtils.getResourceURL(scopeProvider, resourceAsFileUrl);
@@ -233,62 +234,65 @@ public class ClassLoaderUtilsTest {
 
 	@Test
 	public void bytesClassLoader01Root() throws Exception {
-		testUri(getBytesClassLoaderProvider(), "/ClassLoaderTestFile","-- /ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "/ClassLoaderTestFile", "-- /ClassLoaderTestFile --");
 	}
+
 	@Test
 	public void bytesClassLoader02RootNoSlash() throws Exception {
-		testUri(getBytesClassLoaderProvider(), "ClassLoaderTestFile","-- /ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "ClassLoaderTestFile", "-- /ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void bytesClassLoader03Folder() throws Exception {
-		testUri(getBytesClassLoaderProvider(), "/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "/ClassLoader/ClassLoaderTestFile", "-- /ClassLoader/ClassLoaderTestFile --");
 	}
+
 	@Test
 	public void bytesClassLoader04FolderNoSlash() throws Exception {
-		testUri(getBytesClassLoaderProvider(), "ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "ClassLoader/ClassLoaderTestFile", "-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void bytesClassLoader05ResourceFromLocalClasspath() throws Exception {
-		testUri(getBytesClassLoaderProvider(), "/ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
+		testUri(getBytesClassLoaderProvider(), "/ClassLoader/fileOnlyOnLocalClassPath.txt", "-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
 	}
 
 	@Test
 	public void bytesClassLoader06ResourceFromLocalClasspathNoSlash() throws Exception {
-		testUri(getBytesClassLoaderProvider(), "ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
+		testUri(getBytesClassLoaderProvider(), "ClassLoader/fileOnlyOnLocalClassPath.txt", "-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
 	}
 
 	@Test
 	public void bytesClassLoader07Overridable() throws Exception {
-		testUri(getBytesClassLoaderProvider(), "/ClassLoader/overridablefile","zip:/overrideablefile");
+		testUri(getBytesClassLoaderProvider(), "/ClassLoader/overridablefile", "zip:/overrideablefile");
 	}
 
 
 	@Test
 	public void bytesClassLoader07WithScheme() throws Exception {
-		testUri(getBytesClassLoaderProvider(), "classpath:/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "classpath:/ClassLoader/ClassLoaderTestFile", "-- /ClassLoader/ClassLoaderTestFile --");
 	}
+
 	@Test
 	public void bytesClassLoader08WithSchemeNoSlash() throws Exception {
-		testUri(getBytesClassLoaderProvider(), "classpath:ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
+		testUri(getBytesClassLoaderProvider(), "classpath:ClassLoader/ClassLoaderTestFile", "-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
 	public void bytesClassLoader09UrlWithFileScheme() throws Exception {
-		String resource="/ClassLoader/fileOnlyOnLocalClassPath.txt";
+		String resource = "/ClassLoader/fileOnlyOnLocalClassPath.txt";
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, resource);
-		String resourceAsFileUrl=url.toExternalForm();
+		String resourceAsFileUrl = url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
-		testUri(getBytesClassLoaderProvider(), resourceAsFileUrl,"-- /ClassLoader/fileOnlyOnLocalClassPath.txt --","file");
+		testUri(getBytesClassLoaderProvider(), resourceAsFileUrl, "-- /ClassLoader/fileOnlyOnLocalClassPath.txt --", "file");
 	}
 
 	@Test
 	public void bytesClassLoader10UrlWithFileSchemeButNotAllowed() throws Exception {
-		String resource="/ClassLoader/fileOnlyOnLocalClassPath.xml";
+		String resource = "/ClassLoader/fileOnlyOnLocalClassPath.xml";
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, resource);
-		String resourceAsFileUrl=url.toExternalForm();
+		String resourceAsFileUrl = url.toExternalForm();
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
 		URL actual = ClassLoaderUtils.getResourceURL(getBytesClassLoaderProvider(), resourceAsFileUrl);
@@ -298,7 +302,7 @@ public class ClassLoaderUtilsTest {
 	private IScopeProvider getBytesClassLoaderProvider() throws Exception {
 
 		URL file = this.getClass().getResource(JAR_FILE);
-		assertNotNull(file, "jar url ["+JAR_FILE+"] not found");
+		assertNotNull(file, "jar url [" + JAR_FILE + "] not found");
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull(jarFile, "jar file not found");
 

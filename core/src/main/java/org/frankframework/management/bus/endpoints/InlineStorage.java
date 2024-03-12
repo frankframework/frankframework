@@ -49,25 +49,27 @@ public class InlineStorage extends BusEndpointBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getProcessStores(Message<?> message) {
 		Map<String, InlineStoreStateItem> storeItemsGroupedByProcessState = new LinkedHashMap<>();
-		Stream.of(ProcessState.values()).forEach(t -> storeItemsGroupedByProcessState.put(t.getName(), new InlineStoreStateItem())); // init item for each process state
+		Stream.of(ProcessState.values())
+				.forEach(t -> storeItemsGroupedByProcessState.put(t.getName(), new InlineStoreStateItem())); // init item for each process state
 
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			for(Adapter adapter : config.getRegisteredAdapters()) {
+		for (Configuration config : getIbisManager().getConfigurations()) {
+			for (Adapter adapter : config.getRegisteredAdapters()) {
 				for (Receiver<?> receiver : adapter.getReceivers()) {
-					IListener<?> listener=receiver.getListener();
+					IListener<?> listener = receiver.getListener();
 					if (listener instanceof IProvidesMessageBrowsers) {
-						for(ProcessState state : receiver.knownProcessStates()) {
+						for (ProcessState state : receiver.knownProcessStates()) {
 							IMessageBrowser<?> browser = receiver.getMessageBrowser(state);
-							if(browser != null) {
+							if (browser != null) {
 								try {
 									int count = browser.getMessageCount();
-									if(count > 0) {
+									if (count > 0) {
 										InlineStoreItem item = new InlineStoreItem(adapter.getName(), receiver.getName(), count);
 										storeItemsGroupedByProcessState.get(state.getName()).getItems().add(item);
-										storeItemsGroupedByProcessState.get(state.getName()).setTotalMessageCount(storeItemsGroupedByProcessState.get(state.getName()).getTotalMessageCount() + count);
+										storeItemsGroupedByProcessState.get(state.getName())
+												.setTotalMessageCount(storeItemsGroupedByProcessState.get(state.getName()).getTotalMessageCount() + count);
 									}
-								} catch(ListenerException e) {
-									log.warn("Cannot determine number of messages in process state ["+state+"]", e);
+								} catch (ListenerException e) {
+									log.warn("Cannot determine number of messages in process state [" + state + "]", e);
 								}
 							}
 						}

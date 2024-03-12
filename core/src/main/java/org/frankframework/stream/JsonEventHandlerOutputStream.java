@@ -37,15 +37,15 @@ public class JsonEventHandlerOutputStream extends PipedOutputStream implements T
 
 	private final ThreadConnector threadConnector;
 
-	private PipedInputStream pipedInputStream=new PipedInputStream();
-	private final EventConsumer pipeReader=new EventConsumer();
+	private PipedInputStream pipedInputStream = new PipedInputStream();
+	private final EventConsumer pipeReader = new EventConsumer();
 	private Throwable exception;
 
 	public JsonEventHandlerOutputStream(JsonEventHandler handler, ThreadConnector threadConnector) throws StreamingException {
-		this.handler=handler;
-		this.threadConnector=threadConnector;
+		this.handler = handler;
+		this.threadConnector = threadConnector;
 		try {
-			pipedInputStream=new PipedInputStream();
+			pipedInputStream = new PipedInputStream();
 			connect(pipedInputStream);
 			pipeReader.setUncaughtExceptionHandler(this);
 			pipeReader.start();
@@ -77,7 +77,7 @@ public class JsonEventHandlerOutputStream extends PipedOutputStream implements T
 		} finally {
 			try {
 				pipeReader.join();
-				if (getException()!=null) {
+				if (getException() != null) {
 					throw new IOException(getException());
 				}
 			} catch (InterruptedException e) {
@@ -96,6 +96,7 @@ public class JsonEventHandlerOutputStream extends PipedOutputStream implements T
 	public void setException(Throwable exception) {
 		this.exception = exception;
 	}
+
 	public Throwable getException() {
 		return exception;
 	}

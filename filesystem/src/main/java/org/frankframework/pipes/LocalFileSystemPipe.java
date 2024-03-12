@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import org.frankframework.filesystem.FileSystemPipe;
 import org.frankframework.filesystem.LocalFileSystem;
 
-public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
+public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem> {
 
 	public LocalFileSystemPipe() {
 		setFileSystem(new LocalFileSystem());

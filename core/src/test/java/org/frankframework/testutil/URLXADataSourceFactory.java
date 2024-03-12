@@ -14,7 +14,7 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 
 	@Override
 	protected DataSource createDataSource(String product, String url, String userId, String password, boolean testPeek, String implClassname) throws Exception {
-		XADataSource xaDataSource = (XADataSource)Class.forName(implClassname).newInstance();
+		XADataSource xaDataSource = (XADataSource) Class.forName(implClassname).newInstance();
 		if (xaDataSource instanceof DB2XADataSource) {
 			DB2XADataSource db2 = (DB2XADataSource) xaDataSource;
 			db2.setServerName("localhost");
@@ -34,7 +34,7 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 
 	protected abstract DataSource augmentXADataSource(XADataSource xaDataSource, String product);
 
-	@SuppressWarnings({ "unused", "null" }) //only used to verify that all datasources use the same setters
+	@SuppressWarnings({"unused", "null"}) //only used to verify that all datasources use the same setters
 	private void testClassMethods() throws Exception {
 		org.h2.jdbcx.JdbcDataSource h2 = null;
 		DB2XADataSource db2 = null;

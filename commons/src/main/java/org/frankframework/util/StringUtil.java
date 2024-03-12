@@ -35,9 +35,9 @@ public class StringUtil {
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings.
 	 * Does not use any separators if both or one of the strings are empty.
-	 *<p>
-	 *     Example:
-	 *     <pre>
+	 * <p>
+	 * Example:
+	 * <pre>
 	 *         String a = "We";
 	 *         String b = "Frank";
 	 *         String separator = "Are";
@@ -45,9 +45,10 @@ public class StringUtil {
 	 *         System.out.println(res); // prints "WeAreFrank"
 	 *     </pre>
 	 * </p>
-	 * @param part1 First string
+	 *
+	 * @param part1     First string
 	 * @param separator Specified separator
-	 * @param part2 Second string
+	 * @param part2     Second string
 	 * @return the concatenated string
 	 */
 	public static String concatStrings(String part1, String separator, String part2) {
@@ -55,15 +56,15 @@ public class StringUtil {
 	}
 
 	public static String concat(String separator, String... parts) {
-		int i=0;
-		while(i<parts.length && StringUtils.isEmpty(parts[i])) {
+		int i = 0;
+		while (i < parts.length && StringUtils.isEmpty(parts[i])) {
 			i++;
 		}
-		if (i>=parts.length) {
+		if (i >= parts.length) {
 			return null;
 		}
-		StringBuilder result= new StringBuilder(parts[i]);
-		while(++i<parts.length) {
+		StringBuilder result = new StringBuilder(parts[i]);
+		while (++i < parts.length) {
 			if (StringUtils.isNotEmpty(parts[i])) {
 				result.append(separator).append(parts[i]);
 			}
@@ -72,8 +73,8 @@ public class StringUtil {
 	}
 
 	/**
-	 * @see #hide(String)
 	 * @return hidden string with all characters replaced with '*'
+	 * @see #hide(String)
 	 */
 	public static String hide(String string) {
 		return hide(string, 0);
@@ -83,9 +84,9 @@ public class StringUtil {
 	 * Hides the string based on the mode given.
 	 * Mode 1 hides starting from the second character of the string
 	 * until, excluding, the last character.
-	 *<p>
-	 *     Example:
-	 *     <pre>
+	 * <p>
+	 * Example:
+	 * <pre>
 	 *         String a = "test";
 	 *         String res = StringUtil.hide(a, 1);
 	 *         System.out.println(res) // prints "t**t"
@@ -110,6 +111,7 @@ public class StringUtil {
 
 	/**
 	 * Hides the first half of the string.
+	 *
 	 * @see #hideAll(String, String, int)
 	 */
 	public static String hideFirstHalf(String inputString, String regex) {
@@ -119,6 +121,7 @@ public class StringUtil {
 	/**
 	 * Hide all characters matching the given Regular Expression.
 	 * If the set of expressions is null or empty it will return the raw message.
+	 *
 	 * @see #hideAll(String, Collection, int)
 	 */
 	public static String hideAll(String message, Collection<String> collection) {
@@ -128,10 +131,11 @@ public class StringUtil {
 	/**
 	 * Hide all characters matching the given Regular Expression.
 	 * If the set of expressions is null or empty it will return the raw message
+	 *
 	 * @see #hideAll(String, String, int)
 	 */
 	public static String hideAll(String message, Collection<String> collection, int mode) {
-		if(collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
+		if (collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
 			return message; //Nothing to do!
 
 		for (String regex : collection) {
@@ -187,8 +191,7 @@ public class StringUtil {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(string);
 		int count = 0;
-		while (matcher.find())
-			count++;
+		while (matcher.find()) {count++;}
 		return count;
 	}
 
@@ -213,7 +216,7 @@ public class StringUtil {
 	public static String safeCollectionToString(Collection<?> collection) {
 		StringBuilder sb = new StringBuilder();
 		try {
-			for(Object o: collection) {
+			for (Object o : collection) {
 				if (sb.length() > 0) sb.append(", ");
 				sb.append(o);
 			}

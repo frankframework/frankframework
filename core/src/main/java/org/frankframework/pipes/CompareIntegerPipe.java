@@ -33,14 +33,12 @@ import org.frankframework.stream.Message;
  * If one of the parameters is missing then the input message will be used as the missing operand.
  * This pipe can be used in combination with {@link IncreaseIntegerPipe} to construct loops.
  *
+ * @author Richard Punt / Gerrit van Brakel
  * @ff.parameter operand1 The first operand, holds v1.
  * @ff.parameter operand2 The second operand, holds v2.
- *
  * @ff.forward lessthan operand1 &lt; operand2
  * @ff.forward greaterthan operand1 &gt; operand2
  * @ff.forward equals operand1 = operand2
- *
- * @author     Richard Punt / Gerrit van Brakel
  */
 @Category("Basic")
 @ElementType(ElementTypes.ROUTER)

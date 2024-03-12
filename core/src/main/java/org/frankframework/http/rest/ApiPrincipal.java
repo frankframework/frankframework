@@ -35,10 +35,11 @@ public class ApiPrincipal implements Serializable {
 
 	/**
 	 * TimeToLive in seconds
+	 *
 	 * @param ttl
 	 */
 	public ApiPrincipal(int ttl) {
-		this.ttl = ttl*1000L;
+		this.ttl = ttl * 1000L;
 		updateExpiry();
 	}
 

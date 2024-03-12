@@ -33,7 +33,6 @@ import org.springframework.web.context.ServletContextAware;
  * Autowires the CMIS RepositoryConnectorFactory
  *
  * @author Niels Meijer
- *
  */
 @IbisInitializer
 public class CmisLifecycleBean implements ServletContextAware, InitializingBean, DisposableBean {
@@ -62,10 +61,9 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 			String key = CmisRepositoryContextListener.SERVICES_FACTORY;
 			servletContext.setAttribute(key, factory);
 
-			if(log.isDebugEnabled()) log.debug("created and stored CmisServiceFactory in ServletContext under key ["+key+"]");
-		}
-		else {
-			log.error("failed to initialize ["+this.getClass().getSimpleName()+"]");
+			if (log.isDebugEnabled()) log.debug("created and stored CmisServiceFactory in ServletContext under key [" + key + "]");
+		} else {
+			log.error("failed to initialize [" + this.getClass().getSimpleName() + "]");
 		}
 	}
 

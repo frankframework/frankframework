@@ -71,9 +71,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
 
 /**
- *
  * @author Niels Meijer
- *
  */
 @IbisInitializer
 public class ApiListenerServlet extends HttpServletBase {
@@ -106,7 +104,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	@Override
 	public void destroy() {
-		if(dispatcher != null) {
+		if (dispatcher != null) {
 			dispatcher.clear();
 		}
 
@@ -146,22 +144,22 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 
 		String uri = request.getPathInfo();
-		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : ""));
+		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by [" + remoteUser + "]" : ""));
 
 		if (uri == null) {
 			response.setStatus(400);
 			LOG.warn("{} empty uri", () -> createAbortMessage(remoteUser, 400));
 			return;
 		}
-		if(uri.endsWith("/")) {
-			uri = uri.substring(0, uri.length()-1);
+		if (uri.endsWith("/")) {
+			uri = uri.substring(0, uri.length() - 1);
 		}
 
 		try {
 			/*
 			 * Generate OpenApi specification
 			 */
-			if(uri.equalsIgnoreCase("/openapi.json")) {
+			if (uri.equalsIgnoreCase("/openapi.json")) {
 				generateOpenApiSpec(request, response);
 				return;
 			}
@@ -170,7 +168,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			 * Generate an OpenApi json file for a set of ApiDispatchConfigs
 			 * @Deprecated This is here to support old url's
 			 */
-			if(uri.endsWith("openapi.json")) {
+			if (uri.endsWith("openapi.json")) {
 				generatePartialOpenApiSpec(uri, request, response);
 				return;
 			}
@@ -197,9 +195,9 @@ public class ApiListenerServlet extends HttpServletBase {
 		String endpoint = createEndpointUrlFromRequest(request);
 		String specUri = request.getParameter("uri");
 		JsonObject jsonSchema;
-		if(specUri != null) {
+		if (specUri != null) {
 			ApiDispatchConfig apiConfig = dispatcher.findExactMatchingConfigForUri(specUri);
-			if(apiConfig != null) {
+			if (apiConfig != null) {
 				jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
 			} else {
 				jsonSchema = null;
@@ -218,9 +216,9 @@ public class ApiListenerServlet extends HttpServletBase {
 		String remoteUser = request.getRemoteUser();
 
 		ApiDispatchConfig config = dispatcher.findConfigForRequest(method, uri);
-		if(config == null) {
+		if (config == null) {
 			response.setStatus(404);
-			LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
+			LOG.warn("{} no ApiListener configured for [{}]", () -> createAbortMessage(remoteUser, 404), () -> uri);
 			return;
 		}
 
@@ -257,9 +255,9 @@ public class ApiListenerServlet extends HttpServletBase {
 		 * Get serviceClient
 		 */
 		ApiListener listener = config.getApiListener(method);
-		if(listener == null) {
+		if (listener == null) {
 			response.setStatus(405);
-			LOG.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
+			LOG.warn("{} method [{}] not allowed", () -> createAbortMessage(remoteUser, 405), () -> method);
 			return;
 		}
 
@@ -285,89 +283,89 @@ public class ApiListenerServlet extends HttpServletBase {
 					Cookie authorizationCookie = null;
 
 					switch (listener.getAuthenticationMethod()) {
-					case COOKIE:
-						authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
-						if(authorizationCookie != null) {
-							authorizationToken = authorizationCookie.getValue();
-							authorizationCookie.setPath("/");
-						}
-						break;
-					case HEADER:
-						authorizationToken = request.getHeader("Authorization");
-						break;
-					case AUTHROLE:
-						List<String> roles = listener.getAuthenticationRoleList();
-						if(roles != null) {
-							boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
-							if(userIsInRole) {
-								userPrincipal = new ApiPrincipal();
+						case COOKIE:
+							authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
+							if (authorizationCookie != null) {
+								authorizationToken = authorizationCookie.getValue();
+								authorizationCookie.setPath("/");
 							}
-						}
-						break;
-					case JWT:
-						String authorizationHeader = request.getHeader(listener.getJwtHeader());
-						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
-							try {
-								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
-								pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
-								pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
-							} catch(Exception e) {
-								LOG.warn("unable to validate jwt",e);
-								response.sendError(401, e.getMessage());
+							break;
+						case HEADER:
+							authorizationToken = request.getHeader("Authorization");
+							break;
+						case AUTHROLE:
+							List<String> roles = listener.getAuthenticationRoleList();
+							if (roles != null) {
+								boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
+								if (userIsInRole) {
+									userPrincipal = new ApiPrincipal();
+								}
+							}
+							break;
+						case JWT:
+							String authorizationHeader = request.getHeader(listener.getJwtHeader());
+							if (StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
+								try {
+									Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
+									pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
+									pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
+								} catch (Exception e) {
+									LOG.warn("unable to validate jwt", e);
+									response.sendError(401, e.getMessage());
+									return;
+								}
+							} else {
+								response.sendError(401, "JWT is not provided as bearer token");
 								return;
 							}
-						} else {
-							response.sendError(401, "JWT is not provided as bearer token");
-							return;
-						}
-						String requiredClaims = listener.getRequiredClaims();
-						String exactMatchClaims = listener.getExactMatchClaims();
-						String anyMatchClaims = listener.getAnyMatchClaims();
-						JwtSecurityHandler handler = (JwtSecurityHandler)pipelineSession.getSecurityHandler();
-						try {
-							handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
-							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
-								List<String> authRoles = listener.getAuthenticationRoleList();
-								if(authRoles != null) {
-									boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
-									if(userIsInRole) {
+							String requiredClaims = listener.getRequiredClaims();
+							String exactMatchClaims = listener.getExactMatchClaims();
+							String anyMatchClaims = listener.getAnyMatchClaims();
+							JwtSecurityHandler handler = (JwtSecurityHandler) pipelineSession.getSecurityHandler();
+							try {
+								handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
+								if (StringUtils.isNotEmpty(listener.getRoleClaim())) {
+									List<String> authRoles = listener.getAuthenticationRoleList();
+									if (authRoles != null) {
+										boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
+										if (userIsInRole) {
+											userPrincipal = new ApiPrincipal();
+										}
+									} else {
 										userPrincipal = new ApiPrincipal();
 									}
 								} else {
 									userPrincipal = new ApiPrincipal();
 								}
-							} else {
-								userPrincipal = new ApiPrincipal();
+							} catch (AuthorizationException e) {
+								response.sendError(403, e.getMessage());
+								return;
 							}
-						} catch(AuthorizationException e) {
-							response.sendError(403, e.getMessage());
-							return;
-						}
 
-						break;
-					default:
-						break;
+							break;
+						default:
+							break;
 					}
 
-					if(authorizationToken != null && cache.containsKey(authorizationToken))
+					if (authorizationToken != null && cache.containsKey(authorizationToken))
 						userPrincipal = (ApiPrincipal) cache.get(authorizationToken);
 
-					if(userPrincipal == null || !userPrincipal.isLoggedIn()) {
+					if (userPrincipal == null || !userPrincipal.isLoggedIn()) {
 						cache.remove(authorizationToken);
-						if(authorizationCookie != null) {
+						if (authorizationCookie != null) {
 							CookieUtil.addCookie(request, response, authorizationCookie, 0);
 						}
 
 						response.setStatus(401);
-						LOG.warn("{} no (valid) credentials supplied", ()->createAbortMessage(remoteUser, 401));
+						LOG.warn("{} no (valid) credentials supplied", () -> createAbortMessage(remoteUser, 401));
 						return;
 					}
 
-					if(authorizationCookie != null) {
+					if (authorizationCookie != null) {
 						CookieUtil.addCookie(request, response, authorizationCookie, authTTL);
 					}
 
-					if(authorizationToken != null) {
+					if (authorizationToken != null) {
 						userPrincipal.updateExpiry();
 						userPrincipal.setToken(authorizationToken);
 						cache.put(authorizationToken, userPrincipal, authTTL);
@@ -376,7 +374,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 				// Remove this? it's now available as header value
 				pipelineSession.put("remoteAddr", request.getRemoteAddr());
-				if(userPrincipal != null)
+				if (userPrincipal != null)
 					pipelineSession.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
 				pipelineSession.put("uri", uri);
 
@@ -384,37 +382,36 @@ public class ApiListenerServlet extends HttpServletBase {
 				 * Evaluate preconditions
 				 */
 				final String acceptHeader = request.getHeader("Accept");
-				if(!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
-					LOG.warn("{} client expects Accept [{}] but listener can only provide [{}]", ()->createAbortMessage(request.getRemoteUser(), 406), ()-> acceptHeader, listener::getContentType);
+				if (!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
+					LOG.warn("{} client expects Accept [{}] but listener can only provide [{}]", () -> createAbortMessage(request.getRemoteUser(), 406), () -> acceptHeader, listener::getContentType);
 					response.sendError(406, "endpoint cannot provide the supplied MimeType");
 					return;
 				}
 
-				if(!listener.isConsumable(request.getContentType())) {
+				if (!listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
-					LOG.warn("{} did not match consumes [{}] got [{}] instead", ()-> createAbortMessage(remoteUser, 415), listener::getConsumes, request::getContentType);
+					LOG.warn("{} did not match consumes [{}] got [{}] instead", () -> createAbortMessage(remoteUser, 415), listener::getConsumes, request::getContentType);
 					return;
 				}
 
 				String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 				LOG.debug("Evaluating preconditions for listener[{}] etagKey[{}]", listener.getName(), etagCacheKey);
-				if(cache.containsKey(etagCacheKey)) {
+				if (cache.containsKey(etagCacheKey)) {
 					String cachedEtag = (String) cache.get(etagCacheKey);
 					LOG.debug("found etag value[{}] for key[{}]", cachedEtag, etagCacheKey);
 
 					if (method == ApiListener.HttpMethod.GET) {
 						String ifNoneMatch = request.getHeader("If-None-Match");
-						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
+						if (ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
-							if (LOG.isDebugEnabled()) LOG.debug("{} matched if-none-match [{}]", ()->createAbortMessage(remoteUser, 304), ()->ifNoneMatch);
+							if (LOG.isDebugEnabled()) LOG.debug("{} matched if-none-match [{}]", () -> createAbortMessage(remoteUser, 304), () -> ifNoneMatch);
 							return;
 						}
-					}
-					else {
+					} else {
 						String ifMatch = request.getHeader("If-Match");
-						if(ifMatch != null && !ifMatch.equals(cachedEtag)) {
+						if (ifMatch != null && !ifMatch.equals(cachedEtag)) {
 							response.setStatus(412);
-							LOG.warn("{} matched if-match [{}] method [{}]", ()->createAbortMessage(remoteUser, 412), ()->ifMatch, ()->method);
+							LOG.warn("{} matched if-match [{}] method [{}]", () -> createAbortMessage(remoteUser, 412), () -> ifMatch, () -> method);
 							return;
 						}
 					}
@@ -436,19 +433,17 @@ public class ApiListenerServlet extends HttpServletBase {
 					final String segment = patternSegments[i];
 					final String name;
 
-					if("*".equals(segment)) {
-						name = "uriIdentifier_"+uriIdentifier;
-					}
-					else if(segment.startsWith("{") && segment.endsWith("}")) {
-						name = segment.substring(1, segment.length()-1);
-					}
-					else {
+					if ("*".equals(segment)) {
+						name = "uriIdentifier_" + uriIdentifier;
+					} else if (segment.startsWith("{") && segment.endsWith("}")) {
+						name = segment.substring(1, segment.length() - 1);
+					} else {
 						name = null;
 					}
 
-					if(name != null) {
+					if (name != null) {
 						uriIdentifier++;
-						if(LOG.isTraceEnabled()) LOG.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
+						if (LOG.isTraceEnabled()) LOG.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
 						pipelineSession.put(name, uriSegments[i]);
 					}
 				}
@@ -461,7 +456,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Map headers into messageContext
 				 */
-				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
+				if (StringUtils.isNotEmpty(listener.getHeaderParams())) {
 					pipelineSession.put("headers", extractHeaderParamsAsXml(request, listener));
 				}
 
@@ -471,7 +466,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				Message body = null;
 				//TODO fix HttpSender#handleMultipartResponse(..)
-				if(MultipartUtils.isMultipart(request)) {
+				if (MultipartUtils.isMultipart(request)) {
 					final String multipartBodyName = listener.getMultipartBodyName();
 					try {
 						final InputStreamDataSource dataSource = new InputStreamDataSource(request.getContentType(), request.getInputStream()); //the entire InputStream will be read here!
@@ -481,7 +476,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						for (int i = 0; i < mimeMultipart.getCount(); i++) {
 							final BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 							final String fieldName = MultipartUtils.getFieldName(bodyPart);
-							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
+							if ((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
 								body = new PartMessage(bodyPart, MessageUtils.getContext(request));
 							}
 
@@ -512,7 +507,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							attachments.addSubElement(attachment);
 						}
 						pipelineSession.put("multipartAttachments", attachments.toXML());
-					} catch(MessagingException e) {
+					} catch (MessagingException e) {
 						response.sendError(400, "Could not read mime multipart request");
 						LOG.warn("{} Could not read mime multipart request", () -> createAbortMessage(remoteUser, 400));
 						return;
@@ -543,21 +538,20 @@ public class ApiListenerServlet extends HttpServletBase {
 					String cleanPattern = listener.getCleanPattern();
 					if (!Message.isEmpty(result) && method == ApiListener.HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
 						String eTag = MessageUtils.generateMD5Hash(result);
-						if(eTag != null) {
+						if (eTag != null) {
 							LOG.debug("adding/overwriting etag with key[{}] value[{}]", etagCacheKey, eTag);
 							cache.put(etagCacheKey, eTag);
 							response.addHeader("etag", eTag);
 						} else {
 							LOG.debug("skipping etag with key[{}] computed value is null", etagCacheKey);
 						}
-					}
-					else {
+					} else {
 						LOG.debug("removing etag with key[{}]", etagCacheKey);
 						cache.remove(etagCacheKey);
 
 						// Not only remove the eTag for the selected resources but also the collection
 						String key = ApiCacheManager.getParentCacheKey(listener, uri, method);
-						if(key != null) {
+						if (key != null) {
 							LOG.debug("removing parent etag with key[{}]", key);
 							cache.remove(key);
 						}
@@ -568,11 +562,11 @@ public class ApiListenerServlet extends HttpServletBase {
 				 * If a Last Modified value is present, set the 'Last-Modified' header.
 				 */
 				long lastModDate = Instant.now().toEpochMilli();
-				if(!Message.isEmpty(result)) {
+				if (!Message.isEmpty(result)) {
 					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
-					if(StringUtils.isNotEmpty(lastModified)) {
+					if (StringUtils.isNotEmpty(lastModified)) {
 						Instant date = DateFormatUtils.parseToInstant(lastModified, DateFormatUtils.FULL_GENERIC_FORMATTER);
-						if(date != null) {
+						if (date != null) {
 							lastModDate = date.toEpochMilli();
 						}
 					}
@@ -580,7 +574,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				response.setDateHeader("Last-Modified", lastModDate);
 				// If no eTag header is present, disable browser caching. Else force browser to revalidate the request.
 				StringBuilder cacheControl = new StringBuilder();
-				if(!response.containsHeader("etag")) {
+				if (!response.containsHeader("etag")) {
 					cacheControl.append("no-store, no-cache, ");
 					response.setHeader("Pragma", "no-cache");
 					LOG.trace("disabling cache for uri [{}]", request::getRequestURI);
@@ -601,9 +595,9 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
+				if (StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
 					String contentDisposition = pipelineSession.getString(listener.getContentDispositionHeaderSessionKey());
-					if(StringUtils.isNotEmpty(contentDisposition)) {
+					if (StringUtils.isNotEmpty(contentDisposition)) {
 						LOG.debug("Setting Content-Disposition header to [{}]", contentDisposition);
 						response.setHeader("Content-Disposition", contentDisposition);
 					}
@@ -613,7 +607,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
 				 */
 				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
-				if(statusCode > 0) {
+				if (statusCode > 0) {
 					response.setStatus(statusCode);
 				}
 
@@ -629,14 +623,12 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 				LOG.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				LOG.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
 				try {
 					response.reset();
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-				}
-				catch (IOException | IllegalStateException ex) {
+				} catch (IOException | IllegalStateException ex) {
 					LOG.warn("an error occurred while trying to handle exception [{}]", e.getMessage(), ex);
 					//We're only informing the end user(s), no need to catch this error...
 					response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -652,7 +644,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		while (paramNames.hasMoreElements()) {
 			String paramName = paramNames.nextElement();
 			String[] paramList = request.getParameterValues(paramName);
-			if(paramList.length > 1) { // contains multiple items
+			if (paramList.length > 1) { // contains multiple items
 				List<String> valueList = List.of(paramList);
 				if (LOG.isTraceEnabled()) {
 					List<String> logValueList = valueList.stream()
@@ -661,10 +653,9 @@ public class ApiListenerServlet extends HttpServletBase {
 					LOG.trace("setting queryParameter [{}] to {}", paramName, logValueList);
 				}
 				params.put(paramName, valueList);
-			}
-			else {
+			} else {
 				String paramValue = request.getParameter(paramName);
-				LOG.trace("setting queryParameter [{}] to [{}]", ()->paramName, ()->StringEscapeUtils.escapeJava(paramValue));
+				LOG.trace("setting queryParameter [{}] to [{}]", () -> paramName, () -> StringEscapeUtils.escapeJava(paramValue));
 				params.put(paramName, paramValue);
 			}
 		}
@@ -675,7 +666,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		XmlBuilder headersXml = new XmlBuilder("headers");
 		String[] params = listener.getHeaderParams().split(",");
 		for (String headerParam : params) {
-			if(IGNORE_HEADERS.contains(headerParam)) {
+			if (IGNORE_HEADERS.contains(headerParam)) {
 				continue;
 			}
 			String headerValue = request.getHeader(headerParam);
@@ -684,8 +675,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				headerXml.addAttribute("name", headerParam);
 				headerXml.setValue(headerValue);
 				headersXml.addSubElement(headerXml);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				LOG.info("unable to convert header to xml name[{}] value[{}], exception message: {}", headerParam, headerValue, e.getMessage());
 			}
 		}
@@ -693,9 +683,9 @@ public class ApiListenerServlet extends HttpServletBase {
 	}
 
 	private static @Nonnull MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
-		if(listener.getProduces() == MediaTypes.ANY) {
+		if (listener.getProduces() == MediaTypes.ANY) {
 			Message parsedContentType = messageContext.getMessage("contentType");
-			if(!Message.isEmpty(parsedContentType)) {
+			if (!Message.isEmpty(parsedContentType)) {
 				try {
 					return MimeType.valueOf(parsedContentType.asString());
 				} catch (InvalidMimeTypeException imte) {
@@ -703,12 +693,12 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 			}
 			MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
-			if(providedContentType != null) {
+			if (providedContentType != null) {
 				return providedContentType;
 			}
-		} else if(listener.getProduces() == MediaTypes.DETECT) {
+		} else if (listener.getProduces() == MediaTypes.DETECT) {
 			MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
-			if(computedContentType != null) {
+			if (computedContentType != null) {
 				return computedContentType;
 			}
 		}
@@ -724,9 +714,9 @@ public class ApiListenerServlet extends HttpServletBase {
 	 * otherwise.
 	 *
 	 * @param response {@link HttpServletResponse} to which data should be written. If
-	 *                                            no data is available, the output-stream or
-	 *                                            output-writer will not be accessed.
-	 * @param result {@link Message} whose data will be written to the response, if any is available.
+	 *                 no data is available, the output-stream or
+	 *                 output-writer will not be accessed.
+	 * @param result   {@link Message} whose data will be written to the response, if any is available.
 	 * @return {@code true} if data was written, {@code false} if not.
 	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
 	 */
@@ -756,7 +746,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	private String extractMimeType(String contentType) {
 		final int semicolon = contentType.indexOf(";");
-		if(semicolon >= 0) {
+		if (semicolon >= 0) {
 			return contentType.substring(0, semicolon);
 		} else {
 			return contentType;
@@ -769,8 +759,8 @@ public class ApiListenerServlet extends HttpServletBase {
 		for (ApiListener.HttpMethod mtd : methods) {
 			if (mtd != ApiListener.HttpMethod.OPTIONS) {
 				methodsBuilder
-					.append(", ")
-					.append(mtd);
+						.append(", ")
+						.append(mtd);
 			}
 		}
 		return methodsBuilder.toString();
@@ -783,16 +773,16 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	private String createAbortMessage(String remoteUser, int statusCode) {
 		StringBuilder message = new StringBuilder("Aborting request ");
-		if(StringUtils.isNotEmpty(remoteUser)) {
+		if (StringUtils.isNotEmpty(remoteUser)) {
 			message
-				.append("issued by [")
-				.append(remoteUser)
-				.append("] ");
+					.append("issued by [")
+					.append(remoteUser)
+					.append("] ");
 		}
 		message
-			.append("with status code [")
-			.append(statusCode)
-			.append("], ");
+				.append("with status code [")
+				.append(statusCode)
+				.append("], ");
 		return message.toString();
 	}
 }

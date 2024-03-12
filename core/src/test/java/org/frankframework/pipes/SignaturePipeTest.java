@@ -24,6 +24,7 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.SignaturePipe.Action;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -48,18 +49,18 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		assertNotNull(pfxURL, "PFX file not found");
 		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12, "junittest");
 		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, pfxPassword, null);
-		if (keymanagers==null || keymanagers.length==0) {
-			fail("No keymanager found in PFX file ["+pfxCertificate+"]");
+		if (keymanagers == null || keymanagers.length == 0) {
+			fail("No keymanager found in PFX file [" + pfxCertificate + "]");
 		}
-		X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
+		X509KeyManager keyManager = (X509KeyManager) keymanagers[0];
 		PrivateKey privateKey = keyManager.getPrivateKey("1");
 
 		String alias = "1";
 		String[] aliases = null;
-		if(privateKey == null) {
+		if (privateKey == null) {
 			try {
 				aliases = keyManager.getServerAliases("RSA", null);
-				if(aliases != null) { // Try the first alias
+				if (aliases != null) { // Try the first alias
 					privateKey = keyManager.getPrivateKey(aliases[0]);
 					assertNotNull(privateKey);
 					alias = aliases[0];
@@ -68,7 +69,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 				fail("unable to retreive alias from PFX file");
 			}
 		}
-		assertNotNull(privateKey, (aliases != null) ? ("found aliases "+Arrays.asList(aliases)+" in PFX file") : "no aliases found in PFX file");
+		assertNotNull(privateKey, (aliases != null) ? ("found aliases " + Arrays.asList(aliases) + " in PFX file") : "no aliases found in PFX file");
 
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword(pfxPassword);
@@ -77,7 +78,8 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult()
+				.isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(testSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
@@ -93,7 +95,8 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult()
+				.isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(multipasswordKSSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
@@ -120,7 +123,8 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult()
+				.isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(multipasswordKSSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 
@@ -137,7 +141,8 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult()
+				.isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(multipasswordKSSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 
@@ -151,7 +156,8 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult()
+				.isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(testSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}

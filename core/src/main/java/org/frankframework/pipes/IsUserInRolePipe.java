@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.util.List;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISecurityHandler;
@@ -31,28 +32,26 @@ import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
 
-import lombok.Getter;
-
 /**
  * Pipe that checks if the calling user has a specified role.
  * Uses the PipeLineSessions methods.
  * <p>
  * If the role is not specified by the role attribute, the input of
  * the pipe is used as role.
- *
+ * <p>
  * N.B. The role itself must be specified by hand in the deployment descriptors web.xml and application.xml.
  * </p>
- * @ff.forward notInRole user may not assume role
  *
- * @author  Gerrit van Brakel
- * @since   4.4.3
+ * @author Gerrit van Brakel
+ * @ff.forward notInRole user may not assume role
+ * @since 4.4.3
  */
 @Category("Advanced")
 @ElementType(ElementTypes.ROUTER)
 public class IsUserInRolePipe extends FixedForwardPipe {
 
-	private String role=null;
-	private @Getter String notInRoleForwardName="notInRole";
+	private String role = null;
+	private @Getter String notInRoleForwardName = "notInRole";
 	protected PipeForward notInRoleForward;
 
 	@Override
@@ -60,8 +59,8 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		super.configure();
 		if (StringUtils.isNotEmpty(getNotInRoleForwardName())) {
 			notInRoleForward = findForward(getNotInRoleForwardName());
-			if (notInRoleForward==null) {
-				throw new ConfigurationException("could not find forward for notInRoleForwardName ["+ getNotInRoleForwardName()+"]");
+			if (notInRoleForward == null) {
+				throw new ConfigurationException("could not find forward for notInRoleForwardName [" + getNotInRoleForwardName() + "]");
 			}
 		}
 	}
@@ -105,7 +104,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		} catch (SecurityException e) {
 			return new PipeRunResult(notInRoleForward, message);
 		}
-		return new PipeRunResult(getSuccessForward(),message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	public String getRole() {

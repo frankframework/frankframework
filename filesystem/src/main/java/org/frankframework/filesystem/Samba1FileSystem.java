@@ -22,9 +22,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
@@ -32,6 +29,8 @@ import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -61,8 +60,8 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 			throw new ConfigurationException("server share endpoint is required");
 		if (!getShare().startsWith("smb://"))
 			throw new ConfigurationException("attribute share must begin with [smb://]");
-		if(!getShare().endsWith("/"))
-			setShare(getShare()+"/");
+		if (!getShare().endsWith("/"))
+			setShare(getShare() + "/");
 
 		//Setup credentials if applied, may be null.
 		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
@@ -95,7 +94,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public SmbFile toFile(String folder, String filename) throws FileSystemException {
-		return toFile(folder+"/"+filename);
+		return toFile(folder + "/" + filename);
 	}
 
 	@Override
@@ -143,7 +142,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void deleteFile(SmbFile f) throws FileSystemException {
 		try {
 			if (!f.exists()) {
-				throw new FileSystemException("File ["+f.getName()+"] not found");
+				throw new FileSystemException("File [" + f.getName() + "] not found");
 			}
 			if (f.isFile()) {
 				f.delete();
@@ -172,7 +171,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		try {
-			if(folderExists(folder)) {
+			if (folderExists(folder)) {
 				throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 			}
 			if (isForce) {
@@ -190,7 +189,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		String normalized = FilenameUtils.normalizeNoEndSeparator(folder, true) + "/";
 		try {
 			if (folderExists(normalized)) {
-				if(!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
+				if (!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
 					throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
 				}
 
@@ -227,7 +226,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	@Override
 	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		if (!folderExists(destinationFolder)) {
-			if(createFolder) {
+			if (createFolder) {
 				createFolder(destinationFolder);
 			} else {
 				throw new FileSystemException("destination does not exist");
@@ -245,7 +244,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "domain ["+getAuthenticationDomain()+"] share ["+getShare()+"]";
+		return "domain [" + getAuthenticationDomain() + "] share [" + getShare() + "]";
 	}
 
 
@@ -263,8 +262,8 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 				}
 			};
 			SmbFile f = smbContext;
-			if(StringUtils.isNotBlank(folder)) {
-				String normalizedFolder = FilenameUtils.normalizeNoEndSeparator(folder, true)+"/";
+			if (StringUtils.isNotBlank(folder)) {
+				String normalizedFolder = FilenameUtils.normalizeNoEndSeparator(folder, true) + "/";
 				f = new SmbFile(smbContext, normalizedFolder);
 			}
 			this.files = f.listFiles(filter);
@@ -286,7 +285,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to delete file ["+getCanonicalName(file)+"]", e);
+				log.warn("unable to delete file [" + getCanonicalName(file) + "]", e);
 			}
 		}
 	}
@@ -352,6 +351,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	/**
 	 * when <code>true</code>, intermediate directories are created also
+	 *
 	 * @ff.default false
 	 */
 	public void setForce(boolean force) {
@@ -360,6 +360,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	/**
 	 * controls whether hidden files are seen or not
+	 *
 	 * @ff.default false
 	 */
 	public void setListHiddenFiles(boolean listHiddenFiles) {

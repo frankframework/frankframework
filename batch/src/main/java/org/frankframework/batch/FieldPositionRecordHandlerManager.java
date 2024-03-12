@@ -23,7 +23,6 @@ import org.frankframework.core.PipeLineSession;
  * position in a record. The fields in the record are separated by a separator.
  * The value of the specified field is taken as key in the flow-table.
  *
- *
  * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
@@ -48,7 +47,6 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 		}
 		return getRecordHandlerByKey(record.substring(startNdx, endNdx));
 	}
-
 
 
 	/** position of field that identifies the recordtype (position of first field is 1) */

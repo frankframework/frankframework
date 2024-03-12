@@ -26,11 +26,9 @@ import java.io.Reader;
  * ';'.
  *
  * @author leeuwt
- *
- *         Change History Author Date Version Details Tim N. van der Leeuw
- *         30-07-2002 1.0 Initial release
- *
- *
+ * 		<p>
+ * 		Change History Author Date Version Details Tim N. van der Leeuw
+ * 		30-07-2002 1.0 Initial release
  */
 class RekenboxLineReader extends BufferedReader {
 	private int m_pushbackBuffer = -1;
@@ -41,7 +39,6 @@ class RekenboxLineReader extends BufferedReader {
 	 *
 	 * @param in Underlying Reader
 	 * @param sz Size of read-buffer.
-	 *
 	 */
 	public RekenboxLineReader(Reader in, int sz) {
 		super(in, sz);
@@ -51,7 +48,6 @@ class RekenboxLineReader extends BufferedReader {
 	 * Constructor for RekenboxLineReader.
 	 *
 	 * @param in Underlying Reader
-	 *
 	 */
 	public RekenboxLineReader(Reader in) {
 		super(in);
@@ -67,27 +63,27 @@ class RekenboxLineReader extends BufferedReader {
 		str = new StringBuilder(1024);
 		eos = false;
 
-		if(havePushback()) {
+		if (havePushback()) {
 			char c = (char) getPushback();
-			if(c == -1) {
+			if (c == -1) {
 				return null;
 			}
 			str.append(c);
 		}
 
-		while(true) {
+		while (true) {
 			int b = read();
-			if(b == -1) {
+			if (b == -1) {
 				eos = true;
 				break;
-			} else if(b == '\n') {
+			} else if (b == '\n') {
 				break;
 			}
 //          BUGFIX: ACHTER DE if GEZET
 //          str.append((char)b);
-			if(b == ';') {
+			if (b == ';') {
 				int b2 = read();
-				if(b2 != '\n') {
+				if (b2 != '\n') {
 					pushback(b2);
 				}
 				break;
@@ -95,7 +91,7 @@ class RekenboxLineReader extends BufferedReader {
 				str.append((char) b);
 			}
 		}
-		if(eos && str.length() == 0) {
+		if (eos && str.length() == 0) {
 			return null;
 		}
 		return str.toString();
@@ -105,7 +101,7 @@ class RekenboxLineReader extends BufferedReader {
 	 * Method havePushback. Checks if the pushback-buffer is in use.
 	 *
 	 * @return boolean <code>true</code> if there is a character in the
-	 *         pushback-buffer, <code>false</code> if not.
+	 * 		pushback-buffer, <code>false</code> if not.
 	 */
 	protected boolean havePushback() {
 		return m_pushbackValid;
@@ -117,7 +113,7 @@ class RekenboxLineReader extends BufferedReader {
 	 * @return int The character which was in the pushback-buffer.
 	 */
 	protected int getPushback() {
-		if(m_pushbackValid) {
+		if (m_pushbackValid) {
 			m_pushbackValid = false;
 			int result = m_pushbackBuffer;
 			m_pushbackBuffer = -1;
@@ -132,7 +128,7 @@ class RekenboxLineReader extends BufferedReader {
 	 * @param b Integer to push back
 	 */
 	protected void pushback(int b) {
-		if(m_pushbackValid) {
+		if (m_pushbackValid) {
 			throw new IllegalStateException("Attempting to push multiple " + "characters back into stream.");
 		}
 		m_pushbackValid = true;

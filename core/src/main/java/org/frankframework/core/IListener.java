@@ -28,10 +28,10 @@ import org.frankframework.stream.Message;
 
 /**
  * Base-interface for IPullingListener and IPushingListener.
- * @param <M> the raw message type
  *
- * @author  Gerrit van Brakel
- * @since   4.2
+ * @param <M> the raw message type
+ * @author Gerrit van Brakel
+ * @since 4.2
  */
 @FrankDocGroup(order = 30, name = "Listeners")
 @ElementType(ElementTypes.LISTENER)
@@ -65,11 +65,10 @@ public interface IListener<M> extends IConfigurable {
 	 * other parameters from the message and put those into the context.
 	 *
 	 * @param rawMessage The {@link RawMessageWrapper} from which to extract the {@link Message}.
-	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map} threadContext depending on caller.
+	 * @param context    Context to populate. Either a {@link PipeLineSession} or a {@link Map} threadContext depending on caller.
 	 * @return input {@link Message} for adapter.
-	 *
 	 */
-	Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String,Object> context) throws ListenerException;
+	Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException;
 
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the

@@ -16,6 +16,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,10 +54,10 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
 
-		String expected = 	"<results count=\"2\">"+
+		String expected = "<results count=\"2\">" +
 				"<result item=\"1\"><zipEntry>fileaa.txt</zipEntry><fileName>" + folder.toString() + fileSeparator + "fileaa.txt</fileName></result>" +
 				"<result item=\"2\"><zipEntry>filebb.log</zipEntry><fileName>" + folder.toString() + fileSeparator + "filebb.log</fileName></result>" +
-							"</results>";
+				"</results>";
 
 		PipeRunResult prr = doPipe(new UrlMessage(zip));
 
@@ -72,8 +73,8 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
 
-		String expected = 	"<results count=\"2\">"+
-							"</results>";
+		String expected = "<results count=\"2\">" +
+				"</results>";
 
 		PipeRunResult prr = doPipe(new UrlMessage(zip));
 
@@ -88,14 +89,14 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
 
-		String expected = 	"<results count=\"2\">" +
+		String expected = "<results count=\"2\">" +
 				"<result item=\"1\"><zipEntry>fileaa.txt</zipEntry><fileName>" + folder.toString() + fileSeparator + "fileaa.txt</fileName>" +
-					"<fileContent>aaa</fileContent>"+
+				"<fileContent>aaa</fileContent>" +
 				"</result>" +
 				"<result item=\"2\"><zipEntry>filebb.log</zipEntry><fileName>" + folder.toString() + fileSeparator + "filebb.log</fileName>" +
-					"<fileContent>bbb</fileContent>"+
+				"<fileContent>bbb</fileContent>" +
 				"</result>" +
-			"</results>";
+				"</results>";
 
 		PipeRunResult prr = doPipe(new UrlMessage(zip));
 
@@ -111,14 +112,14 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
 
-		String expected = 	"<results count=\"2\">" +
+		String expected = "<results count=\"2\">" +
 				"<result item=\"1\"><zipEntry>fileaa.txt</zipEntry><fileName>" + folder.toString() + fileSeparator + "fileaa.txt</fileName>" +
-					"<fileContent>aaa</fileContent>"+
+				"<fileContent>aaa</fileContent>" +
 				"</result>" +
 				"<result item=\"2\"><zipEntry>filebb.log</zipEntry><fileName>" + folder.toString() + fileSeparator + "filebb.log</fileName>" +
-					"<fileContent>YmJi\n</fileContent>"+
+				"<fileContent>YmJi\n</fileContent>" +
 				"</result>" +
-			"</results>";
+				"</results>";
 
 		PipeRunResult prr = doPipe(new UrlMessage(zip));
 
@@ -217,7 +218,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(new UrlMessage(zip)));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(new UrlMessage(zip)));
 		assertThat(e.getMessage(), Matchers.containsString("directorySessionKey is empty"));
 	}
 }

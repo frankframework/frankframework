@@ -11,6 +11,7 @@ import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeperMessage;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,7 +61,7 @@ public class DatabaseSchedulerTest extends Mockito {
 		MessageKeeper messageKeeper = job.getMessageKeeper();
 		for (int i = 0; i < messageKeeper.size(); i++) {
 			MessageKeeperMessage message = messageKeeper.getMessage(i);
-			if("ERROR".equals(message.getMessageLevel())) {
+			if ("ERROR".equals(message.getMessageLevel())) {
 				assertThat(message.getMessageText(), CoreMatchers.containsString("adapter [testAdapter] receiver [testReceiver] not registered"));
 			}
 		}

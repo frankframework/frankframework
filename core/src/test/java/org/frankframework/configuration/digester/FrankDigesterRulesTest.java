@@ -23,8 +23,10 @@ import java.util.List;
 
 import org.frankframework.core.Resource;
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 import org.xml.sax.SAXException;
 
 public class FrankDigesterRulesTest extends Mockito {

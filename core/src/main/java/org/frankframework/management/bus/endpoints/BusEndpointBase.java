@@ -63,7 +63,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 
 	@Override
 	public final void afterPropertiesSet() {
-		if(applicationContext == null) {
+		if (applicationContext == null) {
 			throw new BusException("ApplicationContext not set");
 		}
 
@@ -76,7 +76,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	}
 
 	protected final void log2SecurityLog(String message, String issuedBy) {
-		String logMessage = (StringUtils.isEmpty(issuedBy)) ? message : message+" issued by "+issuedBy;
+		String logMessage = (StringUtils.isEmpty(issuedBy)) ? message : message + " issued by " + issuedBy;
 		log.info(logMessage);
 		secLog.info(logMessage);
 	}
@@ -85,22 +85,22 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	protected MimeType getMediaTypeFromName(String name) {
 		String ext = FilenameUtils.getExtension(name);
 		switch (ext) {
-		case "xml":
-			return MediaType.APPLICATION_XML;
-		case "json":
-			return MediaType.APPLICATION_JSON;
-		default:
-			return MediaType.TEXT_PLAIN;
+			case "xml":
+				return MediaType.APPLICATION_XML;
+			case "json":
+				return MediaType.APPLICATION_JSON;
+			default:
+				return MediaType.TEXT_PLAIN;
 		}
 	}
 
 	@Nonnull
 	protected Configuration getConfigurationByName(String configurationName) {
-		if(StringUtils.isEmpty(configurationName)) {
+		if (StringUtils.isEmpty(configurationName)) {
 			throw new BusException("no configuration name specified");
 		}
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
+		if (configuration == null) {
 			throw new BusException("configuration [" + configurationName + "] does not exists", 404);
 		}
 		return configuration;
@@ -108,17 +108,17 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 
 	@Nonnull
 	protected Adapter getAdapterByName(String configurationName, String adapterName) {
-		if(StringUtils.isEmpty(adapterName)) {
+		if (StringUtils.isEmpty(adapterName)) {
 			throw new BusException("no adapter name specified");
 		}
-		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
+		if (IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
 			return getIbisManager().getRegisteredAdapter(adapterName);
 		}
 
 		Configuration config = getConfigurationByName(configurationName);
 		Adapter adapter = config.getRegisteredAdapter(adapterName);
 
-		if(adapter == null){
+		if (adapter == null) {
 			throw new BusException("adapter [" + adapterName + "] does not exist", 404);
 		}
 
@@ -128,7 +128,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	@Nonnull
 	protected Receiver<?> getReceiverByName(Adapter adapter, String receiverName) {
 		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
+		if (receiver == null) {
 			throw new BusException("receiver [" + receiverName + "] does not exist", 404);
 		}
 		return receiver;
@@ -137,7 +137,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	@Nonnull
 	protected IPipe getPipeByName(Adapter adapter, String pipeName) {
 		IPipe pipe = adapter.getPipeLine().getPipe(pipeName);
-		if(pipe == null) {
+		if (pipe == null) {
 			throw new BusException("pipe [" + pipeName + "] does not exist", 404);
 		}
 		return pipe;

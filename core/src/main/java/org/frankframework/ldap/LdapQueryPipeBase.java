@@ -55,7 +55,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getLdapProviderURL())) {
-			if (StringUtils.isNotEmpty(getHost()) || getPort()>0) {
+			if (StringUtils.isNotEmpty(getHost()) || getPort() > 0) {
 				throw new ConfigurationException("attributes 'host', 'port' and 'useSsl' cannot be used together with ldapProviderUrl");
 			}
 		} else {
@@ -90,12 +90,12 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	protected String retrieveUrl(String host, int port, String baseDN, boolean useSsl) {
 		String url;
 		if (StringUtils.isNotEmpty(getLdapProviderURL())) {
-			url=getLdapProviderURL();
+			url = getLdapProviderURL();
 		} else {
 			String s = useSsl ? "ldaps://" : "ldap://";
 			String h = (host != null) ? host : "";
 			String p = (port != -1) ? (":" + port) : "";
-			url=s + h + p;
+			url = s + h + p;
 		}
 		String d = (baseDN != null) ? ("/" + baseDN.replaceAll("\\s", "%20")) : "";
 		return url + d;
@@ -118,6 +118,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 
 	/**
 	 * Indication to use ldap or ldaps in ldapProviderUrl. Only used when ldapProviderUrl not specified
+	 *
 	 * @ff.default false
 	 */
 	public void setUseSsl(boolean b) {
@@ -126,6 +127,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 
 	/**
 	 * BaseDN, e.g. CN=USERS,DC=DOMAIN,DC=EXT
+	 *
 	 * @ff.default false
 	 */
 	public void setBaseDN(String baseDN) {

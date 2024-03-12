@@ -24,6 +24,7 @@ package org.frankframework.core;
 public interface IDataIterator<T> extends AutoCloseable {
 
 	boolean hasNext() throws SenderException;
+
 	T next() throws SenderException;
 
 	@Override

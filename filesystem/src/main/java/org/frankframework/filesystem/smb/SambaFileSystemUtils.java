@@ -28,16 +28,15 @@ import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
+import com.hierynomus.smbj.auth.GSSAuthenticationContext;
+
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.util.CredentialFactory;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
-
-import com.hierynomus.smbj.auth.GSSAuthenticationContext;
-
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.util.CredentialFactory;
 
 public class SambaFileSystemUtils {
 
@@ -63,7 +62,7 @@ public class SambaFileSystemUtils {
 
 			return new GSSAuthenticationContext(krbPrincipal.getName(), krbPrincipal.getRealm(), subject, creds);
 		} catch (GSSException e) {
-			throw new FileSystemException("unable to convert kerberos principal to GSS name using oid ["+GSSName.NT_USER_NAME+"]", e);
+			throw new FileSystemException("unable to convert kerberos principal to GSS name using oid [" + GSSName.NT_USER_NAME + "]", e);
 		} catch (PrivilegedActionException e) {
 			throw new FileSystemException("unable to get GSS credentials", e);
 		}
@@ -95,7 +94,8 @@ public class SambaFileSystemUtils {
 		try {
 			LoginContext lc = new LoginContext(credentialFactory.getUsername(), null,
 					new UsernameAndPasswordCallbackHandler(credentialFactory.getUsername(), credentialFactory.getPassword()),
-					new KerberosLoginConfiguration(loginParams));
+					new KerberosLoginConfiguration(loginParams)
+			);
 			lc.login();
 
 			return lc.getSubject();

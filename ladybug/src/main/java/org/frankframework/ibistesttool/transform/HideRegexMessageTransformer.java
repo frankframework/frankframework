@@ -18,8 +18,8 @@ package org.frankframework.ibistesttool.transform;
 import java.util.Set;
 
 import org.frankframework.logging.IbisMaskingLayout;
-
 import org.frankframework.util.StringUtil;
+
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.transform.MessageTransformer;
 

@@ -59,12 +59,12 @@ public class StreamUtilTest {
 
 		int i;
 		InputStream inputStream = input.openStream();
-		while( (i=inputStream.read())>=0) {
-			System.out.print(Integer.toHexString(i)+" ");
+		while ((i = inputStream.read()) >= 0) {
+			System.out.print(Integer.toHexString(i) + " ");
 		}
 
 		Reader reader;
-		if (defaultCharset==null) {
+		if (defaultCharset == null) {
 			reader = StreamUtil.getCharsetDetectingInputStreamReader(input.openStream());
 		} else {
 			reader = StreamUtil.getCharsetDetectingInputStreamReader(input.openStream(), defaultCharset);
@@ -114,10 +114,10 @@ public class StreamUtilTest {
 
 		String actual;
 		if (expectBOM) {
-			assertEquals((byte)0xEF,byteArray[0]);
-			assertEquals((byte)0xBB,byteArray[1]);
-			assertEquals((byte)0xBF,byteArray[2]);
-			actual = new String(byteArray,3, byteArray.length-3, StandardCharsets.UTF_8);
+			assertEquals((byte) 0xEF, byteArray[0]);
+			assertEquals((byte) 0xBB, byteArray[1]);
+			assertEquals((byte) 0xBF, byteArray[2]);
+			actual = new String(byteArray, 3, byteArray.length - 3, StandardCharsets.UTF_8);
 		} else {
 			actual = new String(byteArray, StandardCharsets.UTF_8);
 		}
@@ -224,7 +224,7 @@ public class StreamUtilTest {
 		String line = buf.readLine();
 		StringBuilder sb = new StringBuilder();
 
-		while(line != null) {
+		while (line != null) {
 			sb.append(line).append("\n");
 			line = buf.readLine();
 		}

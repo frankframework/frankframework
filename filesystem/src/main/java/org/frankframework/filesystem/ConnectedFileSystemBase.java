@@ -17,6 +17,8 @@ package org.frankframework.filesystem;
 
 import java.io.InputStream;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.PooledObject;
@@ -25,19 +27,15 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamCaptureUtils;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems} that use a 'Connection' to connect to their storage.
  *
  * @author Gerrit van Brakel
- *
  */
-public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
+public abstract class ConnectedFileSystemBase<F, C> extends FileSystemBase<F> {
 
 	// implementations that have a thread-safe connection can set pooledConnection = false to use a shared connection.
-	private @Setter @Getter boolean pooledConnection=true;
+	private @Setter @Getter boolean pooledConnection = true;
 
 	private C globalConnection;
 	private ObjectPool<C> connectionPool;
@@ -67,7 +65,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 			openPool();
 		} else {
 			globalConnection = createConnection();
-			if (globalConnection==null) {
+			if (globalConnection == null) {
 				throw new FileSystemException("Cannot create connection");
 			}
 		}
@@ -82,7 +80,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 			if (isPooledConnection()) {
 				closePool();
 			} else {
-				if (globalConnection!=null) {
+				if (globalConnection != null) {
 					closeConnection(globalConnection);
 				}
 			}
@@ -97,10 +95,10 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 		log.trace("Get Connection from FS, pooled: {}", this::isPooledConnection);
 		try {
 			return isPooledConnection()
-					? connectionPool!=null ? connectionPool.borrowObject() : null // connectionPool can be null if getConnection() is called before open() or after close() is called. This happens in the adapter status page when the adapter is stopped.
+					? connectionPool != null ? connectionPool.borrowObject() : null // connectionPool can be null if getConnection() is called before open() or after close() is called. This happens in the adapter status page when the adapter is stopped.
 					: globalConnection;
 		} catch (Exception e) {
-			throw new FileSystemException("Cannot get connection from pool of "+ClassUtils.nameOf(this), e);
+			throw new FileSystemException("Cannot get connection from pool of " + ClassUtils.nameOf(this), e);
 		}
 	}
 
@@ -108,7 +106,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * Release the connection, return it to the pool or invalidate it.
 	 */
 	protected void releaseConnection(C connection, boolean invalidateConnection) {
-		if (connection!=null) {
+		if (connection != null) {
 			if (invalidateConnection) {
 				invalidateConnection(connection);
 			} else {
@@ -128,7 +126,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 			try {
 				connectionPool.returnObject(connection);
 			} catch (Exception e) {
-				log.warn("Cannot return connection of "+ClassUtils.nameOf(this), e);
+				log.warn("Cannot return connection of " + ClassUtils.nameOf(this), e);
 			}
 		}
 	}
@@ -150,7 +148,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 				}
 			}
 		} catch (Exception e) {
-			log.warn("Cannot invalidate connection of "+ClassUtils.nameOf(this), e);
+			log.warn("Cannot invalidate connection of " + ClassUtils.nameOf(this), e);
 		}
 	}
 
@@ -159,12 +157,12 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * If any IOExceptions on the stream occur, the connection is invalidated.
 	 */
 	protected InputStream pendingRelease(InputStream stream, C connection) {
-		return StreamCaptureUtils.watch(stream, () -> releaseConnection(connection) , () -> invalidateConnection(connection));
+		return StreamCaptureUtils.watch(stream, () -> releaseConnection(connection), () -> invalidateConnection(connection));
 	}
 
 	private void openPool() {
-		if (connectionPool==null) {
-			connectionPool=new GenericObjectPool<>(new BasePooledObjectFactory<C>() {
+		if (connectionPool == null) {
+			connectionPool = new GenericObjectPool<>(new BasePooledObjectFactory<C>() {
 
 				@Override
 				public C create() throws Exception {
@@ -190,12 +188,12 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 
 	private void closePool() {
 		try {
-			if (connectionPool!=null) {
+			if (connectionPool != null) {
 				connectionPool.close();
-				connectionPool=null;
+				connectionPool = null;
 			}
 		} catch (Exception e) {
-			log.warn("exception clearing Pool of "+ClassUtils.nameOf(this),e);
+			log.warn("exception clearing Pool of " + ClassUtils.nameOf(this), e);
 		}
 	}
 

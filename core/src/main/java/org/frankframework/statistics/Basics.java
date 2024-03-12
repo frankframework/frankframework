@@ -22,33 +22,32 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Container for basic statistical estimators.
  *
- *
- * @author  Gerrit van Brakel
- * @since   4.9.9
+ * @author Gerrit van Brakel
+ * @since 4.9.9
  */
 public class Basics implements IBasics<Basics> {
 
-	public static final int NUM_BASIC_ITEMS=6;
+	public static final int NUM_BASIC_ITEMS = 6;
 
-/*
- * Capacity calculation.
- * c: number of bits in count
- * d: number of databits
- *
- * int:  32 bits
- * long: 64 bits
- *
- * lengths
- * count: c
- * sum: c+d
- * sumOfSquares: c+2d
- */
+	/*
+	 * Capacity calculation.
+	 * c: number of bits in count
+	 * d: number of databits
+	 *
+	 * int:  32 bits
+	 * long: 64 bits
+	 *
+	 * lengths
+	 * count: c
+	 * sum: c+d
+	 * sumOfSquares: c+2d
+	 */
 
 	protected long count = 0;
 	protected long min = Long.MAX_VALUE;
 	protected long max = 0;
 	protected long sum = 0;
-	protected long sumOfSquares=0;
+	protected long sumOfSquares = 0;
 
 	public Basics() {
 		super();
@@ -66,7 +65,7 @@ public class Basics implements IBasics<Basics> {
 		min = Long.MAX_VALUE;
 		max = 0;
 		sum = 0;
-		sumOfSquares=0;
+		sumOfSquares = 0;
 	}
 
 	@Override
@@ -97,7 +96,7 @@ public class Basics implements IBasics<Basics> {
 	}
 
 	public void addRecord(Basics record) {
-		count+=record.getCount();
+		count += record.getCount();
 		if (record.getMin() < min) {
 			min = record.getMin();
 		}
@@ -110,9 +109,9 @@ public class Basics implements IBasics<Basics> {
 
 	private double calculateVariance(long count, long sum, long sumOfSquares) {
 		double result;
-		if (count>1) {
-			result=(sumOfSquares-((sum*sum)/count))/(count-1);
-		} else result=Double.NaN;
+		if (count > 1) {
+			result = (sumOfSquares - ((sum * sum) / count)) / (count - 1);
+		} else result = Double.NaN;
 		return result;
 	}
 
@@ -125,39 +124,65 @@ public class Basics implements IBasics<Basics> {
 	@Override
 	public String getItemName(int index) {
 		switch (index) {
-			case 0: return ITEM_NAME_COUNT;
-			case 1: return ITEM_NAME_MIN;
-			case 2: return ITEM_NAME_MAX;
-			case 3: return ITEM_NAME_AVERAGE;
-			case 4: return ITEM_NAME_STDDEV;
-			case 5: return ITEM_NAME_SUM;
-			default : throw new IllegalArgumentException("item index ["+index+"] outside allowed range [0,"+(NUM_BASIC_ITEMS-1)+"]");
+			case 0:
+				return ITEM_NAME_COUNT;
+			case 1:
+				return ITEM_NAME_MIN;
+			case 2:
+				return ITEM_NAME_MAX;
+			case 3:
+				return ITEM_NAME_AVERAGE;
+			case 4:
+				return ITEM_NAME_STDDEV;
+			case 5:
+				return ITEM_NAME_SUM;
+			default:
+				throw new IllegalArgumentException("item index [" + index + "] outside allowed range [0," + (NUM_BASIC_ITEMS - 1) + "]");
 		}
 	}
 
 	@Override
 	public Type getItemType(int index) {
 		switch (index) {
-			case 0: return Type.INTEGER;
-			case 1: return Type.TIME;
-			case 2: return Type.TIME;
-			case 3: return Type.TIME;
-			case 4: return Type.TIME;
-			case 5: return Type.TIME;
-			default : throw new IllegalArgumentException("item index ["+index+"] outside allowed range [0,"+(NUM_BASIC_ITEMS-1)+"]");
+			case 0:
+				return Type.INTEGER;
+			case 1:
+				return Type.TIME;
+			case 2:
+				return Type.TIME;
+			case 3:
+				return Type.TIME;
+			case 4:
+				return Type.TIME;
+			case 5:
+				return Type.TIME;
+			default:
+				throw new IllegalArgumentException("item index [" + index + "] outside allowed range [0," + (NUM_BASIC_ITEMS - 1) + "]");
 		}
 	}
 
 	@Override
 	public Object getItemValue(int index) {
 		switch (index) {
-			case 0: return new Long(getCount());
-			case 1: if (getCount() == 0) return null; else return new Long(getMin());
-			case 2: if (getCount() == 0) return null; else return new Long(getMax());
-			case 3: if (getCount() == 0) return null; else return new Double(getAverage());
-			case 4: if (getCount() == 0) return null; else return new Double(getStdDev());
-			case 5: if (getCount() == 0) return null; else return new Long(getSum());
-			default : throw new IllegalArgumentException("item index ["+index+"] outside allowed range [0,"+(NUM_BASIC_ITEMS-1)+"]");
+			case 0:
+				return new Long(getCount());
+			case 1:
+				if (getCount() == 0) return null;
+				else return new Long(getMin());
+			case 2:
+				if (getCount() == 0) return null;
+				else return new Long(getMax());
+			case 3:
+				if (getCount() == 0) return null;
+				else return new Double(getAverage());
+			case 4:
+				if (getCount() == 0) return null;
+				else return new Double(getStdDev());
+			case 5:
+				if (getCount() == 0) return null;
+				else return new Long(getSum());
+			default:
+				throw new IllegalArgumentException("item index [" + index + "] outside allowed range [0," + (NUM_BASIC_ITEMS - 1) + "]");
 		}
 	}
 
@@ -170,9 +195,10 @@ public class Basics implements IBasics<Basics> {
 	public long getCount() {
 		return count;
 	}
+
 	@Override
 	public long getIntervalCount(Basics mark) {
-		return count-mark.getCount();
+		return count - mark.getCount();
 	}
 
 	@Override
@@ -189,6 +215,7 @@ public class Basics implements IBasics<Basics> {
 	public long getSum() {
 		return sum;
 	}
+
 	@Override
 	public long getSumOfSquares() {
 		return sumOfSquares;
@@ -196,12 +223,14 @@ public class Basics implements IBasics<Basics> {
 
 	@Override
 	public long getIntervalSum(Basics mark) {
-		return sum-mark.getSum();
+		return sum - mark.getSum();
 	}
+
 	@Override
 	public long getIntervalSumOfSquares(Basics mark) {
-		return sumOfSquares-mark.getSumOfSquares();
+		return sumOfSquares - mark.getSumOfSquares();
 	}
+
 	@Override
 	public long getIntervalMin(Basics mark) {
 		return mark.getMin();
@@ -222,24 +251,26 @@ public class Basics implements IBasics<Basics> {
 		if (count == 0) {
 			return 0;
 		}
-		return (sum / (double)count);
+		return (sum / (double) count);
 	}
+
 	@Override
 	public double getIntervalAverage(Basics mark) {
-		long intervalCount=getIntervalCount(mark);
-		if (intervalCount==0) {
+		long intervalCount = getIntervalCount(mark);
+		if (intervalCount == 0) {
 			return 0;
 		}
-		return getIntervalSum(mark)/(double)(intervalCount);
+		return getIntervalSum(mark) / (double) (intervalCount);
 	}
 
 	@Override
 	public double getVariance() {
 		return calculateVariance(count, sum, sumOfSquares);
 	}
+
 	@Override
 	public double getIntervalVariance(Basics mark) {
-		return calculateVariance(count-mark.getCount(), sum-mark.getSum(), sumOfSquares-mark.getSumOfSquares());
+		return calculateVariance(count - mark.getCount(), sum - mark.getSum(), sumOfSquares - mark.getSumOfSquares());
 	}
 
 	@Override

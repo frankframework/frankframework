@@ -26,7 +26,7 @@ import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.util.LogUtil;
 
-public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
+public class TransactionConnectorCoordinator<T, R> implements AutoCloseable {
 	protected static Logger log = LogUtil.getLogger(TransactionConnectorCoordinator.class);
 
 	private final IThreadConnectableTransactionManager<T, R> txManager;
@@ -37,16 +37,16 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	private T transaction;
 	private R resourceHolder;
 	private boolean suspended;
-	private TransactionConnector<T,R> lastInThread;
-	private int connectorCount=0;
-	private int numBeginChildThreadsCalled=0;
+	private TransactionConnector<T, R> lastInThread;
+	private int connectorCount = 0;
+	private int numBeginChildThreadsCalled = 0;
 	private List<ThrowingRunnable<?>> onEndChildThreadActions;
 
 
-	private TransactionConnectorCoordinator(IThreadConnectableTransactionManager<T,R> txManager) {
+	private TransactionConnectorCoordinator(IThreadConnectableTransactionManager<T, R> txManager) {
 		super();
-		parentThread=Thread.currentThread();
-		if (txManager==null) {
+		parentThread = Thread.currentThread();
+		if (txManager == null) {
 			throw new IllegalStateException("txManager is null");
 		}
 		this.txManager = txManager;
@@ -54,14 +54,14 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 		suspendTransaction();
 	}
 
-	public static <T,R> TransactionConnectorCoordinator<T,R> getInstance(IThreadConnectableTransactionManager<T,R> txManager) {
-		if (txManager==null) {
+	public static <T, R> TransactionConnectorCoordinator<T, R> getInstance(IThreadConnectableTransactionManager<T, R> txManager) {
+		if (txManager == null) {
 			throw new IllegalStateException("txManager is null");
 		}
-		TransactionConnectorCoordinator<T,R> coordinator = (TransactionConnectorCoordinator<T,R>)coordinators.get();
-		if (coordinator==null) {
+		TransactionConnectorCoordinator<T, R> coordinator = (TransactionConnectorCoordinator<T, R>) coordinators.get();
+		if (coordinator == null) {
 			if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-				log.debug("no active transaction in thread [{}]", ()->Thread.currentThread().getName());
+				log.debug("no active transaction in thread [{}]", () -> Thread.currentThread().getName());
 				return null;
 			}
 			coordinator = new TransactionConnectorCoordinator<>(txManager);
@@ -77,11 +77,12 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	/**
 	 * Execute an action with the thread prepared for enlisting transactional resources.
 	 * To be called for obtaining transactional resources (like JDBC connections) if a TransactionConnector might already have been created on the thread.
+	 *
 	 * @see FixedQuerySender#provideOutputStream
 	 */
 	public static <T, R, E extends Exception> T doInUnsuspendedTransationContext(ThrowingSupplier<T, E> action) throws E {
-		TransactionConnectorCoordinator<T,R> coordinator = (TransactionConnectorCoordinator<T,R>)coordinators.get();
-		if (coordinator!=null && coordinator.suspended) {
+		TransactionConnectorCoordinator<T, R> coordinator = (TransactionConnectorCoordinator<T, R>) coordinators.get();
+		if (coordinator != null && coordinator.suspended) {
 			try {
 				coordinator.resumeTransaction();
 				log.debug("executing action in resumed context");
@@ -96,12 +97,13 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 
 	/**
 	 * Execute an action when the thread ends, if it is guarded by a TransactionConnector
+	 *
 	 * @see FixedQuerySender#provideOutputStream
 	 */
 	public static <T, R, E extends Exception> boolean onEndChildThread(ThrowingRunnable<E> action) {
-		TransactionConnectorCoordinator<T,R> coordinator = (TransactionConnectorCoordinator<T,R>)coordinators.get();
-		if (coordinator!=null) {
-			if (coordinator.onEndChildThreadActions==null) {
+		TransactionConnectorCoordinator<T, R> coordinator = (TransactionConnectorCoordinator<T, R>) coordinators.get();
+		if (coordinator != null) {
+			if (coordinator.onEndChildThreadActions == null) {
 				coordinator.onEndChildThreadActions = new LinkedList<>();
 			}
 			coordinator.onEndChildThreadActions.add(action);
@@ -111,13 +113,13 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	}
 
 
-	public void resumeTransactionInChildThread(TransactionConnector<T,R> requester) {
+	public void resumeTransactionInChildThread(TransactionConnector<T, R> requester) {
 		Thread thread = Thread.currentThread();
 		numBeginChildThreadsCalled++;
-		if (numBeginChildThreadsCalled==connectorCount) {
+		if (numBeginChildThreadsCalled == connectorCount) {
 			lastInThread = requester;
 			log.debug("resumeTransactionInChildThread() requester [{}] is last in thread, so resuming transaction", requester);
-			if (onEndChildThreadActions!=null) {
+			if (onEndChildThreadActions != null) {
 				lastInThread.onEndChildThread(onEndChildThreadActions);
 			}
 			resumeTransaction();
@@ -128,23 +130,27 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 
 	public void suspendTransaction() {
 		if (!suspended) {
-			log.debug("suspending transaction of parent thread [{}], current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
+			log.debug("suspending transaction of parent thread [{}], current thread [{}]", () -> parentThread.getName(), () -> Thread.currentThread()
+					.getName());
 			resourceHolder = this.txManager.suspendTransaction(transaction);
 			suspended = true;
 		} else {
-			log.debug("transaction of parent thread [{}] was already suspended, current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
+			log.debug("transaction of parent thread [{}] was already suspended, current thread [{}]", () -> parentThread.getName(), () -> Thread.currentThread()
+					.getName());
 		}
 	}
 
 	public void resumeTransaction() {
 		if (suspended) {
-			log.debug("resumeTransaction() resuming transaction of parent thread [{}], current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
+			log.debug("resumeTransaction() resuming transaction of parent thread [{}], current thread [{}]", () -> parentThread.getName(), () -> Thread.currentThread()
+					.getName());
 			if (!TransactionSynchronizationManager.isSynchronizationActive()) {
 				txManager.resumeTransaction(transaction, resourceHolder);
 			}
 			suspended = false;
 		} else {
-			log.warn("resumeTransaction() transaction of parent thread [{}] was already resumed, current thread [{}]", ()->parentThread.getName(), ()->Thread.currentThread().getName());
+			log.warn("resumeTransaction() transaction of parent thread [{}] was already resumed, current thread [{}]", () -> parentThread.getName(), () -> Thread.currentThread()
+					.getName());
 		}
 	}
 
@@ -155,10 +161,10 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 		if (currentThread != parentThread) {
 			throw new IllegalStateException("close() must be called from parentThread");
 		}
-		if (transaction!=null) {
-			log.debug("close() resuming transaction in thread [{}] after child thread ended", ()->parentThread.getName());
+		if (transaction != null) {
+			log.debug("close() resuming transaction in thread [{}] after child thread ended", () -> parentThread.getName());
 			txManager.resumeTransaction(transaction, resourceHolder);
-			transaction=null;
+			transaction = null;
 			coordinators.remove();
 		} else {
 			log.debug("close() already called");

@@ -18,9 +18,6 @@ package org.frankframework.extensions.sap.jco3;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-
 import com.sap.conn.idoc.IDocRepository;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCo;
@@ -30,6 +27,8 @@ import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoRepository;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.extensions.sap.ISapSystem;
@@ -41,10 +40,10 @@ import org.frankframework.util.GlobalListItem;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
  *
- * @author  Gerrit van Brakel
- * @author  Jaco de Groot
- * @author  Niels Meijer
- * @since   5.0
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
+ * @author Niels Meijer
+ * @since 5.0
  */
 public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem {
 
@@ -58,7 +57,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	private String gwhost;
 	private @Getter int gwservOffset = 3300;
 	private @Getter String mandant = "100";
-	private @Getter String authAlias= null;
+	private @Getter String authAlias = null;
 	private @Getter String userid = null;
 	private @Getter String passwd = null;
 	private @Getter String language = "NL";
@@ -66,7 +65,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	private @Getter int maxConnections = 10;
 	private @Getter int traceLevel = 0;
 
-	private int referenceCount=0;
+	private int referenceCount = 0;
 
 	//SNC Encryption
 	private @Getter boolean sncEnabled = false;
@@ -81,7 +80,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	 * Retrieve a SapSystem from the list of systems.
 	 */
 	public static SapSystemImpl getSystem(String name) {
-		return (SapSystemImpl)getItem(name);
+		return (SapSystemImpl) getItem(name);
 	}
 
 	private void clearSystem() {
@@ -91,17 +90,17 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	private void initSystem() throws SapException {
 		try {
 			SapSystemDataProvider.getInstance().updateSystem(this);
-			if (log.isDebugEnabled() && getTraceLevel()>0) {
-				String logPath=AppConstants.getInstance().getProperty("logging.path");
+			if (log.isDebugEnabled() && getTraceLevel() > 0) {
+				String logPath = AppConstants.getInstance().getProperty("logging.path");
 				JCo.setTrace(getTraceLevel(), logPath);
 			}
 		} catch (Throwable t) {
-			throw new SapException(getLogPrefix()+"exception initializing", t);
+			throw new SapException(getLogPrefix() + "exception initializing", t);
 		}
 	}
 
 	public static void configureAll() {
-		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+		for (Iterator<String> it = getRegisteredNames(); it.hasNext(); ) {
 			String systemName = it.next();
 			SapSystemImpl system = getSystem(systemName);
 			system.configure();
@@ -109,28 +108,28 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	}
 
 	public synchronized void openSystem() throws SapException {
-		if (referenceCount++<=0) {
-			referenceCount=1;
-			log.debug(getLogPrefix()+"opening system");
+		if (referenceCount++ <= 0) {
+			referenceCount = 1;
+			log.debug(getLogPrefix() + "opening system");
 			initSystem();
-			log.debug(getLogPrefix()+"opened system");
+			log.debug(getLogPrefix() + "opened system");
 		}
 	}
 
 	public synchronized void closeSystem() {
 		clearCache();
-		if (--referenceCount<=0) {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
-			referenceCount=0;
+		if (--referenceCount <= 0) {
+			log.debug(getLogPrefix() + "reference count [" + referenceCount + "], closing system");
+			referenceCount = 0;
 			clearSystem();
-			log.debug(getLogPrefix()+"closed system");
+			log.debug(getLogPrefix() + "closed system");
 		} else {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], waiting for other references to close");
+			log.debug(getLogPrefix() + "reference count [" + referenceCount + "], waiting for other references to close");
 		}
 	}
 
 	public static void openSystems() throws SapException {
-		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+		for (Iterator<String> it = getRegisteredNames(); it.hasNext(); ) {
 			String systemName = it.next();
 			SapSystemImpl system = getSystem(systemName);
 			system.openSystem();
@@ -138,7 +137,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	}
 
 	public static void closeSystems() {
-		for(Iterator<String> it = getRegisteredNames(); it.hasNext();) {
+		for (Iterator<String> it = getRegisteredNames(); it.hasNext(); ) {
 			String systemName = it.next();
 			SapSystemImpl system = getSystem(systemName);
 			system.closeSystem();
@@ -152,14 +151,14 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	}
 
 	public void clearCache() {
-		log.debug("start clearing cache of SapSystem ["+getName()+"]");
+		log.debug("start clearing cache of SapSystem [" + getName() + "]");
 		try {
 			JCoRepository jcoRepository = getJcoRepository();
 			jcoRepository.clear();
 		} catch (JCoException e) {
-			log.warn("cannot clear function template cache",e);
+			log.warn("cannot clear function template cache", e);
 		}
-		log.debug("end clearing cache of SapSystem ["+getName()+"]");
+		log.debug("end clearing cache of SapSystem [" + getName() + "]");
 	}
 
 	public JCoDestination getDestination() throws JCoException {
@@ -176,7 +175,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 	}
 
 	public String getLogPrefix() {
-		return "SapSystem ["+getName()+"] ";
+		return "SapSystem [" + getName() + "] ";
 	}
 
 	@Override
@@ -211,6 +210,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * SAP system nr
+	 *
 	 * @ff.default 00
 	 */
 	@Override
@@ -252,6 +252,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * Number added to systemNr to find corresponding message server port
+	 *
 	 * @ff.default 3600
 	 */
 	@Override
@@ -281,6 +282,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * Number added to systemNr to find corresponding gateway port
+	 *
 	 * @ff.default 3300
 	 */
 	@Override
@@ -290,6 +292,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * Mandant i.e. 'destination'
+	 *
 	 * @ff.default 100
 	 */
 	@Override
@@ -317,6 +320,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * Language indicator
+	 *
 	 * @ff.default NL
 	 */
 	@Override
@@ -326,6 +330,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * If set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)
+	 *
 	 * @ff.default false
 	 */
 	@Override
@@ -335,6 +340,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * Maximum number of connections that may connect simultaneously to the SAP system
+	 *
 	 * @ff.default 10
 	 */
 	@Override
@@ -344,6 +350,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * Trace level (effective only when logging level is debug). 0=none, 10= maximum
+	 *
 	 * @ff.default 0
 	 */
 	@Override
@@ -353,6 +360,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * Enable or disable SNC
+	 *
 	 * @ff.default false
 	 */
 	@Override
@@ -368,11 +376,12 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * SNC Quality of Protection. 1: Authentication only, 2: Authentication and integrity protection, 3: Authentication, integrity and privacy protection (encryption), 8: Global default configuration, 9: Maximum protection
+	 *
 	 * @ff.default 8
 	 */
 	@Override
 	public void setSncQop(int qop) throws ConfigurationException {
-		if(qop < 1 || qop > 9) {
+		if (qop < 1 || qop > 9) {
 			throw new ConfigurationException("SNC QOP cannot be smaller then 0 or larger then 9");
 		}
 		this.sncQop = qop;
@@ -392,6 +401,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * When using SNC, this specifies if SNC should authenticate via SSO or a username/password combination. 1=SSO, 0=username/password
+	 *
 	 * @ff.default 0
 	 */
 	@Override
@@ -401,6 +411,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 
 	/**
 	 * Use SAP Cookie Version 2 as logon ticket for SSO based authentication
+	 *
 	 * @ff.default 1
 	 */
 	@Override

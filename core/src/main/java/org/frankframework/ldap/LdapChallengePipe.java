@@ -50,37 +50,38 @@ import org.frankframework.stream.Message;
  * </table>
  * </p>
  *
+ * @author Milan Tomc
  * @deprecated
- * @author  Milan Tomc
  */
 @Deprecated
 @ConfigurationWarning("please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>")
 public class LdapChallengePipe extends FixedForwardPipe {
 
-	private String ldapProviderURL=null;
-	private String initialContextFactoryName=null;
-	private String errorSessionKey=null;
+	private String ldapProviderURL = null;
+	private String initialContextFactoryName = null;
+	private String errorSessionKey = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (StringUtils.isEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL")==null) {
+		if (StringUtils.isEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL") == null) {
 			throw new ConfigurationException("ldapProviderURL must be specified, either as attribute or as parameter");
 		}
-		if (StringUtils.isNotEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL")!=null) {
+		if (StringUtils.isNotEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL") != null) {
 			throw new ConfigurationException("ldapProviderURL can only be specified once, either as attribute or as parameter");
 		}
-		if (getParameterList().findParameter("principal")==null) {
+		if (getParameterList().findParameter("principal") == null) {
 			throw new ConfigurationException("Parameter 'principal' must be specified");
 		}
-		if (getParameterList().findParameter("credentials")==null) {
+		if (getParameterList().findParameter("credentials") == null) {
 			throw new ConfigurationException("Parameter 'credentials' must be specified");
 		}
 	}
 
 	/**
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP
+	 *
 	 * @see IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
@@ -92,16 +93,16 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		String credentials;
 		String principal;
 
-		Map<String,Object> paramMap=null;
+		Map<String, Object> paramMap = null;
 		try {
 			paramMap = getParameterList().getValues(msg, pls).getValueMap();
 			if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 				ldapProviderURL = getLdapProviderURL();
 			} else {
-				ldapProviderURL = (String)paramMap.get("ldapProviderURL");
+				ldapProviderURL = (String) paramMap.get("ldapProviderURL");
 			}
-			credentials = (String)paramMap.get("credentials");
-			principal = (String)paramMap.get("principal");
+			credentials = (String) paramMap.get("credentials");
+			principal = (String) paramMap.get("principal");
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "Invalid parameter", e);
 		}
@@ -112,12 +113,12 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		}
 		if (StringUtils.isEmpty(principal)) {
 //			throw new PipeRunException(this, "principal is empty");
-			handleError(ldapSender,pls,34,"Principal is Empty");
+			handleError(ldapSender, pls, 34, "Principal is Empty");
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 		if (StringUtils.isEmpty(credentials)) {
 //			throw new PipeRunException(this, "credentials are empty");
-			handleError(ldapSender,pls,49,"Credentials are Empty");
+			handleError(ldapSender, pls, 49, "Credentials are Empty");
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 
@@ -132,14 +133,14 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		ldapSender.setCredentials(credentials);
 		ldapSender.setOperation(Operation.READ);
 		try {
-			log.debug("Looking up context for principal ["+principal+"]");
+			log.debug("Looking up context for principal [" + principal + "]");
 			ldapSender.configure();
-			log.debug("Succesfully looked up context for principal ["+principal+"]");
+			log.debug("Succesfully looked up context for principal [" + principal + "]");
 		} catch (Exception e) {
 			if (StringUtils.isNotEmpty(getErrorSessionKey())) {
 				ldapSender.storeLdapException(e, pls);
 			} else {
-				log.warn("LDAP error looking up context for principal ["+principal+"]", e);
+				log.warn("LDAP error looking up context for principal [" + principal + "]", e);
 			}
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
@@ -148,7 +149,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 	}
 
 	protected void handleError(LdapSender ldapSender, PipeLineSession session, int code, String message) {
-		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING+code+"-"+message+"]");
+		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING + code + "-" + message + "]");
 		ldapSender.storeLdapException(t, session);
 	}
 
@@ -156,17 +157,20 @@ public class LdapChallengePipe extends FixedForwardPipe {
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
+
 	public String getLdapProviderURL() {
 		return ldapProviderURL;
 	}
 
 	/**
 	 * class to use as initial context factory
+	 *
 	 * @ff.default com.sun.jndi.ldap.ldapctxfactory
 	 */
 	public void setInitialContextFactoryName(String value) {
 		initialContextFactoryName = value;
 	}
+
 	public String getInitialContextFactoryName() {
 		return initialContextFactoryName;
 	}
@@ -175,6 +179,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;
 	}
+
 	public String getErrorSessionKey() {
 		return errorSessionKey;
 	}

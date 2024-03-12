@@ -20,6 +20,8 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
@@ -27,9 +29,6 @@ import org.frankframework.core.Resource;
 import org.frankframework.util.TransformerPool;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * XSLT provider listener for the Test Tool.
@@ -42,20 +41,20 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable {
 	private @Getter @Setter String name;
 
 	private @Setter String filename;
-	private @Setter int xsltVersion=0; // set to 0 for auto-detect.
+	private @Setter int xsltVersion = 0; // set to 0 for auto-detect.
 	private @Setter boolean namespaceAware = true;
 	private TransformerPool transformerPool = null;
 	private String result;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(filename == null) {
+		if (filename == null) {
 			throw new ConfigurationException("Could not find filename property for " + getName());
 		}
 		try {
 			Resource stylesheet = Resource.getResource(this, filename);
-			if(stylesheet == null) {
-				throw new ConfigurationException("Could not find file ["+filename+"]");
+			if (stylesheet == null) {
+				throw new ConfigurationException("Could not find file [" + filename + "]");
 			}
 			transformerPool = TransformerPool.getInstance(stylesheet, xsltVersion);
 		} catch (Exception e) {
@@ -86,13 +85,13 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable {
 	 */
 	@Deprecated
 	public void setXslt2(boolean b) {
-		xsltVersion=b?2:1;
+		xsltVersion = b ? 2 : 1;
 	}
 
 	@Override
 	public void close() throws Exception {
-		if(getResult() != null) {
-			throw new ConfigurationException("Found remaining message on XsltProviderListener ["+getName()+"]");
+		if (getResult() != null) {
+			throw new ConfigurationException("Found remaining message on XsltProviderListener [" + getName() + "]");
 		}
 	}
 

@@ -25,7 +25,7 @@ public class SoapProviderStub extends SOAPProviderBase {
 	@Override
 	@SneakyThrows
 	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
-		if(session != null) {
+		if (session != null) {
 			pipelineSession.putAll(session);
 			session.getCloseables().clear();
 		}

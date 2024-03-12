@@ -41,14 +41,14 @@ public class HttpResponseHandler {
 
 	public HttpResponseHandler(HttpResponse resp) throws IOException {
 		httpResponse = resp;
-		if(httpResponse.getEntity() != null) {
+		if (httpResponse.getEntity() != null) {
 			httpEntity = httpResponse.getEntity();
 
 			MessageContext context = new MessageContext();
 			Header[] headers = resp.getAllHeaders();
-			if (headers!=null) {
-				for(Header header:headers) {
-					context.put(header.getName(),header.getValue());
+			if (headers != null) {
+				for (Header header : headers) {
+					context.put(header.getName(), header.getValue());
 				}
 			}
 			context.withCharset(getCharset());
@@ -67,10 +67,11 @@ public class HttpResponseHandler {
 
 	/**
 	 * Returns an {@link ReleaseConnectionAfterReadInputStream InputStream} that will automatically close the HttpRequest when fully read
+	 *
 	 * @return an {@link ReleaseConnectionAfterReadInputStream InputStream} retrieved from {@link HttpEntity#getContent()} or NULL when no {@link HttpEntity} is present
 	 */
 	public InputStream getResponse() throws IOException {
-		if(responseMessage == null) {
+		if (responseMessage == null) {
 			return null;
 		}
 
@@ -82,7 +83,7 @@ public class HttpResponseHandler {
 	}
 
 	public String getHeader(String header) {
-		if(httpResponse.getFirstHeader(header) == null)
+		if (httpResponse.getFirstHeader(header) == null)
 			return null;
 
 		return httpResponse.getFirstHeader(header).getValue();
@@ -102,7 +103,7 @@ public class HttpResponseHandler {
 	public String getCharset() {
 		ContentType contentType = getContentType();
 		String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		if(contentType != null && contentType.getCharset() != null)
+		if (contentType != null && contentType.getCharset() != null)
 			charSet = contentType.getCharset().displayName();
 		return charSet;
 	}
@@ -111,7 +112,7 @@ public class HttpResponseHandler {
 	 * Consumes the {@link HttpEntity} and will release the connection.
 	 */
 	public void close() throws IOException {
-		if(httpEntity != null) {
+		if (httpEntity != null) {
 			EntityUtils.consume(httpEntity);
 		}
 	}
@@ -127,10 +128,9 @@ public class HttpResponseHandler {
 			Header header = headers[i];
 			String name = header.getName().toLowerCase();
 			List<String> value;
-			if(headerMap.containsKey(name)) {
+			if (headerMap.containsKey(name)) {
 				value = headerMap.get(name);
-			}
-			else {
+			} else {
 				value = new ArrayList<>();
 			}
 			value.add(header.getValue());

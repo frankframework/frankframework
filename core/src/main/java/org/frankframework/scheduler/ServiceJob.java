@@ -61,8 +61,7 @@ public class ServiceJob extends BaseJob {
 			} finally {
 				localSender.close();
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("JobExecutionException while running {}", getLogPrefix(context), e);
 			throw new JobExecutionException(e, false);
 		}

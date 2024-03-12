@@ -17,21 +17,20 @@ package org.frankframework.extensions.sap.jco3;
 
 import java.util.Properties;
 
-import org.frankframework.extensions.sap.SapException;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import com.sap.conn.jco.ext.DestinationDataEventListener;
 import com.sap.conn.jco.ext.DestinationDataProvider;
 import com.sap.conn.jco.ext.Environment;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.extensions.sap.SapException;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.LogUtil;
+
 /**
- * @author  Jaco de Groot
- * @author  Niels Meijer
- * @since   5.0
+ * @author Jaco de Groot
+ * @author Niels Meijer
+ * @since 5.0
  */
 public class SapSystemDataProvider implements DestinationDataProvider {
 	private static final Logger log = LogUtil.getLogger(SapSystemDataProvider.class);
@@ -73,27 +72,27 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 			destinationProperties.setProperty(DestinationDataProvider.JCO_GROUP, sapSystem.getGroup());
 		}
 		destinationProperties.setProperty(DestinationDataProvider.JCO_CLIENT, sapSystem.getMandant());
-		if(cf.getUsername() != null) {
-			if (cf.getPassword()==null) {
-				throw new IllegalArgumentException("no password specified for sapSystem ["+sapSystem.getName()+"]");
+		if (cf.getUsername() != null) {
+			if (cf.getPassword() == null) {
+				throw new IllegalArgumentException("no password specified for sapSystem [" + sapSystem.getName() + "]");
 			}
 			destinationProperties.setProperty(DestinationDataProvider.JCO_USER, cf.getUsername());
 			destinationProperties.setProperty(DestinationDataProvider.JCO_PASSWD, cf.getPassword());
 		}
 		destinationProperties.setProperty(DestinationDataProvider.JCO_LANG, sapSystem.getLanguage());
-		destinationProperties.setProperty(DestinationDataProvider.JCO_PCS, sapSystem.isUnicode()?"2":"1");
-		destinationProperties.setProperty(DestinationDataProvider.JCO_PEAK_LIMIT, ""+sapSystem.getMaxConnections());
+		destinationProperties.setProperty(DestinationDataProvider.JCO_PCS, sapSystem.isUnicode() ? "2" : "1");
+		destinationProperties.setProperty(DestinationDataProvider.JCO_PEAK_LIMIT, "" + sapSystem.getMaxConnections());
 
-		if(sapSystem.isSncEnabled()) {
+		if (sapSystem.isSncEnabled()) {
 			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MODE, "1");
 			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_QOP, sapSystem.getSncQop()+"");
+			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_QOP, sapSystem.getSncQop() + "");
 			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_SSO, sapSystem.getSncAuthMethod());
 			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_PARTNERNAME, sapSystem.getPartnerName());
 			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
-			if(sapSystem.getSncAuthMethod().equals("1")) {
+			if (sapSystem.getSncAuthMethod().equals("1")) {
 				destinationProperties.setProperty(DestinationDataProvider.JCO_GETSSO2, sapSystem.getSncAuthMethod()); //Automatically order a SSO ticket after logon
-				if(sapSystem.getSncSSO2().equals("1"))
+				if (sapSystem.getSncSSO2().equals("1"))
 					destinationProperties.setProperty(DestinationDataProvider.JCO_MYSAPSSO2, sapSystem.getSncSSO2());
 			}
 		}

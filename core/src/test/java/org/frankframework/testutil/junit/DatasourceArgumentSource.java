@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.frankframework.testutil.TransactionManagerType;
+
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
@@ -19,7 +20,7 @@ public class DatasourceArgumentSource implements ArgumentsProvider {
 
 	@Override
 	public final Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-		if(!context.getTestClass().isPresent()) {
+		if (!context.getTestClass().isPresent()) {
 			throw new IllegalStateException("test class not found");
 		}
 

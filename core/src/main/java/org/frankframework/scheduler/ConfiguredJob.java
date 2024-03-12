@@ -35,15 +35,15 @@ import org.frankframework.configuration.Configuration;
  * <li>adapterName: the name of the adapter<li>
  * <li>receiverName: the name of the receiver<li>
  * </ul>
- *<p><b>Design consideration</b></p>
+ * <p><b>Design consideration</b></p>
  * <p>Currently, the {@link Configuration} is stored in the job data map. As the configuration is not serializable, due to the nature of the
  * adapters, the quartz database support cannot be used.
  * </p>
  *
- * @author  Johan Verrips
+ * @author Johan Verrips
  * @see IAdapter
  * @see Configuration
-  */
+ */
 public class ConfiguredJob extends BaseJob {
 
 	public static final String JOBDEF_KEY = "jobdef";
@@ -53,17 +53,15 @@ public class ConfiguredJob extends BaseJob {
 		String ctName = Thread.currentThread().getName();
 		try {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			IJob jobDef = (IJob)dataMap.get(JOBDEF_KEY);
-			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
+			IJob jobDef = (IJob) dataMap.get(JOBDEF_KEY);
+			Thread.currentThread().setName(jobDef.getName() + "[" + ctName + "]");
 			if (log.isTraceEnabled()) log.trace(getLogPrefix(jobDef) + "executing");
 			jobDef.executeJob();
 			if (log.isTraceEnabled()) log.trace(getLogPrefix(jobDef) + "completed");
-		}
-		catch (Exception e) {
-			log.error("JobExecutionException while running "+getLogPrefix(context), e);
+		} catch (Exception e) {
+			log.error("JobExecutionException while running " + getLogPrefix(context), e);
 			throw new JobExecutionException(e, false);
-		}
-		finally {
+		} finally {
 			Thread.currentThread().setName(ctName);
 		}
 	}

@@ -49,7 +49,6 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 /**
- *
  * @ff.parameter from email address of the sender
  * @ff.parameter subject subject field of the message
  * @ff.parameter threadTopic (optional) conversation field of the message, used to correlate mails in mail viewer (header field "Thread-Topic"). Note: subject must end with value of threadTopic, but cann't be exactly the same
@@ -58,16 +57,15 @@ import org.frankframework.util.StringUtil;
  * @ff.parameter messageBase64 (boolean) indicates whether the message content is base64 encoded (default: <code>false</code>)
  * @ff.parameter charSet the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: UTF-8)
  * @ff.parameter recipients (xml) recipients of the message. Must result in a structure like: <code><pre>
- *       &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
- *       &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
- * </pre></code>
+ * 		      &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
+ * 		      &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
+ * 		</pre></code>
  * @ff.parameter attachments (xml) attachments to the message. Must result in a structure like: <code><pre>
- *       &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
- *       &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
- *       &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
- *       &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
- * </pre></code>
- *
+ * 		      &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
+ * 		      &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
+ * 		      &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
+ * 		      &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
+ * 		</pre></code>
  */
 public abstract class MailSenderBase extends SenderWithParametersBase {
 
@@ -110,7 +108,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 		sendEmail(mailSession);
 
-		String messageID = session==null ? null : session.getMessageId();
+		String messageID = session == null ? null : session.getMessageId();
 		return new SenderResult(messageID);
 	}
 
@@ -244,7 +242,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 					if (StringUtils.isNotEmpty(value)) {
 						String name = recipientElement.getAttribute("name");
 						String type = recipientElement.getAttribute("type");
-						EMail recipient = new EMail(value, name, StringUtils.isNotEmpty(type)?type:"to");
+						EMail recipient = new EMail(value, name, StringUtils.isNotEmpty(type) ? type : "to");
 						recipients.add(recipient);
 					} else {
 						log.debug("empty recipient found, ignoring");
@@ -267,8 +265,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				Element attachmentElement = (Element) iter.next();
 				String name = attachmentElement.getAttribute("name");
 				String mimeType = attachmentElement.getAttribute("type");
-				if (StringUtils.isNotEmpty(mimeType) && mimeType.indexOf("/")<0) {
-					throw new SenderException("mimeType ["+mimeType+"] of attachment ["+name+"] must contain a forward slash ('/')");
+				if (StringUtils.isNotEmpty(mimeType) && mimeType.indexOf("/") < 0) {
+					throw new SenderException("mimeType [" + mimeType + "] of attachment [" + name + "] must contain a forward slash ('/')");
 				}
 				String sessionKey = attachmentElement.getAttribute("sessionKey");
 				boolean base64 = Boolean.parseBoolean(attachmentElement.getAttribute("base64"));
@@ -281,7 +279,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 					} else if (object instanceof String) {
 						attachment = stringToMailAttachment((String) object, base64, mimeType);
 					} else {
-						throw new SenderException("MailSender ["+getName()+"] received unknown attachment type ["+object.getClass().getName()+"] in sessionkey");
+						throw new SenderException("MailSender [" + getName() + "] received unknown attachment type [" + object.getClass()
+								.getName() + "] in sessionkey");
 					}
 				} else {
 					String nodeValue = XmlUtils.getStringValue(attachmentElement);
@@ -305,7 +304,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	private MailAttachmentStream streamToMailAttachment(InputStream stream, boolean isBase64, String mimeType) {
 		MailAttachmentStream attachment = new MailAttachmentStream();
-		if(StringUtils.isEmpty(mimeType)) {
+		if (StringUtils.isEmpty(mimeType)) {
 			mimeType = "application/octet-stream";
 		}
 		if (isBase64) {
@@ -336,22 +335,22 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		from = XmlUtils.getFirstChildTag(emailElement, "from");
 		subject = XmlUtils.getChildTagAsString(emailElement, "subject");
 		if (StringUtils.isEmpty(subject)) {
-			subject=getDefaultSubject();
+			subject = getDefaultSubject();
 		}
 		threadTopic = XmlUtils.getChildTagAsString(emailElement, "threadTopic");
 		message = XmlUtils.getChildTagAsString(emailElement, "message");
 		messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
 		if (StringUtils.isEmpty(messageType)) {
-			messageType=getDefaultMessageType();
+			messageType = getDefaultMessageType();
 		}
-		if (messageType.indexOf("/")<0) {
-			throw new SenderException("messageType ["+messageType+"] must contain a forward slash ('/')");
+		if (messageType.indexOf("/") < 0) {
+			throw new SenderException("messageType [" + messageType + "] must contain a forward slash ('/')");
 		}
 		messageBase64 = XmlUtils.getChildTagAsBoolean(emailElement, "messageBase64");
 		charset = XmlUtils.getChildTagAsString(emailElement, "charset");
 
 		Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
-		if(recipientsElement == null) {
+		if (recipientsElement == null) {
 			throw new SenderException("at least 1 recipient must be specified");
 		}
 		recipientList = XmlUtils.getChildTags(recipientsElement, "recipient");
@@ -375,7 +374,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		mailSession.setMessageBase64(messageBase64);
 		mailSession.setCharSet(charset);
 		mailSession.setHeaders(headers);
-		mailSession.setReplyTo(getEmailAddress(replyTo,"replyTo"));
+		mailSession.setReplyTo(getEmailAddress(replyTo, "replyTo"));
 
 		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
@@ -421,19 +420,22 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	/**
-	 * Set the default value of the subject: header, if not specified in message itself */
+	 * Set the default value of the subject: header, if not specified in message itself
+	 */
 	public void setDefaultSubject(String defaultSubject) {
 		this.defaultSubject = defaultSubject;
 	}
 
 	/**
-	 * Set the default from: header, if not specified in message itself */
+	 * Set the default from: header, if not specified in message itself
+	 */
 	public void setDefaultFrom(String defaultFrom) {
 		this.defaultFrom = defaultFrom;
 	}
 
 	/**
 	 * Timeout <i>in milliseconds</i> for socket connection timeout and socket i/o timeouts
+	 *
 	 * @ff.default 20000
 	 */
 	public void setTimeout(int timeout) {
@@ -442,6 +444,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	/**
 	 * When this name is used, it will be followed by a number which is equal to the node's position
+	 *
 	 * @ff.default attachment
 	 */
 	public void setDefaultAttachmentName(String defaultAttachmentName) {
@@ -450,6 +453,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	/**
 	 * when messageType is not specified defaultMessageType will be used
+	 *
 	 * @ff.default text/plain
 	 */
 	public void setDefaultMessageType(String defaultMessageType) {
@@ -458,6 +462,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	/**
 	 * when messageBase64 is not specified defaultMessageBase64 will be used
+	 *
 	 * @ff.default false
 	 */
 	public void setDefaultMessageBase64(boolean defaultMessageBase64) {
@@ -466,6 +471,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	/**
 	 * NDR return address when mail cannot be delivered. This adds a Return-Path header
+	 *
 	 * @ff.default MAIL FROM attribute
 	 */
 	public void setBounceAddress(String string) {
@@ -495,7 +501,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String bounceAddress = MailSenderBase.this.getBounceAddress();
 
 		public MailSessionBase() throws SenderException {
-			from = new EMail(getDefaultFrom(),"from");
+			from = new EMail(getDefaultFrom(), "from");
 		}
 
 		public void setRecipientsOnMessage(StringBuilder logBuffer) throws SenderException {
@@ -504,7 +510,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			for (EMail recipient : emailList) {
 				recipientsFound = true;
 
-				if(isRecipientWhitelisted(recipient)) {
+				if (isRecipientWhitelisted(recipient)) {
 					addRecipientToMessage(recipient);
 					if (log.isDebugEnabled()) {
 						logBuffer.append("[recipient [" + recipient + "]]");
@@ -519,7 +525,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 
 		private boolean isRecipientWhitelisted(EMail recipient) {
-			return allowedDomains.isEmpty() || allowedDomains.contains(StringUtils.substringAfter(recipient.getAddress(),'@').toLowerCase());
+			return allowedDomains.isEmpty() || allowedDomains.contains(StringUtils.substringAfter(recipient.getAddress(), '@').toLowerCase());
 		}
 
 		protected abstract void addRecipientToMessage(EMail recipient) throws SenderException;
@@ -598,7 +604,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		}
 
 		public void setCharSet(String charSet) {
-			if(StringUtils.isNotEmpty(charSet)) {
+			if (StringUtils.isNotEmpty(charSet)) {
 				this.charSet = charSet;
 			}
 		}
@@ -630,8 +636,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	/**
 	 * Generic mail attachment class
-	 * @author Niels Meijer
 	 *
+	 * @author Niels Meijer
 	 */
 	protected abstract class MailAttachmentBase<T> {
 		private String name;
@@ -664,16 +670,19 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		@Override
 		public String toString() {
-			return "Attachment name ["+name+"] type ["+value.getClass().getSimpleName()+"]";
+			return "Attachment name [" + name + "] type [" + value.getClass().getSimpleName() + "]";
 		}
 	}
 
-	protected class MailAttachmentStream extends MailAttachmentBase<InputStream>{};
+	protected class MailAttachmentStream extends MailAttachmentBase<InputStream> {
+	}
+
+	;
 
 	/**
 	 * Generic mail class
-	 * @author alisihab
 	 *
+	 * @author alisihab
 	 */
 	public class EMail {
 		private InternetAddress emailAddress;
@@ -683,8 +692,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			try {
 				if (StringUtils.isNotEmpty(address)) {
 					InternetAddress[] ia = InternetAddress.parseHeader(address, true);
-					if (ia.length==0) {
-						throw new AddressException("No address found in ["+address+"]");
+					if (ia.length == 0) {
+						throw new AddressException("No address found in [" + address + "]");
 					}
 					emailAddress = ia[0];
 				} else {
@@ -695,7 +704,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				}
 				this.type = type;
 			} catch (AddressException | UnsupportedEncodingException e) {
-				throw new SenderException("cannot parse email address from ["+address+"] ["+name+"]", e);
+				throw new SenderException("cannot parse email address from [" + address + "] [" + name + "]", e);
 			}
 		}
 
@@ -725,7 +734,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 
 		@Override
 		public String toString() {
-			return "address ["+emailAddress.toUnicodeString()+"] type ["+type+"]";
+			return "address [" + emailAddress.toUnicodeString() + "] type [" + type + "]";
 		}
 	}
 

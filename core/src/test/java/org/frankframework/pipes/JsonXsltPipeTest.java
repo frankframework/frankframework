@@ -13,6 +13,7 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+
 import org.junit.jupiter.api.Test;
 
 import jakarta.json.Json;
@@ -30,12 +31,12 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		pipe.setStyleSheetName("/Xslt3/orgchart.xslt");
 		pipe.configure();
 		pipe.start();
-		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
-		log.debug("inputfile ["+input+"]");
-		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
-		PipeRunResult prr = doPipe(pipe, input,session);
-		String jsonOut=prr.getResult().asString();
-		assertJsonEqual(null,expectedJson,jsonOut);
+		String input = TestFileUtils.getTestFile("/Xslt3/employees.json");
+		log.debug("inputfile [" + input + "]");
+		String expectedJson = TestFileUtils.getTestFile("/Xslt3/orgchart.json");
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String jsonOut = prr.getResult().asString();
+		assertJsonEqual(null, expectedJson, jsonOut);
 	}
 
 	@Test
@@ -44,11 +45,11 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		pipe.setJsonResult(false);
 		pipe.configure();
 		pipe.start();
-		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
-		log.debug("inputfile ["+input+"]");
-		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
-		PipeRunResult prr = doPipe(pipe, input,session);
-		String xmlOut=prr.getResult().asString();
+		String input = TestFileUtils.getTestFile("/Xslt3/employees.json");
+		log.debug("inputfile [" + input + "]");
+		String expectedXml = TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String xmlOut = prr.getResult().asString();
 		assertEquals(expectedXml, xmlOut);
 	}
 
@@ -59,11 +60,11 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		pipe.setJsonResult(false);
 		pipe.configure();
 		pipe.start();
-		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
-		log.debug("inputfile ["+input+"]");
-		String expectedText="James";
-		PipeRunResult prr = doPipe(pipe, input,session);
-		String textOut=prr.getResult().asString();
+		String input = TestFileUtils.getTestFile("/Xslt3/employees.json");
+		log.debug("inputfile [" + input + "]");
+		String expectedText = "James";
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String textOut = prr.getResult().asString();
 		assertEquals(expectedText, textOut);
 	}
 
@@ -73,9 +74,9 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 	}
 
 	public void assertJsonEqual(String description, String jsonExp, String jsonAct) {
-		JsonStructure jExp=string2Json(jsonExp);
-		log.debug("jsonAct: ["+jsonAct+"]");
-		JsonStructure jAct=string2Json(jsonAct);
+		JsonStructure jExp = string2Json(jsonExp);
+		log.debug("jsonAct: [" + jsonAct + "]");
+		JsonStructure jAct = string2Json(jsonAct);
 		assertEquals(jExp.toString(), jAct.toString(), description);
 	}
 

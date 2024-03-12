@@ -30,11 +30,9 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -65,7 +63,7 @@ import org.frankframework.util.XmlEncodingUtils;
  *       ...
  *  &lt;/results&gt;
  * </pre>
- *
+ * <p>
  * <br/>
  * The output of each unzipped item is returned in XML as follows when
  * collectFileContents is true:
@@ -91,26 +89,25 @@ import org.frankframework.util.XmlEncodingUtils;
  * <pre>&lt;basename&gt; + &lt;unique number&gt; + "." + &lt;extension&gt;</pre>
  * <br/>
  *
- * @since   4.9
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class UnzipPipe extends FixedForwardPipe {
 
 	private @Getter String directory;
 	private @Getter String directorySessionKey;
-	private @Getter @Deprecated boolean deleteOnExit=true;
-	private @Getter boolean collectResults=true;
-	private @Getter boolean collectFileContents=false;
+	private @Getter @Deprecated boolean deleteOnExit = true;
+	private @Getter boolean collectResults = true;
+	private @Getter boolean collectFileContents = false;
 	private @Getter String collectFileContentsBase64Encoded;
-	private @Getter boolean keepOriginalFileName=false;
-	private @Getter boolean keepOriginalFilePath=false;
-	private @Getter boolean assumeDirectoryExists=false;
-	private @Getter boolean processFile=false;
+	private @Getter boolean keepOriginalFileName = false;
+	private @Getter boolean keepOriginalFilePath = false;
+	private @Getter boolean assumeDirectoryExists = false;
+	private @Getter boolean processFile = false;
 
 	private File dir; // File representation of directory
 	private List<String> base64Extensions;
-
 
 
 	@Override
@@ -122,12 +119,12 @@ public class UnzipPipe extends FixedForwardPipe {
 			}
 		} else {
 			dir = new File(getDirectory());
-			if(!isAssumeDirectoryExists()) {
+			if (!isAssumeDirectoryExists()) {
 				if (!dir.exists()) {
-					throw new ConfigurationException("directory ["+getDirectory()+"] does not exist");
+					throw new ConfigurationException("directory [" + getDirectory() + "] does not exist");
 				}
 				if (!dir.isDirectory()) {
-					throw new ConfigurationException("directory ["+getDirectory()+"] is not a directory");
+					throw new ConfigurationException("directory [" + getDirectory() + "] is not a directory");
 				}
 			}
 		}
@@ -141,11 +138,11 @@ public class UnzipPipe extends FixedForwardPipe {
 	protected InputStream getInputStream(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			if (isProcessFile()) {
-				String filename= message.asString();
+				String filename = message.asString();
 				try {
 					return new FileInputStream(filename);
 				} catch (FileNotFoundException e) {
-					throw new PipeRunException(this, "could not find file ["+filename+"]",e);
+					throw new PipeRunException(this, "could not find file [" + filename + "]", e);
 				}
 			} else if (!message.isBinary()) {
 				log.warn("expected binary message, encountered character data. Do you need to set processFile=\"true\"?");
@@ -156,6 +153,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		}
 
 	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try (InputStream in = getInputStream(message, session)) {
@@ -170,10 +168,10 @@ public class UnzipPipe extends FixedForwardPipe {
 					targetDirectory = new File(directory);
 					if (!targetDirectory.exists()) {
 						if (!isCollectFileContents()) {
-							throw new PipeRunException(this, "Directory ["+directory+"] does not exist");
+							throw new PipeRunException(this, "Directory [" + directory + "] does not exist");
 						}
 					} else if (!targetDirectory.isDirectory()) {
-						throw new PipeRunException(this, "Directory ["+directory+"] is not a directory");
+						throw new PipeRunException(this, "Directory [" + directory + "] is not a directory");
 					}
 				}
 			}
@@ -182,13 +180,13 @@ public class UnzipPipe extends FixedForwardPipe {
 			int count = 0;
 			try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(in))) {
 				ZipEntry ze;
-				while ((ze=zis.getNextEntry())!=null) {
+				while ((ze = zis.getNextEntry()) != null) {
 					String entryname = ze.getName();
-					if(isKeepOriginalFilePath() && targetDirectory != null) {
+					if (isKeepOriginalFilePath() && targetDirectory != null) {
 						File tmpFile = new File(targetDirectory, entryname);
 						tmpFile = tmpFile.isDirectory() ? tmpFile : tmpFile.getParentFile();
 						if (!tmpFile.exists()) {
-							if (tmpFile.mkdirs()) {	// Create directories included in the path
+							if (tmpFile.mkdirs()) {    // Create directories included in the path
 								log.debug("created directory [{}]", tmpFile.getPath());
 							} else {
 								log.warn("directory [{}] could not be created", tmpFile.getPath());
@@ -198,17 +196,17 @@ public class UnzipPipe extends FixedForwardPipe {
 						}
 					}
 
-					if(!ze.isDirectory()) {
+					if (!ze.isDirectory()) {
 						// split the entry name and the extension
-						String entryNameWithoutExtension=null;
-						String extension=null;
-						int dotPos=entryname.lastIndexOf('.');
-						if (dotPos>=0) {
-							extension=entryname.substring(dotPos);
-							entryNameWithoutExtension=entryname.substring(0,dotPos);
+						String entryNameWithoutExtension = null;
+						String extension = null;
+						int dotPos = entryname.lastIndexOf('.');
+						if (dotPos >= 0) {
+							extension = entryname.substring(dotPos);
+							entryNameWithoutExtension = entryname.substring(0, dotPos);
 							log.debug("parsed filename [{}] extension [{}]", entryNameWithoutExtension, extension);
 						} else {
-							entryNameWithoutExtension=entryname;
+							entryNameWithoutExtension = entryname;
 						}
 						InputStream inputStream = StreamUtil.dontClose(zis);
 						byte[] fileContentBytes = null;
@@ -229,10 +227,11 @@ public class UnzipPipe extends FixedForwardPipe {
 								if (isKeepOriginalFilePath()) {
 									String filename = new File(entryNameWithoutExtension).getName();
 									String zipEntryPath = entryname.substring(0, ze.getName().indexOf(filename));
-									if(filename.length() < 3) filename += ".tmp.";	//filename here is a prefix to create a unique filename and that prefix must be at least 3 chars long
+									if (filename.length() < 3)
+										filename += ".tmp.";    //filename here is a prefix to create a unique filename and that prefix must be at least 3 chars long
 									tmpFile = File.createTempFile(filename, extension, new File(targetDirectory, zipEntryPath));
 								} else {
-									if(entryNameWithoutExtension.length() < 3) entryNameWithoutExtension += ".tmp.";
+									if (entryNameWithoutExtension.length() < 3) entryNameWithoutExtension += ".tmp.";
 									tmpFile = File.createTempFile(entryNameWithoutExtension, extension, targetDirectory);
 								}
 							}
@@ -243,9 +242,15 @@ public class UnzipPipe extends FixedForwardPipe {
 							}
 						}
 						if (isCollectResults()) {
-							entryResults.append("<result item=\"").append(count).append("\"><zipEntry>").append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname)).append("</zipEntry>");
+							entryResults.append("<result item=\"")
+									.append(count)
+									.append("\"><zipEntry>")
+									.append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname))
+									.append("</zipEntry>");
 							if (targetDirectory != null) {
-								entryResults.append("<fileName>").append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath())).append("</fileName>");
+								entryResults.append("<fileName>")
+										.append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath()))
+										.append("</fileName>");
 							}
 							if (isCollectFileContents()) {
 								Objects.requireNonNull(fileContentBytes);
@@ -265,9 +270,9 @@ public class UnzipPipe extends FixedForwardPipe {
 				}
 			}
 			String result = "<results count=\"" + count + "\">" + entryResults + "</results>";
-			return new PipeRunResult(getSuccessForward(),result);
+			return new PipeRunResult(getSuccessForward(), result);
 		} catch (IOException e) {
-			throw new PipeRunException(this,"cannot unzip",e);
+			throw new PipeRunException(this, "cannot unzip", e);
 		}
 	}
 
@@ -283,6 +288,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	/**
 	 * If true, file is automatically deleted upon normal JVM termination
+	 *
 	 * @ff.default true
 	 * @deprecated
 	 */
@@ -294,6 +300,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	/**
 	 * If set <code>false</code>, only a small summary (count of items in zip) is returned
+	 *
 	 * @ff.default true
 	 */
 	public void setCollectResults(boolean b) {
@@ -302,6 +309,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	/**
 	 * If set <code>true</code>, the contents of the files in the zip are returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files
+	 *
 	 * @ff.default false
 	 */
 	public void setCollectFileContents(boolean b) {
@@ -310,6 +318,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	/**
 	 * Comma separated list of file extensions. Files with an extension which is part of this list will be base64 encoded. All other files are assumed to have UTF-8 when reading it from the zip and are added as escaped xml with non-unicode-characters being replaced by inverted question mark appended with #, the character number and ;
+	 *
 	 * @ff.default false
 	 */
 	public void setCollectFileContentsBase64Encoded(String string) {
@@ -318,6 +327,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	/**
 	 * If set <code>false</code>, a suffix is added to the original filename to be sure it is unique
+	 *
 	 * @ff.default false
 	 */
 	public void setKeepOriginalFileName(boolean b) {
@@ -332,6 +342,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	/**
 	 * If set <code>true</code>, the path of the zip entry will be preserved. Otherwise, the zip entries will be extracted to the root folder
+	 *
 	 * @ff.default false
 	 */
 	public void setKeepOriginalFilePath(boolean b) {
@@ -340,6 +351,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	/**
 	 * If set <code>true</code>, validation of directory is ignored
+	 *
 	 * @ff.default false
 	 */
 	public void setAssumeDirectoryExists(boolean assumeDirectoryExists) {
@@ -354,6 +366,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	/**
 	 * If set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is used.
+	 *
 	 * @ff.default false
 	 */
 	@Deprecated

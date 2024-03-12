@@ -47,15 +47,15 @@ public class HealthCheck extends BusEndpointBase {
 	@PermitAll
 	public Message<String> getHealth(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		if(StringUtils.isNotEmpty(configurationName)) {
+		if (StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getConfigurationByName(configurationName);
 
 			String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
-			if(StringUtils.isNotEmpty(adapterName)) {
+			if (StringUtils.isNotEmpty(adapterName)) {
 				Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
-				if(adapter == null) {
-					throw new BusException("adapter ["+adapterName+"] does not exist");
+				if (adapter == null) {
+					throw new BusException("adapter [" + adapterName + "] does not exist");
 				}
 
 				return getAdapterHealth(adapter);
@@ -72,25 +72,25 @@ public class HealthCheck extends BusEndpointBase {
 
 		RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-		if(state==RunState.STARTED) {
-			for (Receiver<?> receiver: adapter.getReceivers()) {
+		if (state == RunState.STARTED) {
+			for (Receiver<?> receiver : adapter.getReceivers()) {
 				RunState rState = receiver.getRunState();
 
-				if(rState!=RunState.STARTED) {
-					errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
+				if (rState != RunState.STARTED) {
+					errors.add("receiver[" + receiver.getName() + "] of adapter[" + adapter.getName() + "] is in state[" + rState.toString() + "]");
 					state = RunState.ERROR;
 				}
 			}
 		} else {
-			errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
+			errors.add("adapter[" + adapter.getName() + "] is in state[" + state.toString() + "]");
 			state = RunState.ERROR;
 		}
 
 		Status status = Response.Status.OK;
-		if(state==RunState.ERROR) {
+		if (state == RunState.ERROR) {
 			status = Response.Status.SERVICE_UNAVAILABLE;
 		}
-		if(!errors.isEmpty())
+		if (!errors.isEmpty())
 			response.put("errors", errors);
 		response.put("status", status);
 
@@ -105,13 +105,13 @@ public class HealthCheck extends BusEndpointBase {
 		Map<RunState, Integer> stateCount = new EnumMap<>(RunState.class);
 		List<String> errors = new ArrayList<>();
 
-		for(Configuration config : getIbisManager().getConfigurations()) {
+		for (Configuration config : getIbisManager().getConfigurations()) {
 			RunState state = config.getState();
-			if(state != RunState.STARTED) {
-				if(config.getConfigurationException() != null) {
-					errors.add("configuration["+config.getName()+"] is in state[ERROR]");
+			if (state != RunState.STARTED) {
+				if (config.getConfigurationException() != null) {
+					errors.add("configuration[" + config.getName() + "] is in state[ERROR]");
 				} else {
-					errors.add("configuration["+config.getName()+"] is in state["+state+"]");
+					errors.add("configuration[" + config.getName() + "] is in state[" + state + "]");
 				}
 				stateCount.put(RunState.ERROR, 1); //We're not really using stateCount other then to determine the HTTP response code.
 			}
@@ -120,23 +120,22 @@ public class HealthCheck extends BusEndpointBase {
 		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-			if(state==RunState.STARTED) {
-				for (Receiver<?> receiver: adapter.getReceivers()) {
+			if (state == RunState.STARTED) {
+				for (Receiver<?> receiver : adapter.getReceivers()) {
 					RunState rState = receiver.getRunState();
 
-					if(rState!=RunState.STARTED) {
-						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
+					if (rState != RunState.STARTED) {
+						errors.add("receiver[" + receiver.getName() + "] of adapter[" + adapter.getName() + "] is in state[" + rState.toString() + "]");
 						state = RunState.ERROR;
 					}
 				}
-			}
-			else {
-				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
+			} else {
+				errors.add("adapter[" + adapter.getName() + "] is in state[" + state.toString() + "]");
 				state = RunState.ERROR;
 			}
 
 			int count;
-			if(stateCount.containsKey(state))
+			if (stateCount.containsKey(state))
 				count = stateCount.get(state);
 			else
 				count = 0;
@@ -145,10 +144,10 @@ public class HealthCheck extends BusEndpointBase {
 		}
 
 		Status status = Response.Status.OK;
-		if(stateCount.containsKey(RunState.ERROR))
+		if (stateCount.containsKey(RunState.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
-		if(!errors.isEmpty()) {
+		if (!errors.isEmpty()) {
 			response.put("errors", errors);
 		}
 		response.put("status", status);
@@ -159,11 +158,11 @@ public class HealthCheck extends BusEndpointBase {
 	}
 
 	/**
-*Returns the status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
+	 * Returns the status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
 	 * header configuration The name of the Configuration to delete
 	 */
 	public Message<String> getConfigurationHealth(Configuration configuration) {
-		if(!configuration.isActive()) {
+		if (!configuration.isActive()) {
 			throw new BusException("configuration not active", configuration.getConfigurationException());
 		}
 
@@ -174,23 +173,22 @@ public class HealthCheck extends BusEndpointBase {
 		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
 			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-			if(state==RunState.STARTED) {
-				for (Receiver<?> receiver: adapter.getReceivers()) {
+			if (state == RunState.STARTED) {
+				for (Receiver<?> receiver : adapter.getReceivers()) {
 					RunState rState = receiver.getRunState();
 
-					if(rState!=RunState.STARTED) {
-						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
+					if (rState != RunState.STARTED) {
+						errors.add("receiver[" + receiver.getName() + "] of adapter[" + adapter.getName() + "] is in state[" + rState.toString() + "]");
 						state = RunState.ERROR;
 					}
 				}
-			}
-			else {
-				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
+			} else {
+				errors.add("adapter[" + adapter.getName() + "] is in state[" + state.toString() + "]");
 				state = RunState.ERROR;
 			}
 
 			int count;
-			if(stateCount.containsKey(state))
+			if (stateCount.containsKey(state))
 				count = stateCount.get(state);
 			else
 				count = 0;
@@ -199,10 +197,10 @@ public class HealthCheck extends BusEndpointBase {
 		}
 
 		Status status = Status.OK;
-		if(stateCount.containsKey(RunState.ERROR))
+		if (stateCount.containsKey(RunState.ERROR))
 			status = Status.SERVICE_UNAVAILABLE;
 
-		if(!errors.isEmpty())
+		if (!errors.isEmpty())
 			response.put("errors", errors);
 		response.put("status", status);
 

@@ -30,7 +30,9 @@ import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXException;
 
 /**
@@ -54,21 +56,21 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 	}
 
 	private static String removeRegexCharactersFromInput(String input, String regex) {
-		if(input == null) {
+		if (input == null) {
 			return null;
 		}
 		return input.replaceAll(regex, "");
 	}
 
 	private static String trimMultilineString(String str) throws IOException {
-		if(str == null || str.isEmpty())
+		if (str == null || str.isEmpty())
 			return "";
 
 		StringBuilder buffer = new StringBuilder();
 
 		BufferedReader bufReader = new BufferedReader(new StringReader(str));
 		String line = null;
-		while((line = bufReader.readLine()) != null) {
+		while ((line = bufReader.readLine()) != null) {
 			buffer.append(line.trim());
 			buffer.append("\n");
 		}
@@ -83,25 +85,25 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 	public static void assertEqualsIgnoreCRLF(String expected, String actual, String message) {
 		assertNotNull(expected);
 		assertNotNull(actual);
-		assertEquals(expected.trim().replace("\r",""), actual.trim().replace("\r",""), message);
+		assertEquals(expected.trim().replace("\r", ""), actual.trim().replace("\r", ""), message);
 	}
 
 	public static void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, TransformerException, IOException {
-		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
+		String xslt = XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 
-		String result=XmlUtils.transformXml(transformer, source);
+		String result = XmlUtils.transformXml(transformer, source);
 		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
-		assertEquals(expected,result,xpathExpr);
+		assertEquals(expected, result, xpathExpr);
 	}
 
 	public static void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, TransformerException, IOException {
-		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
+		String xslt = XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 
-		String result=XmlUtils.transformXml(transformer, source);
+		String result = XmlUtils.transformXml(transformer, source);
 		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
-		assertEquals(expected+"",result,xpathExpr);
+		assertEquals(expected + "", result, xpathExpr);
 	}
 
 	@Test
@@ -119,7 +121,7 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		String string = "dummy";
 
 		assertEqualsIgnoreWhitespaces(string, string);
-		assertEqualsIgnoreWhitespaces(string+" ", "  "+string);
+		assertEqualsIgnoreWhitespaces(string + " ", "  " + string);
 	}
 
 	@Test

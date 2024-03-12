@@ -64,10 +64,10 @@ public class AdapterStatistics extends BusEndpointBase {
 
 		long[] numOfMessagesStartProcessingByHour = adapter.getNumOfMessagesStartProcessingByHour();
 		List<Map<String, Object>> hourslyStatistics = new ArrayList<>();
-		for (int i=0; i<numOfMessagesStartProcessingByHour.length; i++) {
+		for (int i = 0; i < numOfMessagesStartProcessingByHour.length; i++) {
 			Map<String, Object> item = new HashMap<>(2);
 			String startTime;
-			if (i<10) {
+			if (i < 10) {
 				startTime = "0" + i + ":00";
 			} else {
 				startTime = i + ":00";
@@ -79,7 +79,7 @@ public class AdapterStatistics extends BusEndpointBase {
 		statisticsMap.put("hourly", hourslyStatistics);
 
 		List<Map<String, Object>> receivers = new ArrayList<>();
-		for (Receiver<?> receiver: adapter.getReceivers()) {
+		for (Receiver<?> receiver : adapter.getReceivers()) {
 			Map<String, Object> receiverMap = new HashMap<>();
 
 			receiverMap.put("name", receiver.getName());
@@ -88,13 +88,13 @@ public class AdapterStatistics extends BusEndpointBase {
 			receiverMap.put("messagesRetried", receiver.getMessagesRetried());
 
 			ArrayList<Map<String, Object>> procStatsMap = new ArrayList<>();
-			for (StatisticsKeeper pstat: receiver.getProcessStatistics()) {
+			for (StatisticsKeeper pstat : receiver.getProcessStatistics()) {
 				procStatsMap.add(pstat.asMap());
 			}
 			receiverMap.put("processing", procStatsMap);
 
 			ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<>();
-			for (StatisticsKeeper istat: receiver.getIdleStatistics()) {
+			for (StatisticsKeeper istat : receiver.getIdleStatistics()) {
 				idleStatsMap.add(istat.asMap());
 			}
 			receiverMap.put("idle", idleStatsMap);
@@ -125,7 +125,7 @@ public class AdapterStatistics extends BusEndpointBase {
 
 		public StatisticsKeeperToMap(Map<String, Object> parent) {
 			super();
-			this.parent=parent;
+			this.parent = parent;
 		}
 
 		@Override
@@ -144,7 +144,7 @@ public class AdapterStatistics extends BusEndpointBase {
 		@Override
 		@SuppressWarnings("unchecked")
 		public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) {
-			if(sk == null) return;
+			if (sk == null) return;
 
 			((List<Object>) data).add(sk.asMap());
 		}
@@ -156,13 +156,13 @@ public class AdapterStatistics extends BusEndpointBase {
 
 		@Override
 		public void handleScalar(Object data, String scalarName, long value) {
-			handleScalar(data, scalarName, ""+value);
+			handleScalar(data, scalarName, "" + value);
 		}
 
 		@Override
 		public void handleScalar(Object data, String scalarName, Date value) {
 			String result;
-			if (value!=null) {
+			if (value != null) {
 				result = DateFormatUtils.format(value, DateFormatUtils.FULL_GENERIC_FORMATTER);
 			} else {
 				result = "-";

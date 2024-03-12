@@ -25,6 +25,7 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -44,21 +45,21 @@ public class IntraGrammarPoolEntityResolverTest {
 		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier();
 		resourceIdentifier.setPublicId(publicId);
 
-		if(namespace != null) {
+		if (namespace != null) {
 			resourceIdentifier.setNamespace(namespace);
 		}
 
-		resourceIdentifier.setBaseSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+"Xslt/importDocument/importLookupRelative1.xsl");
-		resourceIdentifier.setExpandedSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+href);
-		if(href.startsWith("../")) {
-			resourceIdentifier.setExpandedSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+"Xslt/"+href.substring(3));
+		resourceIdentifier.setBaseSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME + "Xslt/importDocument/importLookupRelative1.xsl");
+		resourceIdentifier.setExpandedSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME + href);
+		if (href.startsWith("../")) {
+			resourceIdentifier.setExpandedSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME + "Xslt/" + href.substring(3));
 		}
-		resourceIdentifier.setLiteralSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+href); // this file is known to be in the root of the classpath
+		resourceIdentifier.setLiteralSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME + href); // this file is known to be in the root of the classpath
 		return resourceIdentifier;
 	}
 
 	@ParameterizedTest
-	@CsvSource({"./", "non/existing/folder/", "/non/existing/folder/", "./non/../folder/", IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+"./non/../folder/"})
+	@CsvSource({"./", "non/existing/folder/", "/non/existing/folder/", "./non/../folder/", IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME + "./non/../folder/"})
 	public void noClassPathSchemaResource(String base) throws Exception {
 		List<Schema> schemas = new ArrayList<>();
 		schemas.add(new ResourceSchema("namespace1", "AppConstants.properties"));
@@ -66,7 +67,7 @@ public class IntraGrammarPoolEntityResolverTest {
 
 		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, schemas);
 
-		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier(base+"AppConstants.properties", "namespace1");
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier(base + "AppConstants.properties", "namespace1");
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
@@ -156,7 +157,8 @@ public class IntraGrammarPoolEntityResolverTest {
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull(jarFile, "jar file not found");
 
-		JarFileClassLoader cl = new JarFileClassLoader(new ClassLoader(null) {}); //No parent classloader, getResource and getResources will not fall back
+		JarFileClassLoader cl = new JarFileClassLoader(new ClassLoader(null) {
+		}); //No parent classloader, getResource and getResources will not fall back
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 		return cl;
@@ -172,12 +174,12 @@ public class IntraGrammarPoolEntityResolverTest {
 
 	private static String xmlInputSource2String(XMLInputSource inputSource) throws IOException {
 		Reader reader = null;
-		if(inputSource.getCharacterStream() != null) {
+		if (inputSource.getCharacterStream() != null) {
 			reader = inputSource.getCharacterStream();
-		} else if(inputSource.getByteStream() != null) {
+		} else if (inputSource.getByteStream() != null) {
 			reader = StreamUtil.getCharsetDetectingInputStreamReader(inputSource.getByteStream());
 		}
-		if(reader == null) {
+		if (reader == null) {
 			throw new IOException("unable to read XMLInputSource, no Character nor Byte stream available");
 		}
 		return IOUtils.toString(reader);

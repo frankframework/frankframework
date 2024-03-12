@@ -32,18 +32,18 @@ public class RootElementToSessionKeyFilter extends FullXmlFilter {
 
 	public RootElementToSessionKeyFilter(PipeLineSession session, String rootElementSessionKey, String rootNamespaceSessionKey, ContentHandler handler) {
 		super(handler);
-		if (session!=null) {
-			this.session=session;
-			this.rootElementSessionKey=rootElementSessionKey;
-			this.rootNamespaceSessionKey=rootNamespaceSessionKey;
+		if (session != null) {
+			this.session = session;
+			this.rootElementSessionKey = rootElementSessionKey;
+			this.rootNamespaceSessionKey = rootNamespaceSessionKey;
 		}
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if (!rootElementParsed) {
-			rootElementParsed=true;
-			if (session!=null) {
+			rootElementParsed = true;
+			if (session != null) {
 				if (StringUtils.isNotEmpty(rootElementSessionKey)) {
 					session.put(rootElementSessionKey, localName);
 				}

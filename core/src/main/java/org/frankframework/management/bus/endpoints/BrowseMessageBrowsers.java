@@ -85,10 +85,10 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 		IMessageBrowser<?> storage = null;
 		StorageItemDTO storageItem = null;
-		if(StringUtils.isNotEmpty(pipeName)) {
+		if (StringUtils.isNotEmpty(pipeName)) {
 			storage = getStorageFromPipe(adapter, pipeName);
 			storageItem = getMessageWithMetadata(storage, null, messageId);
-		} else if(StringUtils.isNotEmpty(receiverName)) {
+		} else if (StringUtils.isNotEmpty(receiverName)) {
 			ProcessState processState = BusMessageUtils.getEnumHeader(message, HEADER_PROCESSSTATE_KEY, ProcessState.class);
 			Receiver<?> receiver = getReceiverByName(adapter, receiverName);
 
@@ -113,9 +113,9 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 
 		String storageItem = null;
-		if(StringUtils.isNotEmpty(pipeName)) {
+		if (StringUtils.isNotEmpty(pipeName)) {
 			storageItem = getMessage(getStorageFromPipe(adapter, pipeName), messageId);
-		} else if(StringUtils.isNotEmpty(receiverName)) {
+		} else if (StringUtils.isNotEmpty(receiverName)) {
 			ProcessState processState = BusMessageUtils.getEnumHeader(message, HEADER_PROCESSSTATE_KEY, ProcessState.class);
 			Receiver<?> receiver = getReceiverByName(adapter, receiverName);
 
@@ -146,9 +146,9 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		IListener<?> listener = null;
 		IMessageBrowser<?> storage = null;
 		Map<ProcessState, ProcessStateDTO> targetPSInfo = null;
-		if(StringUtils.isNotEmpty(pipeName)) {
+		if (StringUtils.isNotEmpty(pipeName)) {
 			storage = getStorageFromPipe(adapter, pipeName);
-		} else if(StringUtils.isNotEmpty(receiverName)) {
+		} else if (StringUtils.isNotEmpty(receiverName)) {
 			ProcessState processState = BusMessageUtils.getEnumHeader(message, HEADER_PROCESSSTATE_KEY, ProcessState.class);
 			Receiver<?> receiver = getReceiverByName(adapter, receiverName);
 			listener = receiver.getListener();
@@ -188,7 +188,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		filter.setSortOrder(sortOrder);
 
 		StorageItemsDTO dto = new StorageItemsDTO(storage, filter);
-		if(targetPSInfo != null && !targetPSInfo.isEmpty()) {
+		if (targetPSInfo != null && !targetPSInfo.isEmpty()) {
 			dto.setTargetStates(targetPSInfo);
 		}
 
@@ -209,7 +209,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		try {
 			receiver.retryMessage(messageId);
 		} catch (ListenerException e) {
-			throw new BusException("unable to retry message with id ["+messageId+"]", e);
+			throw new BusException("unable to retry message with id [" + messageId + "]", e);
 		}
 	}
 
@@ -235,7 +235,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 			browser.deleteMessage(messageId);
 		} catch (Exception e) {
 			txStatus.setRollbackOnly();
-			throw new BusException("unable to delete message with id ["+messageId+"]", e);
+			throw new BusException("unable to delete message with id [" + messageId + "]", e);
 		} finally {
 			transactionManager.commit(txStatus);
 		}
@@ -255,24 +255,24 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		Receiver<?> receiver = getReceiverByName(adapter, receiverName);
 
 		Set<ProcessState> availableTargetStates = receiver.targetProcessStates().get(processState);
-		if(availableTargetStates != null && availableTargetStates.contains(targetState)) {
+		if (availableTargetStates != null && availableTargetStates.contains(targetState)) {
 			IMessageBrowser<?> store = receiver.getMessageBrowser(processState);
 			try {
 				RawMessageWrapper rawMessage = store.browseMessage(messageId);
-				if (receiver.changeProcessState(rawMessage, targetState, "admin requested move")==null) { //Why do I need to provide a reason? //Why do I need to provide the raw message?
-					throw new BusException("could not move message ["+messageId+"]");
+				if (receiver.changeProcessState(rawMessage, targetState, "admin requested move") == null) { //Why do I need to provide a reason? //Why do I need to provide the raw message?
+					throw new BusException("could not move message [" + messageId + "]");
 				}
 			} catch (ListenerException e) {
-				throw new BusException("could not move message ["+messageId+"]", e);
+				throw new BusException("could not move message [" + messageId + "]", e);
 			}
 		} else {
-			throw new BusException("it is not allowed to move messages from ["+processState+"] to ["+targetState+"]");
+			throw new BusException("it is not allowed to move messages from [" + processState + "] to [" + targetState + "]");
 		}
 	}
 
 	private IMessageBrowser<?> getStorageFromPipe(Adapter adapter, String pipeName) {
 		IPipe pipe = getPipeByName(adapter, pipeName);
-		if(pipe instanceof MessageSendingPipe) {
+		if (pipe instanceof MessageSendingPipe) {
 			return getPipeMessageLog((MessageSendingPipe) pipe);
 		}
 		throw new BusException("pipe does not have a MessageBrowser");
@@ -280,34 +280,35 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	private IMessageBrowser<?> getPipeMessageLog(MessageSendingPipe pipe) {
 		IMessageBrowser<?> storage = pipe.getMessageLog();
-		if(storage == null) {
+		if (storage == null) {
 			ISender sender = pipe.getSender();
-			if(sender instanceof IMessageBrowser<?>) {
+			if (sender instanceof IMessageBrowser<?>) {
 				storage = (IMessageBrowser<?>) sender;
 			}
 		}
-		if(storage == null) {
-			throw new BusException("Unable to fetch the message log for pipe ["+pipe.getName()+"]");
+		if (storage == null) {
+			throw new BusException("Unable to fetch the message log for pipe [" + pipe.getName() + "]");
 		}
 		return storage;
 	}
 
 	private StorageItemDTO getMessageWithMetadata(IMessageBrowser<?> storage, IListener<?> listener, String messageId) {
 		String message = getMessage(storage, listener, messageId);
-		try(IMessageBrowsingIteratorItem item = storage.getContext(messageId)) {
+		try (IMessageBrowsingIteratorItem item = storage.getContext(messageId)) {
 			StorageItemDTO dto = new StorageItemDTO(item);
 			dto.setMessage(message);
 			return dto;
-		} catch(ListenerException e) {
-			throw new BusException("unable to read message context ["+messageId+"]", e);
+		} catch (ListenerException e) {
+			throw new BusException("unable to read message context [" + messageId + "]", e);
 		}
 	}
 
 	private String getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
 		return getMessage(messageBrowser, null, messageId);
 	}
+
 	private String getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
-		if(messageBrowser == null) {
+		if (messageBrowser == null) {
 			throw new BusException("no MessageBrowser found");
 		}
 
@@ -315,8 +316,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		try {
 			RawMessageWrapper<?> rawmsg = messageBrowser.browseMessage(messageId);
 			msg = MessageBrowsingUtil.getMessageText(rawmsg, listener);
-		} catch(ListenerException | IOException e) {
-			throw new BusException("unable to find or read message ["+messageId+"]", e);
+		} catch (ListenerException | IOException e) {
+			throw new BusException("unable to find or read message [" + messageId + "]", e);
 		}
 
 		if (StringUtils.isEmpty(msg)) {
@@ -333,29 +334,29 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		if (StringUtils.isEmpty(msg)) {
 			throw new BusException("message not found");
 		}
-		if(msg.startsWith("<")) {
+		if (msg.startsWith("<")) {
 			type = MediaType.APPLICATION_XML;
-		} else if(msg.startsWith("{") || msg.startsWith("[")) {
+		} else if (msg.startsWith("{") || msg.startsWith("[")) {
 			type = MediaType.APPLICATION_JSON;
 		}
 		return type;
 	}
 
 	private String getFilename(MediaType type, String filename) {
-		String extension="txt";
-		if(type == MediaType.APPLICATION_XML) {
+		String extension = "txt";
+		if (type == MediaType.APPLICATION_XML) {
 			extension = "xml";
-		} else if(type == MediaType.APPLICATION_JSON) {
+		} else if (type == MediaType.APPLICATION_JSON) {
 			extension = "json";
 		}
 
-		return "msg-"+filename+"."+extension;
+		return "msg-" + filename + "." + extension;
 
 	}
 
 	@Nonnull
 	private Map<ProcessState, ProcessStateDTO> getTargetProcessStateInfo(Set<ProcessState> targetProcessStates) {
-		if(targetProcessStates == null) {
+		if (targetProcessStates == null) {
 			return Collections.emptyMap();
 		}
 

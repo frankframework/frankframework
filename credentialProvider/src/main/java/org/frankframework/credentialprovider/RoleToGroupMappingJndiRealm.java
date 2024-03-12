@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
 /**
  * Extension of {@link org.apache.catalina.realm.JNDIRealm} where we take care of the
  * role to ldap group mapping
- *
+ * <p>
  * Set the <code>pathname</code> parameter to the role-mapping file where the
  * role to ldap group mapping is defined.
  *
@@ -141,7 +141,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 * have a "memberOf" like attribute (specifed by 'userRoleName' and 'roleName') that specifies the groups
 	 * they are member of. The original getRoles assumed groups have a 'member' attribute, specifying their
 	 * members. That approach is not available in this implementation.
-	 *
+	 * <p>
 	 * Shamik uses the nn-tomcat-extensions JNDIRealmEx, with additional settings:
 	 * - roleBase="company specific tenant base"
 	 * - roleSubtree="true"
@@ -153,29 +153,29 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	@Override
 	protected List<String> getRoles(JNDIConnection connection, User user) throws NamingException {
 		long t1 = log.isDebugEnabled() ? System.currentTimeMillis() : 0;
-		int groupCheckCount=0;
-		int nestedRolesFound=0;
+		int groupCheckCount = 0;
+		int nestedRolesFound = 0;
 		try {
 			List<String> roles = user.getRoles();
 			Set<String> allRoles = new LinkedHashSet<>(roles);
 			Queue<String> rolesToCheck = new LinkedList<>(allRoles);
 
-			if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles in: "+allRoles);
+			if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles in: " + allRoles);
 
-			String[] attrIds = { getRoleName() };
+			String[] attrIds = {getRoleName()};
 
 			String role;
-			while((role=rolesToCheck.poll())!=null) {
+			while ((role = rolesToCheck.poll()) != null) {
 				groupCheckCount++;
 
 				Attributes attrs = roleMembershipCache.computeIfAbsentOrExpired(role, r -> connection.context.getAttributes(r, attrIds));
 
-				for (NamingEnumeration<? extends Attribute> attsEnum= attrs.getAll(); attsEnum.hasMoreElements();) {
+				for (NamingEnumeration<? extends Attribute> attsEnum = attrs.getAll(); attsEnum.hasMoreElements(); ) {
 					Attribute attr = attsEnum.next();
-					for (NamingEnumeration<?> attEnum= attr.getAll(); attEnum.hasMoreElements();) {
+					for (NamingEnumeration<?> attEnum = attr.getAll(); attEnum.hasMoreElements(); ) {
 
 						String nestedRole = attEnum.next().toString();
-						if (this.containerLog.isTraceEnabled()) this.containerLog.trace("nestedRole: "+nestedRole);
+						if (this.containerLog.isTraceEnabled()) this.containerLog.trace("nestedRole: " + nestedRole);
 
 						if (!allRoles.contains(nestedRole)) {
 							rolesToCheck.add(nestedRole);
@@ -186,12 +186,12 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 				}
 			}
 			allRoles.add(ALL_AUTHENTICATED);
-			if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles out: "+allRoles);
+			if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles out: " + allRoles);
 			return new ArrayList<>(allRoles);
 		} finally {
 			if (log.isDebugEnabled()) {
 				long t2 = System.currentTimeMillis();
-				log.debug("Role retrieval for user ["+user.getDN()+"] in LDAP took ["+(t2-t1)+"]ms, groupCheckCount ["+groupCheckCount+"] nestedRolesFound ["+nestedRolesFound+"]");
+				log.debug("Role retrieval for user [" + user.getDN() + "] in LDAP took [" + (t2 - t1) + "]ms, groupCheckCount [" + groupCheckCount + "] nestedRolesFound [" + nestedRolesFound + "]");
 			}
 		}
 	}
@@ -316,6 +316,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	public String getPathname() {
 		return pathname;
 	}
+
 	public void setPathname(String pathname) {
 		this.pathname = pathname;
 	}

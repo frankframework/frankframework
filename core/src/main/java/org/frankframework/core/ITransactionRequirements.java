@@ -18,5 +18,6 @@ package org.frankframework.core;
 public interface ITransactionRequirements {
 
 	boolean transactionalRequired();
+
 	boolean transactionalAllowed();
 }

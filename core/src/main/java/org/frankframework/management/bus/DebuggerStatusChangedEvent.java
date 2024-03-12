@@ -23,7 +23,7 @@ public class DebuggerStatusChangedEvent extends ApplicationEvent {
 
 	public DebuggerStatusChangedEvent(Object source, boolean enabled) {
 		super(source);
-		this.enabled=enabled;
+		this.enabled = enabled;
 	}
 
 	public boolean isEnabled() {

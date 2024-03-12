@@ -59,16 +59,16 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	 * This method is called by the Pipeline to process the given pipe.
 	 * It performs various operations on the message and modifies it as required.
 	 *
-	 * @param pipeLine The PipeLine to which the pipe belongs.
-	 * @param pipe The pipe to be processed.
-	 * @param message The message to be processed.
+	 * @param pipeLine        The PipeLine to which the pipe belongs.
+	 * @param pipe            The pipe to be processed.
+	 * @param message         The message to be processed.
 	 * @param pipeLineSession The session of the pipeline execution.
-	 * @param chain The chain of functions to be executed.
+	 * @param chain           The chain of functions to be executed.
 	 * @return The result of processing the pipe.
 	 * @throws PipeRunException if there is an error during processing.
 	 */
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		Object preservedObject = message;
 		INamedObject owner = pipeLine.getOwner();
 
@@ -115,7 +115,8 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				pipeRunResult = chain.apply(message);
 			}
 			if (pipeRunResult == null) {
-				throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner().getName() + "] received null result from pipe [" + pipe.getName() + "]d");
+				throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner()
+						.getName() + "] received null result from pipe [" + pipe.getName() + "]d");
 			}
 
 			if (pipe.isRestoreMovedElements()) {
@@ -142,7 +143,8 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 						result.preserve();
 						inputSource = result.asInputSource();
 					} catch (IOException e) {
-						throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner().getName() + "] could not read received message during compacting to more compact format: " + e.getMessage(), e);
+						throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner()
+								.getName() + "] could not read received message during compacting to more compact format: " + e.getMessage(), e);
 					}
 					XmlWriter xmlWriter = new XmlWriter();
 					CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
@@ -220,7 +222,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				buffer.append(inputChars, startPos, nextStartPos - startPos);
 				copyFrom = nextStartPos;
 			} else {
-				String movedElementSessionKey = inputString.substring(startPos + ME_START.length(),endPos);
+				String movedElementSessionKey = inputString.substring(startPos + ME_START.length(), endPos);
 				if (pipeLineSession.containsKey(movedElementSessionKey)) {
 					String movedElementValue = pipeLineSession.getString(movedElementSessionKey);
 					buffer.append(movedElementValue);

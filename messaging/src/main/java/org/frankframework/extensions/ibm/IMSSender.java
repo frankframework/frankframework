@@ -29,7 +29,6 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.soap.SoapWrapper;
@@ -49,26 +48,26 @@ public class IMSSender extends MQSender {
 	private static final int IIH_HEADERSIZE = 88;
 
 	// IMS Header fields
-	private static final String	  IIH_HEADER_STRUCT_ID		= "IIH ";		// MQIIH_STRUC_ID (4 pos)
-	private static final int	  IIH_HEADER_VERSION		= 1;			// MQIIH_VERSION_1 (4 pos)
-	private static final int	  IIH_HEADER_LENGTH			= 84;			// MQIIH_LENGTH_1 (4 pos)
-	private static final int	  IIH_HEADER_ENCODING		= 0;			// MQ reserved (4 pos)
-	private static final int	  IIH_HEADER_CODECHARSET	= 0;			// MQ reserved (4 pos)
-	private static final String   IIH_HEADER_FORMAT			= "MQIMSVS ";	// MQFMT-IMS-VAR-STRING (8 pos)
-	private	static final int      IIH_HEADER_FLAGS			= 0;			// MQIIH-NONE (4 pos)
-	private static final String   IIH_HEADER_LTERM_OR		= "        ";	// (8 pos)
-	private static final String   IIH_HEADER_MFS_MAPNAME	= "MQIMSVS ";	// (8 pos)
-	private static final String   IIH_HEADER_REPLY_FORMAT	= "MQIMSVS ";	// (8 pos)
-	private	static final String   IIH_HEADER_MFS_AUTH		= "        ";	// Password (8 pos)
-	private static final byte[]   IIH_HEADER_TRAN_INSTANCE	= new byte[16];	// Only relevant for conversation (16 pos)
-	private static final String   IIH_HEADER_TRAN_STATE		= " ";			// MQITS_NOT_IN_CONVERSATION (1 pos)
-	private static final String   IIH_HEADER_COMMIT_MODE	= "1";			// MQICM-SEND-THEN-COMMIT (1 pos)
-	private static final String   IIH_HEADER_SECURITY_SCOPE	= "C";			// MQISS-CHECK (1 pos)
-	private static final String   IIH_HEADER_RESERVED		= " ";			// Reserved (1 pos)
+	private static final String IIH_HEADER_STRUCT_ID = "IIH ";        // MQIIH_STRUC_ID (4 pos)
+	private static final int IIH_HEADER_VERSION = 1;            // MQIIH_VERSION_1 (4 pos)
+	private static final int IIH_HEADER_LENGTH = 84;            // MQIIH_LENGTH_1 (4 pos)
+	private static final int IIH_HEADER_ENCODING = 0;            // MQ reserved (4 pos)
+	private static final int IIH_HEADER_CODECHARSET = 0;            // MQ reserved (4 pos)
+	private static final String IIH_HEADER_FORMAT = "MQIMSVS ";    // MQFMT-IMS-VAR-STRING (8 pos)
+	private static final int IIH_HEADER_FLAGS = 0;            // MQIIH-NONE (4 pos)
+	private static final String IIH_HEADER_LTERM_OR = "        ";    // (8 pos)
+	private static final String IIH_HEADER_MFS_MAPNAME = "MQIMSVS ";    // (8 pos)
+	private static final String IIH_HEADER_REPLY_FORMAT = "MQIMSVS ";    // (8 pos)
+	private static final String IIH_HEADER_MFS_AUTH = "        ";    // Password (8 pos)
+	private static final byte[] IIH_HEADER_TRAN_INSTANCE = new byte[16];    // Only relevant for conversation (16 pos)
+	private static final String IIH_HEADER_TRAN_STATE = " ";            // MQITS_NOT_IN_CONVERSATION (1 pos)
+	private static final String IIH_HEADER_COMMIT_MODE = "1";            // MQICM-SEND-THEN-COMMIT (1 pos)
+	private static final String IIH_HEADER_SECURITY_SCOPE = "C";            // MQISS-CHECK (1 pos)
+	private static final String IIH_HEADER_RESERVED = " ";            // Reserved (1 pos)
 
 	// MQ Fields
-	private static final String MQC_MQFMT_IMS	= "MQIMS   ";	// (8 pos)
-	private static final int MQENC_NATIVE = 273;				// copied from com.ibm.mq.MQC in com.ibm.mq.jar
+	private static final String MQC_MQFMT_IMS = "MQIMS   ";    // (8 pos)
+	private static final int MQENC_NATIVE = 273;                // copied from com.ibm.mq.MQC in com.ibm.mq.jar
 	private static final int CCSID_ISO_8859_1 = 819;
 
 	private static final Charset CHARSET = StandardCharsets.ISO_8859_1;
@@ -81,6 +80,7 @@ public class IMSSender extends MQSender {
 	public void setTransactionCode(String transactionCode) {
 		this.transactionCode = transactionCode;
 	}
+
 	public String getTransactionCode() {
 		return transactionCode;
 	}
@@ -150,12 +150,13 @@ public class IMSSender extends MQSender {
 	}
 
 	@Override
-	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, IOException {
+	public Message extractMessage(javax.jms.Message rawMessage, Map<String, Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, IOException {
 		BytesMessage message;
 		try {
-			message = (BytesMessage)rawMessage;
+			message = (BytesMessage) rawMessage;
 		} catch (ClassCastException e) {
-			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type BytesMessage, but ["+rawMessage.getClass().getName()+"]", e);
+			log.error("message received by listener on [" + getDestinationName() + "] was not of type BytesMessage, but [" + rawMessage.getClass()
+					.getName() + "]", e);
 			return null;
 		}
 
@@ -183,7 +184,7 @@ public class IMSSender extends MQSender {
 		context.put("MQIIH_SecurityScope", byteToString(byteBuffer, charset, 1));
 		context.put("MQIIH_Reserved", byteToString(byteBuffer, charset, 1));
 
-		int readBufferLength = (int)message.getBodyLength() - IIH_HEADERSIZE; // Get the length of the message to extract
+		int readBufferLength = (int) message.getBodyLength() - IIH_HEADERSIZE; // Get the length of the message to extract
 
 		byte[] readBuffer = new byte[readBufferLength];
 		message.readBytes(readBuffer);

@@ -258,7 +258,8 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		List<String> columnsUC = columns.stream().map(c -> c.toUpperCase()).collect(Collectors.toList());
 		return doHasIndexOnColumns(conn, schemaOwner.toUpperCase(), tableName.toUpperCase(), columnsUC,
 				"all_indexes", "all_ind_columns",
-				"TABLE_OWNER", "TABLE_NAME", "INDEX_NAME", "column_name", "column_position");
+				"TABLE_OWNER", "TABLE_NAME", "INDEX_NAME", "column_name", "column_position"
+		);
 	}
 
 	@Override

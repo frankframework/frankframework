@@ -24,8 +24,8 @@ import org.frankframework.core.SenderException;
 /**
  * Pipe that iterates over the lines in a CLOB.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public class ClobLineIteratingPipe extends LobLineIteratingPipeBase {
 

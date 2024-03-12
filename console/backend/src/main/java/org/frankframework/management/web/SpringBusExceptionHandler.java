@@ -25,18 +25,17 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusException;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import org.frankframework.management.bus.BusException;
-
 /**
  * Catch Spring Channel exceptions. Some Exceptions may be thrown direct, see {@link ManagedException}.
  *
- * @author	Niels Meijer
+ * @author Niels Meijer
  */
 
 @Provider
@@ -69,8 +68,8 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 		}
 
 		public static ManagedException parse(Throwable cause) {
-			for(ManagedException me : ManagedException.values()) {
-				if(me.exceptionClass.isAssignableFrom(cause.getClass())) {
+			for (ManagedException me : ManagedException.values()) {
+				if (me.exceptionClass.isAssignableFrom(cause.getClass())) {
 					return me;
 				}
 			}
@@ -82,7 +81,7 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 		 */
 		private static Response convertHttpClientError(HttpClientErrorException e) {
 			Status status = Status.fromStatusCode(e.getRawStatusCode());
-			if(Family.SERVER_ERROR == status.getFamily() || status == Status.NOT_FOUND) {
+			if (Family.SERVER_ERROR == status.getFamily() || status == Status.NOT_FOUND) {
 				return ApiException.formatExceptionResponse(status.getStatusCode() + " - " + status.getReasonPhrase(), status);
 			}
 			return ApiException.formatExceptionResponse(e.getResponseBodyAsString(), status);
@@ -100,9 +99,9 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 	@Override
 	public Response toResponse(MessageHandlingException mhe) {
 		Throwable cause = mhe.getCause();
-		for(int i = 0; i < 5 && cause != null; i++) {
+		for (int i = 0; i < 5 && cause != null; i++) {
 			ManagedException mex = ManagedException.parse(cause);
-			if(mex != null) { //If a ManagedException is found, throw it directly
+			if (mex != null) { //If a ManagedException is found, throw it directly
 				return mex.toResponse(cause);
 			}
 			cause = cause.getCause();

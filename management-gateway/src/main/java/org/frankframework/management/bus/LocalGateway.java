@@ -27,7 +27,7 @@ public class LocalGateway<T> extends MessagingGatewaySupport implements Outbound
 
 	@Override
 	protected void onInit() {
-		if(getRequestChannel() == null) {
+		if (getRequestChannel() == null) {
 			MessageChannel requestChannel = getApplicationContext().getBean("frank-management-bus", MessageChannel.class);
 			setRequestChannel(requestChannel);
 		}

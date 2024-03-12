@@ -9,15 +9,15 @@ import java.sql.ResultSet;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.testutil.mock.FixedQuerySenderMock;
 import org.frankframework.util.SpringUtils;
+
 import org.junit.jupiter.api.Test;
 
 /**
  * Test mocked/stubbed ResultSets
  *
+ * @author Niels Meijer
  * @See {@link TestConfiguration#mockQuery(String, ResultSet)}
  * @See {@link FixedQuerySenderMock}
- *
- * @author Niels Meijer
  */
 public class TestQuerySenderMocks {
 

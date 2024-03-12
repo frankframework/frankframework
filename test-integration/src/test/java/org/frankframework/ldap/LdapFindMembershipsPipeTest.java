@@ -34,7 +34,7 @@ public class LdapFindMembershipsPipeTest {
 	@Before
 	public void setUp() throws ConfigurationException {
 		pipe = new LdapFindGroupMembershipsPipe();
-		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME,null));
+		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, null));
 		pipe.setLdapProviderURL(ldapProviderUrl);
 		pipe.setHost(host);
 		pipe.setPort(port);
@@ -58,7 +58,7 @@ public class LdapFindMembershipsPipeTest {
 
 		PipeRunResult prr = pipe.doPipe(new Message(pipeInput), null);
 
-		System.out.println("result:"+prr.getResult());
+		System.out.println("result:" + prr.getResult());
 	}
 
 	@Test
@@ -70,7 +70,7 @@ public class LdapFindMembershipsPipeTest {
 
 		PipeRunResult prr = pipe.doPipe(new Message(pipeInput), null);
 
-		System.out.println("result:"+prr.getResult());
+		System.out.println("result:" + prr.getResult());
 	}
 
 	@Test
@@ -84,18 +84,18 @@ public class LdapFindMembershipsPipeTest {
 		pipe.configure();
 		pipe.start();
 
-		long time0=System.currentTimeMillis();
+		long time0 = System.currentTimeMillis();
 		PipeRunResult prr1 = pipe.doPipe(new Message(pipeInput), null);
-		long time1=System.currentTimeMillis();
+		long time1 = System.currentTimeMillis();
 
-		System.out.println("result:"+prr1.getResult());
+		System.out.println("result:" + prr1.getResult());
 
-		long time2=System.currentTimeMillis();
+		long time2 = System.currentTimeMillis();
 		PipeRunResult prr2 = pipe.doPipe(new Message(pipeInput), null);
-		long time3=System.currentTimeMillis();
+		long time3 = System.currentTimeMillis();
 
-		System.out.println("first  duration ["+(time1-time0)+"] ms");
-		System.out.println("second duration ["+(time3-time2)+"] ms");
+		System.out.println("first  duration [" + (time1 - time0) + "] ms");
+		System.out.println("second duration [" + (time3 - time2) + "] ms");
 
 		assertEquals(prr1.getResult().asString(), prr2.getResult().asString());
 	}

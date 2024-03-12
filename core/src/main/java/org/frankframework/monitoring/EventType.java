@@ -18,8 +18,8 @@ package org.frankframework.monitoring;
 /**
  * Enumeration of Event Types for monitoring.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public enum EventType {
 	TECHNICAL, FUNCTIONAL, HEARTBEAT, CLEARING;

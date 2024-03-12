@@ -32,7 +32,7 @@ public class SharedWsdlDefinitions {
 
 	public synchronized Definition getOrCompute(String name, ThrowingFunction<String, Definition, ConfigurationException> creator) throws ConfigurationException {
 		Definition result = resources.get(name);
-		if (result==null) {
+		if (result == null) {
 			result = creator.apply(name);
 			resources.put(name, result);
 		}

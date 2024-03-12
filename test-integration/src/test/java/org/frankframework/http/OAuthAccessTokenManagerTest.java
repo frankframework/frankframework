@@ -40,7 +40,7 @@ public class OAuthAccessTokenManagerTest {
 		String tokenEndpoint = TOKENENDPOINT;
 		String scope = "email";
 		String clientId = clientClientId;
-		String clientSecret= clientClientSecret;
+		String clientSecret = clientClientSecret;
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
@@ -48,7 +48,7 @@ public class OAuthAccessTokenManagerTest {
 
 		String accessToken = accessTokenManager.getAccessToken(null, true);
 
-		assertThat(accessToken,startsWith("Bearer"));
+		assertThat(accessToken, startsWith("Bearer"));
 	}
 
 	@Test
@@ -56,7 +56,7 @@ public class OAuthAccessTokenManagerTest {
 		String tokenEndpoint = TOKENENDPOINT;
 		String scope = null;
 		String clientId = clientClientId;
-		String clientSecret= clientClientSecret;
+		String clientSecret = clientClientSecret;
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
@@ -64,7 +64,7 @@ public class OAuthAccessTokenManagerTest {
 
 		String accessToken = accessTokenManager.getAccessToken(null, true);
 
-		assertThat(accessToken,startsWith("Bearer"));
+		assertThat(accessToken, startsWith("Bearer"));
 	}
 
 	@Test
@@ -72,28 +72,28 @@ public class OAuthAccessTokenManagerTest {
 		String tokenEndpoint = TOKENENDPOINT;
 		String scope = "email";
 		String clientId = clientClientId;
-		String clientSecret="xxx";
+		String clientSecret = "xxx";
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, false, httpSender, expiry);
 
-		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null, true));
+		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, () -> accessTokenManager.getAccessToken(null, true));
 		assertThat(exception.getMessage(), containsString("unauthorized_client"));
 	}
 
 	@Test
 	public void testRetrieveAccessTokenWrongTokenEndpoint() {
-		String tokenEndpoint = TOKENENDPOINT+"x";
+		String tokenEndpoint = TOKENENDPOINT + "x";
 		String scope = "email";
 		String clientId = clientClientId;
-		String clientSecret=clientClientSecret;
+		String clientSecret = clientClientSecret;
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, false, httpSender, expiry);
 
-		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null, true));
+		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, () -> accessTokenManager.getAccessToken(null, true));
 		assertThat(exception.getMessage(), containsString("404"));
 	}
 

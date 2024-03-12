@@ -33,7 +33,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Override
 	public void setUp() {
-		String url = "mongodb://"+ user+":"+password+"@" + host;
+		String url = "mongodb://" + user + ":" + password + "@" + host;
 		MongoClient mongoClient = MongoClients.create(url);
 		mongoClientFactory = new JndiMongoClientFactory();
 		mongoClientFactory.add(mongoClient, JndiMongoClientFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
@@ -70,10 +70,10 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.configure();
 		sender.open();
 
-		JsonObject stud = createStudent("Evert","1c", 4,4,3);
+		JsonObject stud = createStudent("Evert", "1c", 4, 4, 3);
 		Message result = sendMessage(stud.toString());
 		System.out.println(result.asString());
-		assertThat(result.asString(),StringContains.containsString("\"insertedId\":"));
+		assertThat(result.asString(), StringContains.containsString("\"insertedId\":"));
 	}
 
 	@Test
@@ -85,7 +85,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		Message result = sendMessage("{ \"student_id\": \"KarelV\", \"class_id\": \"first\", \"grades\": [ 4, 5, 6] }");
 		System.out.println(result.asString());
-		assertThat(result.asString(),StringContains.containsString("\"insertedId\":"));
+		assertThat(result.asString(), StringContains.containsString("\"insertedId\":"));
 	}
 
 	@Test
@@ -96,10 +96,10 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		JsonArrayBuilder students = Json.createArrayBuilder();
-		students.add(createStudent("Harry","1a", 4,5,6));
-		students.add(createStudent("Klaas","1b", 5,7,9));
+		students.add(createStudent("Harry", "1a", 4, 5, 6));
+		students.add(createStudent("Klaas", "1b", 5, 7, 9));
 		Message result = sendMessage(students.build().toString());
-		assertThat(result.asString(),StringContains.containsString("\"insertedIds\":"));
+		assertThat(result.asString(), StringContains.containsString("\"insertedIds\":"));
 	}
 
 	@Test
@@ -110,8 +110,8 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
-		System.out.println("FindOne: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
+		System.out.println("FindOne: [" + result.asString() + "]");
+		assertThat(result.asString(), StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
 	}
 
 	@Test
@@ -123,8 +123,8 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
-		System.out.println("FindOne: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><scores><item>4</item><item>4</item><item>3</item></scores><seatno>10</seatno>"));
+		System.out.println("FindOne: [" + result.asString() + "]");
+		assertThat(result.asString(), StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><scores><item>4</item><item>4</item><item>3</item></scores><seatno>10</seatno>"));
 	}
 
 	@Test
@@ -136,7 +136,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
 //		System.out.println("FindMany: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
+		assertThat(result.asString(), StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
 	}
 
 	@Test
@@ -148,8 +148,8 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
-		System.out.println("FindManyXml: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><scores><item>4</item><item>4</item><item>3</item></scores><seatno>10</seatno></item><item>"));
+		System.out.println("FindManyXml: [" + result.asString() + "]");
+		assertThat(result.asString(), StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><scores><item>4</item><item>4</item><item>3</item></scores><seatno>10</seatno></item><item>"));
 	}
 
 	@Test
@@ -165,7 +165,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		Message result = sendMessage("{ \"student_id\": \"?{searchTarget}\" }");
 //		System.out.println("FindMany: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
+		assertThat(result.asString(), StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
 	}
 
 	@Test
@@ -177,9 +177,9 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
-		System.out.println("FindMany: ["+result.asString()+"]");
+		System.out.println("FindMany: [" + result.asString() + "]");
 		int count = Integer.parseInt(result.asString());
-		assertTrue(count>0);
+		assertTrue(count > 0);
 	}
 
 	@Test
@@ -192,14 +192,15 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
-		System.out.println("FindMany: ["+result.asString()+"]");
+		System.out.println("FindMany: [" + result.asString() + "]");
 		int count = Integer.parseInt(result.asString());
-		assertTrue(count==1);
+		assertTrue(count == 1);
 	}
+
 	@Test
 	public void testUpdateOne() {
 		String filter = "{ \"student_id\": \"Evert\" }";
-		String update = "{\"$set\": {\"seatno\":"+10+"}}";
+		String update = "{\"$set\": {\"seatno\":" + 10 + "}}";
 
 		sender.setAction(MongoAction.UPDATEONE);
 		sender.setCollection("Students");
@@ -208,14 +209,14 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		Message result = sendMessage(update);
-		System.out.println("UpdateOne: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("\"modifiedCount\":"));
+		System.out.println("UpdateOne: [" + result.asString() + "]");
+		assertThat(result.asString(), StringContains.containsString("\"modifiedCount\":"));
 	}
 
 	@Test
 	public void testUpdateMany() {
 		String filter = "{ \"student_id\": \"Evert\" }";
-		String update = "{\"$set\": {\"seatno\":"+10+"}}";
+		String update = "{\"$set\": {\"seatno\":" + 10 + "}}";
 
 		sender.setAction(MongoAction.UPDATEMANY);
 		sender.setCollection("Students");
@@ -224,14 +225,14 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		Message result = sendMessage(update);
-		System.out.println("UpdateMany: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("\"modifiedCount\":"));
+		System.out.println("UpdateMany: [" + result.asString() + "]");
+		assertThat(result.asString(), StringContains.containsString("\"modifiedCount\":"));
 	}
 
 	@Test
 	public void testUpdateManyXml() {
 		String filter = "{ \"student_id\": \"Evert\" }";
-		String update = "{\"$set\": {\"seatno\":"+10+"}}";
+		String update = "{\"$set\": {\"seatno\":" + 10 + "}}";
 
 		sender.setAction(MongoAction.UPDATEMANY);
 		sender.setCollection("Students");
@@ -241,8 +242,8 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.open();
 
 		Message result = sendMessage(update);
-		System.out.println("UpdateMany: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("<modifiedCount>"));
+		System.out.println("UpdateMany: [" + result.asString() + "]");
+		assertThat(result.asString(), StringContains.containsString("<modifiedCount>"));
 	}
 
 	public JsonObject createStudent(String studentId, String classId, Integer... grades) {
@@ -255,7 +256,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	public JsonArray getScores(Integer... grades) {
 		JsonArrayBuilder scores = Json.createArrayBuilder();
-		for (int grade: grades) {
+		for (int grade : grades) {
 			scores.add(grade);
 		}
 		return scores.build();

@@ -61,7 +61,7 @@ class FrankJ2V8LibraryLoader {
 	}
 
 	static void loadLibrary(final String tempDirectory) {
-		if ( isAndroid() ) {
+		if (isAndroid()) {
 			System.loadLibrary("j2v8");
 			return;
 		}
@@ -167,7 +167,7 @@ class FrankJ2V8LibraryLoader {
 			return;
 		}
 		try {
-			Runtime.getRuntime().exec(new String[] { "chmod", permision, path }).waitFor(); //$NON-NLS-1$
+			Runtime.getRuntime().exec(new String[]{"chmod", permision, path}).waitFor(); //$NON-NLS-1$
 		} catch (Throwable e) {
 		}
 	}

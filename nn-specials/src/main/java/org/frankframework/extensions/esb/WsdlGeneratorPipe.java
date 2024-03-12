@@ -23,11 +23,9 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
-
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
@@ -68,7 +66,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		File tempDirectoryBase;
 		String fileName;
 
-		try (InputStream inputStream = fileInSession.asInputStream()){
+		try (InputStream inputStream = fileInSession.asInputStream()) {
 			tempDirectoryBase = FileUtils.getTempDirectory("WsdlGeneratorPipe");
 			fileName = session.getString(getFilenameSessionKey());
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
@@ -134,7 +132,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			File zipOutFile = new File(wsdlDir, wsdl.getFilename() + ".zip");
 			File fullWsdlOutFile = new File(wsdlDir, wsdl.getFilename() + ".wsdl");
 			try (OutputStream zipOut = Files.newOutputStream(zipOutFile.toPath());
-					OutputStream fullWsdlOut = Files.newOutputStream(fullWsdlOutFile.toPath())) {
+				 OutputStream fullWsdlOut = Files.newOutputStream(fullWsdlOutFile.toPath())) {
 				wsdl.setUseIncludes(true);
 				wsdl.zip(zipOut, null);
 				// full wsdl (without includes)
@@ -176,7 +174,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			int inputCmh = Integer.parseInt(inputCmhString);
 			File inputXsdFile = new File(propertiesFile.getParent(), inputXsd);
 			EsbSoapValidator inputValidator = createValidator(inputXsdFile,
-					inputNamespace, inputRoot, 1, inputCmh, pipeLine);
+					inputNamespace, inputRoot, 1, inputCmh, pipeLine
+			);
 			pipeLine.setInputValidator(inputValidator);
 		}
 		if (props.containsKey("output.xsd")) {
@@ -227,7 +226,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	}
 
 	private EsbSoapValidator createValidator(File xsdFile, String namespace,
-			String root, int rootPosition, int cmhVersion, PipeLine pipeLine) throws ConfigurationException {
+											 String root, int rootPosition, int cmhVersion, PipeLine pipeLine) throws ConfigurationException {
 		if (xsdFile != null) {
 			EsbSoapValidator esbSoapValidator = new EsbSoapValidator();
 			esbSoapValidator.setWarn(false);

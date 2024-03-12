@@ -22,7 +22,6 @@ import java.nio.file.Files;
 import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -65,6 +64,7 @@ public class PGPPipe extends FixedForwardPipe {
 		/** Decrypts and verifies the given input. On top of the requirements for Decrypt action, verification expects list of senders' email's and corresponding public keys. However, sender emails does not have to be set, and in that case, this pipe will only validate that someone signed the input. */
 		VERIFY,
 	}
+
 	private Action action;
 	/**
 	 * Emails of the recipients
@@ -73,7 +73,7 @@ public class PGPPipe extends FixedForwardPipe {
 	/**
 	 * Emails of the senders. This will be used to verify that all the senders have signed the given message.
 	 * If not set, and the action is verify; this pipe will validate that at least one person has signed.
-	 *
+	 * <p>
 	 * For signing action, it needs to be set to the email that was used to generate the private key
 	 * that is being used for this process.
 	 */
@@ -102,7 +102,7 @@ public class PGPPipe extends FixedForwardPipe {
 		if (action == null) {
 			throw new ConfigurationException("Action can not be null!");
 		}
-		if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+		if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
 			Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
 		}
 
@@ -116,7 +116,7 @@ public class PGPPipe extends FixedForwardPipe {
 				pgpAction = new Decrypt(secretKey, secretPassword);
 				break;
 			case SIGN:
-				if(verificationAddresses == null || verificationAddresses.length == 0)
+				if (verificationAddresses == null || verificationAddresses.length == 0)
 					throw new ConfigurationException("During signing action, senders has to be set.");
 				pgpAction = new Sign(publicKeys, secretKey, secretPassword, recipients, verificationAddresses[0]);
 				break;

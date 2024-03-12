@@ -20,12 +20,13 @@ import org.frankframework.core.IPushingListener;
 /**
  * Common interface to be implemented by SapListener implementations.
  *
- * @author  Gerrit van Brakel
- * @since   7.3
+ * @author Gerrit van Brakel
+ * @since 7.3
  */
 public interface ISapListener<F> extends IPushingListener<F>, ISapFunctionFacade {
 
 	public void setProgid(String string);
+
 	public void setConnectionCount(String connectionCount);
 
 }

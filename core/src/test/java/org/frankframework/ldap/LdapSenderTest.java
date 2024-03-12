@@ -22,9 +22,11 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -73,7 +75,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	@Override
 	@AfterEach
 	public void tearDown() throws Exception {
-		if(inMemoryDirectoryServer != null) {
+		if (inMemoryDirectoryServer != null) {
 			inMemoryDirectoryServer.shutDown(true);
 		}
 		super.tearDown();
@@ -188,11 +190,11 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 							if ("entryUUID".equals(nameAttribute
 									.getTextContent())
 									|| "modifyTimestamp".equals(nameAttribute
-											.getTextContent())
+									.getTextContent())
 									|| "createTimestamp".equals(nameAttribute
-											.getTextContent())
+									.getTextContent())
 									|| "userPassword".equals(nameAttribute
-											.getTextContent())) {
+									.getTextContent())) {
 								return RETURN_IGNORE_DIFFERENCE_NODES_IDENTICAL;
 							}
 						}

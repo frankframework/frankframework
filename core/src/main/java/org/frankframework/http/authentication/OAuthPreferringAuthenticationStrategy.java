@@ -38,7 +38,6 @@ import org.frankframework.util.LogUtil;
  * OAuth prefering AuthenticationStrategy.
  *
  * @author Gerrit van Brakel
- *
  */
 public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationStrategy {
 	private final Logger log = LogUtil.getLogger(this);

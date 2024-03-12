@@ -22,6 +22,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -219,6 +220,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 
 		// Expect/When
 		assertThrows(PipeRunException.class, () -> doPipe(pipe, "", session),
-				"Pipe [" + pipe.getName() + "] got exception getting name from principal: (NotImplementedException)");
+				"Pipe [" + pipe.getName() + "] got exception getting name from principal: (NotImplementedException)"
+		);
 	}
 }

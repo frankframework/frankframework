@@ -32,11 +32,11 @@ import org.frankframework.util.LogUtil;
 /**
  * Base class for JMS Configurator implementations.
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public abstract class AbstractJmsConfigurator {
-	protected Logger log= LogUtil.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter IPortConnectedListener<Message> listener;
 	private @Getter @Setter ConnectionFactory connectionFactory;

@@ -38,10 +38,9 @@ import org.frankframework.util.AppConstants;
  * Since it's not possible to change the current transaction, the most we can do is attempt to
  * retry the log/force actions and hope we don't break the tx-log even further.
  *
+ * @author Niels Meijer
  * @see <a href="https://github.com/frankframework/frankframework/issues/4615">FrankFramework #4615</a>
  * @see <a href="https://github.com/bitronix/btm/issues/45">BTM issue</a>
- *
- * @author Niels Meijer
  */
 public class BtmDiskJournal extends DiskJournal {
 	private final Logger log = LogManager.getLogger(BtmDiskJournal.class);
@@ -57,7 +56,7 @@ public class BtmDiskJournal extends DiskJournal {
 		try {
 			super.log(status, gtrid, uniqueNames);
 		} catch (IOException e) {
-			if(e instanceof ClosedChannelException || LOG_ERR_MSG.equals(e.getMessage())) {
+			if (e instanceof ClosedChannelException || LOG_ERR_MSG.equals(e.getMessage())) {
 				recover(e);
 
 				super.log(status, gtrid, uniqueNames);
@@ -72,7 +71,7 @@ public class BtmDiskJournal extends DiskJournal {
 		try {
 			super.force();
 		} catch (IOException e) {
-			if(e instanceof ClosedChannelException || FORCE_ERR_MSG.equals(e.getMessage())) {
+			if (e instanceof ClosedChannelException || FORCE_ERR_MSG.equals(e.getMessage())) {
 				recover(e);
 
 				super.force();
@@ -87,7 +86,7 @@ public class BtmDiskJournal extends DiskJournal {
 		try {
 			return super.collectDanglingRecords();
 		} catch (IOException e) {
-			if(e instanceof ClosedChannelException || COLLECT_ERR_MSG.equals(e.getMessage())) {
+			if (e instanceof ClosedChannelException || COLLECT_ERR_MSG.equals(e.getMessage())) {
 				recover(e);
 
 				return super.collectDanglingRecords();
@@ -100,7 +99,7 @@ public class BtmDiskJournal extends DiskJournal {
 	private synchronized void recover(IOException e) throws IOException {
 		Long now = Instant.now().getEpochSecond();
 		Long last = LAST_RECOVERY.getAndSet(now);
-		if(now - last > 3600) {
+		if (now - last > 3600) {
 			log.debug("resetting FileChannel exception count");
 			ERROR_COUNT.set(0);
 		}
@@ -108,7 +107,7 @@ public class BtmDiskJournal extends DiskJournal {
 		int errorCount = ERROR_COUNT.incrementAndGet();
 
 		close();
-		if(errorCount > maxErrorCount) {
+		if (errorCount > maxErrorCount) {
 			log.warn("FileChannel exception but too many retries, aborting");
 			throw e;
 		}

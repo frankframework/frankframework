@@ -2,9 +2,10 @@ package org.frankframework.filesystem;
 
 import java.nio.file.Path;
 
-import org.frankframework.receivers.DirectoryListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
+
+import org.frankframework.receivers.DirectoryListener;
 
 public class DirectoryListenerTest extends FileSystemListenerTest<Path, LocalFileSystem> {
 
@@ -13,9 +14,9 @@ public class DirectoryListenerTest extends FileSystemListenerTest<Path, LocalFil
 
 	@Override
 	public FileSystemListener<Path, LocalFileSystem> createFileSystemListener() {
-		DirectoryListener result=new DirectoryListener();
+		DirectoryListener result = new DirectoryListener();
 		result.setInputFolder(folder.toAbsolutePath().toString());
-		fileAndFolderPrefix=folder.toAbsolutePath()+"/";
+		fileAndFolderPrefix = folder.toAbsolutePath() + "/";
 		return result;
 	}
 

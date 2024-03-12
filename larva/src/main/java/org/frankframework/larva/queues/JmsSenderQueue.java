@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.NotImplementedException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
@@ -33,9 +32,9 @@ public class JmsSenderQueue extends HashMap<String, Object> implements Queue {
 
 	public JmsSenderQueue(JmsSender jmsSender, String useCorrelationIdFrom, String jmsCorrelationId) {
 		super();
-		this.jmsSender=jmsSender;
+		this.jmsSender = jmsSender;
 		put("useCorrelationIdFrom", useCorrelationIdFrom);
-		if (jmsCorrelationId!=null) {
+		if (jmsCorrelationId != null) {
 			put("jmsCorrelationId", jmsCorrelationId);
 		}
 	}

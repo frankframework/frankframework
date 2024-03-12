@@ -26,11 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.frankframework.extensions.aspose.services.conv.CisConversionService;
-import org.springframework.http.MediaType;
-
 import com.aspose.email.Attachment;
 import com.aspose.email.AttachmentCollection;
 import com.aspose.email.EmlLoadOptions;
@@ -51,10 +46,13 @@ import com.aspose.words.SaveFormat;
 import com.aspose.words.Shape;
 
 import lombok.extern.log4j.Log4j2;
-
 import org.frankframework.extensions.aspose.ConversionOption;
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
+import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
 import org.frankframework.stream.Message;
+import org.springframework.http.MediaType;
 
 @Log4j2
 class MailConvertor extends AbstractConvertor {
@@ -79,6 +77,7 @@ class MailConvertor extends AbstractConvertor {
 	}
 
 	private static final MhtSaveOptions options = SaveOptions.getDefaultMhtml();
+
 	static {
 		options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader |
 				MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress |
@@ -123,12 +122,12 @@ class MailConvertor extends AbstractConvertor {
 		HtmlLoadOptions loadOptions = new HtmlLoadOptions();
 		loadOptions.setLoadFormat(LoadFormat.MHTML);
 		loadOptions.setWebRequestTimeout(0);
-		if(!configuration.isLoadExternalResources()){
+		if (!configuration.isLoadExternalResources()) {
 			loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 		}
 
 		Long startTime = new Date().getTime();
-		try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
+		try (FileInputStream fis = new FileInputStream(tempMHtmlFile)) {
 			Document doc = new Document(fis, loadOptions);
 			new FontManager(configuration.getFontsDirectory()).setFontSettings(doc);
 			resizeInlineImages(doc);
@@ -189,7 +188,7 @@ class MailConvertor extends AbstractConvertor {
 		}
 	}
 
-	private double scaleDimension(Double currentValue, float maxValue){
+	private double scaleDimension(Double currentValue, float maxValue) {
 		double scaleFactor = maxValue / currentValue;
 		return scaleFactor * currentValue;
 	}

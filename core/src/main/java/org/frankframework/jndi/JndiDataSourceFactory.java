@@ -31,11 +31,11 @@ import org.frankframework.util.AppConstants;
 
 /**
  * Factory through which (TX-enabled) DataSources can be retrieved.
- *
+ * <p>
  * Already created DataSources are stored in a ConcurrentHashMap.
  * Every DataSource can be augmented before it is added.
  */
-public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDataSource> implements IDataSourceFactory {
+public class JndiDataSourceFactory extends JndiObjectFactory<DataSource, CommonDataSource> implements IDataSourceFactory {
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);

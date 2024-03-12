@@ -33,8 +33,8 @@ public class ApiDispatchConfig {
 	}
 
 	public synchronized void register(ApiListener.HttpMethod method, ApiListener listener) throws ListenerException {
-		if(methods.containsKey(method))
-			throw new ListenerException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
+		if (methods.containsKey(method))
+			throw new ListenerException("ApiListener for uriPattern [" + uriPattern + "] method [" + method + "] has already registered");
 		methods.put(method, listener);
 	}
 
@@ -65,6 +65,6 @@ public class ApiDispatchConfig {
 
 	@Override
 	public String toString() {
-		return this.getClass().toString() + " methods" + getMethods().toString() + " uriPattern["+getUriPattern()+"]";
+		return this.getClass().toString() + " methods" + getMethods().toString() + " uriPattern[" + getUriPattern() + "]";
 	}
 }

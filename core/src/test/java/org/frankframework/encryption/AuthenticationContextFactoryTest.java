@@ -10,6 +10,7 @@ import java.security.UnrecoverableKeyException;
 import javax.net.ssl.SSLContext;
 
 import org.frankframework.configuration.ConfigurationException;
+
 import org.junit.jupiter.api.Test;
 
 public class AuthenticationContextFactoryTest {
@@ -62,7 +63,7 @@ public class AuthenticationContextFactoryTest {
 		keystoreOwner.setKeystorePassword("wrong");
 		keystoreOwner.setKeystoreAlias("alias2");
 		keystoreOwner.setKeystoreAliasPassword("AliasPW2");
-		assertThrows(IOException.class, ()-> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null), "password was incorrect");
+		assertThrows(IOException.class, () -> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null), "password was incorrect");
 	}
 
 	@Test
@@ -72,6 +73,6 @@ public class AuthenticationContextFactoryTest {
 		keystoreOwner.setKeystorePassword("KeystorePW");
 		keystoreOwner.setKeystoreAlias("alias2");
 		keystoreOwner.setKeystoreAliasPassword("wrong");
-		assertThrows(UnrecoverableKeyException.class, ()-> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null), "Cannot recover key");
+		assertThrows(UnrecoverableKeyException.class, () -> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null), "Cannot recover key");
 	}
 }

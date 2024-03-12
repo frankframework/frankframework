@@ -20,11 +20,11 @@ package org.frankframework.receivers;
  * parent receiver.
  *
  * @author Jaco de Groot
- *
  */
 public interface ReceiverAware<M> {
 
 	public void setReceiver(Receiver<M> receiver);
+
 	public Receiver<M> getReceiver();
 
 }

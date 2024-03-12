@@ -19,11 +19,13 @@ import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlBuilder;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+
 import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
@@ -109,7 +111,8 @@ public class TriggerTest implements EventThrowing {
 		ArgumentCaptor<String> eventCode = ArgumentCaptor.forClass(String.class);
 		ArgumentCaptor<MonitorEvent> monitorEventCaptor = ArgumentCaptor.forClass(MonitorEvent.class);
 
-		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
+		doNothing().when(destination)
+				.fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
 		monitor.registerTrigger(trigger);
 
@@ -202,7 +205,8 @@ public class TriggerTest implements EventThrowing {
 		ArgumentCaptor<String> eventCode = ArgumentCaptor.forClass(String.class);
 		ArgumentCaptor<MonitorEvent> monitorEventCaptor = ArgumentCaptor.forClass(MonitorEvent.class);
 
-		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
+		doNothing().when(destination)
+				.fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
 		monitor.registerTrigger(trigger);
 

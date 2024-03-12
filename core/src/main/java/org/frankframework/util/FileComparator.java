@@ -28,7 +28,8 @@ public class FileComparator implements Comparator<File> {
 		long l = file1.lastModified() - file2.lastModified();
 		if (l < 0) {
 			return -1;
-		} if (l > 0) {
+		}
+		if (l > 0) {
 			return 1;
 		} else {
 			return 0;

@@ -10,7 +10,7 @@ import org.frankframework.stream.Message;
 
 public class TestCollector implements ICollector<TestCollectorPart> {
 
-	boolean open=true;
+	boolean open = true;
 	private final StringWriter input = new StringWriter();
 
 	public String getInput() {
@@ -33,7 +33,7 @@ public class TestCollector implements ICollector<TestCollectorPart> {
 	@Override
 	public Message build(List<TestCollectorPart> parts) throws IOException {
 		StringWriter input = new StringWriter();
-		for(TestCollectorPart part : parts) {
+		for (TestCollectorPart part : parts) {
 			input.append(part.asString());
 		}
 
@@ -42,6 +42,6 @@ public class TestCollector implements ICollector<TestCollectorPart> {
 
 	@Override
 	public void close() throws Exception {
-		open=false;
+		open = false;
 	}
 }

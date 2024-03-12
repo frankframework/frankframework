@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -28,8 +29,6 @@ import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-
-import lombok.Getter;
 
 /**
  * Pipe that performs translations between special characters and their xml equivalents.

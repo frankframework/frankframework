@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -27,8 +26,8 @@ import org.frankframework.util.CredentialFactory;
 /**
  * Pipe to check the the CredentialFactory (for testing only).
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class CredentialCheckingPipe extends FixedForwardPipe {
 
@@ -41,10 +40,10 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getTargetUserid()==null) {
+		if (getTargetUserid() == null) {
 			throw new ConfigurationException("targetUserid must be specified");
 		}
-		if (getTargetPassword()==null) {
+		if (getTargetPassword() == null) {
 			throw new ConfigurationException("targetPassword must be specified");
 		}
 	}
@@ -52,23 +51,24 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		CredentialFactory cf=new CredentialFactory(getAuthAlias(),getDefaultUserid(),getDefaultPassword());
-		String result="";
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getDefaultUserid(), getDefaultPassword());
+		String result = "";
 		if (!getTargetUserid().equals(cf.getUsername())) {
-			result+="username does not match target";
+			result += "username does not match target";
 		}
 		if (!getTargetPassword().equals(cf.getPassword())) {
-			result+="password does not match target";
+			result += "password does not match target";
 		}
 		if (StringUtils.isEmpty(result)) {
-			result="OK";
+			result = "OK";
 		}
-		return new PipeRunResult(getSuccessForward(),result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
+
 	public String getAuthAlias() {
 		return authAlias;
 	}
@@ -76,6 +76,7 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 	public void setTargetPassword(String string) {
 		targetPassword = string;
 	}
+
 	public String getTargetPassword() {
 		return targetPassword;
 	}
@@ -83,6 +84,7 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 	public void setTargetUserid(String string) {
 		targetUserid = string;
 	}
+
 	public String getTargetUserid() {
 		return targetUserid;
 	}
@@ -90,6 +92,7 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 	public void setDefaultPassword(String string) {
 		defaultPassword = string;
 	}
+
 	public String getDefaultPassword() {
 		return defaultPassword;
 	}
@@ -97,6 +100,7 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 	public void setDefaultUserid(String string) {
 		defaultUserid = string;
 	}
+
 	public String getDefaultUserid() {
 		return defaultUserid;
 	}

@@ -33,10 +33,9 @@ import org.frankframework.util.LogUtil;
  * Aggregator which handles the collection of {@link ICollector collector parts}.
  * Ensures they are closed if required and 'builds' the collection.
  *
- * @author Niels Meijer
- *
  * @param <C> Collector to use, which creates the parts
  * @param <P> Parts to be added to each collection
+ * @author Niels Meijer
  */
 @Log4j2
 public class Collection<C extends ICollector<P>, P> implements AutoCloseable, INamedObject {
@@ -51,14 +50,14 @@ public class Collection<C extends ICollector<P>, P> implements AutoCloseable, IN
 
 	public void add(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
 		final P part = collector.createPart(input, session, pvl);
-		log.debug("collection [{}] adding part [{}]", this::toString, ()->part);
+		log.debug("collection [{}] adding part [{}]", this::toString, () -> part);
 
 		parts.add(part);
 	}
 
 	/** closes the collector */
 	public Message build() throws CollectionException {
-		try(C closeMe = collector) {
+		try (C closeMe = collector) {
 			log.debug("building collection [{}]", this::toString);
 
 			return collector.build(parts);
@@ -72,8 +71,8 @@ public class Collection<C extends ICollector<P>, P> implements AutoCloseable, IN
 		log.debug("closing collection [{}]", this::toString);
 		collector.close();
 
-		for(P part : parts) {
-			if(part instanceof AutoCloseable) {
+		for (P part : parts) {
+			if (part instanceof AutoCloseable) {
 				try {
 					((AutoCloseable) part).close();
 				} catch (Exception e) {

@@ -25,10 +25,9 @@ import javax.jms.Session;
 import javax.jms.TopicSession;
 import javax.naming.Context;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.tibco.tibjms.TibjmsConnectionFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.jms.JmsException;
 import org.frankframework.jms.JmsMessagingSource;
 import org.frankframework.jms.MessagingSource;
@@ -36,19 +35,20 @@ import org.frankframework.jms.MessagingSource;
 /**
  * {@link MessagingSource} for Tibco connections.
  *
- * @author 	Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class TibcoMessagingSource extends JmsMessagingSource {
 
 	private final TibjmsConnectionFactory connectionFactory;
 
 	public TibcoMessagingSource(String connectionFactoryName, Context context,
-			ConnectionFactory connectionFactory, Map<String, MessagingSource> messagingSourceMap,
-			String authAlias) {
+								ConnectionFactory connectionFactory, Map<String, MessagingSource> messagingSourceMap,
+								String authAlias) {
 		super(connectionFactoryName, "", context, connectionFactory,
-				messagingSourceMap, authAlias, false, null);
-		this.connectionFactory=(TibjmsConnectionFactory)connectionFactory;
+				messagingSourceMap, authAlias, false, null
+		);
+		this.connectionFactory = (TibjmsConnectionFactory) connectionFactory;
 	}
 
 	@Override
@@ -62,10 +62,10 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 
 	@Override
 	public Destination lookupDestination(String destinationName) throws JmsException {
-		Session session=null;
+		Session session = null;
 		try {
-			session = createSession(false,Session.AUTO_ACKNOWLEDGE);
-			log.debug("Session class ["+session.getClass().getName()+"]");
+			session = createSession(false, Session.AUTO_ACKNOWLEDGE);
+			log.debug("Session class [" + session.getClass().getName() + "]");
 			Destination destination;
 
 			/* create the destination */

@@ -22,6 +22,7 @@ import org.frankframework.doc.Optional;
 
 /**
  * Marker interface for Wrappers
+ *
  * @author Gerrit van Brakel
  */
 @FrankDocGroup(order = 50, name = "Wrappers")

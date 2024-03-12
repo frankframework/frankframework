@@ -15,34 +15,33 @@
 */
 package org.frankframework.stream.document;
 
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
 import org.frankframework.stream.JsonEventHandler;
 import org.frankframework.stream.MessageOutputStream;
 import org.frankframework.stream.StreamingException;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 public class DocumentBuilderFactory {
 
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream, boolean prettyPrint) throws SAXException, StreamingException {
 		switch (format) {
-		case XML:
-			return new XmlDocumentBuilder(rootElement, outputStream.asContentHandler(), prettyPrint);
-		case JSON:
-			return new JsonDocumentBuilder(outputStream.asJsonEventHandler());
-		default:
-			throw new IllegalArgumentException("Unknown document format ["+format+"]");
+			case XML:
+				return new XmlDocumentBuilder(rootElement, outputStream.asContentHandler(), prettyPrint);
+			case JSON:
+				return new JsonDocumentBuilder(outputStream.asJsonEventHandler());
+			default:
+				throw new IllegalArgumentException("Unknown document format [" + format + "]");
 		}
 	}
 
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement) throws SAXException {
 		switch (format) {
-		case XML:
-			return new XmlDocumentBuilder(rootElement);
-		case JSON:
-			return new JsonDocumentBuilder();
-		default:
-			throw new IllegalArgumentException("Unknown document format ["+format+"]");
+			case XML:
+				return new XmlDocumentBuilder(rootElement);
+			case JSON:
+				return new JsonDocumentBuilder();
+			default:
+				throw new IllegalArgumentException("Unknown document format [" + format + "]");
 		}
 	}
 

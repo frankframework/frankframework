@@ -5,7 +5,6 @@ package org.frankframework.configuration.classloaders;
  * Does not implement the IConfigurationClassLoader interface
  *
  * @author Niels Meijer
- *
  */
 public class DefaultClassLoader extends ClassLoader {
 

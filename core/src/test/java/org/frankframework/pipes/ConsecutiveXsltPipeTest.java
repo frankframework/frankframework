@@ -11,6 +11,7 @@ import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
+
 import org.junit.jupiter.api.Test;
 
 public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
@@ -48,8 +49,9 @@ public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 		first.start();
 		pipe.start();
 
-		PipeLineResult pipeLineResult=pipeline.process("", new Message("<result><field>&lt;Document&gt;&lt;Header&gt;HeaderValue&lt;/Header&gt;&lt;Action&gt;ActionValue&lt;/Action&gt;&lt;/Document&gt;</field></result>"), session);
+		PipeLineResult pipeLineResult = pipeline.process("", new Message("<result><field>&lt;Document&gt;&lt;Header&gt;HeaderValue&lt;/Header&gt;&lt;Action&gt;ActionValue&lt;/Action&gt;&lt;/Document&gt;</field></result>"), session);
 
-		MatchUtils.assertXmlEquals("<Document><Header>HeaderValue</Header><ActionFound>ActionValue</ActionFound></Document>", pipeLineResult.getResult().asString());
+		MatchUtils.assertXmlEquals("<Document><Header>HeaderValue</Header><ActionFound>ActionValue</ActionFound></Document>", pipeLineResult.getResult()
+				.asString());
 	}
 }

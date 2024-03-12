@@ -25,9 +25,7 @@ import org.frankframework.stream.Message;
 /**
  * Skip a number of bytes or characters from the input.
  *
- *
  * @author Jaco de Groot (***@dynasol.nl)
- *
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class SkipPipe extends FixedForwardPipe {
@@ -71,13 +69,14 @@ public class SkipPipe extends FixedForwardPipe {
 				result = new Message(bytesResult);
 			}
 			return new PipeRunResult(getSuccessForward(), result);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			throw new PipeRunException(this, "Error while transforming input", e);
 		}
 	}
 
 	/**
 	 * Number of bytes (for binary input) or characters (for character input) to skip. An empty byte array or string is returned when skip is larger then the length of the input
+	 *
 	 * @ff.default 0
 	 */
 	public void setSkip(int skip) {
@@ -86,6 +85,7 @@ public class SkipPipe extends FixedForwardPipe {
 
 	/**
 	 * If length>=0 only these number of bytes (for binary input) or characters (for character input) is returned.
+	 *
 	 * @ff.default -1
 	 */
 	public void setLength(int length) {

@@ -18,14 +18,13 @@ package org.frankframework.aws;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.regions.Regions;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -52,7 +51,7 @@ public class AwsBase {
 	}
 
 	public AwsCredentialsProvider getAwsCredentialsProvider() {
-		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+		if ((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
 			throw new IllegalStateException("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)");
 		}
 
@@ -65,8 +64,7 @@ public class AwsBase {
 
 	public static List<String> getAvailableRegions() {
 		List<String> availableRegions = new ArrayList<>(Regions.values().length);
-		for (Regions region : Regions.values())
-			availableRegions.add(region.getName());
+		for (Regions region : Regions.values()) {availableRegions.add(region.getName());}
 
 		return availableRegions;
 	}
@@ -98,7 +96,9 @@ public class AwsBase {
 		this.authAlias = authAlias;
 	}
 
-	/** AWS Client region
+	/**
+	 * AWS Client region
+	 *
 	 * @ff.default eu-west-1
 	 */
 	public void setClientRegion(String clientRegion) {

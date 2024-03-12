@@ -18,7 +18,6 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeForward;
@@ -38,10 +37,8 @@ import org.frankframework.util.PasswordHash;
  * it is validated against the hash in the session key which will determine
  * the forward to be used (success or failure).
  *
- *
- * @ff.forward failure when hashSessionKey is used and password doesn't validate against the hash
- *
  * @author Jaco de Groot
+ * @ff.forward failure when hashSessionKey is used and password doesn't validate against the hash
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class PasswordHashPipe extends FixedForwardPipe {

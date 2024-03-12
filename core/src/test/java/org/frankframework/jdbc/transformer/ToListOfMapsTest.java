@@ -8,10 +8,12 @@ import java.util.stream.Stream;
 
 import org.frankframework.stream.FileMessage;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

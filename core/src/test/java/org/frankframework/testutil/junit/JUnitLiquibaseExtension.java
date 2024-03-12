@@ -47,7 +47,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 	public void beforeEach(ExtensionContext context) throws Exception {
 		Method templateMethod = context.getRequiredTestMethod();
 		boolean isDatabaseTest = AnnotationUtils.findAnnotation(templateMethod, DatabaseTest.class).isPresent();
-		if(!isDatabaseTest) {
+		if (!isDatabaseTest) {
 			throw new JUnitException("Not a @DatabaseTest");
 		}
 
@@ -63,12 +63,12 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 	}
 
 	private void validate(List<WithLiquibase> annotations) {
-		for(WithLiquibase liquibase : annotations) {
+		for (WithLiquibase liquibase : annotations) {
 			String f = liquibase.file();
 			String file = f.startsWith("/") ? f : "/" + f;
 			URL url = JUnitLiquibaseExtension.class.getResource(file);
-			if(url == null) {
-				throw new JUnitException("file ["+file+"] not found");
+			if (url == null) {
+				throw new JUnitException("file [" + file + "] not found");
 			}
 
 			log.info("Running Liquibase file: {} tableName: {}", file, liquibase.tableName());
@@ -88,7 +88,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 	 * Store {@link WithLiquibase} annotations found on both class and method level in the JUnit context.
 	 */
 	private void storeAnnotations(ExtensionContext context, final List<WithLiquibase> annotations) {
-		if(annotations.isEmpty()) {
+		if (annotations.isEmpty()) {
 			return;
 		}
 
@@ -98,7 +98,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 		toStore.addAll(annotations);
 
 		List<WithLiquibase> alreadyStoredAnnotations = getAnnotations(context);
-		if(alreadyStoredAnnotations != null && !alreadyStoredAnnotations.isEmpty()) {
+		if (alreadyStoredAnnotations != null && !alreadyStoredAnnotations.isEmpty()) {
 			toStore.addAll(alreadyStoredAnnotations);
 		}
 
@@ -108,20 +108,20 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 	@Override
 	public void beforeTestExecution(ExtensionContext context) throws Exception {
 		List<WithLiquibase> annotations = getAnnotations(context);
-		if(annotations.isEmpty()) {
+		if (annotations.isEmpty()) {
 			return;
 		}
 
 		log.info("found {} migration script(s)", annotations::size);
 
 		DatabaseTestEnvironment dbTestEnv = DatabaseTestInvocationContext.getDatabaseTestEnvironment(context);
-		if(dbTestEnv == null) {
+		if (dbTestEnv == null) {
 			log.info("unable to execute Liquibase migration script, no DatabaseTestEnvironment found");
 			throw new JUnitException("no DatabaseTestEnvironment found, are you using the DatabaseTest annotation?");
 		}
 
 		AtomicInteger argumentIndex = new AtomicInteger();
-		for(WithLiquibase annotation : annotations) {
+		for (WithLiquibase annotation : annotations) {
 			String file = annotation.file();
 			String tableName = annotation.tableName();
 
@@ -137,15 +137,15 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 	@Override
 	public void afterTestExecution(ExtensionContext context) throws Exception {
 		List<WithLiquibase> annotations = getAnnotations(context);
-		if(annotations.isEmpty()) {
+		if (annotations.isEmpty()) {
 			return;
 		}
 		log.info("cleaning up {} Liquibase instance(s)", annotations::size);
 
 		AtomicInteger argumentIndex = new AtomicInteger();
-		for(WithLiquibase annotation : annotations) {
+		for (WithLiquibase annotation : annotations) {
 			CloseableArgument liquibase = getStore(context).get("liquibaseInstance#" + argumentIndex.incrementAndGet(), CloseableArgument.class);
-			if(liquibase != null) {
+			if (liquibase != null) {
 				log.debug("closing liquibase instance {}", annotation::file);
 				liquibase.close();
 			}
@@ -179,11 +179,11 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 
 		@Override
 		public void close() throws Exception {
-			if(closed.compareAndSet(false, true)) {
+			if (closed.compareAndSet(false, true)) {
 				log.info("Closing Liquibase [{}] and releasing all connections", liquibase::getChangeLogFile);
 				try {
 					liquibase.dropAll();
-				} catch(Exception e) {
+				} catch (Exception e) {
 					log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
 					liquibase.rollback(liquibase.getChangeSetStatuses(null, new LabelExpression()).size(), null);
 				}

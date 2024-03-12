@@ -15,9 +15,10 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
+
 import org.junit.jupiter.api.Test;
 
-public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
+public class LogContextPipeTest extends PipeTestBase<LogContextPipe> {
 
 	@Override
 	public LogContextPipe createPipe() throws ConfigurationException {
@@ -53,7 +54,7 @@ public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 		String input = "fakeInput";
 		ThreadContext.clearMap();
 
-		assertThrows(PipeRunException.class, ()-> doPipe(input));
+		assertThrows(PipeRunException.class, () -> doPipe(input));
 		assertNull(ThreadContext.get("mock-param"));
 	}
 
@@ -75,6 +76,7 @@ public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 		assertEquals("success", prr.getPipeForward().getName());
 		assertNull(ThreadContext.get("mock-param"));
 	}
+
 	@Test
 	public void testLogContextPipeWithContinueOnException2() throws Exception {
 		Parameter mockParam = mock(Parameter.class);

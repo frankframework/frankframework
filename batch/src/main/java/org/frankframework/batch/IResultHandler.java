@@ -27,34 +27,40 @@ import org.frankframework.pipes.AbstractPipe;
 /**
  * Interface for handling a transformed record.
  *
- * @author  John Dekker
+ * @author John Dekker
  */
 @FrankDocGroup(name = "Batch")
 public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);
+
 	public void open() throws SenderException;
+
 	public void close() throws SenderException;
 
 	/**
 	 * Called once, before the first record of a stream is presented to handleResult.
+	 *
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message
 	 */
 	void openDocument(PipeLineSession session, String streamId) throws Exception;
+
 	void closeDocument(PipeLineSession session, String streamId);
 
 	/**
 	 * write a result record.
-	 * @param session  current PipeLineSession
-	 * @param streamId identification of the original file/stream/message containing the untransformed records
+	 *
+	 * @param session   current PipeLineSession
+	 * @param streamId  identification of the original file/stream/message containing the untransformed records
 	 * @param recordKey key of the record (describes the record type)
-	 * @param result transformed record
+	 * @param result    transformed record
 	 */
 	void handleResult(PipeLineSession session, String streamId, String recordKey, String result) throws Exception;
 
 	/**
 	 * Called when all records in the original file are handled.
+	 *
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @return the name or names of the output files
@@ -74,12 +80,14 @@ public interface IResultHandler extends IConfigurable {
 	void closeRecordType(PipeLineSession session, String streamId) throws Exception;
 
 	void openBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception;
+
 	void closeBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception;
 
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow
 	 */
 	boolean isDefault();
+
 	void setDefault(boolean isDefault);
 
 	boolean hasPrefix();

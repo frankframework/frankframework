@@ -29,8 +29,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- *
- *
  * @author John Dekker
  */
 public class ParameterValue {
@@ -64,6 +62,7 @@ public class ParameterValue {
 	public Object getValue() {
 		return value;
 	}
+
 	public Message asMessage() {
 		return Message.asMessage(value);
 	}
@@ -141,6 +140,7 @@ public class ParameterValue {
 	public String asStringValue() {
 		return asStringValue(null);
 	}
+
 	/**
 	 * @param defaultValue returned if value is null
 	 * @return convert the value to a string
@@ -151,7 +151,7 @@ public class ParameterValue {
 
 	private String valueAsString() {
 		if (value instanceof Message) {
-			Message message = (Message)value;
+			Message message = (Message) value;
 			try {
 				return message.asString();
 			} catch (IOException e) {
@@ -166,11 +166,11 @@ public class ParameterValue {
 			return Collections.emptyList();
 		}
 		try {
-			LOG.debug("rendering Parameter [{}] value [{}] as Collection", ()->getDefinition().getName(), ()->value);
-			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
+			LOG.debug("rendering Parameter [{}] value [{}] as Collection", () -> getDefinition().getName(), () -> value);
+			Element holder = XmlUtils.buildElement("<root>" + value + "</root>");
 			return XmlUtils.getChildTags(holder, "*");
 		} catch (DomBuilderException e) {
-			throw new ParameterException(getDefinition().getName(), "Parameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
+			throw new ParameterException(getDefinition().getName(), "Parameter [" + getDefinition().getName() + "] cannot create Collection from [" + value + "]", e);
 		}
 	}
 }

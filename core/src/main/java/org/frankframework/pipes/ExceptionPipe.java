@@ -18,7 +18,6 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -29,7 +28,7 @@ import org.frankframework.stream.Message;
 /**
  * Pipe that throws an exception, based on the input message.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 @ElementType(ElementTypes.ERRORHANDLING)
 public class ExceptionPipe extends FixedForwardPipe {
@@ -46,7 +45,7 @@ public class ExceptionPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (StringUtils.isEmpty(errorMessage)) {
-			errorMessage="exception: "+getName();
+			errorMessage = "exception: " + getName();
 		}
 
 		if (isThrowException()) {
@@ -59,11 +58,13 @@ public class ExceptionPipe extends FixedForwardPipe {
 
 	/**
 	 * when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and no rollback is performed).
+	 *
 	 * @ff.default true
 	 */
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}
+
 	public boolean isThrowException() {
 		return throwException;
 	}

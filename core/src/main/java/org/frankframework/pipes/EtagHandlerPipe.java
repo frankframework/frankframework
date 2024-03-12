@@ -39,7 +39,6 @@ import org.frankframework.util.MessageUtils;
  * Pipe to manage RESTFUL etag caching
  *
  * @author Niels Meijer
- *
  */
 @Deprecated
 @ConfigurationWarning("Please configure eTag caching on the ApiListener")
@@ -49,7 +48,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 	private String uriPattern = null;
 	private IApiCache cache = null;
 
-//	hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
+	//	hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
 	public enum EtagAction {
 		GENERATE, GET, SET, DELETE, FLUSH, CLEAR;
 	}
@@ -58,19 +57,19 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		EtagAction action = getAction();
-		if (action==null) {
+		if (action == null) {
 			throw new ConfigurationException("action must be set");
 		}
 
 		boolean hasUriPatternParameter = false;
 		ParameterList parameterList = getParameterList();
-		for (int i=0; i<parameterList.size(); i++) {
+		for (int i = 0; i < parameterList.size(); i++) {
 			Parameter parameter = parameterList.getParameter(i);
-			if("uriPattern".equalsIgnoreCase(parameter.getName()))
+			if ("uriPattern".equalsIgnoreCase(parameter.getName()))
 				hasUriPatternParameter = true;
 		}
 
-		if(getUriPattern() == null && !hasUriPatternParameter) {
+		if (getUriPattern() == null && !hasUriPatternParameter) {
 			throw new ConfigurationException("no uriPattern found!");
 		}
 
@@ -79,7 +78,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if (message==null) {
+		if (message == null) {
 			throw new PipeRunException(this, "got null input");
 		}
 
@@ -102,49 +101,49 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 
 		//hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
 		String cacheKey = null;
-		if(uriPatternSessionKey != null && !uriPatternSessionKey.isEmpty())
-			cacheKey = getRestPath()+"_"+uriPatternSessionKey.toLowerCase();
+		if (uriPatternSessionKey != null && !uriPatternSessionKey.isEmpty())
+			cacheKey = getRestPath() + "_" + uriPatternSessionKey.toLowerCase();
 		else
-			cacheKey = getRestPath()+"_"+getUriPattern();
-		if(cache != null && cache.containsKey(cacheKey)) {
+			cacheKey = getRestPath() + "_" + getUriPattern();
+		if (cache != null && cache.containsKey(cacheKey)) {
 			Object returnCode = false;
 
 			log.debug("found eTag cacheKey [{}] with action [{}]", cacheKey, getAction());
 			switch (getAction()) {
-			case GENERATE:
-				String hash = MessageUtils.generateMD5Hash(message);
-				if(hash != null) {
-					cache.put(cacheKey, hash);
-				}
-				returnCode = true;
-				break;
-			case GET:
-				returnCode = cache.get(cacheKey);
-				break;
-			case SET:
-				try {
-					cache.put(cacheKey, message.asString());
-				} catch (IOException e) {
-					throw new PipeRunException(this, "cannot open stream", e);
-				}
-				returnCode = true;
-				break;
-			case DELETE:
-				returnCode = cache.remove(cacheKey);
-				break;
-			case FLUSH:
-				if(cache instanceof ApiEhcache) {
-					((ApiEhcache) cache).flush();
+				case GENERATE:
+					String hash = MessageUtils.generateMD5Hash(message);
+					if (hash != null) {
+						cache.put(cacheKey, hash);
+					}
 					returnCode = true;
-				}
-				break;
-			case CLEAR:
-				cache.clear();
-				returnCode = true;
-				break;
+					break;
+				case GET:
+					returnCode = cache.get(cacheKey);
+					break;
+				case SET:
+					try {
+						cache.put(cacheKey, message.asString());
+					} catch (IOException e) {
+						throw new PipeRunException(this, "cannot open stream", e);
+					}
+					returnCode = true;
+					break;
+				case DELETE:
+					returnCode = cache.remove(cacheKey);
+					break;
+				case FLUSH:
+					if (cache instanceof ApiEhcache) {
+						((ApiEhcache) cache).flush();
+						returnCode = true;
+					}
+					break;
+				case CLEAR:
+					cache.clear();
+					returnCode = true;
+					break;
 
-			default:
-				throw new PipeRunException(this, "action not found ["+getAction()+"]");
+				default:
+					throw new PipeRunException(this, "action not found [" + getAction() + "]");
 			}
 
 			return new PipeRunResult(getSuccessForward(), returnCode);
@@ -152,13 +151,13 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		PipeForward pipeForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 		String msg;
 
-		if(cache == null)
+		if (cache == null)
 			msg = "failed to locate cache";
 		else
-			msg = "failed to locate eTag ["+cacheKey+"] in cache";
+			msg = "failed to locate eTag [" + cacheKey + "] in cache";
 
-		if (pipeForward==null) {
-			throw new PipeRunException (this, msg);
+		if (pipeForward == null) {
+			throw new PipeRunException(this, msg);
 		}
 
 		return new PipeRunResult(pipeForward, "");
@@ -173,7 +172,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 	}
 
 	public String getUriPattern() {
-		if(uriPattern != null) {
+		if (uriPattern != null) {
 			return uriPattern.toLowerCase();
 		}
 		return null;

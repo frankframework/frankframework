@@ -12,13 +12,13 @@ public class PasswordHashTest {
 	@Test
 	public void testBasicHashAndValidation() throws Exception {
 		// Print out 10 hashes
-		for(int i = 0; i < 10; i++) {
+		for (int i = 0; i < 10; i++) {
 			assertTrue(PasswordHash.createHash("p\r\nassw0Rd!").contains(":"));
 			assertEquals(134, PasswordHash.createHash("p\r\nassw0Rd!").length());
 		}
 
 		// Test password validation
-		for(int i = 0; i < 100; i++) {
+		for (int i = 0; i < 100; i++) {
 			String password = "" + i;
 			String hash = PasswordHash.createHash(password);
 			String secondHash = PasswordHash.createHash(password);

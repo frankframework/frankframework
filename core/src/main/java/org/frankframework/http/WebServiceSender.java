@@ -36,29 +36,28 @@ import org.frankframework.util.CredentialFactory;
 /**
  * Sender that sends a message via a WebService.
  *
- *
  * @author Gerrit van Brakel
  * @author Niels Meijer
- * @since 7.0
  * @version 2.0
+ * @since 7.0
  */
 public class WebServiceSender extends HttpSender {
 
 	private @Getter boolean soap = true;
 	private @Getter String soapAction = "";
 	private @Getter String soapActionParam = "soapAction";
-	private @Getter String encodingStyle=null;
-	private @Getter String serviceNamespace=null;
-	private @Getter String serviceNamespaceParam="serviceNamespace";
+	private @Getter String encodingStyle = null;
+	private @Getter String serviceNamespace = null;
+	private @Getter String serviceNamespaceParam = "serviceNamespace";
 	private @Getter String namespaceDefs = null;
-	private @Getter boolean throwApplicationFaults=true;
+	private @Getter boolean throwApplicationFaults = true;
 	private @Getter String wssAuthAlias;
 	private @Getter String wssUserName;
 	private @Getter String wssPassword;
 	private @Getter boolean wssPasswordDigest = true;
 
 	private SoapWrapper soapWrapper;
-	private CredentialFactory wsscf=null;
+	private CredentialFactory wsscf = null;
 	private Parameter soapActionParameter;
 	private Parameter serviceNamespaceURIParameter;
 
@@ -70,7 +69,7 @@ public class WebServiceSender extends HttpSender {
 
 	@Override
 	public String getLogPrefix() {
-		return "WebServiceSender ["+getName()+"] to ["+getPhysicalDestinationName()+"] ";
+		return "WebServiceSender [" + getName() + "] to [" + getPhysicalDestinationName() + "] ";
 	}
 
 	@Override
@@ -84,14 +83,14 @@ public class WebServiceSender extends HttpSender {
 		}
 		soapWrapper = SoapWrapper.getInstance();
 
-		if (paramList!=null && StringUtils.isNotEmpty(getSoapActionParam())) {
-			soapActionParameter=paramList.findParameter(getSoapActionParam());
-			if(soapActionParameter != null) {
+		if (paramList != null && StringUtils.isNotEmpty(getSoapActionParam())) {
+			soapActionParameter = paramList.findParameter(getSoapActionParam());
+			if (soapActionParameter != null) {
 				requestOrBodyParamsSet.remove(soapActionParameter.getName());
 				headerParamsSet.remove(soapActionParameter.getName());
 			}
-			serviceNamespaceURIParameter=paramList.findParameter(getServiceNamespaceParam());
-			if(serviceNamespaceURIParameter != null) {
+			serviceNamespaceURIParameter = paramList.findParameter(getServiceNamespaceParam());
+			if (serviceNamespaceURIParameter != null) {
 				requestOrBodyParamsSet.remove(serviceNamespaceURIParameter.getName());
 				headerParamsSet.remove(serviceNamespaceURIParameter.getName());
 			}
@@ -99,7 +98,7 @@ public class WebServiceSender extends HttpSender {
 
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
-			log.debug(getLogPrefix()+"created CredentialFactory for username=["+wsscf.getUsername()+"]");
+			log.debug(getLogPrefix() + "created CredentialFactory for username=[" + wsscf.getUsername() + "]");
 		}
 	}
 
@@ -107,17 +106,17 @@ public class WebServiceSender extends HttpSender {
 	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 
 		String serviceNamespaceURI;
-		if (serviceNamespaceURIParameter!=null) {
-			serviceNamespaceURI=parameters.get(getServiceNamespaceParam()).asStringValue(getServiceNamespace());
+		if (serviceNamespaceURIParameter != null) {
+			serviceNamespaceURI = parameters.get(getServiceNamespaceParam()).asStringValue(getServiceNamespace());
 		} else {
-			serviceNamespaceURI=getServiceNamespace();
+			serviceNamespaceURI = getServiceNamespace();
 		}
 
 		String soapActionURI;
-		if (soapActionParameter!=null) {
-			soapActionURI=parameters.get(getSoapActionParam()).asStringValue(getSoapAction());
+		if (soapActionParameter != null) {
+			soapActionURI = parameters.get(getSoapActionParam()).asStringValue(getSoapAction());
 		} else {
-			soapActionURI=getSoapAction();
+			soapActionURI = getSoapAction();
 		}
 
 		Message soapmsg;
@@ -128,16 +127,16 @@ public class WebServiceSender extends HttpSender {
 				soapmsg = message;
 			}
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix()+"error reading message", e);
+			throw new SenderException(getLogPrefix() + "error reading message", e);
 		}
 
-		if (wsscf!=null) {
+		if (wsscf != null) {
 			soapmsg = soapWrapper.signMessage(soapmsg, wsscf.getUsername(), wsscf.getPassword(), isWssPasswordDigest());
 		}
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix() + "SOAPMSG [" + soapmsg + "]");
 
 		HttpRequestBase method = super.getMethod(uri, soapmsg, parameters, session);
-		log.debug(getLogPrefix()+"setting SOAPAction header ["+soapActionURI+"]");
+		log.debug(getLogPrefix() + "setting SOAPAction header [" + soapActionURI + "]");
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;
 	}
@@ -162,12 +161,13 @@ public class WebServiceSender extends HttpSender {
 			}
 			return httpResult;
 		} catch (Exception e) {
-			throw new SenderException("cannot retrieve result message",e);
+			throw new SenderException("cannot retrieve result message", e);
 		}
 	}
 
 	/**
 	 * when <code>true</code>, messages sent are put in a soap envelope and the soap envelope is removed from received messages (soap envelope will not be visible to the pipeline)
+	 *
 	 * @ff.default true
 	 */
 	public void setSoap(boolean b) {
@@ -219,6 +219,7 @@ public class WebServiceSender extends HttpSender {
 
 	/**
 	 * controls whether soap faults generated by the application generate an exception, or are treated as 'normal' messages
+	 *
 	 * @ff.default true
 	 */
 	public void setThrowApplicationFaults(boolean b) {
@@ -269,6 +270,7 @@ public class WebServiceSender extends HttpSender {
 
 	/**
 	 * when true, the password is sent digested. otherwise it is sent in clear text
+	 *
 	 * @ff.default true
 	 */
 	public void setWssPasswordDigest(boolean b) {

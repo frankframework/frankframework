@@ -15,20 +15,18 @@
 */
 package org.frankframework.filesystem.ftp;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
 
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.stream.Message;
 
 /**
  * Wrapper around a FTPFile to allow for relative path operations
  *
  * @author Niels Meijer
- *
  */
 public class SftpFileRef {
 
@@ -44,7 +42,7 @@ public class SftpFileRef {
 	}
 
 	/**
-	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
+	 * @param name   A canonical name might be provided, strip the path when present and only use the actual file name.
 	 * @param folder The directory the file. This always has presedence over the canonical path provided by the name.
 	 */
 	public SftpFileRef(String name, String folder) {
@@ -67,7 +65,7 @@ public class SftpFileRef {
 	}
 
 	private void setFolder(String folder) {
-		if(StringUtils.isNotEmpty(folder)) {
+		if (StringUtils.isNotEmpty(folder)) {
 			this.folder = FilenameUtils.normalize(folder, true);
 		}
 	}
@@ -80,7 +78,7 @@ public class SftpFileRef {
 
 	@Override
 	public String toString() {
-		return "file-ref name["+name+"] folder["+getFolder()+"]";
+		return "file-ref name[" + name + "] folder[" + getFolder() + "]";
 	}
 
 	/**
@@ -102,7 +100,7 @@ public class SftpFileRef {
 	}
 
 	public long getSize() {
-		if(attributes == null) {
+		if (attributes == null) {
 			return Message.MESSAGE_SIZE_UNKNOWN;
 		}
 

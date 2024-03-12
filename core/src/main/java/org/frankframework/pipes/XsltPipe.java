@@ -15,10 +15,8 @@
 */
 package org.frankframework.pipes;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -36,20 +34,20 @@ import org.frankframework.senders.XsltSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+import org.springframework.beans.factory.InitializingBean;
 
 
 /**
  * Perform an XSLT transformation with a specified stylesheet.
  *
- * @ff.parameters any parameters defined on the pipe will be applied to the created transformer
- *
  * @author Johan Verrips
+ * @ff.parameters any parameters defined on the pipe will be applied to the created transformer
  */
 @Category("Basic")
 @ElementType(ElementTypes.TRANSLATOR)
 public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
-	private String sessionKey=null;
+	private String sessionKey = null;
 
 	private @Getter XsltSender sender = createXsltSender();
 
@@ -92,7 +90,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		try {
 			sender.close();
 		} catch (SenderException e) {
-			log.warn("exception closing XsltSender",e);
+			log.warn("exception closing XsltSender", e);
 		}
 		super.stop();
 	}
@@ -119,6 +117,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	/**
 	 * If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes
+	 *
 	 * @ff.default set by appconstant xslt.streaming.default
 	 */
 	public void setStreamingXslt(boolean streamingActive) {
@@ -154,6 +153,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
+
 	public String getXpathExpression() {
 		return sender.getXpathExpression();
 	}
@@ -172,6 +172,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}
+
 	public String getNamespaceDefs() {
 		return sender.getNamespaceDefs();
 	}
@@ -221,7 +222,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	@Override
 	public void setName(String name) {
 		super.setName(name);
-		sender.setName("Sender of Pipe ["+name+"]");
+		sender.setName("Sender of Pipe [" + name + "]");
 	}
 
 }

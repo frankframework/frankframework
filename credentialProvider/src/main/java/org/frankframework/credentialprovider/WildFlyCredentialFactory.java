@@ -37,11 +37,11 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 
 	private static final ServiceName SERVICE_NAME_CRED_STORE = ServiceName.of("org", "wildfly", "security", "credential-store");
 
-	public static final String WILDFLY_CREDENTIALSTORE_PROPERTY="credentialFactory.wildfly.credentialStore";
+	public static final String WILDFLY_CREDENTIALSTORE_PROPERTY = "credentialFactory.wildfly.credentialStore";
 
 	private String credentialStore = "CS";
 
-	private CredentialStore cs=null;
+	private CredentialStore cs = null;
 
 	@Override
 	public void initialize() {
@@ -49,14 +49,14 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 		credentialStore = appConstants.getProperty(WILDFLY_CREDENTIALSTORE_PROPERTY, credentialStore);
 		if (StringUtils.isEmpty(credentialStore)) {
-			throw new IllegalStateException("No valid property ["+WILDFLY_CREDENTIALSTORE_PROPERTY+"] found");
+			throw new IllegalStateException("No valid property [" + WILDFLY_CREDENTIALSTORE_PROPERTY + "] found");
 		}
 	}
 
 	@Override
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		CredentialStore cs = getCredentialStore(credentialStore);
-		if (cs==null) {
+		if (cs == null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
 		}
 		return new WildFlyCredentials(cs, alias, defaultUsernameSupplier, defaultPasswordSupplier);
@@ -66,9 +66,9 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	public boolean hasCredentials(String alias) {
 		CredentialStore cs = getCredentialStore(credentialStore);
 		try {
-			return cs!=null && (cs.exists(alias, PasswordCredential.class) || cs.exists(alias+"/username", PasswordCredential.class));
+			return cs != null && (cs.exists(alias, PasswordCredential.class) || cs.exists(alias + "/username", PasswordCredential.class));
 		} catch (CredentialStoreException e) {
-			log.fine(()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
+			log.fine(() -> "exception testing for alias [" + alias + "] (" + e.getClass().getName() + ") :" + e.getMessage());
 			return false;
 		}
 	}
@@ -76,15 +76,15 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	@Override
 	public Collection<String> getConfiguredAliases() throws UnsupportedOperationException, CredentialStoreException {
 		CredentialStore cs = getCredentialStore(credentialStore);
-		if (cs==null) {
+		if (cs == null) {
 			return null;
 		}
 		Set<String> result = new LinkedHashSet<>();
 		Set<String> aliases = cs.getAliases();
-		if (aliases!=null) {
+		if (aliases != null) {
 			for (String csAlias : aliases) {
 				if (csAlias.endsWith("/username")) {
-					csAlias = csAlias.substring(0, csAlias.length()-9);
+					csAlias = csAlias.substring(0, csAlias.length() - 9);
 				}
 				result.add(csAlias);
 			}
@@ -93,10 +93,10 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	}
 
 	private CredentialStore getCredentialStore(String credentialStore) {
-		if (cs==null) {
+		if (cs == null) {
 			ServiceContainer registry = getServiceContainer();
 
-			if (registry==null) {
+			if (registry == null) {
 				throw new IllegalStateException("no ServiceContainer registry found");
 			}
 			ServiceController<?> credStoreService = registry.getService(ServiceName.of(SERVICE_NAME_CRED_STORE, credentialStore));

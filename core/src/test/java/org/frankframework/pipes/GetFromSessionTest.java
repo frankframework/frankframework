@@ -19,6 +19,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +55,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "dummyString", session);
-		String result=prr.getResult().asString();
+		String result = prr.getResult().asString();
 		assertEquals(DUMMY_DATA, result.trim());
 	}
 
@@ -130,10 +131,10 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		//It's a bit random how the map is sorted.. sometimes key2 appears before key1
 		BufferedReader bufReader = new BufferedReader(new StringReader(result));
 		String line;
-		while( (line=bufReader.readLine()) != null ) {
-			if(line.indexOf("key1") > 0)
+		while ((line = bufReader.readLine()) != null) {
+			if (line.indexOf("key1") > 0)
 				key1 = line.trim();
-			if(line.indexOf("key2") > 0)
+			if (line.indexOf("key2") > 0)
 				key2 = line.trim();
 		}
 

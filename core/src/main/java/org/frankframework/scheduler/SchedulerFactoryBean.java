@@ -24,8 +24,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * This instance can get detached from the ApplicationContext when it fails to execute the refresh method.
  * The issue arose when the IBIS is reconnecting but fails to init the txManager.
  *
- * @author	Niels Meijer
- *
+ * @author Niels Meijer
  */
 public class SchedulerFactoryBean extends org.springframework.scheduling.quartz.SchedulerFactoryBean {
 
@@ -33,6 +32,7 @@ public class SchedulerFactoryBean extends org.springframework.scheduling.quartz.
 	public void setDataSource(DataSource dataSource) {
 		//Make sure this isn't autowired by Spring
 	}
+
 	@Override
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
 		//Make sure this isn't autowired by Spring

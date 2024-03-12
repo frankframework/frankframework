@@ -23,7 +23,9 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.util.MimeType;
 
 public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
@@ -35,7 +37,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		return zipWriterPipe;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	private Collection<TestCollector, TestCollectorPart> getCollectionFromSession() {
 		Collection collection = (Collection) session.get("zipwriterhandle");
 		assertNotNull(collection);
@@ -108,7 +110,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	void testLast() throws Exception {
 		createCollector();
 		pipe.setAction(Action.LAST);
-		pipe.addParameter(new Parameter("filename","fakeFilename"));
+		pipe.addParameter(new Parameter("filename", "fakeFilename"));
 		configureAndStartPipe();
 
 		String fileContents = "some text to be compressed";

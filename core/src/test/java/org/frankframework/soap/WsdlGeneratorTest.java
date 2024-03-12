@@ -17,6 +17,7 @@ import org.frankframework.pipes.XmlValidator;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 
 public class WsdlGeneratorTest {
@@ -25,7 +26,7 @@ public class WsdlGeneratorTest {
 
 	private PipeLine createPipeline() throws Exception {
 		EchoPipe pipe = new EchoPipe();
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward("success", null));
 		pipe.setName(pipe.getClass().getSimpleName().concat("4WsdlGeneratorTest"));
 		PipeLine pipeline = new PipeLine();
 		pipeline.addPipe(pipe);
@@ -46,7 +47,7 @@ public class WsdlGeneratorTest {
 	//Catch any file-not-found exceptions beforehand
 	private String validateResource(String schema) {
 		URL url = this.getClass().getResource(schema);
-		assertNotNull(url, "File ["+schema+"] not found");
+		assertNotNull(url, "File [" + schema + "] not found");
 		return schema;
 	}
 

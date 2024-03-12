@@ -10,7 +10,7 @@ import javax.transaction.xa.Xid;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.util.LogUtil;
 
-public class XaDatasourceCommitStopper extends XaResourceObserver{
+public class XaDatasourceCommitStopper extends XaResourceObserver {
 	protected static Logger LOG = LogUtil.getLogger(XaDatasourceCommitStopper.class);
 
 	private static boolean stop;
@@ -26,7 +26,7 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 			// Signal all waiting that they can continue
 			LOG.info("Cleaning up pending commits that are on hold -- Signalling other participants they can proceed to do commit");
 			int cs1 = commitGuard.arriveAndAwaitAdvance();
-			LOG.info ("<*> Phase at CS1: {}", cs1);
+			LOG.info("<*> Phase at CS1: {}", cs1);
 			LOG.info("Waiting for other participants to have finished their commits");
 			// Wait for all commits to have completed before continuing
 			int cs2 = commitGuard.arriveAndAwaitAdvance();

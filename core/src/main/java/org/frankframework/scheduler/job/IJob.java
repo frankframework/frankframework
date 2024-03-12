@@ -31,8 +31,9 @@ public interface IJob extends IConfigurable {
 	/**
 	 * Actual implementation of the {@link IJob}. Is wrapped around a {@link Locker}, {@link MessageKeeper exceptions}
 	 * and {@link StatisticsKeeper statistics} will be managed automatically.
-	 * @exception TimeoutException when the TransactionTimeout has been reached
-	 * @exception JobExecutionException when the implementation fails to execute
+	 *
+	 * @throws TimeoutException      when the TransactionTimeout has been reached
+	 * @throws JobExecutionException when the implementation fails to execute
 	 */
 	public void execute() throws JobExecutionException, TimeoutException;
 
@@ -42,6 +43,7 @@ public interface IJob extends IConfigurable {
 	 * A value of 0 in combination with function 'sendMessage' will set dependencyTimeout on the IbisLocalSender to -1 to keep waiting indefinitely instead of 60 seconds for the adapter to start.
 	 */
 	public void setInterval(long interval);
+
 	public long getInterval();
 
 	/**
@@ -49,6 +51,7 @@ public interface IJob extends IConfigurable {
 	 * Can <code>not</code> be used in combination with Interval.
 	 */
 	public void setCronExpression(String cronExpression);
+
 	public String getCronExpression();
 
 	public JobDetail getJobDetail();
@@ -72,6 +75,7 @@ public interface IJob extends IConfigurable {
 	 * In case another thread, potentially on another server, holds the lock and does not release it in a timely manner, it will not trigger the job.
 	 */
 	public void setLocker(Locker locker);
+
 	public Locker getLocker();
 
 	/** Called from {@link ConfiguredJob} which should trigger this job definition. */

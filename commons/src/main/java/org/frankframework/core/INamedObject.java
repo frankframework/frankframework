@@ -18,7 +18,7 @@ package org.frankframework.core;
 /**
  * The <code>INamedObject</code> is implemented by all objects that have a name
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public interface INamedObject {
 
@@ -26,5 +26,6 @@ public interface INamedObject {
 	 * The functional name of the object.
 	 */
 	public void setName(String name);
+
 	public String getName();
 }

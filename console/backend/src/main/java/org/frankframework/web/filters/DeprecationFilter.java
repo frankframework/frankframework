@@ -34,11 +34,11 @@ import org.springframework.core.env.Environment;
 
 /**
  * Manages deprecations per resource/collection.
- *
+ * <p>
  * Default JAX-RS provider and is automatically picked-up by the FF!API Spring context because of the package (component) scanner.
  *
- * @since   7.8.1
- * @author  Niels Meijer
+ * @author Niels Meijer
+ * @since 7.8.1
  */
 
 @Provider
@@ -55,14 +55,14 @@ public class DeprecationFilter implements ContainerRequestFilter, EnvironmentAwa
 	@Override
 	public void filter(ContainerRequestContext requestContext) {
 		Message message = JAXRSUtils.getCurrentMessage();
-		Method method = (Method)message.get("org.apache.cxf.resource.method");
-		if(method == null) {
+		Method method = (Method) message.get("org.apache.cxf.resource.method");
+		if (method == null) {
 			log.error("unable to fetch resource method from CXF Message");
 			requestContext.abortWith(SERVER_ERROR);
 			return;
 		}
 
-		if(!allowDeprecatedEndpoints && method.isAnnotationPresent(Deprecated.class)) {
+		if (!allowDeprecatedEndpoints && method.isAnnotationPresent(Deprecated.class)) {
 			log.warn("endpoint [{}] has been deprecated, set property [{}=true] to restore functionality", getFullPath(method), ALLOW_DEPRECATED_ENDPOINTS_KEY);
 			requestContext.abortWith(DEPRECATION_ERROR);
 		}
@@ -75,15 +75,15 @@ public class DeprecationFilter implements ContainerRequestFilter, EnvironmentAwa
 		final String basePath = (classPath != null) ? classPath.value() : "/";
 
 		StringBuilder pathToUse = new StringBuilder();
-		if(!basePath.startsWith("/")) {
+		if (!basePath.startsWith("/")) {
 			pathToUse.append("/");
 		}
 		pathToUse.append(basePath);
 
 		Path methodPath = method.getAnnotation(Path.class);
-		if(methodPath != null) {
+		if (methodPath != null) {
 			final String path = methodPath.value();
-			pathToUse.append( (basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
+			pathToUse.append((basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
 		}
 		return pathToUse.toString();
 	}

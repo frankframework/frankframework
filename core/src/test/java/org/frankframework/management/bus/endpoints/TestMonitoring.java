@@ -32,11 +32,13 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 
@@ -47,7 +49,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-@WithMockUser(roles = { "IbisTester" })
+@WithMockUser(roles = {"IbisTester"})
 public class TestMonitoring extends BusTestBase {
 	private static final String TEST_MONITOR_NAME = "TestMonitor";
 	private static final String TEST_TRIGGER_EVENT_NAME = "testEvent1";
@@ -170,7 +172,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(201, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload()),
 				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(1).getDestinationsAsString())
-			);
+		);
 	}
 
 	@ParameterizedTest
@@ -191,7 +193,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals("raise".equals(state), getMonitorManager().getMonitor(0).isRaised()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
-			);
+		);
 	}
 
 	// This also indirectly tests the use of EnumUtils to parse DTO enums
@@ -199,7 +201,7 @@ public class TestMonitoring extends BusTestBase {
 	@ValueSource(strings = {"TECHNICAL", "technical", "tEchNical"})
 	public void updateMonitor(String type) {
 		// Arrange
-		String requestJson = "{\"name\":\"newName\", \"type\":\""+type+"\", \"destinations\":[\"mockDestination\"]}";
+		String requestJson = "{\"name\":\"newName\", \"type\":\"" + type + "\", \"destinations\":[\"mockDestination\"]}";
 		MessageBuilder<String> request = createRequestMessage(requestJson, BusTopic.MONITORING, BusAction.MANAGE);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		request.setHeader("monitor", TEST_MONITOR_NAME);
@@ -215,7 +217,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload()),
 				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(0).getDestinationsAsString())
-			);
+		);
 	}
 
 	@Test
@@ -230,9 +232,9 @@ public class TestMonitoring extends BusTestBase {
 
 		// Assert
 		assertAll(
-			() -> assertEquals(0, getMonitorManager().getMonitors().size()),
-			() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
-			() -> assertEquals("no-content", response.getPayload())
+				() -> assertEquals(0, getMonitorManager().getMonitors().size()),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
+				() -> assertEquals("no-content", response.getPayload())
 		);
 	}
 
@@ -287,7 +289,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(2, getMonitorManager().getMonitor(0).getTriggers().size()),
 				() -> assertEquals(201, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
-			);
+		);
 
 		// Assert Trigger
 		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(1);
@@ -298,7 +300,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(TriggerType.ALARM, trigger.getTriggerType()),
 				() -> assertThat(trigger.getEventCodes(), containsInAnyOrder("Receiver Configured")),
 				() -> assertEquals(SourceFiltering.NONE, trigger.getSourceFiltering())
-			);
+		);
 	}
 
 	// The request body only contains fields we want to update.
@@ -320,7 +322,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
-			);
+		);
 
 		// Assert Trigger
 		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
@@ -334,7 +336,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertThat(trigger.getAdapterFilters().keySet(), containsInAnyOrder("adapter1", "adapter2")),
 				() -> assertEquals(0, trigger.getAdapterFilters().get("adapter1").getSubObjectList().size()),
 				() -> assertEquals(0, trigger.getAdapterFilters().get("adapter2").getSubObjectList().size())
-			);
+		);
 	}
 
 	// The request body contains all fields
@@ -356,7 +358,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
-			);
+		);
 
 		// Assert Trigger
 		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
@@ -370,7 +372,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertThat(trigger.getAdapterFilters().keySet(), containsInAnyOrder("adapter1", "adapter2")),
 				() -> assertEquals(1, trigger.getAdapterFilters().get("adapter1").getSubObjectList().size()),
 				() -> assertEquals(1, trigger.getAdapterFilters().get("adapter2").getSubObjectList().size())
-			);
+		);
 	}
 
 	// The request body contains filter:NONE as well as filters
@@ -392,7 +394,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
-			);
+		);
 
 		// Assert Trigger
 		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
@@ -404,7 +406,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertThat(trigger.getEventCodes(), containsInAnyOrder("Pipe Exception", "Sender Timeout")),
 				() -> assertEquals(SourceFiltering.NONE, trigger.getSourceFiltering()),
 				() -> assertEquals(0, trigger.getAdapterFilters().size())
-			);
+		);
 	}
 
 	// The request body contains invalid, but parsable JSON
@@ -443,6 +445,6 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(0, getMonitorManager().getMonitor(0).getTriggers().size()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
-			);
+		);
 	}
 }

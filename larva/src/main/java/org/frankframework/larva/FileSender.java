@@ -21,14 +21,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.helper.ProjectHelperImpl;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.SenderException;
@@ -36,6 +34,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.Dir2Xml;
+import org.springframework.context.ApplicationContext;
 
 /**
  * File sender for the Test Tool.
@@ -76,7 +75,7 @@ public class FileSender implements IConfigurable {
 	 * file, this method will check if the file is deleted by another party
 	 * (detect reading of the file).
 	 *
-	 * @param message  the message to write to file
+	 * @param message the message to write to file
 	 */
 	public void sendMessage(String message) throws TimeoutException, SenderException {
 		if (runAnt) {
@@ -102,16 +101,16 @@ public class FileSender implements IConfigurable {
 						path.mkdirs();
 					}
 
-					try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+					try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
 						fileOutputStream.write(message.getBytes(encoding));
-					} catch(Exception e) {
+					} catch (Exception e) {
 						throw new SenderException("Exception writing file '" + filename + "': " + e.getMessage(), e);
 					}
 					long startTime = System.currentTimeMillis();
 					while (checkDelete && file.exists() && System.currentTimeMillis() < startTime + timeout) {
 						try {
 							Thread.sleep(interval);
-						} catch(InterruptedException e) {
+						} catch (InterruptedException e) {
 							throw new SenderException("Exception waiting for deletion of file '" + filename + "': " + e.getMessage(), e);
 						}
 					}
@@ -124,7 +123,7 @@ public class FileSender implements IConfigurable {
 	}
 
 	public String getMessage() {
-		Dir2Xml dx=new Dir2Xml();
+		Dir2Xml dx = new Dir2Xml();
 		dx.setPath(file.getAbsolutePath());
 		return dx.getRecursiveDirList();
 	}

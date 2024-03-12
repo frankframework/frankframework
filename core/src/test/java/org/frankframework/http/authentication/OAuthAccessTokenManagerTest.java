@@ -12,6 +12,7 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.frankframework.http.HttpSender;
 import org.frankframework.util.CredentialFactory;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -37,7 +38,7 @@ public class OAuthAccessTokenManagerTest {
 	}
 
 	private String getEndpoint() {
-		return "http://localhost:"+tokenServer.getPort();
+		return "http://localhost:" + tokenServer.getPort();
 	}
 
 	@Test
@@ -48,7 +49,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getEndpoint()+MockTokenServer.PATH, scope, client_cf, true, false, httpSender, -1);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getEndpoint() + MockTokenServer.PATH, scope, client_cf, true, false, httpSender, -1);
 
 		String accessToken = accessTokenManager.getAccessToken(null, true);
 
@@ -66,7 +67,7 @@ public class OAuthAccessTokenManagerTest {
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 		Credentials credentials = new UsernamePasswordCredentials(username, password);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getEndpoint()+MockTokenServer.PATH, scope, client_cf, false, false, httpSender, -1);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getEndpoint() + MockTokenServer.PATH, scope, client_cf, false, false, httpSender, -1);
 
 		String accessToken = accessTokenManager.getAccessToken(credentials, true);
 
@@ -81,7 +82,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getEndpoint()+MockTokenServer.PATH, scope, client_cf, true, false, httpSender, -1);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getEndpoint() + MockTokenServer.PATH, scope, client_cf, true, false, httpSender, -1);
 
 		String accessToken = accessTokenManager.getAccessToken(null, true);
 

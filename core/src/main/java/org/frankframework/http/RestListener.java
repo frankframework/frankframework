@@ -46,8 +46,9 @@ import org.frankframework.stream.Message;
  * Servlets' multipart configuration expects a Content-Type of <code>multipart/form-data</code> (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
  * So do not use other multipart content types like <code>multipart/related</code>
  * </p>
- * @author  Niels Meijer
- * @author  Gerrit van Brakel
+ *
+ * @author Niels Meijer
+ * @author Gerrit van Brakel
  */
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
@@ -58,7 +59,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	private @Getter String contentTypeSessionKey;
 	private @Getter String restPath = "/rest";
 	private @Getter Boolean view = null;
-	private @Getter String authRoles="IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService";
+	private @Getter String authRoles = "IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService";
 	private @Getter boolean writeToSecLog = false;
 	private @Getter boolean writeSecLogMessage = false;
 	private @Getter boolean retrieveMultipart = true;
@@ -72,13 +73,14 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public enum MediaTypes {
 		XML, JSON, TEXT;
 	}
+
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (view==null) {
+		if (view == null) {
 			if (StringUtils.isEmpty(getMethod()) || "GET".equalsIgnoreCase(getMethod())) {
 				setView(true);
 			} else {
@@ -90,7 +92,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	@Override
 	public void open() throws ListenerException {
 		super.open();
-		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
+		RestServiceDispatcher.getInstance()
+				.registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
 	}
 
 	@Override
@@ -112,7 +115,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 
 		//Check if consumes has been set or contentType is set to JSON
-		if(getConsumes()== MediaTypes.JSON && "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
+		if (getConsumes() == MediaTypes.JSON && "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
 			try {
 				message = transformToXml(message);
 			} catch (PipeRunException e) {
@@ -122,8 +125,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		int eTag = 0;
 
 		//Check if contentType is not overwritten which disabled auto-converting and mediatype headers
-		if(contentType == null || StringUtils.isEmpty(contentType) || contentType.equalsIgnoreCase("*/*")) {
-			switch(getProduces()) {
+		if (contentType == null || StringUtils.isEmpty(contentType) || contentType.equalsIgnoreCase("*/*")) {
+			switch (getProduces()) {
 				case XML:
 					session.put("contentType", "application/xml");
 					break;
@@ -134,29 +137,28 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 					session.put("contentType", "text/plain");
 					break;
 				default:
-					throw new IllegalStateException("Unknown mediatype ["+getProduces()+"]");
+					throw new IllegalStateException("Unknown mediatype [" + getProduces() + "]");
 			}
 
 			response = super.processRequest(message, session);
-			if(response != null && !response.isEmpty())
+			if (response != null && !response.isEmpty())
 				eTag = response.hashCode();
 
-			if(getProduces()== MediaTypes.JSON) {
+			if (getProduces() == MediaTypes.JSON) {
 				try {
 					response = transformToJson(response);
 				} catch (PipeRunException e) {
 					throw new ListenerException("Failed to transform XML to JSON", e);
 				}
 			}
-		}
-		else {
+		} else {
 			response = super.processRequest(message, session);
-			if(response != null && !response.isEmpty())
+			if (response != null && !response.isEmpty())
 				eTag = response.hashCode();
 		}
 
-		if(!session.containsKey("etag") && isGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
-			session.put("etag", "rest_"+eTag);
+		if (!session.containsKey("etag") && isGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
+			session.put("etag", "rest_" + eTag);
 		}
 
 		return response;
@@ -188,7 +190,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "uriPattern: "+(getUriPattern()==null?"-any-":getUriPattern())+"; method: "+(getMethod()==null?"all":getMethod());
+		return "uriPattern: " + (getUriPattern() == null ? "-any-" : getUriPattern()) + "; method: " + (getMethod() == null ? "all" : getMethod());
 	}
 
 	public String getRestUriPattern() {
@@ -196,7 +198,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 
-	/** Uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'.  */
+	/** Uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'. */
 	public void setUriPattern(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
@@ -223,14 +225,16 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	/**
 	 * Indicates whether this listener supports a view (and a link should be put in the ibis console)
+	 *
 	 * @ff.default if <code>method=get</code> then <code>true</code>, else <code>false</code>
 	 */
 	public void setView(boolean b) {
 		view = b;
 	}
+
 	public boolean isView() {
-		if (view==null ) {
-			log.warn("RestListener ["+getName()+"] appears to be not configured");
+		if (view == null) {
+			log.warn("RestListener [" + getName() + "] appears to be not configured");
 			return false;
 		}
 		return view;
@@ -238,7 +242,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	/**
 	 * Comma separated list of authorization roles which are granted for this rest service
-	 * @ff.default IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService
+	 *
+	 * @ff.default IbisAdmin, IbisDataAdmin, IbisTester, IbisObserver, IbisWebService
 	 */
 	public void setAuthRoles(String string) {
 		authRoles = string;
@@ -254,6 +259,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	/**
 	 * Indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!
+	 *
 	 * @ff.default true
 	 */
 	public void setRetrieveMultipart(boolean b) {
@@ -262,6 +268,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	/**
 	 * Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} receives as input
+	 *
 	 * @ff.default XML
 	 */
 	public void setConsumes(MediaTypes consumes) {
@@ -270,6 +277,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	/**
 	 * Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message
+	 *
 	 * @ff.default XML
 	 */
 	public void setProduces(MediaTypes produces) {
@@ -278,6 +286,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	/**
 	 * If set to true the ibis will automatically validate and process etags
+	 *
 	 * @ff.default false
 	 */
 	public void setValidateEtag(boolean b) {
@@ -286,6 +295,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	/**
 	 * If set to true the ibis will automatically create an etag
+	 *
 	 * @ff.default false
 	 */
 	public void setGenerateEtag(boolean b) {

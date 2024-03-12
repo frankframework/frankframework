@@ -18,10 +18,9 @@ package org.frankframework.stream.document;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.frankframework.stream.JsonEventHandler;
 import org.frankframework.stream.json.JsonWriter;
 import org.xml.sax.SAXException;
-
-import org.frankframework.stream.JsonEventHandler;
 
 public class JsonDocumentBuilder extends JsonNodeBuilder implements IDocumentBuilder {
 
@@ -39,9 +38,10 @@ public class JsonDocumentBuilder extends JsonNodeBuilder implements IDocumentBui
 
 	public JsonDocumentBuilder(JsonEventHandler handler) throws SAXException {
 		super(handler);
-		this.handler=handler;
+		this.handler = handler;
 		handler.startDocument();
 	}
+
 	@Override
 	public void close() throws SAXException {
 		try {

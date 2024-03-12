@@ -79,7 +79,6 @@ import org.frankframework.util.StringUtil;
  * Both CONTAINER and NONE are non-configurable default authenticators.
  *
  * @author Niels Meijer
- *
  */
 public class ServletManager implements ApplicationContextAware, InitializingBean {
 
@@ -120,7 +119,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	}
 
 	private void addDefaultAuthenticator(AuthenticationType type) {
-		if(!authenticators.containsKey(type.name())) {
+		if (!authenticators.containsKey(type.name())) {
 			Class<? extends IAuthenticator> clazz = type.getAuthenticator();
 			IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
 			authenticators.put(type.name(), authenticator);
@@ -130,7 +129,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	public void startAuthenticators() {
 		log.info("starting Authenticators {}", authenticators::values);
 
-		for(IAuthenticator authenticator : authenticators.values()) {
+		for (IAuthenticator authenticator : authenticators.values()) {
 			authenticator.build();
 		}
 	}
@@ -143,8 +142,8 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	private void resolveAndConfigureAuthenticator(String authenticatorName) {
 		AppConstants appConstants = AppConstants.getInstance();
-		String properyPrefix = "application.security.http.authenticators."+authenticatorName+".";
-		String type = AppConstants.getInstance().getProperty(properyPrefix+"type");
+		String properyPrefix = "application.security.http.authenticators." + authenticatorName + ".";
+		String type = AppConstants.getInstance().getProperty(properyPrefix + "type");
 		AuthenticationType auth = null;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);
@@ -154,13 +153,13 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		Class<? extends IAuthenticator> clazz = auth.getAuthenticator();
 		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
 
-		for(Method method: clazz.getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+		for (Method method : clazz.getMethods()) {
+			if (!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = appConstants.getProperty(properyPrefix+setter);
-			if(StringUtils.isEmpty(value))
+			String value = appConstants.getProperty(properyPrefix + setter);
+			if (StringUtils.isEmpty(value))
 				continue;
 
 			ClassUtils.invokeSetter(authenticator, method, value);
@@ -171,11 +170,12 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	/**
 	 * Register a new role
+	 *
 	 * @param roleNames String or multiple strings of roleNames to register
 	 */
 	public void declareRoles(List<String> roleNames) {
 		for (String role : roleNames) {
-			if(StringUtils.isNotEmpty(role) && !registeredRoles.contains(role)) {
+			if (StringUtils.isNotEmpty(role) && !registeredRoles.contains(role)) {
 				registeredRoles.add(role);
 
 				getServletContext().declareRoles(role);
@@ -185,7 +185,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	}
 
 	public void register(ServletConfiguration config) {
-		if(!config.isEnabled()) {
+		if (!config.isEnabled()) {
 			log.info("skip instantiating servlet name [{}] not enabled", config::getName);
 			return;
 		}
@@ -193,10 +193,10 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		registerServlet(config);
 
 		String authenticatorName = config.getAuthenticatorName();
-		if(StringUtils.isNotEmpty(authenticatorName)) {
+		if (StringUtils.isNotEmpty(authenticatorName)) {
 			IAuthenticator authenticator = authenticators.get(authenticatorName);
-			if(authenticator == null) {
-				throw new IllegalStateException("unable to configure servlet security, authenticator ["+authenticatorName+"] does not exist");
+			if (authenticator == null) {
+				throw new IllegalStateException("unable to configure servlet security, authenticator [" + authenticatorName + "] does not exist");
 			}
 			authenticator.registerServlet(config);
 		}
@@ -204,8 +204,8 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	private void registerServlet(ServletConfiguration config) {
 		String servletName = config.getName();
-		if(servlets.containsKey(servletName)) {
-			throw new IllegalArgumentException("unable to instantiate servlet ["+servletName+"], servlet name must be unique");
+		if (servlets.containsKey(servletName)) {
+			throw new IllegalArgumentException("unable to instantiate servlet [" + servletName + "], servlet name must be unique");
 		}
 
 		log.info("instantiating IbisInitializer servlet name [{}] servletClass [{}]", servletName, config.getServlet());
@@ -217,13 +217,13 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		declareRoles(config.getSecurityRoles());
 		serv.setServletSecurity(getServletSecurity(config));
 
-		if(!config.getInitParameters().isEmpty()) {
+		if (!config.getInitParameters().isEmpty()) {
 			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
-			for(Entry<String, String> entry : config.getInitParameters().entrySet()) {
+			for (Entry<String, String> entry : config.getInitParameters().entrySet()) {
 				String key = entry.getKey();
 				String value = entry.getValue();
-				if(!serv.setInitParameter(key, value)) {
-					log("unable to set init-parameter ["+key+"] with value ["+value+"] for servlet ["+servletName+"]", Level.ERROR);
+				if (!serv.setInitParameter(key, value)) {
+					log("unable to set init-parameter [" + key + "] with value [" + value + "] for servlet [" + servletName + "]", Level.ERROR);
 				}
 			}
 		}
@@ -241,33 +241,33 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	private void logServletInfo(Dynamic serv, ServletConfiguration config) {
 		StringBuilder builder = new StringBuilder("registered");
-		builder.append(" servlet ["+serv.getName()+"]");
+		builder.append(" servlet [" + serv.getName() + "]");
 		builder.append(" configuration ");
 		builder.append(config);
 
 		getServletContext().log(builder.toString());
 
-		if(log.isDebugEnabled()) builder.append(" class ["+serv.getClassName()+"]");
+		if (log.isDebugEnabled()) builder.append(" class [" + serv.getClassName() + "]");
 		log.info(builder::toString);
 	}
 
 	private ServletSecurityElement getServletSecurity(ServletConfiguration config) {
 		String[] roles = new String[0];
-		if(config.isAuthenticationEnabled() && authenticators.get(config.getAuthenticatorName()) instanceof JeeAuthenticator) {
+		if (config.isAuthenticationEnabled() && authenticators.get(config.getAuthenticatorName()) instanceof JeeAuthenticator) {
 			// Only set roles when using Container Based Authentication, else let Spring handle it.
 			roles = config.getSecurityRoles().toArray(new String[0]);
 		}
 		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(config.getTransportGuarantee(), roles);
 
 		List<HttpMethodConstraintElement> methodConstraints = new ArrayList<>();
-		if(allowUnsecureOptionsRequest) {
+		if (allowUnsecureOptionsRequest) {
 			methodConstraints.add(new HttpMethodConstraintElement("OPTIONS"));
 		}
 		return new ServletSecurityElement(httpConstraintElement, methodConstraints);
 	}
 
 	private void log(String msg, Level level) {
-		if(log.isInfoEnabled() )
+		if (log.isInfoEnabled())
 			getServletContext().log(msg);
 
 		log.log(level, msg);

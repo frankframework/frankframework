@@ -39,11 +39,13 @@ import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.StreamUtil;
+
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -134,26 +136,25 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 	/**
 	 * This test makes sure that when the config can't be found, it throws an ConfigurationException
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void testExceptionHandlingERROR() throws Exception {
 		mockDatabase(true);
 
-		appConstants.put("configurations."+getConfigurationName()+".reportLevel", "ERROR");
+		appConstants.put("configurations." + getConfigurationName() + ".reportLevel", "ERROR");
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = null;
 		boolean makeSureAnExceptionIsThrown = false;
 		try {
 			config = manager.get(getConfigurationName());
-		}
-		catch (ClassLoaderException e) {
+		} catch (ClassLoaderException e) {
 			String msg = e.getMessage();
 			assertTrue(msg.startsWith("Could not get config"));
 			assertTrue(msg.endsWith("from database"));
 			makeSureAnExceptionIsThrown = true;
-		}
-		finally {
+		} finally {
 			assertNull(config);
 			assertTrue(makeSureAnExceptionIsThrown);
 		}
@@ -161,6 +162,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 	/**
 	 * This test makes sure that when the config can't be found, it only throws a DEBUG error in the log4j logger
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -171,20 +173,19 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		try {
 			mockDatabase(true);
 
-			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "DEBUG");
+			appConstants.put("configurations." + getConfigurationName() + ".reportLevel", "DEBUG");
 			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 			ClassLoader config = manager.get(getConfigurationName()); //Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
-		}
-		finally {
+		} finally {
 			TestAppender.removeAppender(appender);
 		}
 		assertTrue(makeSureNoExceptionIsThrown);
 
 		List<LogEvent> log = appender.getLogEvents();
-		LogEvent firstLogEntry = log.get(log.size()-1);
+		LogEvent firstLogEntry = log.get(log.size() - 1);
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.DEBUG, firstLogEntry.getLevel());
 		String msg = firstLogEntry.getMessage().getFormattedMessage();
@@ -194,6 +195,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 	/**
 	 * This test makes sure that when the config can't be found, it only throws an INFO error in the log4j logger
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -204,20 +206,19 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		try {
 			mockDatabase(true);
 
-			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "INFO");
+			appConstants.put("configurations." + getConfigurationName() + ".reportLevel", "INFO");
 			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 			ClassLoader config = manager.get(getConfigurationName()); //Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
-		}
-		finally {
+		} finally {
 			TestAppender.removeAppender(appender);
 		}
 		assertTrue(makeSureNoExceptionIsThrown);
 
 		List<LogEvent> log = appender.getLogEvents();
-		LogEvent firstLogEntry = log.get(log.size()-1);
+		LogEvent firstLogEntry = log.get(log.size() - 1);
 		assertEquals(ApplicationMessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.INFO, firstLogEntry.getLevel());
 
@@ -228,6 +229,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 	/**
 	 * This test makes sure that when the config can't be found, it only throws a WARN error in the log4j logger
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -238,20 +240,19 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		try {
 			mockDatabase(true);
 
-			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "WARN");
+			appConstants.put("configurations." + getConfigurationName() + ".reportLevel", "WARN");
 			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 			ClassLoader config = manager.get(getConfigurationName()); //Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
-		}
-		finally {
+		} finally {
 			TestAppender.removeAppender(appender);
 			assertTrue(makeSureNoExceptionIsThrown);
 		}
 
 		List<LogEvent> log = appender.getLogEvents();
-		LogEvent firstLogEntry = log.get(log.size()-1);
+		LogEvent firstLogEntry = log.get(log.size() - 1);
 		assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.WARN, firstLogEntry.getLevel());
 		String msg = firstLogEntry.getMessage().getFormattedMessage();

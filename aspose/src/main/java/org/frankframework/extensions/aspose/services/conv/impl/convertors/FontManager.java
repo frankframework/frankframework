@@ -78,7 +78,7 @@ public class FontManager {
 		// We add this array to a new ArrayList to make adding or removing font entries
 		// much easier.
 		List<com.aspose.cells.FontSourceBase> fontSources = new ArrayList<>();
-		if(options.getFontConfigs() != null) {
+		if (options.getFontConfigs() != null) {
 			fontSources.addAll(Arrays.asList(options.getFontConfigs().getFontSources()));
 		}
 

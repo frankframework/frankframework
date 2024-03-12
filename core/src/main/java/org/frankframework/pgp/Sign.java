@@ -29,14 +29,14 @@ public class Sign extends PGPAction {
 	private final String[] recipients;
 
 	public Sign(String[] publicKey, String secretKey, String secretPassword, String[] recipients, String sender) throws ConfigurationException {
-		super(publicKey, secretKey, secretPassword,recipients, sender);
+		super(publicKey, secretKey, secretPassword, recipients, sender);
 		this.recipients = recipients;
 		this.sender = sender;
 	}
 
 	@Override
 	public void run(InputStream inputStream, OutputStream outputStream) throws Exception {
-		BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To algorithmSuite =  BouncyGPG
+		BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To algorithmSuite = BouncyGPG
 				.encryptToStream()
 				.withConfig(keyringConfig)
 				.withStrongAlgorithms();

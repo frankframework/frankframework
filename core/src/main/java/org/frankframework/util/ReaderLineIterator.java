@@ -25,8 +25,8 @@ import org.frankframework.core.SenderException;
 /**
  * Iterator that iterates over all lines in a Reader.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public class ReaderLineIterator implements IDataIterator<String> {
 

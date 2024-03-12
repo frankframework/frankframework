@@ -8,6 +8,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.pipes.CsvParserPipe.HeaderCase;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -26,11 +27,11 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	@Test
 	public void testBasic() throws Exception {
 		configureAndStartPipe();
-		String csv ="a,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y,y</b></record></csv>";
+		String csv = "a,b,c\n1,2,3\nx,\"y,y\"";
+		String expected = "<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y,y</b></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -45,11 +46,11 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	public void testFieldNames() throws Exception {
 		pipe.setFieldNames("p,q,r");
 		configureAndStartPipe();
-		String csv ="a,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><p>a</p><q>b</q><r>c</r></record><record><p>1</p><q>2</q><r>3</r></record><record><p>x</p><q>y,y</q></record></csv>";
+		String csv = "a,b,c\n1,2,3\nx,\"y,y\"";
+		String expected = "<csv><record><p>a</p><q>b</q><r>c</r></record><record><p>1</p><q>2</q><r>3</r></record><record><p>x</p><q>y,y</q></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -57,22 +58,22 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		pipe.setFieldNames("p,q,r");
 		pipe.setFileContainsHeader(true);
 		configureAndStartPipe();
-		String csv ="a,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><p>1</p><q>2</q><r>3</r></record><record><p>x</p><q>y,y</q></record></csv>";
+		String csv = "a,b,c\n1,2,3\nx,\"y,y\"";
+		String expected = "<csv><record><p>1</p><q>2</q><r>3</r></record><record><p>x</p><q>y,y</q></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
 	public void testFieldSeparator() throws Exception {
 		pipe.setFieldSeparator("|");
 		configureAndStartPipe();
-		String csv ="a|b|c\n1|2|3\nx|\"y|y\"";
-		String expected="<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y|y</b></record></csv>";
+		String csv = "a|b|c\n1|2|3\nx|\"y|y\"";
+		String expected = "<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y|y</b></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -81,11 +82,11 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		pipe.setHeaderCase(HeaderCase.UPPERCASE);
 		pipe.setFileContainsHeader(true);
 		configureAndStartPipe();
-		String csv ="a,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><P>1</P><Q>2</Q><R>3</R></record><record><P>x</P><Q>y,y</Q></record></csv>";
+		String csv = "a,b,c\n1,2,3\nx,\"y,y\"";
+		String expected = "<csv><record><P>1</P><Q>2</Q><R>3</R></record><record><P>x</P><Q>y,y</Q></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -94,11 +95,11 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		pipe.setHeaderCase(HeaderCase.LOWERCASE);
 		pipe.setFileContainsHeader(true);
 		configureAndStartPipe();
-		String csv ="a,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><p>1</p><q>2</q><r>3</r></record><record><p>x</p><q>y,y</q></record></csv>";
+		String csv = "a,b,c\n1,2,3\nx,\"y,y\"";
+		String expected = "<csv><record><p>1</p><q>2</q><r>3</r></record><record><p>x</p><q>y,y</q></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -106,11 +107,11 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		pipe.setFieldNames("p,q,R");
 		pipe.setFileContainsHeader(true);
 		configureAndStartPipe();
-		String csv ="a,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><p>1</p><q>2</q><R>3</R></record><record><p>x</p><q>y,y</q></record></csv>";
+		String csv = "a,b,c\n1,2,3\nx,\"y,y\"";
+		String expected = "<csv><record><p>1</p><q>2</q><R>3</R></record><record><p>x</p><q>y,y</q></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -118,22 +119,22 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		pipe.setHeaderCase(HeaderCase.LOWERCASE);
 		pipe.setFileContainsHeader(true);
 		configureAndStartPipe();
-		String csv ="A,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y,y</b></record></csv>";
+		String csv = "A,b,c\n1,2,3\nx,\"y,y\"";
+		String expected = "<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y,y</b></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
 	public void testNoHeaderFromFileCaseLower() throws Exception {
 		pipe.setHeaderCase(HeaderCase.LOWERCASE);
 		configureAndStartPipe();
-		String csv ="A,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y,y</b></record></csv>";
+		String csv = "A,b,c\n1,2,3\nx,\"y,y\"";
+		String expected = "<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y,y</b></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -141,10 +142,10 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		pipe.setFieldNames("p,q,r");
 		pipe.setFileContainsHeader(false);
 		configureAndStartPipe();
-		String csv ="a,b,c\n1,2,3\nx,\"y,y\"";
-		String expected="<csv><record><p>a</p><q>b</q><r>c</r></record><record><p>1</p><q>2</q><r>3</r></record><record><p>x</p><q>y,y</q></record></csv>";
+		String csv = "a,b,c\n1,2,3\nx,\"y,y\"";
+		String expected = "<csv><record><p>a</p><q>b</q><r>c</r></record><record><p>1</p><q>2</q><r>3</r></record><record><p>x</p><q>y,y</q></record></csv>";
 
 		PipeRunResult prr = doPipe(csv);
-		assertXmlEquals(expected,prr.getResult().asString());
+		assertXmlEquals(expected, prr.getResult().asString());
 	}
 }

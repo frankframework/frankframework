@@ -52,18 +52,16 @@ public class MultipartHttpSender extends HttpSender {
 		if (partObject != null && partObject.isBinary()) {
 			InputStream fis = partObject.asInputStream();
 
-			if(StringUtils.isNotEmpty(fileName)) {
+			if (StringUtils.isNotEmpty(fileName)) {
 				return createMultipartBodypart(partName, fis, fileName, contentType);
-			}
-			else if("file".equalsIgnoreCase(partType)) {
+			} else if ("file".equalsIgnoreCase(partType)) {
 				return createMultipartBodypart(sessionKey, fis, partName, contentType);
-			}
-			else {
+			} else {
 				return createMultipartBodypart(partName, fis, null, contentType);
 			}
 		} else {
 			String value = partObject.asString();
-			if(StringUtils.isEmpty(value))
+			if (StringUtils.isEmpty(value))
 				value = partValue;
 
 			return FormBodyPartBuilder.create().setName(partName).setBody(new StringBody(value, contentType)).build();
@@ -71,10 +69,11 @@ public class MultipartHttpSender extends HttpSender {
 	}
 
 	private FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName, ContentType contentType) {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending filepart ["+name+"] with value ["+is+"] fileName ["+fileName+"] and contentType ["+contentType+"]");
+		if (log.isDebugEnabled())
+			log.debug(getLogPrefix() + "appending filepart [" + name + "] with value [" + is + "] fileName [" + fileName + "] and contentType [" + contentType + "]");
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
-			.setName(name)
-			.setBody(new InputStreamBody(is, contentType, fileName));
+				.setName(name)
+				.setBody(new InputStreamBody(is, contentType, fileName));
 		return bodyPart.build();
 	}
 }

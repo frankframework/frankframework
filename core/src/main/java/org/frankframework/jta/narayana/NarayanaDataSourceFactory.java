@@ -56,7 +56,7 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 		this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
 		DataSource ds;
-		if(maxPoolSize > 1) {
+		if (maxPoolSize > 1) {
 			XAConnectionFactory cf = new DataSourceXAConnectionFactory(requireNonNull(transactionManager.getTransactionManager()), xaDataSource);
 			PoolableConnectionFactory poolableConnectionFactory = new PoolableManagedConnectionFactory(cf, null);
 

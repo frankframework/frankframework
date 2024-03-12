@@ -20,8 +20,8 @@ import org.frankframework.core.TimeoutException;
 /**
  * A Guard is the counterpart of the {@link Semaphore} that waits till all resources have been released.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class Guard {
 
@@ -32,17 +32,17 @@ public class Guard {
 	}
 
 	public Guard(int numberOfResourcesToWaitFor) {
-		if(numberOfResourcesToWaitFor < 0) throw new IllegalArgumentException(numberOfResourcesToWaitFor + " < 0");
+		if (numberOfResourcesToWaitFor < 0) throw new IllegalArgumentException(numberOfResourcesToWaitFor + " < 0");
 		counter = numberOfResourcesToWaitFor;
 	}
 
 	/**
 	 * Wait for the counter to get zero.
 	 *
-	 * @exception InterruptedException passed from this.wait().
+	 * @throws InterruptedException passed from this.wait().
 	 */
 	public synchronized void waitForAllResources() throws InterruptedException {
-		while(counter != 0) {
+		while (counter != 0) {
 			this.wait();
 		}
 	}
@@ -50,15 +50,15 @@ public class Guard {
 	/**
 	 * Wait for the counter to get zero.
 	 *
-	 * @exception InterruptedException passed from this.wait().
-	 * @exception TimeoutException if the time specified has passed, but the counter did not reach zero.
+	 * @throws InterruptedException passed from this.wait().
+	 * @throws TimeoutException     if the time specified has passed, but the counter did not reach zero.
 	 */
 	public synchronized void waitForAllResources(long timeout) throws InterruptedException, TimeoutException {
 		while (counter != 0) {
 			this.wait(timeout);
 		}
-		if (counter!=0) {
-			throw new TimeoutException("Timeout of ["+timeout+"] ms expired");
+		if (counter != 0) {
+			throw new TimeoutException("Timeout of [" + timeout + "] ms expired");
 		}
 	}
 
@@ -72,7 +72,7 @@ public class Guard {
 	 */
 	public synchronized void releaseResource() {
 		counter--;
-		if(counter == 0) {
+		if (counter == 0) {
 			this.notify();
 		}
 	}

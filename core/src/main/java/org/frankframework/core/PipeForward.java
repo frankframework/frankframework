@@ -40,7 +40,6 @@ import org.frankframework.pipes.FixedResultPipe;
  * @author Johan Verrips
  * @see PipeLine
  * @see AbstractPipe#findForward
- *
  */
 // Looking up the next pipe or exit is done by method AbstractPipe.findForward(String)
 public class PipeForward {

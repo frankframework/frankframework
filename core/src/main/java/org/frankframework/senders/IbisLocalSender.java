@@ -96,14 +96,13 @@ import lombok.Setter;
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
  *
+ * @author Gerrit van Brakel
  * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
  * @ff.forward "&lt;Exit.code&gt;" default
- *
- * @author Gerrit van Brakel
- * @since  4.2
+ * @since 4.2
  */
 @Category("Basic")
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator{
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator {
 
 	private final @Getter String domain = "Local";
 
@@ -111,11 +110,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private @Getter String serviceName;
 	private @Getter String javaListener;
 	private @Getter String javaListenerSessionKey;
-	private @Getter boolean isolated=false;
-	private @Getter boolean synchronous=true;
-	private @Getter boolean checkDependency=true;
-	private @Getter int dependencyTimeOut=60;
-	private @Getter String returnedSessionKeys=""; // do not initialize with null, returned session keys must be set explicitly
+	private @Getter boolean isolated = false;
+	private @Getter boolean synchronous = true;
+	private @Getter boolean checkDependency = true;
+	private @Getter int dependencyTimeOut = 60;
+	private @Getter String returnedSessionKeys = ""; // do not initialize with null, returned session keys must be set explicitly
 	private @Setter IsolatedServiceCaller isolatedServiceCaller;
 	private @Getter boolean throwJavaListenerNotFoundException = true;
 
@@ -130,16 +129,16 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		if (StringUtils.isEmpty(getServiceName())
 				&& StringUtils.isEmpty(getJavaListener())
 				&& StringUtils.isEmpty(getJavaListenerSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"has no serviceName or javaListener specified");
+			throw new ConfigurationException(getLogPrefix() + "has no serviceName or javaListener specified");
 		}
 		if (StringUtils.isNotEmpty(getServiceName())
 				&& (StringUtils.isNotEmpty(getJavaListener())
-						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
-			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
+				|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
+			throw new ConfigurationException(getLogPrefix() + "serviceName and javaListener cannot be specified both");
 		}
 
-		if(!(getApplicationContext() instanceof Configuration)) {
-			throw new ConfigurationException(getLogPrefix()+"unable to determine configuration");
+		if (!(getApplicationContext() instanceof Configuration)) {
+			throw new ConfigurationException(getLogPrefix() + "unable to determine configuration");
 		}
 		configuration = (Configuration) getApplicationContext();
 	}
@@ -148,28 +147,28 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	public void open() throws SenderException {
 		super.open();
 		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
-			boolean listenerOpened=false;
+			boolean listenerOpened = false;
 			int loops = getDependencyTimeOut();
 			while (!listenerOpened
 					&& !configuration.isUnloadInProgressOrDone()
 					&& (loops == -1 || loops > 0)) {
 				JavaListener<?> listener = JavaListener.getListener(getJavaListener());
-				if (listener!=null) {
-					listenerOpened=listener.isOpen();
+				if (listener != null) {
+					listenerOpened = listener.isOpen();
 				}
 				if (!listenerOpened && !configuration.isUnloadInProgressOrDone()) {
 					if (loops != -1) {
 						loops--;
 					}
 					try {
-						log.debug("waiting for JavaListener ["+getJavaListener()+"] to open");
+						log.debug("waiting for JavaListener [" + getJavaListener() + "] to open");
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						throw new SenderException(e);
 					}
 				}
-				if(loops == 0 && (listener==null || !listener.isOpen())) {
-					log.warn("Unable to open JavaListener ["+getJavaListener()+"] in "+getDependencyTimeOut()+" seconds. Make sure that the listener ["+getJavaListener()+"] exists or increase the timeout so that the sub-adapter may start before timeout limit.");
+				if (loops == 0 && (listener == null || !listener.isOpen())) {
+					log.warn("Unable to open JavaListener [" + getJavaListener() + "] in " + getDependencyTimeOut() + " seconds. Make sure that the listener [" + getJavaListener() + "] exists or increase the timeout so that the sub-adapter may start before timeout limit.");
 				}
 			}
 		}
@@ -178,11 +177,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	@Override
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceName())) {
-			return "WebServiceListener "+getServiceName();
+			return "WebServiceListener " + getServiceName();
 		} else if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
-			return "JavaListenerSessionKey "+getJavaListenerSessionKey();
+			return "JavaListenerSessionKey " + getJavaListenerSessionKey();
 		} else {
-			return "JavaListener "+getJavaListener();
+			return "JavaListener " + getJavaListener();
 		}
 	}
 
@@ -243,7 +242,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			}
 			if (paramList != null) {
 				try {
-					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
+					Map<String, Object> paramValues = paramList.getValues(message, session).getValueMap();
 					subAdapterSession.putAll(paramValues);
 				} catch (ParameterException e) {
 					throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
@@ -264,7 +263,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			try {
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug("{} calling {} in separate Thread", this::getLogPrefix,() -> serviceIndication);
+						log.debug("{} calling {} in separate Thread", this::getLogPrefix, () -> serviceIndication);
 						result = isolatedServiceCaller.callServiceIsolated(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
 					} else {
 						// We return same message as we send, so it should be preserved in case it's not repeatable
@@ -280,9 +279,9 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
-					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
+					throw new TimeoutException(getLogPrefix() + "timeout calling " + serviceIndication, e);
 				}
-				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
+				throw new SenderException(getLogPrefix() + "exception calling " + serviceIndication, e);
 			} finally {
 				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
@@ -294,13 +293,13 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
 
-			ExitState exitState = (ExitState)subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			ExitState exitState = (ExitState) subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = subAdapterSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 
 			String forwardName = Objects.toString(exitCode, null);
 			result.setForwardName(forwardName);
-			result.setSuccess(exitState==null || exitState==ExitState.SUCCESS);
-			result.setErrorMessage("exitState="+exitState);
+			result.setSuccess(exitState == null || exitState == ExitState.SUCCESS);
+			result.setErrorMessage("exitState=" + exitState);
 
 			result.getResult().unscheduleFromCloseOnExitOf(subAdapterSession);
 			result.getResult().closeOnCloseOf(session, this);
@@ -335,6 +334,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 	/**
 	 * If set <code>false</code>, the call is made asynchronously. This implies isolated=<code>true</code>
+	 *
 	 * @ff.default true
 	 */
 	public void setSynchronous(boolean b) {
@@ -343,6 +343,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 	/**
 	 * If <code>true</code>, the call is made in a separate thread, possibly using separate transaction
+	 *
 	 * @ff.default false
 	 */
 	public void setIsolated(boolean b) {
@@ -351,6 +352,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 	/**
 	 * If <code>true</code>, the sender waits upon open until the called {@link JavaListener} is opened
+	 *
 	 * @ff.default true
 	 */
 	public void setCheckDependency(boolean b) {
@@ -359,6 +361,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 	/**
 	 * Maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely
+	 *
 	 * @ff.default 60
 	 */
 	public void setDependencyTimeOut(int i) {
@@ -367,6 +370,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 	/**
 	 * If set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception
+	 *
 	 * @ff.default true
 	 */
 	public void setThrowJavaListenerNotFoundException(boolean b) {

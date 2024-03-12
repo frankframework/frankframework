@@ -20,16 +20,13 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.apache.commons.codec.binary.Base64InputStream;
-
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
-
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
@@ -37,7 +34,7 @@ import org.frankframework.util.XmlBuilder;
 /**
  * FileSystem Sender extension to handle Attachments.
  */
-public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F,A>> extends FileSystemSender<F,FS> {
+public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F, A>> extends FileSystemSender<F, FS> {
 
 	public final FileSystemActor.FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS = {FileSystemActor.FileSystemAction.LISTATTACHMENTS};
 
@@ -65,10 +62,10 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 			}
 
 			XmlBuilder attachments = new XmlBuilder("attachments");
-			IWithAttachments<F,A> withAttachments = getFileSystem();
+			IWithAttachments<F, A> withAttachments = getFileSystem();
 			try {
 				Iterator<A> it = withAttachments.listAttachments(file);
-				if (it!=null) {
+				if (it != null) {
 					while (it.hasNext()) {
 						A attachment = it.next();
 						XmlBuilder attachmentXml = new XmlBuilder("attachment");
@@ -79,9 +76,9 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 
 						FileAttachment fileAttachment = (FileAttachment) attachment;
 						fileAttachment.load();
-						if(!attachmentsAsSessionKeys) {
+						if (!attachmentsAsSessionKeys) {
 							InputStream binaryInputStream = new ByteArrayInputStream(fileAttachment.getContent());
-							InputStream base64 = new Base64InputStream(binaryInputStream,true);
+							InputStream base64 = new Base64InputStream(binaryInputStream, true);
 							attachmentXml.setCdataValue(StreamUtil.streamToString(base64, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 						} else {
 							attachmentXml.setValue(fileAttachment.getName());

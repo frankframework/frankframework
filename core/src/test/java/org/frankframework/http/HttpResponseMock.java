@@ -41,6 +41,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.frankframework.http.mime.MultipartEntity;
+
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -74,10 +75,12 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	private static class HeaderImpl implements Header {
 		private @Getter String name;
 		private @Getter String value;
+
 		public HeaderImpl(String name, String value) {
 			this.name = name;
 			this.value = value;
 		}
+
 		@Override
 		public HeaderElement[] getElements() throws ParseException {
 			return null;
@@ -91,17 +94,17 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		HttpContext context = (HttpContext) invocation.getArguments()[2];
 
 		InputStream response = null;
-		if(request instanceof HttpGet)
+		if (request instanceof HttpGet)
 			response = doGet(host, (HttpGet) request, context);
-		else if(request instanceof HttpPost)
+		else if (request instanceof HttpPost)
 			response = doPost(host, (HttpPost) request, context);
-		else if(request instanceof HttpPut)
+		else if (request instanceof HttpPut)
 			response = doPut(host, (HttpPut) request, context);
-		else if(request instanceof HttpPatch)
+		else if (request instanceof HttpPatch)
 			response = doPatch(host, (HttpPatch) request, context);
-		else if(request instanceof HttpDelete)
+		else if (request instanceof HttpDelete)
 			response = doDelete(host, (HttpDelete) request, context);
-		else if(request instanceof HttpHead)
+		else if (request instanceof HttpHead)
 			response = doHead(host, (HttpHead) request, context);
 		else
 			throw new Exception("mock method not implemented");
@@ -131,7 +134,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		for (Header header : headers) {
 			String headerName = header.getName();
 			String headerValue = header.getValue();
-			if(headerName.equals("X-Akamai-ACS-Auth-Data")) { //Ignore timestamps in request header
+			if (headerName.equals("X-Akamai-ACS-Auth-Data")) { //Ignore timestamps in request header
 				int start = StringUtils.ordinalIndexOf(headerValue, ",", 3);
 				int end = headerValue.lastIndexOf(",");
 				headerValue = headerValue.substring(0, start) + ", timestamp, timestamp" + headerValue.substring(end);
@@ -148,7 +151,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		appendHeaders(request, response);
 
 		HttpEntity entity = request.getEntity();
-		if(entity instanceof MultipartEntity) {
+		if (entity instanceof MultipartEntity) {
 			MultipartEntity multipartEntity = (MultipartEntity) entity;
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			multipartEntity.writeTo(baos);
@@ -161,18 +164,17 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			String content = new String(baos.toByteArray());
 			content = content.replaceAll(boundary, "IGNORE");
 			response.append(content);
-		}
-		else if(entity != null) {
+		} else if (entity != null) {
 			Header contentTypeHeader = request.getEntity().getContentType();
-			if(contentTypeHeader != null) {
+			if (contentTypeHeader != null) {
 				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
 			}
 
 			response.append(lineSeparator);
 			String resultString = EntityUtils.toString(entity);
 			int i = resultString.indexOf("%PDF-1.");
-			if(i >= 0) {
-				resultString = String.format("%s\n...%d more characters", resultString.substring(0, i+8), (resultString.length()-i));
+			if (i >= 0) {
+				resultString = String.format("%s\n...%d more characters", resultString.substring(0, i + 8), (resultString.length() - i));
 			}
 			response.append(resultString);
 		}
@@ -187,9 +189,9 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 
 		appendHeaders(request, response);
 
-		if(request.getEntity() != null) { //If an entity is present
+		if (request.getEntity() != null) { //If an entity is present
 			Header contentTypeHeader = request.getEntity().getContentType();
-			if(contentTypeHeader != null) {
+			if (contentTypeHeader != null) {
 				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
 			}
 
@@ -208,7 +210,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		appendHeaders(request, response);
 
 		Header contentTypeHeader = request.getEntity().getContentType();
-		if(contentTypeHeader != null) {
+		if (contentTypeHeader != null) {
 			response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
 		}
 
@@ -228,7 +230,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	}
 
 	private String getBoundary(String contentType) {
-		String boundary = contentType.substring(contentType.indexOf("boundary=")+9);
+		String boundary = contentType.substring(contentType.indexOf("boundary=") + 9);
 		boundary = boundary.substring(0, boundary.indexOf(";"));
 		return boundary.replace("\"", "");
 	}

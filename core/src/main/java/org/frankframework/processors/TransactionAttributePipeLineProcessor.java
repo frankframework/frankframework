@@ -43,51 +43,51 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getOwner().getName() + "]");
 			try {
 				TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "]");
-				Throwable tCaught=null;
+				Throwable tCaught = null;
 				try {
 					tg.activateGuard(pipeLine.getTransactionTimeout());
 					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 
-					boolean mustRollback=false;
+					boolean mustRollback = false;
 
-					if (pipeLineResult==null) {
-						mustRollback=true;
-						log.warn("Pipeline received null result for messageId ["+messageId+"], transaction (when present and active) will be rolled back");
+					if (pipeLineResult == null) {
+						mustRollback = true;
+						log.warn("Pipeline received null result for messageId [" + messageId + "], transaction (when present and active) will be rolled back");
 					} else {
 						if (!pipeLineResult.isSuccessful()) {
-							mustRollback=true;
-							log.warn("Pipeline result state ["+pipeLineResult.getState()+"] for messageId ["+messageId+"] is not equal to ["+ExitState.SUCCESS+"], transaction (when present and active) will be rolled back");
+							mustRollback = true;
+							log.warn("Pipeline result state [" + pipeLineResult.getState() + "] for messageId [" + messageId + "] is not equal to [" + ExitState.SUCCESS + "], transaction (when present and active) will be rolled back");
 						}
 					}
 					if (mustRollback) {
 						try {
 							itx.setRollbackOnly();
 						} catch (Exception e) {
-							throw new PipeRunException(null,"Could not set RollBackOnly",e);
+							throw new PipeRunException(null, "Could not set RollBackOnly", e);
 						}
 					}
 
 					return pipeLineResult;
 				} catch (Throwable t) {
-					tCaught=t;
+					tCaught = t;
 					throw tCaught;
 				} finally {
 					if (tg.cancel()) {
-						if (tCaught==null) {
-							throw new InterruptedException(tg.getDescription()+" was interrupted");
+						if (tCaught == null) {
+							throw new InterruptedException(tg.getDescription() + " was interrupted");
 						}
-						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
+						log.warn("Thread interrupted, but propagating other caught exception of type [" + ClassUtils.nameOf(tCaught) + "]");
 					}
 				}
 			} catch (Throwable t) {
 				log.debug("setting RollBackOnly for pipeline after catching exception");
 				itx.setRollbackOnly();
 				if (t instanceof Error) {
-					throw (Error)t;
+					throw (Error) t;
 				} else if (t instanceof RuntimeException) {
-					throw (RuntimeException)t;
+					throw (RuntimeException) t;
 				} else if (t instanceof PipeRunException) {
-					throw (PipeRunException)t;
+					throw (PipeRunException) t;
 				} else {
 					throw new PipeRunException(null, "Caught unknown checked exception", t);
 				}
@@ -97,7 +97,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 			}
 		} catch (RuntimeException e) {
 			throw new PipeRunException(null, "RuntimeException calling PipeLine with tx attribute ["
-				+ pipeLine.getTransactionAttribute() + "]", e);
+					+ pipeLine.getTransactionAttribute() + "]", e);
 		}
 	}
 

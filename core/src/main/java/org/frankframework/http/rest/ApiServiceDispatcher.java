@@ -60,7 +60,6 @@ import lombok.extern.log4j.Log4j2;
  * The dispatcher does not handle nor does it process messages!
  *
  * @author Niels Meijer
- *
  */
 @Log4j2
 public class ApiServiceDispatcher {
@@ -69,7 +68,7 @@ public class ApiServiceDispatcher {
 	private static ApiServiceDispatcher self = null;
 
 	public static synchronized ApiServiceDispatcher getInstance() {
-		if( self == null ) {
+		if (self == null) {
 			self = new ApiServiceDispatcher();
 		}
 		return self;
@@ -114,32 +113,32 @@ public class ApiServiceDispatcher {
 	 * Find the {@link ApiDispatchConfig} best matching a given request, consisting of the
 	 * HTTP request method and request URI.
 	 * <p>
-	 *     This method will return the {@link ApiDispatchConfig} that has the most specific match
-	 *     with the request URI, and supports the requested HTTP method.
+	 * This method will return the {@link ApiDispatchConfig} that has the most specific match
+	 * with the request URI, and supports the requested HTTP method.
 	 * </p>
 	 * <p>
-	 *     {@link org.frankframework.http.rest.ApiListener.HttpMethod#OPTIONS} requests and requests for methods that are not supported by the configuration are always matched to the most specific URI pattern match.
-	 *     This is so that the {@code OPTIONS} request will return correct results, and requests for unsupported methods will return HTTP status code
-	 *     {@code 405} instead of {@code 404}.
+	 * {@link org.frankframework.http.rest.ApiListener.HttpMethod#OPTIONS} requests and requests for methods that are not supported by the configuration are always matched to the most specific URI pattern match.
+	 * This is so that the {@code OPTIONS} request will return correct results, and requests for unsupported methods will return HTTP status code
+	 * {@code 405} instead of {@code 404}.
 	 * </p>
 	 * <p>
-	 *     So for instance if a configuration would have the following {@link ApiListener}s installed:
-	 *     <lu>
-	 *         <li>ApiListener1: GET on uri /user/**</li>
-	 *         <li>ApiListener2: GET on uri /user/{userId}/department/{departmentId}</li>
-	 *         <li>ApiListener3: POST on uri /user/{userId}/avatar</li>
-	 *     </lu>
-	 *     Then:
-	 *     <lu>
-	 *         <li>A request {@code GET /user/usr123/department/dept456} would return the {@link ApiDispatchConfig} for /user/{userId}/department/{departmentId} containing ApiListener2</li>
-	 *         <li>A request {@code OPTIONS /user/usr123/department/dept456} would return the {@link ApiDispatchConfig} for /user/{userId}/department/{departmentId} containing ApiListener2</li>
-	 *         <li>A request {@code GET /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/** containing ApiListener1</li>
-	 *         <li>A request {@code POST /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/{userId}/avatar containing ApiListener3</li>
-	 *         <li>A request {@code PUT /user/usr123/avatar} (method PUT has not been configured!) would return the {@link ApiDispatchConfig} for /user/{userId}/avatar containing ApiListener3. Error handling can then be specific about the URL hit not supporting this method.</li>
-	 *     </lu>
+	 * So for instance if a configuration would have the following {@link ApiListener}s installed:
+	 * <lu>
+	 * <li>ApiListener1: GET on uri /user/**</li>
+	 * <li>ApiListener2: GET on uri /user/{userId}/department/{departmentId}</li>
+	 * <li>ApiListener3: POST on uri /user/{userId}/avatar</li>
+	 * </lu>
+	 * Then:
+	 * <lu>
+	 * <li>A request {@code GET /user/usr123/department/dept456} would return the {@link ApiDispatchConfig} for /user/{userId}/department/{departmentId} containing ApiListener2</li>
+	 * <li>A request {@code OPTIONS /user/usr123/department/dept456} would return the {@link ApiDispatchConfig} for /user/{userId}/department/{departmentId} containing ApiListener2</li>
+	 * <li>A request {@code GET /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/** containing ApiListener1</li>
+	 * <li>A request {@code POST /user/usr123/avatar} would return the {@link ApiDispatchConfig} for /user/{userId}/avatar containing ApiListener3</li>
+	 * <li>A request {@code PUT /user/usr123/avatar} (method PUT has not been configured!) would return the {@link ApiDispatchConfig} for /user/{userId}/avatar containing ApiListener3. Error handling can then be specific about the URL hit not supporting this method.</li>
+	 * </lu>
 	 * </p>
 	 *
-	 * @param method {@link ApiListener.HttpMethod} of the HTTP request received
+	 * @param method     {@link ApiListener.HttpMethod} of the HTTP request received
 	 * @param requestUri URI of the HTTP request received
 	 * @return The best matching {@link ApiDispatchConfig}, or {@code null}.
 	 */
@@ -155,18 +154,19 @@ public class ApiServiceDispatcher {
 	 * Calculate a numerical score for how well a given HTTP request {@link org.frankframework.http.rest.ApiListener.HttpMethod} is matched
 	 * by the given {@link ApiDispatchConfig}.
 	 * <p>
-	 *     <lu>
-	 *         <li>
-	 *             The score is positive 10 when the {@code HttpMethod} is {@link org.frankframework.http.rest.ApiListener.HttpMethod#OPTIONS} or
-	 *             {@link ApiDispatchConfig#hasMethod(ApiListener.HttpMethod)} returns {@code true}.
-	 *         </li>
-	 *         <li>
-	 *             In all other cases the score is negative 10.
-	 *         </li>
-	 *     </lu>
+	 * <lu>
+	 * <li>
+	 * The score is positive 10 when the {@code HttpMethod} is {@link org.frankframework.http.rest.ApiListener.HttpMethod#OPTIONS} or
+	 * {@link ApiDispatchConfig#hasMethod(ApiListener.HttpMethod)} returns {@code true}.
+	 * </li>
+	 * <li>
+	 * In all other cases the score is negative 10.
+	 * </li>
+	 * </lu>
 	 * </p>
+	 *
 	 * @param requestMethod The {@link org.frankframework.http.rest.ApiListener.HttpMethod} of the request
-	 * @param config The {@link ApiDispatchConfig} against which to match the request method
+	 * @param config        The {@link ApiDispatchConfig} against which to match the request method
 	 * @return The calculated score of the match.
 	 */
 	public static int scoreRequestMethodMatch(ApiListener.HttpMethod requestMethod, ApiDispatchConfig config) {
@@ -177,22 +177,23 @@ public class ApiServiceDispatcher {
 	/**
 	 * Calculate a numerical score for a URI pattern indicating how specific it is, based on the number of segments and wildcards.
 	 * <p>
-	 *     The intent is to have a higher score the more specific a URI pattern is, thus the more segments
-	 *     the more specific the higher the score but the more wildcards, the less specific a patter is relative
-	 *     to another pattern of the same number of segments.
+	 * The intent is to have a higher score the more specific a URI pattern is, thus the more segments
+	 * the more specific the higher the score but the more wildcards, the less specific a patter is relative
+	 * to another pattern of the same number of segments.
 	 * </p>
 	 * <p>
-	 *     Patterns ending with a {@code /**} "match all" wildcard are always scored as
-	 *     less specific than patterns which do not have the "match all" wildcard.
+	 * Patterns ending with a {@code /**} "match all" wildcard are always scored as
+	 * less specific than patterns which do not have the "match all" wildcard.
 	 * </p>
 	 * <p>
-	 *     Scoring rules:
-	 *     <lu>
-	 *         <li>The more slashes the longer the match the more specific</li>
-	 *         <li>The more wildcards in the pattern the less specific</li>
-	 *         <li>"Match-all" patterns ending with /** are penalized with a -10 starting score</li>
-	 *     </lu>
+	 * Scoring rules:
+	 * <lu>
+	 * <li>The more slashes the longer the match the more specific</li>
+	 * <li>The more wildcards in the pattern the less specific</li>
+	 * <li>"Match-all" patterns ending with /** are penalized with a -10 starting score</li>
+	 * </lu>
 	 * </p>
+	 *
 	 * @param uriPattern A pattern of a URI containing wildcards
 	 * @return Numerical score calculated for the URI based on the rules above.
 	 */
@@ -200,10 +201,13 @@ public class ApiServiceDispatcher {
 		int startValue = uriPattern.endsWith("/**") ? -10 : 0;
 		return uriPattern.chars()
 				.reduce(startValue, (cnt, chr) -> {
-					switch ((char)chr) {
-						case '/': return cnt + 1;
-						case '*': return cnt - 1;
-						default: return cnt;
+					switch ((char) chr) {
+						case '/':
+							return cnt + 1;
+						case '*':
+							return cnt - 1;
+						default:
+							return cnt;
 					}
 				});
 	}
@@ -214,7 +218,7 @@ public class ApiServiceDispatcher {
 
 		String[] uriSegments = uri.split("/");
 
-		for (Map.Entry<String,ApiDispatchConfig> entry : patternClients.entrySet()) {
+		for (Map.Entry<String, ApiDispatchConfig> entry : patternClients.entrySet()) {
 			String uriPattern = entry.getKey();
 			if (log.isTraceEnabled()) log.trace("comparing uri [{}] to pattern [{}]", uri, uriPattern);
 
@@ -262,26 +266,25 @@ public class ApiServiceDispatcher {
 		if (StringUtils.isBlank(uriPattern))
 			throw new ListenerException("uriPattern cannot be null or empty");
 
-		synchronized(patternClients) {
-			for(ApiListener.HttpMethod method : listener.getAllMethods()){
+		synchronized (patternClients) {
+			for (ApiListener.HttpMethod method : listener.getAllMethods()) {
 				patternClients.computeIfAbsent(uriPattern, ApiDispatchConfig::new).register(method, listener);
-				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}}]", uriPattern, method);
+				if (log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}}]", uriPattern, method);
 			}
 		}
 	}
 
 	public void unregisterServiceClient(ApiListener listener) {
 		String uriPattern = listener.getCleanPattern();
-		if(uriPattern == null) {
+		if (uriPattern == null) {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
-		}
-		else {
-			for(ApiListener.HttpMethod method : listener.getAllMethods()){
+		} else {
+			for (ApiListener.HttpMethod method : listener.getAllMethods()) {
 				boolean success = false;
 				synchronized (patternClients) {
 					ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
-					if(dispatchConfig != null) {
-						if(dispatchConfig.getMethods().size() == 1) {
+					if (dispatchConfig != null) {
+						if (dispatchConfig.getMethods().size() == 1) {
 							patternClients.remove(uriPattern); //Remove the entire config if there's only 1 ServiceClient registered
 						} else {
 							dispatchConfig.remove(method); //Only remove the ServiceClient as there are multiple registered
@@ -291,8 +294,8 @@ public class ApiServiceDispatcher {
 				}
 
 				//keep log statements out of synchronized block
-				if(success) {
-					if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern [{}] method [{}}]", uriPattern, method);
+				if (success) {
+					if (log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern [{}] method [{}}]", uriPattern, method);
 				} else {
 					log.warn("unable to find DispatchConfig for uriPattern [{}]", uriPattern);
 				}
@@ -320,7 +323,7 @@ public class ApiServiceDispatcher {
 		String environment = AppConstants.getInstance().getString("dtap.stage", "LOC");
 		JsonObjectBuilder info = Json.createObjectBuilder();
 		info.add("title", instanceName);
-		info.add("description", "OpenApi auto-generated at "+ DateFormatUtils.getTimeStamp()+" for "+instanceName+" ("+environment+")");
+		info.add("description", "OpenApi auto-generated at " + DateFormatUtils.getTimeStamp() + " for " + instanceName + " (" + environment + ")");
 		info.add("version", "unknown");
 		root.add("info", info);
 		root.add("servers", mapServers(endpoint));
@@ -334,16 +337,16 @@ public class ApiServiceDispatcher {
 			for (ApiListener.HttpMethod method : config.getMethods()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
 				listener = config.getApiListener(method);
-				if(listener != null && listener.getReceiver() != null) {
+				if (listener != null && listener.getReceiver() != null) {
 					IAdapter adapter = listener.getReceiver().getAdapter();
 					if (StringUtils.isNotEmpty(adapter.getDescription())) {
 						methodBuilder.add("summary", adapter.getDescription());
 					}
-					if(StringUtils.isNotEmpty(listener.getOperationId())) {
+					if (StringUtils.isNotEmpty(listener.getOperationId())) {
 						methodBuilder.add("operationId", listener.getOperationId());
 					}
 					// GET and DELETE methods cannot have a requestBody according to the specs.
-					if(method != ApiListener.HttpMethod.GET && method != ApiListener.HttpMethod.DELETE) {
+					if (method != ApiListener.HttpMethod.GET && method != ApiListener.HttpMethod.DELETE) {
 						mapRequest(adapter, listener.getConsumes(), methodBuilder);
 					}
 					mapParamsInRequest(adapter, listener, methodBuilder);
@@ -352,7 +355,7 @@ public class ApiServiceDispatcher {
 				}
 				methods.add(method.name().toLowerCase(), methodBuilder);
 			}
-			if(listener != null) {
+			if (listener != null) {
 				paths.add(listener.getUriPattern(), methods);
 			}
 		}
@@ -370,9 +373,9 @@ public class ApiServiceDispatcher {
 
 		// Get load balancer url if exists
 		String loadBalancerUrl = AppConstants.getInstance().getProperty("loadBalancer.url", null);
-		if(StringUtils.isNotEmpty(loadBalancerUrl)) {
+		if (StringUtils.isNotEmpty(loadBalancerUrl)) {
 			serversArray.add(Json.createObjectBuilder().add("url", loadBalancerUrl + servletPath).add("description", "load balancer"));
-		} else if(StringUtils.isNotBlank(url)) { // fall back to the request url
+		} else if (StringUtils.isNotBlank(url)) { // fall back to the request url
 			serversArray.add(Json.createObjectBuilder().add("url", url));
 		}
 
@@ -381,10 +384,10 @@ public class ApiServiceDispatcher {
 
 	public static Json2XmlValidator getJsonValidator(PipeLine pipeline, boolean forOutputValidation) {
 		IPipe validator = forOutputValidation ? pipeline.getOutputValidator() : pipeline.getInputValidator();
-		if(validator == null) {
+		if (validator == null) {
 			validator = pipeline.getPipe(pipeline.getFirstPipe());
 		}
-		if(validator instanceof Json2XmlValidator) {
+		if (validator instanceof Json2XmlValidator) {
 			return (Json2XmlValidator) validator;
 		}
 		return null;
@@ -398,17 +401,18 @@ public class ApiServiceDispatcher {
 
 		// query params
 		Json2XmlValidator inputValidator = getJsonValidator(adapter.getPipeLine(), false);
-		if(inputValidator != null && !inputValidator.getParameterList().isEmpty()) {
+		if (inputValidator != null && !inputValidator.getParameterList().isEmpty()) {
 			for (Parameter parameter : inputValidator.getParameterList()) {
 				String parameterSessionkey = parameter.getSessionKey();
-				if(StringUtils.isNotEmpty(parameterSessionkey) && !parameterSessionkey.equals("headers") && !paramsFromHeaderAndCookie.contains(parameterSessionkey)) {
+				if (StringUtils.isNotEmpty(parameterSessionkey) && !parameterSessionkey.equals("headers") && !paramsFromHeaderAndCookie.contains(parameterSessionkey)) {
 					ParameterType parameterType = parameter.getType() != null ? parameter.getType() : ParameterType.STRING;
-					paramBuilder.add(addParameterToSchema(parameterSessionkey, "query", false, Json.createObjectBuilder().add("type", parameterType.toString().toLowerCase())));
+					paramBuilder.add(addParameterToSchema(parameterSessionkey, "query", false, Json.createObjectBuilder()
+							.add("type", parameterType.toString().toLowerCase())));
 				}
 			}
 		}
 		JsonArray paramBuilderArray = paramBuilder.build();
-		if(!paramBuilderArray.isEmpty()) {
+		if (!paramBuilderArray.isEmpty()) {
 			methodBuilder.add("parameters", paramBuilderArray);
 		}
 	}
@@ -416,14 +420,14 @@ public class ApiServiceDispatcher {
 	private List<String> mapHeaderAndParams(JsonArrayBuilder paramBuilder, ApiListener listener) {
 		List<String> paramsFromHeaderAndCookie = new ArrayList<>();
 		// header parameters
-		if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
+		if (StringUtils.isNotEmpty(listener.getHeaderParams())) {
 			String[] params = listener.getHeaderParams().split(",");
 			for (String parameter : params) {
 				paramBuilder.add(addParameterToSchema(parameter, "header", false, Json.createObjectBuilder().add("type", "string")));
 				paramsFromHeaderAndCookie.add(parameter);
 			}
 		}
-		if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
+		if (StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
 			paramBuilder.add(addParameterToSchema(listener.getMessageIdHeader(), "header", false, Json.createObjectBuilder().add("type", "string")));
 		}
 
@@ -432,10 +436,10 @@ public class ApiServiceDispatcher {
 
 	private void mapPathParameters(JsonArrayBuilder paramBuilder, String uriPattern) {
 		// path parameters
-		if(uriPattern.contains("{")) {
+		if (uriPattern.contains("{")) {
 			Pattern p = Pattern.compile("[^{/}]+(?=})");
 			Matcher m = p.matcher(uriPattern);
-			while(m.find()) {
+			while (m.find()) {
 				paramBuilder.add(addParameterToSchema(m.group(), "path", true, Json.createObjectBuilder().add("type", "string")));
 			}
 		}
@@ -445,7 +449,7 @@ public class ApiServiceDispatcher {
 		JsonObjectBuilder param = Json.createObjectBuilder();
 		param.add("name", name);
 		param.add("in", in);
-		if(required) {
+		if (required) {
 			param.add("required", required);
 		}
 		param.add("schema", schema);
@@ -454,10 +458,11 @@ public class ApiServiceDispatcher {
 
 	private void mapRequest(IAdapter adapter, MediaTypes consumes, JsonObjectBuilder methodBuilder) {
 		PipeLine pipeline = adapter.getPipeLine();
-		Json2XmlValidator inputValidator = getJsonValidator(pipeline,false);
-		if(inputValidator != null && StringUtils.isNotEmpty(inputValidator.getRoot())) {
+		Json2XmlValidator inputValidator = getJsonValidator(pipeline, false);
+		if (inputValidator != null && StringUtils.isNotEmpty(inputValidator.getRoot())) {
 			JsonObjectBuilder requestBodyContent = Json.createObjectBuilder();
-			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder().add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH+inputValidator.getRoot()));
+			JsonObjectBuilder schemaBuilder = Json.createObjectBuilder()
+					.add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH + inputValidator.getRoot()));
 			requestBodyContent.add("content", Json.createObjectBuilder().add(mimeTypeToString(consumes.getMimeType()), schemaBuilder));
 			methodBuilder.add("requestBody", requestBodyContent);
 		}
@@ -478,25 +483,25 @@ public class ApiServiceDispatcher {
 		JsonObjectBuilder schema = null;
 		String schemaReferenceElement = null;
 		List<XSModel> models = new ArrayList<>();
-		if(inputValidator != null) {
+		if (inputValidator != null) {
 			models.addAll(inputValidator.getXSModels());
 			schemaReferenceElement = inputValidator.getMessageRoot(true);
 		}
-		if(outputValidator != null) {
+		if (outputValidator != null) {
 			models.addAll(outputValidator.getXSModels());
-			schemaReferenceElement = outputValidator.getRoot();	// all non-empty exits should refer to this element
+			schemaReferenceElement = outputValidator.getRoot();    // all non-empty exits should refer to this element
 		}
 
-		if(!models.isEmpty()) {
+		if (!models.isEmpty()) {
 			schema = Json.createObjectBuilder();
 		}
 		addComponentsToTheSchema(schemas, models);
 
 		Map<String, PipeLineExit> pipeLineExits = pipeline.getPipeLineExits();
-		for(String exitPath : pipeLineExits.keySet()) {
+		for (String exitPath : pipeLineExits.keySet()) {
 			PipeLineExit ple = pipeLineExits.get(exitPath);
 			int exitCode = ple.getExitCode();
-			if(exitCode == 0) {
+			if (exitCode == 0) {
 				exitCode = 200;
 			}
 
@@ -504,28 +509,28 @@ public class ApiServiceDispatcher {
 
 			Status status = Status.fromStatusCode(exitCode);
 			exit.add("description", status.getReasonPhrase());
-			if(!ple.isEmptyResult()) {
+			if (!ple.isEmptyResult()) {
 				JsonObjectBuilder content = Json.createObjectBuilder();
-				if(StringUtils.isNotEmpty(schemaReferenceElement)){
+				if (StringUtils.isNotEmpty(schemaReferenceElement)) {
 					String reference = null;
-					if(StringUtils.isNotEmpty(ple.getResponseRoot()) && outputValidator == null) {
+					if (StringUtils.isNotEmpty(ple.getResponseRoot()) && outputValidator == null) {
 						reference = ple.getResponseRoot();
 					} else {
 						List<String> references = List.of(schemaReferenceElement.split(","));
-						if(ple.isSuccessExit()) {
+						if (ple.isSuccessExit()) {
 							reference = references.get(0);
 						} else {
-							reference = references.get(references.size()-1);
+							reference = references.get(references.size() - 1);
 						}
 					}
 					// JsonObjectBuilder add method consumes the schema
-					schema.add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH+reference));
+					schema.add("schema", Json.createObjectBuilder().add("$ref", XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH + reference));
 					content.add(mimeTypeToString(contentType), schema);
 				}
 				exit.add("content", content);
 			}
 
-			responses.add(""+exitCode, exit);
+			responses.add("" + exitCode, exit);
 		}
 		return responses;
 	}
@@ -533,20 +538,20 @@ public class ApiServiceDispatcher {
 	private void addComponentsToTheSchema(JsonObjectBuilder schemas, List<XSModel> models) {
 		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, true, XmlTypeToJsonSchemaConverter.SCHEMA_DEFINITION_PATH);
 		JsonObject jsonSchema = converter.getDefinitions();
-		if(jsonSchema != null) {
-			for (Entry<String,JsonValue> entry: jsonSchema.entrySet()) {
+		if (jsonSchema != null) {
+			for (Entry<String, JsonValue> entry : jsonSchema.entrySet()) {
 				schemas.add(entry.getKey(), entry.getValue());
 			}
 		}
 	}
 
 	public void clear() {
-		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
+		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext(); ) {
 			String uriPattern = it.next();
 			ApiDispatchConfig config = patternClients.remove(uriPattern);
-			if(config != null) config.clear();
+			if (config != null) config.clear();
 		}
-		if(!patternClients.isEmpty()) {
+		if (!patternClients.isEmpty()) {
 			log.warn("unable to gracefully unregister [{}] DispatchConfigs", patternClients.size());
 			patternClients.clear();
 		}

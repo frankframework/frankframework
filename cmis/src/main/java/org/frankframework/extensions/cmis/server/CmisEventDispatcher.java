@@ -20,24 +20,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.frankframework.extensions.cmis.CmisEventListener;
-import org.frankframework.extensions.cmis.CmisUtils;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Element;
-
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.extensions.cmis.CmisEventListener;
+import org.frankframework.extensions.cmis.CmisUtils;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
 
 public class CmisEventDispatcher {
 	private final Logger log = LogUtil.getLogger(this);
@@ -48,7 +47,7 @@ public class CmisEventDispatcher {
 	private final String dispatcherName = AppConstants.getInstance().getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX + "adapterDispatcher");
 
 	public static synchronized CmisEventDispatcher getInstance() {
-		if(self == null) {
+		if (self == null) {
 			self = new CmisEventDispatcher();
 		}
 		return self;
@@ -56,17 +55,17 @@ public class CmisEventDispatcher {
 
 	public void registerEventListener(CmisEventListener listener) throws ListenerException {
 		CmisEvent event = listener.getEvent();
-		if(event == null)
+		if (event == null)
 			throw new ListenerException("cannot register EventListener without event to listen on");
 
-		log.info("registering CmisEvent ["+event.name()+"] on dispatcher");
+		log.info("registering CmisEvent [" + event.name() + "] on dispatcher");
 		eventListeners.put(event, listener);
 	}
 
 	public void unregisterEventListener(CmisEventListener listener) {
 		CmisEvent event = listener.getEvent();
 		eventListeners.remove(event);
-		log.info("unregistered CmisEvent ["+event.name()+"] from dispatcher");
+		log.info("unregistered CmisEvent [" + event.name() + "] from dispatcher");
 	}
 
 	/**
@@ -80,22 +79,21 @@ public class CmisEventDispatcher {
 	}
 
 	public Element trigger(CmisEvent event, String message, PipeLineSession messageContext) {
-		if(!eventListeners.containsKey(event))
-			throw new CmisRuntimeException("event ["+event.name()+"] not registered");
+		if (!eventListeners.containsKey(event))
+			throw new CmisRuntimeException("event [" + event.name() + "] not registered");
 
-		if(log.isDebugEnabled()) log.debug("bridging CmisEvent ["+event.name()+"]");
+		if (log.isDebugEnabled()) log.debug("bridging CmisEvent [" + event.name() + "]");
 		CmisUtils.populateCmisAttributes(messageContext);
 
 		try {
 			messageContext.put(CMIS_EVENT_KEY, event.getLabel());
 			CmisEventListener listener = eventListeners.get(event);
 			String result = listener.processRequest(new Message(message), messageContext).asString();
-			if(StringUtils.isEmpty(result))
+			if (StringUtils.isEmpty(result))
 				return XmlUtils.buildElement("<cmis/>");
 			else if (XmlUtils.isWellFormed(result, "cmis")) {
 				return XmlUtils.buildElement(result);
-			}
-			else {
+			} else {
 				throw new CmisRuntimeException("invalid or unparsable result");
 			}
 		} catch (IOException e) {
@@ -104,22 +102,21 @@ public class CmisEventDispatcher {
 
 		//Try and catch the original CMIS exception and throw that instead
 		catch (ListenerException e) {
-			if(e.getCause() instanceof PipeRunException) {
+			if (e.getCause() instanceof PipeRunException) {
 				PipeRunException pre = (PipeRunException) e.getCause();
-				if(pre != null && pre.getCause() instanceof CmisBaseException)
-					throw (CmisBaseException)pre.getCause();
+				if (pre != null && pre.getCause() instanceof CmisBaseException)
+					throw (CmisBaseException) pre.getCause();
 			}
 			throw new CmisRuntimeException(e.getMessage(), e);
-		}
-		catch (DomBuilderException e) {
+		} catch (DomBuilderException e) {
 			throw new CmisRuntimeException("error building domdoc from result", e);
 		}
 	}
 
 	public boolean contains(CmisEvent event) {
-		if(StringUtils.isNotEmpty(dispatcherName)) {
+		if (StringUtils.isNotEmpty(dispatcherName)) {
 			JavaListener listener = JavaListener.getListener(dispatcherName);
-			if(listener == null) {
+			if (listener == null) {
 				throw new CmisRuntimeException("unable to bridge cmis request, dispatcher offline"); //Adapter registered but not started
 			}
 

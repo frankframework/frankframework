@@ -17,12 +17,10 @@ package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.util.Set;
 
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.springframework.http.MediaType;
-
 import org.frankframework.extensions.aspose.ConversionOption;
-
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
+import org.springframework.http.MediaType;
 
 public interface Convertor {
 
@@ -35,8 +33,8 @@ public interface Convertor {
 	 * Converts the given file to a pdf. MediaType is the detected media type of the
 	 * file. The convertor should support the given mediatype (otherwise it gives
 	 * programming error).
-	 * @param charset
 	 *
+	 * @param charset
 	 */
 	CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset);
 

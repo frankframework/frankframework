@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
+
 import org.junit.jupiter.params.provider.Arguments;
 
 /**
@@ -35,7 +36,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 			xmlValidator.start();
 
 			RootValidations rootvalidations = null;
-			if(rootElement != null) {
+			if (rootElement != null) {
 				rootvalidations = new RootValidations("Envelope", "Body", rootElement);
 			}
 			ValidationResult result = xmlValidator.validate(testXml, session, "test", rootvalidations, null);

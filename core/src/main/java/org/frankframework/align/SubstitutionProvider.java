@@ -18,9 +18,13 @@ package org.frankframework.align;
 public interface SubstitutionProvider<V> {
 
 	public boolean hasSubstitutionsFor(AlignmentContext context, String childName);
+
 	public V getSubstitutionsFor(AlignmentContext context, String childName);
+
 	public boolean hasOverride(AlignmentContext context);
+
 	public V getOverride(AlignmentContext context);
+
 	public V getDefault(AlignmentContext context);
 
 }

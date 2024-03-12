@@ -28,32 +28,32 @@ import org.frankframework.stream.Message;
 /**
  * SenderWrapperProcessor that handles caching.
  *
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
 	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		ICache<String,String> cache=senderWrapperBase.getCache();
-		if (cache==null) {
+		ICache<String, String> cache = senderWrapperBase.getCache();
+		if (cache == null) {
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
 
 		String key;
 		try {
-			key=cache.transformKey(message.asString(), session);
+			key = cache.transformKey(message.asString(), session);
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
-		if (key==null) {
+		if (key == null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
 		if (log.isDebugEnabled()) log.debug("cache key [{}]", key);
 		SenderResult result;
-		String cacheResult=cache.get(key);
-		if (cacheResult!=null) {
+		String cacheResult = cache.get(key);
+		if (cacheResult != null) {
 			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key [{}]", key);
 			result = new SenderResult(cacheResult);
 		} else {
@@ -62,7 +62,7 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 			if (log.isDebugEnabled()) log.debug("caching result using key [{}]", key);
 			if (result.isSuccess()) {
 				String cacheValue = cache.transformValue(result.getResult(), session);
-				if (cacheValue==null) {
+				if (cacheValue == null) {
 					if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
 					return result;
 				}

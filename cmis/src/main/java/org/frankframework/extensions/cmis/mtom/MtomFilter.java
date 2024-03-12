@@ -28,12 +28,11 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.frankframework.lifecycle.IbisInitializer;
+import org.frankframework.util.AppConstants;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.context.ServletContextAware;
-
-import org.frankframework.lifecycle.IbisInitializer;
-import org.frankframework.util.AppConstants;
 
 @IbisInitializer
 @DependsOn({"webServices10", "webServices11"})
@@ -48,7 +47,7 @@ public class MtomFilter implements Filter, InitializingBean, ServletContextAware
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		if(ACTIVE) {
+		if (ACTIVE) {
 			MtomRequestWrapper requestWrapper = new MtomRequestWrapper(request); // Turn every request into an MTOM request
 			MtomResponseWrapper responseWrapper = new MtomResponseWrapper(response); // Is this required?
 			chain.doFilter(requestWrapper, responseWrapper);

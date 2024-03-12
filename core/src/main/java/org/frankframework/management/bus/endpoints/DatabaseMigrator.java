@@ -57,14 +57,14 @@ public class DatabaseMigrator extends BusEndpointBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public BinaryResponseMessage downloadMigrationScript(Message<?> message) throws IOException {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
-		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
+		if (IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			try (ZipOutputStream zos = new ZipOutputStream(out)) {
-				for(Configuration configuration : getIbisManager().getConfigurations()) {
+				for (Configuration configuration : getIbisManager().getConfigurations()) {
 					Resource resource = getMigrationResource(configuration);
-					if(resource != null) {
-						try(InputStream file = resource.openStream()) {
-							String filename = configuration.getName() +"-"+ normalizeName(resource.getName()); //Names have to be unique in a zip archive!
+					if (resource != null) {
+						try (InputStream file = resource.openStream()) {
+							String filename = configuration.getName() + "-" + normalizeName(resource.getName()); //Names have to be unique in a zip archive!
 							ZipEntry entry = new ZipEntry(filename);
 							zos.putNextEntry(entry);
 							zos.write(StreamUtil.streamToByteArray(file, false));
@@ -82,7 +82,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 		Configuration configuration = getConfigurationByName(configurationName);
 		Resource changelog = getMigrationResource(configuration);
-		if(changelog == null) {
+		if (changelog == null) {
 			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
 		}
 
@@ -99,12 +99,12 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 	@Nullable
 	private Resource getMigrationResource(Configuration configuration) {
-		if(!configuration.isActive()) {
+		if (!configuration.isActive()) {
 			return null;
 		}
 
 		DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-		if(databaseMigrator.hasMigrationScript()) {
+		if (databaseMigrator.hasMigrationScript()) {
 			return databaseMigrator.getChangeLog();
 		}
 
@@ -117,24 +117,24 @@ public class DatabaseMigrator extends BusEndpointBase {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		Configuration configuration = getConfigurationByName(configurationName);
 
-		if(!(message.getPayload() instanceof String)) {
+		if (!(message.getPayload() instanceof String)) {
 			throw new BusException("payload is not instance of String");
 		}
 
 		DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-		if(!databaseMigrator.hasMigrationScript()) {
+		if (!databaseMigrator.hasMigrationScript()) {
 			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
 		}
 		String filename = BusMessageUtils.getHeader(message, "filename");
-		if(StringUtils.isEmpty(filename)) {
+		if (StringUtils.isEmpty(filename)) {
 			throw new BusException("no filename provided");
 		}
 
-		if(filename.startsWith(configurationName)) { //Remove ConfigurationName if present
-			filename = filename.substring(configurationName.length()+1);
+		if (filename.startsWith(configurationName)) { //Remove ConfigurationName if present
+			filename = filename.substring(configurationName.length() + 1);
 		}
 		String migrationFilename = normalizeName(databaseMigrator.getChangeLog().getName());
-		if(!filename.equals(migrationFilename)) { //Compare if the name matches, else liquibase will see this as a new different changelog!
+		if (!filename.equals(migrationFilename)) { //Compare if the name matches, else liquibase will see this as a new different changelog!
 			throw new BusException("provided changelog filename mismatch");
 		}
 

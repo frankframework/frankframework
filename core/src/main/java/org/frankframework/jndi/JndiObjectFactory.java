@@ -19,25 +19,23 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.core.JndiContextPrefixFactory;
+import org.frankframework.util.ClassUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import lombok.Setter;
-import org.frankframework.core.JndiContextPrefixFactory;
-import org.frankframework.util.ClassUtils;
 
 /**
  * Baseclass for Jndi lookups.
  * Would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
  *
- * @author Gerrit van Brakel
- *
  * @param <O> Object class used by clients
  * @param <L> Class looked up in JNDI
+ * @author Gerrit van Brakel
  */
-public class JndiObjectFactory<O,L> extends ObjectFactoryBase<O,L> implements ApplicationContextAware {
+public class JndiObjectFactory<O, L> extends ObjectFactoryBase<O, L> implements ApplicationContextAware {
 
 	private final Class<L> lookupClass;
 	private @Setter String jndiContextPrefix = null;
@@ -57,7 +55,7 @@ public class JndiObjectFactory<O,L> extends ObjectFactoryBase<O,L> implements Ap
 			object = ObjectLocator.lookup(prefixedJndiName, jndiEnvironment, lookupClass);
 		} catch (NamingException e) { //Fallback and search again but this time without prefix
 			if (!jndiName.equals(prefixedJndiName)) { //Only if a prefix is set!
-				log.debug("prefixed JNDI name [" + prefixedJndiName + "] not found - trying original name [" + jndiName + "], exception: ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+				log.debug("prefixed JNDI name [" + prefixedJndiName + "] not found - trying original name [" + jndiName + "], exception: (" + ClassUtils.nameOf(e) + "): " + e.getMessage());
 
 				try {
 					object = ObjectLocator.lookup(jndiName, jndiEnvironment, lookupClass);
@@ -81,7 +79,7 @@ public class JndiObjectFactory<O,L> extends ObjectFactoryBase<O,L> implements Ap
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		JndiContextPrefixFactory jndiContextFactory = applicationContext.getBean("jndiContextPrefixFactory", JndiContextPrefixFactory.class);
-		if(jndiContextPrefix == null) { // setJndiContextPrefix is called before setApplicationContext. If explicitly set (ie prefix is not null), don't override this value.
+		if (jndiContextPrefix == null) { // setJndiContextPrefix is called before setApplicationContext. If explicitly set (ie prefix is not null), don't override this value.
 			setJndiContextPrefix(jndiContextFactory.getContextPrefix());
 		}
 	}

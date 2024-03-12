@@ -33,11 +33,10 @@ import org.frankframework.util.TransformerPool.OutputType;
  * Baseclass for caching.
  * Provides key transformation functionality.
  *
- *
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
-public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigurationAware {
+public abstract class CacheAdapterBase<V> implements ICache<String, V>, IConfigurationAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -45,50 +44,53 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 	private @Getter String name;
 
 	private @Getter String keyXPath;
-	private @Getter OutputType keyXPathOutputType=OutputType.TEXT;
+	private @Getter OutputType keyXPathOutputType = OutputType.TEXT;
 	private @Getter String keyNamespaceDefs;
 	private @Getter String keyStyleSheet;
 	private @Getter String keyInputSessionKey;
-	private @Getter boolean cacheEmptyKeys=false;
+	private @Getter boolean cacheEmptyKeys = false;
 
 	private @Getter String valueXPath;
-	private @Getter OutputType valueXPathOutputType=OutputType.XML;
+	private @Getter OutputType valueXPathOutputType = OutputType.XML;
 	private @Getter String valueNamespaceDefs;
 	private @Getter String valueStyleSheet;
 	private @Getter String valueInputSessionKey;
-	private @Getter boolean cacheEmptyValues=false;
+	private @Getter boolean cacheEmptyValues = false;
 
-	private TransformerPool keyTp=null;
-	private TransformerPool valueTp=null;
+	private TransformerPool keyTp = null;
+	private TransformerPool valueTp = null;
 
 	@Override
 	public void configure(String ownerName) throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
-			setName(ownerName+"_cache");
+			setName(ownerName + "_cache");
 		}
 		if (StringUtils.isNotEmpty(getKeyXPath()) || StringUtils.isNotEmpty(getKeyStyleSheet())) {
-			keyTp=TransformerPool.configureTransformer(this, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(), getKeyXPathOutputType(),false,null);
+			keyTp = TransformerPool.configureTransformer(this, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(), getKeyXPathOutputType(), false, null);
 		}
 		if (StringUtils.isNotEmpty(getValueXPath()) || StringUtils.isNotEmpty(getValueStyleSheet())) {
-			valueTp=TransformerPool.configureTransformer(this, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(), getValueXPathOutputType(),false,null);
+			valueTp = TransformerPool.configureTransformer(this, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(), getValueXPathOutputType(), false, null);
 		}
 	}
 
 	protected abstract V getElement(String key);
+
 	protected abstract void putElement(String key, V value);
+
 	protected abstract boolean removeElement(Object key);
+
 	protected abstract V toValue(Message value);
 
 	@Override
 	public String transformKey(String input, PipeLineSession session) {
-		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session!=null) {
-			input=(String)session.get(getKeyInputSessionKey());
+		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session != null) {
+			input = (String) session.get(getKeyInputSessionKey());
 		}
-		if (keyTp!=null) {
+		if (keyTp != null) {
 			try {
-				input=keyTp.transform(input, null);
+				input = keyTp.transform(input, null);
 			} catch (Exception e) {
-				log.error(getLogPrefix()+"cannot determine cache key",e);
+				log.error(getLogPrefix() + "cannot determine cache key", e);
 			}
 		}
 		if (StringUtils.isEmpty(input)) {
@@ -103,12 +105,12 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 
 	@Override
 	public V transformValue(Message value, PipeLineSession session) {
-		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session!=null) {
-			value=Message.asMessage(session.get(getValueInputSessionKey()));
+		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session != null) {
+			value = Message.asMessage(session.get(getValueInputSessionKey()));
 		}
-		if (valueTp!=null) {
-			try{
-				value=new Message(valueTp.transform(value, null));
+		if (valueTp != null) {
+			try {
+				value = new Message(valueTp.transform(value, null));
 			} catch (Exception e) {
 				log.error(getLogPrefix() + "transformValue() cannot transform cache value [" + value + "], will not cache", e);
 				return null;
@@ -125,9 +127,10 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 	}
 
 	@Override
-	public V get(String key){
+	public V get(String key) {
 		return getElement(key);
 	}
+
 	@Override
 	public void put(String key, V value) {
 		putElement(key, value);
@@ -140,16 +143,17 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 
 	/**
 	 * name of the cache, will be lowercased
+	 *
 	 * @ff.default <code>&lt;ownerName&gt;</code>_cache
 	 */
 	public void setName(String name) {
-		if(StringUtils.isNotEmpty(name)) {
-			this.name=name.toLowerCase();
+		if (StringUtils.isNotEmpty(name)) {
+			this.name = name.toLowerCase();
 		}
 	}
 
 	public String getLogPrefix() {
-		return "cache ["+getName()+"] ";
+		return "cache [" + getName() + "] ";
 	}
 
 	/** xpath expression to extract cache key from request message */
@@ -159,6 +163,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 
 	/**
 	 * output type of xpath expression to extract cache key from request message
+	 *
 	 * @ff.default text
 	 */
 	public void setKeyXPathOutputType(OutputType keyXPathOutputType) {
@@ -182,6 +187,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 
 	/**
 	 * controls whether empty keys are used for caching. when set true, cache entries with empty keys can exist.
+	 *
 	 * @ff.default false
 	 */
 	public void setCacheEmptyKeys(boolean cacheEmptyKeys) {
@@ -192,6 +198,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 	public void setValueXPath(String valueXPath) {
 		this.valueXPath = valueXPath;
 	}
+
 	public void setValueXPathOutputType(OutputType valueXPathOutputType) {
 		this.valueXPathOutputType = valueXPathOutputType;
 	}
@@ -213,6 +220,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 
 	/**
 	 * controls whether empty values will be cached. when set true, empty cache entries can exist for any key.
+	 *
 	 * @ff.default false
 	 */
 	public void setCacheEmptyValues(boolean cacheEmptyValues) {

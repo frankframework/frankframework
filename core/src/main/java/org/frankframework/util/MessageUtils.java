@@ -69,12 +69,12 @@ public abstract class MessageUtils {
 		int contentLength = request.getContentLength();
 		result.withSize(contentLength);
 		String contentType = request.getContentType();
-		if(StringUtils.isNotEmpty(contentType)) {
+		if (StringUtils.isNotEmpty(contentType)) {
 			result.withMimeType(request.getContentType());
 		}
 
 		Enumeration<String> names = request.getHeaderNames();
-		while(names.hasMoreElements()) {
+		while (names.hasMoreElements()) {
 			String name = names.nextElement();
 			result.put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
 		}
@@ -87,7 +87,7 @@ public abstract class MessageUtils {
 		while (mimeHeaders.hasNext()) {
 			MimeHeader header = mimeHeaders.next();
 			String name = header.getName();
-			if("Content-Type".equals(name)) {
+			if ("Content-Type".equals(name)) {
 				result.withMimeType(header.getValue());
 			} else {
 				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
@@ -100,10 +100,11 @@ public abstract class MessageUtils {
 	 * If content is present (POST/PUT) one of the following headers must be set:<br/>
 	 * Content-Length / Transfer-Encoding <br/>
 	 * If neither header is present a <code>nullMessage</code> will be returned.
+	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc7230#section-3.3">rfc7230</a>
 	 */
 	public static Message parseContentAsMessage(HttpServletRequest request) throws IOException {
-		if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
+		if (request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
 			return new Message(request.getInputStream(), getContext(request));
 		} else {
 			// We want the context because of the request headers
@@ -118,6 +119,7 @@ public abstract class MessageUtils {
 
 	/**
 	 * Reads the first 10k bytes of (binary) messages to determine the charset when not present in the {@link MessageContext}.
+	 *
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
 	public static Charset computeDecodingCharset(Message message) throws IOException {
@@ -126,15 +128,16 @@ public abstract class MessageUtils {
 
 	/**
 	 * Reads the first 10k bytes of (binary) messages to determine the charset when not present in the {@link MessageContext}.
+	 *
 	 * @param confidence percentage required to successfully determine the charset.
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
 	public static Charset computeDecodingCharset(Message message, int confidence) throws IOException {
-		if(Message.isEmpty(message) || !message.isBinary()) {
+		if (Message.isEmpty(message) || !message.isBinary()) {
 			return null;
 		}
 
-		if(StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
+		if (StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
 			return Charset.forName(message.getCharset());
 		}
 
@@ -143,16 +146,16 @@ public abstract class MessageUtils {
 		CharsetMatch match = detector.detect();
 		String charset = match.getName();
 
-		if(match.getConfidence() > 90) {
+		if (match.getConfidence() > 90) {
 			LOG.debug("update charset for message [{}], full match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
 			return updateMessageCharset(message, charset);
 		}
 
 		//Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
-		if(charset.startsWith("windows-125")) {
+		if (charset.startsWith("windows-125")) {
 			charset = "windows-1252";//1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
 		}
-		if(match.getConfidence() >= confidence) {
+		if (match.getConfidence() >= confidence) {
 			LOG.debug("update charset for message [{}], potential match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
 			return updateMessageCharset(message, charset);
 		}
@@ -164,7 +167,7 @@ public abstract class MessageUtils {
 	//Update the MessageContext charset field, it may not remain StreamUtil.AUTO_DETECT_CHARSET
 	private static Charset updateMessageCharset(Message message, String charsetName) {
 		try {
-			if(charsetName != null) {
+			if (charsetName != null) {
 				return Charset.forName(charsetName); //parse it first to validate the charset
 			}
 			return null;
@@ -178,18 +181,18 @@ public abstract class MessageUtils {
 	 * Returns the {@link MimeType} if present in the {@link MessageContext}.
 	 */
 	public static MimeType getMimeType(Message message) {
-		if(Message.isEmpty(message) || message.getContext().isEmpty()) {
+		if (Message.isEmpty(message) || message.getContext().isEmpty()) {
 			return null;
 		}
 
-		MimeType mimeType = (MimeType)message.getContext().get(MessageContext.METADATA_MIMETYPE);
-		if(mimeType == null) {
+		MimeType mimeType = (MimeType) message.getContext().get(MessageContext.METADATA_MIMETYPE);
+		if (mimeType == null) {
 			LOG.trace("no mimetype found in MessageContext");
 			return null;
 		}
 
-		if(message.getCharset() != null) { //and is character data?
-			LOG.trace("found mimetype [{}] in MessageContext with charset [{}]", ()->mimeType, message::getCharset);
+		if (message.getCharset() != null) { //and is character data?
+			LOG.trace("found mimetype [{}] in MessageContext with charset [{}]", () -> mimeType, message::getCharset);
 			return new MimeType(mimeType, Charset.forName(message.getCharset()));
 		}
 
@@ -218,19 +221,19 @@ public abstract class MessageUtils {
 	 * NOTE: This is a resource intensive operation, the first {@value #TIKA_MAGIC_LENGHT} bytes are being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
-		if(Message.isEmpty(message)) {
+		if (Message.isEmpty(message)) {
 			return null;
 		}
 
 		MessageContext context = message.getContext();
 		MimeType contextMimeType = getMimeType(message);
-		if(contextMimeType != null) {
+		if (contextMimeType != null) {
 			LOG.debug("returning predetermined mimetype [{}]", contextMimeType);
 			return contextMimeType;
 		}
 
 		String name = (String) context.get(MessageContext.METADATA_NAME);
-		if(StringUtils.isNotEmpty(filename)) {
+		if (StringUtils.isNotEmpty(filename)) {
 			LOG.trace("using filename from MessageContext [{}]", name);
 			name = filename;
 		}
@@ -239,15 +242,15 @@ public abstract class MessageUtils {
 			Metadata metadata = new Metadata();
 			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
 			byte[] magic = message.getMagic(TIKA_MAGIC_LENGHT);
-			if(magic.length == 0) {
+			if (magic.length == 0) {
 				return null;
 			}
 			org.apache.tika.mime.MediaType tikaMediaType = TIKA_CONFIG.getDetector().detect(new ByteArrayInputStream(magic), metadata);
 			MimeType mimeType = MimeType.valueOf(tikaMediaType.toString());
 			context.withMimeType(mimeType);
-			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
+			if ("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
-				if(charset != null) {
+				if (charset != null) {
 					LOG.debug("found mimetype [{}] with charset [{}]", mimeType, charset);
 					return new MimeType(mimeType, charset);
 				}
@@ -266,7 +269,7 @@ public abstract class MessageUtils {
 	 */
 	public static String generateMD5Hash(Message message) {
 		try {
-			if(!message.isRepeatable()) {
+			if (!message.isRepeatable()) {
 				message.preserve();
 			}
 
@@ -284,7 +287,7 @@ public abstract class MessageUtils {
 	 */
 	public static Long generateCRC32(Message message) {
 		try {
-			if(!message.isRepeatable()) {
+			if (!message.isRepeatable()) {
 				message.preserve();
 			}
 
@@ -306,17 +309,17 @@ public abstract class MessageUtils {
 	public static long computeSize(Message message) {
 		try {
 			long size = message.size();
-			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
+			if (size > Message.MESSAGE_SIZE_UNKNOWN) {
 				return size;
 			}
 
-			if(!message.isRepeatable()) {
+			if (!message.isRepeatable()) {
 				message.preserve();
 			}
 
 			// Preserving the message might make reading the size known. If so, there is no need to compute it.
 			size = message.size();
-			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
+			if (size > Message.MESSAGE_SIZE_UNKNOWN) {
 				return size;
 			}
 

@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 class FormatTest {
 
-	String dummy = "font-size=\""+10+"\"";
+	String dummy = "font-size=\"" + 10 + "\"";
 
 	@Test
 	void svgTest() {

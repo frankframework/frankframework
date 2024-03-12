@@ -18,6 +18,9 @@ package org.frankframework.extensions.aspose.pipe;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.aspose.pdf.Document;
+import com.aspose.pdf.exceptions.InvalidPasswordException;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -25,17 +28,12 @@ import org.frankframework.doc.Default;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 
-import com.aspose.pdf.Document;
-import com.aspose.pdf.exceptions.InvalidPasswordException;
-
 /**
  * Returns the amount of pages of a PDF file.
  *
- * @ff.forward passwordProtected the File is password protected
- *
  * @author Laurens Mäkel
- * @since  7.6
- *
+ * @ff.forward passwordProtected the File is password protected
+ * @since 7.6
  */
 public class AmountOfPagesPipe extends FixedForwardPipe {
 	private String charset = null;
@@ -44,26 +42,27 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		int result = 0;
 
-		try (InputStream binaryInputStream = input.asInputStream(getCharset())){
+		try (InputStream binaryInputStream = input.asInputStream(getCharset())) {
 			Document doc = new Document(binaryInputStream);
 			result = doc.getPages().size();
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot encode message using charset [" + getCharset() + "]", e);
 		} catch (InvalidPasswordException ip) {
-			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
+			return new PipeRunResult(findForward("passwordProtected"), "File is password protected.");
 		}
 
-		return new PipeRunResult(getSuccessForward(), Integer.toString(result) );
+		return new PipeRunResult(getSuccessForward(), Integer.toString(result));
 	}
 
 	/**
 	 * Charset to be used to encode the given input string
 	 */
 	@Default("UTF-8")
-	public void setCharset(String charset){
+	public void setCharset(String charset) {
 		this.charset = charset;
 	}
-	public String getCharset(){
+
+	public String getCharset() {
 		return charset;
 	}
 }

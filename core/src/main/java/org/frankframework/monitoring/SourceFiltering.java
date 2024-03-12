@@ -14,6 +14,7 @@
    limitations under the License.
 */
 package org.frankframework.monitoring;
+
 /**
  * Enumeration of SourceTypes for trigger filters.
  *

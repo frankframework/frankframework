@@ -84,8 +84,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter @Setter Receiver<String> receiver;
 
-	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", HttpSenderBase.MESSAGE_ID_HEADER);
-	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", HttpSenderBase.CORRELATION_ID_HEADER);
+	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader())
+			.getString("apiListener.messageIdHeader", HttpSenderBase.MESSAGE_ID_HEADER);
+	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader())
+			.getString("apiListener.correlationIdHeader", HttpSenderBase.CORRELATION_ID_HEADER);
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;

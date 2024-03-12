@@ -12,20 +12,21 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.frankframework.core.IbisException;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.frankframework.core.IbisException;
 
 public class ApiExceptionTest {
 
 	private static final String API_EXCEPTION_MESSAGE = "api endpoint exception message";
 
 	public static List<?> data() {
-		return Arrays.asList(new Object[][] {
-			{"cannot configure", new IbisException("cannot configure")},
-			{"cannot configure: (IllegalStateException) something is wrong", new IbisException("cannot configure", new IllegalStateException("something is wrong"))},
+		return Arrays.asList(new Object[][]{
+				{"cannot configure", new IbisException("cannot configure")},
+				{"cannot configure: (IllegalStateException) something is wrong", new IbisException("cannot configure", new IllegalStateException("something is wrong"))},
 		});
 	}
 
@@ -84,13 +85,13 @@ public class ApiExceptionTest {
 	@MethodSource("data")
 	public void nestedException(String expectedMessage, Exception causedByException) {
 		ApiException exception = new ApiException(API_EXCEPTION_MESSAGE, causedByException);
-		assertThat(exception.getMessage(), Matchers.startsWith(API_EXCEPTION_MESSAGE +": "+ expectedMessage));
+		assertThat(exception.getMessage(), Matchers.startsWith(API_EXCEPTION_MESSAGE + ": " + expectedMessage));
 		Response response = exception.getResponse();
 		assertEquals(500, response.getStatus());
 		String jsonMessage = toJsonString(response.getEntity());
 		assertThat(jsonMessage, Matchers.startsWith("api endpoint exception message: cannot configure"));
 
-		assertThat(jsonMessage, Matchers.startsWith(API_EXCEPTION_MESSAGE +": "+ expectedMessage));
+		assertThat(jsonMessage, Matchers.startsWith(API_EXCEPTION_MESSAGE + ": " + expectedMessage));
 		exception.printStackTrace();
 	}
 

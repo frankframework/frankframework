@@ -56,6 +56,7 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 
 	/**
 	 * Create a new {@link DataSourceXAResourceRecoveryHelper} instance.
+	 *
 	 * @param xaDataSource the XA data source
 	 */
 	public DataSourceXAResourceRecoveryHelper(XADataSource xaDataSource) {
@@ -64,9 +65,10 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 
 	/**
 	 * Create a new {@link DataSourceXAResourceRecoveryHelper} instance.
+	 *
 	 * @param xaDataSource the XA data source
-	 * @param user the database user or {@code null}
-	 * @param password the database password or {@code null}
+	 * @param user         the database user or {@code null}
+	 * @param password     the database password or {@code null}
 	 */
 	public DataSourceXAResourceRecoveryHelper(XADataSource xaDataSource, String user, String password) {
 		Assert.notNull(xaDataSource, "XADataSource must not be null");
@@ -83,7 +85,7 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 	@Override
 	public XAResource[] getXAResources() {
 		if (connect()) {
-			return new XAResource[] { this };
+			return new XAResource[]{this};
 		}
 		return NO_XA_RESOURCES;
 	}
@@ -93,8 +95,7 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 			try {
 				this.xaConnection = getXaConnection();
 				this.delegate = this.xaConnection.getXAResource();
-			}
-			catch (SQLException ex) {
+			} catch (SQLException ex) {
 				logger.warn("Failed to create connection", ex);
 				return false;
 			}
@@ -113,8 +114,7 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 	public Xid[] recover(int flag) throws XAException {
 		try {
 			return getDelegate(true).recover(flag);
-		}
-		finally {
+		} finally {
 			if (flag == XAResource.TMENDRSCAN) {
 				disconnect();
 			}
@@ -124,11 +124,9 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 	private void disconnect() {
 		try {
 			this.xaConnection.close();
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			logger.warn("Failed to close connection", e);
-		}
-		finally {
+		} finally {
 			this.xaConnection = null;
 			this.delegate = null;
 		}

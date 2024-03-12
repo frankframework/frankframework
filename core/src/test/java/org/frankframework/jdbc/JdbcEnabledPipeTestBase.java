@@ -13,6 +13,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -33,7 +34,7 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> {
 		pipe = createPipe();
 		env.autowire(pipe);
 		pipe.registerForward(new PipeForward("success", "exit"));
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipe.setName(pipe.getClass().getSimpleName() + " under test");
 		pipeline = env.createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
@@ -72,6 +73,7 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> {
 	protected PipeRunResult doPipe(String input) throws PipeRunException {
 		return doPipe(new Message(input));
 	}
+
 	protected PipeRunResult doPipe(Message input) throws PipeRunException {
 		return pipe.doPipe(input, session);
 	}

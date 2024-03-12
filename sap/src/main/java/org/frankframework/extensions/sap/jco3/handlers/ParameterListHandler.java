@@ -26,7 +26,7 @@ import com.sap.conn.jco.JCoParameterList;
  *   STRUCTURE|TABLE
  * &lt;/INPUT&gt;
  * </pre>
- *
+ * <p>
  * and:
  *
  * <pre>
@@ -35,8 +35,8 @@ import com.sap.conn.jco.JCoParameterList;
  * &lt;/TABLES&gt;
  * </pre>
  *
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class ParameterListHandler extends RecordHandler {
 

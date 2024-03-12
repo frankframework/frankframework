@@ -30,7 +30,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 
 	public JmsMessageBrowserIteratorItem(Message msg) {
 		super();
-		this.msg=msg;
+		this.msg = msg;
 	}
 
 	@Override
@@ -41,6 +41,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+
 	@Override
 	public String getOriginalId() throws ListenerException {
 		try {
@@ -49,6 +50,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+
 	@Override
 	public String getCorrelationId() throws ListenerException {
 		try {
@@ -57,10 +59,11 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+
 	@Override
 	public Date getInsertDate() throws ListenerException {
 		try {
-			if (msg.getObjectProperty(JmsTransactionalStorage.FIELD_RECEIVED_DATE)!=null) {
+			if (msg.getObjectProperty(JmsTransactionalStorage.FIELD_RECEIVED_DATE) != null) {
 				return new Date(msg.getLongProperty(JmsTransactionalStorage.FIELD_RECEIVED_DATE));
 			}
 			return new Date(msg.getJMSTimestamp());
@@ -68,6 +71,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+
 	@Override
 	public Date getExpiryDate() throws ListenerException {
 		try {
@@ -76,6 +80,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+
 	@Override
 	public String getType() throws ListenerException {
 		try {
@@ -84,6 +89,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+
 	@Override
 	public String getHost() throws ListenerException {
 		try {
@@ -92,6 +98,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+
 	@Override
 	public String getCommentString() throws ListenerException {
 		try {
@@ -100,6 +107,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			throw new ListenerException(e);
 		}
 	}
+
 	@Override
 	public String getLabel() throws ListenerException {
 		try {
@@ -130,7 +138,7 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 			return "<binary data>";
 		}
 		try {
-			return ((TextMessage)msg).getText();
+			return ((TextMessage) msg).getText();
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}

@@ -42,7 +42,7 @@ public class ConfigurationMessageEvent extends ApplicationMessageEvent {
 
 	private static ApplicationContext getSource(IConfigurationAware source) {
 		ApplicationContext ac = source.getApplicationContext();
-		if(ac instanceof Configuration) {
+		if (ac instanceof Configuration) {
 			return ac;
 		}
 		throw new IllegalStateException("unable to publish message from this context");

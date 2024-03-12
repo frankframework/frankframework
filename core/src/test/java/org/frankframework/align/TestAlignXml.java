@@ -9,7 +9,9 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.Test;
+
 import org.w3c.dom.Document;
 
 public class TestAlignXml {

@@ -17,6 +17,7 @@ package org.frankframework.extensions.aspose.services.conv.impl;
 
 import java.io.IOException;
 
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionException;
@@ -24,12 +25,11 @@ import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.frankframework.extensions.aspose.services.conv.impl.convertors.Convertor;
 import org.frankframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
+import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
-import lombok.extern.log4j.Log4j2;
-import org.frankframework.stream.Message;
-import org.frankframework.util.MessageUtils;
 /**
  * @author Gerard van der Hoorn
  */
@@ -39,7 +39,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 	private final ConvertorFactory convertorFactory;
 	private final MediaTypeValidator mediaTypeValidator = new MediaTypeValidator();
 
-	public CisConversionServiceImpl(CisConfiguration configuration){
+	public CisConversionServiceImpl(CisConfiguration configuration) {
 		this.configuration = configuration;
 		convertorFactory = new ConvertorFactory(this, configuration);
 	}
@@ -49,7 +49,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 		CisConversionResult result = null;
 		MimeType mimeType = MessageUtils.computeMimeType(message, filename);
-		if(mimeType == null || "x-tika-msoffice".equals(mimeType.getSubtype())) {
+		if (mimeType == null || "x-tika-msoffice".equals(mimeType.getSubtype())) {
 			// If we cannot determine the MimeType based on the files magic numbers, read part of the file.
 			// MS Office files can be password protected, which can only be determined by reading a part of the file.
 			mimeType = getMediaType(message, filename);
@@ -63,13 +63,14 @@ public class CisConversionServiceImpl implements CisConversionService {
 			Convertor convertor = convertorFactory.getConvertor(mediaType);
 			if (convertor == null) {
 				// Conversion not supported.
-				String errorMessage = "Omzetten naar PDF mislukt! Reden: bestandstype wordt niet ondersteund (mediaType: "+ mediaType + ")";
+				String errorMessage = "Omzetten naar PDF mislukt! Reden: bestandstype wordt niet ondersteund (mediaType: " + mediaType + ")";
 				result = createFailureResult(filename, conversionOption, mediaType, errorMessage);
 			} else {
 				long startTime = System.currentTimeMillis();
 				// Convertor found, convert the file
 				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, configuration.getCharset());
-				if(log.isDebugEnabled()) log.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
+				if (log.isDebugEnabled())
+					log.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
 			}
 		}
 		return result;
@@ -100,7 +101,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 		MediaType mediaType = null;
 		try {
 			mediaType = mediaTypeValidator.getMediaType(message, filename);
-			log.debug("detected mediatype [{}]",mediaType);
+			log.debug("detected mediatype [{}]", mediaType);
 		} catch (IOException e) {
 			throw new CisConversionException("Het omzetten naar pdf is mislukt. Neem contact op met de functioneel beheerder", e);
 		}

@@ -24,13 +24,13 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.LogUtil;
 
 /**
  * Singleton that has the different jmsRealms.<br/>
  * Typical use: JmsRealmFactory.getInstance().&lt;method to execute&gt;
  * <br/>
+ *
  * @author Johan Verrips IOS
  * @see JmsRealm
  */
@@ -79,9 +79,9 @@ public class JmsRealmFactory {
 
 	public List<String> getConnectionFactoryNames() {
 		List<String> list = new ArrayList<>();
-		for (JmsRealm jmsRealm: jmsRealms.values()) {
+		for (JmsRealm jmsRealm : jmsRealms.values()) {
 			String connectionFactory = jmsRealm.retrieveConnectionFactoryName();
-			if(StringUtils.isNotEmpty(connectionFactory)) {
+			if (StringUtils.isNotEmpty(connectionFactory)) {
 				list.add(connectionFactory);
 			}
 		}
@@ -112,8 +112,8 @@ public class JmsRealmFactory {
 	 */
 	public void registerJmsRealm(JmsRealm jmsRealm) {
 		String realmName = jmsRealm.getRealmName();
-		if(jmsRealms.containsKey(realmName)) {
-			log.warn("overwriting JmsRealm [" + jmsRealm.toString() + "]. Realm with name ["+realmName+"] already exists");
+		if (jmsRealms.containsKey(realmName)) {
+			log.warn("overwriting JmsRealm [" + jmsRealm.toString() + "]. Realm with name [" + realmName + "] already exists");
 		}
 		jmsRealms.put(realmName, jmsRealm);
 		log.debug("JmsRealmFactory registered realm [{}]", () -> jmsRealm.toString());

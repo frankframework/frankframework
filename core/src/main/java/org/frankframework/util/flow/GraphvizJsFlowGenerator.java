@@ -39,9 +39,9 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 	 */
 	public GraphvizEngine getGraphvizEngine() {
 		SoftReference<GraphvizEngine> reference = GRAPHVIZ_ENGINES.get();
-		if(reference == null || reference.get() == null) {
+		if (reference == null || reference.get() == null) {
 			GraphvizEngine generator = createGraphvizEngine();
-			if(generator == null) {
+			if (generator == null) {
 				return null;
 			}
 
@@ -64,7 +64,7 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 	@Override
 	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
 		GraphvizEngine engine = getGraphvizEngine();
-		if(engine != null) {
+		if (engine != null) {
 			String dot = generateDot(xml);
 
 			try {

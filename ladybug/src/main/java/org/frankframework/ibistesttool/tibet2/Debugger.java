@@ -24,6 +24,7 @@ import org.frankframework.core.IAdapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
+
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -67,11 +68,11 @@ public class Debugger extends org.frankframework.ibistesttool.Debugger {
 			return "Adapter '" + RESEND_ADAPTER_NAME + "' not found";
 		}
 		PipeLineSession pipeLineSession = new PipeLineSession();
-		synchronized(inRerun) {
+		synchronized (inRerun) {
 			inRerun.add(correlationId);
 		}
 		try {
-			if(securityContext.getUserPrincipal() != null) {
+			if (securityContext.getUserPrincipal() != null) {
 				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 			}
 			PipeLineResult processResult = adapter.processMessage(correlationId, new Message(inputMessage), pipeLineSession);
@@ -80,9 +81,9 @@ public class Debugger extends org.frankframework.ibistesttool.Debugger {
 			}
 			return null;
 		} catch (IOException e) {
-			return "Rerun failed. Exception in adapter " + RESEND_ADAPTER_NAME + ": (" + e.getClass().getName()+") " + e.getMessage();
+			return "Rerun failed. Exception in adapter " + RESEND_ADAPTER_NAME + ": (" + e.getClass().getName() + ") " + e.getMessage();
 		} finally {
-			synchronized(inRerun) {
+			synchronized (inRerun) {
 				inRerun.remove(correlationId);
 			}
 		}

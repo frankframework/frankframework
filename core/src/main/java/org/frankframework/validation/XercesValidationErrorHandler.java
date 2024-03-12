@@ -51,7 +51,7 @@ class XercesValidationErrorHandler implements XMLErrorHandler {
 	}
 
 	private void handleException(XMLParseException e, SuppressKeys suppressKey) {
-		if (suppressKey!=null) {
+		if (suppressKey != null) {
 			if (allowConsoleWarnings) {
 				ConfigurationWarnings.add(source, log, e.toString(), suppressKey);
 			}

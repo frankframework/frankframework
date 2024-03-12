@@ -8,6 +8,7 @@ import org.frankframework.core.Resource;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool;
+
 import org.junit.jupiter.api.Test;
 
 public class FlowDiagramTest {

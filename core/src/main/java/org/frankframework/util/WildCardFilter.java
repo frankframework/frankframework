@@ -56,7 +56,7 @@ public class WildCardFilter implements FilenameFilter {
 
 		// remove duplicate asterisks
 		int i = wildString.indexOf("**");
-		while(i >= 0) {
+		while (i >= 0) {
 			wildString = wildString.substring(0, i + 1) + wildString.substring(i + 2);
 			i = wildString.indexOf("**");
 		}
@@ -64,12 +64,12 @@ public class WildCardFilter implements FilenameFilter {
 		// parse the input string
 		StringTokenizer tokens = new StringTokenizer(wildString, "*", true);
 		String token = null;
-		while(tokens.hasMoreTokens()) {
+		while (tokens.hasMoreTokens()) {
 			token = tokens.nextToken();
 
-			if(token.equals("*")) {
+			if (token.equals("*")) {
 				pattern.addElement(FIND);
-				if(tokens.hasMoreTokens()) {
+				if (tokens.hasMoreTokens()) {
 					token = tokens.nextToken();
 					pattern.addElement(token);
 				} else {
@@ -81,7 +81,7 @@ public class WildCardFilter implements FilenameFilter {
 			}
 		}
 
-		if(!"*".equals(token)) {
+		if (!"*".equals(token)) {
 			pattern.addElement(EXPECT);
 			pattern.addElement(NOTHING);
 		}
@@ -93,14 +93,14 @@ public class WildCardFilter implements FilenameFilter {
 		// allow directories to match all patterns
 		// not sure if this is the best idea, but
 		// suits my needs for now
-		if(dir != null) {
+		if (dir != null) {
 			String path = dir.getPath();
-			if(!path.endsWith("/") && !path.endsWith("\\")) {
+			if (!path.endsWith("/") && !path.endsWith("\\")) {
 				path += File.separator;
 			}
 			File tempFile = new File(path, name);
 
-			if(tempFile.isDirectory()) {
+			if (tempFile.isDirectory()) {
 				return true;
 			}
 		}
@@ -119,15 +119,15 @@ public class WildCardFilter implements FilenameFilter {
 		int currPos = 0;
 		int cmdPos = 0;
 
-		while(cmdPos < pattern.size()) {
+		while (cmdPos < pattern.size()) {
 			command = pattern.elementAt(cmdPos);
 			param = pattern.elementAt(cmdPos + 1);
 
-			if(command.equals(FIND)) {
+			if (command.equals(FIND)) {
 				// if we are to find 'anything'
 				// then we are done
 
-				if(param.equals(ANYTHING)) {
+				if (param.equals(ANYTHING)) {
 					break;
 				}
 
@@ -135,7 +135,7 @@ public class WildCardFilter implements FilenameFilter {
 				// from the curr pos
 
 				int nextPos = name.indexOf(param, currPos);
-				if(nextPos >= 0) {
+				if (nextPos >= 0) {
 					// found it
 					currPos = nextPos + param.length();
 				} else {
@@ -143,12 +143,12 @@ public class WildCardFilter implements FilenameFilter {
 					break;
 				}
 			} else {
-				if(command.equals(EXPECT)) {
+				if (command.equals(EXPECT)) {
 					// if we are to expect 'nothing'
 					// then we MUST be at the end of the string
 
-					if(param.equals(NOTHING)) {
-						if(currPos != name.length()) {
+					if (param.equals(NOTHING)) {
+						if (currPos != name.length()) {
 							acceptName = false;
 						}
 
@@ -161,7 +161,7 @@ public class WildCardFilter implements FilenameFilter {
 						// is at our current position
 
 						int nextPos = name.indexOf(param, currPos);
-						if(nextPos != currPos) {
+						if (nextPos != currPos) {
 							acceptName = false;
 							break;
 						}
@@ -184,7 +184,7 @@ public class WildCardFilter implements FilenameFilter {
 		StringBuilder out = new StringBuilder();
 
 		int i = 0;
-		while(i < pattern.size()) {
+		while (i < pattern.size()) {
 			out.append("(");
 			out.append(pattern.elementAt(i));
 			out.append(" ");

@@ -28,11 +28,17 @@ import org.frankframework.core.IScopeProvider;
 public interface IXSD extends Schema {
 
 	String getResourceTarget();
-	String getNamespace();			// the externally configured targetNamespace
-	String getTargetNamespace();	// the targetNamespace as defined in the schema
+
+	String getNamespace();            // the externally configured targetNamespace
+
+	String getTargetNamespace();    // the targetNamespace as defined in the schema
+
 	boolean isAddNamespaceToSchema();
+
 	List<String> getRootTags();
+
 	Set<String> getImportedNamespaces();
+
 	@Nullable
 	IXSD getImportParent();
 
@@ -46,8 +52,11 @@ public interface IXSD extends Schema {
 	}
 
 	Set<String> getImportedSchemaLocationsToIgnore();
+
 	boolean isUseBaseImportedSchemaLocationsToIgnore();
+
 	Set<String> getImportedNamespacesToIgnore();
+
 	String getParentLocation();
 
 	String getXsdDefaultNamespace();

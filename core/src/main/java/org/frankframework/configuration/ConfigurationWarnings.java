@@ -36,7 +36,7 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	 */
 	public static void add(IConfigurationAware source, Logger log, String message, Throwable t) {
 		ConfigurationWarnings instance = getInstance(source);
-		if(instance != null) {
+		if (instance != null) {
 			instance.doAdd(source, log, message, t);
 		} else {
 			ApplicationWarnings.add(log, message, t);
@@ -55,7 +55,7 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	 */
 	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
 		ConfigurationWarnings instance = getInstance(source); //We could call two statics, this prevents a double getInstance(..) lookup.
-		if(instance != null) {
+		if (instance != null) {
 			instance.add((Object) source, log, message, suppressionKey, adapter);
 		} else {
 			ApplicationWarnings.add(log, message);
@@ -64,16 +64,16 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 
 	//Helper method to retrieve ConfigurationWarnings from the Configuration Context
 	private static ConfigurationWarnings getInstance(IConfigurationAware source) {
-		if(source == null) {
+		if (source == null) {
 			IllegalArgumentException e = new IllegalArgumentException("no source provided");
 			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to log notification in it's proper context", e);
 			return null;
 		}
 
 		ApplicationContext applicationContext = source.getApplicationContext();
-		if(applicationContext == null) {
+		if (applicationContext == null) {
 			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
-			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to retrieve ApplicationContext from source ["+source+"]", e);
+			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to retrieve ApplicationContext from source [" + source + "]", e);
 			return null;
 		}
 
@@ -81,17 +81,17 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	}
 
 	private boolean doIsSuppressed(SuppressKeys key, IAdapter adapter) {
-		if(key == null) {
+		if (key == null) {
 			throw new IllegalArgumentException("SuppressKeys may not be NULL");
 		}
 
-		return isSuppressed(key) || adapter!=null && getAppConstants().getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
+		return isSuppressed(key) || adapter != null && getAppConstants().getBoolean(key.getKey() + "." + adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 
 	public boolean isSuppressed(SuppressKeys key) {
-		if(key == null) {
+		if (key == null) {
 			throw new IllegalArgumentException("SuppressKeys may not be NULL");
-		} else if(key == SuppressKeys.SQL_INJECTION_SUPPRESS_KEY) {
+		} else if (key == SuppressKeys.SQL_INJECTION_SUPPRESS_KEY) {
 			return "true".equals(System.getProperty(SuppressKeys.SQL_INJECTION_SUPPRESS_KEY.getKey()));
 		}
 
@@ -100,7 +100,7 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 
 	public static boolean isSuppressed(SuppressKeys key, IAdapter adapter) {
 		ConfigurationWarnings instance = getInstance(adapter);
-		if(instance == null) {
+		if (instance == null) {
 			throw new IllegalArgumentException("ConfigurationWarnings not initialized");
 		}
 
@@ -108,17 +108,17 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	}
 
 	public void add(Object source, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
-		if(!doIsSuppressed(suppressionKey, adapter)) {
+		if (!doIsSuppressed(suppressionKey, adapter)) {
 			// provide suppression hint as info
 			String hint = null;
-			if(log.isInfoEnabled()) {
-				if(adapter != null) {
-					hint = ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
-					if(suppressionKey.isAllowGlobalSuppression()) {
-						hint += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
+			if (log.isInfoEnabled()) {
+				if (adapter != null) {
+					hint = ". This warning can be suppressed by setting the property '" + suppressionKey.getKey() + "." + adapter.getName() + "=true'";
+					if (suppressionKey.isAllowGlobalSuppression()) {
+						hint += ", or globally by setting the property '" + suppressionKey.getKey() + "=true'";
 					}
-				} else if(suppressionKey.isAllowGlobalSuppression()) {
-					hint = ". This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
+				} else if (suppressionKey.isAllowGlobalSuppression()) {
+					hint = ". This warning can be suppressed globally by setting the property '" + suppressionKey.getKey() + "=true'";
 				}
 			}
 

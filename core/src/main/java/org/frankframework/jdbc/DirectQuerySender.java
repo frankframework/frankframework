@@ -30,22 +30,19 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.ClassUtils;
 
 /**
  * QuerySender that interprets the input message as a query, possibly with attributes.
  * Messages are expected to contain sql-text.
  *
+ * @author Gerrit van Brakel
  * @ff.parameters All parameters present are applied to the query to be executed.
- *
- * @author  Gerrit van Brakel
- * @since 	4.1
+ * @since 4.1
  */
-public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
+public class DirectQuerySender extends JdbcQuerySenderBase<Connection> {
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -53,7 +50,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	}
 
 	public void configure(boolean ignoreSQLInjectionWarning) throws ConfigurationException {
-		if(ignoreSQLInjectionWarning) {
+		if (ignoreSQLInjectionWarning) {
 			super.configure();
 		} else {
 			configure(null);
@@ -64,10 +61,10 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		super.configure();
 
 		if (adapter != null) {
-			ConfigurationWarnings.add(adapter, log, "has a ["+ClassUtils.nameOf(this)+"]. This may cause potential SQL injections!", SuppressKeys.SQL_INJECTION_SUPPRESS_KEY, adapter);
+			ConfigurationWarnings.add(adapter, log, "has a [" + ClassUtils.nameOf(this) + "]. This may cause potential SQL injections!", SuppressKeys.SQL_INJECTION_SUPPRESS_KEY, adapter);
 		} else {
 			//This can still be triggered when a Sender is inside a SenderSeries wrapper such as ParallelSenders
-			ApplicationWarnings.add(log, "The class ["+ClassUtils.nameOf(this)+"] is used one or more times. This may cause potential SQL injections!");
+			ApplicationWarnings.add(log, "The class [" + ClassUtils.nameOf(this) + "] is used one or more times. This may cause potential SQL injections!");
 		}
 	}
 
@@ -86,7 +83,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		try {
 			return getConnectionForSendMessage();
 		} catch (JdbcException e) {
-			throw new SenderException("cannot get Connection",e);
+			throw new SenderException("cannot get Connection", e);
 		}
 	}
 
@@ -115,7 +112,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 			} finally {
 				closeStatementSet(queryExecutionContext);
 			}
-		} catch (SenderException|TimeoutException e) {
+		} catch (SenderException | TimeoutException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -125,12 +122,12 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	protected QueryExecutionContext prepareStatementSet(Connection connection, Message message) throws SenderException {
 		try {
 			QueryExecutionContext result = getQueryExecutionContext(connection, message);
-			if (getBatchSize()>0) {
+			if (getBatchSize() > 0) {
 				result.getStatement().clearBatch();
 			}
 			return result;
 		} catch (JdbcException | SQLException e) {
-			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext", e);
 		}
 	}
 }

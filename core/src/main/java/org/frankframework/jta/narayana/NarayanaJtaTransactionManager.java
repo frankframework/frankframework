@@ -41,7 +41,7 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 
 	private @Getter RecoveryManager recoveryManager;
 
-	private boolean initialized=false;
+	private boolean initialized = false;
 
 
 	@Override
@@ -58,7 +58,7 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 
 	private void initialize() throws TransactionSystemException {
 		if (!initialized) {
-			initialized=true;
+			initialized = true;
 			determineTmUid();
 			try {
 				arjPropertyManager.getCoreEnvironmentBean().setNodeIdentifier(getUid());
@@ -77,7 +77,7 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 	@Override
 	protected boolean shutdownTransactionManager() {
 		try {
-			if (recoveryManager!=null) {
+			if (recoveryManager != null) {
 				if (!recoveryStoreEmpty()) {
 					log.debug("RecoveryStore not empty. Performing recovery manager scan to clean up");
 					recoveryManager.scan();
@@ -91,7 +91,7 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 					}
 				}
 				recoveryManager.terminate();
-				recoveryManager=null;
+				recoveryManager = null;
 			}
 			return recoveryStoreEmpty();
 		} catch (Exception e) {
@@ -109,14 +109,14 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 		if (!buff.notempty()) {
 			return true;
 		}
-		byte[] objUid=buff.unpackBytes();
+		byte[] objUid = buff.unpackBytes();
 		return !isNotBlankArray(objUid);
 	}
 
 
 	private boolean isNotBlankArray(byte[] arr) {
-		for(int i=0; i<arr.length; i++) {
-			if (arr[i]!=0) {
+		for (int i = 0; i < arr.length; i++) {
+			if (arr[i] != 0) {
 				return true;
 			}
 		}

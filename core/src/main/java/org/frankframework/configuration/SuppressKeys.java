@@ -21,7 +21,6 @@ import lombok.Getter;
  * Enumeration class for suppressing configuration warnings.
  *
  * @author alisihab
- *
  */
 public enum SuppressKeys {
 

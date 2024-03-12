@@ -36,11 +36,10 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 
 /**
-* Pipe to manage the ApiPrincipal handling
-*
-* @author Niels Meijer
-*
-*/
+ * Pipe to manage the ApiPrincipal handling
+ *
+ * @author Niels Meijer
+ */
 public class ApiPrincipalPipe extends FixedForwardPipe {
 
 	private String action = null;
@@ -54,11 +53,11 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 		super.configure();
 
 		String action = getAction();
-		if (action==null) {
+		if (action == null) {
 			throw new ConfigurationException("action must be set");
 		}
 		if (!allowedActions.contains(action)) {
-			throw new ConfigurationException("illegal value for action ["+action+"], must be one of " + allowedActions.toString());
+			throw new ConfigurationException("illegal value for action [" + action + "], must be one of " + allowedActions.toString());
 		}
 
 		cache = ApiCacheManager.getInstance();
@@ -66,7 +65,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if (message==null) {
+		if (message == null) {
 			throw new PipeRunException(this, "got null input");
 		}
 		String input;
@@ -76,16 +75,16 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		if(getAction().equals("get")) {
+		if (getAction().equals("get")) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
-			if(userPrincipal == null)
+			if (userPrincipal == null)
 				throw new PipeRunException(this, "unable to locate ApiPrincipal");
 
 			return new PipeRunResult(getSuccessForward(), userPrincipal.getData());
 		}
-		if(getAction().equals("set")) {
+		if (getAction().equals("set")) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
-			if(userPrincipal == null)
+			if (userPrincipal == null)
 				throw new PipeRunException(this, "unable to locate ApiPrincipal");
 
 			userPrincipal.setData(input);
@@ -93,7 +92,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 			return new PipeRunResult(getSuccessForward(), "");
 		}
-		if(getAction().equals("create")) {
+		if (getAction().equals("create")) {
 			//TODO type of token? (jwt, saml)
 			String uidString = (new UID()).toString();
 			SecureRandom random = new SecureRandom();
@@ -102,7 +101,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			ApiPrincipal userPrincipal = new ApiPrincipal(authTTL);
 			userPrincipal.setData(input);
 			userPrincipal.setToken(token);
-			if(getAuthenticationMethod().equals("cookie")) {
+			if (getAuthenticationMethod().equals("cookie")) {
 				Cookie cookie = new Cookie(ApiListenerServlet.AUTHENTICATION_COOKIE_NAME, token);
 				cookie.setPath("/");
 				cookie.setMaxAge(authTTL);
@@ -119,16 +118,16 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 			return new PipeRunResult(getSuccessForward(), token);
 		}
-		if(getAction().equals("remove")) {
+		if (getAction().equals("remove")) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
-			if(userPrincipal == null)
+			if (userPrincipal == null)
 				throw new PipeRunException(this, "unable to locate ApiPrincipal");
 
 			cache.remove(userPrincipal.getToken());
 			return new PipeRunResult(getSuccessForward(), "");
 		}
 
-		return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), "unable to execute action ["+getAction()+"]");
+		return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), "unable to execute action [" + getAction() + "]");
 	}
 
 	public void setAction(String string) {
@@ -140,13 +139,11 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	}
 
 	public void setAuthenticationMethod(String method) throws ConfigurationException {
-		if(method.equalsIgnoreCase("header")) {
+		if (method.equalsIgnoreCase("header")) {
 			this.authenticationMethod = "header";
-		}
-		else if(method.equalsIgnoreCase("cookie")) {
+		} else if (method.equalsIgnoreCase("cookie")) {
 			this.authenticationMethod = "cookie";
-		}
-		else
+		} else
 			throw new ConfigurationException("Authentication method not implemented");
 	}
 

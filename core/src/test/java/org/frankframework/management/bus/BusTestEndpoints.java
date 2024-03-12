@@ -42,9 +42,13 @@ public class BusTestEndpoints {
 	@ActionSelector(BusAction.WARNINGS)
 	public Message<String> throwException(Message<?> message) {
 		ExceptionTestTypes type = BusMessageUtils.getEnumHeader(message, "type", ExceptionTestTypes.class);
-		Exception cause = new StreamingException("cannot stream",
-			new ConfigurationException("cannot configure",
-				new IllegalStateException("something is wrong")));
+		Exception cause = new StreamingException(
+				"cannot stream",
+				new ConfigurationException(
+						"cannot configure",
+						new IllegalStateException("something is wrong")
+				)
+		);
 		switch (type) {
 			case NOT_FOUND:
 				throw new BusException("Resource not found", 404);

@@ -27,15 +27,13 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.aspose.pdf.Document;
 import com.aspose.pdf.FileSpecification;
 import com.aspose.pdf.PageMode;
 import com.aspose.pdf.SaveFormat;
 
 import lombok.extern.log4j.Log4j2;
-
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
 import org.frankframework.extensions.aspose.services.util.FileConstants;
@@ -44,7 +42,6 @@ import org.frankframework.stream.Message;
 /**
  * This class will combine seperate pdf files to a single pdf with attachments.
  * None existing files in a CisConversionResult will be skipped!
- *
  */
 @Log4j2
 public class PdfAttachmentUtil {
@@ -79,14 +76,15 @@ public class PdfAttachmentUtil {
 	 * Note: Nothing is changed to the given cisConversionResult object and its
 	 * underlying files.
 	 * </p>
-	 *
+	 * <p>
 	 * if there are no attachments null is returned otherwise rootPdf.
 	 */
 	protected void addAttachmentInSinglePdf() throws IOException {
 		try {
 			for (CisConversionResult cisConversionResultAttachment : cisConversionResultList) {
 				if (cisConversionResultAttachment.getPdfResultFile() != null) {
-					try (InputStream attachmentDocumentStream = new BufferedInputStream(Files.newInputStream(cisConversionResultAttachment.getPdfResultFile().toPath()))) {
+					try (InputStream attachmentDocumentStream = new BufferedInputStream(Files.newInputStream(cisConversionResultAttachment.getPdfResultFile()
+							.toPath()))) {
 						addFileToPdf(attachmentDocumentStream, cisConversionResultAttachment.getDocumentName(), ConvertorUtil.PDF_FILETYPE);
 					}
 				} else {

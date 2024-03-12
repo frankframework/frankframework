@@ -19,8 +19,9 @@ package org.frankframework.core;
  * Indicates a Pipe, Sender or Listener to be capable of supporting XA-transactions.
  * When isTransacted() returns true, alternative XA enabled versions of resources like
  * connection factories should be used by implementing classes.
+ *
  * @author Gerrit van Brakel
- * @since  4.1
+ * @since 4.1
  */
 public interface IXAEnabled {
 

@@ -36,10 +36,9 @@ import org.frankframework.util.ClassUtils;
 /**
  * Base class for pipes that can collect items, such as multipart messages and zip archives.
  *
- * @author Niels Meijer
- *
  * @param <C> Collector instance
  * @param <P> parts that are added to the collector
+ * @author Niels Meijer
  */
 public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends FixedForwardPipe {
 
@@ -58,12 +57,15 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 
 	/**
 	 * Collectors must be opened before you can write content to them, after it's closed you can no longer write to it.
+	 *
 	 * @ff.default WRITE
 	 */
-	private @Getter @Setter Action action=Action.WRITE;
+	private @Getter @Setter Action action = Action.WRITE;
 
-	/** Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session
-	  * @ff.default collection
+	/**
+	 * Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session
+	 *
+	 * @ff.default collection
 	 */
 	private @Getter @Setter String collectionName = "collection";
 
@@ -71,7 +73,7 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if(StringUtils.isBlank(collectionName)) {
+		if (StringUtils.isBlank(collectionName)) {
 			throw new ConfigurationException("collectionName may not be blank");
 		}
 	}
@@ -83,22 +85,22 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (CollectionException e) {
-			throw new PipeRunException(this, "unable to complete action ["+getAction()+"]", e);
+			throw new PipeRunException(this, "unable to complete action [" + getAction() + "]", e);
 		}
 	}
 
 	protected @Nullable Collection<C, P> getCollection(PipeLineSession session) throws CollectionException {
-		@SuppressWarnings({ "unchecked", "rawtypes" })
+		@SuppressWarnings({"unchecked", "rawtypes"})
 		Collection<C, P> collection = (Collection) session.get(getCollectionName());
 		if (collection == null && getAction() != Action.OPEN) {
-			throw new CollectionException("cannot find collection under key ["+getCollectionName()+"]");
+			throw new CollectionException("cannot find collection under key [" + getCollectionName() + "]");
 		}
 		return collection;
 	}
 
 	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws CollectionException {
 		try {
-			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+			return getParameterList() != null ? getParameterList().getValues(input, session) : null;
 		} catch (ParameterException e) {
 			throw new CollectionException("cannot determine parameter values", e);
 		}
@@ -107,9 +109,9 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 	protected final @Nullable Message doAction(Action action, Message input, PipeLineSession session) throws CollectionException {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("action", action.name())) {
 			Collection<C, P> collection = getCollection(session);
-			switch(action) {
+			switch (action) {
 				case OPEN: {
-					if(collection != null) {
+					if (collection != null) {
 						throw new CollectionException("collection [" + getCollectionName() + "] is already open, unable to create a new one");
 					}
 					collection = new Collection<>(createCollector(input, session));
@@ -128,7 +130,7 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 				case CLOSE:
 					return closeCollector(collection, session);
 				default:
-					throw new CollectionException("Unknown action ["+action+"]");
+					throw new CollectionException("Unknown action [" + action + "]");
 			}
 
 			return Message.nullMessage();

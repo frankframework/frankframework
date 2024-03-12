@@ -9,6 +9,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.Test;
 
 public class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> {
@@ -38,7 +39,7 @@ public class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWr
 
 		@Override
 		public void configure() throws ConfigurationException {
-			if(!configured.compareAndSet(false, true)) {
+			if (!configured.compareAndSet(false, true)) {
 				throw new ConfigurationException("should only be configured once");
 			}
 			super.configure();
@@ -46,25 +47,25 @@ public class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWr
 
 		@Override
 		public void open() throws SenderException {
-			if(!opened.compareAndSet(false, true)) {
+			if (!opened.compareAndSet(false, true)) {
 				throw new SenderException("not yet opened");
 			}
-			if(!configured.getAcquire()) {
+			if (!configured.getAcquire()) {
 				throw new SenderException("not configured");
 			}
 		}
 
 		@Override
 		public void close() throws SenderException {
-			if(!opened.compareAndSet(true, false)) {
+			if (!opened.compareAndSet(true, false)) {
 				throw new SenderException("already closed");
 			}
 		}
 
 		@Override
 		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
-			if(opened.getAcquire()) {
-				if(!configured.getAcquire()) {
+			if (opened.getAcquire()) {
+				if (!configured.getAcquire()) {
 					throw new IllegalStateException("not configured");
 				}
 

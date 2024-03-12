@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXException;
 
 public class SaxElementBuilderTest {
@@ -18,7 +19,7 @@ public class SaxElementBuilderTest {
 			root.addAttribute("attr1", 1234);
 			root.addAttribute("attr2", "a b  c\td\re\nf\r\n\t\ng");
 
-			Map<String,String> attrs = new LinkedHashMap<>();
+			Map<String, String> attrs = new LinkedHashMap<>();
 			attrs.put("attr3", "abc");
 			attrs.put("attr4", "def");
 			root.addAttributes(attrs);

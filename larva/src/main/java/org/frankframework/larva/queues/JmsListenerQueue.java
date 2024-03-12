@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.NotImplementedException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.SenderException;
@@ -34,7 +33,7 @@ public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
 
 	public JmsListenerQueue(PullingJmsListener jmsListener) {
 		super();
-		this.jmsListener=jmsListener;
+		this.jmsListener = jmsListener;
 		put("jmsListener", jmsListener);
 	}
 

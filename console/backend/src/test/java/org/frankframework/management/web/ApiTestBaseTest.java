@@ -46,7 +46,7 @@ public class ApiTestBaseTest extends FrankApiBase {
 	@Path("/test/{path}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getWithPathAndQueryParam(@PathParam("path") String path, @QueryParam("bool") boolean bool) throws ApiException {
-		return Response.ok().entity(new String[] { path, bool+""}).build();
+		return Response.ok().entity(new String[]{path, bool + ""}).build();
 	}
 
 	@PUT

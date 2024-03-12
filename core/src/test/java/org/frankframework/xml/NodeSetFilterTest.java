@@ -6,8 +6,10 @@ import java.io.IOException;
 
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXException;
 
 public class NodeSetFilterTest {
@@ -29,7 +31,7 @@ public class NodeSetFilterTest {
 		PrettyPrintFilter ppf = new PrefixMappingObservingFilter(xmlWriter);
 		targetElementFilter.setContentHandler(ppf);
 		XmlUtils.parseXml(input, targetElementFilter);
-		assertEquals(expected, xmlWriter.toString(), "testElementFilter "+(includeRoot?"container element":"target element")+" ["+element+"]");
+		assertEquals(expected, xmlWriter.toString(), "testElementFilter " + (includeRoot ? "container element" : "target element") + " [" + element + "]");
 	}
 
 	@BeforeEach
@@ -54,52 +56,52 @@ public class NodeSetFilterTest {
 
 	@Test
 	public void testTargetElementFilterWithRoot() throws Exception {
-		String expected="<prefix- uri=\"urn:tja\">\n" +
-							"\t<root xmlns=\"urn:tja\">\n" +
-								"\t\t<a>x</a>\n" +
-								"\t\t<a>y</a>\n" +
-								"\t\t<a>y</a>\n" +
-							"\t</root>\n" +
-						"</prefix->";
+		String expected = "<prefix- uri=\"urn:tja\">\n" +
+				"\t<root xmlns=\"urn:tja\">\n" +
+				"\t\t<a>x</a>\n" +
+				"\t\t<a>y</a>\n" +
+				"\t\t<a>y</a>\n" +
+				"\t</root>\n" +
+				"</prefix->";
 		testTargetElementFilter("a", true, document, expected);
 	}
 
 	@Test
 	public void testContainerElementFilter() throws Exception {
-		String expected="<prefix- uri=\"urn:tja\">\n" +
-							"\t<a xmlns=\"urn:tja\">y</a>\n" +
-						"</prefix->\n" +
-						"<prefix- uri=\"urn:tja\">\n" +
-							"\t<b xmlns=\"urn:tja\">y</b>\n" +
-						"</prefix->\n" +
-						"<prefix- uri=\"urn:tja\">\n" +
-							"\t<a xmlns=\"urn:tja\">y</a>\n" +
-						"</prefix->\n" +
-						"<prefix- uri=\"urn:tja\">\n" +
-							"\t<b xmlns=\"urn:tja\">y</b>\n" +
-						"</prefix->";
+		String expected = "<prefix- uri=\"urn:tja\">\n" +
+				"\t<a xmlns=\"urn:tja\">y</a>\n" +
+				"</prefix->\n" +
+				"<prefix- uri=\"urn:tja\">\n" +
+				"\t<b xmlns=\"urn:tja\">y</b>\n" +
+				"</prefix->\n" +
+				"<prefix- uri=\"urn:tja\">\n" +
+				"\t<a xmlns=\"urn:tja\">y</a>\n" +
+				"</prefix->\n" +
+				"<prefix- uri=\"urn:tja\">\n" +
+				"\t<b xmlns=\"urn:tja\">y</b>\n" +
+				"</prefix->";
 		testContainerElementFilter("sub2", false, document, expected);
 	}
 
 	@Test
 	public void testContainerElementFilterWithRoot() throws Exception {
-		String expected="<prefix- uri=\"urn:tja\">\n" +
-							"\t<root xmlns=\"urn:tja\">\n" +
-							"\t\t<a>y</a>\n" +
-							"\t\t<b>y</b>\n" +
-							"\t\t<a>y</a>\n" +
-							"\t\t<b>y</b>\n" +
-							"\t</root>\n" +
-						"</prefix->";
-		testContainerElementFilter("sub2",true, document, expected);
+		String expected = "<prefix- uri=\"urn:tja\">\n" +
+				"\t<root xmlns=\"urn:tja\">\n" +
+				"\t\t<a>y</a>\n" +
+				"\t\t<b>y</b>\n" +
+				"\t\t<a>y</a>\n" +
+				"\t\t<b>y</b>\n" +
+				"\t</root>\n" +
+				"</prefix->";
+		testContainerElementFilter("sub2", true, document, expected);
 	}
 
 	@Test
 	public void testNodeSetFilter() throws Exception {
 		NodeSetFilter targetElementFilter = new NodeSetFilter(null, null, false, false, null);
-		String expected="<prefix- uri=\"urn:tja\">\n" +
+		String expected = "<prefix- uri=\"urn:tja\">\n" +
 				"\t<sub1 xmlns=\"urn:tja\">\n" +
-					"\t\t<a>x</a>\n" +
+				"\t\t<a>x</a>\n" +
 				"\t</sub1>\n" +
 				"</prefix->\n" +
 				"<prefix- uri=\"urn:tja\">\n" +
@@ -124,91 +126,91 @@ public class NodeSetFilterTest {
 
 	@Test
 	public void testTargetElementFilterWithNamespace() throws Exception {
-		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false, null);
-		String expected="<prefix- uri=\"urn:tja\">\n" +
+		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a", true, false, null);
+		String expected = "<prefix- uri=\"urn:tja\">\n" +
 				"\t<a xmlns=\"urn:tja\">x</a>\n" +
-			"</prefix->\n" +
-			"<prefix- uri=\"urn:tja\">\n" +
+				"</prefix->\n" +
+				"<prefix- uri=\"urn:tja\">\n" +
 				"\t<a xmlns=\"urn:tja\">y</a>\n" +
-			"</prefix->\n" +
-			"<prefix- uri=\"urn:tja\">\n" +
+				"</prefix->\n" +
+				"<prefix- uri=\"urn:tja\">\n" +
 				"\t<a xmlns=\"urn:tja\">y</a>\n" +
-			"</prefix->";
+				"</prefix->";
 		testNodeSetFilter(targetElementFilter, "a", false, document, expected);
 	}
 
 	@Test
 	public void testTargetElementFilterWithNamespace2() throws Exception {
-		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false, null);
+		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a", true, false, null);
 
-		String document="<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
-		String expected = 	"<prefix-ns uri=\"urn:tja\">\n" +
-								"\t<ns:a xmlns:ns=\"urn:tja\">y</ns:a>\n" +
-							"</prefix-ns>";
+		String document = "<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
+		String expected = "<prefix-ns uri=\"urn:tja\">\n" +
+				"\t<ns:a xmlns:ns=\"urn:tja\">y</ns:a>\n" +
+				"</prefix-ns>";
 
-		testNodeSetFilter(targetElementFilter, "a", false, document,expected);
+		testNodeSetFilter(targetElementFilter, "a", false, document, expected);
 	}
 
 	@Test
 	public void testTargetElementFilterWithNamespace3() throws Exception {
-		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("x=urn:tja"), "x:a",true,false, null);
+		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("x=urn:tja"), "x:a", true, false, null);
 
-		String document="<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
-		String expected =	"<prefix-ns uri=\"urn:tja\">\n" +
-								"\t<ns:a xmlns:ns=\"urn:tja\">y</ns:a>\n" +
-							"</prefix-ns>";
+		String document = "<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
+		String expected = "<prefix-ns uri=\"urn:tja\">\n" +
+				"\t<ns:a xmlns:ns=\"urn:tja\">y</ns:a>\n" +
+				"</prefix-ns>";
 
-		testNodeSetFilter(targetElementFilter, "a", false, document,expected);
+		testNodeSetFilter(targetElementFilter, "a", false, document, expected);
 	}
 
 	@Test
 	public void testTargetElementMultiNamespace() throws Exception {
-		String namespaceDefs="urn:defns2";
-		String targetElement="XDOC";
+		String namespaceDefs = "urn:defns2";
+		String targetElement = "XDOC";
 
 		NodeSetFilter nodeSetFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(namespaceDefs), targetElement, true, false, null) {
 
 			@Override
 			public void startNode(String uri, String localName, String qName) throws SAXException {
-				String msg = "before node ["+qName+"]";
+				String msg = "before node [" + qName + "]";
 				comment(msg.toCharArray(), 0, msg.length());
 			}
 
 			@Override
 			public void endNode(String uri, String localName, String qName) throws SAXException {
-				String msg = "after node ["+qName+"]";
+				String msg = "after node [" + qName + "]";
 				comment(msg.toCharArray(), 0, msg.length());
 			}
 		};
 
-		String document=TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/xdocs.xml");
-		String expected=TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/out.txt");
+		String document = TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/xdocs.xml");
+		String expected = TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/out.txt");
 
 		testNodeSetFilter(nodeSetFilter, targetElement, false, document, expected);
 	}
 
 	@Test
 	public void testContainerMultiNamespace() throws Exception {
-		String namespaceDefs="urn:defcont";
-		String containerElement="DocOutputPrintDocumentRequestCont";
+		String namespaceDefs = "urn:defcont";
+		String containerElement = "DocOutputPrintDocumentRequestCont";
 
 		NodeSetFilter nodeSetFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(namespaceDefs), containerElement, false, false, null) {
 
 			@Override
 			public void startNode(String uri, String localName, String qName) throws SAXException {
-				String msg = "before node ["+qName+"]";
+				String msg = "before node [" + qName + "]";
 				comment(msg.toCharArray(), 0, msg.length());
 			}
 
 			@Override
 			public void endNode(String uri, String localName, String qName) throws SAXException {
-				String msg = "after node ["+qName+"]";
+				String msg = "after node [" + qName + "]";
 				comment(msg.toCharArray(), 0, msg.length());
 			}
 		};
 
-		String document=TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/xdocs.xml");
-		String expected=TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/out.txt");
+		String document = TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/xdocs.xml");
+		String expected = TestFileUtils.getTestFile("/NodeSetFilter/NoDuplicateNamespaces/out.txt");
 
 		testNodeSetFilter(nodeSetFilter, containerElement, false, document, expected);
 	}

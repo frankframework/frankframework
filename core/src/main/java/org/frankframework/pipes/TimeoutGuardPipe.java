@@ -27,9 +27,8 @@ import org.frankframework.task.TimeoutGuard;
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
  *
- * @ff.parameter timeout When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute
- *
  * @author Peter Leeuwenburgh
+ * @ff.parameter timeout When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute
  */
 public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 
@@ -78,7 +77,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 				return new PipeRunResult(getSuccessForward(), errorMessage);
 			}
 		} finally {
-			if(tg.cancel()) {
+			if (tg.cancel()) {
 				//Throw a TimeOutException
 				String msgString = "TimeOutException";
 				Exception e = new TimeoutException("exceeds timeout of [" + timeout_work + "] s, interupting");
@@ -87,7 +86,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 				} else {
 					//This is used for the old console, where a message is displayed
 					log.error(msgString, e);
-					String msgCdataString = "<![CDATA[" + msgString + ": "+ e.getMessage() + "]]>";
+					String msgCdataString = "<![CDATA[" + msgString + ": " + e.getMessage() + "]]>";
 					Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
 					return new PipeRunResult(getSuccessForward(), errorMessage);
 				}
@@ -109,6 +108,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 
 	/**
 	 * when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)
+	 *
 	 * @ff.default true
 	 */
 	public void setThrowException(boolean b) {
@@ -125,6 +125,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 
 	/**
 	 * timeout in seconds of obtaining a result
+	 *
 	 * @ff.default 30
 	 */
 	public void setTimeout(int i) {

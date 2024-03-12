@@ -8,6 +8,7 @@ import org.frankframework.jms.JMSFacade.AcknowledgeMode;
 import org.frankframework.jms.JMSFacade.DeliveryMode;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JMSFacade.SubscriberType;
+
 import org.junit.jupiter.api.Test;
 
 public class JmsFacadeDocumentedEnumTest {

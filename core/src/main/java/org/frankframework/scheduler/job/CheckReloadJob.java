@@ -41,18 +41,18 @@ public class CheckReloadJob extends JobDef {
 
 	@Override
 	public boolean beforeExecuteJob() {
-		if(!atLeastOneConfigrationHasDBClassLoader) {
+		if (!atLeastOneConfigrationHasDBClassLoader) {
 			IbisManager ibisManager = getIbisManager();
 			for (Configuration configuration : ibisManager.getConfigurations()) {
-				if(DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
-					atLeastOneConfigrationHasDBClassLoader=true;
+				if (DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
+					atLeastOneConfigrationHasDBClassLoader = true;
 					break;
 				}
 			}
 		} else {
 			getMessageKeeper().add("skipped job execution: autoload is disabled");
 		}
-		if(!atLeastOneConfigrationHasDBClassLoader) {
+		if (!atLeastOneConfigrationHasDBClassLoader) {
 			getMessageKeeper().add("skipped job execution: no database configurations found");
 		}
 		return atLeastOneConfigrationHasDBClassLoader;
@@ -75,7 +75,7 @@ public class CheckReloadJob extends JobDef {
 		qs.setDatasourceName(getDataSource());
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = "+booleanValueTrue+" and AUTORELOAD = "+booleanValueTrue;
+		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = " + booleanValueTrue + " and AUTORELOAD = " + booleanValueTrue;
 		try {
 			qs.configure();
 			qs.open();
@@ -89,11 +89,10 @@ public class CheckReloadJob extends JobDef {
 							if (rs.next()) {
 								String ibisConfigVersion = rs.getString(1);
 								String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
-								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
-									log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
-								}
-								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-									log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
+								if (StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
+									log.warn(getLogPrefix() + "skipping autoreload for configuration [" + configName + "] unable to determine [configuration.version]");
+								} else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+									log.info(getLogPrefix() + "configuration [" + configName + "] with version [" + configVersion + "] will be reloaded with new version [" + ibisConfigVersion + "]");
 									configsToReload.add(configName);
 								}
 							}
@@ -130,7 +129,8 @@ public class CheckReloadJob extends JobDef {
 				}
 				// unload old (deactivated) configurations
 				for (String currentConfigurationName : configNames) {
-					if (!dbConfigNames.contains(currentConfigurationName) && DATABASE_CLASSLOADER.equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+					if (!dbConfigNames.contains(currentConfigurationName) && DATABASE_CLASSLOADER.equals(ibisManager.getConfiguration(currentConfigurationName)
+							.getClassLoaderType())) {
 						ibisManager.getIbisContext().unload(currentConfigurationName);
 					}
 				}

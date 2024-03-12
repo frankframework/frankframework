@@ -24,26 +24,25 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.jms.JmsRealm;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
-
+import org.frankframework.jms.JmsRealm;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
- *
+ * <p>
  * <br/>
+ *
  * @author Johan Verrips IOS
  */
 public class JndiBase implements IConfigurable {
@@ -71,8 +70,8 @@ public class JndiBase implements IConfigurable {
 	public void configure() throws ConfigurationException {
 		// somewhere a sender is being initialized without setting the property
 		// TODO get rid of the workaround and find out why spring does not set the prefix
-		if(StringUtils.isEmpty(jndiContextPrefix)) {
-			jndiContextPrefix = AppConstants.getInstance(configurationClassLoader).getString("jndiContextPrefix","");
+		if (StringUtils.isEmpty(jndiContextPrefix)) {
+			jndiContextPrefix = AppConstants.getInstance(configurationClassLoader).getString("jndiContextPrefix", "");
 		}
 	}
 
@@ -94,13 +93,13 @@ public class JndiBase implements IConfigurable {
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {
 			URL url = ClassLoaderUtils.getResourceURL(this, getJndiProperties());
-			if (url==null) {
-				throw new NamingException("cannot find jndiProperties from ["+getJndiProperties()+"]");
+			if (url == null) {
+				throw new NamingException("cannot find jndiProperties from [" + getJndiProperties() + "]");
 			}
 			try {
 				jndiEnv.load(url.openStream());
 			} catch (IOException e) {
-				throw new NamingException("cannot load jndiProperties ["+getJndiProperties()+"] from url ["+url.toString()+"]");
+				throw new NamingException("cannot load jndiProperties [" + getJndiProperties() + "] from url [" + url.toString() + "]");
 			}
 		}
 		if (StringUtils.isNotEmpty(getInitialContextFactoryName())) {
@@ -127,10 +126,10 @@ public class JndiBase implements IConfigurable {
 		}
 
 		if (log.isDebugEnabled()) {
-			for(Iterator it=jndiEnv.keySet().iterator(); it.hasNext();) {
-				String key=(String) it.next();
-				String value=jndiEnv.getProperty(key);
-				log.debug("jndiEnv ["+key+"] = ["+value+"]");
+			for (Iterator it = jndiEnv.keySet().iterator(); it.hasNext(); ) {
+				String key = (String) it.next();
+				String value = jndiEnv.getProperty(key);
+				log.debug("jndiEnv [" + key + "] = [" + value + "]");
 			}
 		}
 		return jndiEnv;
@@ -212,6 +211,7 @@ public class JndiBase implements IConfigurable {
 
 	/**
 	 * loads JNDI (and other) properties from a JmsRealm
+	 *
 	 * @see JmsRealm
 	 */
 	public void setJmsRealm(String jmsRealmName) {

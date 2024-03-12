@@ -7,9 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class CredentialFactoryTest {
 
@@ -63,7 +64,8 @@ class CredentialFactoryTest {
 	@Test
 	void testMultipleFactories() {
 		// Init setting on purpose with extra whitespaces, commas etc.
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", " java.util.doesNotExist , org.frankframework.credentialprovider.PropertyFileCredentialFactory,,  , org.frankframework.credentialprovider.MockCredentialFactory");
+		CredentialConstants.getInstance()
+				.setProperty("credentialFactory.class", " java.util.doesNotExist , org.frankframework.credentialprovider.PropertyFileCredentialFactory,,  , org.frankframework.credentialprovider.MockCredentialFactory");
 		MockCredentialFactory.getInstance().add("account", "mockUsername", "mockPassword");
 		// Act
 		ICredentials c = CredentialFactory.getCredentials("account", null, null);
@@ -75,7 +77,8 @@ class CredentialFactoryTest {
 
 	@Test
 	void testRightOrderMockFirst() throws Exception {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.MockCredentialFactory, org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		CredentialConstants.getInstance()
+				.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.MockCredentialFactory, org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 		CredentialFactory.getCredentials(null, null, null); // Make sure the factories are initialized and class loading is done
 		MockCredentialFactory.getInstance().add("account", "fakeUsername", "mockGoesFirst");
 		MockCredentialFactory.getInstance().add("alias1", "alias1Username", "alias1Password");
@@ -97,7 +100,8 @@ class CredentialFactoryTest {
 
 	@Test
 	void testRightOrderMockLast() throws Exception {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory, org.frankframework.credentialprovider.MockCredentialFactory, ");
+		CredentialConstants.getInstance()
+				.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory, org.frankframework.credentialprovider.MockCredentialFactory, ");
 		CredentialFactory.getCredentials(null, null, null); // Make sure the factories are initialized and class loading is done
 		MockCredentialFactory.getInstance().add("account", "mockUsername", "mockGoesSecond");
 		MockCredentialFactory.getInstance().add("alias1", "alias1Username", "alias1Password");

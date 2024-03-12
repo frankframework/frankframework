@@ -64,12 +64,12 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(applicationContext == null) {
+		if (applicationContext == null) {
 			throw new IllegalStateException("ApplicationContext has not been autowired, cannot instantiate IFlowDiagram");
 		}
 
 		String generatorBeanClass = AppConstants.getInstance().getProperty("flow.generator");
-		if(StringUtils.isNotEmpty(generatorBeanClass)) {
+		if (StringUtils.isNotEmpty(generatorBeanClass)) {
 			flowGenerator = createFlowGenerator(generatorBeanClass);
 		} else {
 			log.info("no FlowGenerator configured. No flow diagrams will be generated");
@@ -85,15 +85,15 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	 * able to generate dot files and return the `noImageAvailable` image.
 	 */
 	protected IFlowGenerator createFlowGenerator(String generatorBeanClass) {
-		if(log.isDebugEnabled()) log.debug("trying to initialize FlowGenerator ["+generatorBeanClass+"]");
+		if (log.isDebugEnabled()) log.debug("trying to initialize FlowGenerator [" + generatorBeanClass + "]");
 		try {
 			Class<?> clazz = ClassUtils.loadClass(generatorBeanClass);
-			if(clazz.isAssignableFrom(IFlowGenerator.class)) {
+			if (clazz.isAssignableFrom(IFlowGenerator.class)) {
 				throw new IllegalStateException("provided generator does not implement IFlowGenerator interface");
 			}
 			return (IFlowGenerator) SpringUtils.createBean(applicationContext, clazz);
 		} catch (ClassNotFoundException e) {
-			log.warn("FlowGenerator class ["+generatorBeanClass+"] not found", e);
+			log.warn("FlowGenerator class [" + generatorBeanClass + "] not found", e);
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			log.warn("failed to initalize FlowGenerator", e);
 		}
@@ -104,7 +104,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	public InputStream get(IAdapter adapter) throws IOException {
 		File destFile = retrieveAdapterFlowFile(adapter);
 
-		if(destFile == null || !destFile.exists()) {
+		if (destFile == null || !destFile.exists()) {
 			return null;
 		}
 
@@ -114,7 +114,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	public InputStream get(Configuration configuration) throws IOException {
 		File destFile = retrieveConfigurationFlowFile(configuration);
 
-		if(destFile == null || !destFile.exists()) {
+		if (destFile == null || !destFile.exists()) {
 			return null;
 		}
 
@@ -124,7 +124,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	public InputStream get(List<Configuration> configurations) throws IOException {
 		File destFile = retrieveAllConfigurationsFlowFile();
 
-		if(destFile == null || !destFile.exists()) {
+		if (destFile == null || !destFile.exists()) {
 			return null;
 		}
 
@@ -133,9 +133,9 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	public void generate(IAdapter adapter) throws IOException {
 		File destFile = retrieveAdapterFlowFile(adapter);
-		if(destFile == null) return;
+		if (destFile == null) return;
 
-		if(destFile.exists()) { //If the file exists, update it
+		if (destFile.exists()) { //If the file exists, update it
 			Files.delete(destFile.toPath());
 		}
 
@@ -147,9 +147,9 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	public void generate(Configuration configuration) throws IOException {
 		File destFile = retrieveConfigurationFlowFile(configuration);
-		if(destFile == null) return;
+		if (destFile == null) return;
 
-		if(destFile.exists()) { //If the file exists, update it
+		if (destFile.exists()) { //If the file exists, update it
 			Files.delete(destFile.toPath());
 		}
 
@@ -161,9 +161,9 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	public void generate(List<Configuration> configurations) throws IOException {
 		File destFile = retrieveAllConfigurationsFlowFile();
-		if(destFile == null) return;
+		if (destFile == null) return;
 
-		if(destFile.exists()) { //If the file exists, update it
+		if (destFile.exists()) { //If the file exists, update it
 			Files.delete(destFile.toPath());
 		}
 
@@ -197,7 +197,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	private File retrieveConfigurationFlowFile(Configuration configuration) {
 		String filename = configuration.getName();
-		if(StringUtils.isEmpty(filename)) {
+		if (StringUtils.isEmpty(filename)) {
 			log.warn("cannot generate FlowFile, configuration name is null");
 			return null;
 		}
@@ -209,12 +209,12 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	private File retrieveFlowFile(File parent, String fileName) {
-		if(flowGenerator == null) { //fail fast check to see if an IFlowGenerator is available.
+		if (flowGenerator == null) { //fail fast check to see if an IFlowGenerator is available.
 			log.debug("cannot retrieve Flow file, no generator found");
 			return null;
 		}
 
-		if (!parent.exists()&& !parent.mkdirs()) {
+		if (!parent.exists() && !parent.mkdirs()) {
 			throw new IllegalStateException(parent.getPath() + " does not exist and could not be created");
 		}
 
@@ -226,7 +226,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	// Don't call this when no generator is set!
 	private void generateFlowDiagram(String name, String xml, File destination) throws IOException {
-		if(flowGenerator == null || StringUtils.isEmpty(xml)) { //fail fast check to see if an IFlowGenerator is available.
+		if (flowGenerator == null || StringUtils.isEmpty(xml)) { //fail fast check to see if an IFlowGenerator is available.
 			log.debug("cannot generate flow diagram for {}", name);
 			return;
 		}
@@ -237,21 +237,21 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		try (FileOutputStream outputStream = new FileOutputStream(destination)) {
 			flowGenerator.generateFlow(xml, outputStream);
 		} catch (FlowGenerationException e) {
-			if(log.isDebugEnabled()) log.debug("error generating flow diagram for ["+name+"]", e);
+			if (log.isDebugEnabled()) log.debug("error generating flow diagram for [" + name + "]", e);
 
-			if(destination.exists()) {
+			if (destination.exists()) {
 				Files.delete(destination.toPath());
 			}
 
-			throw new IOException("error generating flow diagram for ["+name+"]", e);
+			throw new IOException("error generating flow diagram for [" + name + "]", e);
 		}
 
-		log.debug("finished generating flow diagram for ["+ name +"] in ["+ (System.currentTimeMillis()-start) +"] ms");
+		log.debug("finished generating flow diagram for [" + name + "] in [" + (System.currentTimeMillis() - start) + "] ms");
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		if(flowGenerator != null) {
+		if (flowGenerator != null) {
 			flowGenerator.destroy();
 		}
 	}

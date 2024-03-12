@@ -32,7 +32,7 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Base class for Monitor Destination implementations.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public abstract class MonitorDestinationBase implements IMonitorDestination, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
@@ -42,7 +42,7 @@ public abstract class MonitorDestinationBase implements IMonitorDestination, App
 	private String hostname;
 
 	protected MonitorDestinationBase() {
-		log.debug("creating Destination [{}]", ()->ClassUtils.nameOf(this));
+		log.debug("creating Destination [{}]", () -> ClassUtils.nameOf(this));
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public abstract class MonitorDestinationBase implements IMonitorDestination, App
 
 	@Override
 	public XmlBuilder toXml() {
-		XmlBuilder destinationXml=new XmlBuilder("destination");
+		XmlBuilder destinationXml = new XmlBuilder("destination");
 		destinationXml.addAttribute("name", getName());
 		destinationXml.addAttribute("className", getUserClass(this).getCanonicalName());
 		return destinationXml;

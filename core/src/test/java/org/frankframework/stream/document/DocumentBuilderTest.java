@@ -9,7 +9,9 @@ import org.frankframework.stream.json.JsonTee;
 import org.frankframework.stream.json.JsonWriter;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXException;
 
 import jakarta.json.Json;
@@ -37,25 +39,25 @@ public class DocumentBuilderTest {
 	}
 
 	public void buildObject(ObjectBuilder object, String prefix) throws SAXException {
-		object.addAttribute(prefix+"attr1", prefix+"alpha quote[\"]");
-		object.addAttribute(prefix+"attr2", 1.2);
-		object.addAttribute(prefix+"attr3", true);
-		object.addAttribute(prefix+"attr4", "a b  c\td\re\nf\r\n\t\ng");
-		object.add(prefix+"veld1", prefix+"waarde1 quote[\"]");
-		object.add(prefix+"veld2", 10);
-		try (INodeBuilder node=object.addField(prefix+"array")) {
-			try (ArrayBuilder array = node.startArray(prefix+"element")) {
-				array.addElement(prefix+"elem1");
-				array.addElement(prefix+"elem2");
+		object.addAttribute(prefix + "attr1", prefix + "alpha quote[\"]");
+		object.addAttribute(prefix + "attr2", 1.2);
+		object.addAttribute(prefix + "attr3", true);
+		object.addAttribute(prefix + "attr4", "a b  c\td\re\nf\r\n\t\ng");
+		object.add(prefix + "veld1", prefix + "waarde1 quote[\"]");
+		object.add(prefix + "veld2", 10);
+		try (INodeBuilder node = object.addField(prefix + "array")) {
+			try (ArrayBuilder array = node.startArray(prefix + "element")) {
+				array.addElement(prefix + "elem1");
+				array.addElement(prefix + "elem2");
 			}
 		}
-		try (ArrayBuilder repeatedField = object.addRepeatedField(prefix+"repField")) {
-			repeatedField.addElement(prefix+"rep1");
-			repeatedField.addElement(prefix+"rep2");
+		try (ArrayBuilder repeatedField = object.addRepeatedField(prefix + "repField")) {
+			repeatedField.addElement(prefix + "rep1");
+			repeatedField.addElement(prefix + "rep2");
 		}
-		try (ObjectBuilder objectField = object.addObjectField(prefix+"objField")) {
-			objectField.add(prefix+"o1", prefix+"w1");
-			objectField.add(prefix+"o2", 10);
+		try (ObjectBuilder objectField = object.addObjectField(prefix + "objField")) {
+			objectField.add(prefix + "o1", prefix + "w1");
+			objectField.add(prefix + "o2", 10);
 		}
 	}
 
@@ -138,8 +140,8 @@ public class DocumentBuilderTest {
 	@Test
 	public void testXmlDocumentBuilderWithStrangeCharPrefix() throws SAXException {
 		String prefix = "pr#x @y*:";
-		String expectedElementPrefix="pr_x__y__";
-		String expectedValuePrefix=prefix;
+		String expectedElementPrefix = "pr_x__y__";
+		String expectedValuePrefix = prefix;
 		String expected = getExpectedXml(expectedElementPrefix, expectedValuePrefix);
 		XmlWriter writer = new XmlWriter();
 		try (IDocumentBuilder root = new XmlDocumentBuilder("root", writer, false)) {
@@ -154,14 +156,14 @@ public class DocumentBuilderTest {
 
 	@Test
 	public void Issue4106ContentAfterDuplicateArray() throws Exception {
-		String input="{ \"a\": [ 1 ], \"b\": [ 2 ], \"c\": \"cc\" }";
-		String expected = "<root>"+
-								"<a>1</a>"+
-								"<b>2</b>"+
-								"<c>cc</c>"+
-							"</root>";
-		try(JsonReader jr = Json.createReader(new StringReader(input))) {
-			JsonValue jValue=null;
+		String input = "{ \"a\": [ 1 ], \"b\": [ 2 ], \"c\": \"cc\" }";
+		String expected = "<root>" +
+				"<a>1</a>" +
+				"<b>2</b>" +
+				"<c>cc</c>" +
+				"</root>";
+		try (JsonReader jr = Json.createReader(new StringReader(input))) {
+			JsonValue jValue = null;
 			jValue = jr.read();
 			StringWriter writer = new StringWriter();
 			try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer, true)) {
@@ -174,9 +176,9 @@ public class DocumentBuilderTest {
 
 	@Test
 	public void jsonToJsonObject() throws Exception {
-		String input="{\"a\":\"aa\"}";
-		try(JsonReader jr = Json.createReader(new StringReader(input))) {
-			JsonValue jValue=null;
+		String input = "{\"a\":\"aa\"}";
+		try (JsonReader jr = Json.createReader(new StringReader(input))) {
+			JsonValue jValue = null;
 			jValue = jr.read();
 			StringWriter writer = new StringWriter();
 			try (JsonDocumentBuilder documentBuilder = new JsonDocumentBuilder(writer)) {
@@ -188,9 +190,9 @@ public class DocumentBuilderTest {
 
 	@Test
 	public void jsonToJsonArray() throws Exception {
-		String input="[\"a\",\"b\"]";
-		try(JsonReader jr = Json.createReader(new StringReader(input))) {
-			JsonValue jValue=null;
+		String input = "[\"a\",\"b\"]";
+		try (JsonReader jr = Json.createReader(new StringReader(input))) {
+			JsonValue jValue = null;
 			jValue = jr.read();
 			StringWriter writer = new StringWriter();
 			try (JsonDocumentBuilder documentBuilder = new JsonDocumentBuilder(writer)) {

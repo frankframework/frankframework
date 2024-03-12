@@ -20,5 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public @interface LocalFileSystemMock {
 
 	String username() default "frankframework";
+
 	String password() default "pass_123";
 }

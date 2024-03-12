@@ -13,73 +13,64 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-package net.wedjaa.ansible.vault.crypto.data;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+package net.wedjaa.ansible.vault.crypto.data;
 
 import net.wedjaa.ansible.vault.crypto.decoders.CypherFactory;
 import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
 
-public class VaultInfo
-{
+public class VaultInfo {
 	private static final Log logger = LogFactory.getLog(VaultInfo.class);
-	
-    public final static String INFO_SEPARATOR = ";";
-    public final static int INFO_ELEMENTS = 3;
-    public final static int MAGIC_PART = 0;
-    public final static int VERSION_PART = 1;
-    public final static int CYPHER_PART = 2;
 
-    public final static String VAULT_MAGIC="$ANSIBLE_VAULT";
-    public final static String VAULT_VERSION="1.1";
+	public final static String INFO_SEPARATOR = ";";
+	public final static int INFO_ELEMENTS = 3;
+	public final static int MAGIC_PART = 0;
+	public final static int VERSION_PART = 1;
+	public final static int CYPHER_PART = 2;
 
-    private boolean validVault;
-    private String vaultVersion;
-    private String vaultCypher;
+	public final static String VAULT_MAGIC = "$ANSIBLE_VAULT";
+	public final static String VAULT_VERSION = "1.1";
 
-    public static String vaultInfoForCypher(String vaultCypher)
-    {
-        String infoLine = VAULT_MAGIC+";"+VAULT_VERSION+";"+vaultCypher;
-        return infoLine;
-    }
+	private boolean validVault;
+	private String vaultVersion;
+	private String vaultCypher;
 
-    public VaultInfo(String infoLine)
-    {
-    	if( logger.isDebugEnabled() ) {
-        	logger.debug(String.format("Ansible Vault info: %s", infoLine));
-    	}
+	public static String vaultInfoForCypher(String vaultCypher) {
+		String infoLine = VAULT_MAGIC + ";" + VAULT_VERSION + ";" + vaultCypher;
+		return infoLine;
+	}
 
-        String [] infoParts = infoLine.split(INFO_SEPARATOR);
-        if (infoParts.length == INFO_ELEMENTS)
-        {
-            if ( infoParts[MAGIC_PART].equals(VAULT_MAGIC) ) {
-                validVault = true;
-                vaultVersion = infoParts[VERSION_PART];
-                vaultCypher = infoParts[CYPHER_PART];
-            }
-        }
-    }
+	public VaultInfo(String infoLine) {
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Ansible Vault info: %s", infoLine));
+		}
 
-    public boolean isEncryptedVault()
-    {
-        return validVault;
-    }
+		String[] infoParts = infoLine.split(INFO_SEPARATOR);
+		if (infoParts.length == INFO_ELEMENTS) {
+			if (infoParts[MAGIC_PART].equals(VAULT_MAGIC)) {
+				validVault = true;
+				vaultVersion = infoParts[VERSION_PART];
+				vaultCypher = infoParts[CYPHER_PART];
+			}
+		}
+	}
 
-    public CypherInterface getCypher()
-    {
-        return CypherFactory.getCypher(vaultCypher);
-    }
+	public boolean isEncryptedVault() {
+		return validVault;
+	}
 
-    public String getVaultVersion()
-    {
-        return vaultVersion;
-    }
+	public CypherInterface getCypher() {
+		return CypherFactory.getCypher(vaultCypher);
+	}
 
-    public boolean isValidVault()
-    {
-        return isEncryptedVault() && getCypher() != null;
-    }
+	public String getVaultVersion() {
+		return vaultVersion;
+	}
+
+	public boolean isValidVault() {
+		return isEncryptedVault() && getCypher() != null;
+	}
 
 }

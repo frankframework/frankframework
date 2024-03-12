@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.ArrayList;
 
 import org.frankframework.statistics.HasStatistics.Action;
+
 import org.junit.jupiter.api.Test;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -13,14 +14,11 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
  * CounterStatistic Tester.
  *
  * @author <Sina Sen>
- *
  */
 public class CounterStatisticTest {
 
 	/**
-	 *
 	 * Method: performAction(Action action)
-	 *
 	 */
 	@Test
 	public void testPerformActionSummaryOrFull() {
@@ -31,9 +29,7 @@ public class CounterStatisticTest {
 	}
 
 	/**
-	 *
 	 * Method: performAction(Action action)
-	 *
 	 */
 	@Test
 	public void testPerformActionMarkMain() {
@@ -52,9 +48,7 @@ public class CounterStatisticTest {
 	}
 
 	/**
-	 *
 	 * Method: getIntervalValue()
-	 *
 	 */
 	@Test
 	public void testGetIntervalValue() {

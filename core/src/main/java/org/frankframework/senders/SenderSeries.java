@@ -37,14 +37,14 @@ import org.frankframework.util.ClassUtils;
 /**
  * Series of Senders, that are executed one after another.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class SenderSeries extends SenderWrapperBase {
 
 	private final List<ISender> senderList = new LinkedList<>();
 	private final Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<>();
-	private @Getter @Setter boolean synchronous=true;
+	private @Getter @Setter boolean synchronous = true;
 
 	@Override
 	protected boolean isSenderConfigured() {
@@ -53,7 +53,7 @@ public class SenderSeries extends SenderWrapperBase {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		for (ISender sender: getSenders()) {
+		for (ISender sender : getSenders()) {
 			sender.configure();
 		}
 		super.configure();
@@ -62,14 +62,15 @@ public class SenderSeries extends SenderWrapperBase {
 
 	@Override
 	public void open() throws SenderException {
-		for (ISender sender: getSenders()) {
+		for (ISender sender : getSenders()) {
 			sender.open();
 		}
 		super.open();
 	}
+
 	@Override
 	public void close() throws SenderException {
-		for (ISender sender: getSenders()) {
+		for (ISender sender : getSenders()) {
 			sender.close();
 		}
 		super.close();
@@ -77,11 +78,12 @@ public class SenderSeries extends SenderWrapperBase {
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getCorrelationId();
-		SenderResult result=null;
+		String correlationID = session == null ? null : session.getCorrelationId();
+		SenderResult result = null;
 		long t1 = System.currentTimeMillis();
-		for (ISender sender: getSenders()) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
+		for (ISender sender : getSenders()) {
+			if (log.isDebugEnabled())
+				log.debug(getLogPrefix() + "sending correlationID [" + correlationID + "] message [" + message + "] to sender [" + sender.getName() + "]");
 			result = sender.sendMessage(message, session);
 			if (!result.isSuccess()) {
 				return result;
@@ -89,19 +91,19 @@ public class SenderSeries extends SenderWrapperBase {
 			message = result.getResult();
 			long t2 = System.currentTimeMillis();
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
-			sk.addValue(t2-t1);
-			t1=t2;
+			sk.addValue(t2 - t1);
+			t1 = t2;
 		}
-		return result!=null ? result : new SenderResult(message);
+		return result != null ? result : new SenderResult(message);
 	}
 
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		//Object senderData=hski.openGroup(data,getName(),"sender");
-		for (ISender sender: getSenders()) {
-			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));
+		for (ISender sender : getSenders()) {
+			hski.handleStatisticsKeeper(data, getStatisticsKeeper(sender));
 			if (sender instanceof HasStatistics) {
-				((HasStatistics)sender).iterateOverStatistics(hski,data,action);
+				((HasStatistics) sender).iterateOverStatistics(hski, data, action);
 			}
 		}
 		//hski.closeGroup(senderData);
@@ -112,14 +114,13 @@ public class SenderSeries extends SenderWrapperBase {
 		if (super.consumesSessionVariable(sessionKey)) {
 			return true;
 		}
-		for (ISender sender:senderList) {
+		for (ISender sender : senderList) {
 			if (sender.consumesSessionVariable(sessionKey)) {
 				return true;
 			}
 		}
 		return false;
 	}
-
 
 
 	@Deprecated // replaced by registerSender, to allow for multiple senders in XSD. Method must be present, as it is used by Digester
@@ -129,12 +130,13 @@ public class SenderSeries extends SenderWrapperBase {
 
 	/**
 	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input.
+	 *
 	 * @ff.mandatory
 	 */
 	public void registerSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added
-		statisticsMap.put(sender, new StatisticsKeeper("-> "+ClassUtils.nameOf(sender)));
+		statisticsMap.put(sender, new StatisticsKeeper("-> " + ClassUtils.nameOf(sender)));
 	}
 
 	protected Iterable<ISender> getSenders() {

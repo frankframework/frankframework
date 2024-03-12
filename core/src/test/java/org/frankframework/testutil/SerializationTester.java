@@ -21,7 +21,8 @@ public class SerializationTester<T> {
 			out.writeObject(in);
 			return baos.toByteArray();
 		} catch (IOException e) {
-			System.out.println("problem serializing session attribute class [" + in.getClass().getName() + "]: (" + e.getClass().getName() + "): " + e.getMessage() + ". Value [" + ToStringBuilder.reflectionToString(in, ToStringStyle.MULTI_LINE_STYLE) + "]");
+			System.out.println("problem serializing session attribute class [" + in.getClass().getName() + "]: (" + e.getClass()
+					.getName() + "): " + e.getMessage() + ". Value [" + ToStringBuilder.reflectionToString(in, ToStringStyle.MULTI_LINE_STYLE) + "]");
 			throw e;
 		}
 	}
@@ -37,14 +38,14 @@ public class SerializationTester<T> {
 	}
 
 	public T testSerialization(T in) throws Exception {
-		byte[] wire=serialize(in);
-		if (wire==null) {
-			throw new NullPointerException("Could not Serialize ["+ToStringBuilder.reflectionToString(in,ToStringStyle.MULTI_LINE_STYLE)+"]");
+		byte[] wire = serialize(in);
+		if (wire == null) {
+			throw new NullPointerException("Could not Serialize [" + ToStringBuilder.reflectionToString(in, ToStringStyle.MULTI_LINE_STYLE) + "]");
 		}
-		log.debug("Serialization wire for object type [{}]: [{}]", ()->in.getClass().getSimpleName(), ()->Hex.encodeHexString(wire));
-		T out=deserialize(wire);
-		if (out==null) {
-			throw new NullPointerException("Could not Deserialize ["+ToStringBuilder.reflectionToString(in,ToStringStyle.MULTI_LINE_STYLE)+"]");
+		log.debug("Serialization wire for object type [{}]: [{}]", () -> in.getClass().getSimpleName(), () -> Hex.encodeHexString(wire));
+		T out = deserialize(wire);
+		if (out == null) {
+			throw new NullPointerException("Could not Deserialize [" + ToStringBuilder.reflectionToString(in, ToStringStyle.MULTI_LINE_STYLE) + "]");
 		}
 		return out;
 	}

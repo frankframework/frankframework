@@ -73,7 +73,7 @@ public class ApplicationMessageEvent extends ApplicationContextEvent {
 		}
 
 		if (e != null) {
-			m.append(": (" + ClassUtils.nameOf(e) +") "+ e.getMessage());
+			m.append(": (" + ClassUtils.nameOf(e) + ") " + e.getMessage());
 		}
 
 		Date date = new Date(getTimestamp());

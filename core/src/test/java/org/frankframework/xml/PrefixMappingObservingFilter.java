@@ -29,14 +29,14 @@ public class PrefixMappingObservingFilter extends PrettyPrintFilter {
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		AttributesImpl attributes = new AttributesImpl();
 		attributes.addAttribute("", "uri", "uri", "string", uri);
-		startElement("", "prefix-"+prefix, "prefix-"+prefix, attributes);
+		startElement("", "prefix-" + prefix, "prefix-" + prefix, attributes);
 		super.startPrefixMapping(prefix, uri);
 	}
 
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
 		super.endPrefixMapping(prefix);
-		endElement("", "prefix-"+prefix, "prefix-"+prefix);
+		endElement("", "prefix-" + prefix, "prefix-" + prefix);
 	}
 
 }

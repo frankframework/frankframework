@@ -22,7 +22,7 @@ import org.frankframework.filesystem.FileSystemListener;
 import org.frankframework.filesystem.LocalFileSystem;
 
 @Category("Basic")
-public class DirectoryListener extends FileSystemListener<Path, LocalFileSystem>{
+public class DirectoryListener extends FileSystemListener<Path, LocalFileSystem> {
 
 	@Override
 	protected LocalFileSystem createFileSystem() {

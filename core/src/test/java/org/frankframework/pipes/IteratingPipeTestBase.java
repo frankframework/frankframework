@@ -19,7 +19,9 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> extends PipeTestBase<P> {
@@ -40,7 +42,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 			if (message.asString().contains("exception")) {
 				throw new SenderException("Exception triggered");
 			}
-			String result = "["+message.asString()+"]";
+			String result = "[" + message.asString() + "]";
 			resultLog.append(result).append("\n");
 			if (message.asString().contains("error")) {
 				return new SenderResult(Message.asMessage(result), "Error triggered");
@@ -91,6 +93,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	protected void testTenLines() throws Exception {
 		doPipeWithTenLineInput("/IteratingPipe/TenLinesResult.xml");
 	}
+
 	protected void testTenLinesToSeven() throws Exception {
 		doPipeWithTenLineInput("/IteratingPipe/SevenLinesResult.xml");
 	}
@@ -107,6 +110,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
+
 	@Test
 	public void testBasicBlockEnabled() throws Exception {
 		testBasic(true);
@@ -128,13 +132,13 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
+
 	@Test
 	public void testBasicMaxItemsBlockEnabled() throws Exception {
 		testBasicMaxItems(true);
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesLogSingleBlock.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
-
 
 
 	public void testFullBlocks(boolean blockEnabled) throws Exception {
@@ -150,6 +154,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
+
 	@Test
 	public void testFullBlocksBlockEnabled() throws Exception {
 		testFullBlocks(true);
@@ -171,6 +176,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
+
 	@Test
 	public void testPartialFinalBlockBlockEnabled() throws Exception {
 		testPartialFinalBlock(true);
@@ -193,6 +199,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
+
 	@Test
 	public void testPartialFinalBlockMaxItemsBlockEnabled() throws Exception {
 		testPartialFinalBlockMaxItems(true);

@@ -42,14 +42,14 @@ public class InitialCapsFilter extends FullXmlFilter {
 	}
 
 	protected String initialCap(String elementName) {
-		return Character.toUpperCase(elementName.charAt(0))+elementName.substring(1);
+		return Character.toUpperCase(elementName.charAt(0)) + elementName.substring(1);
 	}
 
 	protected String initialCapQname(String qname) {
 		int colonPos = qname.indexOf(":");
-		if (colonPos<0) {
+		if (colonPos < 0) {
 			return initialCap(qname);
 		}
-		return qname.substring(0,colonPos+1)+initialCap(qname.substring(colonPos+1));
+		return qname.substring(0, colonPos + 1) + initialCap(qname.substring(colonPos + 1));
 	}
 }

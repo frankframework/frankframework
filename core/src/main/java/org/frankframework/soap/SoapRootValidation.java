@@ -30,7 +30,7 @@ public class SoapRootValidation extends RootValidation {
 
 	@Override
 	public boolean isNamespaceAllowedOnElement(Map<List<String>, List<String>> invalidRootNamespaces, String namespaceURI, String localName) {
-		if("Fault".equals(localName) && SOAPConstants.URI_NS_SOAP_ENVELOPE.equals(namespaceURI)) {
+		if ("Fault".equals(localName) && SOAPConstants.URI_NS_SOAP_ENVELOPE.equals(namespaceURI)) {
 			return true;
 		}
 

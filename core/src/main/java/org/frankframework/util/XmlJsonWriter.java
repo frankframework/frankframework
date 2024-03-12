@@ -29,11 +29,11 @@ import org.frankframework.xml.SaxException;
 public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 
 	private Writer writer;
-	private boolean commaRequired=false;
-	private boolean stringOpen=false;
+	private boolean commaRequired = false;
+	private boolean stringOpen = false;
 
 	public XmlJsonWriter(Writer writer) {
-		this.writer=writer;
+		this.writer = writer;
 	}
 
 	public XmlJsonWriter() {
@@ -55,10 +55,10 @@ public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 			if (commaRequired) {
 				writer.write(",");
 			}
-			commaRequired=false;
-			if (attrs!=null) {
-				String key=attrs.getValue("key");
-				if (key!=null) {
+			commaRequired = false;
+			if (attrs != null) {
+				String key = attrs.getValue("key");
+				if (key != null) {
 					writer.append('"').append(key).append("\":");
 				}
 			}
@@ -69,7 +69,7 @@ public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 			} else if (localname.equals("null")) {
 				writer.write("null");
 			} else if (localname.equals("string")) {
-				stringOpen=true;
+				stringOpen = true;
 			}
 		} catch (IOException e) {
 			throw new SaxException(e);
@@ -84,9 +84,9 @@ public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 			} else if (localname.equals("map")) {
 				writer.write("}");
 			} else if (localname.equals("string")) {
-				stringOpen=false;
+				stringOpen = false;
 			}
-			commaRequired=true;
+			commaRequired = true;
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}

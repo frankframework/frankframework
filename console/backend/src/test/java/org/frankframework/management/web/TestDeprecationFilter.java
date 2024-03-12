@@ -20,17 +20,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageImpl;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.logging.log4j.Level;
 import org.frankframework.util.TestAppender;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.core.env.Environment;
-
 import org.frankframework.web.filters.DeprecationFilter;
+import org.springframework.core.env.Environment;
 
 public class TestDeprecationFilter {
 
@@ -143,7 +143,7 @@ public class TestDeprecationFilter {
 
 	private void setMethod(Class<?> targetClass, String methodName) throws Exception {
 		Message message = new MessageImpl();
-		Method method = targetClass.getMethod(methodName, new Class[] {});
+		Method method = targetClass.getMethod(methodName, new Class[]{});
 		message.put(CXF_METHOD_KEY, method);
 
 		SortedSet<Phase> ps = new TreeSet<>();

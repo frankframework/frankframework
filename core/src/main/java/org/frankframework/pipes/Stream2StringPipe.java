@@ -25,7 +25,7 @@ import org.frankframework.stream.Message;
 /**
  * Return simply the input message from stream to string.
  *
- * @author  Tom van der Heijden
+ * @author Tom van der Heijden
  * @deprecated not necessary when using Messages.
  */
 @Deprecated

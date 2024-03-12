@@ -17,7 +17,14 @@ package org.frankframework.web;
 
 import java.lang.reflect.Method;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.lifecycle.servlets.AuthenticationType;
+import org.frankframework.lifecycle.servlets.IAuthenticator;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.EnumUtils;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StringUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -30,14 +37,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import lombok.Setter;
-import org.frankframework.lifecycle.servlets.AuthenticationType;
-import org.frankframework.lifecycle.servlets.IAuthenticator;
-
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.EnumUtils;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StringUtil;
 
 @Configuration
 @EnableWebSecurity //Enables Spring Security (classpath)
@@ -49,7 +48,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	private IAuthenticator createAuthenticator() {
 		String properyPrefix = "application.security.console.authentication.";
-		String type = environment.getProperty(properyPrefix+"type", "NONE");
+		String type = environment.getProperty(properyPrefix + "type", "NONE");
 		AuthenticationType auth = null;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);
@@ -59,13 +58,13 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		Class<? extends IAuthenticator> clazz = auth.getAuthenticator();
 		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
 
-		for(Method method: clazz.getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+		for (Method method : clazz.getMethods()) {
+			if (!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = environment.getProperty(properyPrefix+setter);
-			if(StringUtils.isEmpty(value))
+			String value = environment.getProperty(properyPrefix + setter);
+			if (StringUtils.isEmpty(value))
 				continue;
 
 			ClassUtils.invokeSetter(authenticator, method, value);

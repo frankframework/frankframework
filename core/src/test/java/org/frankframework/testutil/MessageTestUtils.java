@@ -36,6 +36,7 @@ public class MessageTestUtils {
 		BINARY("/Documents/doc001.pdf");
 
 		private URL url;
+
 		private MessageType(String resource) {
 			URL url = TestFileUtils.getTestFileURL(resource);
 			assertNotNull(url, "unable to find test file");
@@ -67,24 +68,28 @@ public class MessageTestUtils {
 
 	public static Message getNonRepeatableMessage(MessageType type) throws IOException {
 		Message message = type.getMessage();
-		if(type == MessageType.BINARY) {
-			return new Message(new FilterInputStream(message.asInputStream()) {}, message.getContext());
+		if (type == MessageType.BINARY) {
+			return new Message(new FilterInputStream(message.asInputStream()) {
+			}, message.getContext());
 		}
-		return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {}, message.getContext());
+		return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {
+		}, message.getContext());
 	}
 
 	public static Message getBinaryMessage(String resource, boolean repeatable) throws IOException {
 		Message message = getMessage(resource);
-		if(!repeatable) {
-			return new Message(new FilterInputStream(message.asInputStream()) {}, message.getContext());
+		if (!repeatable) {
+			return new Message(new FilterInputStream(message.asInputStream()) {
+			}, message.getContext());
 		}
 		return message;
 	}
 
 	public static Message getCharacterMessage(String resource, boolean repeatable) throws IOException {
 		Message message = getMessage(resource);
-		if(!repeatable) {
-			return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {}, message.getContext());
+		if (!repeatable) {
+			return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {
+			}, message.getContext());
 		}
 		return message;
 	}

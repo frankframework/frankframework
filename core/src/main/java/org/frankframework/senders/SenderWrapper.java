@@ -31,10 +31,9 @@ import org.frankframework.stream.Message;
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
  *
+ * @author Gerrit van Brakel
  * @ff.parameters any parameters defined on the SenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}
- *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @since 4.9
  */
 public class SenderWrapper extends SenderWrapperBase {
 
@@ -43,7 +42,7 @@ public class SenderWrapper extends SenderWrapperBase {
 
 	@Override
 	protected boolean isSenderConfigured() {
-		return getSender()!=null;
+		return getSender() != null;
 	}
 
 	@Override
@@ -51,11 +50,13 @@ public class SenderWrapper extends SenderWrapperBase {
 		super.configure();
 		getSender().configure();
 	}
+
 	@Override
 	public void open() throws SenderException {
 		getSender().open();
 		super.open();
 	}
+
 	@Override
 	public void close() throws SenderException {
 		super.close();
@@ -70,7 +71,7 @@ public class SenderWrapper extends SenderWrapperBase {
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		if (getSender() instanceof HasStatistics) {
-			((HasStatistics)getSender()).iterateOverStatistics(hski,data,action);
+			((HasStatistics) getSender()).iterateOverStatistics(hski, data, action);
 		}
 	}
 

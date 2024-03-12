@@ -38,7 +38,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	@Override
 	public Object asNative() {
-		if (super.asNative()==null) {
+		if (super.asNative() == null) {
 			setRequestStream(new StringWriter());
 		}
 		return super.asNative();
@@ -46,8 +46,8 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	@Override
 	public OutputStream asStream(String charset) throws StreamingException {
-		this.charset=charset;
-		if (super.asNative()==null) {
+		this.charset = charset;
+		if (super.asNative() == null) {
 			setRequestStream(new ByteArrayOutputStream());
 		}
 		return super.asStream(charset);
@@ -55,7 +55,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	@Override
 	public Writer asWriter() throws StreamingException {
-		if (super.asNative()==null) {
+		if (super.asNative() == null) {
 			setRequestStream(new StringWriter());
 		}
 		return super.asWriter();
@@ -63,7 +63,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	@Override
 	public ContentHandler asContentHandler() throws StreamingException {
-		if (super.asNative()==null) {
+		if (super.asNative() == null) {
 			setRequestStream(new StringWriter());
 		}
 		return super.asContentHandler();
@@ -71,7 +71,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	@Override
 	public JsonEventHandler asJsonEventHandler() {
-		if (super.asNative()==null) {
+		if (super.asNative() == null) {
 			setRequestStream(new StringWriter());
 		}
 		return super.asJsonEventHandler();
@@ -79,10 +79,10 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	@Override
 	public Message getResponse() {
-		if (responseBuffer==null) {
+		if (responseBuffer == null) {
 			return null;
 		} else if (responseBuffer instanceof ByteArrayOutputStream) {
-			return new Message(((ByteArrayOutputStream)responseBuffer).toByteArray(), charset);
+			return new Message(((ByteArrayOutputStream) responseBuffer).toByteArray(), charset);
 		} else {
 			return new Message(responseBuffer.toString());
 		}
@@ -97,11 +97,11 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 
 	private void installCapture() {
 		if (captureStream instanceof Writer) {
-			super.captureCharacterStream((Writer)captureStream, caputureSize);
+			super.captureCharacterStream((Writer) captureStream, caputureSize);
 			return;
 		}
 		if (captureStream instanceof OutputStream) {
-			super.captureBinaryStream((OutputStream)captureStream, caputureSize);
+			super.captureBinaryStream((OutputStream) captureStream, caputureSize);
 			return;
 		}
 	}

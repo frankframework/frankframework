@@ -61,8 +61,8 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	}
 
 	private void insert(int key, String value) throws JdbcException, SQLException {
-		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(connection, String.format("INSERT INTO "+TEST_TABLE+" (TKEY, TVARCHAR, TINT) VALUES ('%d', '%s', '0')", key, value));
+		try (Connection connection = env.getConnection()) {
+			JdbcTestUtil.executeStatement(connection, String.format("INSERT INTO " + TEST_TABLE + " (TKEY, TVARCHAR, TINT) VALUES ('%d', '%s', '0')", key, value));
 		}
 	}
 
@@ -70,7 +70,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	public void testWithStylesheetNoCollectResultsAndIgnoreExceptions() throws Exception {
 		preFillDatabaseTable();
 
-		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
+		pipe.setQuery("SELECT TKEY, TVARCHAR FROM " + TEST_TABLE + " ORDER BY TKEY");
 		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
 		pipe.setCollectResults(false);
 		pipe.setIgnoreExceptions(true);
@@ -92,7 +92,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	public void testWithStylesheetNoCollectResultsAndIgnoreExceptionsParallel() throws Exception {
 		preFillDatabaseTable();
 
-		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
+		pipe.setQuery("SELECT TKEY, TVARCHAR FROM " + TEST_TABLE + " ORDER BY TKEY");
 		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
 		pipe.setCollectResults(false);
 		pipe.setParallel(true);
@@ -109,7 +109,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		long startTime = System.currentTimeMillis();
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		long duration = System.currentTimeMillis() - startTime;
-		assertTrue(duration < PARALLEL_DELAY + 100, "Test took "+(duration- (PARALLEL_DELAY + 100))+"ms too long.");
+		assertTrue(duration < PARALLEL_DELAY + 100, "Test took " + (duration - (PARALLEL_DELAY + 100)) + "ms too long.");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		String expectedXml = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
 
@@ -120,14 +120,14 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	public void testWithStylesheetNoCollectResultsAndIgnoreExceptionsWithUpdateInSameTable() throws Exception {
 		preFillDatabaseTable();
 
-		pipe.setQuery("SELECT TKEY, TVARCHAR FROM "+TEST_TABLE+" ORDER BY TKEY");
+		pipe.setQuery("SELECT TKEY, TVARCHAR FROM " + TEST_TABLE + " ORDER BY TKEY");
 		pipe.setStyleSheetName("Pipes/ResultSetIteratingPipe/CreateMessage.xsl");
 		pipe.setCollectResults(false);
 		pipe.setIgnoreExceptions(true);
 		pipe.setDatasourceName(getDataSourceName());
 
 		FixedQuerySender sender = env.createBean(FixedQuerySender.class);
-		sender.setQuery("UPDATE "+TEST_TABLE+" SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
+		sender.setQuery("UPDATE " + TEST_TABLE + " SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
 		Parameter param = new Parameter();
 		param.setName("ID");
 		param.setXpathExpression("result/id");
@@ -139,15 +139,15 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
-		try(Connection connection = env.getConnection()) {
-			String jdbcResult = JdbcTestUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
+		try (Connection connection = env.getConnection()) {
+			String jdbcResult = JdbcTestUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM " + TEST_TABLE + " WHERE TINT = '4'");
 			assertEquals("10", jdbcResult);
 		}
 	}
 
 	private void insertBlob(int key, InputStream blob, boolean compressBlob) throws Exception {
-		try(Connection connection = env.getConnection();
-				PreparedStatement stmt = connection.prepareStatement("INSERT INTO "+TEST_TABLE+" (TKEY, TBLOB, TBOOLEAN, TVARCHAR) VALUES (?, ?, ?, ?)")) {
+		try (Connection connection = env.getConnection();
+			 PreparedStatement stmt = connection.prepareStatement("INSERT INTO " + TEST_TABLE + " (TKEY, TBLOB, TBOOLEAN, TVARCHAR) VALUES (?, ?, ?, ?)")) {
 			stmt.setInt(1, key);
 			stmt.setBinaryStream(2, (compressBlob ? new DeflaterInputStream(blob) : blob));
 			stmt.setBoolean(3, compressBlob);
@@ -167,7 +167,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		insertBlob(3, xmlMessage.asInputStream(), false);
 
 		// Act
-		pipe.setQuery("SELECT TKEY, TBLOB FROM "+TEST_TABLE+" WHERE TVARCHAR='blobtest' ORDER BY TKEY");
+		pipe.setQuery("SELECT TKEY, TBLOB FROM " + TEST_TABLE + " WHERE TVARCHAR='blobtest' ORDER BY TKEY");
 		pipe.setBlobSmartGet(true);
 		pipe.setDatasourceName(getDataSourceName());
 
@@ -186,6 +186,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	private static class ResultCollectingSender extends EchoSender {
 		private List<Message> data = Collections.synchronizedList(new ArrayList<>());
 		private int delay = 0;
+
 		public ResultCollectingSender() {
 			this(0);
 		}
@@ -196,7 +197,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 		@Override
 		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-			if(delay > 0) {
+			if (delay > 0) {
 				try {
 					Thread.sleep(delay);
 				} catch (InterruptedException e) {
@@ -208,13 +209,15 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 			data.add(message);
 			return super.sendMessage(message, session);
 		}
+
 		public String collectResults() throws InterruptedException {
-			while(data.size() < 10) {
+			while (data.size() < 10) {
 				log.info("sleeping, result count [{}]", data::size);
 				Thread.sleep(200);
 			}
-			return "<xml>\n"+data.stream().map(this::mapMessage).sorted().collect(Collectors.joining())+"\n</xml>";
+			return "<xml>\n" + data.stream().map(this::mapMessage).sorted().collect(Collectors.joining()) + "\n</xml>";
 		}
+
 		private String mapMessage(Message message) {
 			try {
 				return message.asString();

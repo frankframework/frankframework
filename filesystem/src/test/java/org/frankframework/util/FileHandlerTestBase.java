@@ -18,6 +18,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -27,10 +32,6 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 public abstract class FileHandlerTestBase {
 
@@ -67,11 +68,11 @@ public abstract class FileHandlerTestBase {
 		String compareFile = filename;
 		String actions = "read";
 
-		if(decode) {
+		if (decode) {
 			inFilepath += ".b64";
 			actions += ",decode";
 		}
-		if(encode) {
+		if (encode) {
 			actions += ",encode";
 			compareFile += ".b64";
 		}
@@ -84,7 +85,7 @@ public abstract class FileHandlerTestBase {
 
 		String expectedContents = TestFileUtils.getTestFile(BASEDIR + compareFile, charset);
 		assertNotNull(expectedContents);
-		if(outputType == null || outputType.equalsIgnoreCase("string")) {
+		if (outputType == null || outputType.equalsIgnoreCase("string")) {
 			String actualContents = (String) handler.handle(null, session, null);
 			assertEquals(removeNewlines(expectedContents), removeNewlines(actualContents), "file contents");
 		} else {
@@ -102,7 +103,7 @@ public abstract class FileHandlerTestBase {
 		ParameterList paramList = null;
 		String compareFile = directory == null ? contentFile : directory + "/" + contentFile;
 		String filepath = null;
-		if(filename != null) {
+		if (filename != null) {
 			URL fileURL = getURL(filename);
 			filepath = fileURL.getPath() + ".tmp";
 
@@ -110,7 +111,7 @@ public abstract class FileHandlerTestBase {
 				Path path = Path.of(filepath);
 				Files.deleteIfExists(path);
 			} catch (Exception e) {} //Ignored
-			if(fileContentsAtStart != null) {
+			if (fileContentsAtStart != null) {
 				FileWriter fw = new FileWriter(filepath);
 				fw.write(fileContentsAtStart);
 				fw.close();
@@ -118,21 +119,21 @@ public abstract class FileHandlerTestBase {
 		}
 
 		String actions = baseAction;
-		if(decode) {
+		if (decode) {
 			contentFile += ".b64";
 			actions = "decode," + actions;
 		}
-		if(encode) {
+		if (encode) {
 			actions = "encode," + actions;
 			compareFile += ".b64";
 		}
 		handler.setActions(actions);
 		handler.setCharset(charset);
-		if(directory != null) {
+		if (directory != null) {
 			handler.setDirectory(directory);
 		}
-		if(suffix != null) {
-			if(suffixViaParam) {
+		if (suffix != null) {
+			if (suffixViaParam) {
 				paramList = new ParameterList();
 				paramList.add(new Parameter("writeSuffix", suffix));
 				paramList.configure();
@@ -150,7 +151,7 @@ public abstract class FileHandlerTestBase {
 		assertNotNull(contents);
 		String stringContent = contents.replace("\r", ""); //Remove carriage return
 		String actFilename = (String) handler.handle(Message.asMessage(stringContent), session, paramList);
-		if(filename == null) {
+		if (filename == null) {
 			assertNotNull(actFilename);
 		} else {
 			File f = new File(filepath);
@@ -158,20 +159,20 @@ public abstract class FileHandlerTestBase {
 		}
 
 		String expectedContents;
-		if(fileContentsAtStart != null && !truncate) {
+		if (fileContentsAtStart != null && !truncate) {
 			expectedContents = fileContentsAtStart;
 		} else {
 			expectedContents = "";
 		}
-		if(write) {
+		if (write) {
 			expectedContents += TestFileUtils.getTestFile(BASEDIR + compareFile, charset);
-			if(writeSeparator) {
+			if (writeSeparator) {
 				expectedContents += System.getProperty("line.separator");
 			}
 		}
 
 		log.debug("act filename [{}] suffix [{}]", actFilename, suffix);
-		if(suffix != null) {
+		if (suffix != null) {
 			assertThat(actFilename, endsWith(suffix));
 		}
 		File fa = new File(actFilename);
@@ -241,7 +242,7 @@ public abstract class FileHandlerTestBase {
 		// String contents=TestFileUtils.getTestFile(contentFile, charset);
 
 		String actualContents = (String) handler.handle(null, session, null);
-		if(readDelete) assertEquals(expectedContents, actualContents, "file contents");
+		if (readDelete) assertEquals(expectedContents, actualContents, "file contents");
 		assertFalse(Files.exists(file.toPath()), "file [" + filepath + "] should have been deleted");
 	}
 

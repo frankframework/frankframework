@@ -25,6 +25,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
@@ -36,14 +44,6 @@ import org.apache.kafka.common.metrics.KafkaMetric;
 import org.apache.kafka.common.metrics.stats.Value;
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.common.utils.Time;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -78,36 +78,38 @@ public class KafkaReceiverTest {
 				null,
 				Time.SYSTEM
 		));
-		Mockito.when(mockListener.metrics()).thenReturn((Map)metrics);
+		Mockito.when(mockListener.metrics()).thenReturn((Map) metrics);
 	}
 
 	@ParameterizedTest
 	@MethodSource
 	void validateParameters(Consumer<KafkaListener> configurer, boolean shouldSucceed, String name) {
 		configurer.accept(listener);
-		if(shouldSucceed) Assertions.assertDoesNotThrow(listener::configure, name);
+		if (shouldSucceed) Assertions.assertDoesNotThrow(listener::configure, name);
 		else Assertions.assertThrows(ConfigurationException.class, listener::configure, name);
 	}
+
 	public static Consumer<KafkaListener> configure(Consumer<KafkaListener> function) {
 		return function;
 	}
+
 	static Stream<Arguments> validateParameters() {
 		return Stream.of(
-				Arguments.of(configure(listener->listener.setTopics(null)), false, "null topics"),
-				Arguments.of(configure(listener->listener.setTopics("")), false, "empty topics"),
-				Arguments.of(configure(listener->listener.setTopics("test")), true, "valid topics 1"),
-				Arguments.of(configure(listener->listener.setTopics("test,test2")), true, "valid topics 2"),
-				Arguments.of(configure(listener->listener.setTopics("test.test2")), true, "valid topics 3"),
-				Arguments.of(configure(listener->listener.setGroupId(null)), false, "null groupId"),
-				Arguments.of(configure(listener->listener.setGroupId("")), false, "empty groupId"),
-				Arguments.of(configure(listener->listener.setGroupId("test")), true, "valid groupId"),
-				Arguments.of(configure(listener->listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
-				Arguments.of(configure(listener->listener.setPatternRecheckInterval(100)), true, "valid patternRecheckInterval"),
-				Arguments.of(configure(listener->listener.setOffsetStrategy(OffsetResetStrategy.EARLIEST)), true, "valid fromBeginning"),
-				Arguments.of(configure(listener->listener.setOffsetStrategy(OffsetResetStrategy.LATEST)), true, "valid fromBeginning"),
-				Arguments.of(configure(listener->listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
-				Arguments.of(configure(listener->listener.setPatternRecheckInterval(9)), false, "9 patternRecheckInterval"),
-				Arguments.of(configure(listener->listener.setPatternRecheckInterval(10)), true, "10 patternRecheckInterval")
+				Arguments.of(configure(listener -> listener.setTopics(null)), false, "null topics"),
+				Arguments.of(configure(listener -> listener.setTopics("")), false, "empty topics"),
+				Arguments.of(configure(listener -> listener.setTopics("test")), true, "valid topics 1"),
+				Arguments.of(configure(listener -> listener.setTopics("test,test2")), true, "valid topics 2"),
+				Arguments.of(configure(listener -> listener.setTopics("test.test2")), true, "valid topics 3"),
+				Arguments.of(configure(listener -> listener.setGroupId(null)), false, "null groupId"),
+				Arguments.of(configure(listener -> listener.setGroupId("")), false, "empty groupId"),
+				Arguments.of(configure(listener -> listener.setGroupId("test")), true, "valid groupId"),
+				Arguments.of(configure(listener -> listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
+				Arguments.of(configure(listener -> listener.setPatternRecheckInterval(100)), true, "valid patternRecheckInterval"),
+				Arguments.of(configure(listener -> listener.setOffsetStrategy(OffsetResetStrategy.EARLIEST)), true, "valid fromBeginning"),
+				Arguments.of(configure(listener -> listener.setOffsetStrategy(OffsetResetStrategy.LATEST)), true, "valid fromBeginning"),
+				Arguments.of(configure(listener -> listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
+				Arguments.of(configure(listener -> listener.setPatternRecheckInterval(9)), false, "9 patternRecheckInterval"),
+				Arguments.of(configure(listener -> listener.setPatternRecheckInterval(10)), true, "10 patternRecheckInterval")
 		);
 	}
 
@@ -123,7 +125,8 @@ public class KafkaReceiverTest {
 		RecordHeaders headers = new RecordHeaders();
 		headers.add("headerKey", "headerValue".getBytes());
 		ConsumerRecord<String, byte[]> record = new ConsumerRecord<>(topic, 0, 0, ConsumerRecord.NO_TIMESTAMP, TimestampType.NO_TIMESTAMP_TYPE, NULL_SIZE, NULL_SIZE, "", "testtesttest".getBytes(),
-				headers, Optional.empty());
+				headers, Optional.empty()
+		);
 		mockListener.addRecord(record);
 
 		Assertions.assertNull(mockListener.committed(Set.of(topicPartition)).get(topicPartition));
@@ -135,7 +138,7 @@ public class KafkaReceiverTest {
 		Assertions.assertEquals(1L, mockListener.committed(Set.of(topicPartition)).get(topicPartition).offset());
 
 		Assertions.assertEquals(topic, message.getContext().get("kafkaTopic"));
-		Assertions.assertEquals("testtesttest",message.asString());
+		Assertions.assertEquals("testtesttest", message.asString());
 		Map<String, String> receivedHeaders = (Map<String, String>) message.getContext().get("kafkaHeaders");
 		Assertions.assertEquals("headerValue", receivedHeaders.get("headerKey"));
 

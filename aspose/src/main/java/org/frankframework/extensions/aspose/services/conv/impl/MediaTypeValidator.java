@@ -19,13 +19,11 @@ import java.io.IOException;
 
 import org.apache.tika.Tika;
 import org.apache.tika.io.TikaInputStream;
-import org.springframework.http.MediaType;
-
 import org.frankframework.stream.Message;
+import org.springframework.http.MediaType;
 
 /**
  * Specific class to detect media type used by CisConversionServiceImpl
- *
  */
 class MediaTypeValidator {
 

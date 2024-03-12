@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 
 public class UnloadableClass implements IConfigurable {
 	static String fail = null;
+
 	static {
 		// Force an exception so the class won't load
 		System.err.println(fail.length());

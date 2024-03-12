@@ -20,10 +20,9 @@ import lombok.Setter;
 /**
  * Enables the ability to provide a mockable FixedQuerySender.
  *
+ * @author Niels Meijer
  * @See {@link TestConfiguration#mockQuery(String, ResultSet)}
  * @See {@link FixedQuerySenderMock}
- *
- * @author Niels Meijer
  */
 public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationContextAware {
 	private @Setter ApplicationContext applicationContext;
@@ -32,12 +31,12 @@ public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationC
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if(FixedQuerySender.class.getCanonicalName().equals(bean.getClass().getCanonicalName())) {
+		if (FixedQuerySender.class.getCanonicalName().equals(bean.getClass().getCanonicalName())) {
 			FixedQuerySenderMock qs = createMock(FixedQuerySenderMock.class);
 			qs.addMockedQueries(fixedQuerySenderMocks);
 			return qs;
 		}
-		if(DirectQuerySender.class.getCanonicalName().equals(bean.getClass().getCanonicalName())) {
+		if (DirectQuerySender.class.getCanonicalName().equals(bean.getClass().getCanonicalName())) {
 			DirectQuerySenderMock qs = createMock(DirectQuerySenderMock.class);
 			qs.addMockedQueries(fixedDirectSenderMocks);
 			return qs;

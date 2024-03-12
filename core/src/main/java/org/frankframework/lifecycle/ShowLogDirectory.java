@@ -75,7 +75,7 @@ public class ShowLogDirectory {
 		String directory = BusMessageUtils.getHeader(message, "directory", defaultLogDirectory);
 		String wildcard = BusMessageUtils.getHeader(message, "wildcard", defaultLogWildcard);
 
-		if(StringUtils.isNotEmpty(directory) && !FileUtils.readAllowed(FileViewer.permissionRules, directory, BusMessageUtils::hasAnyRole)) {
+		if (StringUtils.isNotEmpty(directory) && !FileUtils.readAllowed(FileViewer.permissionRules, directory, BusMessageUtils::hasAnyRole)) {
 			throw new BusException("Access to path (" + directory + ") not allowed!");
 		}
 

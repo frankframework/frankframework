@@ -15,26 +15,25 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.stream.Message;
-import org.frankframework.util.ClassLoaderUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.xml.sax.SAXException;
 
 import net.bankid.merchant.library.Communicator;
 import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.DirectoryResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.TimeoutException;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassLoaderUtils;
+import org.xml.sax.SAXException;
 
 /**
  * Initially I thought, hey lets add some unittests...
  * Let's just skip them for now shall we? :)
- *
  */
 public class IdinSenderTest extends Mockito {
 
@@ -43,25 +42,28 @@ public class IdinSenderTest extends Mockito {
 	private List<Issuer> getIssuers() {
 		return getIssuers("NL");
 	}
+
 	private List<Issuer> getIssuers(String country) {
 		List<Issuer> issuers = new ArrayList<>();
-		for(int i = 0; i < 10; i++) {
+		for (int i = 0; i < 10; i++) {
 			Issuer issuer = mock(Issuer.class);
 			issuer.setIssuerCountry(country);
-			issuer.setIssuerID("id_"+i);
-			issuer.setIssuerName("name_"+i);
+			issuer.setIssuerID("id_" + i);
+			issuer.setIssuerName("name_" + i);
 			issuers.add(issuer);
 		}
 		return issuers;
 	}
+
 	private Map<String, List<Issuer>> getIssuersByCountry() {
 		Map<String, List<Issuer>> countryMap = new HashMap<>();
 		List<String> countries = Arrays.asList("NL", "BE", "GB", "DE", "ES");
-		for(String country : countries) {
+		for (String country : countries) {
 			countryMap.put(country, getIssuers(country));
 		}
 		return countryMap;
 	}
+
 	private XMLGregorianCalendar getDateTimestamp() {
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(new Date(0)); //EPOCH

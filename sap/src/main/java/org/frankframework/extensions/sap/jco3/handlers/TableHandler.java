@@ -29,8 +29,8 @@ import com.sap.conn.jco.JCoTable;
  * &lt;/INSOBJECTPARTNER&gt;
  * </pre>
  *
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class TableHandler extends Handler {
 
@@ -39,16 +39,16 @@ public class TableHandler extends Handler {
 
 	public TableHandler(JCoTable table) {
 		super();
-		this.table=table;
+		this.table = table;
 	}
 
 	@Override
 	protected void startElement(String localName) {
 		if (!parsedItem) {
 			if (localName.equals("item")) {
-				if(log.isTraceEnabled()) log.trace("appending row");
+				if (log.isTraceEnabled()) log.trace("appending row");
 				table.appendRow();
-				parsedItem=true;
+				parsedItem = true;
 			} else {
 				log.warn("element '" + localName + "' invalid");
 				unknownElementDepth = 1;
@@ -70,8 +70,8 @@ public class TableHandler extends Handler {
 	protected void endElement(String localName) {
 		if (parsedStringField) {
 			endStringField(localName, table);
-		} else if (parsedItem){
-			parsedItem=false;
+		} else if (parsedItem) {
+			parsedItem = false;
 		} else {
 			finished(localName);
 		}

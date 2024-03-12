@@ -29,7 +29,7 @@ import org.apache.logging.log4j.core.pattern.ThrowablePatternConverter;
 import org.apache.logging.log4j.util.Strings;
 
 @Plugin(name = "IbisThrowablePatternConverter", category = PatternConverter.CATEGORY)
-@ConverterKeys({ "iEx", "iThrowable" })
+@ConverterKeys({"iEx", "iThrowable"})
 public final class IbisThrowablePatternConverter extends ThrowablePatternConverter {
 
 	private static final String CAUSED_BY = "Caused by: ";
@@ -60,11 +60,11 @@ public final class IbisThrowablePatternConverter extends ThrowablePatternConvert
 		final ExtendedStackTraceElement[] elements = proxy.getExtendedStackTrace();
 		final String[] linesToBePrinted = writer.toString().split(Strings.LINE_SEPARATOR);
 
-		for (int i = 0; i <= elements.length-commonElementCount; ++i) {
+		for (int i = 0; i <= elements.length - commonElementCount; ++i) {
 			buffer.append(linesToBePrinted[i]);
 			if (i != 0 && i <= elements.length) {
 				buffer.append(" ");
-				buffer.append(elements[i-1].getExtraClassInfo().toString());
+				buffer.append(elements[i - 1].getExtraClassInfo().toString());
 			}
 			buffer.append(Strings.LINE_SEPARATOR);
 		}

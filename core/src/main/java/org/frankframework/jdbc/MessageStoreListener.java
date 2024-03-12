@@ -21,12 +21,11 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import lombok.Getter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ListenerException;
@@ -41,24 +40,24 @@ import org.frankframework.util.StringUtil;
 /**
  * Read messages from the IBISSTORE database table previously stored by a
  * {@link MessageStoreSender}.
- *
+ * <p>
  * Example configuration:
  * <code><pre>
-	&lt;Receiver
-		name="03 MessageStoreReceiver"
-		numThreads="4"
-		transactionAttribute="Required"
-		pollInterval="1"
-		&gt;
-		&lt;MessageStoreListener
-			name="03 MessageStoreListener"
-			slotId="${instance.name}/TestMessageStore"
-			statusValueInProcess="I"
-		/&gt;
-	&lt;/Receiver&gt;
-
- * </pre></code>
+ * &lt;Receiver
+ * name="03 MessageStoreReceiver"
+ * numThreads="4"
+ * transactionAttribute="Required"
+ * pollInterval="1"
+ * &gt;
+ * &lt;MessageStoreListener
+ * name="03 MessageStoreListener"
+ * slotId="${instance.name}/TestMessageStore"
+ * statusValueInProcess="I"
+ * /&gt;
+ * &lt;/Receiver&gt;
  *
+ * </pre></code>
+ * <p>
  * If you have a <code>MessageStoreListener</code>, failed messages are automatically kept in database
  * table IBISSTORE. Messages are also kept after successful processing. The state of a message
  * is distinguished by the <code>TYPE</code> field, as follows:
@@ -77,18 +76,18 @@ import org.frankframework.util.StringUtil;
  */
 public class MessageStoreListener<M> extends JdbcTableListener<M> {
 
-	private static final String DEFAULT_TABLE_NAME="IBISSTORE";
-	private static final String DEFAULT_KEY_FIELD="MESSAGEKEY";
-	private static final String DEFAULT_MESSAGE_FIELD="MESSAGE";
-	private static final String DEFAULT_MESSAGEID_FIELD="MESSAGEID";
-	private static final String DEFAULT_CORRELATIONID_FIELD="CORRELATIONID";
-	private static final String DEFAULT_STATUS_FIELD="TYPE";
-	private static final String DEFAULT_TIMESTAMP_FIELD="MESSAGEDATE";
-	private static final String DEFAULT_COMMENT_FIELD="COMMENTS";
+	private static final String DEFAULT_TABLE_NAME = "IBISSTORE";
+	private static final String DEFAULT_KEY_FIELD = "MESSAGEKEY";
+	private static final String DEFAULT_MESSAGE_FIELD = "MESSAGE";
+	private static final String DEFAULT_MESSAGEID_FIELD = "MESSAGEID";
+	private static final String DEFAULT_CORRELATIONID_FIELD = "CORRELATIONID";
+	private static final String DEFAULT_STATUS_FIELD = "TYPE";
+	private static final String DEFAULT_TIMESTAMP_FIELD = "MESSAGEDATE";
+	private static final String DEFAULT_COMMENT_FIELD = "COMMENTS";
 
-	private static final String DEFAULT_STATUS_VALUE_AVAILABLE=IMessageBrowser.StorageType.MESSAGESTORAGE.getCode();
-	private static final String DEFAULT_STATUS_VALUE_PROCESSED=IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode();
-	private static final String DEFAULT_STATUS_VALUE_ERROR=IMessageBrowser.StorageType.ERRORSTORAGE.getCode();
+	private static final String DEFAULT_STATUS_VALUE_AVAILABLE = IMessageBrowser.StorageType.MESSAGESTORAGE.getCode();
+	private static final String DEFAULT_STATUS_VALUE_PROCESSED = IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode();
+	private static final String DEFAULT_STATUS_VALUE_ERROR = IMessageBrowser.StorageType.ERRORSTORAGE.getCode();
 
 	private @Getter String slotId;
 	private @Getter String sessionKeys = null;
@@ -119,10 +118,10 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 			extractSessionKeyList();
 		}
 		if (isMoveToMessageLog()) {
-			String setClause = "EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
-			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
+			String setClause = "EXPIRYDATE = " + getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(), 30);
+			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE), setClause));
 		} else {
-			String query = "DELETE FROM "+getTableName()+" WHERE "+getKeyField()+" = ?";
+			String query = "DELETE FROM " + getTableName() + " WHERE " + getKeyField() + " = ?";
 			setUpdateStatusQuery(ProcessState.DONE, query);
 			setUpdateStatusQuery(ProcessState.ERROR, query);
 		}
@@ -145,16 +144,16 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	private Message convertToMessage(@Nonnull RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> threadContext) throws ListenerException {
 		Message message;
 		String messageData = extractStringData(rawMessageWrapper);
-		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
+		try (CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
 			CSVRecord csvRecord = parser.getRecords().get(0);
 			message = new Message(csvRecord.get(0));
-			for (int i=1; i<csvRecord.size();i++) {
-				if (sessionKeysList.size()>=i) {
-					threadContext.put(sessionKeysList.get(i-1), csvRecord.get(i));
+			for (int i = 1; i < csvRecord.size(); i++) {
+				if (sessionKeysList.size() >= i) {
+					threadContext.put(sessionKeysList.get(i - 1), csvRecord.get(i));
 				}
 			}
 		} catch (IOException e) {
-			throw new ListenerException("cannot convert message",e);
+			throw new ListenerException("cannot convert message", e);
 		}
 		return message;
 	}
@@ -173,7 +172,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 
 	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
 		if (browser instanceof JdbcTableMessageBrowser) {
-			JdbcTableMessageBrowser<?> jtmb = (JdbcTableMessageBrowser<?>)browser;
+			JdbcTableMessageBrowser<?> jtmb = (JdbcTableMessageBrowser<?>) browser;
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}
@@ -183,7 +182,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	@Override
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
 		IMessageBrowser<M> browser = super.getMessageBrowser(state);
-		if (browser!=null) {
+		if (browser != null) {
 			return augmentMessageBrowser(browser);
 		}
 		return null;
@@ -193,9 +192,9 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	public String getSelectCondition() {
 		String conditionClause = super.getSelectCondition();
 		if (StringUtils.isNotEmpty(conditionClause)) {
-			conditionClause = "("+conditionClause+")";
+			conditionClause = "(" + conditionClause + ")";
 		}
-		String slotIdClause = StringUtils.isNotEmpty(getSlotId()) ? "SLOTID='"+slotId+"'" : null;
+		String slotIdClause = StringUtils.isNotEmpty(getSlotId()) ? "SLOTID='" + slotId + "'" : null;
 		return StringUtil.concatStrings(slotIdClause, " AND ", conditionClause);
 	}
 
@@ -215,63 +214,63 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	@Default (DEFAULT_TABLE_NAME)
+	@Default(DEFAULT_TABLE_NAME)
 	@Optional
 	public void setTableName(String string) {
 		super.setTableName(string);
 	}
 
 	@Override
-	@Default (DEFAULT_KEY_FIELD)
+	@Default(DEFAULT_KEY_FIELD)
 	public void setKeyField(String fieldname) {
 		super.setKeyField(fieldname);
 	}
 
 	@Override
-	@Default (DEFAULT_MESSAGE_FIELD)
+	@Default(DEFAULT_MESSAGE_FIELD)
 	public void setMessageField(String fieldname) {
 		super.setMessageField(fieldname);
 	}
 
 	@Override
-	@Default (DEFAULT_MESSAGEID_FIELD)
+	@Default(DEFAULT_MESSAGEID_FIELD)
 	public void setMessageIdField(String fieldname) {
 		super.setMessageIdField(fieldname);
 	}
 
 	@Override
-	@Default (DEFAULT_CORRELATIONID_FIELD)
+	@Default(DEFAULT_CORRELATIONID_FIELD)
 	public void setCorrelationIdField(String fieldname) {
 		super.setCorrelationIdField(fieldname);
 	}
 
 	@Override
-	@Default ("BLOB")
+	@Default("BLOB")
 	public void setMessageFieldType(MessageFieldType fieldtype) {
 		super.setMessageFieldType(fieldtype);
 	}
 
 	@Override
-	@Default ("<code>true</code>")
+	@Default("<code>true</code>")
 	public void setBlobSmartGet(boolean b) {
 		super.setBlobSmartGet(b);
 	}
 
 	@Override
-	@Default (DEFAULT_STATUS_FIELD)
+	@Default(DEFAULT_STATUS_FIELD)
 	@Optional
 	public void setStatusField(String fieldname) {
 		super.setStatusField(fieldname);
 	}
 
 	@Override
-	@Default (DEFAULT_TIMESTAMP_FIELD)
+	@Default(DEFAULT_TIMESTAMP_FIELD)
 	public void setTimestampField(String fieldname) {
 		super.setTimestampField(fieldname);
 	}
 
 	@Override
-	@Default (DEFAULT_COMMENT_FIELD)
+	@Default(DEFAULT_COMMENT_FIELD)
 	public void setCommentField(String commentField) {
 		super.setCommentField(commentField);
 	}
@@ -295,14 +294,14 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	@Default ("<code>E</code>")
+	@Default("<code>E</code>")
 	@Optional
 	public void setStatusValueError(String string) {
 		super.setStatusValueError(string);
 	}
 
 	@Override
-	@Default ("<code>A</code>")
+	@Default("<code>A</code>")
 	@Optional
 	public void setStatusValueProcessed(String string) {
 		super.setStatusValueProcessed(string);
@@ -318,6 +317,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 
 	/**
 	 * Move to messageLog after processing, as the message is already stored in the ibisstore only some fields need to be updated. When set <code>false</code>, messages are deleted after being processed
+	 *
 	 * @ff.default <code>true</code>
 	 */
 	public void setMoveToMessageLog(boolean moveToMessageLog) {

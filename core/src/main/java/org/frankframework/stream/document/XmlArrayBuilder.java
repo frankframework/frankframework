@@ -15,9 +15,8 @@
 */
 package org.frankframework.stream.document;
 
-import org.xml.sax.SAXException;
-
 import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
 
 public class XmlArrayBuilder extends ArrayBuilder {
 
@@ -29,7 +28,6 @@ public class XmlArrayBuilder extends ArrayBuilder {
 		this.elementName = elementName;
 		this.current = current;
 	}
-
 
 
 	@Override

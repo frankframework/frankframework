@@ -33,11 +33,12 @@ import org.frankframework.receivers.JavaListener;
 import org.frankframework.stream.Message;
 
 import lombok.Getter;
+
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 /**
  * Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
- *
+ * <p>
  * An IbisJavaSender makes a call to a Receiver with a {@link JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  *
@@ -53,11 +54,10 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * </ul>
  * N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server.
  *
+ * @author Gerrit van Brakel
  * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
  * @ff.forward "&lt;Exit.code&gt;" default
- *
- * @author  Gerrit van Brakel
- * @since   4.4.5
+ * @since 4.4.5
  */
 @Category("Advanced")
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
@@ -77,16 +77,16 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getServiceName()) && StringUtils.isEmpty(getServiceNameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"must specify serviceName or serviceNameSessionKey");
+			throw new ConfigurationException(getLogPrefix() + "must specify serviceName or serviceNameSessionKey");
 		}
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
-			return "JavaListenerSessionKey "+getServiceNameSessionKey();
+			return "JavaListenerSessionKey " + getServiceNameSessionKey();
 		}
-		return "JavaListener "+getServiceName();
+		return "JavaListener " + getServiceName();
 	}
 
 	@Override
@@ -171,6 +171,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 	/**
 	 * Currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed
+	 *
 	 * @ff.default false
 	 */
 	public void setMultipartResponse(boolean b) {
@@ -181,11 +182,11 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	 * Set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath
 	 */
 	public void setDispatchType(String type) throws ConfigurationException {
-		if(StringUtils.isNotEmpty(type)) {
-			if(type.equalsIgnoreCase("DLL")) {
+		if (StringUtils.isNotEmpty(type)) {
+			if (type.equalsIgnoreCase("DLL")) {
 				dispatchType = type;
 			} else {
-				throw new ConfigurationException(getLogPrefix()+"the attribute 'setDispatchType' only supports the value 'DLL'");
+				throw new ConfigurationException(getLogPrefix() + "the attribute 'setDispatchType' only supports the value 'DLL'");
 			}
 		}
 	}

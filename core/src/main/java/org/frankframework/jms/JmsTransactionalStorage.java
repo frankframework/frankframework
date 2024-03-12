@@ -23,7 +23,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -49,21 +48,21 @@ import org.frankframework.receivers.RawMessageWrapper;
  * a key based on the sent or received message. Messages with the same key are considered to
  * be the same.
  *
- * @author  Gerrit van Brakel
- * @since   4.1
+ * @author Gerrit van Brakel
+ * @since 4.1
  */
 public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageBrowser<S, ObjectMessage> implements ITransactionalStorage<S> {
 
-	public static final String FIELD_TYPE="type";
-	public static final String FIELD_ORIGINAL_ID="originalId";
-	public static final String FIELD_RECEIVED_DATE="receivedDate";
-	public static final String FIELD_COMMENTS="comments";
-	public static final String FIELD_SLOTID="SlotId";
-	public static final String FIELD_HOST="host";
-	public static final String FIELD_LABEL="label";
+	public static final String FIELD_TYPE = "type";
+	public static final String FIELD_ORIGINAL_ID = "originalId";
+	public static final String FIELD_RECEIVED_DATE = "receivedDate";
+	public static final String FIELD_COMMENTS = "comments";
+	public static final String FIELD_SLOTID = "SlotId";
+	public static final String FIELD_HOST = "host";
+	public static final String FIELD_LABEL = "label";
 
-	private String slotId=null;
-	private String type=null;
+	private String slotId = null;
+	private String type = null;
 
 	public JmsTransactionalStorage() {
 		super();
@@ -74,20 +73,20 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 
 	@Override
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
-		Session session=null;
+		Session session = null;
 		try {
 			session = createSession();
 			ObjectMessage msg = session.createObjectMessage(message);
-			msg.setStringProperty(FIELD_TYPE,getType());
-			msg.setStringProperty(FIELD_ORIGINAL_ID,messageId);
+			msg.setStringProperty(FIELD_TYPE, getType());
+			msg.setStringProperty(FIELD_ORIGINAL_ID, messageId);
 			msg.setJMSCorrelationID(correlationId);
-			msg.setLongProperty(FIELD_RECEIVED_DATE,receivedDate.getTime());
-			msg.setStringProperty(FIELD_COMMENTS,comments);
+			msg.setLongProperty(FIELD_RECEIVED_DATE, receivedDate.getTime());
+			msg.setStringProperty(FIELD_COMMENTS, comments);
 			if (StringUtils.isNotEmpty(getSlotId())) {
-				msg.setStringProperty(FIELD_SLOTID,getSlotId());
+				msg.setStringProperty(FIELD_SLOTID, getSlotId());
 			}
-			msg.setStringProperty(FIELD_LABEL,label);
-			return send(session,getDestination(),msg);
+			msg.setStringProperty(FIELD_LABEL, label);
+			return send(session, getDestination(), msg);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		} finally {
@@ -104,8 +103,8 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	@Override
 	public RawMessageWrapper<S> browseMessage(String storageKey) throws ListenerException {
 		try {
-			ObjectMessage msg=browseJmsMessage(storageKey);
-			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
+			ObjectMessage msg = browseJmsMessage(storageKey);
+			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S) msg.getObject(), storageKey, null);
 			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 			return messageWrapper;
 		} catch (JMSException e) {
@@ -116,8 +115,8 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	@Override
 	public RawMessageWrapper<S> getMessage(String storageKey) throws ListenerException {
 		try {
-			ObjectMessage msg=getJmsMessage(storageKey);
-			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
+			ObjectMessage msg = getJmsMessage(storageKey);
+			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S) msg.getObject(), storageKey, null);
 			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 			return messageWrapper;
 		} catch (JMSException e) {
@@ -126,14 +125,12 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	}
 
 
-
-
 	@Override
 	public String getSelector() {
 		if (StringUtils.isEmpty(getSlotId())) {
 			return null;
 		}
-		return FIELD_SLOTID+"='"+getSlotId()+"'";
+		return FIELD_SLOTID + "='" + getSlotId() + "'";
 	}
 
 
@@ -142,6 +139,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	public void setSlotId(String string) {
 		slotId = string;
 	}
+
 	@Override
 	public String getSlotId() {
 		return slotId;
@@ -152,6 +150,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	public void setType(String string) {
 		type = string;
 	}
+
 	@Override
 	public String getType() {
 		return type;

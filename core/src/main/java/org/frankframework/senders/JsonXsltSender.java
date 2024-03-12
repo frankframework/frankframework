@@ -40,13 +40,12 @@ import org.frankframework.stream.ThreadConnector;
  * JSON input is transformed into XML map, array, string, integer and boolean elements, in the namespace http://www.w3.org/2013/XSL/json.
  * The XSLT stylesheet or XPathExpression operates on these element.
  *
- * @see  <a href="https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/">https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/</a>
- *
  * @author Gerrit van Brakel
+ * @see <a href="https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/">https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/</a>
  */
 public class JsonXsltSender extends XsltSender {
 
-	private boolean jsonResult=true;
+	private boolean jsonResult = true;
 	private @Getter @Setter IXmlDebugger xmlDebugger;
 
 	@Override
@@ -76,7 +75,7 @@ public class JsonXsltSender extends XsltSender {
 
 	@Override
 	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) {
-		if (getXmlDebugger()!=null) {
+		if (getXmlDebugger() != null) {
 			handler = getXmlDebugger().inspectXml(session, "input JSON converted to XML", handler);
 		}
 		return new JsonXslt3XmlReader(handler);
@@ -84,17 +83,20 @@ public class JsonXsltSender extends XsltSender {
 
 	/**
 	 * When <code>true</code>, the xml result of the transformation is converted back to json
+	 *
 	 * @ff.default true
 	 */
 	public void setJsonResult(boolean jsonResult) {
 		this.jsonResult = jsonResult;
 	}
+
 	public boolean isJsonResult() {
 		return jsonResult;
 	}
 
 	/**
 	 * Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions
+	 *
 	 * @ff.default j=http://www.w3.org/2013/XSL/json
 	 */
 	@Override

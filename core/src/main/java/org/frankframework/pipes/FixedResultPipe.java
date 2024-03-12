@@ -20,6 +20,7 @@ import java.net.URL;
 
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -43,8 +44,6 @@ import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
 
 /**
  * Produces a fixed result that does not depend on the input message. It may return the contents of a file
@@ -71,12 +70,10 @@ import lombok.Getter;
  * Many attributes of this pipe reference file names. If a file is referenced by a relative path, the path
  * is relative to the configuration's root directory.
  *
- * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>${xyz}</code> or
- * <code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
- *
- * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
- *
  * @author Johan Verrips
+ * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>${xyz}</code> or
+ * 		<code>xyz</code> (if <code>replaceFixedParams</code> is true) is substituted by the parameter's value.
+ * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
  */
 @Category("Basic")
 @ElementType(ElementTypes.TRANSLATOR)
@@ -102,6 +99,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 * If a filename or filenameSessionKey was specified, the contents of the file is put in the
 	 * <code>returnString</code>, so that the <code>returnString</code>
 	 * may always be returned.
+	 *
 	 * @throws ConfigurationException
 	 */
 	@Override
@@ -114,18 +112,18 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, getFilename());
 			} catch (Throwable e) {
-				throw new ConfigurationException("got exception searching for ["+getFilename()+"]", e);
+				throw new ConfigurationException("got exception searching for [" + getFilename() + "]", e);
 			}
-			if (resource==null) {
-				throw new ConfigurationException("cannot find resource ["+getFilename()+"]");
+			if (resource == null) {
+				throw new ConfigurationException("cannot find resource [" + getFilename() + "]");
 			}
 			try {
 				returnString = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
+				throw new ConfigurationException("got exception loading [" + getFilename() + "]", e);
 			}
 		}
-		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString==null) { // allow an empty returnString to be specified
+		if (StringUtils.isEmpty(getFilename()) && StringUtils.isEmpty(getFilenameSessionKey()) && returnString == null) { // allow an empty returnString to be specified
 			throw new ConfigurationException("has neither filename nor filenameSessionKey nor returnString specified");
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
@@ -135,7 +133,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result=getReturnString();
+		String result = getReturnString();
 		String filename;
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
 			filename = session.getString(getFilenameSessionKey());
@@ -147,20 +145,20 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, filename);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,"got exception searching for ["+filename+"]", e);
+				throw new PipeRunException(this, "got exception searching for [" + filename + "]", e);
 			}
 			if (resource == null) {
 				PipeForward fileNotFoundForward = findForward(FILE_NOT_FOUND_FORWARD);
 				if (fileNotFoundForward != null) {
 					return new PipeRunResult(fileNotFoundForward, message);
 				}
-				throw new PipeRunException(this,"cannot find resource ["+filename+"]");
+				throw new PipeRunException(this, "cannot find resource [" + filename + "]");
 			}
 			try {
 				Message msg = new UrlMessage(resource);
 				result = msg.asString();
 			} catch (Throwable e) {
-				throw new PipeRunException(this,"got exception loading ["+filename+"]", e);
+				throw new PipeRunException(this, "got exception loading [" + filename + "]", e);
 			}
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
@@ -169,15 +167,15 @@ public class FixedResultPipe extends FixedForwardPipe {
 		if (!getParameterList().isEmpty()) {
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
-				for(ParameterValue pv : pvl) {
+				for (ParameterValue pv : pvl) {
 					String replaceFrom;
 					if (isReplaceFixedParams()) {
-						replaceFrom=pv.getName();
+						replaceFrom = pv.getName();
 					} else {
-						replaceFrom="${"+pv.getName()+"}";
+						replaceFrom = "${" + pv.getName() + "}";
 					}
 					String to = pv.asStringValue("");
-					result= result.replace(replaceFrom, to);
+					result = result.replace(replaceFrom, to);
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
@@ -186,11 +184,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
 		if (isSubstituteVars()) {
-			result=StringResolver.substVars(result, session, appConstants);
+			result = StringResolver.substVars(result, session, appConstants);
 		}
 
 		if (transformerPool != null) {
-			try{
+			try {
 				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
 			} catch (SAXException e) {
 				throw new PipeRunException(this, "got error converting string [" + result + "] to source", e);
@@ -209,8 +207,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 *
 	 * @ff.default false
 	 */
-	public void setSubstituteVars(boolean substitute){
-		this.substituteVars=substitute;
+	public void setSubstituteVars(boolean substitute) {
+		this.substituteVars = substitute;
 	}
 
 	/**
@@ -237,22 +235,22 @@ public class FixedResultPipe extends FixedForwardPipe {
 	/**
 	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
 	 */
-	public void setReplaceFrom(String replaceFrom){
-		this.replaceFrom=replaceFrom;
+	public void setReplaceFrom(String replaceFrom) {
+		this.replaceFrom = replaceFrom;
 	}
 
 	/**
 	 * See <code>replaceFrom</code>.
 	 */
-	public void setReplaceTo(String replaceTo){
-		this.replaceTo=replaceTo;
+	public void setReplaceTo(String replaceTo) {
+		this.replaceTo = replaceTo;
 	}
 
 	/**
 	 * File name of XSLT stylesheet to apply.
 	 */
-	public void setStyleSheetName (String styleSheetName){
-		this.styleSheetName=styleSheetName;
+	public void setStyleSheetName(String styleSheetName) {
+		this.styleSheetName = styleSheetName;
 	}
 
 	/**
@@ -260,8 +258,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 *
 	 * @ff.default false
 	 */
-	public void setReplaceFixedParams(boolean b){
-		replaceFixedParams=b;
+	public void setReplaceFixedParams(boolean b) {
+		replaceFixedParams = b;
 	}
 
 }

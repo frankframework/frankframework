@@ -8,6 +8,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+
 import org.junit.jupiter.api.Test;
 
 import jakarta.json.Json;
@@ -25,13 +26,13 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
 		sender.configure();
 		sender.open();
-		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
-		log.debug("inputfile ["+input+"]");
-		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
+		String input = TestFileUtils.getTestFile("/Xslt3/employees.json");
+		log.debug("inputfile [" + input + "]");
+		String expectedJson = TestFileUtils.getTestFile("/Xslt3/orgchart.json");
 		Message message = new Message(input);
 		SenderResult senderResult = sender.sendMessage(message, session);
-		String jsonOut=senderResult.getResult().asString();
-		assertJsonEqual(expectedJson,jsonOut, null);
+		String jsonOut = senderResult.getResult().asString();
+		assertJsonEqual(expectedJson, jsonOut, null);
 	}
 
 	@Test
@@ -40,13 +41,13 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		sender.setJsonResult(false);
 		sender.configure();
 		sender.open();
-		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
-		log.debug("inputfile ["+input+"]");
+		String input = TestFileUtils.getTestFile("/Xslt3/employees.json");
+		log.debug("inputfile [" + input + "]");
 		Message message = new Message(input);
-		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
+		String expectedXml = TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
 		SenderResult senderResult = sender.sendMessage(message, session);
-		String xmlOut=senderResult.getResult().asString();
-		assertEquals(expectedXml,xmlOut);
+		String xmlOut = senderResult.getResult().asString();
+		assertEquals(expectedXml, xmlOut);
 	}
 
 	@Test
@@ -56,13 +57,13 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		sender.setJsonResult(false);
 		sender.configure();
 		sender.open();
-		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
-		log.debug("inputfile ["+input+"]");
+		String input = TestFileUtils.getTestFile("/Xslt3/employees.json");
+		log.debug("inputfile [" + input + "]");
 		Message message = new Message(input);
-		String expectedText="James";
+		String expectedText = "James";
 		SenderResult senderResult = sender.sendMessage(message, session);
-		String textOut=senderResult.getResult().asString();
-		assertEquals(expectedText,textOut);
+		String textOut = senderResult.getResult().asString();
+		assertEquals(expectedText, textOut);
 	}
 
 	public static JsonStructure string2Json(String json) {
@@ -71,9 +72,9 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 	}
 
 	public void assertJsonEqual(String jsonExp, String jsonAct, String description) {
-		JsonStructure jExp=string2Json(jsonExp);
-		log.debug("jsonAct: ["+jsonAct+"]");
-		JsonStructure jAct=string2Json(jsonAct);
+		JsonStructure jExp = string2Json(jsonExp);
+		log.debug("jsonAct: [" + jsonAct + "]");
+		JsonStructure jAct = string2Json(jsonAct);
 		assertEquals(jExp.toString(), jAct.toString(), description);
 		//assertEquals(description,inputJson,jsonOut);
 	}

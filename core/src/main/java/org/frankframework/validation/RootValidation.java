@@ -53,7 +53,7 @@ public class RootValidation {
 					}
 				}
 				if (!found) {
-					ConfigurationWarnings.add(source, log, "Element ["+validElement+"] not in list of available root elements "+allRootTags);
+					ConfigurationWarnings.add(source, log, "Element [" + validElement + "] not in list of available root elements " + allRootTags);
 				}
 			}
 		}
@@ -75,7 +75,7 @@ public class RootValidation {
 	}
 
 	public String getValidLastElements() {
-		return rootValidation.get(getPathLength()-1);
+		return rootValidation.get(getPathLength() - 1);
 	}
 
 	public boolean isNamespaceAllowedOnElement(Map<List<String>, List<String>> invalidRootNamespaces, String namespaceURI, String localName) {

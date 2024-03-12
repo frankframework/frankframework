@@ -8,6 +8,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +33,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		pipe.setElseForwardName(pipeName);
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "test1", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "test1", session));
 		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named [test123]"));
 	}
 
@@ -43,7 +44,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, " <test1", session);
+		PipeRunResult prr = doPipe(pipe, " <test1", session);
 		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -53,7 +54,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, " <test1", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, " <test1", session));
 		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named [test123]"));
 	}
 
@@ -64,7 +65,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, "	<test1", session);
+		PipeRunResult prr = doPipe(pipe, "	<test1", session);
 		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -74,7 +75,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "	 <test1", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "	 <test1", session));
 		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named [test123]"));
 	}
 
@@ -84,7 +85,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "<test1", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "<test1", session));
 		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named [test123]"));
 	}
 
@@ -93,10 +94,10 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		String pipeName = "test123";
 
 		pipe.setElseForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.registerForward(new PipeForward(pipeName, null));
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, "test1", session);
+		PipeRunResult prr = doPipe(pipe, "test1", session);
 		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -104,10 +105,10 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	void validInputOnInvalidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.setThenForwardName(pipeName);
-		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.registerForward(new PipeForward(pipeName, null));
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, "<test1", session);
+		PipeRunResult prr = doPipe(pipe, "<test1", session);
 		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -115,7 +116,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	void validInputOnElsePipeTest() throws Exception {
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, "test", session);
+		PipeRunResult prr = doPipe(pipe, "test", session);
 		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
@@ -123,7 +124,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	void validInputOnThenPipeTest() throws Exception {
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, "<test", session);
+		PipeRunResult prr = doPipe(pipe, "<test", session);
 		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
@@ -131,7 +132,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	void emptyInputOnElsePipeTest() throws Exception {
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, "", session);
+		PipeRunResult prr = doPipe(pipe, "", session);
 		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
@@ -140,7 +141,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		pipe.setElseForwardOnEmptyInput(false);
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, "", session);
+		PipeRunResult prr = doPipe(pipe, "", session);
 		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
@@ -148,7 +149,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	void nullInputOnElsePipeTest() throws Exception {
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, null, session);
+		PipeRunResult prr = doPipe(pipe, null, session);
 		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
@@ -157,7 +158,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		pipe.setElseForwardOnEmptyInput(false);
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, null, session);
+		PipeRunResult prr = doPipe(pipe, null, session);
 		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 }

@@ -40,7 +40,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 	private final Map<IPipe, Semaphore> pipeThreadCounts = new ConcurrentHashMap<>();
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		Semaphore s = getSemaphore(pipe);
 		if (s != null) {
@@ -53,7 +53,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 				StatisticsKeeper sk = pipeLine.getPipeWaitingStatistics(pipe);
 				sk.addValue(waitingDuration);
 				pipeRunResult = chain.apply(message);
-			} catch(InterruptedException e) {
+			} catch (InterruptedException e) {
 				throw new PipeRunException(pipe, "Interrupted acquiring semaphore", e);
 			} finally {
 				s.release();
@@ -77,7 +77,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 	}
 
 	private Semaphore getSemaphore(IPipe pipe) {
-		return pipeThreadCounts.computeIfAbsent(pipe, k -> k.getMaxThreads()>0 ? new Semaphore(k.getMaxThreads()) : null);
+		return pipeThreadCounts.computeIfAbsent(pipe, k -> k.getMaxThreads() > 0 ? new Semaphore(k.getMaxThreads()) : null);
 	}
 
 }

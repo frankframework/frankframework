@@ -25,16 +25,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.springframework.messaging.MessageHandlingException;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.springframework.messaging.MessageHandlingException;
 
 /**
  * Collection of server and application statistics and information.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
@@ -71,10 +70,10 @@ public class ServerStatistics extends FrankApiBase {
 	public Response getIbisHealth() {
 		try {
 			return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.HEALTH));
-		} catch(ApiException e) {
+		} catch (ApiException e) {
 			Map<String, Object> response = new HashMap<>();
 			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
-			response.put("error", "unable to connect to backend system: "+e.getMessage());
+			response.put("error", "unable to connect to backend system: " + e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
 		} catch (MessageHandlingException e) {
 			throw e; //Spring gateway exchange exceptions are handled by the SpringBusExceptionHandler

@@ -6,18 +6,20 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.ContentHandler;
 
 public class TransformerPoolNamespaceUnawarenessTest {
 
-	public static String NAMESPACED_INPUT_MESSAGE="<root><sub xmlns=\"http://dummy\">+</sub><sub>-</sub></root>";
-	public static String NAMESPACELESS_XPATH="/root/sub";
-	public static String NAMESPACELESS_STYLESHEET="/Util/TransformerPool/NamespacelessStylesheet.xsl";
-	public static String NAMESPACE_INSENSITIVE_RESULT= "+ -";
-	public static String NAMESPACE_COMPLIANT_RESULT= "-";
-	public static String NAMESPACE_INSENSITIVE_FIRST_RESULT= "+";
-	public static String NO_MATCH_AT_ALL= "";
+	public static String NAMESPACED_INPUT_MESSAGE = "<root><sub xmlns=\"http://dummy\">+</sub><sub>-</sub></root>";
+	public static String NAMESPACELESS_XPATH = "/root/sub";
+	public static String NAMESPACELESS_STYLESHEET = "/Util/TransformerPool/NamespacelessStylesheet.xsl";
+	public static String NAMESPACE_INSENSITIVE_RESULT = "+ -";
+	public static String NAMESPACE_COMPLIANT_RESULT = "-";
+	public static String NAMESPACE_INSENSITIVE_FIRST_RESULT = "+";
+	public static String NO_MATCH_AT_ALL = "";
 
 
 	public String XPATH_0_AND_2_RESULT_7_0 = NAMESPACE_COMPLIANT_RESULT;
@@ -26,14 +28,14 @@ public class TransformerPoolNamespaceUnawarenessTest {
 	public String xpath_0_and_2_result = XPATH_0_AND_2_RESULT_7_5678;
 
 
-	public String STYLESHEET_AUTO_UNAWARE_RESULT_7_0= NAMESPACE_COMPLIANT_RESULT;
-	public String STYLESHEET_AUTO_UNAWARE_RESULT_7_5678= NAMESPACE_INSENSITIVE_FIRST_RESULT;
+	public String STYLESHEET_AUTO_UNAWARE_RESULT_7_0 = NAMESPACE_COMPLIANT_RESULT;
+	public String STYLESHEET_AUTO_UNAWARE_RESULT_7_5678 = NAMESPACE_INSENSITIVE_FIRST_RESULT;
 
 	public String stylesheet_auto_unaware_result = STYLESHEET_AUTO_UNAWARE_RESULT_7_5678;
 
 
-	public String XSLT1_UNAWARE_RESULT_7_0= NAMESPACE_INSENSITIVE_FIRST_RESULT;
-	public String XSLT1_UNAWARE_RESULT_7_5678= NAMESPACE_INSENSITIVE_FIRST_RESULT;
+	public String XSLT1_UNAWARE_RESULT_7_0 = NAMESPACE_INSENSITIVE_FIRST_RESULT;
+	public String XSLT1_UNAWARE_RESULT_7_5678 = NAMESPACE_INSENSITIVE_FIRST_RESULT;
 
 	public String xslt1_unaware_result = XSLT1_UNAWARE_RESULT_7_5678;
 
@@ -93,7 +95,6 @@ public class TransformerPoolNamespaceUnawarenessTest {
 	public void testNamespaceInsensitiveXPathXslt1NamespaceUnaware() throws Exception {
 		testNamespaceInsensitiveXPathTransformation(1, false, xslt1_unaware_result); // under XPath 1.0, only the value of the first node in the matched nodeset is returned
 	}
-
 
 
 	@Test

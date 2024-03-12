@@ -11,9 +11,11 @@ import java.util.Properties;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.frankframework.management.web.FrankApiTestBase;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import org.frankframework.management.web.FrankApiTestBase;
+import org.frankframework.util.SpringUtils;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -21,8 +23,6 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-
-import org.frankframework.util.SpringUtils;
 
 public class CorsFilterTest {
 

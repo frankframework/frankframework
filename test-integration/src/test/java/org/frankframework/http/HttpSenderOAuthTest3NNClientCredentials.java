@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.junit.Ignore;
 
 org.frankframework.core.PipeLineSession;
@@ -22,23 +23,23 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 	protected String PROPERTY_FILE = "HttpSenderOAuth3.properties";
 
 
-	protected String tokenBaseUrl  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenBaseUrl");
-	protected String dataBaseUrl   = PropertyUtil.getProperty(PROPERTY_FILE, "dataBaseUrl");
-	protected String apiContext    = PropertyUtil.getProperty(PROPERTY_FILE, "apiContext");
-	protected String tokenContext  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenContext");
-	protected String url           = dataBaseUrl + apiContext;
+	protected String tokenBaseUrl = PropertyUtil.getProperty(PROPERTY_FILE, "tokenBaseUrl");
+	protected String dataBaseUrl = PropertyUtil.getProperty(PROPERTY_FILE, "dataBaseUrl");
+	protected String apiContext = PropertyUtil.getProperty(PROPERTY_FILE, "apiContext");
+	protected String tokenContext = PropertyUtil.getProperty(PROPERTY_FILE, "tokenContext");
+	protected String url = dataBaseUrl + apiContext;
 	protected String tokenEndpoint = tokenBaseUrl + tokenContext;
-	protected String client_id     = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
+	protected String client_id = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
 	protected String client_secret = PropertyUtil.getProperty(PROPERTY_FILE, "client_secret");
 	protected boolean authTokenReq = PropertyUtil.getProperty(PROPERTY_FILE, "authenticatedTokenRequest", false);
-//	protected String username      = PropertyUtil.getProperty(PROPERTY_FILE, "username");
+	//	protected String username      = PropertyUtil.getProperty(PROPERTY_FILE, "username");
 //	protected String password      = PropertyUtil.getProperty(PROPERTY_FILE, "password");
-	protected String proxyHost     = PropertyUtil.getProperty(PROPERTY_FILE, "proxyHost");
-	protected String proxyPort     = PropertyUtil.getProperty(PROPERTY_FILE, "proxyPort");
+	protected String proxyHost = PropertyUtil.getProperty(PROPERTY_FILE, "proxyHost");
+	protected String proxyPort = PropertyUtil.getProperty(PROPERTY_FILE, "proxyPort");
 	protected String proxyUsername = PropertyUtil.getProperty(PROPERTY_FILE, "proxyUsername");
 	protected String proxyPassword = PropertyUtil.getProperty(PROPERTY_FILE, "proxyPassword");
 
-	protected String truststore         = PropertyUtil.getProperty(PROPERTY_FILE, "truststore");
+	protected String truststore = PropertyUtil.getProperty(PROPERTY_FILE, "truststore");
 	protected String truststorePassword = PropertyUtil.getProperty(PROPERTY_FILE, "truststorePassword");
 
 	protected boolean useProxy = false;
@@ -48,10 +49,10 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 	@Ignore("must use basic authentication for this provider")
 	public void testSendClientCredentialsTokenRequestUsingRequestParameters() throws Exception {
 
-		String tokenUrl = tokenEndpoint+
+		String tokenUrl = tokenEndpoint +
 				"?grant_type=client_credentials"
-				+"&client_id="+ client_id
-				+"&client_secret="+ client_secret;
+				+ "&client_id=" + client_id
+				+ "&client_secret=" + client_secret;
 
 		HttpSender sender = new HttpSender();
 		sender.setContentType("application/x-www-form-urlencoded");
@@ -83,7 +84,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 
 		Message result = sender.sendMessageOrThrow(new Message("dummy"), session);
 
-		log.debug("result: "+result.asString());
+		log.debug("result: " + result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 		assertThat(result.asString(), containsString("\"access_token\":"));
 	}
@@ -91,7 +92,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 	@Test
 	public void testSendClientCredentialsTokenRequestUsingBasicAuthentication() throws Exception {
 
-		String tokenUrl = tokenEndpoint+"?grant_type=client_credentials";
+		String tokenUrl = tokenEndpoint + "?grant_type=client_credentials";
 
 		HttpSender sender = new HttpSender();
 		sender.setContentType("application/x-www-form-urlencoded");
@@ -125,11 +126,10 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 
 		Message result = sender.sendMessageOrThrow(new Message("dummy"), session);
 
-		log.debug("result: "+result.asString());
+		log.debug("result: " + result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 		assertThat(result.asString(), containsString("\"access_token\":"));
 	}
-
 
 
 	@Test
@@ -168,7 +168,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 		PipeLineSession session = new PipeLineSession();
 
 		Message result = sender.sendMessageOrThrow(new Message(""), session);
-		log.debug("result: "+result.asString());
+		log.debug("result: " + result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 
 		log.debug("Wait 1 second");
@@ -176,7 +176,7 @@ public class HttpSenderOAuthTest3NNClientCredentials {
 		log.debug("Test again");
 
 		result = sender.sendMessageOrThrow(new Message(""), session);
-		log.debug("result: "+result.asString());
+		log.debug("result: " + result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
 

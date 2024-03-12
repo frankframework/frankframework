@@ -44,7 +44,6 @@ import org.frankframework.util.Misc;
 
 /**
  * Singleton bean that keeps track of a Spring Application's uptime.
- *
  */
 public class MetricsRegistryFactoryBean implements InitializingBean, DisposableBean, FactoryBean<MeterRegistry> {
 
@@ -59,26 +58,26 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 	public MetricsRegistryFactoryBean() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 
-		for(Object keyObj:APP_CONSTANTS.keySet()) {
-			String key = (String)keyObj;
+		for (Object keyObj : APP_CONSTANTS.keySet()) {
+			String key = (String) keyObj;
 			if (key.startsWith(MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX) && key.endsWith(".enabled")) {
 				String tail = key.substring(MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX.length());
 				String[] tailArr = tail.split("\\.");
-				if (tailArr.length==2 && APP_CONSTANTS.getBoolean(key, false)) {
-					String product=tailArr[0];
-					String configuratorClassNamePropertyKey = MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX+product+CONFIGURATOR_CLASS_SUFFIX;
+				if (tailArr.length == 2 && APP_CONSTANTS.getBoolean(key, false)) {
+					String product = tailArr[0];
+					String configuratorClassNamePropertyKey = MetricsRegistryConfiguratorBase.METRICS_EXPORT_PROPERTY_PREFIX + product + CONFIGURATOR_CLASS_SUFFIX;
 					String configuratorClassName = APP_CONSTANTS.get(configuratorClassNamePropertyKey);
 					if (StringUtils.isEmpty(configuratorClassName)) {
-						log.warn("did not find value for property ["+configuratorClassNamePropertyKey+"] to enable configuration of enabled meter registy product ["+product+"]");
+						log.warn("did not find value for property [" + configuratorClassNamePropertyKey + "] to enable configuration of enabled meter registy product [" + product + "]");
 						continue;
 					}
-					log.debug("using class ["+configuratorClassName+"] to configure enabled meter registy product ["+product+"]");
+					log.debug("using class [" + configuratorClassName + "] to configure enabled meter registy product [" + product + "]");
 					try {
 						Class<MetricsRegistryConfiguratorBase> configuratorClass = (Class<MetricsRegistryConfiguratorBase>) Class.forName(configuratorClassName);
 						MetricsRegistryConfiguratorBase configurator = configuratorClass.newInstance();
 						configurator.registerAt(compositeRegistry);
 					} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-						log.warn("Cannot configure meter registy product ["+product+"]", e);
+						log.warn("Cannot configure meter registy product [" + product + "]", e);
 					}
 				}
 			}
@@ -97,10 +96,10 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 
 	private void setupCommonTags() {
 		registry.config().commonTags(
-			"instance", APP_CONSTANTS.getString("instance.name",""),
-			"ff_version", APP_CONSTANTS.getString("application.version", "unknown"),
-			"hostname" , Misc.getHostname(),
-			"dtap_stage" , APP_CONSTANTS.getProperty("dtap.stage")
+				"instance", APP_CONSTANTS.getString("instance.name", ""),
+				"ff_version", APP_CONSTANTS.getString("application.version", "unknown"),
+				"hostname", Misc.getHostname(),
+				"dtap_stage", APP_CONSTANTS.getProperty("dtap.stage")
 		);
 	}
 
@@ -120,7 +119,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 		log4j2Metrics.bindTo(registry);
 
 		String logDir = APP_CONSTANTS.get("log.dir");
-		if(StringUtils.isNotEmpty(logDir)) {
+		if (StringUtils.isNotEmpty(logDir)) {
 			File f = new File(logDir);
 			new DiskSpaceMetrics(f, tags).bindTo(registry);
 		}
@@ -133,7 +132,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 
 	@Override
 	public Class<? extends MeterRegistry> getObjectType() {
-		return  (this.registry != null ? this.registry.getClass() : MeterRegistry.class);
+		return (this.registry != null ? this.registry.getClass() : MeterRegistry.class);
 	}
 
 	@Override
@@ -144,8 +143,8 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 	@Override
 	public void destroy() throws Exception {
 		try {
-			if(jvmGcMetrics != null) jvmGcMetrics.close();
-			if(log4j2Metrics != null) log4j2Metrics.close();
+			if (jvmGcMetrics != null) jvmGcMetrics.close();
+			if (log4j2Metrics != null) log4j2Metrics.close();
 		} finally {
 			registry.close();
 		}

@@ -33,10 +33,10 @@ public class RelativePathDirectoryClassLoader extends DirectoryClassLoader {
 	@Override
 	public URL getResource(String name, boolean useParent) {
 		URL url = super.getResource(name, false);
-		if(url == null) {
+		if (url == null) {
 			url = getLocalResource(name);
 		}
-		if(url == null && useParent) {
+		if (url == null && useParent) {
 			url = getParent().getResource(name);
 		}
 		return url;

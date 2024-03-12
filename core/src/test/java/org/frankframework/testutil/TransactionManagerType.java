@@ -35,10 +35,10 @@ public enum TransactionManagerType {
 	private final String[] springConfigurationFiles;
 
 	TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
-		if(springConfigurationFile == null) {
-			springConfigurationFiles = new String[]{ TestConfiguration.TEST_CONFIGURATION_FILE };
+		if (springConfigurationFile == null) {
+			springConfigurationFiles = new String[]{TestConfiguration.TEST_CONFIGURATION_FILE};
 		} else {
-			springConfigurationFiles = new String[]{ springConfigurationFile, TestConfiguration.TEST_DATABASE_ENABLED_CONFIGURATION_FILE };
+			springConfigurationFiles = new String[]{springConfigurationFile, TestConfiguration.TEST_DATABASE_ENABLED_CONFIGURATION_FILE};
 		}
 		factory = clazz;
 	}
@@ -102,25 +102,25 @@ public enum TransactionManagerType {
 	public TestConfiguration getConfigurationContext(String productKey) {
 		// If we need to create a new TestConfiguration, always created it with autoStart=true
 		// because that makes it more consistent between new and cached configuration.
-		if(this == TransactionManagerType.DATASOURCE) {
-			return datasourceConfigurations.computeIfAbsent(productKey, (ignored)-> this.create(true));
+		if (this == TransactionManagerType.DATASOURCE) {
+			return datasourceConfigurations.computeIfAbsent(productKey, (ignored) -> this.create(true));
 		}
 		return transactionManagerConfigurations.computeIfAbsent(this, (ignored) -> this.create(true));
 	}
 
 	public synchronized void closeConfigurationContext() {
-		if(this == TransactionManagerType.DATASOURCE) {
+		if (this == TransactionManagerType.DATASOURCE) {
 			Iterator<TestConfiguration> it = datasourceConfigurations.values().iterator();
-			while(it.hasNext()) {
+			while (it.hasNext()) {
 				TestConfiguration ac = it.next();
-				if(ac != null) {
+				if (ac != null) {
 					ac.close();
 				}
 				it.remove();
 			}
 		} else {
 			TestConfiguration ac = transactionManagerConfigurations.remove(this);
-			if(ac != null) {
+			if (ac != null) {
 				ac.close();
 			}
 			if (this == BTM && TransactionManagerServices.isTransactionManagerRunning()) {

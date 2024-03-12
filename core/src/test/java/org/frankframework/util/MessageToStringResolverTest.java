@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +67,7 @@ class MessageToStringResolverTest {
 	@Test
 	void testWithExceptionInMessage() {
 		// Arrange
-		Message badMessage = Message.asMessage((ThrowingSupplier)()-> Files.newInputStream(Paths.get("this file does not exist")));
+		Message badMessage = Message.asMessage((ThrowingSupplier) () -> Files.newInputStream(Paths.get("this file does not exist")));
 		propsA.put("bad-message", badMessage);
 
 		// Act

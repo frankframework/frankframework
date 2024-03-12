@@ -40,13 +40,12 @@ import org.frankframework.util.UUIDUtil;
  * JtaTransactionManager-wrapper that enables to recover transaction logs produced by another instance.
  *
  * @author Gerrit van Brakel
- *
  */
 public abstract class StatusRecordingTransactionManager extends ThreadConnectableJtaTransactionManager implements DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private static final long serialVersionUID = 1L;
-	private static final int TMUID_MAX_LENGTH=36; // 51 is valid for BTM. 36 appears to work for Narayana i.c.w. MS_SQL, MySQL and MariaDB, avoiding SQLException: ConnectionImple.registerDatabase - ARJUNA017017: enlist of resource failed
+	private static final int TMUID_MAX_LENGTH = 36; // 51 is valid for BTM. 36 appears to work for Narayana i.c.w. MS_SQL, MySQL and MariaDB, avoiding SQLException: ConnectionImple.registerDatabase - ARJUNA017017: enlist of resource failed
 
 	private @Getter @Setter String statusFile;
 	private @Getter @Setter String uidFile;
@@ -63,6 +62,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 
 	/**
 	 * Shutdown the transaction manager, attempting to complete all running transactions.
+	 *
 	 * @return true if a successful shutdown took place, or false if any transactions are pending that need to be recovered later.
 	 */
 	protected abstract boolean shutdownTransactionManager() throws TransactionSystemException;
@@ -84,19 +84,19 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 	protected String determineTmUid() {
 		String recordedTmUid = read(getUidFile());
 		if (StringUtils.isNotEmpty(recordedTmUid)) {
-			log.info("retrieved tmuid ["+recordedTmUid+"] from ["+getUidFile()+"]");
+			log.info("retrieved tmuid [" + recordedTmUid + "] from [" + getUidFile() + "]");
 			setUid(recordedTmUid);
 		}
 		if (StringUtils.isEmpty(getUid())) {
-			String tmuid = Misc.getHostname()+"-"+ UUIDUtil.createSimpleUUID();
-			if (tmuid.length()>TMUID_MAX_LENGTH) {
+			String tmuid = Misc.getHostname() + "-" + UUIDUtil.createSimpleUUID();
+			if (tmuid.length() > TMUID_MAX_LENGTH) {
 				tmuid = tmuid.substring(0, TMUID_MAX_LENGTH);
 			}
 			setUid(tmuid);
-			log.info("created tmuid ["+getUid()+"]");
+			log.info("created tmuid [" + getUid() + "]");
 		}
 		if (!getUid().equals(recordedTmUid)) {
-			write(getUidFile(),getUid());
+			write(getUidFile(), getUid());
 		}
 		return getUid();
 	}
@@ -118,14 +118,14 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 			Path file = Paths.get(filename);
 			Path folder = file.getParent();
 			try {
-				if (folder!=null) {
+				if (folder != null) {
 					Files.createDirectories(folder);
 				}
 				try (OutputStream fos = Files.newOutputStream(file)) {
-					fos.write((text+"\n").getBytes(StandardCharsets.UTF_8));
+					fos.write((text + "\n").getBytes(StandardCharsets.UTF_8));
 				}
 			} catch (Exception e) {
-				throw new TransactionSystemException("Cannot write line ["+text+"] to file ["+file+"]", e);
+				throw new TransactionSystemException("Cannot write line [" + text + "] to file [" + file + "]", e);
 			}
 		}
 	}
@@ -139,7 +139,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 			try (InputStream fis = Files.newInputStream(file)) {
 				return StreamUtils.copyToString(fis, StandardCharsets.UTF_8).trim();
 			} catch (Exception e) {
-				throw new TransactionSystemException("Cannot read from file ["+file+"]", e);
+				throw new TransactionSystemException("Cannot read from file [" + file + "]", e);
 			}
 		}
 		return null;

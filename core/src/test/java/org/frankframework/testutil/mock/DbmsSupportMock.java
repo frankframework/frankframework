@@ -6,6 +6,7 @@ import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.dbms.IDbmsSupport;
+
 import org.mockito.Mockito;
 
 public abstract class DbmsSupportMock extends GenericDbmsSupport implements IDbmsSupport {

@@ -23,38 +23,34 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Setter;
 import org.frankframework.batch.IResultHandler;
 import org.frankframework.batch.ResultWriter;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
-
 import org.frankframework.util.SpringUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 
 /**
  * Baseclass for batch {@link IResultHandler resultHandler} that writes the transformed record to a LOB.
  *
+ * @author Gerrit van Brakel
  * @ff.parameters any parameters defined on the resultHandler will be applied to the SQL statement
- *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @since 4.7
  */
 public abstract class Result2LobWriterBase extends ResultWriter implements ApplicationContextAware {
 	private @Setter ApplicationContext applicationContext;
 
-	protected Map<String,Connection> openConnections = Collections.synchronizedMap(new HashMap<String,Connection>());
-	protected Map<String,ResultSet>  openResultSets  = Collections.synchronizedMap(new HashMap<String,ResultSet>());
-	protected Map<String,Object>     openLobHandles  = Collections.synchronizedMap(new HashMap<String,Object>());
+	protected Map<String, Connection> openConnections = Collections.synchronizedMap(new HashMap<String, Connection>());
+	protected Map<String, ResultSet> openResultSets = Collections.synchronizedMap(new HashMap<String, ResultSet>());
+	protected Map<String, Object> openLobHandles = Collections.synchronizedMap(new HashMap<String, Object>());
 
 	protected FixedQuerySender querySender;
 
@@ -62,7 +58,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	public void configure() throws ConfigurationException {
 		super.configure();
 		querySender = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-		querySender.setName("querySender of "+getName());
+		querySender.setName("querySender of " + getName());
 		querySender.configure();
 	}
 
@@ -81,23 +77,26 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 		}
 	}
 
-	protected abstract Object getLobHandle(IDbmsSupport dbmsSupport, ResultSet rs)                   throws SenderException;
-	protected abstract Writer getWriter   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
-	protected abstract void   updateLob   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
+	protected abstract Object getLobHandle(IDbmsSupport dbmsSupport, ResultSet rs) throws SenderException;
+
+	protected abstract Writer getWriter(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
+
+	protected abstract void updateLob(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 
 	@Override
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
-		querySender.sendMessageOrThrow(new Message(streamId), session).close(); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it?
-		Connection connection=querySender.getConnection();
+		querySender.sendMessageOrThrow(new Message(streamId), session)
+				.close(); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it?
+		Connection connection = querySender.getConnection();
 		openConnections.put(streamId, connection);
 		Message message = new Message(streamId);
 		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message);
-		PreparedStatement statement=queryExecutionContext.getStatement();
-		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
+		PreparedStatement statement = queryExecutionContext.getStatement();
+		IDbmsSupport dbmsSupport = querySender.getDbmsSupport();
 		JdbcUtil.applyParameters(dbmsSupport, statement, queryExecutionContext.getParameterList(), message, session);
-		ResultSet rs =statement.executeQuery();
-		openResultSets.put(streamId,rs);
-		Object lobHandle=getLobHandle(dbmsSupport, rs);
+		ResultSet rs = statement.executeQuery();
+		openResultSets.put(streamId, rs);
+		Object lobHandle = getLobHandle(dbmsSupport, rs);
 		openLobHandles.put(streamId, lobHandle);
 		return getWriter(dbmsSupport, lobHandle, rs);
 	}
@@ -105,12 +104,12 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	@Override
 	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
-			return super.finalizeResult(session,streamId, error);
+			return super.finalizeResult(session, streamId, error);
 		} finally {
 			Object lobHandle = openLobHandles.get(streamId);
 			Connection conn = openConnections.get(streamId);
 			ResultSet rs = openResultSets.get(streamId);
-			if (rs!=null) {
+			if (rs != null) {
 				updateLob(querySender.getDbmsSupport(), lobHandle, rs);
 				JdbcUtil.fullClose(conn, rs);
 			}

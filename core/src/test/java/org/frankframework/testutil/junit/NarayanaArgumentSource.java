@@ -9,6 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.apiguardian.api.API;
+
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
 /**
@@ -16,7 +17,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
  *
  * @author Niels Meijer
  */
-@Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD })
+@Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @API(status = STABLE, since = "5.7")

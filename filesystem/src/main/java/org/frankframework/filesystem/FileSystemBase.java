@@ -20,19 +20,17 @@ import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.LogUtil;
 
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems}.
  *
  * @author Gerrit van Brakel
- *
  */
 public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 	protected final Logger log = LogUtil.getLogger(this);
 
-	private int maxNumberOfMessagesToList=-1;
+	private int maxNumberOfMessagesToList = -1;
 
 	private boolean open;
 
@@ -40,6 +38,7 @@ public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 	public void open() throws FileSystemException {
 		open = true;
 	}
+
 	@Override
 	public void close() throws FileSystemException {
 		open = false;
@@ -54,11 +53,11 @@ public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		int count = 0;
 		int stopAt = getMaxNumberOfMessagesToList();
-		if (stopAt<0) {
+		if (stopAt < 0) {
 			stopAt = Integer.MAX_VALUE;
 		}
-		try(DirectoryStream<F> ds = listFiles(folder)) {
-			for (Iterator<F> it = ds.iterator(); it.hasNext() && count<=stopAt; it.next()) {
+		try (DirectoryStream<F> ds = listFiles(folder)) {
+			for (Iterator<F> it = ds.iterator(); it.hasNext() && count <= stopAt; it.next()) {
 				count++;
 			}
 		} catch (IOException e) {
@@ -69,11 +68,13 @@ public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 
 	/**
 	 * The maximum number of messages to be retrieved from a folder.
+	 *
 	 * @ff.default -1 (unlimited)
 	 */
 	public void setMaxNumberOfMessagesToList(int maxNumberOfMessagesToList) {
 		this.maxNumberOfMessagesToList = maxNumberOfMessagesToList;
 	}
+
 	public int getMaxNumberOfMessagesToList() {
 		return maxNumberOfMessagesToList;
 	}

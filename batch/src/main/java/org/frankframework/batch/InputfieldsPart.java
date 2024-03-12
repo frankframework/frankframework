@@ -20,7 +20,7 @@ import lombok.Setter;
 import org.frankframework.doc.FrankDocGroup;
 
 /**
- * @author  John Dekker
+ * @author John Dekker
  */
 @FrankDocGroup(name = "Batch")
 public class InputfieldsPart {

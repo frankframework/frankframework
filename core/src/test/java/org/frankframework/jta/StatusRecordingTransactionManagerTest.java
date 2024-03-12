@@ -7,11 +7,12 @@ import javax.transaction.TransactionManager;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.transaction.TransactionSystemException;
 
 import lombok.Setter;
 
-public class StatusRecordingTransactionManagerTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManagerTest.TestableStatusRecordingTransactionManager>{
+public class StatusRecordingTransactionManagerTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManagerTest.TestableStatusRecordingTransactionManager> {
 
 	private TestableStatusRecordingTransactionManager tm;
 
@@ -39,6 +40,7 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		public String determineTmUid() {
 			return super.determineTmUid();
 		}
+
 		@Override
 		public void initUserTransactionAndTransactionManager() throws TransactionSystemException {
 			super.initUserTransactionAndTransactionManager();
@@ -65,7 +67,7 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 
 	@Test
 	public void testPresetTmUid() {
-		write(tmUidFile,"fakeTmUid");
+		write(tmUidFile, "fakeTmUid");
 		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
 		String tmUid = tm.getUid();
@@ -117,11 +119,11 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 	@Test
 	public void testCreateFolders() {
 		tm = setupTransactionManager();
-		tm.setUidFile(folder+"/a/b/c/"+TMUID_FILE);
+		tm.setUidFile(folder + "/a/b/c/" + TMUID_FILE);
 		tm.initUserTransactionAndTransactionManager();
 		String tmUid = tm.getUid();
 		assertNotNull(tmUid);
-		String recordedTmUid = read(folder+"/a/b/c/"+TMUID_FILE);
+		String recordedTmUid = read(folder + "/a/b/c/" + TMUID_FILE);
 		assertEquals(tmUid, recordedTmUid);
 	}
 
@@ -129,8 +131,8 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 	public void testTestReadWithWhitespace() {
 		tm = setupTransactionManager();
 		String value = "fake tm uid";
-		String fullPathTmFile = folder+"/"+TMUID_FILE;
-		tm.write(fullPathTmFile, "\n "+value+" \n\n");
+		String fullPathTmFile = folder + "/" + TMUID_FILE;
+		tm.write(fullPathTmFile, "\n " + value + " \n\n");
 		assertEquals(value, tm.read(fullPathTmFile));
 	}
 }

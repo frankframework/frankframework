@@ -20,7 +20,7 @@ import org.frankframework.core.IPullingListener;
 /**
  * A true multi-threaded {@link IPullingListener Listener}-class.
  * <br/>
- *
+ * <p>
  * Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
  * {@link #setTransacted(boolean) transacted} attribute. If this is set to <code>true</code>, received messages are
  * committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
@@ -58,6 +58,7 @@ import org.frankframework.core.IPullingListener;
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}<br/><br/>
  * </p>
+ *
  * @author Gerrit van Brakel
  * @since 4.0.1, since 4.8 as 'switch'-class
  */

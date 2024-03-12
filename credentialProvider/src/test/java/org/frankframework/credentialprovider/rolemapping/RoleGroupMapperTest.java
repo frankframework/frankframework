@@ -11,6 +11,13 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import com.unboundid.ldap.listener.InMemoryDirectoryServer;
+import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.CatalinaBaseConfigurationSource;
@@ -21,12 +28,6 @@ import org.apache.tomcat.unittest.TesterContext;
 import org.apache.tomcat.util.file.ConfigFileLoader;
 import org.frankframework.credentialprovider.RoleToGroupMappingJndiRealm;
 import org.frankframework.util.ClassUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import com.unboundid.ldap.listener.InMemoryDirectoryServer;
-import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 
 public class RoleGroupMapperTest {
 
@@ -88,7 +89,7 @@ public class RoleGroupMapperTest {
 
 	@AfterAll
 	public static void tearDown() {
-		if(inMemoryDirectoryServer != null) {
+		if (inMemoryDirectoryServer != null) {
 			inMemoryDirectoryServer.shutDown(true);
 		}
 	}
@@ -124,7 +125,7 @@ public class RoleGroupMapperTest {
 				"cn=ApplSubGroup2,ou=Groups,dc=myorg,dc=com",
 				"cn=ApplSubSubGroup1,ou=SubGroups,ou=Groups,dc=myorg,dc=com",
 				"AllAuthenticated"
-			));
+		));
 
 	}
 
@@ -136,7 +137,7 @@ public class RoleGroupMapperTest {
 		realm.start();
 
 		// this mapping is used to find the required group for a role, apparently
-		Map<String,String> roleToGroupMapping = context.getRoleMapping();
+		Map<String, String> roleToGroupMapping = context.getRoleMapping();
 
 		log.info("Configured roleMappings: " + roleToGroupMapping);
 

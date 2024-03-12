@@ -21,16 +21,15 @@ import org.xml.sax.Attributes;
  * AttributesWrapper that removes all namespaces, retaining only local names.
  *
  * @author Gerrit van Brakel
- *
  */
 public class NamespaceRemovingAttributesWrapper extends AttributesWrapper {
 
 	public NamespaceRemovingAttributesWrapper(Attributes source) {
-		super(source,"xmlns");
+		super(source, "xmlns");
 	}
 
 	public int findIndexByLocalName(String localName) {
-		for(int i=0;i<getLength();i++) {
+		for (int i = 0; i < getLength(); i++) {
 			if (localName.equals(getLocalName(i))) {
 				return i;
 			}

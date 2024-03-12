@@ -27,6 +27,8 @@ import javax.jms.QueueBrowser;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IMessageBrowser;
@@ -36,20 +38,17 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Basic browser of JMS Messages.
+ *
  * @param <M> the payload message type as used by IMessageBrowser.
  * @param <J> the physical JMS message to carry the payload.
- *
- * @author  Johan Verrips
+ * @author Johan Verrips
  */
 public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends JMSFacade implements IMessageBrowser<M> {
 
 	private @Getter long timeout = 3000;
-	private @Getter String selector=null;
+	private @Getter String selector = null;
 
 	private @Getter @Setter String hideRegex = null;
 	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
@@ -61,13 +60,13 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	public JmsMessageBrowser(String selector) {
 		this();
-		this.selector=selector;
+		this.selector = selector;
 	}
 
 	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		try {
-			return new JmsQueueBrowserIterator(this,(Queue)getDestination(),getSelector());
+			return new JmsQueueBrowserIterator(this, (Queue) getDestination(), getSelector());
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
@@ -75,15 +74,15 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	@Override
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
-		String selector=getSelector();
-		if (startTime!=null) {
-			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp >= "+ DateFormatUtils.format(startTime));
+		String selector = getSelector();
+		if (startTime != null) {
+			selector = StringUtil.concatStrings(selector, " AND ", "JMSTimestamp >= " + DateFormatUtils.format(startTime));
 		}
-		if (endTime!=null) {
-			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp < "+ DateFormatUtils.format(endTime));
+		if (endTime != null) {
+			selector = StringUtil.concatStrings(selector, " AND ", "JMSTimestamp < " + DateFormatUtils.format(endTime));
 		}
 		try {
-			return new JmsQueueBrowserIterator(this,(Queue)getDestination(),selector);
+			return new JmsQueueBrowserIterator(this, (Queue) getDestination(), selector);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
@@ -104,42 +103,42 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	@Override
 	public int getMessageCount() throws ListenerException {
-		QueueBrowser queueBrowser=null;
+		QueueBrowser queueBrowser = null;
 		Session session = null;
 		try {
 			session = createSession();
 			if (StringUtils.isEmpty(getSelector())) {
-				queueBrowser=session.createBrowser((Queue)getDestination());
+				queueBrowser = session.createBrowser((Queue) getDestination());
 			} else {
-				queueBrowser=session.createBrowser((Queue)getDestination(), getSelector());
+				queueBrowser = session.createBrowser((Queue) getDestination(), getSelector());
 			}
-			int count=0;
-			for (Enumeration enm=queueBrowser.getEnumeration();enm.hasMoreElements();enm.nextElement()) {
+			int count = 0;
+			for (Enumeration enm = queueBrowser.getEnumeration(); enm.hasMoreElements(); enm.nextElement()) {
 				count++;
 			}
 			return count;
 		} catch (Exception e) {
-			throw new ListenerException("cannot determin messagecount",e);
+			throw new ListenerException("cannot determin messagecount", e);
 		} finally {
 			try {
-				if (queueBrowser!=null) {
+				if (queueBrowser != null) {
 					queueBrowser.close();
 				}
 			} catch (JMSException e) {
-				throw new ListenerException("error closing queuebrowser",e);
+				throw new ListenerException("error closing queuebrowser", e);
 			}
 			closeSession(session);
 		}
 	}
 
 	public J getJmsMessage(String messageId) throws ListenerException {
-		Session session=null;
+		Session session = null;
 		J msg;
 		MessageConsumer mc = null;
 		try {
 			session = createSession();
 			mc = getMessageConsumer(session, getDestination(), getCombinedSelector(messageId));
-			msg = (J)mc.receive(getTimeout());
+			msg = (J) mc.receive(getTimeout());
 			return msg;
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -149,7 +148,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 					mc.close();
 				}
 			} catch (JMSException e1) {
-				throw new ListenerException("exception closing message consumer",e1);
+				throw new ListenerException("exception closing message consumer", e1);
 			}
 			closeSession(session);
 		}
@@ -161,20 +160,20 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	}
 
 	public J browseJmsMessage(String messageId) throws ListenerException {
-		return (J)doBrowse("JMSMessageID", messageId);
+		return (J) doBrowse("JMSMessageID", messageId);
 	}
 
 
-	protected javax.jms.Message doBrowse(Map<String,String> selectors) throws ListenerException {
-		QueueSession session=null;
+	protected javax.jms.Message doBrowse(Map<String, String> selectors) throws ListenerException {
+		QueueSession session = null;
 		javax.jms.Message msg = null;
-		QueueBrowser queueBrowser=null;
+		QueueBrowser queueBrowser = null;
 		try {
-			session = (QueueSession)createSession();
-			queueBrowser = session.createBrowser((Queue)getDestination(),getCombinedSelector(selectors));
+			session = (QueueSession) createSession();
+			queueBrowser = session.createBrowser((Queue) getDestination(), getCombinedSelector(selectors));
 			Enumeration msgenum = queueBrowser.getEnumeration();
 			if (msgenum.hasMoreElements()) {
-				msg=(javax.jms.Message)msgenum.nextElement();
+				msg = (javax.jms.Message) msgenum.nextElement();
 			}
 			return msg;
 		} catch (Exception e) {
@@ -185,25 +184,25 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 					queueBrowser.close();
 				}
 			} catch (JMSException e1) {
-				throw new ListenerException("exception closing queueBrowser",e1);
+				throw new ListenerException("exception closing queueBrowser", e1);
 			}
 			closeSession(session);
 		}
 	}
 
 	protected javax.jms.Message doBrowse(String selectorKey, String selectorValue) throws ListenerException {
-		Map<String,String> selectorMap = new HashMap<>();
+		Map<String, String> selectorMap = new HashMap<>();
 		selectorMap.put(selectorKey, selectorValue);
 		return doBrowse(selectorMap);
 	}
 
 	@Override
 	public void deleteMessage(String messageId) throws ListenerException {
-		Session session=null;
+		Session session = null;
 		MessageConsumer mc = null;
 		try {
 			session = createSession();
-			log.debug("retrieving message ["+messageId+"] in order to delete it");
+			log.debug("retrieving message [" + messageId + "] in order to delete it");
 			mc = getMessageConsumer(session, getDestination(), getCombinedSelector(messageId));
 			mc.receive(getTimeout());
 		} catch (Exception e) {
@@ -214,21 +213,21 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 					mc.close();
 				}
 			} catch (JMSException e1) {
-				throw new ListenerException("exception closing message consumer",e1);
+				throw new ListenerException("exception closing message consumer", e1);
 			}
 			closeSession(session);
 		}
 	}
 
 	protected String getCombinedSelector(String messageId) {
-		Map<String,String> selectorMap = new HashMap<>();
+		Map<String, String> selectorMap = new HashMap<>();
 		selectorMap.put("JMSMessageID", messageId);
 		return getCombinedSelector(selectorMap);
 	}
 
-	protected String getCombinedSelector(Map<String,String> selectors) {
+	protected String getCombinedSelector(Map<String, String> selectors) {
 		StringBuilder result = new StringBuilder();
-		for (Map.Entry<String,String> entry: selectors.entrySet()) {
+		for (Map.Entry<String, String> entry : selectors.entrySet()) {
 			if (result.length() > 0) {
 				result.append(" AND ");
 			}
@@ -243,8 +242,9 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	/**
 	 * Timeout <i>in milliseconds</i> for receiving a message from the queue
-	 * @deprecated use {@link #setTimeout(long)} instead
+	 *
 	 * @ff.default 3000
+	 * @deprecated use {@link #setTimeout(long)} instead
 	 */
 	@Deprecated(since = "8.1")
 	@ConfigurationWarning("Use attribute timeout instead")
@@ -254,6 +254,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	/**
 	 * Timeout <i>in milliseconds</i> for receiving a message from the queue
+	 *
 	 * @ff.default 3000
 	 */
 	public void setTimeout(long newTimeOut) {

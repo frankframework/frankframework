@@ -14,10 +14,11 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
+class TestZipWriterSender extends SenderTestBase<ZipWriterSender> {
 
 	@Override
 	public ZipWriterSender createSender() throws Exception {
@@ -34,7 +35,7 @@ class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 	}
 
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	private Collection<TestCollector, TestCollectorPart> getCollectionFromSession() {
 		Collection collection = (Collection) session.get("zipwriterhandle");
 		assertNotNull(collection);
@@ -43,14 +44,14 @@ class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 
 	@Test
 	void testCollectionName() throws Exception {
-		sender.addParameter(new Parameter("filename","fakeFilename"));
+		sender.addParameter(new Parameter("filename", "fakeFilename"));
 		sender.configure();
 		assertEquals("zipwriterhandle", sender.getCollectionName());
 	}
 
 	@Test
 	void testChangeCollectionName() throws Exception {
-		sender.addParameter(new Parameter("filename","fakeFilename"));
+		sender.addParameter(new Parameter("filename", "fakeFilename"));
 		sender.setZipWriterHandle("test123");
 		sender.configure();
 		assertEquals("test123", sender.getCollectionName());
@@ -58,7 +59,7 @@ class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 
 	@Test
 	void testWrite() throws Exception {
-		sender.addParameter(new Parameter("filename","fakeFilename"));
+		sender.addParameter(new Parameter("filename", "fakeFilename"));
 		sender.configure();
 		sender.open();
 
@@ -81,8 +82,8 @@ class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 		String senderInput = "pipe input";
 		String filename = "fakeFilename";
 
-		sender.addParameter(new Parameter("filename",filename));
-		sender.addParameter(new Parameter("contents",fileContents));
+		sender.addParameter(new Parameter("filename", filename));
+		sender.addParameter(new Parameter("contents", fileContents));
 		sender.configure();
 		sender.open();
 

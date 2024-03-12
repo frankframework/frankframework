@@ -23,6 +23,7 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.JavaxXmlValidator;
 import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorTestBase;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -92,12 +93,13 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		// in other places in the code, which silently made warnings go to one instead of the other, making checks on just one
 		// of them useless (as the warnings would never show up there anymore).
 		// By checking both we prevent this in the future.
-		assertEquals(expectedNrOfWarnings, configuration.getConfigurationWarnings().size(), expectedNrOfWarnings + " ConfigurationWarnings expected, got " + configuration.getConfigurationWarnings().getWarnings());
+		assertEquals(expectedNrOfWarnings, configuration.getConfigurationWarnings()
+				.size(), expectedNrOfWarnings + " ConfigurationWarnings expected, got " + configuration.getConfigurationWarnings().getWarnings());
 		assertEquals(0, ApplicationWarnings.getSize(), "No ApplicationWarnings expected, got " + ApplicationWarnings.getWarningsList());
 	}
 
 	public static XmlValidator getValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
-		XmlValidator validator=getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
+		XmlValidator validator = getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
 		validator.configure();
 		return validator;
 	}
@@ -123,13 +125,13 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		return validator;
 	}
 
-	protected ValidationResult runAndEvaluate(XmlValidator validator, String inputFile, String[] expectedFailureReasons) throws IOException  {
+	protected ValidationResult runAndEvaluate(XmlValidator validator, String inputFile, String[] expectedFailureReasons) throws IOException {
 		log.debug("inputFile [{}]", inputFile);
 		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
 		PipeLineSession session = new PipeLineSession();
 		try {
-			PipeRunResult result=validator.doPipe(new Message(testXml), session);
-			PipeForward forward=result.getPipeForward();
+			PipeRunResult result = validator.doPipe(new Message(testXml), session);
+			PipeForward forward = result.getPipeForward();
 			ValidationResult validationResult = forward.getName().equals("success") ? ValidationResult.VALID : ValidationResult.INVALID;
 			evaluateResult(validationResult, session, null, expectedFailureReasons);
 		} catch (Exception e) {
@@ -141,9 +143,9 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 	@Override
 	public ValidationResult validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws IOException, ConfigurationException, PipeStartException {
+									 boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws IOException, ConfigurationException, PipeStartException {
 		XmlValidator validator = getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
-		if (rootelement!=null) validator.setRoot(rootelement);
+		if (rootelement != null) validator.setRoot(rootelement);
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 		validator.configure();
 		validator.start();
@@ -212,7 +214,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	void testWrongRootElement(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange
-		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK,  "anotherElement");
+		XmlValidator validator = buildXmlValidator(configuration, SCHEMA_LOCATION_BASIC_A_OK, "anotherElement");
 		validator.setFullSchemaChecking(true);
 		validator.setReasonSessionKey("reason");
 		validator.setThrowException(false);
@@ -234,7 +236,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 		// Assert 2
 		assertEquals("failure", forward.getName());
-		assertThat((String)session.get("reason"), containsString("Illegal element 'A'. Element(s) 'anotherElement' expected."));
+		assertThat((String) session.get("reason"), containsString("Illegal element 'A'. Element(s) 'anotherElement' expected."));
 	}
 
 
@@ -322,7 +324,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 
 		// Assert 2
 		assertEquals("failure", forward.getName());
-		assertThat((String)session.get("reason"), containsString("Illegal element 'A'. Element(s) 'anotherElement' expected."));
+		assertThat((String) session.get("reason"), containsString("Illegal element 'A'. Element(s) 'anotherElement' expected."));
 	}
 
 	@MethodSource("data")
@@ -405,7 +407,8 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	@MethodSource("data")
-	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario07a
+	@ParameterizedTest(name = "{0}")
+		//copied from iaf-test /XmlValidator/scenario07a
 	void testImportIncludeOK(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange
@@ -456,7 +459,8 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	@MethodSource("data")
-	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario07b
+	@ParameterizedTest(name = "{0}")
+		//copied from iaf-test /XmlValidator/scenario07b
 	void testImportIncludeError(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange
@@ -484,7 +488,8 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	@MethodSource("data")
-	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario05a, then simplified
+	@ParameterizedTest(name = "{0}")
+		//copied from iaf-test /XmlValidator/scenario05a, then simplified
 	void testIncludeOK(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange
@@ -510,7 +515,8 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	@MethodSource("data")
-	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario05b, then simplified
+	@ParameterizedTest(name = "{0}")
+		//copied from iaf-test /XmlValidator/scenario05b, then simplified
 	void testIncludeError(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange
@@ -540,7 +546,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	@ParameterizedTest(name = "{0}")
 	void testElementFormDefaultUnqualified(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
-		XmlValidator validator = getUnconfiguredValidator(ELEMENT_FORM_DEFAULT_UNQUALIFIED_NAMESPACE +" "+ ELEMENT_FORM_DEFAULT_UNQUALIFIED_SCHEMA, false, implementation);
+		XmlValidator validator = getUnconfiguredValidator(ELEMENT_FORM_DEFAULT_UNQUALIFIED_NAMESPACE + " " + ELEMENT_FORM_DEFAULT_UNQUALIFIED_SCHEMA, false, implementation);
 		validator.setIgnoreUnknownNamespaces(true);
 		validator.configure();
 		validator.start();

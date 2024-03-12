@@ -15,13 +15,6 @@
 */
 package org.frankframework.filesystem.ftp;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.util.CredentialFactory;
-import org.springframework.context.ApplicationContext;
-
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -36,6 +29,12 @@ import com.jcraft.jsch.SftpException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.util.CredentialFactory;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Helper class for sftp.
@@ -124,7 +123,7 @@ public class SftpSession implements IConfigurable {
 		} catch (JSchException e) {
 			throw new FileSystemException("unable to open SFTP channel");
 		} catch (SftpException e) {
-			throw new FileSystemException("unable to enter remote directory ["+remoteDirectory+"]");
+			throw new FileSystemException("unable to enter remote directory [" + remoteDirectory + "]");
 		}
 	}
 
@@ -141,7 +140,7 @@ public class SftpSession implements IConfigurable {
 				sftpSession.setConfig("PreferredAuthentications", "publickey");
 			}
 
-			if(!strictHostKeyChecking) {
+			if (!strictHostKeyChecking) {
 				sftpSession.setConfig("StrictHostKeyChecking", "no");
 			}
 
@@ -153,7 +152,7 @@ public class SftpSession implements IConfigurable {
 				sftpSession.setConfig("cipher.s2c", prefSCEncryption);
 			}
 
-			if (! StringUtils.isEmpty(proxyHost)) {
+			if (!StringUtils.isEmpty(proxyHost)) {
 				sftpSession.setProxy(createProxy());
 			}
 
@@ -165,8 +164,7 @@ public class SftpSession implements IConfigurable {
 			}
 			log.debug("created new sftp session to host {}", sftpSession.getHost());
 			return sftpSession;
-		}
-		catch(JSchException e) {
+		} catch (JSchException e) {
 			throw new FileSystemException("cannot connect to the FTP server with domain [" + getHost() + "] at port [" + getPort() + "]", e);
 		}
 	}
@@ -232,6 +230,7 @@ public class SftpSession implements IConfigurable {
 
 	/**
 	 * Port number of remote host
+	 *
 	 * @ff.default 21
 	 */
 	public void setPort(int i) {
@@ -260,6 +259,7 @@ public class SftpSession implements IConfigurable {
 
 	/**
 	 * Proxy port
+	 *
 	 * @ff.default 1080
 	 */
 	public void setProxyPort(int i) {
@@ -283,6 +283,7 @@ public class SftpSession implements IConfigurable {
 
 	/**
 	 * Transport type in case of sftp
+	 *
 	 * @ff.default SOCKS5
 	 */
 	public void setProxyTransportType(TransportType type) {
@@ -321,6 +322,7 @@ public class SftpSession implements IConfigurable {
 
 	/**
 	 * Verify the hosts againt the knownhosts file.
+	 *
 	 * @ff.default true
 	 */
 	public void setStrictHostKeyChecking(boolean b) {

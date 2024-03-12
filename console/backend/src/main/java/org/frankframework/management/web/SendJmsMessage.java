@@ -33,11 +33,9 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
@@ -45,8 +43,8 @@ import org.frankframework.util.XmlEncodingUtils;
 /**
  * Send a message with JMS.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
@@ -64,7 +62,7 @@ public class SendJmsMessage extends FrankApiBase {
 		String message = null;
 		String fileName = null;
 		InputStream file = null;
-		if(inputDataMap == null) {
+		if (inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
@@ -89,8 +87,8 @@ public class SendJmsMessage extends FrankApiBase {
 		builder.addHeader("messageProperty", messageProperty);
 
 		Attachment filePart = inputDataMap.getAttachment("file");
-		if(filePart != null) {
-			fileName = filePart.getContentDisposition().getParameter( "filename" );
+		if (filePart != null) {
+			fileName = filePart.getContentDisposition().getParameter("filename");
 			file = filePart.getObject(InputStream.class);
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
@@ -100,12 +98,11 @@ public class SendJmsMessage extends FrankApiBase {
 				} catch (IOException e) {
 					throw new ApiException("error processing zip file", e);
 				}
-			}
-			else {
+			} else {
 				try {
 					message = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
-					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+					throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 				} catch (IOException e) {
 					throw new ApiException("error reading file", e);
 				}
@@ -114,7 +111,7 @@ public class SendJmsMessage extends FrankApiBase {
 			message = RequestUtils.resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
-		if(StringUtils.isEmpty(message)) {
+		if (StringUtils.isEmpty(message)) {
 			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 
@@ -125,18 +122,18 @@ public class SendJmsMessage extends FrankApiBase {
 
 	private void processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		ZipInputStream archive = new ZipInputStream(file);
-		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
-			int size = (int)entry.getSize();
-			if (size>0) {
-				byte[] b=new byte[size];
-				int rb=0;
-				int chunk=0;
+		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
+			int size = (int) entry.getSize();
+			if (size > 0) {
+				byte[] b = new byte[size];
+				int rb = 0;
+				int chunk = 0;
 				while ((size - rb) > 0) {
-					chunk=archive.read(b,rb,size - rb);
-					if (chunk==-1) {
+					chunk = archive.read(b, rb, size - rb);
+					if (chunk == -1) {
 						break;
 					}
-					rb+=chunk;
+					rb += chunk;
 				}
 				String currentMessage = XmlEncodingUtils.readXml(b, null);
 

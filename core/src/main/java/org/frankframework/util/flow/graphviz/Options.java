@@ -48,7 +48,8 @@ public final class Options {
 		return new Options(
 				Format.valueOf(format.group(1)),
 				hasMemory ? Integer.parseInt(memory.group(1)) : null,
-				hasYInvert ? Boolean.parseBoolean(yInvert.group(1)) : null);
+				hasYInvert ? Boolean.parseBoolean(yInvert.group(1)) : null
+		);
 	}
 
 	public Options format(Format format) {
@@ -85,6 +86,6 @@ public final class Options {
 
 	@Override
 	public String toString() {
-		return super.toString()+" - engine[dot] format["+format+"] memory["+totalMemory+"] yInvert["+yInvert+"]";
+		return super.toString() + " - engine[dot] format[" + format + "] memory[" + totalMemory + "] yInvert[" + yInvert + "]";
 	}
 }

@@ -8,9 +8,10 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 
-public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
+public class JsonValidatorTest extends PipeTestBase<JsonValidator> {
 
 	@Override
 	public JsonValidator createPipe() {
@@ -41,7 +42,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals("failure", result.getPipeForward().getName());
 		assertEquals(input, result.getResult().asString());
 
-		String reason = (String)session.get("failureReason");
+		String reason = (String) session.get("failureReason");
 		assertThat(reason, containsString("The object must have a property whose name is \"members\""));
 	}
 
@@ -57,7 +58,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals("failure", result.getPipeForward().getName());
 		assertEquals(input, result.getResult().asString());
 
-		String reason = (String)session.get("failureReason");
+		String reason = (String) session.get("failureReason");
 		assertThat(reason, containsString("The object must have a property whose name is \"members\""));
 	}
 
@@ -74,7 +75,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals("parserError", result.getPipeForward().getName());
 		assertEquals(input, result.getResult().asString());
 
-		String reason = (String)session.get("failureReason");
+		String reason = (String) session.get("failureReason");
 		assertThat(reason, containsString("[Unexpected char 97 at (line no=1, column no=2, offset=1)]"));
 	}
 
@@ -116,7 +117,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals("failure", result.getPipeForward().getName());
 		assertEquals(input, result.getResult().asString());
 
-		String reason = (String)session.get("failureReason");
+		String reason = (String) session.get("failureReason");
 		assertThat(reason, containsString("The object must have a property whose name is \"street\""));
 	}
 

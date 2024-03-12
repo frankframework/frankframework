@@ -76,8 +76,7 @@ public class GetSchedules extends BusEndpointBase {
 		try {
 			returnMap.put("scheduler", getSchedulerMetaData(scheduler));
 			returnMap.put("jobs", getJobGroupNamesWithJobs(scheduler));
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			throw new BusException("Failed to parse schedules", e);
 		}
 
@@ -114,11 +113,11 @@ public class GetSchedules extends BusEndpointBase {
 			schedulesMap.put("isSchedulerRemote", schedulerMetaData.isSchedulerRemote());
 
 			String state = "unknown";
-			if(schedulerMetaData.isStarted())
+			if (schedulerMetaData.isStarted())
 				state = "started";
-			if(schedulerMetaData.isInStandbyMode())
+			if (schedulerMetaData.isInStandbyMode())
 				state = "paused";
-			if(schedulerMetaData.isShutdown())
+			if (schedulerMetaData.isShutdown())
 				state = "stopped";
 
 			schedulesMap.put("state", state);
@@ -134,8 +133,7 @@ public class GetSchedules extends BusEndpointBase {
 			schedulesMap.put("schedulerClass", schedulerMetaData.getSchedulerClass().getName());
 			schedulesMap.put("threadPoolClass", schedulerMetaData.getThreadPoolClass().getName());
 			schedulesMap.put("threadPoolSize", schedulerMetaData.getThreadPoolSize());
-		}
-		catch (SchedulerException se) {
+		} catch (SchedulerException se) {
 			log.error("unable to retrieve SchedulerMetaData", se);
 		}
 
@@ -152,12 +150,12 @@ public class GetSchedules extends BusEndpointBase {
 		return 0;
 	}
 
-	private Map<String,Object> getJobGroupNamesWithJobs(Scheduler scheduler) {
+	private Map<String, Object> getJobGroupNamesWithJobs(Scheduler scheduler) {
 		Map<String, Object> jobGroups = new HashMap<>();
 		try {
 			List<String> jobGroupNames = scheduler.getJobGroupNames();
 
-			for(String jobGroupName : jobGroupNames) {
+			for (String jobGroupName : jobGroupNames) {
 				List<Map<String, Object>> jobsInGroupList = new ArrayList<>();
 
 				Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(jobGroupName));
@@ -179,8 +177,8 @@ public class GetSchedules extends BusEndpointBase {
 		Scheduler scheduler = getScheduler();
 		String jobName = jobKey.getName();
 		JobDetail job = scheduler.getJobDetail(jobKey);
-		if(job == null) {
-			throw new BusException("Job ["+jobKey+"] not found");
+		if (job == null) {
+			throw new BusException("Job [" + jobKey + "] not found");
 		}
 
 		jobData.put("name", job.getKey().getName());
@@ -190,10 +188,10 @@ public class GetSchedules extends BusEndpointBase {
 			description = job.getDescription();
 		jobData.put("description", description);
 		jobData.put("stateful", job.isPersistJobDataAfterExecution() && job.isConcurrentExectionDisallowed());
-		jobData.put("durable",job.isDurable());
+		jobData.put("durable", job.isDurable());
 		jobData.put("jobClass", job.getJobClass().getSimpleName());
 
-		if(job instanceof IbisJobDetail) {
+		if (job instanceof IbisJobDetail) {
 			jobData.put("type", ((IbisJobDetail) job).getJobType());
 		}
 
@@ -206,9 +204,9 @@ public class GetSchedules extends BusEndpointBase {
 		JobDataMap jobMap = job.getJobDataMap();
 		jobData.put("properties", getJobData(jobMap));
 
-		if(expanded) {
+		if (expanded) {
 			IJob jobDef = (IJob) jobMap.get(ConfiguredJob.JOBDEF_KEY);
-			if(jobDef instanceof DatabaseJob) {
+			if (jobDef instanceof DatabaseJob) {
 				DatabaseJob dbJob = (DatabaseJob) jobDef;
 				jobData.put("adapter", dbJob.getAdapterName());
 				jobData.put("listener", dbJob.getJavaListener());
@@ -217,7 +215,7 @@ public class GetSchedules extends BusEndpointBase {
 			}
 
 			Locker locker = jobDef.getLocker();
-			if(locker != null) {
+			if (locker != null) {
 				jobData.put("locker", true);
 				jobData.put("lockkey", locker.getObjectId());
 			} else {
@@ -265,11 +263,11 @@ public class GetSchedules extends BusEndpointBase {
 
 	private void putDateProperty(Map<String, Object> map, String propertyName, Date date) {
 		try {
-			if(date != null) {
+			if (date != null) {
 				map.put(propertyName, date.getTime());
 			}
 		} catch (Exception e) {
-			log.debug("error parsing date for property ["+propertyName+"]", e);
+			log.debug("error parsing date for property [" + propertyName + "]", e);
 		}
 	}
 
@@ -299,7 +297,7 @@ public class GetSchedules extends BusEndpointBase {
 		List<Map<String, Object>> messages = new ArrayList<>();
 
 		IJob jobdef = (IJob) jobDetail.getJobDataMap().get(ConfiguredJob.JOBDEF_KEY);
-		for (int t=0; t < jobdef.getMessageKeeper().size(); t++) {
+		for (int t = 0; t < jobdef.getMessageKeeper().size(); t++) {
 			Map<String, Object> message = new HashMap<>(3);
 			MessageKeeperMessage job = jobdef.getMessageKeeper().getMessage(t);
 

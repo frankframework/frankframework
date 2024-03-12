@@ -25,16 +25,15 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
+import com.tibco.tibjms.admin.ServerInfo;
+import com.tibco.tibjms.admin.TibjmsAdmin;
+import com.tibco.tibjms.admin.TibjmsAdminException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
-
-import com.tibco.tibjms.admin.ServerInfo;
-import com.tibco.tibjms.admin.TibjmsAdmin;
-import com.tibco.tibjms.admin.TibjmsAdminException;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.LogUtil;
 
 /**
  * Some utilities for working with TIBCO.
@@ -46,10 +45,11 @@ public class TibcoUtils {
 	static Logger log = LogUtil.getLogger(TibcoUtils.class);
 
 	public static long getQueueFirstMessageAge(String provUrl,
-			String authAlias, String userName, String password, String queueName)
+											   String authAlias, String userName, String password, String queueName)
 			throws JMSException {
 		return getQueueFirstMessageAge(provUrl, authAlias, userName, password,
-				queueName, null);
+				queueName, null
+		);
 	}
 
 	/**
@@ -57,14 +57,16 @@ public class TibcoUtils {
 	 * return -2: message found, but not of type Message.
 	 */
 	public static long getQueueFirstMessageAge(String provUrl,
-			String authAlias, String userName, String password,
-			String queueName, String messageSelector) throws JMSException {
+											   String authAlias, String userName, String password,
+											   String queueName, String messageSelector) throws JMSException {
 		Connection connection = null;
 		Session jSession = null;
 		try {
 			connection = getConnection(provUrl, authAlias, userName, password);
-			jSession = connection.createSession(false,
-					javax.jms.Session.AUTO_ACKNOWLEDGE);
+			jSession = connection.createSession(
+					false,
+					javax.jms.Session.AUTO_ACKNOWLEDGE
+			);
 			return getQueueFirstMessageAge(jSession, queueName, messageSelector);
 		} finally {
 			if (connection != null) {
@@ -78,41 +80,44 @@ public class TibcoUtils {
 	}
 
 	public static Connection getConnection(String provUrl, String authAlias,
-			String userName, String password) throws JMSException {
+										   String userName, String password) throws JMSException {
 		String url = StringUtils.replace(provUrl, "tibjmsnaming:", "tcp:");
 		CredentialFactory cf = new CredentialFactory(authAlias, userName,
-				password);
+				password
+		);
 		ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
 				url);
 		return factory.createConnection(cf.getUsername(), cf.getPassword());
 	}
 
 	protected static long getQueueFirstMessageAge(Session jSession,
-			String queueName) throws JMSException {
+												  String queueName) throws JMSException {
 		return getQueueFirstMessageAge(jSession, queueName, null);
 	}
 
 	protected static long getQueueFirstMessageAge(Session jSession,
-			String queueName, String messageSelector) throws JMSException {
+												  String queueName, String messageSelector) throws JMSException {
 		return getQueueFirstMessageAge(jSession, queueName, messageSelector,
-				System.currentTimeMillis());
+				System.currentTimeMillis()
+		);
 	}
 
 	protected static long getQueueFirstMessageAge(Session jSession,
-			String queueName, long currentTime) throws JMSException {
+												  String queueName, long currentTime) throws JMSException {
 		return getQueueFirstMessageAge(jSession, queueName, null, currentTime);
 	}
 
 	protected static long getQueueFirstMessageAge(Session jSession,
-			String queueName, String messageSelector, long currentTime)
+												  String queueName, String messageSelector, long currentTime)
 			throws JMSException {
 		return getQueueFirstMessageAge(jSession, queueName, messageSelector,
-				currentTime, true);
+				currentTime, true
+		);
 	}
 
 	protected static long getQueueFirstMessageAge(Session jSession,
-			String queueName, String messageSelector, long currentTime,
-			boolean warn) throws JMSException {
+												  String queueName, String messageSelector, long currentTime,
+												  boolean warn) throws JMSException {
 		QueueBrowser queueBrowser = null;
 		try {
 			Queue queue = jSession.createQueue(queueName);
@@ -150,10 +155,11 @@ public class TibcoUtils {
 	}
 
 	protected static String getQueueFirstMessageAgeAsString(Session jSession,
-			String queueName, long currentTime) {
+															String queueName, long currentTime) {
 		try {
 			long age = getQueueFirstMessageAge(jSession, queueName, null,
-					currentTime, false);
+					currentTime, false
+			);
 			if (age == -2) {
 				return "??";
 			} else if (age == -1) {
@@ -167,14 +173,16 @@ public class TibcoUtils {
 	}
 
 	public static long getQueueMessageCount(String provUrl, String authAlias,
-			String userName, String password, String queueName,
-			String messageSelector) throws JMSException {
+											String userName, String password, String queueName,
+											String messageSelector) throws JMSException {
 		Connection connection = null;
 		Session jSession = null;
 		try {
 			connection = getConnection(provUrl, authAlias, userName, password);
-			jSession = connection.createSession(false,
-					javax.jms.Session.AUTO_ACKNOWLEDGE);
+			jSession = connection.createSession(
+					false,
+					javax.jms.Session.AUTO_ACKNOWLEDGE
+			);
 			return getQueueMessageCount(jSession, queueName, messageSelector);
 		} finally {
 			if (connection != null) {
@@ -188,7 +196,7 @@ public class TibcoUtils {
 	}
 
 	protected static long getQueueMessageCount(Session jSession,
-			String queueName, String messageSelector) throws JMSException {
+											   String queueName, String messageSelector) throws JMSException {
 		QueueBrowser queueBrowser = null;
 		try {
 			Queue queue = jSession.createQueue(queueName);
@@ -215,7 +223,7 @@ public class TibcoUtils {
 	}
 
 	protected static TibjmsAdmin getActiveServerAdmin(String url,
-			CredentialFactory cf) throws TibjmsAdminException {
+													  CredentialFactory cf) throws TibjmsAdminException {
 		TibjmsAdminException lastException = null;
 		TibjmsAdmin admin = null;
 		String[] uws = url.split(",");
@@ -234,7 +242,7 @@ public class TibcoUtils {
 				// following exception:
 				//   com.tibco.tibjms.admin.TibjmsAdminSecurityException: Command unavailable on a server not in active state and using a JSON configuration file
 				state = admin.getInfo().getState();
-			} catch(TibjmsAdminException e) {
+			} catch (TibjmsAdminException e) {
 				// In case a passive or broken server is tried before an active
 				// server this will result in an exception. Hence, ignore all
 				// exceptions unless all servers fail in which case the latest

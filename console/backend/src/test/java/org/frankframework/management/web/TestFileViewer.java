@@ -17,11 +17,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
+
 import org.apache.commons.io.FilenameUtils;
 import org.frankframework.management.bus.ResponseMessageBase;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 

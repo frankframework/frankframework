@@ -22,9 +22,9 @@ import org.frankframework.util.PropertyLoader;
  * Singleton class that has the credential constant values for this application.<br/>
  * <p>When an instance is created, it tries to load the properties file specified
  * by the <code>propertiesFileName</code> field</p>
+ *
  * @author Niels Meijer
  * @version 3.0
- *
  */
 public final class CredentialConstants extends PropertyLoader {
 
@@ -36,7 +36,7 @@ public final class CredentialConstants extends PropertyLoader {
 	}
 
 	public static synchronized CredentialConstants getInstance() {
-		if(instance == null) {
+		if (instance == null) {
 			instance = new CredentialConstants();
 		}
 		return instance;

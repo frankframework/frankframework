@@ -70,9 +70,9 @@ public class StorageItemsDTO {
 			int count;
 			List<StorageItemDTO> messages = new LinkedList<>();
 
-			for (count=0; iterator.hasNext(); ) {
+			for (count = 0; iterator.hasNext(); ) {
 				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) {
-					if(!filter.matchAny(iterItem))
+					if (!filter.matchAny(iterItem))
 						continue;
 
 					count++;

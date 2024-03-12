@@ -50,7 +50,7 @@ import org.frankframework.util.JdbcUtil;
  * StoredProcedureQuerySender is used to send stored procedure queries and retrieve the result.
  *
  * <p>
- *     <h3>QueryType settings and OUTPUT parameters</h3>
+ * <h3>QueryType settings and OUTPUT parameters</h3>
  * The StoredProcedureQuerySender class has the following features:
  * <ul>
  *     <li>It supports setting the output parameters of the stored procedure by setting 'mode' attribute of
@@ -70,80 +70,79 @@ import org.frankframework.util.JdbcUtil;
  *     {@code mode="INOUT"} depending on how the stored procedure is defined.
  * </p>
  * <p>
- *	<h3>Sample Output for queryType=OTHER</h3>
- *	<h4>Basic Example with Only Simple Output Parameters</h4>
+ * 	<h3>Sample Output for queryType=OTHER</h3>
+ * 	<h4>Basic Example with Only Simple Output Parameters</h4>
  *  <code><pre>
-	&lt;resultset&gt;
-		&lt;result param="r1" type="STRING"&gt;MESSAGE-CONTENTS&lt;/result&gt;
-		&lt;result param="r2" type="STRING"&gt;E&lt;/result&gt;
-	&lt;/resultset&gt;
+ * &lt;resultset&gt;
+ * &lt;result param="r1" type="STRING"&gt;MESSAGE-CONTENTS&lt;/result&gt;
+ * &lt;result param="r2" type="STRING"&gt;E&lt;/result&gt;
+ * &lt;/resultset&gt;
  *  </pre></code>
  *
- *	<h4>Example with Resultset and Simple Output Parameters</h4>
+ * 	<h4>Example with Resultset and Simple Output Parameters</h4>
  *  <code><pre>
-	 &lt;resultset&gt;
-		 &lt;result resultNr="1"&gt;
-			 &lt;fielddefinition&gt;
-				&lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&gt;
-				 &lt;field ...../&gt;
- 		     &lt;/fielddefinition&gt;
-			 &lt;rowset&gt;
-				 &lt;row number="0"&gt;
-					 &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
-					 &lt;field name="TCHAR"&gt;E&lt;/field&gt;
-					 &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
-					 &lt;field name="TCLOB" null="true"/&gt;
-					 &lt;field name="TBLOB" null="true"/&gt;
-				 &lt;/row&gt;
-                 &lt;row number="1" ...../&gt;
-			 &lt;/rowset&gt;
-		 &lt;/result&gt;
-		 &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
-	 &lt;/resultset&gt;
+ * &lt;resultset&gt;
+ * &lt;result resultNr="1"&gt;
+ * &lt;fielddefinition&gt;
+ * &lt;field name="FIELDNAME"
+ * type="columnType"
+ * columnDisplaySize=""
+ * precision=""
+ * scale=""
+ * isCurrency=""
+ * columnTypeName=""
+ * columnClassName=""/&gt;
+ * &lt;field ...../&gt;
+ * &lt;/fielddefinition&gt;
+ * &lt;rowset&gt;
+ * &lt;row number="0"&gt;
+ * &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
+ * &lt;field name="TCHAR"&gt;E&lt;/field&gt;
+ * &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
+ * &lt;field name="TCLOB" null="true"/&gt;
+ * &lt;field name="TBLOB" null="true"/&gt;
+ * &lt;/row&gt;
+ * &lt;row number="1" ...../&gt;
+ * &lt;/rowset&gt;
+ * &lt;/result&gt;
+ * &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
+ * &lt;/resultset&gt;
  *  </pre></code>
  *
- *	<h4>Example with Simple and Cursor Output Parameters</h4>
- *	<code><pre>
-	&lt;resultset&gt;
-		&lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
-		&lt;result param="cursor1" type="LIST"&gt;
-			 &lt;fielddefinition&gt;
-				&lt;field name="FIELDNAME"
-						  type="columnType"
-						  columnDisplaySize=""
-						  precision=""
-						  scale=""
-						  isCurrency=""
-						  columnTypeName=""
-						  columnClassName=""/&gt;
-				 &lt;field ...../&gt;
- 		     &lt;/fielddefinition&gt;
-			&lt;rowset&gt;
-				&lt;row number="0"&gt;
-					&lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
-					&lt;field name="TCHAR"&gt;E&lt;/field&gt;
-					&lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
-					&lt;field name="TCLOB" null="true"/&gt;
-					&lt;field name="TBLOB" null="true"/&gt;
-				&lt;/row&gt;
-				&lt;row number="1" ..... /&gt;
-			&lt;/rowset&gt;
-		&lt;/result&gt;
-	&lt;/resultset&gt;
- *	</pre></code>
+ * 	<h4>Example with Simple and Cursor Output Parameters</h4>
+ * 	<code><pre>
+ * &lt;resultset&gt;
+ * &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
+ * &lt;result param="cursor1" type="LIST"&gt;
+ * &lt;fielddefinition&gt;
+ * &lt;field name="FIELDNAME"
+ * type="columnType"
+ * columnDisplaySize=""
+ * precision=""
+ * scale=""
+ * isCurrency=""
+ * columnTypeName=""
+ * columnClassName=""/&gt;
+ * &lt;field ...../&gt;
+ * &lt;/fielddefinition&gt;
+ * &lt;rowset&gt;
+ * &lt;row number="0"&gt;
+ * &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
+ * &lt;field name="TCHAR"&gt;E&lt;/field&gt;
+ * &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
+ * &lt;field name="TCLOB" null="true"/&gt;
+ * &lt;field name="TBLOB" null="true"/&gt;
+ * &lt;/row&gt;
+ * &lt;row number="1" ..... /&gt;
+ * &lt;/rowset&gt;
+ * &lt;/result&gt;
+ * &lt;/resultset&gt;
+ * 	</pre></code>
  * </p>
  * <p><em>NOTE:</em> Support for stored procedures is currently experimental and changes in the currently produced output-format
  * are expected.</p>
  *
  * @ff.parameters All parameters present are applied to the query to be executed.
- *
  * @since 7.9
  */
 public class StoredProcedureQuerySender extends FixedQuerySender {
@@ -193,7 +192,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	 * their parameter-position (1-based) in the parameter list of the call.
 	 *
 	 * @param parameterList Full list of all parameters configured on the StoredProcedureSender.
-	 * @param query The query that is configured
+	 * @param query         The query that is configured
 	 * @return Output-parameters indexed by position in the query parameter-list.
 	 */
 	private Map<Integer, Parameter> buildOutputParameterMap(ParameterList parameterList, String query) {
@@ -208,7 +207,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		}
 		Map<String, Integer> queryParameterMap = new HashMap<>();
 		for (int i = 0; i < queryParameterNames.size(); i++) {
-			queryParameterMap.put(queryParameterNames.get(i), i+1);
+			queryParameterMap.put(queryParameterNames.get(i), i + 1);
 		}
 
 		Map<Integer, Parameter> result = new HashMap<>();

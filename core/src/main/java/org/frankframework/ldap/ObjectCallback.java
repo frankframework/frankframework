@@ -15,12 +15,12 @@
  */
 package org.frankframework.ldap;
 
-public abstract class ObjectCallback<O,K,V> implements Callback<K,V> {
+public abstract class ObjectCallback<O, K, V> implements Callback<K, V> {
 
 	private final O data;
 
 	public ObjectCallback(O data) {
-		this.data=data;
+		this.data = data;
 	}
 
 	public O getData() {

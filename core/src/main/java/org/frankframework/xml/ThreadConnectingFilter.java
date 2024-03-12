@@ -26,7 +26,7 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 
 	public ThreadConnectingFilter(ThreadConnector threadConnector, ContentHandler handler) {
 		super(handler);
-		this.threadConnector=threadConnector;
+		this.threadConnector = threadConnector;
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 			throw (SAXException) t;
 		}
 		if (t instanceof Exception) {
-			throw new SaxException((Exception)t);
+			throw new SaxException((Exception) t);
 		}
 		throw new RuntimeException(t);
 	}
@@ -45,7 +45,7 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 	public void startDocument() throws SAXException {
 		try {
 			threadConnector.startThread(null);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			handleException(e); //Cleanup dangling threads, creates better Ladybug reports
 		}
 		super.startDocument();

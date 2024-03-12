@@ -87,7 +87,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
-			String correlationID = session==null ? "" : session.getCorrelationId();
+			String correlationID = session == null ? "" : session.getCorrelationId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
 			String cronExpression = values.get("_cronexpression").asStringValue();
@@ -96,9 +96,9 @@ public class SchedulerSender extends SenderWithParametersBase {
 			}
 			schedule(jobName, cronExpression, correlationID, message.asString());
 			return new SenderResult(jobName);
-		} catch(SenderException e) {
+		} catch (SenderException e) {
 			throw e;
-		} catch(Exception e) {
+		} catch (Exception e) {
 			throw new SenderException("Error during scheduling " + message, e);
 		}
 	}
@@ -117,7 +117,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 
 		schedulerHelper.scheduleJob(jobDetail, cronExpression);
 		if (log.isDebugEnabled()) {
-			log.debug("SchedulerSender ["+ getName() +"] has send job [" + jobName + "] to the scheduler");
+			log.debug("SchedulerSender [" + getName() + "] has send job [" + jobName + "] to the scheduler");
 		}
 	}
 
@@ -128,7 +128,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 
 	/** job group in which the new trigger is to be created (optional) */
 	public void setJobGroup(String string) {
-		if(StringUtils.isNotEmpty(string))
+		if (StringUtils.isNotEmpty(string))
 			jobGroup = string;
 		else
 			jobGroup = null;

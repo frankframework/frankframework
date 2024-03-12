@@ -28,20 +28,19 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.lifecycle.DynamicRegistration;
+import org.frankframework.util.HttpUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import org.frankframework.lifecycle.DynamicRegistration;
-import org.frankframework.util.HttpUtils;
-
 /**
  * Main dispatcher for all API resources.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -57,7 +56,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
-		if(!isEnabled) {
+		if (!isEnabled) {
 			return;
 		}
 
@@ -67,7 +66,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-		if(!isEnabled) {
+		if (!isEnabled) {
 			try {
 				response.sendError(404, "api backend not enabled");
 			} catch (IOException e) {
@@ -82,7 +81,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		 * Log POST, PUT and DELETE requests
 		 */
 		final String method = request.getMethod();
-		if(!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("OPTIONS")) {
+		if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("OPTIONS")) {
 			secLog.debug("received http request from URI [{}:{}] issued by [{}]", method, request.getRequestURI(), HttpUtils.getCommandIssuedBy(request));
 		}
 
@@ -93,7 +92,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public void setBus(Bus bus) {
-		if(bus != null) {
+		if (bus != null) {
 			String busInfo = String.format("Successfully created %s with SpringBus [%s]", getName(), bus.getId());
 			log.info(busInfo);
 			getServletContext().log(busInfo);

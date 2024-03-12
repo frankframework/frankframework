@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Path;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.PropertyUtil;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -16,6 +14,9 @@ import org.junit.jupiter.api.io.TempDir;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.PropertyUtil;
 
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 
@@ -121,7 +122,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	@Disabled
 	@Test
 	@Override
-	public void writableFileSystemTestDeleteAppendedFile() throws Exception{
+	public void writableFileSystemTestDeleteAppendedFile() throws Exception {
 		super.writableFileSystemTestDeleteAppendedFile();
 	}
 
@@ -135,10 +136,10 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	@Test
 	public void testToFileWithBucketnameInFilename() throws FileSystemException {
 		// arrange
-		String filename="fakeFile";
-		String bucketname="fakeBucket";
+		String filename = "fakeFile";
+		String bucketname = "fakeBucket";
 
-		String combinedFilename = bucketname +"|" + filename;
+		String combinedFilename = bucketname + "|" + filename;
 
 		// act
 		S3Object ref = fileSystem.toFile(combinedFilename);
@@ -151,17 +152,17 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	@Test
 	public void testToFileWithBucketnameInFilenameWithFolder() throws FileSystemException {
 		// arrange
-		String foldername="fakeFolder";
-		String filename="fakeFile";
-		String bucketname="fakeBucket";
+		String foldername = "fakeFolder";
+		String filename = "fakeFile";
+		String bucketname = "fakeBucket";
 
-		String combinedFilename = bucketname +"|" + foldername +"/"+ filename;
+		String combinedFilename = bucketname + "|" + foldername + "/" + filename;
 
 		// act
 		S3Object ref = fileSystem.toFile(combinedFilename);
 
 		// assert
 		assertEquals(bucketname, ref.getBucketName());
-		assertEquals(foldername +"/"+ filename, ref.getKey());
+		assertEquals(foldername + "/" + filename, ref.getKey());
 	}
 }

@@ -42,7 +42,7 @@ public class SizeLimitedVector<E> extends java.util.Vector<E> {
 	@Override
 	public synchronized boolean add(E o) {
 		super.add(o);
-		if(super.size() > maxSize) {
+		if (super.size() > maxSize) {
 			super.removeElementAt(0);
 		}
 		return true;
@@ -54,8 +54,8 @@ public class SizeLimitedVector<E> extends java.util.Vector<E> {
 	 */
 	public void setMaxSize(int maxSize) {
 		this.maxSize = maxSize;
-		if(this.size() > 0) {
-			while(size() > maxSize) removeElementAt(0);
+		if (this.size() > 0) {
+			while (size() > maxSize) removeElementAt(0);
 		}
 	}
 }

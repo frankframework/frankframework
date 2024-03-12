@@ -32,14 +32,12 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.springframework.messaging.Message;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
+import org.springframework.messaging.Message;
 
 @Path("/")
 public class ShowLiquibaseScript extends FrankApiBase {
@@ -64,7 +62,7 @@ public class ShowLiquibaseScript extends FrankApiBase {
 		String configuration = RequestUtils.resolveStringFromMap(inputDataMap, "configuration", null);
 
 		Attachment filePart = inputDataMap.getAttachment("file");
-		if(configuration == null || filePart == null) {
+		if (configuration == null || filePart == null) {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 
@@ -87,8 +85,8 @@ public class ShowLiquibaseScript extends FrankApiBase {
 		Message<?> response = sendSyncMessage(builder);
 		String result = (String) response.getPayload();
 
-		if(StringUtils.isEmpty(result)) {
-			throw new ApiException("Make sure liquibase xml script exists for configuration ["+configuration+"]");
+		if (StringUtils.isEmpty(result)) {
+			throw new ApiException("Make sure liquibase xml script exists for configuration [" + configuration + "]");
 		}
 
 		HashMap<String, Object> resultMap = new HashMap<>();

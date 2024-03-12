@@ -7,13 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
- *
  * IfMultipart Tester.
  *
  * @author <Sina Sen>
@@ -37,7 +38,7 @@ class IfMultipartTest extends PipeTestBase<IfMultipart> {
 		pipe.setElseForwardName(null);
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, null, session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, null, session));
 		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named [null]"));
 	}
 
@@ -45,7 +46,7 @@ class IfMultipartTest extends PipeTestBase<IfMultipart> {
 	void testInputNotHTTPRequest() throws Exception {
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "i am a string not a http req", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "i am a string not a http req", session));
 		assertThat(e.getMessage(), Matchers.endsWith("expected HttpServletRequest as input, got [Message]"));
 	}
 
@@ -78,7 +79,7 @@ class IfMultipartTest extends PipeTestBase<IfMultipart> {
 		pipe.setThenForwardName("success");
 		configureAndStartPipe();
 
-		assertThrows(PipeRunException.class, ()->doPipe(pipe, request, session));
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, request, session));
 	}
 
 	@Test
@@ -86,6 +87,6 @@ class IfMultipartTest extends PipeTestBase<IfMultipart> {
 		pipe.setElseForwardName("elsee");
 		configureAndStartPipe();
 
-		assertThrows(PipeRunException.class, ()->doPipe(pipe, request, session));
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, request, session));
 	}
 }

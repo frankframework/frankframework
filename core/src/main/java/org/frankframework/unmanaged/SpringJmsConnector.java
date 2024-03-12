@@ -68,8 +68,9 @@ import org.frankframework.util.DateFormatUtils;
  * <p>
  * This implementation works only with a PushingJmsListener, and not with other types PortConnectedListeners.
  * </p>
- * @author  Tim van der Leeuw
- * @since   4.8
+ *
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector<Message>, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener<Message> {
 
@@ -77,10 +78,10 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	private @Setter BeanFactory beanFactory;
 	private @Getter DefaultMessageListenerContainer jmsContainer;
 
-	public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
-	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
+	public static final int DEFAULT_CACHE_LEVEL_TRANSACTED = DefaultMessageListenerContainer.CACHE_NONE;
+	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED = DefaultMessageListenerContainer.CACHE_NONE;
 
-	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
+	public static final int IDLE_TASK_EXECUTION_LIMIT = 1000;
 
 	private CredentialFactory credentialFactory;
 	private CacheMode cacheMode;
@@ -102,9 +103,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	 */
 	@Override
 	public void configureEndpointConnection(final IPortConnectedListener<Message> jmsListener,
-			ConnectionFactory connectionFactory, CredentialFactory credentialFactory, Destination destination,
-			IbisExceptionListener exceptionListener, CacheMode cacheMode, int acknowledgeMode, boolean sessionTransacted,
-			String messageSelector, long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
+											ConnectionFactory connectionFactory, CredentialFactory credentialFactory, Destination destination,
+											IbisExceptionListener exceptionListener, CacheMode cacheMode, int acknowledgeMode, boolean sessionTransacted,
+											String messageSelector, long receiveTimeout, long pollGuardInterval) throws ConfigurationException {
 		super.configureEndpointConnection(jmsListener, connectionFactory, destination, exceptionListener);
 		this.credentialFactory = credentialFactory;
 		this.cacheMode = cacheMode;
@@ -123,13 +124,13 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		// that all required properties are set before we get a chance
 		// to insert our dynamic values from the config. file.
 		jmsContainer = new IbisMessageListenerContainer();
-		IbisMessageListenerContainer ibisMessageListenerContainer = (IbisMessageListenerContainer)jmsContainer;
+		IbisMessageListenerContainer ibisMessageListenerContainer = (IbisMessageListenerContainer) jmsContainer;
 		ibisMessageListenerContainer.setCredentialFactory(credentialFactory);
 
 		if (getReceiver().isTransacted()) {
-			log.debug("{} setting transaction manager to [{}]", this::getLogPrefix, ()->txManager);
+			log.debug("{} setting transaction manager to [{}]", this::getLogPrefix, () -> txManager);
 			jmsContainer.setTransactionManager(txManager);
-			if (getReceiver().getTransactionTimeout()>0) {
+			if (getReceiver().getTransactionTimeout() > 0) {
 				jmsContainer.setTransactionTimeout(getReceiver().getTransactionTimeout());
 			}
 			txDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
@@ -160,7 +161,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
 		jmsContainer.setIdleTaskExecutionLimit(IDLE_TASK_EXECUTION_LIMIT);
 
-		if (cacheMode!=null) {
+		if (cacheMode != null) {
 			jmsContainer.setCacheLevelName(cacheMode.name());
 		} else {
 			if (getReceiver().isTransacted()) {
@@ -169,7 +170,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				jmsContainer.setCacheLevel(DEFAULT_CACHE_LEVEL_NON_TRANSACTED);
 			}
 		}
-		if (acknowledgeMode>=0) {
+		if (acknowledgeMode >= 0) {
 			jmsContainer.setSessionAcknowledgeMode(acknowledgeMode);
 		}
 		jmsContainer.setMessageListener(this);
@@ -178,7 +179,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		try {
 			((AutowireCapableBeanFactory) this.beanFactory).configureBean(this.jmsContainer, "proto-jmsContainer");
 		} catch (BeansException e) {
-			throw new ConfigurationException(getLogPrefix()+"Out of luck wiring up and configuring Default JMS Message Listener Container for JMS Listener ["+ (getListener().getName()+"]"), e);
+			throw new ConfigurationException(getLogPrefix() + "Out of luck wiring up and configuring Default JMS Message Listener Container for JMS Listener [" + (getListener().getName() + "]"), e);
 		}
 
 		// Finally, set bean name to something we can make sense of
@@ -199,7 +200,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				throw new ListenerException(e);
 			}
 		}
-		if (jmsContainer!=null) {
+		if (jmsContainer != null) {
 			try {
 				jmsContainer.start();
 				if (pollGuardInterval != -1 && jmsContainer instanceof IbisMessageListenerContainer) {
@@ -210,10 +211,10 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 					pollGuardTimer.schedule(pollGuard, pollGuardInterval, pollGuardInterval);
 				}
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"cannot start", e);
+				throw new ListenerException(getLogPrefix() + "cannot start", e);
 			}
 		} else {
-			throw new ListenerException(getLogPrefix()+"no jmsContainer defined");
+			throw new ListenerException(getLogPrefix() + "no jmsContainer defined");
 		}
 	}
 
@@ -225,29 +226,29 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			pollGuardTimer.cancel();
 			pollGuardTimer = null;
 		}
-		if (jmsContainer!=null) {
+		if (jmsContainer != null) {
 			try {
 				jmsContainer.stop();
 				jmsContainer.destroy();
 				jmsContainer = null;
 				log.debug("{} jmsContainer is destroyed", this::getLogPrefix);
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"Exception while trying to stop", e);
+				throw new ListenerException(getLogPrefix() + "Exception while trying to stop", e);
 			}
 		} else {
-			throw new ListenerException(getLogPrefix()+"no jmsContainer defined");
+			throw new ListenerException(getLogPrefix() + "no jmsContainer defined");
 		}
 	}
 
 
 	@Override
-	public void onMessage(Message message, Session session)	throws JMSException {
-		TransactionStatus txStatus=null;
+	public void onMessage(Message message, Session session) throws JMSException {
+		TransactionStatus txStatus = null;
 
-		final long onMessageStart= System.currentTimeMillis();
-		final long jmsTimestamp= message.getJMSTimestamp();
+		final long onMessageStart = System.currentTimeMillis();
+		final long jmsTimestamp = message.getJMSTimestamp();
 		threadsProcessing.increase();
-		Thread.currentThread().setName(getReceiver().getName()+"["+threadsProcessing.getValue()+"]");
+		Thread.currentThread().setName(getReceiver().getName() + "[" + threadsProcessing.getValue() + "]");
 
 		final String logPrefix = getLogPrefix();
 		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
@@ -274,7 +275,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				}
 			}
 		} finally {
-			if (txStatus!=null && !txStatus.isCompleted()) {
+			if (txStatus != null && !txStatus.isCompleted()) {
 				if (!txStatus.isRollbackOnly()) {
 					log.debug("{} committing transaction {}", logPrefix, txStatus);
 					txManager.commit(txStatus);
@@ -285,11 +286,11 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			}
 			threadsProcessing.decrease();
 			if (log.isInfoEnabled()) {
-				long onMessageEnd= System.currentTimeMillis();
+				long onMessageEnd = System.currentTimeMillis();
 
 				log.info("{} A) JMSMessageTime [{}]", logPrefix, DateFormatUtils.format(jmsTimestamp));
-				log.info("{} B) onMessageStart [{}] diff (~'queing' time) [{}]", logPrefix, DateFormatUtils.format(onMessageStart), (onMessageStart-jmsTimestamp));
-				log.info("{} C) onMessageEnd   [{}] diff (process time) [{}]", logPrefix, DateFormatUtils.format(onMessageEnd), (onMessageEnd-onMessageStart));
+				log.info("{} B) onMessageStart [{}] diff (~'queing' time) [{}]", logPrefix, DateFormatUtils.format(onMessageStart), (onMessageStart - jmsTimestamp));
+				log.info("{} C) onMessageEnd   [{}] diff (process time) [{}]", logPrefix, DateFormatUtils.format(onMessageEnd), (onMessageEnd - onMessageStart));
 			}
 		}
 	}
@@ -297,7 +298,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	@Override
 	public void onException(JMSException e) {
 		IbisExceptionListener ibisExceptionListener = getExceptionListener();
-		if (ibisExceptionListener!= null) {
+		if (ibisExceptionListener != null) {
 			ibisExceptionListener.exceptionThrown(getListener(), e);
 		} else {
 			log.error("{} Cannot report the error to an IBIS Exception Listener", (Supplier<?>) this::getLogPrefix, e);
@@ -307,16 +308,17 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	@Override
 	public boolean isThreadCountReadable() {
-		return jmsContainer!=null;
+		return jmsContainer != null;
 	}
+
 	@Override
 	public boolean isThreadCountControllable() {
-		return jmsContainer!=null;
+		return jmsContainer != null;
 	}
 
 	@Override
 	public int getCurrentThreadCount() {
-		if (jmsContainer!=null) {
+		if (jmsContainer != null) {
 			return jmsContainer.getActiveConsumerCount();
 		}
 		return 0;
@@ -324,7 +326,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	@Override
 	public int getMaxThreadCount() {
-		if (jmsContainer!=null) {
+		if (jmsContainer != null) {
 			return jmsContainer.getMaxConcurrentConsumers();
 		}
 		return 0;
@@ -332,25 +334,25 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	@Override
 	public void increaseThreadCount() {
-		if (jmsContainer!=null) {
-			jmsContainer.setMaxConcurrentConsumers(jmsContainer.getMaxConcurrentConsumers()+1);
+		if (jmsContainer != null) {
+			jmsContainer.setMaxConcurrentConsumers(jmsContainer.getMaxConcurrentConsumers() + 1);
 		}
 	}
 
 	@Override
 	public void decreaseThreadCount() {
-		if (jmsContainer!=null) {
-			int current=getMaxThreadCount();
-			if (current>1) {
-				jmsContainer.setMaxConcurrentConsumers(current-1);
+		if (jmsContainer != null) {
+			int current = getMaxThreadCount();
+			if (current > 1) {
+				jmsContainer.setMaxConcurrentConsumers(current - 1);
 			}
 		}
 	}
 
 	public String getLogPrefix() {
-		String result="SpringJmsConnector ";
-		if (getListener()!=null && getListener().getReceiver()!=null) {
-			result += "of Receiver ["+getListener().getReceiver().getName()+"] ";
+		String result = "SpringJmsConnector ";
+		if (getListener() != null && getListener().getReceiver() != null) {
+			result += "of Receiver [" + getListener().getReceiver().getName() + "] ";
 		}
 		return result;
 	}

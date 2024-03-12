@@ -28,9 +28,8 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -56,8 +55,8 @@ import org.frankframework.util.DateFormatUtils;
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public abstract class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<javax.jms.Message> {
 
@@ -142,7 +141,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		String cid = "unset";
 		DeliveryMode mode = null;
 		Instant tsSent = null;
-		Destination replyTo=null;
+		Destination replyTo = null;
 		try {
 			mode = DeliveryMode.parse(rawMessage.getJMSDeliveryMode());
 		} catch (JMSException e) {
@@ -183,19 +182,19 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		}
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"listener on ["+ getDestinationName()
-				+ "] got message with JMSDeliveryMode=[" + mode
-				+ "] \n  JMSMessageID=[" + id
-				+ "] \n  JMSCorrelationID=[" + cid
-				+ "] \n  Timestamp Sent=[" + tsSent!=null ? DateFormatUtils.format(tsSent) : null
-				+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
-				+ "] \n Message=[" + rawMessage
-				+ "]");
+			log.debug(getLogPrefix() + "listener on [" + getDestinationName()
+					+ "] got message with JMSDeliveryMode=[" + mode
+					+ "] \n  JMSMessageID=[" + id
+					+ "] \n  JMSCorrelationID=[" + cid
+					+ "] \n  Timestamp Sent=[" + tsSent != null ? DateFormatUtils.format(tsSent) : null
+					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
+					+ "] \n Message=[" + rawMessage
+					+ "]");
 		}
 
 		PipeLineSession.updateListenerParameters(messageProperties, id, cid, null, tsSent);
-		messageProperties.put("timestamp",tsSent);
-		messageProperties.put("replyTo",replyTo);
+		messageProperties.put("timestamp", tsSent);
+		messageProperties.put("replyTo", replyTo);
 		return messageProperties;
 	}
 
@@ -205,7 +204,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	 * other parameters from the message and put those in the context.
 	 *
 	 * @param rawMessage The {@link RawMessageWrapper} from which to extract the {@link Message}.
-	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map<String,Object>} threadContext depending on caller.
+	 * @param context    Context to populate. Either a {@link PipeLineSession} or a {@link Map<String,Object>} threadContext depending on caller.
 	 * @return String  input {@link Message} for adapter.
 	 */
 	public Message extractMessage(@Nonnull RawMessageWrapper<javax.jms.Message> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
@@ -216,7 +215,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		}
 	}
 
-	public Message prepareReply(Message rawReply, Map<String,Object> threadContext) throws ListenerException {
+	public Message prepareReply(Message rawReply, Map<String, Object> threadContext) throws ListenerException {
 		return prepareReply(rawReply, threadContext, null);
 	}
 
@@ -253,7 +252,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		// handle reply
 		try {
 			Destination replyTo = isUseReplyTo() ? (Destination) session.get("replyTo") : null;
-			if (replyTo==null && StringUtils.isNotEmpty(getReplyDestinationName())) {
+			if (replyTo == null && StringUtils.isNotEmpty(getReplyDestinationName())) {
 				replyTo = getDestination(getReplyDestinationName());
 			}
 
@@ -278,7 +277,9 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 							}
 						}
 					} else {
-						log.warn(getLogPrefix() + "{} message with correlationID [{}] is not a JMS message, but [{}], cannot determine time to live [{}]ms, sending response with 20 second time to live", this::getLogPrefix, logValue(replyCid), ()->rawMessageWrapper.getRawMessage().getClass().getName(), logValue(timeToLive));
+						log.warn(getLogPrefix() + "{} message with correlationID [{}] is not a JMS message, but [{}], cannot determine time to live [{}]ms, sending response with 20 second time to live", this::getLogPrefix, logValue(replyCid), () -> rawMessageWrapper.getRawMessage()
+								.getClass()
+								.getName(), logValue(timeToLive));
 						timeToLive = 1000;
 						ignoreInvalidDestinationException = true;
 					}
@@ -346,7 +347,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	@Deprecated
 	public void setSender(ISender newSender) {
 		sender = newSender;
-		ConfigurationWarnings.add(this, log, "["+getName()+"] has a nested Sender, which is deprecated. Please use attribute replyDestinationName or a Sender nested in Receiver instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
+		ConfigurationWarnings.add(this, log, "[" + getName() + "] has a nested Sender, which is deprecated. Please use attribute replyDestinationName or a Sender nested in Receiver instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 	}
 
 	/**
@@ -354,7 +355,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	 *
 	 * @param session which has been built during the pipeline
 	 * @return a map with headers to set to the JMS response, or {@code null} if there was
-	 * no session or no parameters.
+	 * 		no session or no parameters.
 	 */
 	protected Map<String, Object> getMessageProperties(PipeLineSession session) {
 
@@ -383,6 +384,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 	/**
 	 * Retrieve JMS properties from the threadContext
+	 *
 	 * @param threadContext used throughout the pipeline
 	 * @return a map with JMS headers to set
 	 */
@@ -409,14 +411,16 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	/**
 	 * By default, the JmsListener takes the Correlation-ID (if present) as the ID that has to be used as Correlation-ID of the reply.
 	 * When set to <code>true</code>, the messageID is used as Correlation-ID of the reply.
+	 *
 	 * @ff.default false
 	 */
-	public void setForceMessageIdAsCorrelationId(Boolean force){
+	public void setForceMessageIdAsCorrelationId(Boolean force) {
 		forceMessageIdAsCorrelationId = force;
 	}
 
 	/**
 	 * Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-
+	 *
 	 * @ff.default 1000
 	 */
 	public void setTimeout(long newTimeout) {
@@ -443,6 +447,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 	/**
 	 * Value of the JMSType field of the reply message
+	 *
 	 * @ff.default not set by application
 	 */
 	public void setReplyMessageType(String string) {
@@ -452,6 +457,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 	/**
 	 * Controls mode that reply messages are sent with
+	 *
 	 * @ff.default NON_PERSISTENT
 	 */
 	public void setReplyDeliveryMode(DeliveryMode replyDeliveryMode) {
@@ -461,6 +467,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 	/**
 	 * Sets the priority that is used to deliver the reply message. Ranges from 0 to 9. Effectively the default priority is set by JMS to 4, <code>-1</code> means not set and thus uses the JMS default
+	 *
 	 * @ff.default -1
 	 */
 	public void setReplyPriority(int i) {
@@ -470,6 +477,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 	/**
 	 * Time <i>in milliseconds</i> after which the reply-message will expire
+	 *
 	 * @ff.default 0
 	 */
 	public void setReplyMessageTimeToLive(long l) {
@@ -478,6 +486,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 	/**
 	 * If <code>true</code>, messages sent are put in a SOAP envelope
+	 *
 	 * @ff.default false
 	 */
 	public void setSoap(boolean b) {
@@ -498,6 +507,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 
 	/**
 	 * sessionKey to store the SOAP header of the incoming message
+	 *
 	 * @ff.default soapHeader
 	 */
 	public void setSoapHeaderSessionKey(String string) {

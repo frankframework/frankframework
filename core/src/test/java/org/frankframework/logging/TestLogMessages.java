@@ -37,6 +37,7 @@ import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
+
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,11 +66,10 @@ public class TestLogMessages {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size(), "found messages "+logEvents);
+			assertEquals(1, logEvents.size(), "found messages " + logEvents);
 			String message = logEvents.get(0);
-			assertEquals("DEBUG - "+ TEST_REGEX_OUT, message);
-		}
-		finally {
+			assertEquals("DEBUG - " + TEST_REGEX_OUT, message);
+		} finally {
 			IbisMaskingLayout.cleanGlobalReplace();
 			globalReplace.forEach(IbisMaskingLayout::addToGlobalReplace);
 			TestAppender.removeAppender(appender);
@@ -84,11 +84,10 @@ public class TestLogMessages {
 			log.debug("my beautiful log with <password>TO BE HIDDEN</password> hidden value");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size(), "found messages "+logEvents);
+			assertEquals(1, logEvents.size(), "found messages " + logEvents);
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful log with <password>************</password> hidden value", message);
-		}
-		finally {
+		} finally {
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -112,11 +111,10 @@ public class TestLogMessages {
 			log.error("some message");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(6, logEvents.size(), "found messages "+logEvents);
+			assertEquals(6, logEvents.size(), "found messages " + logEvents);
 			assertEquals("WARN - my beautiful warning message", logEvents.get(0));
 			assertEquals("ERROR - my beautiful error message", logEvents.get(1));
-		}
-		finally {
+		} finally {
 			Thread.currentThread().setName(threadName);
 			TestAppender.removeAppender(appender);
 		}
@@ -133,8 +131,7 @@ public class TestLogMessages {
 			assertEquals(1, logEvents.size());
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful <![CDATA[debug]]> for me & you --> \"world\"", message);
-		}
-		finally {
+		} finally {
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -147,11 +144,10 @@ public class TestLogMessages {
 			log.debug("my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size(), "found messages "+logEvents);
+			assertEquals(1, logEvents.size(), "found messages " + logEvents);
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
-		}
-		finally {
+		} finally {
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -166,13 +162,12 @@ public class TestLogMessages {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size(), "found messages "+logEvents);
+			assertEquals(1, logEvents.size(), "found messages " + logEvents);
 			String message = logEvents.get(0);
 
-			String expected = "DEBUG - "+ TEST_REGEX_IN.substring(0, length).trim() + " ...("+(TEST_REGEX_IN.length()-length)+" more characters)";
+			String expected = "DEBUG - " + TEST_REGEX_IN.substring(0, length).trim() + " ...(" + (TEST_REGEX_IN.length() - length) + " more characters)";
 			TestAssertions.assertEqualsIgnoreCRLF(expected, message);
-		}
-		finally {
+		} finally {
 			IbisMaskingLayout.setMaxLength(-1);
 			TestAppender.removeAppender(appender);
 		}
@@ -190,14 +185,13 @@ public class TestLogMessages {
 			log.debug("Oh no, something went wrong!", t);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals(1, logEvents.size(), "found messages "+logEvents);
+			assertEquals(1, logEvents.size(), "found messages " + logEvents);
 			String message = logEvents.get(0);
 
 			String expected = "DEBUG - Oh no, something went wrong! java.lang.Throwable: my exception message\n" +
 					"	at TestLogMessages.logWithStacktrace(TestLogMessages:0) ~[?:?]";
 			TestAssertions.assertEqualsIgnoreCRLF(expected, message);
-		}
-		finally {
+		} finally {
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -249,7 +243,7 @@ public class TestLogMessages {
 			log.warn("warn");
 			log.error("error");
 
-			assertEquals(4, appender.getNumberOfAlerts(), "found messages "+appender.getLogLines());
+			assertEquals(4, appender.getNumberOfAlerts(), "found messages " + appender.getLogLines());
 		} finally {
 			TestAppender.removeAppender(appender);
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);
@@ -258,7 +252,7 @@ public class TestLogMessages {
 
 	@Test
 	public void testMessageLogThreadContext() throws Exception {
-		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
+		PatternLayout layout = PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
 		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
 		TestAppender.addToRootLogger(appender);
 		try {
@@ -270,21 +264,20 @@ public class TestLogMessages {
 			assertEquals(1, logEvents.size());
 			String message = logEvents.get(0);
 			assertAll(
-				() -> assertThat(message, StringContains.containsString("DEBUG - Adapter Success ")),
-				() -> assertThat(message, StringContains.containsString("key [value]")),
-				() -> assertThat(message, StringContains.containsString("key-two [value2]")),
-				() -> assertFalse(message.endsWith(" "), "message should not end with a space"),
-				() -> assertFalse(message.contains("log.dir")) // No other info in log context
+					() -> assertThat(message, StringContains.containsString("DEBUG - Adapter Success ")),
+					() -> assertThat(message, StringContains.containsString("key [value]")),
+					() -> assertThat(message, StringContains.containsString("key-two [value2]")),
+					() -> assertFalse(message.endsWith(" "), "message should not end with a space"),
+					() -> assertFalse(message.contains("log.dir")) // No other info in log context
 			);
-		}
-		finally {
+		} finally {
 			TestAppender.removeAppender(appender);
 		}
 	}
 
 	@Test
 	public void testMessageEmptyLogThreadContext() {
-		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
+		PatternLayout layout = PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
 		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
 		TestAppender.addToRootLogger(appender);
 		try {
@@ -294,8 +287,7 @@ public class TestLogMessages {
 			assertEquals(1, logEvents.size());
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - Adapter Success ", message);
-		}
-		finally {
+		} finally {
 			TestAppender.removeAppender(appender);
 		}
 	}

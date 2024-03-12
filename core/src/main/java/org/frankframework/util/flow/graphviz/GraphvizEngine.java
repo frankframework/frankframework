@@ -34,11 +34,11 @@ import org.frankframework.util.flow.ResultHandler;
 import lombok.extern.log4j.Log4j2;
 
 //TODO: consider moving this to a separate module
+
 /**
  * JavaScript engine wrapper for VizJs flow diagrams
  *
  * @author Niels Meijer
- *
  */
 @Log4j2
 public class GraphvizEngine {
@@ -57,6 +57,7 @@ public class GraphvizEngine {
 
 	/**
 	 * Create a new GraphvizEngine instance. Using version 2.0.0
+	 *
 	 * @throws IOException
 	 */
 	public GraphvizEngine() throws IOException {
@@ -65,6 +66,7 @@ public class GraphvizEngine {
 
 	/**
 	 * Create a new GraphvizEngine instance
+	 *
 	 * @param graphvizVersion version of the VisJs engine to initiate
 	 * @throws IOException
 	 */
@@ -105,9 +107,10 @@ public class GraphvizEngine {
 
 	/**
 	 * Execute GraphViz with default options ({@link Format#SVG})
+	 *
 	 * @param src dot file
 	 * @return {@link Format#SVG} string
-	 * @throws IOException when VizJs files can't be found on the classpath
+	 * @throws IOException             when VizJs files can't be found on the classpath
 	 * @throws FlowGenerationException when a JavaScript engine error occurs
 	 */
 	public String execute(String src) throws IOException, FlowGenerationException {
@@ -116,26 +119,27 @@ public class GraphvizEngine {
 
 	/**
 	 * Execute GraphViz
-	 * @param src dot file
+	 *
+	 * @param src     dot file
 	 * @param options see {@link Options}
 	 * @return string in specified {@link Format}
-	 * @throws IOException when VizJs files can't be found on the classpath
+	 * @throws IOException             when VizJs files can't be found on the classpath
 	 * @throws FlowGenerationException when a JavaScript engine error occurs
 	 */
 	public String execute(String src, Options options) throws IOException, FlowGenerationException {
-		if(StringUtils.isEmpty(src)) {
+		if (StringUtils.isEmpty(src)) {
 			throw new FlowGenerationException("no dot-file provided");
 		}
 
 		long start = 0;
-		if(log.isDebugEnabled()) {
-			if(log.isTraceEnabled()) log.trace("executing VizJS src["+src+"] options["+options.toString()+"]");
+		if (log.isDebugEnabled()) {
+			if (log.isTraceEnabled()) log.trace("executing VizJS src[" + src + "] options[" + options.toString() + "]");
 			start = System.currentTimeMillis();
 		}
 
 		String call = jsVizExec(src, options);
 		String result = getEngine().execute(call);
-		if(start > 0 && log.isDebugEnabled()) {
+		if (start > 0 && log.isDebugEnabled()) {
 			log.debug("executed VisJs in [{}]ms", System.currentTimeMillis() - start);
 		}
 		return options.postProcess(result);
@@ -152,18 +156,19 @@ public class GraphvizEngine {
 	private String getVizJsSource(String version) throws IOException {
 		URL vizWrapperURL = ClassLoaderUtils.getResourceURL("/js/viz-" + version + ".js");
 		URL vizRenderURL = ClassLoaderUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
-		if(vizWrapperURL == null || vizRenderURL == null)
-			throw new IOException("failed to open vizjs file for version ["+version+"]");
+		if (vizWrapperURL == null || vizRenderURL == null)
+			throw new IOException("failed to open vizjs file for version [" + version + "]");
 		return StreamUtil.streamToString(vizWrapperURL.openStream()) + StreamUtil.streamToString(vizRenderURL.openStream());
 	}
 
 
 	/**
 	 * Creates the GraphvizEngine instance
+	 *
 	 * @throws IOException when the VizJS file can't be found
 	 */
 	private synchronized Engine getEngine() throws IOException {
-		if(engine == null) {
+		if (engine == null) {
 			log.debug("creating new VizJs engine");
 			String visJsSource = getVizJsSource(graphvizVersion);
 			engine = new Engine(getVisJsWrapper(), visJsSource);
@@ -217,7 +222,7 @@ public class GraphvizEngine {
 			}
 
 			if (jsEngine == null)
-				throw new UnsupportedOperationException("no usable Javascript engines found, tried "+Arrays.toString(engines));
+				throw new UnsupportedOperationException("no usable Javascript engines found, tried " + Arrays.toString(engines));
 		}
 
 		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws JavascriptException {

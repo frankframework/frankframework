@@ -51,7 +51,7 @@ import org.frankframework.util.StreamUtil;
 
 /**
  * baseclass for validating input message against a XML Schema.
- *
+ * <p>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  *
  * @author Johan Verrips IOS
@@ -89,7 +89,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected String logPrefix = "";
 	protected @Getter Boolean ignoreUnknownNamespaces;
 	private @Getter boolean ignoreCaching = false;
-	private @Getter String xmlSchemaVersion=null;
+	private @Getter String xmlSchemaVersion = null;
 
 	protected @Setter SchemasProvider schemasProvider;
 
@@ -99,11 +99,11 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * Configure the XmlValidator
 	 *
 	 * @throws ConfigurationException when:
-	 * <ul>
-	 *     <li>the schema cannot be found</li>
-	 *     <li><{@link #isThrowException()} is false and there is no forward defined for "failure"</li>
-	 *     <li>when the parser does not accept setting the properties for validating</li>
-	 * </ul>
+	 *                                <ul>
+	 *                                    <li>the schema cannot be found</li>
+	 *                                    <li><{@link #isThrowException()} is false and there is no forward defined for "failure"</li>
+	 *                                    <li>when the parser does not accept setting the properties for validating</li>
+	 *                                </ul>
 	 */
 	public void configure(IConfigurationAware owner) throws ConfigurationException {
 		this.logPrefix = ClassUtils.nameOf(owner);
@@ -116,7 +116,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	}
 
 	public void start() throws ConfigurationException {
-		if(isStarted()) {
+		if (isStarted()) {
 			log.info("already started " + ClassUtils.nameOf(this));
 		}
 
@@ -124,7 +124,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	}
 
 	public void stop() {
-		if(started) {
+		if (started) {
 			started = false;
 		}
 	}
@@ -187,6 +187,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	}
 
 	public abstract ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
+
 	public abstract List<XSModel> getXSModels();
 
 	/**
@@ -228,7 +229,6 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	}
 
 
-
 	protected String getLogPrefix(PipeLineSession session) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
@@ -241,7 +241,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected InputSource getInputSource(Message input) throws XmlValidatorException {
 		final InputSource is;
 		if (isValidateFile()) {
-			String filename=null;
+			String filename = null;
 			try {
 				filename = input.asString();
 				is = new InputSource(StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(filename), getCharset()));
@@ -272,6 +272,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * see property
 	 * http://apache.org/xml/features/validation/schema-full-checking
 	 * </p>
+	 *
 	 * @ff.default <code>false</code>
 	 */
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
@@ -280,6 +281,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	/**
 	 * Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.
+	 *
 	 * @ff.default false
 	 */
 	public void setThrowException(boolean throwException) {
@@ -288,6 +290,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	/**
 	 * If set: key of session variable to store reasons of mis-validation in
+	 *
 	 * @ff.default failureReason
 	 */
 	public void setReasonSessionKey(String reasonSessionKey) {
@@ -296,6 +299,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	/**
 	 * Like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive
+	 *
 	 * @ff.default xmlFailureReason
 	 */
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
@@ -304,6 +308,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	/**
 	 * If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated
+	 *
 	 * @ff.default false
 	 */
 	public void setValidateFile(boolean b) {
@@ -312,6 +317,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	/**
 	 * Characterset used for reading file, only used when <code>validateFile</code> is <code>true</code>
+	 *
 	 * @ff.default utf-8
 	 */
 	public void setCharset(String string) {
@@ -321,6 +327,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	/**
 	 * If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s).
 	 * Alternatively, warnings can be switched off using suppression properties {@value SuppressKeys#XSD_VALIDATION_WARNINGS_SUPPRESS_KEY}, {@value SuppressKeys#XSD_VALIDATION_ERROR_SUPPRESS_KEY} and {@value SuppressKeys#XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY}
+	 *
 	 * @ff.default true
 	 */
 	public void setWarn(boolean warn) {
@@ -329,6 +336,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	/**
 	 * Ignore namespaces in the input message which are unknown
+	 *
 	 * @ff.default true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise
 	 */
 	public void setIgnoreUnknownNamespaces(Boolean b) {
@@ -337,6 +345,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	/**
 	 * If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)
+	 *
 	 * @ff.default false
 	 */
 	public void setIgnoreCaching(boolean ignoreCaching) {
@@ -345,12 +354,14 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	/**
 	 * If set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property.
+	 *
 	 * @ff.default <code>1.1</code>
 	 */
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		this.xmlSchemaVersion = xmlSchemaVersion;
 	}
+
 	public boolean isXmlSchema1_0() {
-		return getXmlSchemaVersion()==null || "1.0".equals(getXmlSchemaVersion());
+		return getXmlSchemaVersion() == null || "1.0".equals(getXmlSchemaVersion());
 	}
 }

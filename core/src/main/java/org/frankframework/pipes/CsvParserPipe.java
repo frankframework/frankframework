@@ -21,13 +21,11 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.util.Map.Entry;
 
+import lombok.Getter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -39,12 +37,12 @@ import org.frankframework.stream.PathMessage;
 import org.frankframework.util.FileUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
 
 /**
  * Reads a message in CSV format, and turns it into XML.
  *
  * @author Gerrit van Brakel
- *
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class CsvParserPipe extends FixedForwardPipe {
@@ -52,8 +50,8 @@ public class CsvParserPipe extends FixedForwardPipe {
 	private @Getter Boolean fileContainsHeader;
 	private @Getter String fieldNames;
 	private @Getter String fieldSeparator;
-	private @Getter HeaderCase headerCase=null;
-	private @Getter boolean prettyPrint=false;
+	private @Getter HeaderCase headerCase = null;
+	private @Getter boolean prettyPrint = false;
 
 	private CSVFormat format = CSVFormat.DEFAULT;
 
@@ -67,9 +65,9 @@ public class CsvParserPipe extends FixedForwardPipe {
 		super.configure();
 		if (StringUtils.isNotEmpty(getFieldNames())) {
 			format = format.withHeader(getFieldNames().split(","))
-						.withSkipHeaderRecord(getFileContainsHeader()!=null && getFileContainsHeader());
+					.withSkipHeaderRecord(getFileContainsHeader() != null && getFileContainsHeader());
 		} else {
-			if (getFileContainsHeader()==null || getFileContainsHeader()) {
+			if (getFileContainsHeader() == null || getFileContainsHeader()) {
 				format = format.withFirstRecordAsHeader();
 			} else {
 				throw new ConfigurationException("No fieldNames specified, and fileContainsHeader=false");
@@ -78,8 +76,8 @@ public class CsvParserPipe extends FixedForwardPipe {
 
 		if (StringUtils.isNotEmpty(getFieldSeparator())) {
 			String separator = getFieldSeparator();
-			if (separator.length()>1) {
-				throw new ConfigurationException("Illegal value for fieldSeparator ["+separator+"], can only be a single character");
+			if (separator.length() > 1) {
+				throw new ConfigurationException("Illegal value for fieldSeparator [" + separator + "], can only be a single character");
 			}
 			format = format.withDelimiter(getFieldSeparator().charAt(0));
 		}
@@ -105,20 +103,21 @@ public class CsvParserPipe extends FixedForwardPipe {
 
 	private void processCsvRecord(final CSVRecord csvRecord, final SaxDocumentBuilder document) throws PipeRunException {
 		try (SaxElementBuilder element = document.startElement("record")) {
-			for(Entry<String,String> entry: csvRecord.toMap().entrySet()) {
+			for (Entry<String, String> entry : csvRecord.toMap().entrySet()) {
 				String key = entry.getKey();
-				if(getHeaderCase() != null) {
-					key = getHeaderCase()==HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
+				if (getHeaderCase() != null) {
+					key = getHeaderCase() == HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
 				}
 				element.addElement(key, entry.getValue());
 			}
 		} catch (SAXException e) {
-			throw new PipeRunException(this, "Exception caught at line ["+ csvRecord.getRecordNumber()+"] pos ["+ csvRecord.getCharacterPosition()+"]", e);
+			throw new PipeRunException(this, "Exception caught at line [" + csvRecord.getRecordNumber() + "] pos [" + csvRecord.getCharacterPosition() + "]", e);
 		}
 	}
 
 	/**
 	 * Specifies if the first line should be treated as header or as data
+	 *
 	 * @ff.default true
 	 */
 	public void setFileContainsHeader(Boolean fileContainsHeader) {
@@ -132,6 +131,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 
 	/**
 	 * Character that separates fields
+	 *
 	 * @ff.default ,
 	 */
 	public void setFieldSeparator(String fieldSeparator) {

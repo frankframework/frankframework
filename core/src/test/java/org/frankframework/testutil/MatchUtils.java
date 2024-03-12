@@ -39,15 +39,15 @@ public class MatchUtils {
 		Properties inProps = new Properties();
 		inProps.load(new StringReader(mapInStr));
 		Map<String, Object> mapIn = new HashMap<>();
-		for(Object key : inProps.keySet()) {
+		for (Object key : inProps.keySet()) {
 			mapIn.put((String) key, inProps.getProperty((String) key));
 		}
 		return mapIn;
 	}
 
-	public static String mapToString(Map<String,String> map) {
-		StringBuilder buf=new StringBuilder();
-		for (String key:map.keySet()) {
+	public static String mapToString(Map<String, String> map) {
+		StringBuilder buf = new StringBuilder();
+		for (String key : map.keySet()) {
 			buf.append(key).append('=');
 			if (map.containsKey(key)) {
 				buf.append(map.get(key));
@@ -57,12 +57,12 @@ public class MatchUtils {
 		return buf.toString();
 	}
 
-	public static void assertMapEquals(Map<String,String> exp, Map<String,String> act) {
-		SortedMap<String,String> exps=new TreeMap<>(exp);
-		String expStr=mapToString(exps);
-		SortedMap<String,String> acts=new TreeMap<>(act);
-		String actStr=mapToString(acts);
-		assertEquals(expStr,actStr);
+	public static void assertMapEquals(Map<String, String> exp, Map<String, String> act) {
+		SortedMap<String, String> exps = new TreeMap<>(exp);
+		String expStr = mapToString(exps);
+		SortedMap<String, String> acts = new TreeMap<>(act);
+		String actStr = mapToString(acts);
+		assertEquals(expStr, actStr);
 	}
 
 	public static String xmlPretty(String xml, boolean removeNamespaces, boolean includeComments) {
@@ -79,7 +79,7 @@ public class MatchUtils {
 			XmlUtils.parseXml(xml, contentHandler);
 			return xmlWriter.toString();
 		} catch (IOException | SAXException e) {
-			throw new RuntimeException("ERROR: could not prettify ["+xml+"]",e);
+			throw new RuntimeException("ERROR: could not prettify [" + xml + "]", e);
 		}
 	}
 
@@ -108,7 +108,7 @@ public class MatchUtils {
 		} catch (RuntimeException e) {
 			xmlActPretty = e.getMessage();
 		}
-		assertEquals(xmlExpPretty,xmlActPretty,description);
+		assertEquals(xmlExpPretty, xmlActPretty, description);
 	}
 
 	public static void assertXmlSimilar(String expected, String actual) {
@@ -117,9 +117,9 @@ public class MatchUtils {
 			String actualCanonalized = XmlUtils.canonicalize(actual);
 
 			DetailedDiff diff = new DetailedDiff(new Diff(expectedCanonalized, actualCanonalized));
-			if(!diff.similar()) {
-				LOG.debug("expected: \n"+ expectedCanonalized);
-				LOG.debug("actual: \n"+ actualCanonalized);
+			if (!diff.similar()) {
+				LOG.debug("expected: \n" + expectedCanonalized);
+				LOG.debug("actual: \n" + actualCanonalized);
 				assertEquals("xml not similar: " + diff.toString(), expectedCanonalized, actualCanonalized);
 			}
 		} catch (Exception e) {
@@ -141,8 +141,8 @@ public class MatchUtils {
 	}
 
 	public static void assertTestFileEquals(String file1, URL url) throws IOException {
-		assertNotNull(url, "url to compare to ["+file1+"] should not be null");
-		assertTestFileEquals(file1,url.openStream());
+		assertNotNull(url, "url to compare to [" + file1 + "] should not be null");
+		assertTestFileEquals(file1, url.openStream());
 	}
 
 	public static void assertTestFileEquals(String file1, InputStream fileStream) throws IOException {
@@ -151,7 +151,7 @@ public class MatchUtils {
 
 	public static void assertTestFileEquals(String file1, String file2) throws IOException {
 		String testFile = TestFileUtils.getTestFile(file1);
-		assertNotNull("testFile ["+file1+"] is null",testFile);
+		assertNotNull("testFile [" + file1 + "] is null", testFile);
 
 		TestAssertions.assertEqualsIgnoreWhitespaces(testFile.trim(), file2.trim());
 	}

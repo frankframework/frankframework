@@ -20,40 +20,39 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.LogUtil;
 
 public class SubstitutionNode<V> {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private Map<String,SubstitutionNode<V>> parents;
+	private Map<String, SubstitutionNode<V>> parents;
 	private V value;
 
-	public void registerSubstitutes(Map<String,V> substitutes) {
-		for(Entry<String,V> entry:substitutes.entrySet()) {
+	public void registerSubstitutes(Map<String, V> substitutes) {
+		for (Entry<String, V> entry : substitutes.entrySet()) {
 			registerSubstitute(entry.getKey(), entry.getValue());
 		}
 	}
 
 	public void registerSubstitute(String path, V value) {
-		if (log.isDebugEnabled()) log.debug("register override ["+path+"]=["+value+"]");
+		if (log.isDebugEnabled()) log.debug("register override [" + path + "]=[" + value + "]");
 		String[] elements = path.split("/");
 		registerSubstitute(elements, elements.length, value);
 	}
 
 	protected void registerSubstitute(String[] elements, int index, V value) {
-		if (index==0) {
-			this.value=value;
+		if (index == 0) {
+			this.value = value;
 		} else {
 			String key = elements[--index];
-			SubstitutionNode<V> parent=null;
-			if (parents==null) {
-				parents=new HashMap<>();
+			SubstitutionNode<V> parent = null;
+			if (parents == null) {
+				parents = new HashMap<>();
 			} else {
 				parent = parents.get(key);
 			}
-			if (parent==null) {
-				parent=new SubstitutionNode<>();
+			if (parent == null) {
+				parent = new SubstitutionNode<>();
 				parents.put(key, parent);
 			}
 			parent.registerSubstitute(elements, index, value);
@@ -61,11 +60,11 @@ public class SubstitutionNode<V> {
 	}
 
 	public V getMatchingValue(AlignmentContext context, String elementName) {
-		if (parents==null || !parents.containsKey(elementName)) {
+		if (parents == null || !parents.containsKey(elementName)) {
 			return value;
 		}
 		SubstitutionNode<V> parent = parents.get(elementName);
-		if (context==null) {
+		if (context == null) {
 			return parent.getMatchingValue(null, null);
 		}
 		return parent.getMatchingValue(context.getParent(), context.getLocalName());

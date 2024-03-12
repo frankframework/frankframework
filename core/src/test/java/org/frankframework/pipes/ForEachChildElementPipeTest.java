@@ -29,10 +29,12 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.XmlUtils;
+
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
@@ -48,50 +50,50 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	private final String messageError = "<root><sub name=\"a\">B</sub><sub>error</sub><sub>tail</sub></root>";
 
 	private final String expectedBasicNoNS = "<results>\n" +
-		"<result item=\"1\">\n" +
-		"<sub>A &amp; B</sub>\n" +
-		"</result>\n" +
-		"<result item=\"2\">\n" +
-		"<sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub>\n" +
-		"</result>\n" +
-		"<result item=\"3\">\n" +
-		"<sub name=\"r\">R</sub>\n" +
-		"</result>\n</results>";
+			"<result item=\"1\">\n" +
+			"<sub>A &amp; B</sub>\n" +
+			"</result>\n" +
+			"<result item=\"2\">\n" +
+			"<sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub>\n" +
+			"</result>\n" +
+			"<result item=\"3\">\n" +
+			"<sub name=\"r\">R</sub>\n" +
+			"</result>\n</results>";
 
 	private final String expectedBasicNoNSFirstElement = "<results>\n" +
-		"<result item=\"1\">\n" +
-		"<sub>A &amp; B</sub>\n" +
-		"</result>\n</results>";
+			"<result item=\"1\">\n" +
+			"<sub>A &amp; B</sub>\n" +
+			"</result>\n</results>";
 
 	private final String expectedBasicNoNSFirstTwoElements = "<results>\n" +
-		"<result item=\"1\">\n" +
-		"<sub>A &amp; B</sub>\n" +
-		"</result>\n" +
-		"<result item=\"2\">\n" +
-		"<sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub>\n" +
-		"</result>\n</results>";
+			"<result item=\"1\">\n" +
+			"<sub>A &amp; B</sub>\n" +
+			"</result>\n" +
+			"<result item=\"2\">\n" +
+			"<sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub>\n" +
+			"</result>\n</results>";
 
 	private final String expectedBasicNS1 = "<results>\n" +
-		"<result item=\"1\">\n" +
-		"<sub xmlns=\"urn:test\">A &amp; B</sub>\n" +
-		"</result>\n" +
-		"<result item=\"2\">\n" +
-		"<sub name=\"p &amp; Q\" xmlns=\"urn:test\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub>\n" +
-		"</result>\n" +
-		"<result item=\"3\">\n" +
-		"<sub name=\"r\" xmlns=\"urn:test\">R</sub>\n" +
-		"</result>\n</results>";
+			"<result item=\"1\">\n" +
+			"<sub xmlns=\"urn:test\">A &amp; B</sub>\n" +
+			"</result>\n" +
+			"<result item=\"2\">\n" +
+			"<sub name=\"p &amp; Q\" xmlns=\"urn:test\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub>\n" +
+			"</result>\n" +
+			"<result item=\"3\">\n" +
+			"<sub name=\"r\" xmlns=\"urn:test\">R</sub>\n" +
+			"</result>\n</results>";
 
 	private final String expectedBasicNS2 = "<results>\n" +
-		"<result item=\"1\">\n" +
-		"<ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub>\n" +
-		"</result>\n" +
-		"<result item=\"2\">\n" +
-		"<ns:sub name=\"p &amp; Q\" xmlns:ns=\"urn:test\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</ns:sub>\n" +
-		"</result>\n" +
-		"<result item=\"3\">\n" +
-		"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n" +
-		"</result>\n</results>";
+			"<result item=\"1\">\n" +
+			"<ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub>\n" +
+			"</result>\n" +
+			"<result item=\"2\">\n" +
+			"<ns:sub name=\"p &amp; Q\" xmlns:ns=\"urn:test\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</ns:sub>\n" +
+			"</result>\n" +
+			"<result item=\"3\">\n" +
+			"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n" +
+			"</result>\n</results>";
 
 	private final PipeLineSession session = new PipeLineSession();
 
@@ -124,31 +126,31 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		ElementRenderer(SwitchCounter sc, Exception e) {
 			super();
-			this.sc=sc;
-			this.e=e;
+			this.sc = sc;
+			this.e = e;
 		}
 
 		@Override
 		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			callCounter++;
-			if (sc!=null) sc.mark("out");
+			if (sc != null) sc.mark("out");
 			try {
 				if (message.asString().contains("error")) {
-					if (e!=null) {
+					if (e != null) {
 						if (e instanceof SenderException) {
-							throw (SenderException)e;
+							throw (SenderException) e;
 						}
 						if (e instanceof TimeoutException) {
-							throw (TimeoutException)e;
+							throw (TimeoutException) e;
 						}
 						if (e instanceof RuntimeException) {
-							throw (RuntimeException)e;
+							throw (RuntimeException) e;
 						}
 					}
 					throw new SenderException("Exception triggered", e);
 				}
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix(),e);
+				throw new SenderException(getLogPrefix(), e);
 			}
 			return super.sendMessage(message, session);
 		}
@@ -239,7 +241,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	@Test
 	public void testErrorBlock() throws Exception {
 		Exception targetException = new NullPointerException("FakeException");
-		ElementRenderer er = getElementRenderer(targetException) ;
+		ElementRenderer er = getElementRenderer(targetException);
 		pipe.setSender(er);
 		pipe.setBlockSize(10);
 		configurePipe();
@@ -249,8 +251,8 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			doPipe(pipe, messageError, session);
 			fail("Expected exception to be thrown");
 		} catch (Exception e) {
-			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
-			assertCauseChainEndsAtOriginalException(targetException,e);
+			assertThat(e.getMessage(), StringContains.containsString("(NullPointerException) FakeException"));
+			assertCauseChainEndsAtOriginalException(targetException, e);
 			assertEquals(1, er.callCounter);
 		}
 	}
@@ -266,8 +268,8 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			doPipe(pipe, messageError, session);
 			fail("Expected exception to be thrown");
 		} catch (Exception e) {
-			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
-			assertCauseChainEndsAtOriginalException(targetException,e);
+			assertThat(e.getMessage(), StringContains.containsString("(NullPointerException) FakeException"));
+			assertCauseChainEndsAtOriginalException(targetException, e);
 		}
 	}
 
@@ -283,8 +285,8 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			doPipe(pipe, messageError, session);
 			fail("Expected exception to be thrown");
 		} catch (Exception e) {
-			assertThat(e.getMessage(),StringContains.containsString("(NullPointerException) FakeException"));
-			assertCauseChainEndsAtOriginalException(targetException,e);
+			assertThat(e.getMessage(), StringContains.containsString("(NullPointerException) FakeException"));
+			assertCauseChainEndsAtOriginalException(targetException, e);
 		}
 	}
 
@@ -299,8 +301,8 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			doPipe(pipe, messageError, session);
 			fail("Expected exception to be thrown");
 		} catch (Exception e) {
-			assertThat(e.getMessage(),StringContains.containsString("FakeTimeout"));
-			assertCauseChainEndsAtOriginalException(targetException,e);
+			assertThat(e.getMessage(), StringContains.containsString("FakeTimeout"));
+			assertCauseChainEndsAtOriginalException(targetException, e);
 		}
 	}
 
@@ -316,16 +318,16 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			doPipe(pipe, messageError, session);
 			fail("Expected exception to be thrown");
 		} catch (Exception e) {
-			assertThat(e.getMessage(),StringContains.containsString("FakeTimeout"));
-			assertCauseChainEndsAtOriginalException(targetException,e);
+			assertThat(e.getMessage(), StringContains.containsString("FakeTimeout"));
+			assertCauseChainEndsAtOriginalException(targetException, e);
 		}
 	}
 
-	private void assertCauseChainEndsAtOriginalException(Exception expectedCause,Exception actual) {
+	private void assertCauseChainEndsAtOriginalException(Exception expectedCause, Exception actual) {
 		//actual.printStackTrace();
-		Throwable cause=actual;
-		while (cause.getCause()!=null) {
-			cause=cause.getCause();
+		Throwable cause = actual;
+		while (cause.getCause() != null) {
+			cause = cause.getCause();
 		}
 		//cause.printStackTrace();
 		assertEquals(expectedCause, cause, "cause chain should continue up to original exception");
@@ -410,7 +412,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		pipe.setElementXPathExpression("/root/sub[@name=$param]");
 		// pipe.setNamespaceAware(true);
 		pipe.setSender(getElementRenderer(sc));
-		pipe.addParameter(new Parameter("param","r"));
+		pipe.addParameter(new Parameter("param", "r"));
 		configurePipe();
 		pipe.start();
 
@@ -1072,18 +1074,18 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	private class SwitchCounter {
 		public int count;
 		private String prevLabel;
-		public Map<String,Integer> hitCount = new HashMap<>();
+		public Map<String, Integer> hitCount = new HashMap<>();
 
 		public void mark(String label) {
-			if (prevLabel==null || !prevLabel.equals(label)) {
-				prevLabel=label;
+			if (prevLabel == null || !prevLabel.equals(label)) {
+				prevLabel = label;
 				count++;
 			}
-			Integer hits=hitCount.get(label);
+			Integer hits = hitCount.get(label);
 			if (hits == null) {
-				hitCount.put(label,1);
+				hitCount.put(label, 1);
 			} else {
-				hitCount.put(label,hits+1);
+				hitCount.put(label, hits + 1);
 			}
 		}
 	}
@@ -1096,42 +1098,42 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		public LoggingInputStream(InputStream arg0, SwitchCounter sc) {
 			super(arg0);
-			this.sc=sc;
+			this.sc = sc;
 		}
 
 		private void print(String string) {
-			log.debug("in["+sc.hitCount.get("in")+"]-> "+string);
+			log.debug("in[" + sc.hitCount.get("in") + "]-> " + string);
 			sc.mark("in");
 		}
 
 		@Override
 		public int read() throws IOException {
-			int c=super.read();
-			print("in-> ["+((char)c)+"]");
+			int c = super.read();
+			print("in-> [" + ((char) c) + "]");
 			return c;
 		}
 
 		@Override
 		public int read(byte[] buf, int off, int len) throws IOException {
-			int l=super.read(buf, off, Math.min(len, blockSize));
-			if (l<0) {
+			int l = super.read(buf, off, Math.min(len, blockSize));
+			if (l < 0) {
 				print("{EOF}");
 			} else {
-				print(new String(buf,off,l));
+				print(new String(buf, off, l));
 			}
 			return l;
 		}
 
 		@Override
 		public int read(byte[] buf) throws IOException {
-			if (buf.length> blockSize) {
-				return read(buf,0, blockSize);
+			if (buf.length > blockSize) {
+				return read(buf, 0, blockSize);
 			}
-			int l=super.read(buf);
-			if (l<0) {
+			int l = super.read(buf);
+			if (l < 0) {
 				print("{EOF}");
 			} else {
-				print(new String(buf,0,l));
+				print(new String(buf, 0, l));
 			}
 			return l;
 		}

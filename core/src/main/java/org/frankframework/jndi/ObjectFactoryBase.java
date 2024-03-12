@@ -32,15 +32,14 @@ import org.frankframework.util.LogUtil;
 /**
  * Baseclass for Object lookups.
  *
- * @author Gerrit van Brakel
- *
  * @param <O> Object class used by clients
  * @param <L> Class looked up
+ * @author Gerrit van Brakel
  */
-public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
+public abstract class ObjectFactoryBase<O, L> implements DisposableBean {
 	protected final Logger log = LogUtil.getLogger(this);
 
-	protected Map<String,O> objects = new ConcurrentHashMap<>();
+	protected Map<String, O> objects = new ConcurrentHashMap<>();
 
 	/**
 	 * Perform the actual lookup
@@ -49,7 +48,7 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 
 	@SuppressWarnings("unchecked")
 	protected O augment(L object, String objectName) {
-		return (O)object;
+		return (O) object;
 	}
 
 
@@ -82,17 +81,17 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 
 	@Override
 	public void destroy() throws Exception {
-		Exception masterException=null;
-		for (Entry<String,O> entry:objects.entrySet()) {
+		Exception masterException = null;
+		for (Entry<String, O> entry : objects.entrySet()) {
 			String name = entry.getKey();
 			O object = entry.getValue();
 			if (object instanceof AutoCloseable) {
 				try {
-					log.debug("closing ["+ClassUtils.nameOf(object)+"] object ["+name+"]");
-					((AutoCloseable)object).close();
+					log.debug("closing [" + ClassUtils.nameOf(object) + "] object [" + name + "]");
+					((AutoCloseable) object).close();
 				} catch (Exception e) {
-					if (masterException==null) {
-						masterException = new Exception("Exception caught closing ["+ClassUtils.nameOf(object)+"] object ["+name+"] held by ("+getClass().getSimpleName()+")", e);
+					if (masterException == null) {
+						masterException = new Exception("Exception caught closing [" + ClassUtils.nameOf(object) + "] object [" + name + "] held by (" + getClass().getSimpleName() + ")", e);
 					} else {
 						masterException.addSuppressed(e);
 					}
@@ -100,7 +99,7 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 			}
 		}
 		objects.clear();
-		if (masterException!=null) {
+		if (masterException != null) {
 			throw masterException;
 		}
 	}

@@ -33,19 +33,17 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.management.IbisAction;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 
 /**
  * Get adapter information from either all or a specified adapter
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
@@ -71,10 +69,10 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response getAdapterOld(@PathParam("name") String name, @QueryParam("configuration") String configuration, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
-		if(StringUtils.isNotEmpty(configuration)) {
+		if (StringUtils.isNotEmpty(configuration)) {
 			return getAdapter(configuration, name, expanded, showPendingMsgCount);
 		}
-		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+name, Status.BAD_REQUEST);
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX + "/adapters/" + name, Status.BAD_REQUEST);
 	}
 
 	@GET
@@ -99,10 +97,10 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response getIbisHealthOld(@PathParam("name") String name, @QueryParam("configuration") String configuration) {
-		if(StringUtils.isNotEmpty(configuration)) {
+		if (StringUtils.isNotEmpty(configuration)) {
 			return getAdapterHealth(configuration, name);
 		}
-		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+name+"/health", Status.BAD_REQUEST);
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX + "/adapters/" + name + "/health", Status.BAD_REQUEST);
 	}
 
 	@GET
@@ -133,36 +131,36 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 		ArrayList<String> adapters = new ArrayList<>();
 
 		String value = RequestUtils.getValue(json, "action");
-		if(StringUtils.isNotEmpty(value)) {
-			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
-			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
+		if (StringUtils.isNotEmpty(value)) {
+			if (value.equals("stop")) {action = IbisAction.STOPADAPTER;}
+			if (value.equals("start")) {action = IbisAction.STARTADAPTER;}
 		}
-		if(action == null) {
+		if (action == null) {
 			throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 		}
 
 		Object adapterList = json.get("adapters");
-		if(adapterList != null) {
+		if (adapterList != null) {
 			try {
 				adapters.addAll((ArrayList<String>) adapterList);
-			} catch(Exception e) {
+			} catch (Exception e) {
 				throw new ApiException(e);
 			}
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 		builder.addHeader("action", action.name());
-		if(adapters.isEmpty()) {
+		if (adapters.isEmpty()) {
 			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, "*ALL*");
 			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, "*ALL*");
 			callAsyncGateway(builder);
 		} else {
-			for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
+			for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext(); ) {
 				String adapterNameWithPossibleConfigurationName = iterator.next();
 				int slash = adapterNameWithPossibleConfigurationName.indexOf("/");
 				String adapterName;
-				if(slash > -1) {
-					adapterName = adapterNameWithPossibleConfigurationName.substring(slash+1);
+				if (slash > -1) {
+					adapterName = adapterNameWithPossibleConfigurationName.substring(slash + 1);
 					String configurationName = adapterNameWithPossibleConfigurationName.substring(0, slash);
 					builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 				} else {
@@ -183,10 +181,10 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response updateAdapterOld(@PathParam("adapter") String adapter, @QueryParam("configuration") String configuration, Map<String, Object> json) {
-		if(StringUtils.isNotEmpty(configuration)) {
+		if (StringUtils.isNotEmpty(configuration)) {
 			return updateAdapter(configuration, adapter, json);
 		}
-		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+adapter, Status.BAD_REQUEST);
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX + "/adapters/" + adapter, Status.BAD_REQUEST);
 	}
 
 	@PUT
@@ -198,11 +196,11 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Description("start/stop an adapter")
 	public Response updateAdapter(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter, Map<String, Object> json) {
 		Object value = json.get("action");
-		if(value instanceof String) {
+		if (value instanceof String) {
 			IbisAction action = null;
-			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
-			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
-			if(action == null) {
+			if (value.equals("stop")) {action = IbisAction.STOPADAPTER;}
+			if (value.equals("start")) {action = IbisAction.STARTADAPTER;}
+			if (action == null) {
 				throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 			}
 
@@ -224,10 +222,10 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response updateReceiverOld(@QueryParam("configuration") String configuration, @PathParam("adapter") String adapter, @PathParam("receiver") String receiver, Map<String, Object> json) {
-		if(StringUtils.isNotEmpty(configuration)) {
+		if (StringUtils.isNotEmpty(configuration)) {
 			return updateReceiverOld(configuration, adapter, receiver, json);
 		}
-		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+adapter+"/receivers/"+receiver, Status.BAD_REQUEST);
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX + "/adapters/" + adapter + "/receivers/" + receiver, Status.BAD_REQUEST);
 	}
 
 	@PUT
@@ -239,13 +237,12 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Description("start/stop an adapter receivers")
 	public Response updateReceiver(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter, @PathParam("receiver") String receiver, Map<String, Object> json) {
 		Object value = json.get("action");
-		if(value instanceof String) {
+		if (value instanceof String) {
 			IbisAction action = null;
-			if(value.equals("stop")) { action = IbisAction.STOPRECEIVER; }
-			else if(value.equals("start")) { action = IbisAction.STARTRECEIVER; }
-			else if(value.equals("incthread")) { action = IbisAction.INCTHREADS; }
-			else if(value.equals("decthread")) { action = IbisAction.DECTHREADS; }
-			if(action == null) {
+			if (value.equals("stop")) {action = IbisAction.STOPRECEIVER;} else if (value.equals("start")) {
+				action = IbisAction.STARTRECEIVER;
+			} else if (value.equals("incthread")) {action = IbisAction.INCTHREADS;} else if (value.equals("decthread")) {action = IbisAction.DECTHREADS;}
+			if (action == null) {
 				throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);
 			}
 
@@ -267,10 +264,10 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Produces(MediaType.TEXT_PLAIN)
 	@Deprecated
 	public Response getAdapterFlowOld(@PathParam("adapter") String adapter, @QueryParam("configuration") String configuration) {
-		if(StringUtils.isNotEmpty(configuration)) {
+		if (StringUtils.isNotEmpty(configuration)) {
 			return getAdapterFlow(configuration, adapter);
 		}
-		throw new ApiException(REDIRECT_MESSAGE_PREFIX+"/adapters/"+adapter+"/flow", Status.BAD_REQUEST);
+		throw new ApiException(REDIRECT_MESSAGE_PREFIX + "/adapters/" + adapter + "/flow", Status.BAD_REQUEST);
 	}
 
 	@GET

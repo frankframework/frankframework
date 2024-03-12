@@ -26,10 +26,10 @@ public interface DocumentedEnum {
 		Field enumConstant;
 		try {
 			enumConstant = getClass().getField(name());
-		} catch(NoSuchFieldException e) {
+		} catch (NoSuchFieldException e) {
 			return name();
 		}
-		if(enumConstant.isAnnotationPresent(EnumLabel.class)) {
+		if (enumConstant.isAnnotationPresent(EnumLabel.class)) {
 			EnumLabel enumLabel = enumConstant.getAnnotation(EnumLabel.class);
 			return enumLabel.value();
 		}

@@ -21,10 +21,10 @@ import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.INamedObject;
 import org.frankframework.util.LogUtil;
+
 /**
  * A JmsRealm is a definition of a JMS provider, and is kind of a utility
  * class to prevent the tedeous work of repeatedly defining all parameters
@@ -33,8 +33,9 @@ import org.frankframework.util.LogUtil;
  * This class is not an extension of JNDIBase, which would be logical, because
  * in the JMSBase class the function PropertyUtils.copyProperties is used, which cannot
  * handle this.
- * @see JMSFacade#setJmsRealm
+ *
  * @author Johan Verrips IOS
+ * @see JMSFacade#setJmsRealm
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
@@ -82,10 +83,10 @@ public class JmsRealm {
 	 * copies matching properties to any other class
 	 */
 	public void copyRealm(Object destination) {
-		String logPrefixDest=destination.getClass().getName()+" ";
+		String logPrefixDest = destination.getClass().getName() + " ";
 		if (destination instanceof INamedObject) {
 			INamedObject namedDestination = (INamedObject) destination;
-			logPrefixDest += "["+namedDestination.getName()+"] ";
+			logPrefixDest += "[" + namedDestination.getName() + "] ";
 		}
 		try {
 			BeanMap thisBeanMap = new BeanMap(this);
@@ -98,18 +99,18 @@ public class JmsRealm {
 					PropertyUtils.setProperty(destination, key, value);
 				}
 			}
-		}catch (Exception e) {
-			log.error(logPrefixDest+"unable to copy properties of JmsRealm", e);
+		} catch (Exception e) {
+			log.error(logPrefixDest + "unable to copy properties of JmsRealm", e);
 		}
-		log.info(logPrefixDest+"loaded properties from jmsRealm ["+toString()+"]");
+		log.info(logPrefixDest + "loaded properties from jmsRealm [" + toString() + "]");
 	}
 
 	/**
 	 * copies matching properties from a JmsRealm to any other class
 	 *
 	 * @see JmsRealm
-	 *
-	 * TODO: Some amount of cleanup possible by putting JmsRealmFactory in Spring context
+	 * 		<p>
+	 * 		TODO: Some amount of cleanup possible by putting JmsRealmFactory in Spring context
 	 */
 	public static void copyRealm(Object destination, String jmsRealmName) throws ConfigurationException {
 
@@ -124,7 +125,6 @@ public class JmsRealm {
 	 * The <code>toString()</code> method retrieves its value by reflection.
 	 *
 	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
-	 *
 	 **/
 	@Override
 	public String toString() {
@@ -142,6 +142,7 @@ public class JmsRealm {
 	public void setRealmName(String newName) {
 		realmName = newName;
 	}
+
 	public String getRealmName() {
 		return realmName;
 	}
@@ -178,6 +179,7 @@ public class JmsRealm {
 	public void setQueueConnectionFactoryName(String newQueueConnectionFactoryName) {
 		queueConnectionFactoryName = newQueueConnectionFactoryName;
 	}
+
 	public String getQueueConnectionFactoryName() {
 		return queueConnectionFactoryName;
 	}
@@ -188,6 +190,7 @@ public class JmsRealm {
 	public void setTopicConnectionFactoryName(String newTopicConnectionFactoryName) {
 		topicConnectionFactoryName = newTopicConnectionFactoryName;
 	}
+
 	public String getTopicConnectionFactoryName() {
 		return topicConnectionFactoryName;
 	}
@@ -195,6 +198,7 @@ public class JmsRealm {
 	public void setDatasourceName(String string) {
 		datasourceName = string;
 	}
+
 	public String getDatasourceName() {
 		return datasourceName;
 	}
@@ -203,6 +207,7 @@ public class JmsRealm {
 	public void setSecurityProtocol(String securityProtocol) {
 		this.securityProtocol = securityProtocol;
 	}
+
 	public String getSecurityProtocol() {
 		return securityProtocol;
 	}
@@ -211,6 +216,7 @@ public class JmsRealm {
 	public void setUrlPkgPrefixes(String urlPkgPrefixes) {
 		this.urlPkgPrefixes = urlPkgPrefixes;
 	}
+
 	public String getUrlPkgPrefixes() {
 		return urlPkgPrefixes;
 	}
@@ -232,14 +238,10 @@ public class JmsRealm {
 	}
 
 
-
-
-
-
-
 	public void setUserTransactionUrl(String string) {
 		userTransactionUrl = string;
 	}
+
 	public String getUserTransactionUrl() {
 		return userTransactionUrl;
 	}
@@ -247,6 +249,7 @@ public class JmsRealm {
 	public void setPrincipal(String string) {
 		principal = string;
 	}
+
 	public String getPrincipal() {
 		return principal;
 	}
@@ -254,6 +257,7 @@ public class JmsRealm {
 	public void setJndiAuthAlias(String string) {
 		jndiAuthAlias = string;
 	}
+
 	public String getJndiAuthAlias() {
 		return jndiAuthAlias;
 	}
@@ -261,6 +265,7 @@ public class JmsRealm {
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
+
 	public String getAuthAlias() {
 		return authAlias;
 	}
@@ -268,6 +273,7 @@ public class JmsRealm {
 	public void setJndiContextPrefix(String string) {
 		jndiContextPrefix = string;
 	}
+
 	public String getJndiContextPrefix() {
 		return jndiContextPrefix;
 	}
@@ -275,6 +281,7 @@ public class JmsRealm {
 	public void setJndiProperties(String jndiProperties) {
 		this.jndiProperties = jndiProperties;
 	}
+
 	public String getJndiProperties() {
 		return jndiProperties;
 	}

@@ -30,7 +30,7 @@ public class ObjectLocator<L> extends JndiObjectLocator {
 	public ObjectLocator(Properties jndiEnvironment, Class<L> lookupClass) {
 		setExpectedType(lookupClass);
 
-		if(jndiEnvironment != null) {
+		if (jndiEnvironment != null) {
 			setJndiEnvironment(jndiEnvironment);
 		}
 	}

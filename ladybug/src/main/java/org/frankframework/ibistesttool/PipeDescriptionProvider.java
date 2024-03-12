@@ -69,7 +69,7 @@ public class PipeDescriptionProvider {
 	public PipeDescription getPipeDescription(PipeLine pipeLine, IPipe pipe) {
 		PipeDescription pipeDescription;
 		INamedObject pipeLineOwner = pipeLine.getOwner();
-		String adapterName = pipeLineOwner==null? "?": pipeLineOwner.getName();
+		String adapterName = pipeLineOwner == null ? "?" : pipeLineOwner.getName();
 		String pipeName = pipe.getName();
 		String checkpointName = null;
 		String xpathExpression = null;
@@ -89,41 +89,49 @@ public class PipeDescriptionProvider {
 			} else if (pipeName.startsWith(MessageSendingPipe.INPUT_VALIDATOR_NAME_PREFIX)
 					&& pipeName.endsWith(MessageSendingPipe.INPUT_VALIDATOR_NAME_SUFFIX)) {
 				checkpointName = INPUT_VALIDATOR_CHECKPOINT_NAME;
-				String parentPipeName = getParentPipeName(pipeName,
+				String parentPipeName = getParentPipeName(
+						pipeName,
 						MessageSendingPipe.INPUT_VALIDATOR_NAME_PREFIX,
-						MessageSendingPipe.INPUT_VALIDATOR_NAME_SUFFIX);
+						MessageSendingPipe.INPUT_VALIDATOR_NAME_SUFFIX
+				);
 				xpathExpression = "//*/adapter[@name=\"" + adapterName + "\"]/pipeline/pipe[@name=\"" + parentPipeName + "\"]/inputValidator";
 			} else if (pipeName.startsWith(MessageSendingPipe.OUTPUT_VALIDATOR_NAME_PREFIX)
 					&& pipeName.endsWith(MessageSendingPipe.OUTPUT_VALIDATOR_NAME_SUFFIX)) {
 				checkpointName = OUTPUT_VALIDATOR_CHECKPOINT_NAME;
-				String parentPipeName = getParentPipeName(pipeName,
+				String parentPipeName = getParentPipeName(
+						pipeName,
 						MessageSendingPipe.OUTPUT_VALIDATOR_NAME_PREFIX,
-						MessageSendingPipe.OUTPUT_VALIDATOR_NAME_SUFFIX);
+						MessageSendingPipe.OUTPUT_VALIDATOR_NAME_SUFFIX
+				);
 				xpathExpression = "//*/adapter[@name=\"" + adapterName + "\"]/pipeline/pipe[@name=\"" + parentPipeName + "\"]/outputValidator";
 			} else if (pipeName.startsWith(MessageSendingPipe.INPUT_WRAPPER_NAME_PREFIX)
 					&& pipeName.endsWith(MessageSendingPipe.INPUT_WRAPPER_NAME_SUFFIX)) {
 				checkpointName = INPUT_WRAPPER_CHECKPOINT_NAME;
-				String parentPipeName = getParentPipeName(pipeName,
+				String parentPipeName = getParentPipeName(
+						pipeName,
 						MessageSendingPipe.INPUT_WRAPPER_NAME_PREFIX,
-						MessageSendingPipe.INPUT_WRAPPER_NAME_SUFFIX);
+						MessageSendingPipe.INPUT_WRAPPER_NAME_SUFFIX
+				);
 				xpathExpression = "//*/adapter[@name=\"" + adapterName + "\"]/pipeline/pipe[@name=\"" + parentPipeName + "\"]/inputWrapper";
 			} else if (pipeName.startsWith(MessageSendingPipe.OUTPUT_WRAPPER_NAME_PREFIX)
 					&& pipeName.endsWith(MessageSendingPipe.OUTPUT_WRAPPER_NAME_SUFFIX)) {
 				checkpointName = OUTPUT_WRAPPER_CHECKPOINT_NAME;
-				String parentPipeName = getParentPipeName(pipeName,
+				String parentPipeName = getParentPipeName(
+						pipeName,
 						MessageSendingPipe.OUTPUT_WRAPPER_NAME_PREFIX,
-						MessageSendingPipe.OUTPUT_WRAPPER_NAME_SUFFIX);
+						MessageSendingPipe.OUTPUT_WRAPPER_NAME_SUFFIX
+				);
 				xpathExpression = "//*/adapter[@name=\"" + adapterName + "\"]/pipeline/pipe[@name=\"" + parentPipeName + "\"]/outputWrapper";
 			}
 		} else {
 			xpathExpression = "//*/adapter[@name=\"" + adapterName + "\"]/pipeline/pipe[@name=\"" + pipeName + "\"]";
 		}
-		synchronized(pipeDescriptionCaches) {
+		synchronized (pipeDescriptionCaches) {
 			// When a configuration is changed (reloaded) a new configuration
 			// object will be created. The old configuration object will be
 			// removed from pipeDescriptionCaches by the garbage collection as
 			// this is a WeakHashMap.
-			if(!(pipeLine.getApplicationContext() instanceof Configuration)) {
+			if (!(pipeLine.getApplicationContext() instanceof Configuration)) {
 				pipeDescription = new PipeDescription();
 				pipeDescription.setCheckpointName(getCheckpointName(pipe, checkpointName));
 				pipeDescription.setDescription("Unable to find pipe information, configuration not found.");
@@ -181,7 +189,7 @@ public class PipeDescriptionProvider {
 		XPath xPath = XmlUtils.getXPathFactory().newXPath();
 		try {
 			XPathExpression xPathExpression = xPath.compile(xpathExpression);
-			return (Node)xPathExpression.evaluate(document, XPathConstants.NODE);
+			return (Node) xPathExpression.evaluate(document, XPathConstants.NODE);
 		} catch (XPathExpressionException e) {
 			return null;
 		}
@@ -201,8 +209,8 @@ public class PipeDescriptionProvider {
 					|| "schemaLocation".equals(attribute.getName())) {
 				if ("schemaLocation".equals(attribute.getName())) {
 					int index = 0;
-					for(String resourceName : StringUtil.split(attribute.getValue(), ", \t\r\n\f")) {
-						if(index++ % 2 == 1 && pipeDescription.doesNotContainResourceName(resourceName)) {
+					for (String resourceName : StringUtil.split(attribute.getValue(), ", \t\r\n\f")) {
+						if (index++ % 2 == 1 && pipeDescription.doesNotContainResourceName(resourceName)) {
 							pipeDescription.addResourceName(resourceName);
 						}
 					}
@@ -230,11 +238,11 @@ public class PipeDescriptionProvider {
 		String resource;
 		try {
 			URL resourceUrl = ClassLoaderUtils.getResourceURL(pipeLine, resourceName);
-			if(resourceUrl != null)
+			if (resourceUrl != null)
 				resource = StreamUtil.resourceToString(resourceUrl, "\n", false);
 			else
 				resource = "File not found: " + resourceName;
-		} catch(IOException e) {
+		} catch (IOException e) {
 			resource = "IOException: " + e.getMessage();
 		}
 		return resource;

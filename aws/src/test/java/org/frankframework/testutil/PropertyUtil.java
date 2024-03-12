@@ -7,14 +7,13 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
 
 public class PropertyUtil {
 	protected static Logger log = LogUtil.getLogger(PropertyUtil.class);
 
-	public static Map<String,Properties> propertiesMap = new HashMap<>();
+	public static Map<String, Properties> propertiesMap = new HashMap<>();
 
 	public static String getProperty(String propertyFile, String property) {
 		Properties properties = propertiesMap.get(propertyFile);
@@ -23,12 +22,12 @@ public class PropertyUtil {
 			try {
 				properties.load(ClassLoaderUtils.getResourceURL(propertyFile).openStream());
 			} catch (IOException e) {
-				log.warn("Could not load property file ["+propertyFile+"]",e);
+				log.warn("Could not load property file [" + propertyFile + "]", e);
 			}
 			propertiesMap.put(propertyFile, properties);
 		}
 		String envValue = System.getenv(property);
-		if(StringUtils.isNotEmpty(envValue)) {
+		if (StringUtils.isNotEmpty(envValue)) {
 			return envValue;
 		}
 		return properties.getProperty(property);

@@ -28,10 +28,8 @@ import java.util.Date;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.frankframework.dbms.JdbcException;
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IForwardTarget;
@@ -40,13 +38,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 public class ResultSet2FileSender extends FixedQuerySender {
 	private @Getter String filenameSessionKey;
@@ -60,7 +59,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getFilenameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"filenameSessionKey must be specified");
+			throw new ConfigurationException(getLogPrefix() + "filenameSessionKey must be specified");
 		}
 		String sft = getStatusFieldType();
 		if (StringUtils.isNotEmpty(sft)) {
@@ -75,27 +74,27 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	protected PipeRunResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session, @Nullable IForwardTarget next) throws SenderException, TimeoutException {
 		String fileName = session.getString(getFilenameSessionKey());
 		if (fileName == null) {
-			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]");
+			throw new SenderException(getLogPrefix() + "unable to get filename from session key [" + getFilenameSessionKey() + "]");
 		}
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
 			try {
 				maxRecords = session.getInteger(getMaxRecordsSessionKey());
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix() + "unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
+				throw new SenderException(getLogPrefix() + "unable to parse " + getMaxRecordsSessionKey() + " to integer", e);
 			}
 		}
 
 		int counter = 0;
 		try (FileOutputStream fos = new FileOutputStream(fileName, isAppend())) {
-			PreparedStatement statement=queryExecutionContext.getStatement();
+			PreparedStatement statement = queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			try (ResultSet resultset = statement.executeQuery()) {
 				boolean eor = maxRecords == 0;
 				while (!eor && resultset.next()) {
 					counter++;
 					processResultSet(resultset, fos, counter);
-					if (maxRecords>=0 && counter>=maxRecords) {
+					if (maxRecords >= 0 && counter >= maxRecords) {
 						ResultSetMetaData rsmd = resultset.getMetaData();
 						if (rsmd.getColumnCount() >= 3) {
 							String group = resultset.getString(3);
@@ -126,17 +125,17 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return new PipeRunResult(null, new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>"));
 	}
 
-	private void processResultSet (ResultSet resultset, FileOutputStream fos, int counter) throws SQLException, IOException {
+	private void processResultSet(ResultSet resultset, FileOutputStream fos, int counter) throws SQLException, IOException {
 		String rec_str = resultset.getString(1);
 		if (log.isDebugEnabled()) {
 			log.debug("iteration [" + counter + "] item [" + rec_str + "]");
 		}
 		if ("timestamp".equalsIgnoreCase(getStatusFieldType())) {
 			//TODO: statusFieldType is nu altijd een timestamp (dit moeten ook andere types kunnen zijn)
-			resultset.updateTimestamp(2 , new Timestamp((new Date()).getTime()));
+			resultset.updateTimestamp(2, new Timestamp((new Date()).getTime()));
 			resultset.updateRow();
 		}
-		if (rec_str!=null) {
+		if (rec_str != null) {
 			fos.write(rec_str.getBytes());
 		}
 		fos.write(eolArray);
@@ -155,6 +154,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 
 	/**
 	 * Key of session variable that contains the name of the file to use.
+	 *
 	 * @ff.mandatory
 	 */
 	public void setFilenameSessionKey(String filenameSessionKey) {
@@ -163,6 +163,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 
 	/**
 	 * If set <code>true</code> and the file already exists, the resultset rows are written to the end of the file.
+	 *
 	 * @ff.default false
 	 */
 	public void setAppend(boolean b) {

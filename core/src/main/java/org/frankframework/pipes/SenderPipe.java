@@ -22,17 +22,16 @@ import org.frankframework.core.IValidator;
 import org.frankframework.core.IWrapperPipe;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
-import org.frankframework.doc.Reintroduce;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.doc.Reintroduce;
 
 /**
  * Plain extension to {@link MessageSendingPipe} that can be used directly in configurations.
  * Only extension is that the setters for listener and sender have been made public, and can therefore
  * be set from the configuration file.
  *
+ * @author Dennis van Loon
  * @ff.parameters Any parameters defined on the pipe will be handed to the sender, if this is a ISenderWithParameters.
- *
- * @author  Dennis van Loon
  */
 @Category("Basic")
 @ElementType(ElementTypes.ENDPOINT)

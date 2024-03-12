@@ -55,10 +55,12 @@ public class MessageContext implements Serializable {
 	public MessageContext() {
 		super();
 	}
+
 	public MessageContext(String charset) {
 		this();
 		withCharset(charset);
 	}
+
 	public MessageContext(Map<String, ?> base) {
 		this();
 		withAllFrom(base);
@@ -68,15 +70,15 @@ public class MessageContext implements Serializable {
 		this(base.data);
 	}
 
-	public MessageContext withAllFrom(Map<String,?> base) {
-		if (base!=null) {
+	public MessageContext withAllFrom(Map<String, ?> base) {
+		if (base != null) {
 			putAll(base);
 		}
 		return this;
 	}
 
 	public void putAll(Map<String, ?> base) {
-		if (base!=null) {
+		if (base != null) {
 			data.putAll(base);
 		}
 	}
@@ -111,18 +113,20 @@ public class MessageContext implements Serializable {
 		}
 		return this;
 	}
+
 	public MessageContext withCharset(Charset charset) {
-		if (charset!=null) {
+		if (charset != null) {
 			put(METADATA_CHARSET, charset.name());
 		}
 		return this;
 	}
+
 	public MessageContext withMimeType(String mimeType) {
 		try {
 			withMimeType(MimeType.valueOf(mimeType));
 		} catch (InvalidMimeTypeException imte) {
 			String parsed = StringUtil.splitToStream(mimeType, ";").filter(e -> !e.contains("=")).findFirst().orElse(null);
-			if(parsed != null) {
+			if (parsed != null) {
 				try {
 					return withMimeType(MimeType.valueOf(parsed));
 				} catch (InvalidMimeTypeException imte2) {
@@ -141,39 +145,47 @@ public class MessageContext implements Serializable {
 
 		return this;
 	}
+
 	public MessageContext withSize(long size) {
 		if (size >= 0) {
 			put(METADATA_SIZE, size);
 		}
 		return this;
 	}
+
 	public MessageContext withoutSize() {
 		remove(METADATA_SIZE);
 		return this;
 	}
+
 	public MessageContext withModificationTime(long time) {
 		return withModificationTime(Instant.ofEpochMilli(time));
 	}
+
 	public MessageContext withModificationTime(Date time) {
-		if (time!=null) {
+		if (time != null) {
 			put(METADATA_MODIFICATIONTIME, DateFormatUtils.format(time));
 		}
 		return this;
 	}
+
 	public MessageContext withModificationTime(Instant time) {
-		if (time!=null) {
+		if (time != null) {
 			put(METADATA_MODIFICATIONTIME, DateFormatUtils.format(time));
 		}
 		return this;
 	}
+
 	public MessageContext withName(String name) {
 		put(METADATA_NAME, name);
 		return this;
 	}
+
 	public MessageContext withLocation(String location) {
 		put(METADATA_LOCATION, location);
 		return this;
 	}
+
 	public MessageContext with(String name, String value) {
 		put(name, value);
 		return this;
@@ -183,14 +195,14 @@ public class MessageContext implements Serializable {
 		// If in future we need to make incompatible changes we can keep reading old version by selecting on version-nr
 		out.writeLong(customSerializationVersion);
 		Map<String, Serializable> serializableData = data.entrySet().stream()
-						.filter(e -> {
-							if (e.getValue() instanceof Serializable) return true;
-							else {
-								LOG.warn("Cannot write non-serializable MessageContext entry to stream: [{}] -> [{}]", e::getKey, e::getValue);
-								return false;
-							}
-						})
-						.collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable)(e.getValue())));
+				.filter(e -> {
+					if (e.getValue() instanceof Serializable) return true;
+					else {
+						LOG.warn("Cannot write non-serializable MessageContext entry to stream: [{}] -> [{}]", e::getKey, e::getValue);
+						return false;
+					}
+				})
+				.collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable) (e.getValue())));
 		out.writeObject(serializableData);
 	}
 

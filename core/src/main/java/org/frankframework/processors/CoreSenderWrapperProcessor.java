@@ -23,8 +23,8 @@ import org.frankframework.senders.SenderWrapperBase;
 import org.frankframework.stream.Message;
 
 /**
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
 public class CoreSenderWrapperProcessor implements SenderWrapperProcessor {
 

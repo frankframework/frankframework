@@ -22,7 +22,7 @@ import org.frankframework.core.INamedObject;
  * Common interface to be implemented by SapSystem implementations.
  *
  * @author Gerrit van Brakel
- * @since  7.3
+ * @since 7.3
  */
 public interface ISapSystem extends INamedObject, org.frankframework.configuration.extensions.ISapSystem {
 
@@ -31,32 +31,53 @@ public interface ISapSystem extends INamedObject, org.frankframework.configurati
 	public void registerItem(Object dummyParent);
 
 	public void setGwhost(String string);
+
 	public void setMandant(String string);
+
 	public void setAuthAlias(String string);
+
 	public void setUserid(String string);
+
 	public void setPasswd(String string);
+
 	public void setLanguage(String string);
+
 	public void setUnicode(boolean b);
+
 	public void setMaxConnections(int i);
+
 	public void setTraceLevel(int i);
+
 	public void setServiceOffset(int i);
+
 	public void setSystemnr(String string);
 
 	public void setHost(String string);
+
 	public void setAshost(String string);
+
 	public void setGroup(String string);
+
 	public void setR3name(String string);
+
 	public void setMshost(String string);
+
 	public void setMsservOffset(int i);
+
 	public void setGwservOffset(int i);
 
 	public void setSncEnabled(boolean sncEnabled);
+
 	public void setSncLibrary(String sncLibPath);
+
 	public void setSncQop(int qop) throws ConfigurationException;
 
 	public void setMyName(String myName);
+
 	public void setPartnerName(String partnerName);
+
 	public void setSncAuthMethod(String sncAuthMethod);
+
 	public void setSncSSO2(String sncSSO2);
 
 }

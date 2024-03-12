@@ -19,12 +19,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.jboss.as.domain.management.plugin.Credential;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
@@ -61,13 +62,13 @@ public class WildFlyCredentialFactoryTest {
 		when(spi.exists(any(String.class), isA(Credential.class.getClass()))).thenAnswer(i -> {
 			String alias = i.getArgument(0);
 			Class<? extends Credential> credentialClass = i.getArgument(1);
-			return credentialClass.equals(PasswordCredential.class) && aliases!=null && aliases.contains(alias);
+			return credentialClass.equals(PasswordCredential.class) && aliases != null && aliases.contains(alias);
 		});
 
 		doAnswer(i -> {
 			String alias = i.getArgument(0);
 			ClearPassword clearPassword = mock(ClearPassword.class);
-			when(clearPassword.getPassword()).thenReturn((alias+"-value").toCharArray());
+			when(clearPassword.getPassword()).thenReturn((alias + "-value").toCharArray());
 			return new PasswordCredential(clearPassword);
 		}).when(spi).retrieve(anyString(), isA(Credential.class.getClass()), isNull(), isNull(), isNull());
 
@@ -124,7 +125,7 @@ public class WildFlyCredentialFactoryTest {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("a", () -> "defaultUsername", () -> "defaultPassword");
+		WildFlyCredentials wfc = (WildFlyCredentials) credentialFactory.getCredentials("a", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("a", wfc.getAlias());
 		assertEquals("a/username-value", wfc.getUsername());
 		assertEquals("a-value", wfc.getPassword());
@@ -135,7 +136,7 @@ public class WildFlyCredentialFactoryTest {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("b", () -> "defaultUsername", () -> "defaultPassword");
+		WildFlyCredentials wfc = (WildFlyCredentials) credentialFactory.getCredentials("b", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("b", wfc.getAlias());
 		assertEquals("defaultUsername", wfc.getUsername());
 		assertEquals("b-value", wfc.getPassword());
@@ -146,7 +147,7 @@ public class WildFlyCredentialFactoryTest {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("c", () -> "defaultUsername", () -> "defaultPassword");
+		WildFlyCredentials wfc = (WildFlyCredentials) credentialFactory.getCredentials("c", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("c", wfc.getAlias());
 		assertEquals("c/username-value", wfc.getUsername());
 		assertEquals("defaultPassword", wfc.getPassword());
@@ -157,7 +158,7 @@ public class WildFlyCredentialFactoryTest {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("d", () -> "defaultUsername", () -> "defaultPassword");
+		WildFlyCredentials wfc = (WildFlyCredentials) credentialFactory.getCredentials("d", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("d", wfc.getAlias());
 		assertEquals("defaultUsername", wfc.getUsername());
 		assertEquals("defaultPassword", wfc.getPassword());

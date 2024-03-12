@@ -24,11 +24,10 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.xml.sax.SAXException;
-
 import org.frankframework.stream.JsonEventHandler;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.xml.SaxException;
+import org.xml.sax.SAXException;
 
 public class JsonWriter implements JsonEventHandler {
 
@@ -41,7 +40,7 @@ public class JsonWriter implements JsonEventHandler {
 		private boolean inArray;
 
 		private NodeState(boolean inArray) {
-			this.inArray=inArray;
+			this.inArray = inArray;
 		}
 	}
 
@@ -54,7 +53,7 @@ public class JsonWriter implements JsonEventHandler {
 	}
 
 	public JsonWriter(Writer writer) {
-		this.writer=writer;
+		this.writer = writer;
 		stateStack.push(new NodeState(false));
 	}
 
@@ -78,7 +77,7 @@ public class JsonWriter implements JsonEventHandler {
 			if (state.firstElemSeen) {
 				writer.write(",");
 			} else {
-				state.firstElemSeen=true;
+				state.firstElemSeen = true;
 			}
 		}
 	}
@@ -98,7 +97,7 @@ public class JsonWriter implements JsonEventHandler {
 	public void startObjectEntry(String key) throws SAXException {
 		try {
 			writeSeparatingComma(true);
-			writer.write("\""+key+"\":");
+			writer.write("\"" + key + "\":");
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}
@@ -140,8 +139,8 @@ public class JsonWriter implements JsonEventHandler {
 		try {
 			writeSeparatingComma(false);
 			if (value instanceof String) {
-				writer.write("\""+StringEscapeUtils.escapeJson((String)value)+"\"");
-			} else if (value==null) {
+				writer.write("\"" + StringEscapeUtils.escapeJson((String) value) + "\"");
+			} else if (value == null) {
 				writer.write("null");
 			} else {
 				writer.write(StringEscapeUtils.escapeJson(value.toString()));
@@ -156,7 +155,7 @@ public class JsonWriter implements JsonEventHandler {
 	public void number(String value) throws SAXException {
 		try {
 			writeSeparatingComma(false);
-			if (value==null) {
+			if (value == null) {
 				writer.write("null");
 			} else {
 				writer.write(value);

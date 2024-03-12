@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ListenerException;
@@ -29,9 +31,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * File listener for the Test Tool.
@@ -50,7 +49,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	private long waitBeforeRead = -1;
 	/**
 	 * -- GETTER --
-	 *  Get the timeout in milliseconds waiting for creation of the file.
+	 * Get the timeout in milliseconds waiting for creation of the file.
 	 */
 	@Getter private long timeout = 3000;
 	private long interval = 100;
@@ -78,10 +77,10 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			try {
 				String message = getMessage();
 				if (message != null) {
-					throw new ConfigurationException("Found remaining message on fileListener ["+getName()+"]");
+					throw new ConfigurationException("Found remaining message on fileListener [" + getName() + "]");
 				}
-			} catch(ListenerException e) {
-				throw new ConfigurationException("Could read message from fileListener ["+getName()+"]: " + e.getMessage(), e);
+			} catch (ListenerException e) {
+				throw new ConfigurationException("Could read message from fileListener [" + getName() + "]: " + e.getMessage(), e);
 			} catch (TimeoutException e) {
 				//Simply means no message was found
 			}
@@ -101,7 +100,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 		if (waitBeforeRead != -1) {
 			try {
 				Thread.sleep(waitBeforeRead);
-			} catch(InterruptedException e) {
+			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				throw new ListenerException("Exception waiting before reading the file: " + e.getMessage(), e);
 			}
@@ -130,7 +129,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			while ((file == null || !file.exists()) && System.currentTimeMillis() < startTime + timeout) {
 				try {
 					Thread.sleep(interval);
-				} catch(InterruptedException e) {
+				} catch (InterruptedException e) {
 					throw new ListenerException("Exception waiting for file: " + e.getMessage(), e);
 				}
 				if (filename == null) {
@@ -149,7 +148,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 						stringBuilder.append(new String(buffer, 0, length, StandardCharsets.UTF_8));
 						length = fileInputStream.read(buffer);
 					}
-				} catch(IOException e) {
+				} catch (IOException e) {
 					throw new ListenerException("Exception reading file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
 				}
 				result = stringBuilder.toString();

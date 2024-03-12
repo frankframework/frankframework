@@ -18,6 +18,9 @@ package org.frankframework.pipes;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.ThreadContext;
 import org.frankframework.core.ParameterException;
@@ -31,17 +34,12 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-
 /**
  * Pipe that stores all its parameter values in the ThreadContext, formerly known as Mapped Diagnostic Context (MDC), to be used in logging.
  * The input is passed through to the output.
  *
- * @ff.parameters every parameter value is stored in the ThreadContext under its name.
- *
  * @author Gerrit van Brakel
+ * @ff.parameters every parameter value is stored in the ThreadContext under its name.
  */
 @ElementType(ElementTypes.SESSION)
 @Log4j2
@@ -49,12 +47,14 @@ public class LogContextPipe extends FixedForwardPipe {
 
 	/**
 	 * If set to <code>true</code> the ThreadContext parameters will be exported from the current PipeLine up in the call tree.
+	 *
 	 * @ff.default false
 	 */
 	private @Getter @Setter boolean export;
 
 	/**
 	 * If set {@code true} the pipe will never forward to the {@code ExceptionForward} even if an error occurred during execution.
+	 *
 	 * @ff.default false
 	 */
 	private @Getter @Setter boolean continueOnError;
@@ -62,7 +62,7 @@ public class LogContextPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (!getParameterList().isEmpty()) {
-			Map<String,String> values = new LinkedHashMap<>();
+			Map<String, String> values = new LinkedHashMap<>();
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				for (ParameterValue pv : pvl) {
@@ -86,7 +86,7 @@ public class LogContextPipe extends FixedForwardPipe {
 				session.scheduleCloseOnSessionExit(CloseableThreadContext.putAll(values), ClassUtils.nameOf(this));
 			}
 		}
-		return new PipeRunResult(getSuccessForward(),message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 }

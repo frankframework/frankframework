@@ -33,6 +33,7 @@ import javax.naming.NamingException;
 
 import org.frankframework.jms.IConnectionFactoryFactory;
 import org.frankframework.jms.JmsTransactionalStorage;
+
 import org.mockito.Mockito;
 
 import lombok.Getter;
@@ -74,7 +75,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 
 	public static synchronized MessageHandler getMessageHandler(boolean createNewInstance) {
 		MessageHandler handler = messageHandlers.get();
-		if(handler == null || createNewInstance) {
+		if (handler == null || createNewInstance) {
 			handler = MessageHandler.newInstance();
 			messageHandlers.set(handler);
 		}
@@ -135,6 +136,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 	//Use this to 'send' and 'receive' messages
 	public abstract static class MessageHandler extends Mockito implements MessageProducer, MessageConsumer {
 		private javax.jms.Message payload = null;
+
 		public static MessageHandler newInstance() {
 			return mock(MessageHandler.class, CALLS_REAL_METHODS);
 		}
@@ -162,6 +164,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 
 	public abstract static class TextMessageMock extends Mockito implements TextMessage {
 		private @Getter @Setter String text;
+
 		public static TextMessageMock newInstance() {
 			return mock(TextMessageMock.class, CALLS_REAL_METHODS);
 		}

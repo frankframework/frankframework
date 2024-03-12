@@ -44,7 +44,7 @@ public class NetStorageUtils {
 	/**
 	 * An enum of the keyed-hash algorithms supported by {@link #computeKeyedHash(byte[], String, NetStorageUtils.KeyedHashAlgorithm)}
 	 * Currently supported hashes include HMAC-MD5; HMAC-SHA1; HMAC-SHA256
-	 *
+	 * <p>
 	 * The string representation matches the java {@link javax.crypto.Mac#getInstance(String)}} cononical names.
 	 */
 	public enum KeyedHashAlgorithm {
@@ -68,8 +68,9 @@ public class NetStorageUtils {
 
 	/**
 	 * Computes the HMAC hash of a given byte[]. This is a wrapper over the Mac crypto functions.
-	 * @param data byte[] of content to hash
-	 * @param key secret key to salt the hash
+	 *
+	 * @param data     byte[] of content to hash
+	 * @param key      secret key to salt the hash
 	 * @param hashType determines which alogirthm to use. The recommendation is to use HMAC-SHA256
 	 * @return a byte[] presenting the HMAC hash of the source data.
 	 */
@@ -130,11 +131,14 @@ public class NetStorageUtils {
 		final StringBuilder result = new StringBuilder();
 
 		try {
-			for (String entry : new TreeSet<String>(data.keySet()))
-				result.append(String.format("%s%s=%s",
+			for (String entry : new TreeSet<String>(data.keySet())) {
+				result.append(String.format(
+						"%s%s=%s",
 						result.length() > 0 ? "&" : "",
 						URLEncoder.encode(entry, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING),
-						URLEncoder.encode(data.get(entry), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING)));
+						URLEncoder.encode(data.get(entry), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING)
+				));
+			}
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalArgumentException("This should never happen! StandardCharsets.UTF_8 is an enum!", e);
 		}

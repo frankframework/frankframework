@@ -25,7 +25,7 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Basic interpolating percentile estimator.
  * After the array has been filled with samples, the estimates do not change anymore.
- *
+ * <p>
  * Interpolated values do not change anymore once the array gets filled completely.
  *
  * @author Gerrit van Brakel
@@ -37,7 +37,7 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 
 	public PercentileEstimatorBase(String configKey, String defaultPList, int valueArraySize) {
 		List pListBuffer = new ArrayList();
-		StringTokenizer tok = AppConstants.getInstance().getTokenizedProperty(configKey,defaultPList);
+		StringTokenizer tok = AppConstants.getInstance().getTokenizedProperty(configKey, defaultPList);
 
 		while (tok.hasMoreTokens()) {
 			pListBuffer.add(new Integer(Integer.parseInt(tok.nextToken())));
@@ -60,57 +60,57 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 		// insert value in ordered array of first_values
 		int i;
 		for (i = (int) count - 1;
-			i > 0 && values[i - 1] > value;
-			i--) {
+			 i > 0 && values[i - 1] > value;
+			 i--) {
 			values[i] = values[i - 1];
 		}
 		values[i] = value;
 	}
 
-/*
-	protected int getVicinityCount(double target, double range, long count) {
-		int result=0;
-		for (int i=0; i<count; i++) {
-			if (Math.abs(target-values[i])<= range) {
-				result++;
+	/*
+		protected int getVicinityCount(double target, double range, long count) {
+			int result=0;
+			for (int i=0; i<count; i++) {
+				if (Math.abs(target-values[i])<= range) {
+					result++;
+				}
 			}
+			if (result==0) {
+				return 1;
+			}
+			return result;
 		}
-		if (result==0) {
-			return 1;
-		}
-		return result;
-	}
-*/
+	*/
 	protected double getInterpolatedPercentile(int p, long count) {
-		if (count==0) {
+		if (count == 0) {
 			return Double.NaN;
 		}
 
-		int pos=((int)count*p)/50;
+		int pos = ((int) count * p) / 50;
 
-		if ((pos & 1)==0) {
+		if ((pos & 1) == 0) {
 			pos--;
 		}
 
-		if (pos<=0) {
+		if (pos <= 0) {
 			return values[0];
 		}
-		if (pos>=count*2-1) {
-			return values[(int)count-1];
+		if (pos >= count * 2 - 1) {
+			return values[(int) count - 1];
 		}
 
-		double fraction = (count*p-pos*50)/100.0;
-		double result = values[(pos-1)/2]+(values[(pos+1)/2]-values[(pos-1)/2])*fraction;
-	//	System.out.println("Interpolated p"+p+"="+result);
+		double fraction = (count * p - pos * 50) / 100.0;
+		double result = values[(pos - 1) / 2] + (values[(pos + 1) / 2] - values[(pos - 1) / 2]) * fraction;
+		//	System.out.println("Interpolated p"+p+"="+result);
 		return result;
 	}
 
 	@Override
 	public double getPercentileEstimate(int index, long count, long min, long max) {
-		if (count<=values.length) {
-			return getInterpolatedPercentile(p[index],count);
+		if (count <= values.length) {
+			return getInterpolatedPercentile(p[index], count);
 		}
-		return getInterpolatedPercentile(p[index],values.length);
+		return getInterpolatedPercentile(p[index], values.length);
 	}
 
 	@Override
@@ -132,8 +132,8 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 	@Override
 	public XmlBuilder getSample(int index, long count, long min, long max) {
 		XmlBuilder sample = new XmlBuilder("sample");
-		sample.addAttribute("percentile",""+(100*index)/values.length);
-		sample.addAttribute("value",""+values[index]);
+		sample.addAttribute("percentile", "" + (100 * index) / values.length);
+		sample.addAttribute("value", "" + values[index]);
 
 		return sample;
 	}

@@ -14,6 +14,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.logging.log4j.Logger;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -88,13 +89,13 @@ public class AmazonSqsFactoryTest {
 
 		Session senderSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		Queue senderQueue = senderSession.createQueue(queueName);
-		log.info("queue ["+senderQueue+"]");
+		log.info("queue [" + senderQueue + "]");
 
 		log.debug("reading all messages from queue");
 		TextMessage message;
 		do {
-			message=readMessage(queueName);
-		} while (message!=null);
+			message = readMessage(queueName);
+		} while (message != null);
 
 		log.debug("sending message");
 		MessageProducer producer = senderSession.createProducer(senderQueue);
@@ -113,7 +114,7 @@ public class AmazonSqsFactoryTest {
 		Session receiverSsession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		Queue receiverQueue = receiverSsession.createQueue(queueName);
 		MessageConsumer consumer = receiverSsession.createConsumer(receiverQueue);
-		TextMessage received = (TextMessage)consumer.receive(1000);
+		TextMessage received = (TextMessage) consumer.receive(1000);
 
 		assertNotNull(received);
 
@@ -121,7 +122,7 @@ public class AmazonSqsFactoryTest {
 		assertEquals(sent.getText(), received.getText());
 
 		log.debug("rereading message");
-		received = (TextMessage)consumer.receive(1000);
+		received = (TextMessage) consumer.receive(1000);
 		assertNull(received);
 		receiverSsession.close();
 		connection.close();
@@ -136,13 +137,13 @@ public class AmazonSqsFactoryTest {
 
 		Session senderSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		Queue senderQueue = senderSession.createQueue(queueName);
-		log.info("queue ["+senderQueue+"]");
+		log.info("queue [" + senderQueue + "]");
 
 		log.debug("reading all messages from queue");
 		TextMessage message;
 		do {
-			message=readMessage(queueName);
-		} while (message!=null);
+			message = readMessage(queueName);
+		} while (message != null);
 
 		log.debug("sending message");
 		MessageProducer producer = senderSession.createProducer(senderQueue);
@@ -161,7 +162,7 @@ public class AmazonSqsFactoryTest {
 		Session receiverSsession = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 		Queue receiverQueue = receiverSsession.createQueue(queueName);
 		MessageConsumer consumer = receiverSsession.createConsumer(receiverQueue);
-		TextMessage received = (TextMessage)consumer.receive(1000);
+		TextMessage received = (TextMessage) consumer.receive(1000);
 
 		assertNotNull(received);
 
@@ -173,7 +174,7 @@ public class AmazonSqsFactoryTest {
 
 		log.debug("rereading message");
 		// we did not acknowledge the message, it should be visible again after the visibility timeout expires
-		received = (TextMessage)consumer.receive(1000);
+		received = (TextMessage) consumer.receive(1000);
 		assertNotNull(received);
 		assertEquals(sent.getJMSMessageID(), received.getJMSMessageID());
 		assertEquals(sent.getText(), received.getText());
@@ -189,9 +190,9 @@ public class AmazonSqsFactoryTest {
 		Session receiverSsession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		Queue receiverQueue = receiverSsession.createQueue(queueName);
 		MessageConsumer consumer = receiverSsession.createConsumer(receiverQueue);
-		TextMessage received = (TextMessage)consumer.receive(1000);
-		if (received!=null) {
-			log.debug("read messageid ["+received.getJMSMessageID()+"]");
+		TextMessage received = (TextMessage) consumer.receive(1000);
+		if (received != null) {
+			log.debug("read messageid [" + received.getJMSMessageID() + "]");
 		}
 		receiverSsession.close();
 		connection.close();

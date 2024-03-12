@@ -22,16 +22,13 @@ import java.security.GeneralSecurityException;
 
 import javax.net.ssl.SSLContext;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.filesystem.FileSystemException;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.doc.DocumentedEnum;
@@ -40,9 +37,10 @@ import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
-
+import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Base class for FTP(s) connections
@@ -55,6 +53,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter FtpType ftpType = FtpType.FTP;
+
 	public enum FtpType implements DocumentedEnum {
 		@EnumLabel("FTP") FTP(null, true),
 		@EnumLabel("FTPSI") FTPS_IMPLICIT("TLS", true),
@@ -63,6 +62,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 
 		private @Getter boolean implicit;
 		private @Getter String protocol;
+
 		private FtpType(String protocol, boolean implicit) {
 			this.protocol = protocol;
 			this.implicit = implicit;
@@ -70,6 +70,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	}
 
 	private @Getter Prot prot = Prot.C;
+
 	public enum Prot {
 		/** Clear */
 		C,
@@ -89,7 +90,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		int ftpFileType;
 
 		private FileType(int ftpFileType) {
-			this.ftpFileType=ftpFileType;
+			this.ftpFileType = ftpFileType;
 		}
 	}
 
@@ -111,7 +112,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	private TransportType proxyTransportType = TransportType.SOCKS;
 
 	private @Getter FileType fileType = null;
-	private @Getter boolean passive=true;
+	private @Getter boolean passive = true;
 
 	// configuration parameters for SSL Context and SocketFactory
 	private @Getter String keystore;
@@ -121,12 +122,12 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	private @Getter String keystoreAlias;
 	private @Getter String keystoreAliasAuthAlias;
 	private @Getter String keystoreAliasPassword;
-	private @Getter String keyManagerAlgorithm=null;
+	private @Getter String keyManagerAlgorithm = null;
 	private @Getter String truststore = null;
-	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
+	private @Getter KeystoreType truststoreType = KeystoreType.JKS;
 	private @Getter String truststoreAuthAlias;
 	private @Getter String truststorePassword = null;
-	private @Getter String trustManagerAlgorithm=null;
+	private @Getter String trustManagerAlgorithm = null;
 	private @Getter boolean verifyHostname = true;
 	private @Getter boolean allowSelfSignedCertificates = false;
 	private @Getter boolean ignoreCertificateExpiredException = false;
@@ -148,7 +149,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 
 	public synchronized FTPClient openClient(String remoteDirectory) throws FileSystemException {
 		LOG.debug("open ftp client");
-		if (ftpClient == null || ! ftpClient.isConnected()) {
+		if (ftpClient == null || !ftpClient.isConnected()) {
 			openFtpClient(remoteDirectory);
 		}
 		return ftpClient;
@@ -165,22 +166,22 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 			CredentialFactory usercf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 			ftpClient.login(usercf.getUsername(), usercf.getPassword());
 
-			if (! StringUtils.isEmpty(remoteDirectory)) {
+			if (!StringUtils.isEmpty(remoteDirectory)) {
 				ftpClient.changeWorkingDirectory(remoteDirectory);
-				checkReply("changeWorkingDirectory "+remoteDirectory);
+				checkReply("changeWorkingDirectory " + remoteDirectory);
 			}
 
 			if (fileType != null) {
 				ftpClient.setFileType(fileType.ftpFileType);
-				checkReply("setFileType "+remoteDirectory);
+				checkReply("setFileType " + remoteDirectory);
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			close(ftpClient);
-			throw new FileSystemException("Cannot connect to the FTP server with domain ["+getHost()+"]", e);
+			throw new FileSystemException("Cannot connect to the FTP server with domain [" + getHost() + "]", e);
 		}
 	}
 
-	private void checkReply(String cmd) throws IOException  {
+	private void checkReply(String cmd) throws IOException {
 		if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
 			throw new IOException("Command [" + cmd + "] returned error [" + ftpClient.getReplyCode() + "]: " + ftpClient.getReplyString());
 		}
@@ -192,7 +193,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		Proxy proxy = getProxy();
 		if (transport == FtpType.FTP) {
 			FTPClient client = new FTPClient();
-			if(proxy != null) {
+			if (proxy != null) {
 				client.setProxy(proxy); //May not set NULL
 			}
 			return client;
@@ -201,16 +202,16 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		SSLContext sslContext = AuthSSLContextFactory.createSSLContext(this, this, transport.getProtocol());
 		FTPSClient client = new FTPSClient(transport.isImplicit(), sslContext);
 
-		if(proxy != null) {
+		if (proxy != null) {
 			client.setProxy(proxy);
 			client.setSocketFactory(sslContext.getSocketFactory()); // Have to set the SocketFactory again
 		}
 
-		if(isVerifyHostname()) {
+		if (isVerifyHostname()) {
 			client.setTrustManager(null);//When NULL it overrides the default 'ValidateServerCertificateTrustManager' and uses the JVM Default
 		}
 
-		if(prot != Prot.C) { //Have to check if not C because that removes the SSLSocketFactory
+		if (prot != Prot.C) { //Have to check if not C because that removes the SSLSocketFactory
 			client.execPROT(prot.name());
 		}
 
@@ -221,17 +222,17 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		if (StringUtils.isNotEmpty(proxyHost)) {
 			Proxy.Type type;
 			switch (proxyTransportType) {
-			case DIRECT:
-				type = Proxy.Type.DIRECT;
-				break;
-			case SOCKS:
-				type = Proxy.Type.SOCKS;
-				break;
-			case HTTP:
-				type = Proxy.Type.HTTP;
-				break;
-			default:
-				throw new IllegalStateException("invalid proxy type");
+				case DIRECT:
+					type = Proxy.Type.DIRECT;
+					break;
+				case SOCKS:
+					type = Proxy.Type.SOCKS;
+					break;
+				case HTTP:
+					type = Proxy.Type.HTTP;
+					break;
+				default:
+					throw new IllegalStateException("invalid proxy type");
 			}
 			return new Proxy(type, new InetSocketAddress(host, port));
 		}
@@ -243,8 +244,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 			LOG.debug("closing ftp client");
 			try {
 				ftpClient.disconnect();
-			}
-			catch(Exception e) {
+			} catch (Exception e) {
 				LOG.error("error while closeing FtpClient", e);
 			}
 		}
@@ -261,6 +261,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 
 	/**
 	 * Port number of remote host
+	 *
 	 * @ff.default 21
 	 */
 	public void setPort(int i) {
@@ -289,6 +290,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 
 	/**
 	 * Proxy port
+	 *
 	 * @ff.default 1080
 	 */
 	public void setProxyPort(int i) {
@@ -297,6 +299,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 
 	/**
 	 * FTP protocol to use
+	 *
 	 * @ff.default FTP
 	 */
 	public void setFtpType(FtpType value) {
@@ -309,6 +312,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 
 	/**
 	 * If <code>true</code>, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server
+	 *
 	 * @ff.default true
 	 */
 	public void setPassive(boolean b) {
@@ -317,6 +321,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 
 	/**
 	 * (ftps) Transport type in case of sftp
+	 *
 	 * @ff.default SOCKS5
 	 */
 	public void setProxyTransportType(TransportType type) {
@@ -329,7 +334,9 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		keystore = string;
 	}
 
-	/** (ftps) Type of keystore
+	/**
+	 * (ftps) Type of keystore
+	 *
 	 * @ff.default pkcs12
 	 */
 	@Override
@@ -374,14 +381,15 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 	}
 
 
-
 	/** (ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
 	@Override
 	public void setTruststore(String string) {
 		truststore = string;
 	}
 
-	/** (ftps) Type of truststore
+	/**
+	 * (ftps) Type of truststore
+	 *
 	 * @ff.default jks
 	 */
 	@Override
@@ -413,7 +421,9 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		verifyHostname = b;
 	}
 
-	/** (ftps) If <code>true</code>, self signed certificates are accepted
+	/**
+	 * (ftps) If <code>true</code>, self signed certificates are accepted
+	 *
 	 * @ff.default false
 	 */
 	@Override
@@ -423,6 +433,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 
 	/**
 	 * (ftps) If <code>true</code>, CertificateExpiredExceptions are ignored
+	 *
 	 * @ff.default false
 	 */
 	@Override
@@ -432,6 +443,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 
 	/**
 	 * Sets the <code>Data Channel Protection Level</code>.
+	 *
 	 * @ff.default C
 	 */
 	public void setProt(Prot prot) {

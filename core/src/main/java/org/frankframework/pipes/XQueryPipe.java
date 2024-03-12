@@ -29,10 +29,9 @@ import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQPreparedExpression;
 import javax.xml.xquery.XQResultSequence;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.saxonica.xqj.SaxonXQDataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -47,9 +46,8 @@ import org.frankframework.util.StreamUtil;
 /**
  * Perform an XQuery.
  *
- * @ff.parameters any parameters defined on the pipe will be passed as external variable to the XQuery
- *
  * @author Jaco de Groot
+ * @ff.parameters any parameters defined on the pipe will be passed as external variable to the XQuery
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class XQueryPipe extends FixedForwardPipe {
@@ -95,7 +93,7 @@ public class XQueryPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if (message==null) {
+		if (message == null) {
 			throw new PipeRunException(this, "got null input");
 		}
 		String input;
@@ -108,7 +106,7 @@ public class XQueryPipe extends FixedForwardPipe {
 			String stringResult = input;
 			preparedExpression.bindDocument(XQConstants.CONTEXT_ITEM, stringResult, null, null);
 			if (getParameterList() != null) {
-				Map<String,Object> parametervalues = null;
+				Map<String, Object> parametervalues = null;
 				parametervalues = getParameterList().getValues(message, session).getValueMap();
 				Iterator<Parameter> iterator = getParameterList().iterator();
 				while (iterator.hasNext()) {
@@ -125,7 +123,7 @@ public class XQueryPipe extends FixedForwardPipe {
 	}
 
 	/** name of the file (resource) on the classpath to read the xquery from */
-	public void setXqueryName(String xqueryName){
+	public void setXqueryName(String xqueryName) {
 		this.xqueryName = xqueryName;
 	}
 
@@ -134,7 +132,7 @@ public class XQueryPipe extends FixedForwardPipe {
 	}
 
 	/** name of the file on the file system to read the xquery from */
-	public void setXqueryFile(String xqueryFile){
+	public void setXqueryFile(String xqueryFile) {
 		this.xqueryFile = xqueryFile;
 	}
 

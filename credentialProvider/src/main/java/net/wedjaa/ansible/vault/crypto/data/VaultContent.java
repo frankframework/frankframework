@@ -16,10 +16,10 @@
 
 package net.wedjaa.ansible.vault.crypto.data;
 
+import java.io.IOException;
+
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-
-import java.io.IOException;
 
 public class VaultContent {
 	private static final Log logger = LogFactory.getLog(VaultContent.class);
@@ -50,7 +50,8 @@ public class VaultContent {
 	public String toString() {
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Salt: %d - HMAC: %d - Data: %d - TargetLen: %d", salt.length, hmac.length,
-					data.length, (salt.length + hmac.length + data.length) * 2));
+					data.length, (salt.length + hmac.length + data.length) * 2
+			));
 		}
 
 		String saltString = Util.hexit(salt);

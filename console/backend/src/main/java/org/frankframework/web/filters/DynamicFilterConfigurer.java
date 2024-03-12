@@ -25,14 +25,12 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.SpringUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-
-import lombok.Getter;
-
-import org.frankframework.util.SpringUtils;
 
 /**
  * Configures all {@link Dynamic} Filters through Spring and registers them in the ServletContext.
@@ -48,6 +46,7 @@ public class DynamicFilterConfigurer implements ServletContextListener {
 
 		private @Getter Class<? extends Filter> filterClass;
 		private @Getter String endpoints;
+
 		DynamicFilters(Class<? extends Filter> clazz, String endpoints) {
 			this.filterClass = clazz;
 			this.endpoints = endpoints;
@@ -58,15 +57,15 @@ public class DynamicFilterConfigurer implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent sce) {
 		ServletContext context = sce.getServletContext();
 
-		for(DynamicFilters dynamicFilter : DynamicFilters.values()) {
+		for (DynamicFilters dynamicFilter : DynamicFilters.values()) {
 			try {
 				Dynamic filter = createFilter(context, dynamicFilter.getFilterClass());
-				String[] urlMapping = new String[] { dynamicFilter.getEndpoints() };
+				String[] urlMapping = new String[]{dynamicFilter.getEndpoints()};
 
 				filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, urlMapping);
 			} catch (Exception e) {
 				log.fatal("unable to create [{}]", dynamicFilter, e);
-				context.log("unable to create ["+dynamicFilter+"]", e);
+				context.log("unable to create [" + dynamicFilter + "]", e);
 			}
 		}
 	}
@@ -78,7 +77,7 @@ public class DynamicFilterConfigurer implements ServletContextListener {
 
 	private Dynamic createFilter(ServletContext context, Class<? extends Filter> filter) {
 		WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(context);
-		if(wac != null) {
+		if (wac != null) {
 			log.info("creating [{}] through Application Context [{}]", filter::getSimpleName, wac::getDisplayName);
 			Filter filterInstance = SpringUtils.createBean(wac, filter);
 			return context.addFilter(filter.getSimpleName(), filterInstance);

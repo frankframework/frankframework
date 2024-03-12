@@ -22,8 +22,8 @@ public class TestAlignNamespacesXml extends AlignTestBase {
 	@Override
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
 
-		URL schemaUrl=getSchemaURL(schemaFile);
-		String xmlString=getTestFile(inputFile+".xml");
+		URL schemaUrl = getSchemaURL(schemaFile);
+		String xmlString = getTestFile(inputFile + ".xml");
 
 		String xmlNoNamespace = removeNamespacesExceptAttributes(xmlString);
 
@@ -56,12 +56,12 @@ public class TestAlignNamespacesXml extends AlignTestBase {
 				+ "<xsl:copy>"
 				+ "<xsl:apply-templates/>"
 				+ "</xsl:copy>"
-			+ "</xsl:template>";
+				+ "</xsl:template>";
 
 		String stylesheet = "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
-		+ "<xsl:output method=\"xml\" />"
-		+ template
-		+ "</xsl:stylesheet>";
+				+ "<xsl:output method=\"xml\" />"
+				+ template
+				+ "</xsl:stylesheet>";
 
 		TransformerPool tp = TransformerPool.getInstance(stylesheet, 2);
 		tp.open();

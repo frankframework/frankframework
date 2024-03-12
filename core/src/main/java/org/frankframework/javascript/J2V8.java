@@ -78,7 +78,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 	public void executeScript(String script) throws JavascriptException {
 		try {
 			v8.executeScript(script);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			throw new JavascriptException("error executing script", e);
 		}
 	}

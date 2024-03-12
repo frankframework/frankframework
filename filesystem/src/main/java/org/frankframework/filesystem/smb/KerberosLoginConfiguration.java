@@ -22,7 +22,6 @@ import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 
@@ -40,10 +39,10 @@ public class KerberosLoginConfiguration extends Configuration {
 
 	@Override
 	public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-		if(ClassUtils.isClassPresent(ORACLE_LOGIN_MODULE_CLASSNAME)) {
-			return new AppConfigurationEntry[] { createAppConfigurationEntry(ORACLE_LOGIN_MODULE_CLASSNAME) };
-		} else if(ClassUtils.isClassPresent(IBM_LOGIN_MODULE_CLASSNAME)) {
-			return new AppConfigurationEntry[] { createAppConfigurationEntry(IBM_LOGIN_MODULE_CLASSNAME) };
+		if (ClassUtils.isClassPresent(ORACLE_LOGIN_MODULE_CLASSNAME)) {
+			return new AppConfigurationEntry[]{createAppConfigurationEntry(ORACLE_LOGIN_MODULE_CLASSNAME)};
+		} else if (ClassUtils.isClassPresent(IBM_LOGIN_MODULE_CLASSNAME)) {
+			return new AppConfigurationEntry[]{createAppConfigurationEntry(IBM_LOGIN_MODULE_CLASSNAME)};
 		}
 
 		logger.error("neither ({}) nor ({}) class is found, unable to use KRB5 authentication", ORACLE_LOGIN_MODULE_CLASSNAME, IBM_LOGIN_MODULE_CLASSNAME);

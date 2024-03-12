@@ -10,9 +10,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.Node;
 
 import org.frankframework.stream.Message;
+import org.w3c.dom.Node;
 
 public class TestPipeDescriptionProvider {
 

@@ -18,7 +18,6 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -110,7 +109,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	/**
 	 * Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
-	 * 	 * by the {@link #setLineSeparatorSymbol(String)}.
+	 * * by the {@link #setLineSeparatorSymbol(String)}.
 	 */
 	public void setReplace(String replace) {
 		this.replace = replace;
@@ -136,9 +135,9 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 * Replace all characters that are non-printable according to the XML specification with
 	 * the value specified in {@link #setReplaceNonXmlChar(String)}.
 	 * <p>
-	 *     <b>NB:</b> This will only replace or remove characters considered non-printable. This
-	 *     will not check if a given character is valid in the particular way it is used. Thus it will
-	 *     not remove or replace, for instance, a single {@code '&'} character.
+	 * <b>NB:</b> This will only replace or remove characters considered non-printable. This
+	 * will not check if a given character is valid in the particular way it is used. Thus it will
+	 * not remove or replace, for instance, a single {@code '&'} character.
 	 * </p>
 	 * <p>
 	 * See also:

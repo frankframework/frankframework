@@ -17,12 +17,13 @@ import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends HelperedBasicFileSystemTest<F,FS> {
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.ThrowingAfterCloseInputStream;
+
+public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends HelperedBasicFileSystemTest<F, FS> {
 
 	@Override
 	@BeforeEach
@@ -185,7 +186,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (_folderExists(folderName)) {
 			_deleteFolder(folderName);
 			waitForActionToFinish();
-			assertFalse( _folderExists(folderName), "could not remove folder before test");
+			assertFalse(_folderExists(folderName), "could not remove folder before test");
 		}
 
 		fileSystem.createFolder(folderName);
@@ -218,8 +219,8 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		createFolderIfNotExists(folderName);
 
-		for(int i=0;i<3;i++) {
-			createFile(folderName, "file_"+i+".txt", "some text here");
+		for (int i = 0; i < 3; i++) {
+			createFile(folderName, "file_" + i + ".txt", "some text here");
 		}
 
 		fileSystem.removeFolder(folderName, true);
@@ -231,7 +232,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	@Test
 	public void writableFileSystemTestRemoveFolderRecursive() throws Exception {
 		String folderName = "dummyTestFolder";
-		String innerFolder = folderName+"/innerfolder";
+		String innerFolder = folderName + "/innerfolder";
 		String innerFolder2 = innerFolder + "/innerFolder2";
 		fileSystem.configure();
 		fileSystem.open();
@@ -325,7 +326,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.configure();
 		fileSystem.open();
 
-		createFile(null,fileName, "");
+		createFile(null, fileName, "");
 		waitForActionToFinish();
 
 		assertTrue(_fileExists(fileName));
@@ -355,7 +356,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		_createFolder(sourceFolder);
 		_createFolder(destinationFolder);
-		createFile(sourceFolder,fileName, "");
+		createFile(sourceFolder, fileName, "");
 		waitForActionToFinish();
 
 		assertTrue(_fileExists(sourceFolder, fileName));
@@ -378,7 +379,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		String foldername = "nonExistingFolder";
 		fileSystem.configure();
 		fileSystem.open();
-		if(_folderExists(foldername)) {
+		if (_folderExists(foldername)) {
 			_deleteFolder(foldername);
 		}
 
@@ -409,19 +410,18 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 		F f = null;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(null)) {
+		try (DirectoryStream<F> ds = fileSystem.listFiles(null)) {
 			Iterator<F> files = ds.iterator();
-			if(files.hasNext()) {
+			if (files.hasNext()) {
 				f = files.next();
-			}
-			else {
+			} else {
 				fail("File not found");
 			}
 		}
-		long size=fileSystem.getFileSize(f);
+		long size = fileSystem.getFileSize(f);
 
-		if (size< contents.length()/2 || size> contents.length()*2) {
-			fail("fileSize ["+size+"] out of range compared to ["+contents.length()+"]");
+		if (size < contents.length() / 2 || size > contents.length() * 2) {
+			fail("fileSize [" + size + "] out of range compared to [" + contents.length() + "]");
 		}
 	}
 
@@ -437,13 +437,13 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		String canonicalName=fileSystem.getCanonicalName(file);
+		String canonicalName = fileSystem.getCanonicalName(file);
 
 		assertNotNull("Canonical name should not be null", canonicalName);
 	}
 
 	@Test
-	public void writableFileSystemTestDeleteDownloadedFile() throws Exception{
+	public void writableFileSystemTestDeleteDownloadedFile() throws Exception {
 		String filename = "fileToBeDownloadedAndDeleted.txt";
 		String content = "some content";
 
@@ -454,18 +454,18 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		assertTrue(_fileExists(filename), "Expected the file ["+filename+"] to be present");
+		assertTrue(_fileExists(filename), "Expected the file [" + filename + "] to be present");
 
 		Message result = fileSystem.readFile(file, null);
 		assertEquals(content, result.asString());
 
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
-		assertFalse(_fileExists(filename), "Expected the file ["+filename+"] not to be present");
+		assertFalse(_fileExists(filename), "Expected the file [" + filename + "] not to be present");
 	}
 
 	@Test
-	public void writableFileSystemTestDeleteUploadedFile() throws Exception{
+	public void writableFileSystemTestDeleteUploadedFile() throws Exception {
 		String filename = "fileToBeUploadedAndDeleted.txt";
 		String content = "some content";
 
@@ -475,16 +475,16 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		F file = fileSystem.toFile(filename);
 		fileSystem.createFile(file, new ThrowingAfterCloseInputStream(new ByteArrayInputStream(content.getBytes())));
 
-		assertTrue(_fileExists(filename), "Expected the file ["+filename+"] to be present");
+		assertTrue(_fileExists(filename), "Expected the file [" + filename + "] to be present");
 
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
-		assertFalse(_fileExists(filename), "Expected the file ["+filename+"] not to be present");
+		assertFalse(_fileExists(filename), "Expected the file [" + filename + "] not to be present");
 
 	}
 
 	@Test
-	public void writableFileSystemTestDeleteAppendedFile() throws Exception{
+	public void writableFileSystemTestDeleteAppendedFile() throws Exception {
 		String filename = "fileToBeAppendedAndDeleted.txt";
 		String content = "some content";
 
@@ -495,7 +495,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		assertTrue(_fileExists(filename), "Expected the file ["+filename+"] to be present");
+		assertTrue(_fileExists(filename), "Expected the file [" + filename + "] to be present");
 
 		OutputStream out = fileSystem.appendFile(file);
 		out.write(content.getBytes());
@@ -505,7 +505,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
 
-		assertFalse(_fileExists(filename), "Expected the file ["+filename+"] not to be present");
+		assertFalse(_fileExists(filename), "Expected the file [" + filename + "] not to be present");
 	}
 
 	@Test
@@ -520,17 +520,17 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		_createFolder(folder);
 		createFile(folder, filename, content);
 
-		F file1 = fileSystem.toFile(folder,filename);
+		F file1 = fileSystem.toFile(folder, filename);
 		assertTrue(fileSystem.exists(file1));
-		assertThat(fileSystem.getCanonicalName(file1),anyOf(endsWith(folder+"/"+filename),endsWith(folder+"\\"+filename)));
-		assertThat(fileSystem.getName(file1),endsWith(filename));
+		assertThat(fileSystem.getCanonicalName(file1), anyOf(endsWith(folder + "/" + filename), endsWith(folder + "\\" + filename)));
+		assertThat(fileSystem.getName(file1), endsWith(filename));
 
-		String absoluteName1 = folder+"/"+filename;
-		String absoluteName2 = folder+"\\"+filename;
+		String absoluteName1 = folder + "/" + filename;
+		String absoluteName2 = folder + "\\" + filename;
 		F file2 = fileSystem.toFile(absoluteName1);
 		assertTrue(fileSystem.exists(file2));
-		assertThat(fileSystem.getCanonicalName(file2),anyOf(endsWith(absoluteName1),endsWith(absoluteName2)));
-		assertThat(fileSystem.getName(file2),endsWith(filename));
+		assertThat(fileSystem.getCanonicalName(file2), anyOf(endsWith(absoluteName1), endsWith(absoluteName2)));
+		assertThat(fileSystem.getName(file2), endsWith(filename));
 
 	}
 

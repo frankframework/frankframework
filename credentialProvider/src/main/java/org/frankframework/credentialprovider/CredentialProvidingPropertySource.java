@@ -21,17 +21,16 @@ import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
 
 /**
  * Tomcat PropertySource that gets its data from the configured CredentialFactory.
- *
+ * <p>
  * Example context.xml configuration attributes:
- *   user="${testiaf_user/username}"
- *   password="${testiaf_user/password}"
- *
+ * user="${testiaf_user/username}"
+ * password="${testiaf_user/password}"
+ * <p>
  * Example context.xml configuration attributes with defaults:
- *   user="${testiaf_user/username:-default username}"
- *   password="${testiaf_user/password:-default password}"
+ * user="${testiaf_user/username:-default username}"
+ * password="${testiaf_user/password:-default password}"
  *
  * @author Gerrit van Brakel
- *
  */
 public class CredentialProvidingPropertySource implements PropertySource {
 
@@ -50,14 +49,15 @@ public class CredentialProvidingPropertySource implements PropertySource {
 				return null;
 			}
 		} catch (NoSuchElementException e) {
-			System.err.println("CredentialProvidingPropertySource: Cannot resolve alias ["+alias+"]");
+			System.err.println("CredentialProvidingPropertySource: Cannot resolve alias [" + alias + "]");
 			return null;
 		} catch (Exception e) {
-			System.err.println("CredentialProvidingPropertySource: Cannot resolve alias ["+alias+"] ("+e.getClass().getTypeName()+"): "+e.getMessage());
+			System.err.println("CredentialProvidingPropertySource: Cannot resolve alias [" + alias + "] (" + e.getClass()
+					.getTypeName() + "): " + e.getMessage());
 			return null;
 		}
 
-		boolean returnPassword = pathElements.length==1 || pathElements[1].trim().equalsIgnoreCase("password");
+		boolean returnPassword = pathElements.length == 1 || pathElements[1].trim().equalsIgnoreCase("password");
 		ICredentials credentials = CredentialFactory.getCredentials(alias, null, null);
 
 		return returnPassword ? credentials.getPassword() : credentials.getUsername();

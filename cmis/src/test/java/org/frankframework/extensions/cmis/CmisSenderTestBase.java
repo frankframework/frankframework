@@ -20,6 +20,10 @@ import java.util.List;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.jupiter.api.Disabled;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.client.api.ItemIterable;
 import org.apache.chemistry.opencmis.client.api.ObjectFactory;
@@ -34,10 +38,6 @@ import org.apache.chemistry.opencmis.client.runtime.util.EmptyItemIterable;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
-import org.junit.jupiter.api.Disabled;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.testutil.TestFileUtils;
@@ -55,18 +55,18 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 				super.setBindingType(bindingType);
 
 				switch (bindingType) {
-				case ATOMPUB:
-					setUrl(ENDPOINT+"/atom11");
-					break;
-				case WEBSERVICES:
-					setUrl(ENDPOINT+"/services11/cmis");
-					break;
-				case BROWSER:
-					setUrl(ENDPOINT+"/browser");
-					break;
-				default:
-					fail("BindingType ["+bindingType+"] not implemented");
-					break;
+					case ATOMPUB:
+						setUrl(ENDPOINT + "/atom11");
+						break;
+					case WEBSERVICES:
+						setUrl(ENDPOINT + "/services11/cmis");
+						break;
+					case BROWSER:
+						setUrl(ENDPOINT + "/browser");
+						break;
+					default:
+						fail("BindingType [" + bindingType + "] not implemented");
+						break;
 				}
 			}
 		};
@@ -74,7 +74,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		sender.setPassword("test");
 		sender.setRepository("test");
 
-		if(!STUBBED) {
+		if (!STUBBED) {
 			return sender;
 		}
 
@@ -147,11 +147,11 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 			InputStream content = (InputStream) invocation.getArguments()[3];
 
 			stream = StreamUtil.streamToBytes(content);
-			if(length > 0) { //if a length has been provided, validate it.
+			if (length > 0) { //if a length has been provided, validate it.
 				assertEquals(stream.length, length);
 			}
 
-			if(name.startsWith("/fileInput-")) {
+			if (name.startsWith("/fileInput-")) {
 				String testFileContent = TestFileUtils.getTestFile("/fileInput.txt");
 				assertEquals(testFileContent, new String(stream));
 			}

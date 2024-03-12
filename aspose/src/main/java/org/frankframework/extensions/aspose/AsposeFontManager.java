@@ -32,9 +32,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.aspose.cells.FontConfigs;
 import com.aspose.slides.FontsLoader;
 import com.aspose.words.FolderFontSource;
@@ -42,6 +39,8 @@ import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.FileUtils;
 
@@ -65,7 +64,7 @@ public class AsposeFontManager {
 			rootDirectory = new File(fontsDirectory);
 
 			if (!rootDirectory.exists()) {
-				log.warn("fontDirectory ["+fontsDirectory+"] does not exist, using ibis.tmpdir instead");
+				log.warn("fontDirectory [" + fontsDirectory + "] does not exist, using ibis.tmpdir instead");
 			} else {
 				fontDirectory = new File(rootDirectory, FONTS_RESOURCE_DIR);
 			}
@@ -78,7 +77,7 @@ public class AsposeFontManager {
 		}
 
 		// If this font (sub-)directory does not exist, try to create it
-		if(!fontDirectory.exists()) {
+		if (!fontDirectory.exists()) {
 			fontDirectory.mkdirs();
 		}
 	}
@@ -88,7 +87,7 @@ public class AsposeFontManager {
 	}
 
 	public void load(boolean unzipArchive) throws IOException {
-		if(unzipArchive) {
+		if (unzipArchive) {
 			unpackDefaultFontArchive();
 		}
 
@@ -102,8 +101,8 @@ public class AsposeFontManager {
 	/** unpack the fonts.zip archive in the supplied font directory. Does not override existing files */
 	public void unpackDefaultFontArchive() throws IOException {
 		URL fontsUrl = ClassLoaderUtils.getResourceURL(FONTS_RESOURCE_NAME);
-		if(fontsUrl == null) {
-			throw new IllegalStateException("font archive ["+FONTS_RESOURCE_NAME+"] cannot be found");
+		if (fontsUrl == null) {
+			throw new IllegalStateException("font archive [" + FONTS_RESOURCE_NAME + "] cannot be found");
 		}
 
 		try (InputStream inputStream = new BufferedInputStream(fontsUrl.openStream())) {
@@ -117,7 +116,7 @@ public class AsposeFontManager {
 					}
 
 					String filename = FilenameUtils.normalize(entry.getName(), true);
-					if(filename != null) {
+					if (filename != null) {
 						Path target = fontsDirPath.resolve(filename);
 						if (Files.notExists(target)) {
 							Files.copy(zipInputStream, target);
@@ -156,7 +155,7 @@ public class AsposeFontManager {
 
 	private void loadFontsForSlides() {
 		//We have to explicitly set the font directory for unix systems
-		final String[] fontDirectories = new String[] { getFontsPath() };
+		final String[] fontDirectories = new String[]{getFontsPath()};
 		FontsLoader.loadExternalFonts(fontDirectories);
 	}
 
@@ -171,8 +170,8 @@ public class AsposeFontManager {
 			File fontFile = new File(fontDirectory, filename);
 
 			Font newFont = createFont(fontFile);
-			if(newFont != null) {
-				if(fonts.contains(newFont)) {
+			if (newFont != null) {
+				if (fonts.contains(newFont)) {
 					log.debug("skipping font [{}], already registered", newFont::getFontName);
 				} else if (!ge.registerFont(newFont)) {
 					log.warn("unable to register font [{}] filename [{}]", newFont::getFontName, fontFile::getName);

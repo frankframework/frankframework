@@ -4,16 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import org.frankframework.core.INamedObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.INamedObject;
 
 public class ClassUtilsTest {
 
 	@BeforeAll
 	public static void ensureOptionalDependenciesAreNotOnTheClasspath() {
 		assertAll(
-			() -> assertFalse(isPresent("org.springframework.util.ClassUtils"), "found Spring.ClassUtils on the classpath, unable to test optional dependency")
+				() -> assertFalse(isPresent("org.springframework.util.ClassUtils"), "found Spring.ClassUtils on the classpath, unable to test optional dependency")
 		);
 	}
 

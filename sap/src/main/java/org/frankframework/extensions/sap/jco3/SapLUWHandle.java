@@ -15,29 +15,28 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.extensions.sap.jco3.tx.RollbackException;
-import org.frankframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
-
 import com.sap.conn.jco.JCoContext;
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoException;
 
+import org.apache.logging.log4j.Logger;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.extensions.sap.jco3.tx.RollbackException;
+import org.frankframework.util.LogUtil;
+
 /**
  * Wrapper for SAP sessions, used to control Logical Units of Work (LUWs).
  *
- * @author  Gerrit van Brakel
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class SapLUWHandle {
 	protected static Logger log = LogUtil.getLogger(SapLUWHandle.class);
 
 	private final JCoDestination destination;
 	private String tid;
-	private boolean useTid=false;
+	private boolean useTid = false;
 
 	private SapLUWHandle(SapSystemImpl sapSystem) throws JCoException {
 		super();
@@ -45,33 +44,33 @@ public class SapLUWHandle {
 	}
 
 	public static SapLUWHandle createHandle(PipeLineSession session, String sessionKey, SapSystemImpl sapSystem, boolean useTid) throws JCoException {
-		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
-		if (result!=null) {
-			log.warn("LUWHandle already exists under key ["+sessionKey+"]");
+		SapLUWHandle result = (SapLUWHandle) session.get(sessionKey);
+		if (result != null) {
+			log.warn("LUWHandle already exists under key [" + sessionKey + "]");
 		}
 		result = new SapLUWHandle(sapSystem);
 		result.setUseTid(useTid);
-		session.put(sessionKey,result);
+		session.put(sessionKey, result);
 		return result;
 	}
 
 	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey) {
-		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
+		SapLUWHandle result = (SapLUWHandle) session.get(sessionKey);
 		return result;
 	}
 
 	public static SapLUWHandle retrieveHandle(PipeLineSession session, String sessionKey, boolean create, SapSystemImpl sapSystem, boolean useTid) throws JCoException {
-		SapLUWHandle result=(SapLUWHandle)session.get(sessionKey);
-		if (result==null && create) {
+		SapLUWHandle result = (SapLUWHandle) session.get(sessionKey);
+		if (result == null && create) {
 			return createHandle(session, sessionKey, sapSystem, useTid);
 		}
 		return result;
 	}
 
 	public static void releaseHandle(PipeLineSession session, String sessionKey) throws JCoException {
-		SapLUWHandle handle=(SapLUWHandle)session.get(sessionKey);
-		if (handle==null) {
-			log.debug("no handle found under session key ["+sessionKey+"]");
+		SapLUWHandle handle = (SapLUWHandle) session.get(sessionKey);
+		if (handle == null) {
+			log.debug("no handle found under session key [" + sessionKey + "]");
 		} else {
 			handle.release();
 			session.remove(sessionKey);
@@ -79,11 +78,10 @@ public class SapLUWHandle {
 	}
 
 
-
 	public void begin() throws JCoException {
 		if (isUseTid()) {
-			tid=destination.createTID();
-			log.debug("begin: created SAP TID ["+tid+"]");
+			tid = destination.createTID();
+			log.debug("begin: created SAP TID [" + tid + "]");
 		} else {
 			// Use a stateful connection to make commit through BAPI work, this is
 			// probably not needed when using tid, but haven't found
@@ -96,15 +94,15 @@ public class SapLUWHandle {
 	public void commit() throws JCoException {
 		if (isUseTid()) {
 			destination.confirmTID(tid);
-			log.debug("commit: confirmed SAP TID ["+tid+"]");
+			log.debug("commit: confirmed SAP TID [" + tid + "]");
 		} else {
 			log.warn("Should Execute COMMIT by calling COMMIT BAPI");
 		}
 	}
 
 	public void rollback() {
-		log.debug("rollback: forget about SAP TID ["+tid+"], throw exception to signal SAP");
-		tid=null;
+		log.debug("rollback: forget about SAP TID [" + tid + "], throw exception to signal SAP");
+		tid = null;
 		throw new RollbackException();
 	}
 
@@ -119,6 +117,7 @@ public class SapLUWHandle {
 	public JCoDestination getDestination() {
 		return destination;
 	}
+
 	public String getTid() {
 		return tid;
 	}
@@ -126,6 +125,7 @@ public class SapLUWHandle {
 	public void setUseTid(boolean b) {
 		useTid = b;
 	}
+
 	public boolean isUseTid() {
 		return useTid;
 	}

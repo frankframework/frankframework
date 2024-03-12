@@ -23,10 +23,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -43,88 +39,91 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Services) standard.
  * <p>
  * Example request in case of bis provider:<br/><code><pre>
- *	&lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
- *		&lt;soap:Header&gt;
- *			&lt;bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
- *				&lt;bis:From&gt;
- *					&lt;bis:Id&gt;PolicyConversion_01_ServiceAgents_01&lt;/bis:Id&gt;
- *				&lt;/bis:From&gt;
- *				&lt;bis:HeaderFields&gt;
- *					&lt;bis:ConversationId&gt;1790257_10000050_04&lt;/bis:ConversationId&gt;
- *					&lt;bis:MessageId&gt;1790257&lt;/bis:MessageId&gt;
- *					&lt;bis:Timestamp&gt;2011-03-02T10:26:31.464+01:00&lt;/bis:Timestamp&gt;
- *				&lt;/bis:HeaderFields&gt;
- *			&lt;/bis:MessageHeader&gt;
- *		&lt;/soap:Header&gt;
- *		&lt;soap:Body&gt;
- *			<i>&lt;pcr:GetRequest xmlns:pcr="http://www.ing.com/nl/pcretail/ts/migrationauditdata_01"&gt;
- *				&lt;pcr:PolicyDetails&gt;
- *					&lt;pcr:RVS_PARTY_ID&gt;1790257&lt;/pcr:RVS_PARTY_ID&gt;
- *					&lt;pcr:RVS_POLICY_NUMBER&gt;10000050&lt;/pcr:RVS_POLICY_NUMBER&gt;
- *					&lt;pcr:RVS_BRANCH_CODE&gt;04&lt;/pcr:RVS_BRANCH_CODE&gt;
- *				&lt;/pcr:PolicyDetails&gt;
- *			&lt;/pcr:GetRequest&gt;</i>
- *		&lt;/soap:Body&gt;
- *	&lt;/soap:Envelope&gt;
+ * 	&lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
+ * 		&lt;soap:Header&gt;
+ * 			&lt;bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
+ * 				&lt;bis:From&gt;
+ * 					&lt;bis:Id&gt;PolicyConversion_01_ServiceAgents_01&lt;/bis:Id&gt;
+ * 				&lt;/bis:From&gt;
+ * 				&lt;bis:HeaderFields&gt;
+ * 					&lt;bis:ConversationId&gt;1790257_10000050_04&lt;/bis:ConversationId&gt;
+ * 					&lt;bis:MessageId&gt;1790257&lt;/bis:MessageId&gt;
+ * 					&lt;bis:Timestamp&gt;2011-03-02T10:26:31.464+01:00&lt;/bis:Timestamp&gt;
+ * 				&lt;/bis:HeaderFields&gt;
+ * 			&lt;/bis:MessageHeader&gt;
+ * 		&lt;/soap:Header&gt;
+ * 		&lt;soap:Body&gt;
+ * 			<i>&lt;pcr:GetRequest xmlns:pcr="http://www.ing.com/nl/pcretail/ts/migrationauditdata_01"&gt;
+ * 				&lt;pcr:PolicyDetails&gt;
+ * 					&lt;pcr:RVS_PARTY_ID&gt;1790257&lt;/pcr:RVS_PARTY_ID&gt;
+ * 					&lt;pcr:RVS_POLICY_NUMBER&gt;10000050&lt;/pcr:RVS_POLICY_NUMBER&gt;
+ * 					&lt;pcr:RVS_BRANCH_CODE&gt;04&lt;/pcr:RVS_BRANCH_CODE&gt;
+ * 				&lt;/pcr:PolicyDetails&gt;
+ * 			&lt;/pcr:GetRequest&gt;</i>
+ * 		&lt;/soap:Body&gt;
+ * 	&lt;/soap:Envelope&gt;
  * </pre></code><br/>
  * The element MessageHeader in the soap header is mandatory.
  * </p><p>
  * Example response in case of bis requester:<br/><code><pre>
- *	&lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
- *		&lt;soap:Header&gt;
- *			&lt;bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
- *				&lt;bis:From&gt;
- *					&lt;bis:Id&gt;IJA_DB4CONV&lt;/bis:Id&gt;
- *				&lt;/bis:From&gt;
- *				&lt;bis:HeaderFields&gt;
- *					&lt;bis:ConversationId&gt;1790257_10000050_04&lt;/bis:ConversationId&gt;
- *					&lt;bis:MessageId&gt;rn09ce_0a3b8d2d--33192359_12e588118c1_-612f&lt;/bis:MessageId&gt;
- *					&lt;bis:ExternalRefToMessageId&gt;1790257&lt;/bis:ExternalRefToMessageId&gt;
- *					&lt;bis:Timestamp&gt;2011-03-02T10:26:31&lt;/bis:Timestamp&gt;
- *				&lt;/bis:HeaderFields&gt;
- *			&lt;/bis:MessageHeader&gt;
- *		&lt;/soap:Header&gt;
- *		&lt;soap:Body&gt;
- *			<i>&lt;GetResponse xmlns="http://www.ing.com/nl/pcretail/ts/migrationcasedata_01"&gt;</i>
- *				<i>&lt;CaseData&gt;...&lt;/CaseData&gt;</i>
- *				&lt;bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
- *					&lt;bis:Status&gt;OK&lt;/bis:Status&gt;
- *				&lt;/bis:Result&gt;
- *			<i>&lt;/GetResponse&gt;</i>
- *		&lt;/soap:Body&gt;
- *	&lt;/soap:Envelope&gt;
+ * 	&lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
+ * 		&lt;soap:Header&gt;
+ * 			&lt;bis:MessageHeader xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
+ * 				&lt;bis:From&gt;
+ * 					&lt;bis:Id&gt;IJA_DB4CONV&lt;/bis:Id&gt;
+ * 				&lt;/bis:From&gt;
+ * 				&lt;bis:HeaderFields&gt;
+ * 					&lt;bis:ConversationId&gt;1790257_10000050_04&lt;/bis:ConversationId&gt;
+ * 					&lt;bis:MessageId&gt;rn09ce_0a3b8d2d--33192359_12e588118c1_-612f&lt;/bis:MessageId&gt;
+ * 					&lt;bis:ExternalRefToMessageId&gt;1790257&lt;/bis:ExternalRefToMessageId&gt;
+ * 					&lt;bis:Timestamp&gt;2011-03-02T10:26:31&lt;/bis:Timestamp&gt;
+ * 				&lt;/bis:HeaderFields&gt;
+ * 			&lt;/bis:MessageHeader&gt;
+ * 		&lt;/soap:Header&gt;
+ * 		&lt;soap:Body&gt;
+ * 			<i>&lt;GetResponse xmlns="http://www.ing.com/nl/pcretail/ts/migrationcasedata_01"&gt;</i>
+ * 				<i>&lt;CaseData&gt;...&lt;/CaseData&gt;</i>
+ * 				&lt;bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
+ * 					&lt;bis:Status&gt;OK&lt;/bis:Status&gt;
+ * 				&lt;/bis:Result&gt;
+ * 			<i>&lt;/GetResponse&gt;</i>
+ * 		&lt;/soap:Body&gt;
+ * 	&lt;/soap:Envelope&gt;
  * </pre></code><br/>
  * The elements MessageHeader in the soap header and Result in the soap body are mandatory.
  * </p><p>
  * Example element Result in case of an error response:<br/><code><pre>
- *	&lt;bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
- *		&lt;bis:Status&gt;ERROR&lt;/bis:Status&gt;
- *		&lt;bis:ErrorList&gt;
- *			&lt;bis:Error&gt;
- *				&lt;bis:Code&gt;ERR6003&lt;/bis:Code&gt;
- *				&lt;bis:Reason&gt;Invalid Request Message&lt;/bis:Reason&gt;
- *				&lt;bis:Service&gt;
- *					&lt;bis:Name&gt;migrationauditdata_01&lt;/bis:Name&gt;
- *					&lt;bis:Context&gt;1&lt;/bis:Context&gt;
- *					&lt;bis:Action&gt;
- *						&lt;bis:Name&gt;SetPolicyDetails_Action&lt;/bis:Name&gt;
- *						&lt;bis:Version&gt;1&lt;/bis:Version&gt;
- *					&lt;/bis:Action&gt;
- *				&lt;/bis:Service&gt;
- *				&lt;bis:DetailList&gt;
- *					&lt;bis:Detail&gt;
- *						&lt;bis:Code/&gt;
- *						&lt;bis:Text&gt;Pipe [Validate tibco request] msgId [Test Tool correlation id] got invalid xml according to schema [....&lt;/bis:Text&gt;
- *					&lt;/bis:Detail&gt;
- *				&lt;/bis:DetailList&gt;
- *			&lt;/bis:Error&gt;
- *		&lt;/bis:ErrorList&gt;
- *	&lt;/bis:Result&gt;
+ * 	&lt;bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
+ * 		&lt;bis:Status&gt;ERROR&lt;/bis:Status&gt;
+ * 		&lt;bis:ErrorList&gt;
+ * 			&lt;bis:Error&gt;
+ * 				&lt;bis:Code&gt;ERR6003&lt;/bis:Code&gt;
+ * 				&lt;bis:Reason&gt;Invalid Request Message&lt;/bis:Reason&gt;
+ * 				&lt;bis:Service&gt;
+ * 					&lt;bis:Name&gt;migrationauditdata_01&lt;/bis:Name&gt;
+ * 					&lt;bis:Context&gt;1&lt;/bis:Context&gt;
+ * 					&lt;bis:Action&gt;
+ * 						&lt;bis:Name&gt;SetPolicyDetails_Action&lt;/bis:Name&gt;
+ * 						&lt;bis:Version&gt;1&lt;/bis:Version&gt;
+ * 					&lt;/bis:Action&gt;
+ * 				&lt;/bis:Service&gt;
+ * 				&lt;bis:DetailList&gt;
+ * 					&lt;bis:Detail&gt;
+ * 						&lt;bis:Code/&gt;
+ * 						&lt;bis:Text&gt;Pipe [Validate tibco request] msgId [Test Tool correlation id] got invalid xml according to schema [....&lt;/bis:Text&gt;
+ * 					&lt;/bis:Detail&gt;
+ * 				&lt;/bis:DetailList&gt;
+ * 			&lt;/bis:Error&gt;
+ * 		&lt;/bis:ErrorList&gt;
+ * 	&lt;/bis:Result&gt;
  * </pre></code>
  * </p><p>
  * If direction=unwrap and one of the following conditions is true a PipeRunException is thrown:
@@ -171,6 +170,7 @@ import org.frankframework.util.XmlUtils;
  * <tr><td>{@link #setOmitResult(boolean) omitResult}</td><td>(only used when direction=wrap) when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a PipeRunException is thrown</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when direction=unwrap) when set <code>true</code> the <code>outputNamespace</code> is added to the output root element in the SOAP body</td><td>false</td></tr>
  * </table></p>
+ *
  * @author Peter Leeuwenburgh
  * @deprecated Please replace with org.frankframework.extensions.esb.EsbSoapWrapperPipe (not 1:1)
  */
@@ -187,11 +187,11 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	private static final String bisMessageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
 	private static final String bisErrorXPath = "bis:Result/bis:Status='ERROR'";
 
-	private static final String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
-			"ERR6003", "Invalid Request Message" }, {
-			"ERR6004", "Invalid Backend system response" }, {
-			"ERR6005", "Backend system failure response" }, {
-			"ERR6999", "Unspecified Errors" }
+	private static final String[][] BISERRORS = {{"ERR6002", "Service Interface Request Time Out"}, {
+			"ERR6003", "Invalid Request Message"}, {
+			"ERR6004", "Invalid Backend system response"}, {
+			"ERR6005", "Backend system failure response"}, {
+			"ERR6999", "Unspecified Errors"}
 	};
 
 	private String inputXPath = null;
@@ -269,7 +269,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message result;
 		try {
-			if (getDirection()== Direction.WRAP) {
+			if (getDirection() == Direction.WRAP) {
 				String originalBisMessageHeader = (String) session.get(getBisMessageHeaderSessionKey());
 				String bisConversationId = null;
 				String bisExternalRefToMessageId = null;

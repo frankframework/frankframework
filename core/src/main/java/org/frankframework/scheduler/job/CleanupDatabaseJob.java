@@ -164,7 +164,8 @@ public class CleanupDatabaseJob extends JobDef {
 				param.setType(ParameterType.TIMESTAMP);
 				qs.addParameter(param);
 
-				String query = this.getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows, qs.getDbmsSupport().getDbms());
+				String query = this.getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows, qs.getDbmsSupport()
+						.getDbms());
 				qs.setQuery(query);
 				qs.configure();
 				qs.open();

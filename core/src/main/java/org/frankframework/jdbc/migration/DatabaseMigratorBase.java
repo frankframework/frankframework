@@ -43,9 +43,8 @@ import org.frankframework.util.LogUtil;
 /**
  * DatabaseMigration implementation for IAF.
  *
- * @author	Niels Meijer
- * @since	7.0-B4
- *
+ * @author Niels Meijer
+ * @since 7.0-B4
  */
 public abstract class DatabaseMigratorBase implements IConfigurationAware, InitializingBean {
 
@@ -59,18 +58,18 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 
 	@Override
 	public void afterPropertiesSet() {
-		if(dataSourceFactory == null) {
+		if (dataSourceFactory == null) {
 			throw new IllegalStateException("DataSourceFactory has not been autowired");
 		}
 
 		configurationClassLoader = configuration.getClassLoader();
-		if(!(configurationClassLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
+		if (!(configurationClassLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
 			throw new IllegalStateException("unable to initialize database migrator");
 		}
 	}
 
 	public String getDatasourceName() {
-		if(datasourceName == null) {
+		if (datasourceName == null) {
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME));
 		}
@@ -83,10 +82,10 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 
 	protected final DataSource lookupMigratorDatasource() throws SQLException {
 		try {
-			log.debug("looking up Datasource ["+getDatasourceName()+"] for JdbcMigrator ["+getName()+"]");
+			log.debug("looking up Datasource [" + getDatasourceName() + "] for JdbcMigrator [" + getName() + "]");
 			return dataSourceFactory.getDataSource(getDatasourceName());
 		} catch (NamingException e) {
-			throw new SQLException("cannot connect to datasource ["+getDatasourceName()+"]", e);
+			throw new SQLException("cannot connect to datasource [" + getDatasourceName() + "]", e);
 		}
 	}
 
@@ -125,7 +124,7 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
-		if(!(applicationContext instanceof Configuration)) {
+		if (!(applicationContext instanceof Configuration)) {
 			throw new IllegalStateException("context not instanceof configuration");
 		}
 		this.configuration = (Configuration) applicationContext;

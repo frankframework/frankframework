@@ -31,12 +31,13 @@ class SpringSoapBus extends SpringBus implements InitializingBean, DisposableBea
 	// This list comes from https://stackoverflow.com/questions/37756464/setting-apache-cxf-bus-properties-for-malicious-xml.
 	// The present code to process them expects them to be integers.
 	private static final List<String> CFX_SECURITY_PROPERTIES = Arrays.asList(
-		"org.apache.cxf.stax.maxAttributeSize",
-		"org.apache.cxf.stax.maxChildElements",
-		"org.apache.cxf.stax.maxElementDepth",
-		"org.apache.cxf.stax.maxAttributeCount",
-		"org.apache.cxf.stax.maxTextLength",
-		"org.apache.cxf.stax.maxElementCount");
+			"org.apache.cxf.stax.maxAttributeSize",
+			"org.apache.cxf.stax.maxChildElements",
+			"org.apache.cxf.stax.maxElementDepth",
+			"org.apache.cxf.stax.maxAttributeCount",
+			"org.apache.cxf.stax.maxTextLength",
+			"org.apache.cxf.stax.maxElementCount"
+	);
 	private static final String SOAP_BUS_PREFIX = "soap.bus.";
 
 	private final Logger log = LogUtil.getLogger(this);
@@ -54,9 +55,9 @@ class SpringSoapBus extends SpringBus implements InitializingBean, DisposableBea
 
 	@Override
 	public void afterPropertiesSet() {
-		for(String propName: CFX_SECURITY_PROPERTIES) {
+		for (String propName : CFX_SECURITY_PROPERTIES) {
 			String propValue = ctx.getEnvironment().getProperty(SOAP_BUS_PREFIX + propName);
-			if(! StringUtils.isBlank(propValue)) {
+			if (!StringUtils.isBlank(propValue)) {
 				this.setProperty(propName, Integer.valueOf(propValue));
 				log.info("Set property [{}] of bus [{}] to [{}]", () -> propName, this::getId, () -> propValue);
 			}

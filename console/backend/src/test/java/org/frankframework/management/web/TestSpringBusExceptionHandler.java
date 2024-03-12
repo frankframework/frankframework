@@ -4,9 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.ws.rs.core.Response;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.IbisException;
 import org.frankframework.management.bus.BusException;
-import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.MessageHandlingException;
@@ -18,6 +19,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 public class TestSpringBusExceptionHandler {
 	private final SpringBusExceptionHandler handler = new SpringBusExceptionHandler();
+
 	public enum TestExceptionType {
 		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, AUTHORIZATION, AUTHENTICATION, CLIENT_EXCEPTION_400, CLIENT_EXCEPTION_404, NOT_FOUND
 	}
@@ -30,28 +32,32 @@ public class TestSpringBusExceptionHandler {
 	}
 
 	private Exception createExceptionCause(TestExceptionType type) {
-		Exception cause = new IbisException("cannot stream",
-			new IbisException("cannot configure",
-				new IllegalStateException("something is wrong")));
+		Exception cause = new IbisException(
+				"cannot stream",
+				new IbisException(
+						"cannot configure",
+						new IllegalStateException("something is wrong")
+				)
+		);
 
 		switch (type) {
-		case NOT_FOUND:
-			return new BusException("resource not found", 404);
-		case MESSAGE:
-			return new BusException("message without cause");
-		case CAUSE:
-			return new IllegalStateException("uncaught exception", cause);
-		case AUTHORIZATION:
-			return new AccessDeniedException("Access Denied");
-		case AUTHENTICATION:
-			return new AuthenticationCredentialsNotFoundException("An Authentication object was not found in the SecurityContext");
-		case CLIENT_EXCEPTION_400:
-			return HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "custom status text ignored", HttpHeaders.EMPTY, "some exception text".getBytes(), null);
-		case CLIENT_EXCEPTION_404:
-			return HttpClientErrorException.create(HttpStatus.NOT_FOUND, "custom status text ignored", HttpHeaders.EMPTY, "http body ignored".getBytes(), null);
-		case MESSAGE_WITH_CAUSE:
-		default:
-			return new BusException("message with a cause", cause);
+			case NOT_FOUND:
+				return new BusException("resource not found", 404);
+			case MESSAGE:
+				return new BusException("message without cause");
+			case CAUSE:
+				return new IllegalStateException("uncaught exception", cause);
+			case AUTHORIZATION:
+				return new AccessDeniedException("Access Denied");
+			case AUTHENTICATION:
+				return new AuthenticationCredentialsNotFoundException("An Authentication object was not found in the SecurityContext");
+			case CLIENT_EXCEPTION_400:
+				return HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "custom status text ignored", HttpHeaders.EMPTY, "some exception text".getBytes(), null);
+			case CLIENT_EXCEPTION_404:
+				return HttpClientErrorException.create(HttpStatus.NOT_FOUND, "custom status text ignored", HttpHeaders.EMPTY, "http body ignored".getBytes(), null);
+			case MESSAGE_WITH_CAUSE:
+			default:
+				return new BusException("message with a cause", cause);
 		}
 	}
 
@@ -123,7 +129,7 @@ public class TestSpringBusExceptionHandler {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "lala" })
+	@WithMockUser(authorities = {"lala"})
 	public void testEndpointMessageWithAuthorizationError() {
 		// Arrange
 		MessageHandlingException e = createException(TestExceptionType.AUTHORIZATION);

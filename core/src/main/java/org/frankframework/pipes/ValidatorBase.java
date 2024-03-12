@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -36,21 +38,17 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.XmlValidatorException;
 import org.springframework.context.ApplicationContext;
 
-import lombok.Getter;
-import lombok.Setter;
-
 
 /**
  * Pipe that validates the input message against a Schema.
  *
+ * @author Gerrit van Brakel
  * @ff.forward parserError a parser exception occurred, probably caused by a non-well-formed document. If not specified, <code>failure</code> is used in such a case.
  * @ff.forward failure The document is not valid according to the configured schema.
  * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
  * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
  * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
  * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
- *
- * @author Gerrit van Brakel
  */
 public abstract class ValidatorBase extends FixedForwardPipe implements IDualModeValidator {
 
@@ -103,7 +101,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 	protected final PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
 		throwEvent(validationResult.getEvent());
 		PipeForward forward = null;
-		switch(validationResult) {
+		switch (validationResult) {
 			case VALID_WITH_WARNINGS:
 				if (responseMode) {
 					forward = findForward("outputWarnings");
@@ -143,7 +141,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 				}
 				return forward;
 			default:
-				throw new IllegalStateException("Unknown validationResult ["+validationResult+"]");
+				throw new IllegalStateException("Unknown validationResult [" + validationResult + "]");
 		}
 	}
 
@@ -415,6 +413,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 	public void setRoot(String root) {
 		this.root = root;
 	}
+
 	/** Name of the response root element */
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;

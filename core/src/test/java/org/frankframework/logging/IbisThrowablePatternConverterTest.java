@@ -15,6 +15,7 @@ import org.frankframework.pipes.CompareIntegerPipe;
 import org.frankframework.pipes.UnzipPipe;
 import org.frankframework.pipes.XmlSwitch;
 import org.frankframework.pipes.XsltPipe;
+
 import org.junit.jupiter.api.Test;
 
 public class IbisThrowablePatternConverterTest {
@@ -32,13 +33,13 @@ public class IbisThrowablePatternConverterTest {
 					try {
 						throw new PipeRunException(new UnzipPipe(), "UnzipPipe");
 					} catch (final PipeRunException e) {
-						throw new PipeRunException(new XmlSwitch(), "XmlSwitch",e);
+						throw new PipeRunException(new XmlSwitch(), "XmlSwitch", e);
 					}
 				} catch (final PipeRunException e) {
-					throw new PipeRunException(new XsltPipe(), "XsltPipe",e);
+					throw new PipeRunException(new XsltPipe(), "XsltPipe", e);
 				}
 			} catch (final PipeRunException e) {
-				throw new PipeRunException(new CompareIntegerPipe(), "CompareIntegerPipe",e);
+				throw new PipeRunException(new CompareIntegerPipe(), "CompareIntegerPipe", e);
 			}
 		} catch (final PipeRunException e) {
 			parent = e;
@@ -57,9 +58,9 @@ public class IbisThrowablePatternConverterTest {
 
 		int firstCausedBy = result.indexOf("Caused by");
 		assertThat("cannot find first 'Caused By'", firstCausedBy, greaterThan(0));
-		int secondCausedBy =  result.indexOf("Caused by", firstCausedBy+10);
+		int secondCausedBy = result.indexOf("Caused by", firstCausedBy + 10);
 		assertThat("cannot find second 'Caused By'", secondCausedBy, greaterThan(0));
 
-		assertThat("'Caused By's too far apart", secondCausedBy-firstCausedBy, lessThan(300));
+		assertThat("'Caused By's too far apart", secondCausedBy - firstCausedBy, lessThan(300));
 	}
 }

@@ -43,7 +43,7 @@ public class ServiceListener extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.SERVICE_LISTENER)
 	@ActionSelector(BusAction.GET)
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getServiceListeners(Message<?> message) {
 		Map<String, Object> returnData = new HashMap<>();
 
@@ -58,11 +58,11 @@ public class ServiceListener extends BusEndpointBase {
 	@RolesAllowed("IbisTester")
 	public Message<String> postServiceListeners(Message<?> message) {
 		String serviceName = BusMessageUtils.getHeader(message, "service");
-		if(StringUtils.isEmpty(serviceName)) {
+		if (StringUtils.isEmpty(serviceName)) {
 			throw new BusException("service name not provided");
 		}
 
-		if(!ServiceDispatcher.getInstance().isRegisteredServiceListener(serviceName)) {
+		if (!ServiceDispatcher.getInstance().isRegisteredServiceListener(serviceName)) {
 			throw new BusException("ServiceListener not found");
 		}
 
@@ -71,7 +71,7 @@ public class ServiceListener extends BusEndpointBase {
 		try (PipeLineSession session = new PipeLineSession()) {
 			dispatchResult = ServiceDispatcher.getInstance().dispatchRequest(serviceName, payload, session);
 		} catch (ListenerException e) {
-			throw new BusException("Exception executing service ["+serviceName+"]", e);
+			throw new BusException("Exception executing service [" + serviceName + "]", e);
 		}
 
 		Map<String, String> result = new HashMap<>();

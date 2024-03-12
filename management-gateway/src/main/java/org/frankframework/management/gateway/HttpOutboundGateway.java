@@ -15,18 +15,16 @@
 */
 package org.frankframework.management.gateway;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.util.SpringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
-
-import lombok.Setter;
-
-import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.util.SpringUtils;
 
 public class HttpOutboundGateway<T> implements InitializingBean, ApplicationContextAware, OutboundGateway<T> {
 
@@ -38,7 +36,7 @@ public class HttpOutboundGateway<T> implements InitializingBean, ApplicationCont
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(StringUtils.isBlank(endpoint)) {
+		if (StringUtils.isBlank(endpoint)) {
 			throw new IllegalStateException("no endpoint specified");
 		}
 

@@ -15,9 +15,8 @@
 */
 package org.frankframework.stream.json;
 
-import org.xml.sax.SAXException;
-
 import org.frankframework.stream.JsonEventHandler;
+import org.xml.sax.SAXException;
 
 public class JsonTee implements JsonEventHandler {
 
@@ -25,8 +24,8 @@ public class JsonTee implements JsonEventHandler {
 	private final JsonEventHandler second;
 
 	public JsonTee(JsonEventHandler first, JsonEventHandler second) {
-		this.first=first;
-		this.second=second;
+		this.first = first;
+		this.second = second;
 	}
 
 	@Override

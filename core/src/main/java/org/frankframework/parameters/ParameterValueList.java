@@ -44,31 +44,32 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	public ParameterValueList() {
 		super();
 		list = new ArrayList<>();
-		map  = new LinkedHashMap<>();
+		map = new LinkedHashMap<>();
 	}
 
 	public static ParameterValueList get(ParameterList params, Message message, PipeLineSession session) throws ParameterException {
-		if (params==null) {
+		if (params == null) {
 			return null;
 		}
 		return params.getValues(message, session);
 	}
 
 	protected void add(ParameterValue pv) {
-		if(pv == null || pv.getDefinition() == null) {
+		if (pv == null || pv.getDefinition() == null) {
 			throw new IllegalStateException("No parameter defined");
 		}
-		if(StringUtils.isEmpty(pv.getDefinition().getName())) {
+		if (StringUtils.isEmpty(pv.getDefinition().getName())) {
 			throw new IllegalStateException("Parameter must have a name");
 		}
 		list.add(pv);
-		map.put(pv.getDefinition().getName(),pv);
+		map.put(pv.getDefinition().getName(), pv);
 	}
 
 	@Deprecated //Fix this in a separate PR
 	public ParameterValue getParameterValue(String name) {
 		return get(name);
 	}
+
 	/** Get a specific {@link ParameterValue} */
 	public ParameterValue get(String name) {
 		return map.get(name);
@@ -76,8 +77,8 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 
 	/** Find a (case insensitive) {@link ParameterValue} */
 	public ParameterValue findParameterValue(String name) {
-		for(Map.Entry<String, ParameterValue> entry : map.entrySet()) {
-			if(entry.getKey().equalsIgnoreCase(name)) {
+		for (Map.Entry<String, ParameterValue> entry : map.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(name)) {
 				return entry.getValue();
 			}
 		}
@@ -95,7 +96,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	@Nullable
 	public ParameterValue remove(String name) {
 		ParameterValue pv = map.remove(name);
-		if(pv != null) {
+		if (pv != null) {
 			list.remove(pv);
 		}
 		return pv;
@@ -114,7 +115,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
 		// convert map with parameterValue to map with value
-		Map<String,Object> result = new LinkedHashMap<>(paramValuesMap.size());
+		Map<String, Object> result = new LinkedHashMap<>(paramValuesMap.size());
 		for (ParameterValue pv : paramValuesMap.values()) {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
@@ -122,9 +123,9 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 	public static Message getValue(ParameterValueList pvl, String name, Message defaultValue) {
-		if (pvl!=null) {
+		if (pvl != null) {
 			ParameterValue pv = pvl.get(name);
-			Message value = pv!=null ? pv.asMessage() : null;
+			Message value = pv != null ? pv.asMessage() : null;
 			if (!Message.isNull(value)) {
 				return value;
 			}
@@ -133,9 +134,9 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 	public static String getValue(ParameterValueList pvl, String name, String defaultValue) {
-		if (pvl!=null) {
+		if (pvl != null) {
 			ParameterValue pv = pvl.get(name);
-			if (pv!=null) {
+			if (pv != null) {
 				return pv.asStringValue(defaultValue);
 			}
 		}

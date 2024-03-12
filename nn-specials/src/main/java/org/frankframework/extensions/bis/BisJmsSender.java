@@ -20,8 +20,6 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Element;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -34,6 +32,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
 
 /**
  * Bis (Business Integration Services) extension of JmsSender.
@@ -61,7 +60,7 @@ import org.frankframework.util.XmlUtils;
  * <tr><td>{@link #setRemoveResponseNamespaces(boolean) removeResponseNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the response are removed (this functionality will be used during migration from IFSA to TIBCO)</td><td>false</td></tr>
  * </p>
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  * @deprecated Please use JmsSender combined with BisWrapperPipe
  */
 @Deprecated
@@ -105,7 +104,7 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) {
+	public Message extractMessageBody(Message message, Map<String, Object> context, SoapWrapper soapWrapper) {
 		return message;
 	}
 

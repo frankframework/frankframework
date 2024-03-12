@@ -12,6 +12,7 @@ import org.frankframework.pipes.ChecksumPipe.ChecksumGenerator;
 import org.frankframework.pipes.ChecksumPipe.ChecksumType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 
 public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
@@ -80,7 +81,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	public void emptyCharset() throws Exception {
 		pipe.setCharset("");
 		configureAndStartPipe();
-		assertNotNull(doPipe(pipe,"anotherDummy", session));
+		assertNotNull(doPipe(pipe, "anotherDummy", session));
 	}
 
 	@Test

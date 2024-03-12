@@ -40,8 +40,8 @@ import org.frankframework.util.FileUtils;
 public class ZipWriter implements ICollector<MessageZipEntry> {
 
 	private static final MediaType MIMETYPE_ZIP = new MediaType("application", "zip");
-	static final String PARAMETER_FILENAME="filename";
-	static final String PARAMETER_CONTENTS="contents";
+	static final String PARAMETER_FILENAME = "filename";
+	static final String PARAMETER_CONTENTS = "contents";
 
 	private final boolean includeFileHeaders;
 	private final String zipLocation;
@@ -52,27 +52,27 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 				break;
 			case WRITE:
 			case LAST:
-				if(parameterList == null) {
-					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
+				if (parameterList == null) {
+					throw new ConfigurationException("parameter '" + PARAMETER_FILENAME + "' or parameter '" + PARAMETER_CONTENTS + "' is required");
 				}
-				Parameter filenameParameter=parameterList.findParameter(PARAMETER_FILENAME);
-				Parameter contentsParameter=parameterList.findParameter(PARAMETER_CONTENTS);
-				if (filenameParameter==null && contentsParameter==null) {
-					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
+				Parameter filenameParameter = parameterList.findParameter(PARAMETER_FILENAME);
+				Parameter contentsParameter = parameterList.findParameter(PARAMETER_CONTENTS);
+				if (filenameParameter == null && contentsParameter == null) {
+					throw new ConfigurationException("parameter '" + PARAMETER_FILENAME + "' or parameter '" + PARAMETER_CONTENTS + "' is required");
 				}
 				break;
 			case CLOSE:
-				if (parameterList != null && parameterList.findParameter(PARAMETER_FILENAME)!=null) {
-					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' cannot not be configured on action [close]");
+				if (parameterList != null && parameterList.findParameter(PARAMETER_FILENAME) != null) {
+					throw new ConfigurationException("parameter '" + PARAMETER_FILENAME + "' cannot not be configured on action [close]");
 				}
 				break;
 			case STREAM:
-				if(parameterList == null || parameterList.findParameter(PARAMETER_FILENAME)==null) {
-					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' is required");
+				if (parameterList == null || parameterList.findParameter(PARAMETER_FILENAME) == null) {
+					throw new ConfigurationException("parameter '" + PARAMETER_FILENAME + "' is required");
 				}
 				break;
 			default:
-				throw new ConfigurationException("unknown action ["+action+"]");
+				throw new ConfigurationException("unknown action [" + action + "]");
 		}
 	}
 
@@ -82,8 +82,9 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 
 	/**
 	 * Create a new ZipWriterCollector
+	 *
 	 * @param includeFileHeaders whether to calculate the size and crc for each entry
-	 * @param zipLocation if exists the file should be placed here, for legacy / deprecated purposes only!
+	 * @param zipLocation        if exists the file should be placed here, for legacy / deprecated purposes only!
 	 */
 	public ZipWriter(boolean includeFileHeaders, String zipLocation) {
 		this.includeFileHeaders = includeFileHeaders;
@@ -112,7 +113,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 	@Override
 	public Message build(List<MessageZipEntry> parts) throws IOException {
 		File file;
-		if(StringUtils.isEmpty(zipLocation)) {
+		if (StringUtils.isEmpty(zipLocation)) {
 			File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
 			file = File.createTempFile("msg", ".zip", collectorsTempFolder);
 		} else {
@@ -120,7 +121,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 		}
 
 		try (FileOutputStream fos = new FileOutputStream(file); ZipOutputStream zipoutput = new ZipOutputStream(fos)) {
-			for(MessageZipEntry entry : parts) {
+			for (MessageZipEntry entry : parts) {
 				entry.writeEntry(zipoutput);
 			}
 		}

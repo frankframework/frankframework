@@ -22,8 +22,8 @@ import org.frankframework.util.LogUtil;
 /**
  * Baseclass for SenderWrapperProcessor.
  *
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
 public abstract class SenderWrapperProcessorBase implements SenderWrapperProcessor {
 	protected Logger log = LogUtil.getLogger(this);

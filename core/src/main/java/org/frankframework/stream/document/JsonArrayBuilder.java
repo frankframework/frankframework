@@ -15,9 +15,8 @@
 */
 package org.frankframework.stream.document;
 
-import org.xml.sax.SAXException;
-
 import org.frankframework.stream.JsonEventHandler;
+import org.xml.sax.SAXException;
 
 public class JsonArrayBuilder extends ArrayBuilder {
 

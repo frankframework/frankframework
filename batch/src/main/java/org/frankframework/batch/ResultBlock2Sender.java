@@ -19,9 +19,8 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ISenderWithParameters;
@@ -33,10 +32,9 @@ import org.frankframework.util.ClassUtils;
 /**
  * ResultHandler that collects a number of records and sends them together to a sender.
  *
+ * @author Gerrit van Brakel
  * @ff.parameters any parameters defined on the resultHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
- *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @since 4.7
  * @deprecated Warning: non-maintained functionality.
  */
 public class ResultBlock2Sender extends Result2StringWriter {
@@ -55,11 +53,11 @@ public class ResultBlock2Sender extends Result2StringWriter {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (sender==null) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
+		if (sender == null) {
+			throw new ConfigurationException(ClassUtils.nameOf(this) + " has no sender");
 		}
 		if (StringUtils.isEmpty(sender.getName())) {
-			sender.setName("sender of "+getName());
+			sender.setName("sender of " + getName());
 		}
 		sender.configure();
 	}
@@ -80,79 +78,79 @@ public class ResultBlock2Sender extends Result2StringWriter {
 
 	@Override
 	public void openDocument(PipeLineSession session, String streamId) throws Exception {
-		counters.put(streamId,new Integer(0));
-		levels.put(streamId,new Integer(0));
+		counters.put(streamId, new Integer(0));
+		levels.put(streamId, new Integer(0));
 		super.openDocument(session, streamId);
 	}
 
 	@Override
 	public void closeDocument(PipeLineSession session, String streamId) {
-		super.closeDocument(session,streamId);
+		super.closeDocument(session, streamId);
 		counters.remove(streamId);
 		levels.remove(streamId);
 	}
 
 	protected int getCounter(String streamId) throws SenderException {
 		Integer counter = counters.get(streamId);
-		if (counter==null) {
-			throw new SenderException("no counter found for stream ["+streamId+"]");
+		if (counter == null) {
+			throw new SenderException("no counter found for stream [" + streamId + "]");
 		}
 		return counter.intValue();
 	}
 
 	protected int incCounter(String streamId) throws SenderException {
 		Integer counter = counters.get(streamId);
-		if (counter==null) {
-			throw new SenderException("no counter found for stream ["+streamId+"]");
+		if (counter == null) {
+			throw new SenderException("no counter found for stream [" + streamId + "]");
 		}
-		int result=counter.intValue()+1;
-		counters.put(streamId,new Integer(result));
+		int result = counter.intValue() + 1;
+		counters.put(streamId, new Integer(result));
 		return result;
 	}
 
 	public int getLevel(String streamId) throws SenderException {
 		Integer level = levels.get(streamId);
-		if (level==null) {
-			throw new SenderException("no level found for stream ["+streamId+"]");
+		if (level == null) {
+			throw new SenderException("no level found for stream [" + streamId + "]");
 		}
 		return level.intValue();
 	}
 
 	protected int incLevel(String streamId) throws SenderException {
 		Integer level = levels.get(streamId);
-		if (level==null) {
-			throw new SenderException("no level found for stream ["+streamId+"]");
+		if (level == null) {
+			throw new SenderException("no level found for stream [" + streamId + "]");
 		}
-		int result=level.intValue()+1;
-		levels.put(streamId,new Integer(result));
+		int result = level.intValue() + 1;
+		levels.put(streamId, new Integer(result));
 		return result;
 	}
 
 	protected int decLevel(String streamId) throws SenderException {
 		Integer level = levels.get(streamId);
-		if (level==null) {
-			throw new SenderException("no level found for stream ["+streamId+"]");
+		if (level == null) {
+			throw new SenderException("no level found for stream [" + streamId + "]");
 		}
-		int result=level.intValue()-1;
-		levels.put(streamId,new Integer(result));
+		int result = level.intValue() - 1;
+		levels.put(streamId, new Integer(result));
 		return result;
 	}
 
 	@Override
 	public void openBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception {
-		super.openBlock(session,streamId,blockName,blocks);
+		super.openBlock(session, streamId, blockName, blocks);
 		incLevel(streamId);
 	}
 
 	@Override
 	public void closeBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception {
-		super.closeBlock(session,streamId,blockName,blocks);
-		int level=decLevel(streamId);
-		if (level==0) {
-			StringWriter writer=(StringWriter)getWriter(session,streamId,false);
-			if (writer!=null) {
-				Message message=new Message(writer.getBuffer().toString());
-				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");
+		super.closeBlock(session, streamId, blockName, blocks);
+		int level = decLevel(streamId);
+		if (level == 0) {
+			StringWriter writer = (StringWriter) getWriter(session, streamId, false);
+			if (writer != null) {
+				Message message = new Message(writer.getBuffer().toString());
+				log.debug("sending block [" + message + "] to sender [" + sender.getName() + "]");
 				writer.getBuffer().setLength(0);
 				getSender().sendMessageOrThrow(message, session).close();
 			}

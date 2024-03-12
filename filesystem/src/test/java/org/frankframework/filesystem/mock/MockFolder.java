@@ -9,7 +9,7 @@ public class MockFolder extends MockFile {
 	private final Map<String, MockFolder> folders = new HashMap<>();  // do not use LinkedHashMap, do not rely on insertion order
 
 	public MockFolder(String filename, MockFolder parent) {
-		super(filename,parent);
+		super(filename, parent);
 	}
 
 	public Map<String, MockFile> getFiles() {

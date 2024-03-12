@@ -10,14 +10,14 @@ import java.util.List;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.jupiter.api.Test;
+
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.frankframework.management.bus.ResponseMessageBase;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
-import org.frankframework.management.bus.ResponseMessageBase;
-
-public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
+public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage> {
 
 	@Override
 	public SendJmsMessage createJaxRsResource() {
@@ -34,7 +34,7 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
 		attachments.add(new StringAttachment("message", "inputMessage"));
 
-		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments));
+		ApiException e = assertThrows(ApiException.class, () -> dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments));
 		assertEquals("unsupported file encoding [fakeEncoding]", e.getMessage());
 	}
 
@@ -48,7 +48,7 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
 
-		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments));
+		ApiException e = assertThrows(ApiException.class, () -> dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments));
 		assertEquals("unsupported file encoding [fakeEncoding]", e.getMessage());
 	}
 

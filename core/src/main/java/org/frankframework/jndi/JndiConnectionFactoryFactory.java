@@ -24,7 +24,7 @@ import javax.naming.NamingException;
 
 import org.frankframework.jms.IConnectionFactoryFactory;
 
-public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFactory,ConnectionFactory> implements IConnectionFactoryFactory {
+public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFactory, ConnectionFactory> implements IConnectionFactoryFactory {
 
 	public JndiConnectionFactoryFactory() {
 		super(ConnectionFactory.class);

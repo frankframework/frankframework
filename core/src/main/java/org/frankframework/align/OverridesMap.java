@@ -27,28 +27,28 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 	@Override
 	protected void registerSubstitute(String[] elements, int index, V value) {
 		super.registerSubstitute(elements, index, value);
-		for(int i=0;i<index;i++) {
-			registerParent(i>0?elements[i-1]:null,elements[i]);
+		for (int i = 0; i < index; i++) {
+			registerParent(i > 0 ? elements[i - 1] : null, elements[i]);
 		}
 	}
 
 	protected void registerParent(String parent, String child) {
-		if (parent==null) {
+		if (parent == null) {
 			// if parent is null, searching can stop after this child
 			allParents.put(child, null);
 			return;
 		}
-		Set<String> parentSetOfChild=null;
-		boolean created=false;
+		Set<String> parentSetOfChild = null;
+		boolean created = false;
 		if (allParents.containsKey(child)) {
 			parentSetOfChild = allParents.get(child);
-			if (parentSetOfChild==null) {
+			if (parentSetOfChild == null) {
 				return; // child already registered with null parent;
 			}
 		} else {
-			parentSetOfChild=new HashSet<>();
+			parentSetOfChild = new HashSet<>();
 			allParents.put(child, parentSetOfChild);
-			created=true;
+			created = true;
 		}
 		if (created || !parentSetOfChild.contains(parent)) {
 			parentSetOfChild.add(parent);
@@ -59,14 +59,14 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 	public boolean hasSubstitutionsFor(AlignmentContext context, String childName) {
 		while (allParents.containsKey(childName)) {
 			Set<String> parentSetOfChild = allParents.get(childName);
-			if (parentSetOfChild==null) {
+			if (parentSetOfChild == null) {
 				return true;
 			}
-			if (context==null) {
+			if (context == null) {
 				return false;
 			}
-			childName=context.getLocalName();
-			context=context.getParent();
+			childName = context.getLocalName();
+			context = context.getParent();
 		}
 		return false;
 	}
@@ -81,7 +81,7 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 
 	@Override
 	public boolean hasOverride(AlignmentContext context) {
-		return getOverride(context)!=null;
+		return getOverride(context) != null;
 	}
 
 	@Override

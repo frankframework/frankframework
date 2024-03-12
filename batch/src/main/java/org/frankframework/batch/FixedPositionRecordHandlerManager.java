@@ -25,14 +25,13 @@ import org.frankframework.core.PipeLineSession;
  * position in a record. The fields in the record are of a fixed length.
  * The data beween the start position and end position is taken as key in the flow-table.
  *
- *
  * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int startPosition;
-	private @Getter int endPosition=-1;
+	private @Getter int endPosition = -1;
 
 	@Override
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
@@ -41,19 +40,20 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 			throw new Exception("Record size is smaller then the specified position of the recordtype within the record");
 		}
 		if (endPosition < 0) {
-			Map<String,RecordHandlingFlow> valueHandlersMap = getFlowMap();
+			Map<String, RecordHandlingFlow> valueHandlersMap = getFlowMap();
 			RecordHandlingFlow rhf = null;
-			for(String name: valueHandlersMap.keySet()) {
-				if (log.isTraceEnabled()) log.trace("determining value for record ["+record+"] with key ["+name+"] and startPosition ["+startPosition+"]");
-				if (name.length()<=record.length()) {
+			for (String name : valueHandlersMap.keySet()) {
+				if (log.isTraceEnabled())
+					log.trace("determining value for record [" + record + "] with key [" + name + "] and startPosition [" + startPosition + "]");
+				if (name.length() <= record.length()) {
 					value = record.substring(startPosition, name.length());
-					if (value.equals(name) && (rhf = valueHandlersMap.get(name))!=null) {
+					if (value.equals(name) && (rhf = valueHandlersMap.get(name)) != null) {
 						break;
 					}
 				}
 			}
 			if (rhf == null) {
-				rhf =getFlowMap().get("*");
+				rhf = getFlowMap().get("*");
 				if (rhf == null) {
 					throw new Exception("No handlers (flow) found for recordKey [" + value + "]");
 				}
@@ -72,6 +72,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	/**
 	 * Start position of the field in the record that identifies the recordtype (first character is 0)
+	 *
 	 * @ff.default 0
 	 */
 	public void setStartPosition(int i) {
@@ -80,6 +81,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	/**
 	 * If endposition &gt;= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &lt; 0 then it depends on the length of the recordkey in the flow
+	 *
 	 * @ff.default -1
 	 */
 	public void setEndPosition(int i) {

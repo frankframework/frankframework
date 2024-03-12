@@ -51,7 +51,7 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 
 	public void configure() throws ConfigurationException {
-		for(Parameter param : this) {
+		for (Parameter param : this) {
 			param.configure();
 		}
 		index = null; //Once configured there is no need to keep this in memory
@@ -60,14 +60,14 @@ public class ParameterList extends ArrayList<Parameter> {
 		if (isNamesMustBeUnique()) {
 			Set<String> names = new LinkedHashSet<>();
 			Set<String> duplicateNames = new LinkedHashSet<>();
-			for(Parameter param : this) {
+			for (Parameter param : this) {
 				if (names.contains(param.getName())) {
 					duplicateNames.add(param.getName());
 				}
 				names.add(param.getName());
 			}
 			if (!duplicateNames.isEmpty()) {
-				throw new ConfigurationException("Duplicate parameter names "+duplicateNames);
+				throw new ConfigurationException("Duplicate parameter names " + duplicateNames);
 			}
 		}
 	}
@@ -96,7 +96,7 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 
 	private boolean parameterEvaluationRequiresInputValue() {
-		for (Parameter p:this) {
+		for (Parameter p : this) {
 			if (p.requiresInputValueForResolution()) {
 				return true;
 			}
@@ -105,7 +105,7 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 
 	private boolean parameterEvaluationRequiresInputValueOrContext() {
-		for (Parameter p:this) {
+		for (Parameter p : this) {
 			if (p.requiresInputValueOrContextForResolution()) {
 				return true;
 			}
@@ -116,11 +116,12 @@ public class ParameterList extends ArrayList<Parameter> {
 	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
 		return getValues(message, session, true);
 	}
+
 	/**
 	 * Returns a List of <link>ParameterValue<link> objects
 	 */
 	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
-		if(isInputValueRequiredForResolution() && message != null) {
+		if (isInputValueRequiredForResolution() && message != null) {
 			try {
 				message.preserve();
 			} catch (IOException e) {
@@ -142,7 +143,7 @@ public class ParameterList extends ArrayList<Parameter> {
 
 	public void addMatchingSessionKeys(ParameterValueList result, Parameter parm, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		String parmName = parm.getName();
-		for (String sessionKey: session.keySet()) {
+		for (String sessionKey : session.keySet()) {
 			if (PipeLineSession.TS_RECEIVED_KEY.equals(sessionKey) || PipeLineSession.TS_SENT_KEY.equals(sessionKey) || !sessionKey.startsWith(parmName) && !"*".equals(parmName)) {
 				continue;
 			}
@@ -163,7 +164,7 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 
 	public boolean consumesSessionVariable(String sessionKey) {
-		for (Parameter p:this) {
+		for (Parameter p : this) {
 			if (p.consumesSessionVariable(sessionKey)) {
 				return true;
 			}

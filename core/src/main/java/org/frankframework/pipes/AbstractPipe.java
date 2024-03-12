@@ -22,12 +22,9 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -50,6 +47,8 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -76,11 +75,9 @@ import org.frankframework.util.SpringUtils;
  * However, your documentation should say if and how parameters are used!<p>
  * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself
  *
+ * @author Johan Verrips / Gerrit van Brakel
  * @ff.forward success successful processing of the message of the pipe
  * @ff.forward exception some error happened while processing the message; represents the 'unhappy or error flow' and is not limited to Java Exceptions.
- *
- * @author     Johan Verrips / Gerrit van Brakel
- *
  * @see PipeLineSession
  */
 public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters {
@@ -88,10 +85,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Getter ApplicationContext applicationContext;
 
 	private @Getter String name;
-	private @Getter String getInputFromSessionKey=null;
-	private @Getter String getInputFromFixedValue=null;
-	private @Getter String storeResultInSessionKey=null;
-	private @Getter boolean preserveInput=false;
+	private @Getter String getInputFromSessionKey = null;
+	private @Getter String getInputFromFixedValue = null;
+	private @Getter String storeResultInSessionKey = null;
+	private @Getter boolean preserveInput = false;
 
 	private @Getter int maxThreads = 0;
 	private @Getter long durationThreshold = -1;
@@ -101,11 +98,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Getter String elementToMoveSessionKey = null;
 	private @Getter String elementToMoveChain = null;
 	private @Getter boolean removeCompactMsgNamespaces = true;
-	private @Getter boolean restoreMovedElements=false;
+	private @Getter boolean restoreMovedElements = false;
 
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
 	private @Getter Locker locker;
-	private @Getter String emptyInputReplacement=null;
+	private @Getter String emptyInputReplacement = null;
 	private @Getter boolean writeToSecLog = false;
 	private @Getter String secLogSessionKeys = null;
 	private @Getter String logIntermediaryResults = null;
@@ -114,7 +111,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private final Map<String, PipeForward> pipeForwards = new HashMap<>();
 	private final ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
-	private @Setter EventPublisher eventPublisher=null;
+	private @Setter EventPublisher eventPublisher = null;
 
 	private @Getter @Setter PipeLine pipeLine;
 
@@ -137,16 +134,16 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if(StringUtils.isNotEmpty(getName()) && getName().contains("/")) {
-			throw new ConfigurationException("It is not allowed to have '/' in pipe name ["+getName()+"]");
+		if (StringUtils.isNotEmpty(getName()) && getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in pipe name [" + getName() + "]");
 		}
 		ParameterList params = getParameterList();
-		if (params!=null) {
+		if (params != null) {
 			try {
 				params.setNamesMustBeUnique(parameterNamesMustBeUnique);
 				params.configure();
 			} catch (ConfigurationException e) {
-				throw new ConfigurationException("while configuring parameters",e);
+				throw new ConfigurationException("while configuring parameters", e);
 			}
 		}
 
@@ -164,7 +161,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 */
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
-		if(!(applicationContext instanceof Configuration)) {
+		if (!(applicationContext instanceof Configuration)) {
 			throw new IllegalArgumentException("ApplicationContext is not instance of Configuration");
 		}
 		this.applicationContext = applicationContext;
@@ -175,10 +172,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public void start() throws PipeStartException {}
+	public void start() throws PipeStartException {
+	}
 
 	@Override
-	public void stop() {}
+	public void stop() {
+	}
 
 
 	/**
@@ -207,15 +206,15 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	public void registerForward(PipeForward forward) throws ConfigurationException {
 		String forwardName = forward.getName();
-		if(forwardName != null) {
+		if (forwardName != null) {
 			PipeForward current = pipeForwards.get(forwardName);
-			if (current==null){
+			if (current == null) {
 				pipeForwards.put(forwardName, forward);
 			} else {
-				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings.add(this, log, "forward ["+forwardName+"] is already registered");
+				if (forward.getPath() != null && forward.getPath().equals(current.getPath())) {
+					ConfigurationWarnings.add(this, log, "forward [" + forwardName + "] is already registered");
 				} else {
-					log.info("PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+					log.info("PipeForward [" + forwardName + "] already registered, pointing to [" + current.getPath() + "]. Ignoring new one, that points to [" + forward.getPath() + "]");
 				}
 			}
 		} else {
@@ -236,7 +235,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * </ul>
 	 */
 	@Nullable
-	public PipeForward findForward(@Nullable String forward){
+	public PipeForward findForward(@Nullable String forward) {
 		if (StringUtils.isEmpty(forward)) {
 			return null;
 		}
@@ -249,7 +248,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		PipeForward result = pipeLine.getGlobalForwards().get(forward);
 		if (result == null) {
 			IPipe pipe = pipeLine.getPipe(forward);
-			if (pipe!=null) {
+			if (pipe != null) {
 				result = new PipeForward(forward, forward);
 			}
 		}
@@ -266,18 +265,18 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public Map<String, PipeForward> getForwards(){
+	public Map<String, PipeForward> getForwards() {
 		Map<String, PipeForward> forwards = new Hashtable<>(pipeForwards);
 		PipeLine pipeline = getPipeLine();
-		if (pipeline==null) {
+		if (pipeline == null) {
 			return null;
 		}
 
 		//Omit global pipeline-forwards and only return local pipe-forwards
 		List<IPipe> pipes = pipeline.getPipes();
-		for (int i=0; i<pipes.size(); i++) {
+		for (int i = 0; i < pipes.size(); i++) {
 			String pipeName = pipes.get(i).getName();
-			if(forwards.containsKey(pipeName))
+			if (forwards.containsKey(pipeName))
 				forwards.remove(pipeName);
 		}
 		return forwards;
@@ -312,7 +311,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
-		return sessionKey.equals(getInputFromSessionKey) || parameterList!=null && parameterList.consumesSessionVariable(sessionKey);
+		return sessionKey.equals(getInputFromSessionKey) || parameterList != null && parameterList.consumesSessionVariable(sessionKey);
 	}
 
 	/**
@@ -321,7 +320,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	@Mandatory
 	public void setName(String name) {
-		this.name=name;
+		this.name = name;
 		inSizeStatDummyObject.setName(getName() + " (in)");
 		outSizeStatDummyObject.setName(getName() + " (out)");
 	}
@@ -358,6 +357,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	/**
 	 * The maximum number of threads that may {@link #doPipe process messages} simultaneously.
 	 * A value of 0 indicates an unlimited number of threads.
+	 *
 	 * @ff.default 0
 	 */
 	public void setMaxThreads(int newMaxThreads) {
@@ -400,10 +400,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 
-
 	public void setSizeStatistics(boolean sizeStatistics) {
 		this.sizeStatistics = sizeStatistics;
 	}
+
 	@Override
 	public boolean hasSizeStatistics() {
 		return sizeStatistics;

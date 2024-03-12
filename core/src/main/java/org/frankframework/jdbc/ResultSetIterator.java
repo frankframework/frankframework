@@ -21,10 +21,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.JdbcUtil;
@@ -32,11 +30,11 @@ import org.frankframework.util.LogUtil;
 
 /**
  * Iterator over ResultSet.
- *
+ * <p>
  * Each row is returned in the same way a row is usually returned from a query.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 class ResultSetIterator implements IDataIterator<String> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -49,9 +47,9 @@ class ResultSetIterator implements IDataIterator<String> {
 	private final ResultSetMetaData rsmeta;
 	private final String blobCharset;
 
-	private boolean lineChecked=true; // assumes at least one line is present, and cursor is on it!
-	private boolean lineAvailable=true;
-	private int rowNumber=0;
+	private boolean lineChecked = true; // assumes at least one line is present, and cursor is on it!
+	private boolean lineAvailable = true;
+	private int rowNumber = 0;
 
 	public ResultSetIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs, String blobCharset, boolean decompressBlobs, boolean blobSmartGet) throws SQLException {
 		super();
@@ -61,7 +59,7 @@ class ResultSetIterator implements IDataIterator<String> {
 		this.decompressBlobs = decompressBlobs;
 		this.blobSmartGet = blobSmartGet;
 		this.blobCharset = blobCharset;
-		rsmeta=rs.getMetaData();
+		rsmeta = rs.getMetaData();
 	}
 
 	@Override
@@ -80,7 +78,7 @@ class ResultSetIterator implements IDataIterator<String> {
 	@Override
 	public String next() throws SenderException {
 		try {
-			lineChecked=false;
+			lineChecked = false;
 			return DB2XMLWriter.getRowXml(dbmsSupport, rs, rowNumber++, rsmeta, blobCharset, decompressBlobs, "", true, blobSmartGet);
 		} catch (Exception e) {
 			throw new SenderException(e);

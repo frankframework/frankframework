@@ -73,8 +73,7 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 	/**
 	 * Called after the object has been created.
 	 *
-	 * @param parameters
-	 *            the parameters provided to bridge service factory
+	 * @param parameters the parameters provided to bridge service factory
 	 */
 	public void init(Map<String, String> parameters) {
 	}
@@ -152,16 +151,18 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 	@Override
 	public TypeDefinitionList getTypeChildren(String repositoryId, String typeId, Boolean includePropertyDefinitions,
-			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
+											  BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 		return getRepositoryService().getTypeChildren(repositoryId, typeId, includePropertyDefinitions, maxItems,
-				skipCount, extension);
+				skipCount, extension
+		);
 	}
 
 	@Override
 	public List<TypeDefinitionContainer> getTypeDescendants(String repositoryId, String typeId, BigInteger depth,
-			Boolean includePropertyDefinitions, ExtensionsData extension) {
+															Boolean includePropertyDefinitions, ExtensionsData extension) {
 		return getRepositoryService().getTypeDescendants(repositoryId, typeId, depth, includePropertyDefinitions,
-				extension);
+				extension
+		);
 	}
 
 	@Override
@@ -186,34 +187,38 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 	@Override
 	public ObjectInFolderList getChildren(String repositoryId, String folderId, String filter, String orderBy,
-			Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
-			Boolean includePathSegment, BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
+										  Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
+										  Boolean includePathSegment, BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 		return getNavigationService().getChildren(repositoryId, folderId, filter, orderBy, includeAllowableActions,
-				includeRelationships, renditionFilter, includePathSegment, maxItems, skipCount, extension);
+				includeRelationships, renditionFilter, includePathSegment, maxItems, skipCount, extension
+		);
 	}
 
 	@Override
 	public List<ObjectInFolderContainer> getDescendants(String repositoryId, String folderId, BigInteger depth,
-			String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
-			String renditionFilter, Boolean includePathSegment, ExtensionsData extension) {
+														String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
+														String renditionFilter, Boolean includePathSegment, ExtensionsData extension) {
 		return getNavigationService().getDescendants(repositoryId, folderId, depth, filter, includeAllowableActions,
-				includeRelationships, renditionFilter, includePathSegment, extension);
+				includeRelationships, renditionFilter, includePathSegment, extension
+		);
 	}
 
 	@Override
 	public List<ObjectInFolderContainer> getFolderTree(String repositoryId, String folderId, BigInteger depth,
-			String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
-			String renditionFilter, Boolean includePathSegment, ExtensionsData extension) {
+													   String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
+													   String renditionFilter, Boolean includePathSegment, ExtensionsData extension) {
 		return getNavigationService().getFolderTree(repositoryId, folderId, depth, filter, includeAllowableActions,
-				includeRelationships, renditionFilter, includePathSegment, extension);
+				includeRelationships, renditionFilter, includePathSegment, extension
+		);
 	}
 
 	@Override
 	public List<ObjectParentData> getObjectParents(String repositoryId, String objectId, String filter,
-			Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
-			Boolean includeRelativePathSegment, ExtensionsData extension) {
+												   Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
+												   Boolean includeRelativePathSegment, ExtensionsData extension) {
 		return getNavigationService().getObjectParents(repositoryId, objectId, filter, includeAllowableActions,
-				includeRelationships, renditionFilter, includeRelativePathSegment, extension);
+				includeRelationships, renditionFilter, includeRelativePathSegment, extension
+		);
 	}
 
 	@Override
@@ -223,60 +228,66 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 	@Override
 	public ObjectList getCheckedOutDocs(String repositoryId, String folderId, String filter, String orderBy,
-			Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
-			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
+										Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
+										BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 		return getNavigationService().getCheckedOutDocs(repositoryId, folderId, filter, orderBy,
-				includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, extension);
+				includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, extension
+		);
 	}
 
 	@Override
 	public String create(String repositoryId, Properties properties, String folderId, ContentStream contentStream,
-			VersioningState versioningState, List<String> policies, ExtensionsData extension) {
+						 VersioningState versioningState, List<String> policies, ExtensionsData extension) {
 		return super.create(repositoryId, properties, folderId, contentStream, versioningState, policies, extension);
 	}
 
 	@Override
 	public String createDocument(String repositoryId, Properties properties, String folderId,
-			ContentStream contentStream, VersioningState versioningState, List<String> policies, Acl addAces,
-			Acl removeAces, ExtensionsData extension) {
+								 ContentStream contentStream, VersioningState versioningState, List<String> policies, Acl addAces,
+								 Acl removeAces, ExtensionsData extension) {
 		return getObjectService().createDocument(repositoryId, properties, folderId, contentStream, versioningState,
-				policies, addAces, removeAces, extension);
+				policies, addAces, removeAces, extension
+		);
 	}
 
 	@Override
 	public String createDocumentFromSource(String repositoryId, String sourceId, Properties properties,
-			String folderId, VersioningState versioningState, List<String> policies, Acl addAces, Acl removeAces,
-			ExtensionsData extension) {
+										   String folderId, VersioningState versioningState, List<String> policies, Acl addAces, Acl removeAces,
+										   ExtensionsData extension) {
 		return getObjectService().createDocumentFromSource(repositoryId, sourceId, properties, folderId,
-				versioningState, policies, addAces, removeAces, extension);
+				versioningState, policies, addAces, removeAces, extension
+		);
 	}
 
 	@Override
 	public String createFolder(String repositoryId, Properties properties, String folderId, List<String> policies,
-			Acl addAces, Acl removeAces, ExtensionsData extension) {
+							   Acl addAces, Acl removeAces, ExtensionsData extension) {
 		return getObjectService().createFolder(repositoryId, properties, folderId, policies, addAces, removeAces,
-				extension);
+				extension
+		);
 	}
 
 	@Override
 	public String createRelationship(String repositoryId, Properties properties, List<String> policies, Acl addAces,
-			Acl removeAces, ExtensionsData extension) {
+									 Acl removeAces, ExtensionsData extension) {
 		return getObjectService()
 				.createRelationship(repositoryId, properties, policies, addAces, removeAces, extension);
 	}
 
 	@Override
 	public String createPolicy(String repositoryId, Properties properties, String folderId, List<String> policies,
-			Acl addAces, Acl removeAces, ExtensionsData extension) {
+							   Acl addAces, Acl removeAces, ExtensionsData extension) {
 		return getObjectService().createPolicy(repositoryId, properties, folderId, policies, addAces, removeAces,
-				extension);
+				extension
+		);
 	}
 
 	@Override
 	public String createItem(String repositoryId, Properties properties, String folderId, List<String> policies,
-			Acl addAces, Acl removeAces, ExtensionsData extension) {
+							 Acl addAces, Acl removeAces, ExtensionsData extension) {
 		return getObjectService().createItem(repositoryId, properties, folderId, policies, addAces, removeAces,
-				extension);
+				extension
+		);
 	}
 
 	@Override
@@ -286,10 +297,11 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 	@Override
 	public ObjectData getObject(String repositoryId, String objectId, String filter, Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter, Boolean includePolicyIds,
-			Boolean includeAcl, ExtensionsData extension) {
+								IncludeRelationships includeRelationships, String renditionFilter, Boolean includePolicyIds,
+								Boolean includeAcl, ExtensionsData extension) {
 		return getObjectService().getObject(repositoryId, objectId, filter, includeAllowableActions,
-				includeRelationships, renditionFilter, includePolicyIds, includeAcl, extension);
+				includeRelationships, renditionFilter, includePolicyIds, includeAcl, extension
+		);
 	}
 
 	@Override
@@ -299,42 +311,44 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 	@Override
 	public List<RenditionData> getRenditions(String repositoryId, String objectId, String renditionFilter,
-			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
+											 BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 		return getObjectService()
 				.getRenditions(repositoryId, objectId, renditionFilter, maxItems, skipCount, extension);
 	}
 
 	@Override
 	public ObjectData getObjectByPath(String repositoryId, String path, String filter, Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter, Boolean includePolicyIds,
-			Boolean includeAcl, ExtensionsData extension) {
+									  IncludeRelationships includeRelationships, String renditionFilter, Boolean includePolicyIds,
+									  Boolean includeAcl, ExtensionsData extension) {
 		return getObjectService().getObjectByPath(repositoryId, path, filter, includeAllowableActions,
-				includeRelationships, renditionFilter, includePolicyIds, includeAcl, extension);
+				includeRelationships, renditionFilter, includePolicyIds, includeAcl, extension
+		);
 	}
 
 	@Override
 	public ContentStream getContentStream(String repositoryId, String objectId, String streamId, BigInteger offset,
-			BigInteger length, ExtensionsData extension) {
+										  BigInteger length, ExtensionsData extension) {
 		return getObjectService().getContentStream(repositoryId, objectId, streamId, offset, length, extension);
 	}
 
 	@Override
 	public void updateProperties(String repositoryId, Holder<String> objectId, Holder<String> changeToken,
-			Properties properties, ExtensionsData extension) {
+								 Properties properties, ExtensionsData extension) {
 		getObjectService().updateProperties(repositoryId, objectId, changeToken, properties, extension);
 	}
 
 	@Override
 	public List<BulkUpdateObjectIdAndChangeToken> bulkUpdateProperties(String repositoryId,
-			List<BulkUpdateObjectIdAndChangeToken> objectIdAndChangeToken, Properties properties,
-			List<String> addSecondaryTypeIds, List<String> removeSecondaryTypeIds, ExtensionsData extension) {
+																	   List<BulkUpdateObjectIdAndChangeToken> objectIdAndChangeToken, Properties properties,
+																	   List<String> addSecondaryTypeIds, List<String> removeSecondaryTypeIds, ExtensionsData extension) {
 		return getObjectService().bulkUpdateProperties(repositoryId, objectIdAndChangeToken, properties,
-				addSecondaryTypeIds, removeSecondaryTypeIds, extension);
+				addSecondaryTypeIds, removeSecondaryTypeIds, extension
+		);
 	}
 
 	@Override
 	public void moveObject(String repositoryId, Holder<String> objectId, String targetFolderId, String sourceFolderId,
-			ExtensionsData extension) {
+						   ExtensionsData extension) {
 		getObjectService().moveObject(repositoryId, objectId, targetFolderId, sourceFolderId, extension);
 	}
 
@@ -345,41 +359,44 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 	@Override
 	public void deleteObjectOrCancelCheckOut(String repositoryId, String objectId, Boolean allVersions,
-			ExtensionsData extension) {
+											 ExtensionsData extension) {
 		// TODO: rework -> object cache
 		getObjectService().deleteObject(repositoryId, objectId, allVersions, extension);
 	}
 
 	@Override
 	public FailedToDeleteData deleteTree(String repositoryId, String folderId, Boolean allVersions,
-			UnfileObject unfileObjects, Boolean continueOnFailure, ExtensionsData extension) {
+										 UnfileObject unfileObjects, Boolean continueOnFailure, ExtensionsData extension) {
 		return getObjectService().deleteTree(repositoryId, folderId, allVersions, unfileObjects, continueOnFailure,
-				extension);
+				extension
+		);
 	}
 
 	@Override
 	public void setContentStream(String repositoryId, Holder<String> objectId, Boolean overwriteFlag,
-			Holder<String> changeToken, ContentStream contentStream, ExtensionsData extension) {
+								 Holder<String> changeToken, ContentStream contentStream, ExtensionsData extension) {
 		getObjectService().setContentStream(repositoryId, objectId, overwriteFlag, changeToken, contentStream,
-				extension);
+				extension
+		);
 	}
 
 	@Override
 	public void appendContentStream(String repositoryId, Holder<String> objectId, Holder<String> changeToken,
-			ContentStream contentStream, boolean isLastChunk, ExtensionsData extension) {
+									ContentStream contentStream, boolean isLastChunk, ExtensionsData extension) {
 		getObjectService().appendContentStream(repositoryId, objectId, changeToken, contentStream, isLastChunk,
-				extension);
+				extension
+		);
 	}
 
 	@Override
 	public void deleteContentStream(String repositoryId, Holder<String> objectId, Holder<String> changeToken,
-			ExtensionsData extension) {
+									ExtensionsData extension) {
 		getObjectService().deleteContentStream(repositoryId, objectId, changeToken, extension);
 	}
 
 	@Override
 	public void checkOut(String repositoryId, Holder<String> objectId, ExtensionsData extension,
-			Holder<Boolean> contentCopied) {
+						 Holder<Boolean> contentCopied) {
 		getVersioningService().checkOut(repositoryId, objectId, extension, contentCopied);
 	}
 
@@ -390,54 +407,60 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 	@Override
 	public void checkIn(String repositoryId, Holder<String> objectId, Boolean major, Properties properties,
-			ContentStream contentStream, String checkinComment, List<String> policies, Acl addAces, Acl removeAces,
-			ExtensionsData extension) {
+						ContentStream contentStream, String checkinComment, List<String> policies, Acl addAces, Acl removeAces,
+						ExtensionsData extension) {
 		getVersioningService().checkIn(repositoryId, objectId, major, properties, contentStream, checkinComment,
-				policies, addAces, removeAces, extension);
+				policies, addAces, removeAces, extension
+		);
 	}
 
 	@Override
 	public ObjectData getObjectOfLatestVersion(String repositoryId, String objectId, String versionSeriesId,
-			Boolean major, String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
-			String renditionFilter, Boolean includePolicyIds, Boolean includeAcl, ExtensionsData extension) {
+											   Boolean major, String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
+											   String renditionFilter, Boolean includePolicyIds, Boolean includeAcl, ExtensionsData extension) {
 		return getVersioningService()
 				.getObjectOfLatestVersion(repositoryId, objectId, versionSeriesId, major, filter,
 						includeAllowableActions, includeRelationships, renditionFilter, includePolicyIds, includeAcl,
-						extension);
+						extension
+				);
 	}
 
 	@Override
 	public Properties getPropertiesOfLatestVersion(String repositoryId, String objectId, String versionSeriesId,
-			Boolean major, String filter, ExtensionsData extension) {
+												   Boolean major, String filter, ExtensionsData extension) {
 		return getVersioningService().getPropertiesOfLatestVersion(repositoryId, objectId, versionSeriesId, major,
-				filter, extension);
+				filter, extension
+		);
 	}
 
 	@Override
 	public List<ObjectData> getAllVersions(String repositoryId, String objectId, String versionSeriesId, String filter,
-			Boolean includeAllowableActions, ExtensionsData extension) {
+										   Boolean includeAllowableActions, ExtensionsData extension) {
 		return getVersioningService().getAllVersions(repositoryId, objectId, versionSeriesId, filter,
-				includeAllowableActions, extension);
+				includeAllowableActions, extension
+		);
 	}
 
 	@Override
 	public ObjectList getContentChanges(String repositoryId, Holder<String> changeLogToken, Boolean includeProperties,
-			String filter, Boolean includePolicyIds, Boolean includeAcl, BigInteger maxItems, ExtensionsData extension) {
+										String filter, Boolean includePolicyIds, Boolean includeAcl, BigInteger maxItems, ExtensionsData extension) {
 		return getDiscoveryService().getContentChanges(repositoryId, changeLogToken, includeProperties, filter,
-				includePolicyIds, includeAcl, maxItems, extension);
+				includePolicyIds, includeAcl, maxItems, extension
+		);
 	}
 
 	@Override
 	public ObjectList query(String repositoryId, String statement, Boolean searchAllVersions,
-			Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
-			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
+							Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
+							BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 		return getDiscoveryService().query(repositoryId, statement, searchAllVersions, includeAllowableActions,
-				includeRelationships, renditionFilter, maxItems, skipCount, extension);
+				includeRelationships, renditionFilter, maxItems, skipCount, extension
+		);
 	}
 
 	@Override
 	public void addObjectToFolder(String repositoryId, String objectId, String folderId, Boolean allVersions,
-			ExtensionsData extension) {
+								  ExtensionsData extension) {
 		getMultiFilingService().addObjectToFolder(repositoryId, objectId, folderId, allVersions, extension);
 	}
 
@@ -448,15 +471,16 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 	@Override
 	public ObjectList getObjectRelationships(String repositoryId, String objectId, Boolean includeSubRelationshipTypes,
-			RelationshipDirection relationshipDirection, String typeId, String filter, Boolean includeAllowableActions,
-			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
+											 RelationshipDirection relationshipDirection, String typeId, String filter, Boolean includeAllowableActions,
+											 BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 		return getRelationshipService().getObjectRelationships(repositoryId, objectId, includeSubRelationshipTypes,
-				relationshipDirection, typeId, filter, includeAllowableActions, maxItems, skipCount, extension);
+				relationshipDirection, typeId, filter, includeAllowableActions, maxItems, skipCount, extension
+		);
 	}
 
 	@Override
 	public Acl applyAcl(String repositoryId, String objectId, Acl addAces, Acl removeAces,
-			AclPropagation aclPropagation, ExtensionsData extension) {
+						AclPropagation aclPropagation, ExtensionsData extension) {
 		return getAclService().applyAcl(repositoryId, objectId, addAces, removeAces, aclPropagation, extension);
 	}
 
@@ -494,7 +518,7 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 	@Override
 	public List<ObjectData> getAppliedPolicies(String repositoryId, String objectId, String filter,
-			ExtensionsData extension) {
+											   ExtensionsData extension) {
 		return getPolicyService().getAppliedPolicies(repositoryId, objectId, filter, extension);
 	}
 

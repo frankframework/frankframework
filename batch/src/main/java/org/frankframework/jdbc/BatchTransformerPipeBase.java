@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.frankframework.batch.StreamTransformerPipe;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -31,7 +30,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.ReferTo;
-
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
@@ -40,8 +38,8 @@ import org.frankframework.util.JdbcUtil;
 /**
  * abstract base class for JDBC batch transforming pipes.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 @Deprecated
 @ConfigurationWarning("Not tested and maintained, please look for alternatives if you use this class")
@@ -53,7 +51,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		querySender = createBean(FixedQuerySender.class);
-		querySender.setName("source of "+getName());
+		querySender.setName("source of " + getName());
 		querySender.configure();
 	}
 
@@ -79,8 +77,8 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 
 		ResultSetReader(Connection conn, ResultSet rs, Reader reader) {
 			super(reader);
-			this.conn=conn;
-			this.rs=rs;
+			this.conn = conn;
+			this.rs = rs;
 		}
 
 		@Override
@@ -101,15 +99,15 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		try {
 			connection = querySender.getConnection();
 			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message);
-			PreparedStatement statement=queryExecutionContext.getStatement();
+			PreparedStatement statement = queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			ResultSet rs = statement.executeQuery();
-			if (rs==null || !rs.next()) {
+			if (rs == null || !rs.next()) {
 				throw new SenderException("query has empty resultset");
 			}
 			return new ResultSetReader(connection, rs, getReader(rs, getCharset(), streamId, session));
 		} catch (Exception e) {
-			throw new PipeRunException(this,"cannot open reader",e);
+			throw new PipeRunException(this, "cannot open reader", e);
 		}
 	}
 
@@ -127,6 +125,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
+
 	public String getQuery() {
 		return querySender.getQuery();
 	}
@@ -135,6 +134,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
+
 	public String getDatasourceName() {
 		return querySender.getDatasourceName();
 	}

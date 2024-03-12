@@ -20,7 +20,7 @@ public class TransactionManagerTest {
 
 	private void checkNumberOfLines(DatabaseTestEnvironment env, int expected, String query) throws Exception {
 		String preparedQuery = env.getDbmsSupport().prepareQueryTextForNonLockingRead(query);
-		try(Connection connection = env.getConnection()) {
+		try (Connection connection = env.getConnection()) {
 			int count = JdbcTestUtil.executeIntQuery(connection, preparedQuery);
 			assertEquals(expected, count, "number of lines in table");
 		}
@@ -29,7 +29,7 @@ public class TransactionManagerTest {
 	@TxManagerTest
 	@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TEST_TABLE)
 	public void testCommit(DatabaseTestEnvironment env) throws Exception {
-		try(Connection connection = env.getConnection()) {
+		try (Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
 		}
 
@@ -48,7 +48,7 @@ public class TransactionManagerTest {
 	@TxManagerTest
 	@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TEST_TABLE)
 	public void testRollback(DatabaseTestEnvironment env) throws Exception {
-		try(Connection connection = env.getConnection()) {
+		try (Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
 		}
 
@@ -69,7 +69,7 @@ public class TransactionManagerTest {
 	@TxManagerTest
 	@WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TEST_TABLE)
 	public void testRequiresNew(DatabaseTestEnvironment env) throws Exception {
-		try(Connection connection = env.getConnection()) {
+		try (Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(connection, "DELETE FROM " + TEST_TABLE + " where TKEY=1");
 		}
 

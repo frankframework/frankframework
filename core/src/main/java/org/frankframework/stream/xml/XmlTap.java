@@ -15,9 +15,8 @@
 */
 package org.frankframework.stream.xml;
 
-import org.xml.sax.ContentHandler;
-
 import org.frankframework.xml.XmlWriter;
+import org.xml.sax.ContentHandler;
 
 public class XmlTap extends XmlTee {
 
@@ -31,6 +30,6 @@ public class XmlTap extends XmlTee {
 	}
 
 	public XmlWriter getWriter() {
-		return (XmlWriter)getSecondContentHandler();
+		return (XmlWriter) getSecondContentHandler();
 	}
 }

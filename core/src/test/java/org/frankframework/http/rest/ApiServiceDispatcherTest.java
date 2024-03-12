@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.ListenerException;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.util.EnumUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ public class ApiServiceDispatcherTest {
 
 		// Spin up many simultaneous threads to 'bomb' the dispatcher with many concurrent requests
 		for (int i = 0; i < NR_OF_THREADS; i++) {
-			String name = "thread"+i;
+			String name = "thread" + i;
 			CreateListener target = new CreateListener(name);
 			Thread t = new Thread(target);
 			t.setName(name);
@@ -65,7 +66,7 @@ public class ApiServiceDispatcherTest {
 
 		@Override
 		public void run() {
-			double timeout = Math.ceil(Math.random()*3);
+			double timeout = Math.ceil(Math.random() * 3);
 			try {
 				Thread.sleep((long) timeout);
 			} catch (InterruptedException e1) {
@@ -90,7 +91,7 @@ public class ApiServiceDispatcherTest {
 
 	private ApiListener createServiceClient(List<ApiListenerServletTest.Methods> method, String uri) {
 		ApiListener listener = new ApiListener();
-		listener.setName("Listener4Uri["+uri+"]");
+		listener.setName("Listener4Uri[" + uri + "]");
 
 		String methods = method.stream()
 				.map(m -> EnumUtils.parse(HttpMethod.class, m.name()).name())
@@ -186,7 +187,7 @@ public class ApiServiceDispatcherTest {
 	}
 
 
-	private void testMultipleMethods(String uri){
+	private void testMultipleMethods(String uri) {
 		ApiDispatchConfig config = dispatcher.findExactMatchingConfigForUri("/" + uri);
 		assertNotNull(config);
 		assertEquals("[GET, POST]", config.getMethods().toString());

@@ -22,7 +22,8 @@ import io.micrometer.influx.InfluxMeterRegistry;
 
 public class InfluxRegistryConfigurator extends MetricsRegistryConfiguratorBase<InfluxConfig> {
 
-	private class Config extends MeterRegistryConfigBase implements InfluxConfig {}
+	private class Config extends MeterRegistryConfigBase implements InfluxConfig {
+	}
 
 	@Override
 	protected InfluxConfig createConfig() {

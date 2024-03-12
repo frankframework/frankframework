@@ -23,13 +23,12 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.ResponseMessageBase;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.DigestUtils;
-
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.ResponseMessageBase;
 
 public class ResponseUtils {
 
@@ -38,37 +37,37 @@ public class ResponseUtils {
 		String mimeType = BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY, null);
 		ResponseBuilder builder = Response.status(status);
 
-		if(mimeType != null) {
+		if (mimeType != null) {
 			builder.type(mimeType);
 		}
 
-		if(status == 200 || status > 204) {
+		if (status == 200 || status > 204) {
 			builder.entity(response.getPayload());
 		}
 
 		String contentDisposition = BusMessageUtils.getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
-		if(contentDisposition != null) {
+		if (contentDisposition != null) {
 			builder.header("Content-Disposition", contentDisposition);
 		}
 
 		return builder;
 	}
 
-	public static ResponseBuilder convertToJaxRsStreamingResponse(Message<?> message, StreamingOutput response){
+	public static ResponseBuilder convertToJaxRsStreamingResponse(Message<?> message, StreamingOutput response) {
 		int status = BusMessageUtils.getIntHeader(message, ResponseMessageBase.STATUS_KEY, 200);
 		String mimeType = BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY, null);
 		ResponseBuilder builder = Response.status(status);
 
-		if(mimeType != null) {
+		if (mimeType != null) {
 			builder.type(mimeType);
 		}
 
-		if(status == 200 || status > 204) {
+		if (status == 200 || status > 204) {
 			builder.entity(response);
 		}
 
 		String contentDisposition = BusMessageUtils.getHeader(message, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
-		if(contentDisposition != null) {
+		if (contentDisposition != null) {
 			builder.header("Content-Disposition", contentDisposition);
 		}
 
@@ -79,7 +78,7 @@ public class ResponseUtils {
 	public static EntityTag generateETagHeaderValue(Message<?> response) {
 		MessageHeaders headers = response.getHeaders();
 		String mime = headers.get(ResponseMessageBase.MIMETYPE_KEY, String.class);
-		if(MediaType.APPLICATION_JSON_VALUE.equals(mime)) {
+		if (MediaType.APPLICATION_JSON_VALUE.equals(mime)) {
 			return generateETagHeaderValue(response.getPayload(), true);
 		}
 		return null;
@@ -87,12 +86,12 @@ public class ResponseUtils {
 
 	private static EntityTag generateETagHeaderValue(Object payload, boolean isWeak) {
 		byte[] bytes;
-		if(payload instanceof String) {
-			bytes = ((String)payload).getBytes(StandardCharsets.UTF_8);
+		if (payload instanceof String) {
+			bytes = ((String) payload).getBytes(StandardCharsets.UTF_8);
 		} else if (payload instanceof byte[]) {
 			bytes = (byte[]) payload;
 		} else {
-			throw new NotImplementedException("return type ["+payload.getClass()+"] not implemented");
+			throw new NotImplementedException("return type [" + payload.getClass() + "] not implemented");
 		}
 
 		return new EntityTag(DigestUtils.md5DigestAsHex(bytes), isWeak);

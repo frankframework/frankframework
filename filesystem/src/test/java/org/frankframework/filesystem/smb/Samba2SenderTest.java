@@ -1,5 +1,7 @@
 package org.frankframework.filesystem.smb;
 
+import org.junit.jupiter.api.BeforeEach;
+
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
@@ -9,7 +11,6 @@ import org.frankframework.senders.Samba2Sender;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
-import org.junit.jupiter.api.BeforeEach;
 
 public class Samba2SenderTest extends FileSystemSenderTest<Samba2Sender, SmbFileRef, Samba2FileSystem> {
 
@@ -28,7 +29,7 @@ public class Samba2SenderTest extends FileSystemSenderTest<Samba2Sender, SmbFile
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		if("localhost".equals(host)) {
+		if ("localhost".equals(host)) {
 			return new LocalFileSystemTestHelper(fs.getTestDirectory());
 		}
 		return new Samba2FileSystemTestHelper(host, port, shareName, username, password, domain);
@@ -37,7 +38,7 @@ public class Samba2SenderTest extends FileSystemSenderTest<Samba2Sender, SmbFile
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
-		if("localhost".equals(host)) {
+		if ("localhost".equals(host)) {
 			fs.startServer(FileSystemType.SMB2);
 			port = fs.getPort();
 		}
@@ -50,7 +51,7 @@ public class Samba2SenderTest extends FileSystemSenderTest<Samba2Sender, SmbFile
 		sender.setShare(shareName);
 		sender.setUsername(username);
 		sender.setPassword(password);
-		if("localhost".equals(host)) { // test stub only works with NTLM
+		if ("localhost".equals(host)) { // test stub only works with NTLM
 			sender.setAuthType(Samba2AuthType.NTLM);
 		}
 		sender.setHostname(host);

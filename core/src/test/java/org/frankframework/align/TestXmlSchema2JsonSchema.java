@@ -34,7 +34,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		testXml2JsonSchema(schemaFile, namespace, inputFile, rootElement, false, false, expectValidRoundTrip, expectedFailureReason);
 //		testXml2JsonSchema(schemaFile, namespace, inputFile, rootElement, true, false, expectValidRoundTrip, expectedFailureReason);
 //		testXml2JsonSchema(schemaFile, namespace, inputFile, rootElement, false, true, expectValidRoundTrip, expectedFailureReason);
-		testXml2JsonSchema(schemaFile, namespace, inputFile, rootElement, true, true, expectValidRoundTrip,	expectedFailureReason);
+		testXml2JsonSchema(schemaFile, namespace, inputFile, rootElement, true, true, expectValidRoundTrip, expectedFailureReason);
 	}
 
 	public void testXml2JsonSchema(String schemaFile, String namespace, String inputFile, String rootElement, boolean compactArrays, boolean skipJsonRootElements, boolean expectValidRoundTrip, String expectedFailureReason) throws Exception {
@@ -93,9 +93,9 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		}
 
 		// validate the json against the generated schema
-		if (compactArrays==skipJsonRootElements) {
+		if (compactArrays == skipJsonRootElements) {
 			if (StringUtils.isNotEmpty(jsonString)) {
-				validateJson(jsonString,jsonSchemaContent);
+				validateJson(jsonString, jsonSchemaContent);
 			}
 		}
 

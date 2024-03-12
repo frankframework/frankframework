@@ -29,11 +29,11 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 
 /**
-* Property Configurer that add's additional properties to the Spring environment through a custom property-source
-* Implements BeanFactoryPostProcessor so it's executed before other beans are created.
-*
-* @author Niels Meijer
-*/
+ * Property Configurer that add's additional properties to the Spring environment through a custom property-source
+ * Implements BeanFactoryPostProcessor so it's executed before other beans are created.
+ *
+ * @author Niels Meijer
+ */
 public abstract class CustomPropertySourcePostProcessor implements BeanFactoryPostProcessor, PriorityOrdered, EnvironmentAware {
 	private static final String CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME = "CustomPropertySource";
 	private ConfigurableEnvironment environment;
@@ -50,7 +50,7 @@ public abstract class CustomPropertySourcePostProcessor implements BeanFactoryPo
 		Properties props = new Properties();
 
 		PropertiesPropertySource customPropertySource = (PropertiesPropertySource) environment.getPropertySources().get(CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME);
-		if(customPropertySource != null) {
+		if (customPropertySource != null) {
 			props.putAll(customPropertySource.getSource());
 		}
 
@@ -80,7 +80,7 @@ public abstract class CustomPropertySourcePostProcessor implements BeanFactoryPo
 		convertProperties(customProperties);
 
 		PropertiesPropertySource propertySource = createPropertySource(customProperties);
-		if(propertySources.contains(CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME)) {
+		if (propertySources.contains(CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME)) {
 			propertySources.replace(CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME, propertySource);
 		} else {
 			propertySources.addFirst(propertySource);

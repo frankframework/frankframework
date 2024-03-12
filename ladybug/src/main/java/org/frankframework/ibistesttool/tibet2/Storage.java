@@ -159,7 +159,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	public int getSize() throws StorageException {
 		try {
 			return jdbcTemplate.queryForObject("select count(*) from " + table, Integer.class);
-		} catch(DataAccessException e){
+		} catch (DataAccessException e) {
 			throw new StorageException("Could not read size", e);
 		}
 	}
@@ -167,18 +167,20 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	@Override
 	public List<Integer> getStorageIds() throws StorageException {
 		try {
-			List<Integer> storageIds = jdbcTemplate.query("select LOGID from " + table + " order by LOGID desc",
-					(rs, rowNum) -> rs.getInt(1));
+			List<Integer> storageIds = jdbcTemplate.query(
+					"select LOGID from " + table + " order by LOGID desc",
+					(rs, rowNum) -> rs.getInt(1)
+			);
 			return storageIds;
-		} catch(DataAccessException e){
+		} catch (DataAccessException e) {
 			throw new StorageException("Could not read storage id's", e);
 		}
 	}
 
 	@Override
 	public List<List<Object>> getMetadata(int maxNumberOfRecords,
-			final List<String> metadataNames, List<String> searchValues,
-			int metadataValueType) throws StorageException {
+										  final List<String> metadataNames, List<String> searchValues,
+										  int metadataValueType) throws StorageException {
 		// Prevent SQL injection (searchValues are passed as parameters to the SQL statement)
 		for (String metadataName : metadataNames) {
 			if (!reportColumnNames.contains(metadataName)) {
@@ -208,7 +210,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		}
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		StringBuilder query = new StringBuilder("select"
-				+ dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords)  + " * from (select ");
+				+ dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords) + " * from (select ");
 		List<Object> args = new ArrayList<>();
 		List<Integer> argTypes = new ArrayList<>();
 		boolean first = true;
@@ -244,14 +246,17 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 				if (j != -1) {
 					String column = metadataNames.get(i);
 					String searchValueLeft = searchValue.substring(1, j);
-					String searchValueRight = searchValue.substring(j + 1,
-							searchValue.length() - 1);
+					String searchValueRight = searchValue.substring(
+							j + 1,
+							searchValue.length() - 1
+					);
 					if (StringUtils.isNotEmpty(searchValueLeft)) {
 						if (integerColumns.contains(column)) {
 							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft);
 						} else if (timestampColumns.contains(column)) {
 							addTimestampExpression(query, args, argTypes, column, ">=",
-									searchValueLeft, simpleDateFormat);
+									searchValueLeft, simpleDateFormat
+							);
 						}
 					}
 					if (StringUtils.isNotEmpty(searchValueRight)) {
@@ -259,7 +264,8 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 							addNumberExpression(query, args, argTypes, column, "<=", searchValueRight);
 						} else if (timestampColumns.contains(column)) {
 							addTimestampExpression(query, args, argTypes, column, "<=",
-									searchValueRight, simpleDateFormat);
+									searchValueRight, simpleDateFormat
+							);
 						}
 					}
 				} else {
@@ -295,25 +301,25 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		try {
 			metadata = jdbcTemplate.query(query.toString(), args.toArray(), argTypes.stream().mapToInt(i -> i).toArray(),
 					(rs, rowNum) ->
-						{
-							List<Object> row = new ArrayList<Object>();
-							for (int i = 0; i < metadataNames.size(); i++) {
-								if (integerColumns.contains(metadataNames.get(i))) {
-									row.add(rs.getInt(i + 1));
-								} else if (timestampColumns.contains(metadataNames.get(i))) {
-									row.add(simpleDateFormat.format(rs.getTimestamp(i + 1)));
-								} else {
-									row.add(getValue(rs, i + 1));
-								}
+					{
+						List<Object> row = new ArrayList<Object>();
+						for (int i = 0; i < metadataNames.size(); i++) {
+							if (integerColumns.contains(metadataNames.get(i))) {
+								row.add(rs.getInt(i + 1));
+							} else if (timestampColumns.contains(metadataNames.get(i))) {
+								row.add(simpleDateFormat.format(rs.getTimestamp(i + 1)));
+							} else {
+								row.add(getValue(rs, i + 1));
 							}
-							return row;
 						}
-					);
-		} catch(DataAccessException e){
+						return row;
+					}
+			);
+		} catch (DataAccessException e) {
 			throw new StorageException("Could not read metadata", e);
 		}
 		for (int i = 0; i < metadata.size(); i++) {
-			if (!SearchUtil.matches((List<Object>)metadata.get(i), regexSearchValues)) {
+			if (!SearchUtil.matches((List<Object>) metadata.get(i), regexSearchValues)) {
 				metadata.remove(i);
 				i--;
 			}
@@ -338,25 +344,27 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		}
 		query.append(" from " + table + " where LOGID = ?");
 		try {
-			jdbcTemplate.query(query.toString(),
+			jdbcTemplate.query(
+					query.toString(),
 					new Object[]{storageId},
-					new int[] {Types.INTEGER},
+					new int[]{Types.INTEGER},
 					(rs, rowNum) ->
-						{
-							for (int i = 0; i < reportColumnNames.size(); i++) {
-								String value = getValue(rs, i + 1);
-								Checkpoint checkpoint = new Checkpoint(report,
-										Thread.currentThread().getName(),
-										Storage.class.getName(),
-										"Column " + reportColumnNames.get(i),
-										Checkpoint.TYPE_INPUTPOINT, 0);
-								checkpoint.setMessage(value);
-								checkpoints.add(checkpoint);
-							}
-							return null;
+					{
+						for (int i = 0; i < reportColumnNames.size(); i++) {
+							String value = getValue(rs, i + 1);
+							Checkpoint checkpoint = new Checkpoint(report,
+									Thread.currentThread().getName(),
+									Storage.class.getName(),
+									"Column " + reportColumnNames.get(i),
+									Checkpoint.TYPE_INPUTPOINT, 0
+							);
+							checkpoint.setMessage(value);
+							checkpoints.add(checkpoint);
 						}
-					);
-		} catch(DataAccessException e){
+						return null;
+					}
+			);
+		} catch (DataAccessException e) {
 			throw new StorageException("Could not read report", e);
 		}
 		return report;
@@ -367,7 +375,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	}
 
 	private void addLikeExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String searchValue) {
+								   String column, String searchValue) {
 		if (searchValue.startsWith("~") && searchValue.contains("*")) {
 			addExpression(query, "lower(" + column + ") like lower(?)");
 		} else if (searchValue.startsWith("~")) {
@@ -387,9 +395,9 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	}
 
 	private void addFixedStringExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String searchValue) {
+										  String column, String searchValue) {
 		String[] svs = searchValue.split(",");
-		String questionMarks= "";
+		String questionMarks = "";
 		for (int i = 0; i < svs.length; i++) {
 			if (i == 0) {
 				questionMarks = "?";
@@ -403,22 +411,22 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	}
 
 	private void addNumberExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String operator, String searchValue)
-					throws StorageException {
+									 String column, String operator, String searchValue)
+			throws StorageException {
 		try {
 			BigDecimal bigDecimal = new BigDecimal(searchValue);
 			addExpression(query, column + " " + operator + " ?");
 			args.add(bigDecimal);
 			argTypes.add(Types.DECIMAL);
-		} catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			throw new StorageException("Search value '" + searchValue
 					+ "' isn't a valid number");
 		}
 	}
 
 	private void addTimestampExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String operator, String searchValue,
-			SimpleDateFormat simpleDateFormat) throws StorageException {
+										String column, String operator, String searchValue,
+										SimpleDateFormat simpleDateFormat) throws StorageException {
 		String searchValueToParse;
 		if (searchValue.length() < 23) {
 			if (">=".equals(operator)) {
@@ -437,7 +445,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 				Integer.parseInt(searchValueToParse.substring(14, 16));
 				Integer.parseInt(searchValueToParse.substring(17, 19));
 				Integer.parseInt(searchValueToParse.substring(20, 23));
-			} catch(NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				throwExceptionOnInvalidTimestamp(searchValue);
 			}
 			if (searchValueToParse.charAt(4) != '-'
@@ -563,7 +571,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		}
 
 		PipeLineSession pipeLineSession = new PipeLineSession();
-		if(securityContext.getUserPrincipal() != null)
+		if (securityContext.getUserPrincipal() != null)
 			pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 		PipeLineResult processResult = adapter.processMessage(TestTool.getCorrelationId(), message, pipeLineSession);
 		if (!processResult.isSuccessful()) {

@@ -61,41 +61,41 @@ public class DateFormatUtils {
 
 	static {
 		DATE_EXPRESSION_PARSER_MAP = Map.ofEntries(
-			Map.entry(Pattern.compile("^\\d{8}$"), buildFormatter("yyyyMMdd")),
-			Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}$"), buildFormatter("dd-MM-yyyy")),
-			Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{2}$"), SHORT_DATE_FORMATTER),
-			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}$"), ISO_DATE_FORMATTER),
-			Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$"), buildFormatter("MM/dd/yyyy")),
-			Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}$"), buildFormatter("yyyy/MM/dd")),
-			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$"), buildFormatter("dd MMM yyyy")),
-			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$"), buildFormatter("dd MMMM yyyy")),
-			Map.entry(Pattern.compile("^\\d{12}$"), buildFormatter("yyyyMMddHHmm")),
-			Map.entry(Pattern.compile("^\\d{8}\\s\\d{4}$"), buildFormatter("yyyyMMdd HHmm")),
-			Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("dd-MM-yyyy HH:mm")),
-			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}$"), buildFormatter("yyyy-MM-dd HH:mm")),
-			Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("MM/dd/yyyy HH:mm")),
-			Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), new DateTimeFormatterBuilder()
-					.appendPattern("dd/MM/")
-					.appendValueReduced(ChronoField.YEAR, 2, 2, Year.now().getValue() - 60)
-					.appendPattern(" HH:mm:ss")
-					.toFormatter()
-					.withZone(ZoneId.systemDefault())
-					.withResolverStyle(ResolverStyle.LENIENT)),
-			Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}$"), buildFormatter("yyyy/MM/dd HH:mm")),
-			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("dd MMM yyyy HH:mm")),
-			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("dd MMMM yyyy HH:mm")),
-			Map.entry(Pattern.compile("^\\d{14}$"), buildFormatter("yyyyMMddHHmmss")),
-			Map.entry(Pattern.compile("^\\d{8}\\s\\d{6}$"), buildFormatter("yyyyMMdd HHmmss")),
-			Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd-MM-yyyy HH:mm:ss")),
-			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), GENERIC_DATETIME_FORMATTER),
-			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_GENERIC_FORMATTER),
-			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER),
-			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\w+$"), FULL_ISO_FORMATTER),
-			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy-MM-dd'T'HH:mm:ss")),
-			Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("MM/dd/yyyy HH:mm:ss")),
-			Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy/MM/dd HH:mm:ss")),
-			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd MMM yyyy HH:mm:ss")),
-			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd MMMM yyyy HH:mm:ss"))
+				Map.entry(Pattern.compile("^\\d{8}$"), buildFormatter("yyyyMMdd")),
+				Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}$"), buildFormatter("dd-MM-yyyy")),
+				Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{2}$"), SHORT_DATE_FORMATTER),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}$"), ISO_DATE_FORMATTER),
+				Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$"), buildFormatter("MM/dd/yyyy")),
+				Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}$"), buildFormatter("yyyy/MM/dd")),
+				Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$"), buildFormatter("dd MMM yyyy")),
+				Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$"), buildFormatter("dd MMMM yyyy")),
+				Map.entry(Pattern.compile("^\\d{12}$"), buildFormatter("yyyyMMddHHmm")),
+				Map.entry(Pattern.compile("^\\d{8}\\s\\d{4}$"), buildFormatter("yyyyMMdd HHmm")),
+				Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("dd-MM-yyyy HH:mm")),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}$"), buildFormatter("yyyy-MM-dd HH:mm")),
+				Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("MM/dd/yyyy HH:mm")),
+				Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), new DateTimeFormatterBuilder()
+						.appendPattern("dd/MM/")
+						.appendValueReduced(ChronoField.YEAR, 2, 2, Year.now().getValue() - 60)
+						.appendPattern(" HH:mm:ss")
+						.toFormatter()
+						.withZone(ZoneId.systemDefault())
+						.withResolverStyle(ResolverStyle.LENIENT)),
+				Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}$"), buildFormatter("yyyy/MM/dd HH:mm")),
+				Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("dd MMM yyyy HH:mm")),
+				Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("dd MMMM yyyy HH:mm")),
+				Map.entry(Pattern.compile("^\\d{14}$"), buildFormatter("yyyyMMddHHmmss")),
+				Map.entry(Pattern.compile("^\\d{8}\\s\\d{6}$"), buildFormatter("yyyyMMdd HHmmss")),
+				Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd-MM-yyyy HH:mm:ss")),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), GENERIC_DATETIME_FORMATTER),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_GENERIC_FORMATTER),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\w+$"), FULL_ISO_FORMATTER),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy-MM-dd'T'HH:mm:ss")),
+				Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("MM/dd/yyyy HH:mm:ss")),
+				Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy/MM/dd HH:mm:ss")),
+				Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd MMM yyyy HH:mm:ss")),
+				Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd MMMM yyyy HH:mm:ss"))
 		);
 	}
 

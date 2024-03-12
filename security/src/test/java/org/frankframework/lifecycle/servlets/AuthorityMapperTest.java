@@ -17,10 +17,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import org.frankframework.lifecycle.DynamicRegistration;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public class AuthorityMapperTest {
 	private final Set<String> ALL_USER_ROLES = new HashSet<>(Arrays.asList(DynamicRegistration.ALL_IBIS_USER_ROLES));
@@ -48,10 +48,10 @@ public class AuthorityMapperTest {
 		assertEquals(4, authorities.size());
 
 		assertAll(
-			() -> assertTrue(authorities.contains("ROLE_IbisObserver")),
-			() -> assertTrue(authorities.contains("ROLE_IbisAdmin")),
-			() -> assertTrue(authorities.contains("ROLE_IbisDataAdmin")),
-			() -> assertTrue(authorities.contains("ROLE_IbisTester"))
+				() -> assertTrue(authorities.contains("ROLE_IbisObserver")),
+				() -> assertTrue(authorities.contains("ROLE_IbisAdmin")),
+				() -> assertTrue(authorities.contains("ROLE_IbisDataAdmin")),
+				() -> assertTrue(authorities.contains("ROLE_IbisTester"))
 		);
 	}
 }

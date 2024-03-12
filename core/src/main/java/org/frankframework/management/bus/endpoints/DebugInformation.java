@@ -43,7 +43,7 @@ public class DebugInformation extends BusEndpointBase {
 		String baseClassName = BusMessageUtils.getHeader(message, "baseClassName");
 		String className = BusMessageUtils.getHeader(message, "className");
 
-		if(StringUtils.isEmpty(className)) {
+		if (StringUtils.isEmpty(className)) {
 			throw new BusException("className may not be empty");
 		}
 
@@ -66,7 +66,7 @@ public class DebugInformation extends BusEndpointBase {
 
 			return new JsonResponseMessage(result);
 		} catch (Exception e) {
-			throw new BusException("Could not determine classInfo for class ["+className+"]", e);
+			throw new BusException("Could not determine classInfo for class [" + className + "]", e);
 		}
 	}
 }

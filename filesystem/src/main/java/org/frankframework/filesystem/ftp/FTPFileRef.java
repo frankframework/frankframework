@@ -15,17 +15,15 @@
 */
 package org.frankframework.filesystem.ftp;
 
+import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPFile;
-
-import lombok.Getter;
 
 /**
  * Wrapper around a FTPFile to allow for relative path operations
  *
  * @author Niels Meijer
- *
  */
 public class FTPFileRef extends FTPFile {
 
@@ -45,7 +43,7 @@ public class FTPFileRef extends FTPFile {
 	}
 
 	/**
-	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
+	 * @param name   A canonical name might be provided, strip the path when present and only use the actual file name.
 	 * @param folder The directory the file. This always has presedence over the canonical path provided by the name.
 	 */
 	public FTPFileRef(String name, String folder) {
@@ -71,7 +69,7 @@ public class FTPFileRef extends FTPFile {
 
 	/** Overwrites the folder of the file, in case setName was called with a canonical path */
 	private void setFolder(String folder) {
-		if(StringUtils.isNotEmpty(folder)) {
+		if (StringUtils.isNotEmpty(folder)) {
 			this.folder = FilenameUtils.normalize(folder, true);
 		}
 	}
@@ -85,7 +83,7 @@ public class FTPFileRef extends FTPFile {
 
 	@Override
 	public String toString() {
-		return "file-ref name["+super.getName()+"] folder["+getFolder()+"]";
+		return "file-ref name[" + super.getName() + "] folder[" + getFolder() + "]";
 	}
 
 	/** Update the FTPFile attributes */

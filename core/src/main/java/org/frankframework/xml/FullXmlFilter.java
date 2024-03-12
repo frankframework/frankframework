@@ -38,7 +38,7 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 
 	public FullXmlFilter(ContentHandler handler) {
 		this();
-		if (handler!=null) {
+		if (handler != null) {
 			setContentHandler(handler);
 		}
 	}
@@ -47,7 +47,7 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 	public void setContentHandler(ContentHandler handler) {
 		super.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
-			setLexicalHandler ((LexicalHandler)handler);
+			setLexicalHandler((LexicalHandler) handler);
 		}
 	}
 
@@ -56,56 +56,60 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 		super.setParent(parent);
 		setParentsLexicalHandler(parent);
 	}
+
 	protected void setParentsLexicalHandler(XMLReader parent) {
 		try {
 			parent.setProperty("http://xml.org/sax/properties/lexical-handler", this);
 		} catch (SAXNotRecognizedException | SAXNotSupportedException e) {
-			log.warn("cannot set LexicalHandler to parent ["+parent+"]");
+			log.warn("cannot set LexicalHandler to parent [" + parent + "]");
 		}
 	}
 
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
-		if (lexicalHandler!=null) {
+		if (lexicalHandler != null) {
 			lexicalHandler.comment(ch, start, length);
 		}
 	}
 
 	@Override
 	public void startCDATA() throws SAXException {
-		if (lexicalHandler!=null) {
+		if (lexicalHandler != null) {
 			lexicalHandler.startCDATA();
 		}
 	}
+
 	@Override
 	public void endCDATA() throws SAXException {
-		if (lexicalHandler!=null) {
+		if (lexicalHandler != null) {
 			lexicalHandler.endCDATA();
 		}
 	}
 
 	@Override
 	public void startDTD(String name, String publicId, String systemId) throws SAXException {
-		if (lexicalHandler!=null) {
+		if (lexicalHandler != null) {
 			lexicalHandler.startDTD(name, publicId, systemId);
 		}
 	}
+
 	@Override
 	public void endDTD() throws SAXException {
-		if (lexicalHandler!=null) {
+		if (lexicalHandler != null) {
 			lexicalHandler.endDTD();
 		}
 	}
 
 	@Override
 	public void startEntity(String name) throws SAXException {
-		if (lexicalHandler!=null) {
+		if (lexicalHandler != null) {
 			lexicalHandler.startEntity(name);
 		}
 	}
+
 	@Override
 	public void endEntity(String name) throws SAXException {
-		if (lexicalHandler!=null) {
+		if (lexicalHandler != null) {
 			lexicalHandler.endEntity(name);
 		}
 	}

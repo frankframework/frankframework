@@ -44,26 +44,28 @@ import org.frankframework.util.LogUtil;
  * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
  * to receive messages from Servlets.
  * </table>
- * @author  Gerrit van Brakel
- * @since   4.12
+ *
+ * @author Gerrit van Brakel
+ * @since 4.12
  */
 public abstract class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String name;
-	private @Getter boolean applicationFaultsAsExceptions=true;
+	private @Getter boolean applicationFaultsAsExceptions = true;
 	private @Getter boolean running;
 
 	private IMessageHandler<Message> handler;
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (handler==null) {
+		if (handler == null) {
 			throw new ConfigurationException("handler has not been set");
 		}
 	}
@@ -72,6 +74,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	public void open() throws ListenerException {
 		setRunning(true);
 	}
+
 	@Override
 	public void close() {
 		setRunning(false);
@@ -108,7 +111,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 			}
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
 			String correlationId = session.getCorrelationId();
-			return handler.formatException(null,correlationId, message, e);
+			return handler.formatException(null, correlationId, message, e);
 		} finally {
 			ThreadContext.clearAll();
 		}
@@ -131,8 +134,9 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 	@Override
 	public void setHandler(IMessageHandler<Message> handler) {
-		this.handler=handler;
+		this.handler = handler;
 	}
+
 	@Override
 	public void setExceptionListener(IbisExceptionListener exceptionListener) {
 //		this.exceptionListener=exceptionListener;

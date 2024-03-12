@@ -30,6 +30,7 @@ import org.frankframework.stream.Message;
  * so that the receiver knows whether or not the request was successfully
  * processed, and might -for instance- not commit a received message.
  * <br/>
+ *
  * @author Johan Verrips
  */
 public class PipeLineResult {
@@ -39,7 +40,7 @@ public class PipeLineResult {
 	private @Getter @Setter int exitCode;
 
 	public boolean isSuccessful() {
-		return getState()==ExitState.SUCCESS;
+		return getState() == ExitState.SUCCESS;
 	}
 
 	public @Nonnull Message getResult() {
@@ -54,8 +55,8 @@ public class PipeLineResult {
 	}
 
 	@Override
-	public String toString(){
-		return "result=["+result+"] state=["+state+"]";
+	public String toString() {
+		return "result=[" + result + "] state=[" + state + "]";
 	}
 
 }

@@ -55,7 +55,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.GET)
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getJdbcInfo(Message<?> message) {
 		Map<String, Object> result = new HashMap<>();
 
@@ -65,7 +65,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		result.put("datasources", dataSourceNames);
 
 		List<String> resultTypes = new ArrayList<>();
-		for(ResultType type : ResultType.values()) {
+		for (ResultType type : ResultType.values()) {
 			resultTypes.add(type.name().toLowerCase());
 		}
 		result.put("resultTypes", resultTypes);
@@ -113,19 +113,19 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), null);
 
 			switch (resultType) {
-			case CSV:
-				result = new QueryOutputToCSV().parse(message);
-				mimetype = MediaType.TEXT_PLAIN;
-				break;
-			case JSON:
-				result = new QueryOutputToJson().parse(message);
-				mimetype = MediaType.APPLICATION_JSON;
-				break;
-			case XML:
-			default:
-				result = message.asString();
-				mimetype = MediaType.APPLICATION_XML;
-				break;
+				case CSV:
+					result = new QueryOutputToCSV().parse(message);
+					mimetype = MediaType.TEXT_PLAIN;
+					break;
+				case JSON:
+					result = new QueryOutputToJson().parse(message);
+					mimetype = MediaType.APPLICATION_JSON;
+					break;
+				case XML:
+				default:
+					result = message.asString();
+					mimetype = MediaType.APPLICATION_XML;
+					break;
 			}
 			message.close();
 		} catch (Exception e) {

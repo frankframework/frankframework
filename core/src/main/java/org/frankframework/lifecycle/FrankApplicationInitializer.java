@@ -36,7 +36,7 @@ import org.frankframework.util.Misc;
 
 /**
  * Spring WebApplicationInitializer that should start after the {@link FrankEnvironmentInitializer} has been configured.
- *
+ * <p>
  * TODO: IbisContext should be directly wired under the EnvironmentContext.
  *
  * @author Niels Meijer
@@ -71,7 +71,7 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 		ApplicationContext parentContext = null;
 		try {
 			parentContext = WebApplicationContextUtils.getWebApplicationContext(servletContext); //This can throw many different types of errors!
-			if(parentContext == null) {
+			if (parentContext == null) {
 				throw new IllegalStateException("No Frank EnvironmentContext found. Aborting launch...");
 			}
 		} catch (Throwable t) {
@@ -92,17 +92,18 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 
 	/**
 	 * Retrieves the IbisContext from the ServletContext
+	 *
 	 * @param servletContext
 	 * @return IbisContext or IllegalStateException when not found
 	 */
 	public static IbisContext getIbisContext(ServletContext servletContext) {
 		Throwable t = (Throwable) servletContext.getAttribute(EXCEPTION_KEY); // non-recoverable startup error
-		if(t != null) {
+		if (t != null) {
 			throw new IllegalStateException("Could not initialize IbisContext", t);
 		}
 
-		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(CONTEXT_KEY);
-		if(ibisContext == null) {
+		IbisContext ibisContext = (IbisContext) servletContext.getAttribute(CONTEXT_KEY);
+		if (ibisContext == null) {
 			throw new IllegalStateException("IbisContext not found in ServletContext");
 		}
 
@@ -119,8 +120,8 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 		@Override
 		public void contextDestroyed(ServletContextEvent sce) {
 			ServletContext servletContext = sce.getServletContext();
-			IbisContext ibisContext = (IbisContext)servletContext.getAttribute(CONTEXT_KEY);
-			if(ibisContext != null) {
+			IbisContext ibisContext = (IbisContext) servletContext.getAttribute(CONTEXT_KEY);
+			if (ibisContext != null) {
 				APPLICATION_LOG.info("Shutting down {}", ClassUtils.classNameOf(ibisContext));
 				ibisContext.close();
 			}

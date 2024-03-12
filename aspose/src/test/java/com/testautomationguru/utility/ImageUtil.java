@@ -17,11 +17,11 @@ public class ImageUtil {
 		final int[] p2 = img2.getRGB(0, 0, w, h, null, 0, w);
 
 		double diff = getDifferencePercent(img1, img2);
-		if(diff > deviation) {
+		if (diff > deviation) {
 			logger.warning("Image compared - does not match, diff was: " + diff);
-			if(highlight) {
-				for(int i = 0; i < p1.length; i++) {
-					if(p1[i] != p2[i]) {
+			if (highlight) {
+				for (int i = 0; i < p1.length; i++) {
+					if (p1[i] != p2[i]) {
 						p1[i] = colorCode;
 					}
 				}
@@ -49,13 +49,13 @@ public class ImageUtil {
 		int height = img1.getHeight();
 		int width2 = img2.getWidth();
 		int height2 = img2.getHeight();
-		if(width != width2 || height != height2) {
+		if (width != width2 || height != height2) {
 			throw new IllegalArgumentException(String.format("Images must have the same dimensions: (%d,%d) vs. (%d,%d)", width, height, width2, height2));
 		}
 
 		long diff = 0;
-		for(int y = 0; y < height; y++) {
-			for(int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
 				diff += pixelDiff(img1.getRGB(x, y), img2.getRGB(x, y));
 			}
 		}

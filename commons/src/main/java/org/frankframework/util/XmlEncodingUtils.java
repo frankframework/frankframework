@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 public class XmlEncodingUtils {
 	static Logger log = LogManager.getLogger(XmlEncodingUtils.class);
 	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
+
 	public static String encodeChars(String string) {
 		return encodeChars(string, false);
 	}
@@ -39,7 +40,7 @@ public class XmlEncodingUtils {
 	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
 	 */
 	public static String encodeChars(String string, boolean escapeNewLines) {
-		if (string==null) {
+		if (string == null) {
 			return null;
 		}
 		int length = string.length();
@@ -64,13 +65,13 @@ public class XmlEncodingUtils {
 	 */
 	public static String encodeChars(char[] chars, int offset, int length, boolean escapeNewLines) {
 
-		if (length<=0) {
+		if (length <= 0) {
 			return "";
 		}
 		StringBuilder encoded = new StringBuilder(length);
 		String escape;
 		for (int i = 0; i < length; i++) {
-			char c=chars[offset+i];
+			char c = chars[offset + i];
 			escape = escapeChar(c, escapeNewLines);
 			if (escape == null)
 				encoded.append(c);
@@ -90,16 +91,15 @@ public class XmlEncodingUtils {
 		int escapeStartPos = 0;
 
 		for (int i = 0; i < string.length(); i++) {
-			char cur=string.charAt(i);
+			char cur = string.charAt(i);
 			if (inEscape) {
-				if ( cur == ';') {
+				if (cur == ';') {
 					inEscape = false;
 					String escapedString = string.substring(escapeStartPos, i + 1);
 					char unEscape = unEscapeString(escapedString);
 					if (unEscape == 0x0) {
 						decoded.append(escapedString);
-					}
-					else {
+					} else {
 						decoded.append(unEscape);
 					}
 				}
@@ -119,25 +119,25 @@ public class XmlEncodingUtils {
 	}
 
 	/**
-	   * Conversion of special xml signs. Please note that non valid xml chars
-	   * are not changed, hence you might want to use
-	   * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
-	   **/
+	 * Conversion of special xml signs. Please note that non valid xml chars
+	 * are not changed, hence you might want to use
+	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
+	 **/
 	private static String escapeChar(char c, boolean escapeNewLines) {
 		switch (c) {
-			case ('<') :
+			case ('<'):
 				return "&lt;";
-			case ('>') :
+			case ('>'):
 				return "&gt;";
-			case ('&') :
+			case ('&'):
 				return "&amp;";
-			case ('\"') :
+			case ('\"'):
 				return "&quot;";
-			case ('\'') :
+			case ('\''):
 				// return "&apos;"; // apos does not work in Internet Explorer
 				return "&#39;";
-			case ('\n')  :
-				if(escapeNewLines)
+			case ('\n'):
+				if (escapeNewLines)
 					return "&#10;";
 		}
 		return null;
@@ -162,7 +162,7 @@ public class XmlEncodingUtils {
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
 	 */
 	public static int replaceNonPrintableCharacters(char[] buf, int offset, int len) {
-		if (len<0) {
+		if (len < 0) {
 			return len;
 		}
 		int c;
@@ -170,37 +170,38 @@ public class XmlEncodingUtils {
 		int counter = 0;
 		int readPos = 0;
 		int writePos = 0;
-		while(readPos<len) { // while no shift needs to be made, loop and replace where necessary
-			c=Character.codePointAt(buf, readPos+offset);
+		while (readPos < len) { // while no shift needs to be made, loop and replace where necessary
+			c = Character.codePointAt(buf, readPos + offset);
 			charCount = Character.charCount(c);
 			if (isPrintableUnicodeChar(c, true)) {
 				readPos += charCount;
 			} else {
-				buf[offset+readPos]= REPLACE_NON_XML_CHAR;
-				if (charCount==1) {
+				buf[offset + readPos] = REPLACE_NON_XML_CHAR;
+				if (charCount == 1) {
 					readPos++;
 				} else {
-					writePos = readPos+1;
+					writePos = readPos + 1;
 					readPos += charCount;
 					break;
 				}
 			}
 		}
-		while(readPos<len) { // continue with loop and shift after replacement was shorter than original
-			c=Character.codePointAt(buf, readPos+offset);
+		while (readPos < len) { // continue with loop and shift after replacement was shorter than original
+			c = Character.codePointAt(buf, readPos + offset);
 			charCount = Character.charCount(c);
 			if (isPrintableUnicodeChar(c, true)) {
-				for(int j=0;j<charCount;j++) {
-					buf[offset+writePos++]=buf[offset+readPos++];
+				for (int j = 0; j < charCount; j++) {
+					buf[offset + writePos++] = buf[offset + readPos++];
 				}
 			} else {
-				buf[offset+writePos++]= REPLACE_NON_XML_CHAR;
-				readPos+=charCount;
+				buf[offset + writePos++] = REPLACE_NON_XML_CHAR;
+				readPos += charCount;
 				counter++;
 			}
 		}
-		if (counter>0 && log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+ REPLACE_NON_XML_CHAR+"] in char array of length ["+len+"]");
-		return writePos>0 ? writePos : readPos;
+		if (counter > 0 && log.isDebugEnabled())
+			log.debug("replaced [" + counter + "] non valid xml characters to [" + REPLACE_NON_XML_CHAR + "] in char array of length [" + len + "]");
+		return writePos > 0 ? writePos : readPos;
 	}
 
 	/**
@@ -212,7 +213,7 @@ public class XmlEncodingUtils {
 	}
 
 	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
-		if (string==null) {
+		if (string == null) {
 			return null;
 		}
 		int length = string.length();
@@ -220,7 +221,7 @@ public class XmlEncodingUtils {
 		int c;
 		int counter = 0;
 		for (int i = 0; i < length; i += Character.charCount(c)) {
-			c=string.codePointAt(i);
+			c = string.codePointAt(i);
 			if (isPrintableUnicodeChar(c, allowUnicodeSupplementaryCharacters)) {
 				encoded.appendCodePoint(c);
 			} else {
@@ -232,8 +233,8 @@ public class XmlEncodingUtils {
 				counter++;
 			}
 		}
-		if (counter>0) {
-			if (log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+to+"] in string of length ["+length+"]");
+		if (counter > 0) {
+			if (log.isDebugEnabled()) log.debug("replaced [" + counter + "] non valid xml characters to [" + to + "] in string of length [" + length + "]");
 		}
 		return encoded.toString();
 	}
@@ -244,16 +245,18 @@ public class XmlEncodingUtils {
 		int c;
 		int counter = 0;
 		for (int i = 0; i < length; i += Character.charCount(c)) {
-			c=string.codePointAt(i);
-			if (isPrintableUnicodeChar(c,
-					allowUnicodeSupplementaryCharacters)) {
+			c = string.codePointAt(i);
+			if (isPrintableUnicodeChar(
+					c,
+					allowUnicodeSupplementaryCharacters
+			)) {
 				encoded.appendCodePoint(c);
 			} else {
 				counter++;
 			}
 		}
-		if (counter>0) {
-			if (log.isDebugEnabled()) log.debug("stripped ["+counter+"] non valid xml characters in string of length ["+length+"]");
+		if (counter > 0) {
+			if (log.isDebugEnabled()) log.debug("stripped [" + counter + "] non valid xml characters in string of length [" + length + "]");
 		}
 		return encoded.toString();
 	}
@@ -264,11 +267,11 @@ public class XmlEncodingUtils {
 
 	public static boolean isPrintableUnicodeChar(int c, boolean allowUnicodeSupplementaryCharacters) {
 		return (c == 0x0009)
-			|| (c == 0x000A)
-			|| (c == 0x000D)
-			|| (c >= 0x0020 && c <= 0xD7FF)
-			|| (c >= 0xE000 && c <= 0xFFFD)
-			|| (allowUnicodeSupplementaryCharacters && (c >= 0x00010000 && c <= 0x0010FFFF));
+				|| (c == 0x000A)
+				|| (c == 0x000D)
+				|| (c >= 0x0020 && c <= 0xD7FF)
+				|| (c >= 0xE000 && c <= 0xFFFD)
+				|| (allowUnicodeSupplementaryCharacters && (c >= 0x00010000 && c <= 0x0010FFFF));
 	}
 
 	/**
@@ -285,27 +288,27 @@ public class XmlEncodingUtils {
 		String charset = StringUtils.isEmpty(defaultEncoding) ? StreamUtil.DEFAULT_INPUT_STREAM_ENCODING : defaultEncoding;
 		int length = source.length;
 
-		String firstPart = new String(source, 0, length<100?length:100, charset);
+		String firstPart = new String(source, 0, length < 100 ? length : 100, charset);
 		if (StringUtils.isEmpty(firstPart)) {
 			return null;
 		}
 
 		if (firstPart.startsWith("<?xml")) {
-			int endPos = firstPart.indexOf("?>")+2;
+			int endPos = firstPart.indexOf("?>") + 2;
 			if (endPos < 2) {
-				throw new IllegalArgumentException("no valid xml declaration in string ["+firstPart+"]");
+				throw new IllegalArgumentException("no valid xml declaration in string [" + firstPart + "]");
 			}
 
-			String declaration=firstPart.substring(6,endPos-2);
+			String declaration = firstPart.substring(6, endPos - 2);
 			log.debug("parsed declaration [{}]", declaration);
-			final String encodingTarget= "encoding=\"";
-			int encodingStart=declaration.indexOf(encodingTarget);
-			if (encodingStart>0) {
-				encodingStart+=encodingTarget.length();
-				log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");
-				int encodingEnd=declaration.indexOf("\"", encodingStart);
+			final String encodingTarget = "encoding=\"";
+			int encodingStart = declaration.indexOf(encodingTarget);
+			if (encodingStart > 0) {
+				encodingStart += encodingTarget.length();
+				log.debug("encoding-declaration [" + declaration.substring(encodingStart) + "]");
+				int encodingEnd = declaration.indexOf("\"", encodingStart);
 				if (encodingEnd > 0) {
-					charset=declaration.substring(encodingStart, encodingEnd);
+					charset = declaration.substring(encodingStart, encodingEnd);
 					log.debug("parsed charset []", charset);
 				} else {
 					log.warn("no end in encoding attribute in declaration [{}]", declaration);

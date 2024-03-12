@@ -15,9 +15,8 @@
 */
 package org.frankframework.extensions.esb;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
@@ -28,7 +27,7 @@ import org.frankframework.util.SpringUtils;
 /**
  * ESB (Enterprise Service Bus) extension of JmsSender.
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 @Category("NN-Special")
 public class EsbJmsSender extends JmsSender {
@@ -58,7 +57,7 @@ public class EsbJmsSender extends JmsSender {
 				throw new ConfigurationException(getLogPrefix() + "replyToName [" + getReplyToName() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
 			}
 		}
-		if (StringUtils.isEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
+		if (StringUtils.isEmpty(getSoapAction()) && (paramList == null || paramList.findParameter("SoapAction") == null)) {
 			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
@@ -76,6 +75,7 @@ public class EsbJmsSender extends JmsSender {
 
 	/**
 	 * receiver timeout, in milliseconds
+	 *
 	 * @ff.default 20000 (20s)
 	 */
 	public void setTimeout(long l) {
@@ -84,8 +84,9 @@ public class EsbJmsSender extends JmsSender {
 
 	/**
 	 * receiver timeout, in milliseconds.
-	 * @deprecated use {@link #setTimeout(long)} instead.
+	 *
 	 * @ff.default 20000 (20s)
+	 * @deprecated use {@link #setTimeout(long)} instead.
 	 */
 	@Deprecated(since = "8.1")
 	@ConfigurationWarning("Use attribute timeout instead")
@@ -104,11 +105,13 @@ public class EsbJmsSender extends JmsSender {
 	public void setReplyTimeout(int replyTimeout) {
 		super.setReplyTimeout(replyTimeout);
 	}
+
 	/** if messageProtocol=<code>RR</code> then <code>synchronous</code> defaults to <code>true</code> */
 	@Override
 	public void setSynchronous(boolean synchronous) {
 		super.setSynchronous(synchronous);
 	}
+
 	/** if messageProtocol=<code>RR</code> then if <code>soapAction</code> is empty then it is derived from the element MessageHeader/To/Location in the SOAP header of the input message (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion) */
 	@Override
 	public void setSoapAction(String soapAction) {

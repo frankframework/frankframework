@@ -32,14 +32,15 @@ import org.frankframework.stream.Message;
 /**
  * Sender that writes an item to a collection, created by {@link CollectorPipeBase} with action=<code>OPEN</code>.
  *
- * @ff.parameters all parameters are handled by the collection.
- *
  * @author Niels Meijer
+ * @ff.parameters all parameters are handled by the collection.
  */
 public abstract class CollectorSenderBase<C extends ICollector<P>, P> extends SenderWithParametersBase {
 
-	/** Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session
-	  * @ff.default collection
+	/**
+	 * Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session
+	 *
+	 * @ff.default collection
 	 */
 	private @Getter @Setter String collectionName = "collection";
 
@@ -47,17 +48,17 @@ public abstract class CollectorSenderBase<C extends ICollector<P>, P> extends Se
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if(StringUtils.isBlank(collectionName)) {
+		if (StringUtils.isBlank(collectionName)) {
 			throw new ConfigurationException("collectionName may not be blank");
 		}
 	}
 
 
 	protected @Nonnull Collection<C, P> getCollection(PipeLineSession session) throws CollectionException {
-		@SuppressWarnings({ "unchecked", "rawtypes" })
+		@SuppressWarnings({"unchecked", "rawtypes"})
 		Collection<C, P> collection = (Collection) session.get(getCollectionName());
 		if (collection == null) {
-			throw new CollectionException("cannot find collection under key ["+getCollectionName()+"]");
+			throw new CollectionException("cannot find collection under key [" + getCollectionName() + "]");
 		}
 		return collection;
 	}

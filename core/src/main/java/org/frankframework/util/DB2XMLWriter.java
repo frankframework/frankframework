@@ -43,27 +43,27 @@ import org.xml.sax.SAXException;
  * Example of a result:
  * <code><pre>
  * &lt;result&gt;
-	&lt;fielddefinition&gt;
-		&lt;field name="FIELDNAME"
-		          type="columnType"
-		          columnDisplaySize=""
-		          precision=""
-		          scale=""
-		          isCurrency=""
-		          columnTypeName=""
-		          columnClassName=""/&gt;
-		 &lt;field ...../&gt;
-	&lt;/fielddefinition&gt;
-	&lt;rowset&gt;
-		&lt;row number="1"&gt;
-			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
-			&lt;field name="FIELDNAME" null="true" &gt;&lt;/field&gt;
-			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
-			&lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
-		&lt;/row&gt;
-	&lt;/rowset&gt;
-&lt;/result&gt;
-</pre></code>
+ * &lt;fielddefinition&gt;
+ * &lt;field name="FIELDNAME"
+ * type="columnType"
+ * columnDisplaySize=""
+ * precision=""
+ * scale=""
+ * isCurrency=""
+ * columnTypeName=""
+ * columnClassName=""/&gt;
+ * &lt;field ...../&gt;
+ * &lt;/fielddefinition&gt;
+ * &lt;rowset&gt;
+ * &lt;row number="1"&gt;
+ * &lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
+ * &lt;field name="FIELDNAME" null="true" &gt;&lt;/field&gt;
+ * &lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
+ * &lt;field name="FIELDNAME"&gt;value&lt;/field&gt;
+ * &lt;/row&gt;
+ * &lt;/rowset&gt;
+ * &lt;/result&gt;
+ * </pre></code>
  * Note: that the fieldname and columntype are always capital case!
  *
  * @author Johan Verrips
@@ -75,13 +75,13 @@ public class DB2XMLWriter {
 	private String docname = "result";
 	private String recordname = "rowset";
 	private String nullValue = "";
-	private boolean trimSpaces=true;
-	private boolean decompressBlobs=false;
-	private boolean getBlobSmart=false;
+	private boolean trimSpaces = true;
+	private boolean decompressBlobs = false;
+	private boolean getBlobSmart = false;
 	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private static final boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
-	public static String getFieldType (int type) {
+	public static String getFieldType(int type) {
 		return JDBCType.valueOf(type).getName();
 	}
 
@@ -245,12 +245,12 @@ public class DB2XMLWriter {
 
 			try (SaxElementBuilder queryresult = parent.startElement(recordname)) {
 				while (rs.next() && rowCounter < maxRows) {
-					getRowXml(queryresult, dbmsSupport, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces, getBlobSmart);
+					getRowXml(queryresult, dbmsSupport, rs, rowCounter, rsmeta, getBlobCharset(), decompressBlobs, nullValue, trimSpaces, getBlobSmart);
 					rowCounter++;
 				}
 			}
 		} catch (Exception e) {
-			log.error("Error occurred at row [" + rowCounter+"]", e);
+			log.error("Error occurred at row [" + rowCounter + "]", e);
 		}
 	}
 
@@ -267,7 +267,7 @@ public class DB2XMLWriter {
 			try (SaxElementBuilder field = fields.startElement("field")) {
 
 				String columnName = rsmeta.getColumnName(j);
-				if(convertFieldnamesToUppercase)
+				if (convertFieldnamesToUppercase)
 					columnName = columnName.toUpperCase();
 				field.addAttribute("name", columnName);
 
@@ -275,42 +275,42 @@ public class DB2XMLWriter {
 				try {
 					field.addAttribute("type", getFieldType(rsmeta.getColumnType(j)));
 				} catch (SQLException e) {
-					log.debug("Could not determine columnType",e);
+					log.debug("Could not determine columnType", e);
 				}
 				try {
 					field.addAttribute("columnDisplaySize", "" + rsmeta.getColumnDisplaySize(j));
 				} catch (SQLException e) {
-					log.debug("Could not determine columnDisplaySize",e);
+					log.debug("Could not determine columnDisplaySize", e);
 				}
 				try {
 					field.addAttribute("precision", "" + rsmeta.getPrecision(j));
 				} catch (SQLException e) {
-					log.warn("Could not determine precision",e);
+					log.warn("Could not determine precision", e);
 				} catch (NumberFormatException e2) {
-					if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
+					if (log.isDebugEnabled()) log.debug("Could not determine precision: " + e2.getMessage());
 				}
 				try {
 					field.addAttribute("scale", "" + rsmeta.getScale(j));
 				} catch (SQLException e) {
-					log.debug("Could not determine scale",e);
+					log.debug("Could not determine scale", e);
 				}
 				try {
 					field.addAttribute("isCurrency", "" + rsmeta.isCurrency(j));
 				} catch (SQLException e) {
-					log.debug("Could not determine isCurrency",e);
+					log.debug("Could not determine isCurrency", e);
 				}
 				try {
 					String columnTypeName = rsmeta.getColumnTypeName(j);
-					if(convertFieldnamesToUppercase)
+					if (convertFieldnamesToUppercase)
 						columnTypeName = columnTypeName.toUpperCase();
 					field.addAttribute("columnTypeName", columnTypeName);
 				} catch (SQLException e) {
-					log.debug("Could not determine columnTypeName",e);
+					log.debug("Could not determine columnTypeName", e);
 				}
 				try {
 					field.addAttribute("columnClassName", rsmeta.getColumnClassName(j));
 				} catch (SQLException e) {
-					log.debug("Could not determine columnClassName",e);
+					log.debug("Could not determine columnClassName", e);
 				}
 			}
 		}
@@ -330,18 +330,18 @@ public class DB2XMLWriter {
 				try (SaxElementBuilder resultField = row.startElement("field")) {
 
 					String columnName = rsmeta.getColumnName(i);
-					if(convertFieldnamesToUppercase)
+					if (convertFieldnamesToUppercase)
 						columnName = columnName.toUpperCase();
 					resultField.addAttribute("name", columnName);
 
 					try {
 						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
 						if (rs.wasNull()) {
-							resultField.addAttribute("null","true");
+							resultField.addAttribute("null", "true");
 						}
 						resultField.addValue(value);
 					} catch (Exception e) {
-						throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
+						throw new SenderException("error getting fieldvalue column [" + i + "] fieldType [" + getFieldType(rsmeta.getColumnType(i)) + "]", e);
 					}
 				}
 			}
@@ -375,6 +375,7 @@ public class DB2XMLWriter {
 	public void setTrimSpaces(boolean b) {
 		trimSpaces = b;
 	}
+
 	public boolean isTrimSpaces() {
 		return trimSpaces;
 	}
@@ -382,6 +383,7 @@ public class DB2XMLWriter {
 	public void setDecompressBlobs(boolean b) {
 		decompressBlobs = b;
 	}
+
 	public boolean isDecompressBlobs() {
 		return decompressBlobs;
 	}
@@ -389,6 +391,7 @@ public class DB2XMLWriter {
 	public void setGetBlobSmart(boolean b) {
 		getBlobSmart = b;
 	}
+
 	public boolean isGetBlobSmart() {
 		return getBlobSmart;
 	}

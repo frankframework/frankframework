@@ -30,6 +30,6 @@ public class JavascriptException extends IbisException {
 	}
 
 	public JavascriptException(String msg, Throwable th) {
-		super(msg,th);
+		super(msg, th);
 	}
 }

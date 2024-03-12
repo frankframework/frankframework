@@ -7,13 +7,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe> {
 
@@ -229,7 +230,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe> {
 		pipe.configure();
 		pipe.start();
 
-		assertThrows(PipeRunException.class, ()-> pipe.doPipe(null, session));
+		assertThrows(PipeRunException.class, () -> pipe.doPipe(null, session));
 	}
 
 	@Test
@@ -241,7 +242,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe> {
 		pipe.configure();
 		pipe.start();
 
-		assertThrows(PipeRunException.class, ()-> doPipe(pipe, "xdfgfx", session));
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "xdfgfx", session));
 	}
 
 	@Test
@@ -281,7 +282,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe> {
 		pipe.setNumberOfAttempts(1);
 		pipe.start();
 
-		assertThrows(PipeRunException.class, ()-> doPipe(pipe, "xx", session));
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "xx", session));
 	}
 
 	@Test
@@ -308,6 +309,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe> {
 		pipe.configure();
 		pipe.start();
 
-		assertThrows(PipeRunException.class, ()-> doPipe(pipe, "xx", session));
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "xx", session));
 	}
 }

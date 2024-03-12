@@ -36,11 +36,11 @@ import org.frankframework.util.Misc;
  */
 public class ResourceBasedMongoClientFactory extends ResourceBasedObjectFactory<MongoClient, MongoClient> implements IMongoClientFactory {
 
-	public final String MONGODB_URL_PREFIX="mongodb://";
+	public final String MONGODB_URL_PREFIX = "mongodb://";
 
-	public final String AUTH_ALIAS_KEY="authAlias";
-	public final String USERNAME_KEY="username";
-	public final String PASSWORD_KEY="password";
+	public final String AUTH_ALIAS_KEY = "authAlias";
+	public final String USERNAME_KEY = "username";
+	public final String PASSWORD_KEY = "password";
 
 	@Override
 	public MongoClient getMongoClient(String dataSourceName) throws NamingException {
@@ -56,10 +56,10 @@ public class ResourceBasedMongoClientFactory extends ResourceBasedObjectFactory<
 	protected MongoClient createObject(Properties properties, String objectName) throws NamingException {
 		String url = properties.getProperty("url");
 		if (StringUtils.isEmpty(url)) {
-			throw new NamingException("property url must be specified for object ["+objectName+"]");
+			throw new NamingException("property url must be specified for object [" + objectName + "]");
 		}
 		if (!url.startsWith(MONGODB_URL_PREFIX)) {
-			throw new NamingException("property url must url ["+url+"] for object ["+objectName+"] must start with '"+MONGODB_URL_PREFIX+"'");
+			throw new NamingException("property url must url [" + url + "] for object [" + objectName + "] must start with '" + MONGODB_URL_PREFIX + "'");
 		}
 		String authAlias = properties.getProperty(AUTH_ALIAS_KEY);
 		String username = properties.getProperty(USERNAME_KEY);

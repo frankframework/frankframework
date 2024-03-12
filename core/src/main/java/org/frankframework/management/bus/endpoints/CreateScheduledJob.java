@@ -63,11 +63,11 @@ public class CreateScheduledJob extends BusEndpointBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> createOrUpdateSchedule(Message<?> message) {
 		String jobName = BusMessageUtils.getHeader(message, "job");
-		if(StringUtils.isEmpty(jobName)) {
+		if (StringUtils.isEmpty(jobName)) {
 			throw new BusException("no job name specified");
 		}
 		String groupName = BusMessageUtils.getHeader(message, "group");
-		if(StringUtils.isEmpty(groupName)) {
+		if (StringUtils.isEmpty(groupName)) {
 			throw new BusException("no job group specified");
 		}
 		boolean overwrite = BusMessageUtils.getBooleanHeader(message, "overwrite", false);
@@ -79,7 +79,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		String cronExpression = BusMessageUtils.getHeader(message, "cron", null);
 		int interval = BusMessageUtils.getIntHeader(message, "interval", -1);
 		//Either one of the two has to be set
-		if(interval == -1 && StringUtils.isEmpty(cronExpression)) {
+		if (interval == -1 && StringUtils.isEmpty(cronExpression)) {
 			throw new BusException("Either 'cron' or 'interval' has to be set");
 		}
 
@@ -88,28 +88,28 @@ public class CreateScheduledJob extends BusEndpointBase {
 
 		IAdapter adapter = getAdapter(configurationName, adapterName);
 		//Make sure the adapter exists!
-		if(adapter == null) {
-			throw new BusException("Adapter ["+adapterName+"] not found");
+		if (adapter == null) {
+			throw new BusException("Adapter [" + adapterName + "] not found");
 		}
 
 		String listenerName = BusMessageUtils.getHeader(message, "listener");
 		String receiverName = BusMessageUtils.getHeader(message, "receiver");
 		//Make sure the receiver exists!
-		if(StringUtils.isEmpty(listenerName) && StringUtils.isNotEmpty(receiverName)) {
+		if (StringUtils.isEmpty(listenerName) && StringUtils.isNotEmpty(receiverName)) {
 			Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 			IListener<?> listener = receiver.getListener();
-			if(listener != null) {
+			if (listener != null) {
 				listenerName = listener.getName();
 			}
 		}
-		if(StringUtils.isEmpty(listenerName)) {
+		if (StringUtils.isEmpty(listenerName)) {
 			throw new BusException("no listener specified");
 		}
 
 		Configuration applicationContext = adapter.getConfiguration();
 
 		boolean hasLocker = BusMessageUtils.getBooleanHeader(message, "locker", false);
-		String lockKey = BusMessageUtils.getHeader(message, "lockkey", "lock4["+name+"]");
+		String lockKey = BusMessageUtils.getHeader(message, "lockkey", "lock4[" + name + "]");
 		String jobMessage = BusMessageUtils.getHeader(message, "message");
 		String description = BusMessageUtils.getHeader(message, "description");
 
@@ -126,7 +126,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		jobdef.setDescription(description);
 		jobdef.setInterval(interval);
 
-		if(hasLocker) {
+		if (hasLocker) {
 			Locker locker = SpringUtils.createBean(applicationContext, Locker.class);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
@@ -142,7 +142,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		}
 
 		//Save the job in the database
-		if(AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
+		if (AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
 			boolean success = false;
 			FixedQuerySender qs = createBean(FixedQuerySender.class);
 			qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
@@ -157,7 +157,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 				qs.open();
 				try (Connection conn = qs.getConnection()) {
 
-					if(overwrite) {
+					if (overwrite) {
 						String deleteQuery = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
 						try (PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery)) {
 							deleteStatement.setString(1, name);
@@ -190,7 +190,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 				qs.close();
 			}
 
-			if(!success)
+			if (!success)
 				throw new BusException("An error occurred while storing the job in the database");
 		}
 
@@ -199,21 +199,21 @@ public class CreateScheduledJob extends BusEndpointBase {
 
 	private IAdapter getAdapter(String configurationName, String adapterName) {
 		Configuration configuration = null;
-		if(StringUtils.isNotEmpty(configurationName)) {
+		if (StringUtils.isNotEmpty(configurationName)) {
 			configuration = getIbisManager().getConfiguration(configurationName);
-			if(configuration == null) {
-				throw new BusException("configuration ["+configurationName+"] does not exists");
+			if (configuration == null) {
+				throw new BusException("configuration [" + configurationName + "] does not exists");
 			}
 		}
-		if(configuration != null) {
+		if (configuration != null) {
 			return configuration.getRegisteredAdapter(adapterName);
 		}
 		return findAdapter(adapterName);
 	}
 
 	private IAdapter findAdapter(String adapterName) {
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			if(config.isActive()) {
+		for (Configuration config : getIbisManager().getConfigurations()) {
+			if (config.isActive()) {
 				Adapter adapter = config.getRegisteredAdapter(adapterName);
 				if (adapterName.equals(adapter.getName())) {
 					return adapter;

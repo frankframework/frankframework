@@ -114,7 +114,7 @@ public class TestAppender extends AbstractAppender {
 
 	public boolean contains(String msg) {
 		for (String log : getLogLines()) {
-			if(log.contains(msg)) {
+			if (log.contains(msg)) {
 				return true;
 			}
 		}
@@ -128,7 +128,7 @@ public class TestAppender extends AbstractAppender {
 	public static void setRootLogLevel(Level loglevel) {
 		LoggerContext logContext = LoggerContext.getContext(false);
 		org.apache.logging.log4j.core.Logger rootLogger = logContext.getRootLogger();
-		if(rootLogger.getLevel() != loglevel) {
+		if (rootLogger.getLevel() != loglevel) {
 			Configurator.setLevel(rootLogger.getName(), loglevel);
 		}
 	}

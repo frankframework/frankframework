@@ -38,7 +38,7 @@ public class HttpReport extends HttpEntityEnclosingRequestBase {
 	public static final String METHOD_NAME = "REPORT";
 
 	/**
-	 * @param uri to connect to
+	 * @param uri     to connect to
 	 * @param element entity
 	 * @throws TransformerException
 	 * @throws IllegalArgumentException if the uri is invalid.
@@ -59,7 +59,7 @@ public class HttpReport extends HttpEntityEnclosingRequestBase {
 	}
 
 	/**
-	 * @param uri to connect to
+	 * @param uri     to connect to
 	 * @param element entity
 	 * @throws TransformerException
 	 * @throws IllegalArgumentException if the uri is invalid.

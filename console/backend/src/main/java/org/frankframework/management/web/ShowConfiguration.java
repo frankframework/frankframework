@@ -34,20 +34,18 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-
 import org.frankframework.management.IbisAction;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.RequestUtils;
 
 /**
  * Shows the configuration (with resolved variables).
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
@@ -60,12 +58,12 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Relation("application")
 	@Description("view all the loaded/original configurations")
 	public Response getConfigurationXML(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
-		if(StringUtils.isNotEmpty(flow)) {
+		if (StringUtils.isNotEmpty(flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 			return callSyncGateway(builder);
 		} else {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
-			if(loaded) builder.addHeader("loaded", loaded);
+			if (loaded) builder.addHeader("loaded", loaded);
 			return callSyncGateway(builder);
 		}
 	}
@@ -79,7 +77,7 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Description("reload the entire application")
 	public Response fullReload(Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
-		if(value instanceof String && "reload".equals(value)) {
+		if (value instanceof String && "reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 			builder.addHeader("action", IbisAction.FULLRELOAD.name());
 			callAsyncGateway(builder);
@@ -98,7 +96,7 @@ public final class ShowConfiguration extends FrankApiBase {
 	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loaded) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
 		builder.addHeader("configuration", configurationName);
-		if(loaded) builder.addHeader("loaded", loaded);
+		if (loaded) builder.addHeader("loaded", loaded);
 		return callSyncGateway(builder);
 	}
 
@@ -134,7 +132,7 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Description("reload a specific configuration")
 	public Response reloadConfiguration(@PathParam("configuration") String configurationName, Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
-		if(value instanceof String && "reload".equals(value)) {
+		if (value instanceof String && "reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 			builder.addHeader("action", IbisAction.RELOAD.name());
 			builder.addHeader("configuration", configurationName);
@@ -169,16 +167,16 @@ public final class ShowConfiguration extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", HttpUtils.urlDecode(encodedVersion));
-		if(json.containsKey("activate")) {
+		if (json.containsKey("activate")) {
 			Object obj = json.get("activate");
-			if(obj instanceof Boolean) {
+			if (obj instanceof Boolean) {
 				builder.addHeader("activate", (Boolean) json.get("activate"));
 			} else {
 				throw new ApiException("activate must be of type boolean");
 			}
-		} else if(json.containsKey("autoreload")) {
+		} else if (json.containsKey("autoreload")) {
 			Object obj = json.get("autoreload");
-			if(obj instanceof Boolean) {
+			if (obj instanceof Boolean) {
 				builder.addHeader("autoreload", (Boolean) json.get("autoreload"));
 			} else {
 				throw new ApiException("autoreload must be of type boolean");
@@ -195,22 +193,22 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Relation("configuration")
 	@Description("upload a new configuration versions")
 	public Response uploadConfiguration(MultipartBody inputDataMap) throws ApiException {
-		if(inputDataMap == null) {
+		if (inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
 		String datasource = RequestUtils.resolveStringFromMap(inputDataMap, "datasource", "");
 		boolean multipleConfigs = RequestUtils.resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
-		boolean activateConfig  = RequestUtils.resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
+		boolean activateConfig = RequestUtils.resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
 		boolean automaticReload = RequestUtils.resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
 		InputStream file = RequestUtils.resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
 
 		String user = RequestUtils.resolveTypeFromMap(inputDataMap, "user", String.class, "");
-		if(StringUtils.isEmpty(user)) {
+		if (StringUtils.isEmpty(user)) {
 			user = getUserPrincipalName();
 		}
 
-		String fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
+		String fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter("filename");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.UPLOAD);
 		builder.setPayload(file);
@@ -219,7 +217,7 @@ public final class ShowConfiguration extends FrankApiBase {
 		builder.addHeader("activate_config", activateConfig);
 		builder.addHeader("automatic_reload", automaticReload);
 		builder.addHeader("user", user);
-		if(StringUtils.isNotEmpty(datasource)) {
+		if (StringUtils.isNotEmpty(datasource)) {
 			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
 		return callSyncGateway(builder);

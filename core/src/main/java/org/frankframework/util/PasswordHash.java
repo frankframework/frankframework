@@ -30,7 +30,7 @@ import javax.crypto.spec.PBEKeySpec;
  * PBKDF2 salted password hashing.
  * Author: havoc AT defuse.ca
  * www: http://crackstation.net/hashing-security.htm
- *
+ * <p>
  * Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).
  */
 public class PasswordHash {
@@ -121,8 +121,7 @@ public class PasswordHash {
 	 */
 	private static boolean slowEquals(byte[] a, byte[] b) {
 		int diff = a.length ^ b.length;
-		for(int i = 0; i < a.length && i < b.length; i++)
-			diff |= a[i] ^ b[i];
+		for (int i = 0; i < a.length && i < b.length; i++) {diff |= a[i] ^ b[i];}
 		return diff == 0;
 	}
 
@@ -149,7 +148,7 @@ public class PasswordHash {
 	 */
 	private static byte[] fromHex(String hex) {
 		byte[] binary = new byte[hex.length() / 2];
-		for(int i = 0; i < binary.length; i++) {
+		for (int i = 0; i < binary.length; i++) {
 			binary[i] = (byte) Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
 		}
 		return binary;
@@ -165,7 +164,7 @@ public class PasswordHash {
 		BigInteger bi = new BigInteger(1, array);
 		String hex = bi.toString(16);
 		int paddingLength = (array.length * 2) - hex.length();
-		if(paddingLength > 0)
+		if (paddingLength > 0)
 			return String.format("%0" + paddingLength + "d", 0) + hex;
 		else
 			return hex;

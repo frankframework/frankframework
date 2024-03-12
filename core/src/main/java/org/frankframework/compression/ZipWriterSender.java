@@ -32,11 +32,10 @@ import org.frankframework.stream.Message;
  * Filename and contents are taken from parameters. If one of the parameters is not present, the input message
  * is used for either filename or contents.
  *
+ * @author Gerrit van Brakel
  * @ff.parameter filename filename of the zipentry
  * @ff.parameter contents contents of the zipentry
- *
- * @author  Gerrit van Brakel
- * @since   4.9.10
+ * @since 4.9.10
  */
 public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEntry> {
 
@@ -54,7 +53,7 @@ public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEn
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		if(backwardsCompatibility) {
+		if (backwardsCompatibility) {
 			try {
 				message.preserve();
 				super.sendMessage(message, session);
@@ -69,6 +68,7 @@ public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEn
 
 	/**
 	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested
+	 *
 	 * @ff.default zipwriterhandle
 	 */
 	@Deprecated

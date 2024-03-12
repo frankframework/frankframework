@@ -28,7 +28,6 @@ import java.util.Vector;
  * That way we can test all individual ClassLoaders the same way.
  *
  * @author Niels Meijer
- *
  */
 public class ClassLoaderMock extends ClassLoader {
 
@@ -51,8 +50,8 @@ public class ClassLoaderMock extends ClassLoader {
 		addFile(parentURLs, "parent_only.xml");
 		addFile(parentURLs, "folder/parent_only.xml");
 
-		addFile(URLs, BASEPATH+"basepath_only.xml");
-		addFile(URLs, BASEPATH+"folder/basepath_only.xml");
+		addFile(URLs, BASEPATH + "basepath_only.xml");
+		addFile(URLs, BASEPATH + "folder/basepath_only.xml");
 
 		//Files to test the WebAppClassLoader
 		addFile(URLs, "WebAppClassLoader/ClassLoaderTestFile.xml");
@@ -61,29 +60,31 @@ public class ClassLoaderMock extends ClassLoader {
 	private void populateUrls() {
 		populateUrls("");
 	}
+
 	private void populateUrls(String rootDirOrPrefix) {
-		addFile(URLs, rootDirOrPrefix+"ClassLoaderTestFile");
-		addFile(URLs, rootDirOrPrefix+"ClassLoaderTestFile.txt");
-		addFile(URLs, rootDirOrPrefix+"ClassLoaderTestFile.xml");
-		addFile(URLs, rootDirOrPrefix+"ClassLoader/ClassLoaderTestFile");
-		addFile(URLs, rootDirOrPrefix+"ClassLoader/ClassLoaderTestFile.txt");
-		addFile(URLs, rootDirOrPrefix+"ClassLoader/ClassLoaderTestFile.xml");
+		addFile(URLs, rootDirOrPrefix + "ClassLoaderTestFile");
+		addFile(URLs, rootDirOrPrefix + "ClassLoaderTestFile.txt");
+		addFile(URLs, rootDirOrPrefix + "ClassLoaderTestFile.xml");
+		addFile(URLs, rootDirOrPrefix + "ClassLoader/ClassLoaderTestFile");
+		addFile(URLs, rootDirOrPrefix + "ClassLoader/ClassLoaderTestFile.txt");
+		addFile(URLs, rootDirOrPrefix + "ClassLoader/ClassLoaderTestFile.xml");
 	}
+
 	private void addFile(Map<String, URL> map, String file) {
 		addFile(map, file, false);
 	}
+
 	private void addFile(Map<String, URL> map, String file, boolean retrieveFromParent) {
-		if(!retrieveFromParent) {
+		if (!retrieveFromParent) {
 			try {
-				map.put(file, new URL("file:"+ROOTDIR+file));
-			}
-			catch (MalformedURLException e) {
+				map.put(file, new URL("file:" + ROOTDIR + file));
+			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			}
 		} else {
 			String resource = file;
-			if(!resource.startsWith("/"))
-				resource = "/"+file;
+			if (!resource.startsWith("/"))
+				resource = "/" + file;
 
 			map.put(file, this.getClass().getResource(resource));
 		}
@@ -92,7 +93,7 @@ public class ClassLoaderMock extends ClassLoader {
 	@Override
 	public URL getResource(String name) {
 		URL url = URLs.get(name);
-		if(url == null)
+		if (url == null)
 			url = parentURLs.get(name);
 
 		return url;
@@ -107,7 +108,7 @@ public class ClassLoaderMock extends ClassLoader {
 			urls.add(basePathUrl);
 
 		URL parent = parentURLs.get(name);
-		if(parent != null)
+		if (parent != null)
 			urls.add(parent);
 
 		return urls.elements();

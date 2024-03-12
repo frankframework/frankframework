@@ -34,19 +34,19 @@ import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy
 
 /**
  * Factory for {@link JmsMessagingSource}s, to share them for JMS Objects that can use the same.
- *
+ * <p>
  * JMS related IBIS objects can obtain a MessagingSource from this class. The physical connection is shared
  * between all IBIS objects that have the same connectionFactoryName.
  *
- * @author  Gerrit van Brakel
- * @since   4.4
+ * @author Gerrit van Brakel
+ * @since 4.4
  */
 public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 
 	/**
 	 * Global JVM-wide cache for JMS Messaging Sources, which hold reference to ConnectionFactories.
 	 */
-	private static final Map<String,MessagingSource> JMS_MESSAGING_SOURCE_MAP = new HashMap<>();
+	private static final Map<String, MessagingSource> JMS_MESSAGING_SOURCE_MAP = new HashMap<>();
 
 	private final JMSFacade jmsFacade;
 	private final String applicationServerType = AppConstants.getInstance().getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
@@ -88,31 +88,31 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		try {
 			connectionFactory = connectionFactoryFactory.getConnectionFactory(cfName, jmsFacade.getJndiEnv());
 		} catch (NamingException e) {
-			throw new JmsException("Could not find connection factory ["+cfName+"]", e);
+			throw new JmsException("Could not find connection factory [" + cfName + "]", e);
 		}
 		if (connectionFactory == null) {
-			throw new JmsException("Could not find connection factory ["+cfName+"]");
+			throw new JmsException("Could not find connection factory [" + cfName + "]");
 		}
 
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			String connectionFactoryInfo = getConnectionFactoryInfo(connectionFactory);
-			if (connectionFactoryInfo==null) {
+			if (connectionFactoryInfo == null) {
 				connectionFactoryInfo = connectionFactory.toString();
 			}
-			log.info(jmsFacade.getLogPrefix()+"looked up connection factory ["+cfName+"]: ["+connectionFactoryInfo+"]");
+			log.info(jmsFacade.getLogPrefix() + "looked up connection factory [" + cfName + "]: [" + connectionFactoryInfo + "]");
 		}
 		return new TransactionAwareConnectionFactoryProxy(connectionFactory);
 	}
 
 	public String getConnectionFactoryInfo(ConnectionFactory connectionFactory) {
-		String info=null;
+		String info = null;
 		Connection connection = null;
 		try {
 			connection = connectionFactory.createConnection();
 			ConnectionMetaData metaData = connection.getMetaData();
 			info = "jms provider name [" + metaData.getJMSProviderName() + "] jms provider version [" + metaData.getProviderVersion() + "] jms version [" + metaData.getJMSVersion() + "]";
 		} catch (JMSException e) {
-			log.warn("Exception determining connection factory info",e);
+			log.warn("Exception determining connection factory info", e);
 		} finally {
 			if (connection != null) {
 				try {

@@ -6,9 +6,10 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
+
 import org.junit.jupiter.api.Test;
 
-public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
+public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe> {
 
 	/**
 	 * Test all possible options for FixedForwardPipe#getParameterValue(ParameterValueList, String)

@@ -19,10 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import lombok.Getter;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -35,9 +34,9 @@ import org.frankframework.stream.Message;
 /**
  * Pipe that performs base64 encoding and decoding.
  *
- * @since   4.4
- * @author  Niels Meijer
+ * @author Niels Meijer
  * @version 2.0
+ * @since 4.4
  */
 @Category("Basic")
 @ElementType(ElementTypes.TRANSLATOR)
@@ -58,12 +57,12 @@ public class Base64Pipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		Direction dir=getDirection();
-		if (dir==Direction.ENCODE) {
+		Direction dir = getDirection();
+		if (dir == Direction.ENCODE) {
 			if (StringUtils.isEmpty(getLineSeparator())) {
 				setLineSeparatorArray("");
 			} else if (getLineSeparator().equalsIgnoreCase("auto")) {
-				setLineSeparatorArray(System.getProperty ( "line.separator" ));
+				setLineSeparatorArray(System.getProperty("line.separator"));
 			} else if (getLineSeparator().equalsIgnoreCase("dos")) {
 				setLineSeparatorArray("\r\n");
 			} else if (getLineSeparator().equalsIgnoreCase("unix")) {
@@ -80,7 +79,7 @@ public class Base64Pipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection() == Direction.ENCODE;//TRUE encode - FALSE decode
 
 		InputStream binaryInputStream;
 		try {
@@ -91,12 +90,14 @@ public class Base64Pipe extends FixedForwardPipe {
 
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
-		Message result = new Message(base64, message.copyContext().withoutSize().withCharset(directionEncode ? StandardCharsets.US_ASCII.name() : getCharset()));
+		Message result = new Message(base64, message.copyContext()
+				.withoutSize()
+				.withCharset(directionEncode ? StandardCharsets.US_ASCII.name() : getCharset()));
 		if (directionEncode) {
 			try {
 				result = new Message(result.asReader(), result.copyContext());
 			} catch (IOException e) {
-				throw new PipeRunException(this,"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		}
 		// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
@@ -116,7 +117,8 @@ public class Base64Pipe extends FixedForwardPipe {
 	}
 
 	/**
-	 *  (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf
+	 * (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf
+	 *
 	 * @ff.default auto
 	 */
 	public void setLineSeparator(String lineSeparator) {
@@ -124,7 +126,8 @@ public class Base64Pipe extends FixedForwardPipe {
 	}
 
 	/**
-	 *  (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines
+	 * (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines
+	 *
 	 * @ff.default 76
 	 */
 	public void setLineLength(int lineLength) {

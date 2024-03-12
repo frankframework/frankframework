@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.LogUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ public class TestApplicationWarnings {
 
 	@AfterEach
 	public void tearDown() {
-		if(configuration != null) {
+		if (configuration != null) {
 			configuration.close();
 		}
 	}

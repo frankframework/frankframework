@@ -54,7 +54,7 @@ import org.frankframework.util.LogUtil;
  * This servlet allows the use of WebContent served from {@link Configuration Configurations}.
  * The configuration must have a folder called <code>webcontent</code> for this to work. The Configuration
  * may consist of adapters and webcontent or standalone webcontent. This works for all {@link IConfigurationClassLoader ClassLoaders}.
- *
+ * <p>
  * Just like other {@link DynamicRegistration.Servlet servlets} this servlet may be configured through the {@link ServletManager}.
  *
  * @author Niels Meijer
@@ -92,14 +92,14 @@ public class WebContentServlet extends HttpServletBase {
 
 	private void loadMediaTypes() throws IOException {
 		URL mappingFile = ClassLoaderUtils.getResourceURL("/MediaTypeMapping.properties");
-		if(mappingFile == null) {
+		if (mappingFile == null) {
 			throw new IOException("unable to find mappingFile");
 		}
 
-		try(InputStream stream = mappingFile.openStream()) {
+		try (InputStream stream = mappingFile.openStream()) {
 			Properties properties = new Properties();
 			properties.load(stream);
-			for(String key : properties.stringPropertyNames()) {
+			for (String key : properties.stringPropertyNames()) {
 				String value = properties.getProperty(key);
 				supportedMediaTypes.put(key, MediaType.valueOf(value));
 			}
@@ -109,11 +109,11 @@ public class WebContentServlet extends HttpServletBase {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
-		if(path == null) {
+		if (path == null) {
 			resp.sendRedirect(req.getContextPath() + SERVLET_PATH);
 			return;
-		} else if(path.equals("/")) {
-			if(isDtapStageLoc) {
+		} else if (path.equals("/")) {
+			if (isDtapStageLoc) {
 				listDirectory(resp);
 				resp.flushBuffer();
 			} else {
@@ -124,18 +124,18 @@ public class WebContentServlet extends HttpServletBase {
 
 		URL resource = findResource(req);
 
-		if(resource == null) {
+		if (resource == null) {
 			resp.sendError(404, "resource not found");
 			return;
 		}
 
 		MimeType mimeType = determineMimeType(resource);
-		if(mimeType != null) {
+		if (mimeType != null) {
 			log.debug("found MimeType [{}] for resource [{}]", mimeType, resource);
 			resp.setContentType(mimeType.toString());
 		}
 
-		try(InputStream in = resource.openStream()) {
+		try (InputStream in = resource.openStream()) {
 			IOUtils.copy(in, resp.getOutputStream());
 		} catch (IOException e) {
 			log.warn("error reading or writing resource to servlet", e);
@@ -149,7 +149,7 @@ public class WebContentServlet extends HttpServletBase {
 	@Override
 	protected long getLastModified(HttpServletRequest req) {
 		String path = req.getPathInfo();
-		if(StringUtils.isNotEmpty(path) && !path.equals("/") && findResource(req) != null) {
+		if (StringUtils.isNotEmpty(path) && !path.equals("/") && findResource(req) != null) {
 			String configurationName = (String) req.getAttribute(CONFIGURATION_KEY);
 			return findConfiguration(configurationName).getStartupDate();
 		}
@@ -161,7 +161,7 @@ public class WebContentServlet extends HttpServletBase {
 		String extension = FilenameUtils.getExtension(resource.toString());
 		log.debug("trying to lookup MimeType for extension [{}]", extension);
 		MimeType type = supportedMediaTypes.get(extension);
-		if(type == null) {
+		if (type == null) {
 			log.info("no default MimeType mapping found for extension [{}]", extension);
 			return computedMediaTypes.computeIfAbsent(resource, this::computeMimeType);
 		}
@@ -170,6 +170,7 @@ public class WebContentServlet extends HttpServletBase {
 
 	/**
 	 * Tries to determine the MimeType by reading the file's magic (first 16k bytes)
+	 *
 	 * @return the computed MimeType or APPLICATION/OCTET_STREAM
 	 */
 	private MimeType computeMimeType(URL resource) {
@@ -177,9 +178,9 @@ public class WebContentServlet extends HttpServletBase {
 		Metadata metadata = new Metadata();
 		String name = FilenameUtils.getExtension(resource.toString());
 		metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
-		try(InputStream in = resource.openStream()) {
+		try (InputStream in = resource.openStream()) {
 			MimeType type = MimeType.valueOf(detector.detect(TikaInputStream.get(in), metadata).toString());
-			if(!type.getSubtype().contains("x-tika")) {
+			if (!type.getSubtype().contains("x-tika")) {
 				return type;
 			}
 		} catch (IOException e) {
@@ -193,26 +194,26 @@ public class WebContentServlet extends HttpServletBase {
 	 */
 	private URL findResource(HttpServletRequest req) {
 		String normalizedPath = FilenameUtils.normalize(req.getPathInfo(), true);
-		if(normalizedPath.startsWith("/")) {
+		if (normalizedPath.startsWith("/")) {
 			normalizedPath = normalizedPath.substring(1);
 		}
 		String[] split = normalizedPath.split("/");
 		String configurationName = split[0];
 		Configuration configuration = findConfiguration(configurationName);
-		if(configuration == null) {
+		if (configuration == null) {
 			log.debug("unable to find configuration [{}] derived from path [{}]", configurationName, normalizedPath);
 			return null;
 		}
 		req.setAttribute(CONFIGURATION_KEY, configurationName);
 
 		String resource = normalizedPath.substring(configurationName.length());
-		if(StringUtils.isEmpty(resource) || resource.equals("/")) {
+		if (StringUtils.isEmpty(resource) || resource.equals("/")) {
 			log.debug("unable to determine resource from path [{}] returning welcome file [{}]", normalizedPath, WELCOME_FILE);
 			resource = WELCOME_FILE;
 		}
 
 		ClassLoaderBase classLoader = (ClassLoaderBase) configuration.getClassLoader();
-		if(classLoader == null) {
+		if (classLoader == null) {
 			log.warn("configuration [{}] has no ClassLoader", configuration);
 			return null;
 		}
@@ -224,12 +225,12 @@ public class WebContentServlet extends HttpServletBase {
 	}
 
 	private void listDirectory(HttpServletResponse resp) throws IOException {
-		for(Configuration configuration : getIbisManager().getConfigurations()) {
+		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			ClassLoaderBase classLoader = (ClassLoaderBase) configuration.getClassLoader();
 			boolean isWebContentFolderPresent = classLoader != null && classLoader.getLocalResource("WebContent") != null;
-			if(isWebContentFolderPresent) {
+			if (isWebContentFolderPresent) {
 				log.info("found configuration [{}] with [WebContent] folder", configuration);
-				resp.getWriter().append("<a href=\""+configuration.getName()+"\">"+configuration.getName()+"</a>");
+				resp.getWriter().append("<a href=\"" + configuration.getName() + "\">" + configuration.getName() + "</a>");
 			}
 		}
 	}

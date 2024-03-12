@@ -33,27 +33,26 @@ import org.frankframework.util.SpringUtils;
 /**
  * This is a factory for objects to be used with the 'factory-create-rule'
  * of the Apache Digester framework as a replacement for the 'object-create-rule'.
- *
+ * <p>
  * The intention is to have objects created by the Apache Digester be created
  * via the Spring Factory thus allowing for dependency injection; and if not
  * possible then create them ourselves but inject at least a reference to the
  * Spring Factory when supported by the object. When the object is created
  * directly by this factory, the Spring Factory is used for auto-wiring
  * and initialization.
- *
+ * <p>
  * The factory is abstract; subclasses will need to implement method
  * 'getSuggestedBeanName()' to return the name of the default Bean to load from
  * the Spring Context.
- *
+ * <p>
  * All Beans defined in the Spring Context that can be loaded via this
  * Factory must be defined as Prototype beans (scope="prototype") because
  * the expected behaviour from an ObjectCreationFactory is to create new
  * instances with each call. The Apache Digester will normally set extra
  * properties for each instance. (See {@link #isPrototypesOnly()}.)
  *
- * @author  Tim van der Leeuw
- * @since   4.8
- *
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware, IDigesterRuleAware {
 	protected Logger log = LogUtil.getLogger(this);
@@ -67,11 +66,11 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	/**
 	 * Suggest the name of the bean which should be retrieved from
 	 * the Spring BeanFactory.
-	 *
+	 * <p>
 	 * If a className attribute has also been specified in the XML,
 	 * then that takes precedence over finding a bean with given
 	 * suggestedBeanName.
-	 *
+	 * <p>
 	 * If for the className multiple bean-definitions are found in
 	 * the factory, then a bean is selected from those with this
 	 * given suggestedBeanName. If no such bean exists, an error is thrown
@@ -83,7 +82,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * Return <code>true</code> is only prototype beans from the
 	 * Spring Context will be returned, <code>false</code> is
 	 * a Spring singleton bean might be returned.
-	 *
+	 * <p>
 	 * This is hard-coded to return <code>true</code> only in this
 	 * class. If a subclass wishes to allow using singleton-beans,
 	 * then this method should be overridden.
@@ -96,7 +95,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 	/**
 	 * Create object using, if possible, the Spring BeanFactory.
-	 *
+	 * <p>
 	 * An object is created according to the following rules:
 	 * <ol>
 	 * <li>If <em>no</em> attribute 'className' is given in the configuration file,
@@ -140,7 +139,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 */
 	protected Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
 		String classname = attrs.get("classname");
-		if(StringUtils.isNotEmpty(classname)) {
+		if (StringUtils.isNotEmpty(classname)) {
 			throw new IllegalArgumentException("invalid attribute [classname]. Did you mean [className]?");
 		}
 
@@ -152,7 +151,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 					+ "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
 		}
 
-		if(className == null) {
+		if (className == null) {
 			className = rule.getBeanClass();
 		}
 
@@ -160,14 +159,14 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	private Object createBeanFromClassName(String className) throws ClassNotFoundException {
-		if(applicationContext == null) {
+		if (applicationContext == null) {
 			throw new IllegalStateException("No ApplicationContext found, unable to initialize class [" + className + "]");
 		}
 
 		if (className == null) { //See if a bean class has been defined
 			String beanName = getSuggestedBeanName();
 			if (!isPrototypesOnly() && !applicationContext.isSingleton(beanName)) {
-				throw new IllegalStateException("bean ["+beanName+"] must be of type singleton");
+				throw new IllegalStateException("bean [" + beanName + "] must be of type singleton");
 			}
 			return applicationContext.getBean(beanName);
 		}
@@ -178,7 +177,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	protected <T> T createBeanAndAutoWire(Class<T> beanClass) {
-		if (log.isDebugEnabled()) log.debug("instantiating bean class ["+beanClass.getName()+"] directly using Spring Factory ["+applicationContext.getDisplayName()+"]");
+		if (log.isDebugEnabled())
+			log.debug("instantiating bean class [" + beanClass.getName() + "] directly using Spring Factory [" + applicationContext.getDisplayName() + "]");
 
 		return SpringUtils.createBean(applicationContext, beanClass); //Autowire and initialize the bean through Spring
 	}
@@ -194,8 +194,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 	@Override
 	public final void setDigesterRule(DigesterRule rule) {
-		if(this.rule != null) {
-			throw new IllegalStateException("cannot override factory rule ["+this.rule+"]");
+		if (this.rule != null) {
+			throw new IllegalStateException("cannot override factory rule [" + this.rule + "]");
 		}
 		this.rule = rule;
 	}

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.frankframework.http.rest.ApiListener.HttpMethod;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -30,25 +31,25 @@ public class ApiListenerPatternsTest {
 	private ApiListener listener;
 
 	public static Collection<Object[]> data() {
-		return List.of(new Object[][] {
-				{ "*", "/*", "/*" },
-				{ "test", "/test", "/test" },
-				{ "/test", "/test", "/test" },
-				{ "/test/", "/test", "/test" },
+		return List.of(new Object[][]{
+				{"*", "/*", "/*"},
+				{"test", "/test", "/test"},
+				{"/test", "/test", "/test"},
+				{"/test/", "/test", "/test"},
 
-				{ "test/*", "/test/*", "/test/*" },
-				{ "*/*", "/*/*", "/*/*" },
-				{ "test/something", "/test/something", "/test/something" },
-				{ "test/*/something", "/test/*/something", "/test/*/something" },
-				{ "test/*/*", "/test/*/*", "/test/*/*" },
-				{ "test/*/something/else", "/test/*/something/else", "/test/*/something/else" },
-				{ "test/*/something/*", "/test/*/something/*", "/test/*/something/*" },
+				{"test/*", "/test/*", "/test/*"},
+				{"*/*", "/*/*", "/*/*"},
+				{"test/something", "/test/something", "/test/something"},
+				{"test/*/something", "/test/*/something", "/test/*/something"},
+				{"test/*/*", "/test/*/*", "/test/*/*"},
+				{"test/*/something/else", "/test/*/something/else", "/test/*/something/else"},
+				{"test/*/something/*", "/test/*/something/*", "/test/*/something/*"},
 
-				{ "/*/*/*", "/*/*/*", "/*/*/*" },
+				{"/*/*/*", "/*/*/*", "/*/*/*"},
 
-				{ "/text/{name}", "/text/{name}", "/text/*" },
-				{ "/text/{name}/something", "/text/{name}/something", "/text/*/something" },
-				{ "/text/{name}/{name2}", "/text/{name}/{name2}", "/text/*/*" },
+				{"/text/{name}", "/text/{name}", "/text/*"},
+				{"/text/{name}/something", "/text/{name}/something", "/text/*/something"},
+				{"/text/{name}/{name2}", "/text/{name}/{name2}", "/text/*/*"},
 		});
 	}
 

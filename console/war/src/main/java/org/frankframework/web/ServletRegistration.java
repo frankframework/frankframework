@@ -18,20 +18,17 @@ package org.frankframework.web;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import org.frankframework.lifecycle.DynamicRegistration.Servlet;
+import org.frankframework.lifecycle.servlets.SecuritySettings;
+import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.util.SpringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
-
-import org.frankframework.lifecycle.DynamicRegistration.Servlet;
-import org.frankframework.lifecycle.servlets.SecuritySettings;
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
-
-import org.frankframework.util.SpringUtils;
 
 @Log4j2
 public class ServletRegistration extends ServletRegistrationBean<Servlet> implements ApplicationContextAware, InitializingBean {
@@ -52,7 +49,7 @@ public class ServletRegistration extends ServletRegistrationBean<Servlet> implem
 		servletConfiguration.fromServlet(servlet);
 
 		Map<String, String> initParams = servletConfiguration.getInitParameters();
-		for(Map.Entry<String, String> entry : initParams.entrySet()) {
+		for (Map.Entry<String, String> entry : initParams.entrySet()) {
 			String key = entry.getKey();
 			String val = entry.getValue();
 			addInitParameter(key, val);
@@ -66,8 +63,8 @@ public class ServletRegistration extends ServletRegistrationBean<Servlet> implem
 
 	private void addUrlMappings(List<String> urlMapping) {
 		String[] mapping = urlMapping.stream()
-			.filter(e -> !e.startsWith("!"))
-			.toArray(String[]::new);
+				.filter(e -> !e.startsWith("!"))
+				.toArray(String[]::new);
 		addUrlMappings(mapping);
 	}
 }

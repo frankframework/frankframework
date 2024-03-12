@@ -27,8 +27,8 @@ import org.frankframework.util.StreamUtil;
 /**
  * Basic InputStreamReaderFactory.
  *
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
 public class InputStreamReaderFactory implements IReaderFactory {
 
@@ -41,7 +41,7 @@ public class InputStreamReaderFactory implements IReaderFactory {
 		try {
 			return StreamUtil.getCharsetDetectingInputStreamReader(inputstream, charset);
 		} catch (IOException e) {
-			throw new SenderException("cannot use charset ["+charset+"] to read stream ["+streamId+"]",e);
+			throw new SenderException("cannot use charset [" + charset + "] to read stream [" + streamId + "]", e);
 		}
 	}
 

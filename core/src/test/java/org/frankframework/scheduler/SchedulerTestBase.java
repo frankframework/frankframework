@@ -23,8 +23,10 @@ import java.text.ParseException;
 
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.testutil.TestConfiguration;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;

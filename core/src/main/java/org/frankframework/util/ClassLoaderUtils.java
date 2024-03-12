@@ -37,6 +37,7 @@ public abstract class ClassLoaderUtils {
 
 	/**
 	 * Get a resource-URL directly from the ClassPath
+	 *
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
@@ -59,13 +60,14 @@ public abstract class ClassLoaderUtils {
 
 	/**
 	 * Get a resource-URL from a ClassLoader, therefore the resource should not start with a leading slash
+	 *
 	 * @param scopeProvider to retrieve the file from, or NULL when you want to retrieve the resource directly from the ClassPath (using an absolute path)
-	 * @param resource name of the resource you are trying to fetch the URL from
+	 * @param resource      name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
 	public static URL getResourceURL(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
 		ClassLoader classLoader = null;
-		if(scopeProvider == null) { // Used by ClassPath resources
+		if (scopeProvider == null) { // Used by ClassPath resources
 			classLoader = Thread.currentThread().getContextClassLoader();
 		} else {
 			classLoader = scopeProvider.getConfigurationClassLoader();
@@ -92,7 +94,8 @@ public abstract class ClassLoaderUtils {
 				protocols.addAll(toList(allowedProtocols));
 				return getResourceNative(resourceToUse, protocols);
 			} else {
-				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+nameOf(classLoader)+"] and no protocol to try as URL");
+				if (log.isDebugEnabled())
+					log.debug("Cannot lookup resource [" + resource + "] in classloader [" + nameOf(classLoader) + "] and no protocol to try as URL");
 			}
 		}
 
@@ -111,7 +114,7 @@ public abstract class ClassLoaderUtils {
 		}
 		log.debug("determined protocol [{}] for resource [{}]", protocol, resource);
 
-		if(!allowedProtocols.contains(protocol)) {
+		if (!allowedProtocols.contains(protocol)) {
 			log.debug("Cannot lookup resource [{}] protocol [{}] not in allowedProtocols {}", resource, protocol, allowedProtocols.toString());
 			return null;
 		}
@@ -119,7 +122,7 @@ public abstract class ClassLoaderUtils {
 		String escapedURL = resource.replace(" ", "%20");
 		try {
 			return new URL(escapedURL);
-		} catch(MalformedURLException e) {
+		} catch (MalformedURLException e) {
 			log.debug("Could not find resource [{}] as URL [{}]: {}", resource, escapedURL, e.getMessage());
 			return null;
 		}
@@ -130,7 +133,7 @@ public abstract class ClassLoaderUtils {
 	}
 
 	private static List<String> toList(String protocolList) {
-		if(StringUtils.isBlank(protocolList)) {
+		if (StringUtils.isBlank(protocolList)) {
 			return Collections.emptyList();
 		}
 		//Arrays.asList(..) won't return an empty List when empty.
@@ -142,15 +145,15 @@ public abstract class ClassLoaderUtils {
 	 * else return the className of the object. Don't return the package name to avoid cluttering the logs.
 	 */
 	public static String nameOf(ClassLoader classLoader) {
-		if(classLoader == null) {
+		if (classLoader == null) {
 			return "<null>";
 		}
 
 		String logPrefix = ClassUtils.nameOf(classLoader) + "@" + Integer.toHexString(classLoader.hashCode());
-		if(classLoader instanceof IConfigurationClassLoader) {
+		if (classLoader instanceof IConfigurationClassLoader) {
 			String configurationName = ((IConfigurationClassLoader) classLoader).getConfigurationName();
-			if(StringUtils.isNotEmpty(configurationName)) {
-				logPrefix += "["+configurationName+"]";
+			if (StringUtils.isNotEmpty(configurationName)) {
+				logPrefix += "[" + configurationName + "]";
 			}
 		}
 		return logPrefix;

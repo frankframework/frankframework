@@ -28,13 +28,12 @@ import org.frankframework.stream.Message;
 
 /**
  * Selects an exitState, based on the number of received messages by this pipe.
- *
+ * <p>
  * The exitState is the difference (subtraction) between the <code>divisor</code> and
  * the remainder of [number of received messages] modulus <code>divisor</code>.
  * This will always be an integer between 1 and <code>divisor</code>, inclusive.
  *
- *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 
 @ElementType(ElementTypes.ROUTER)
@@ -81,7 +80,7 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 		return divisor;
 	}
 
-	@Default ("2")
+	@Default("2")
 	public void setDivisor(int i) {
 		divisor = i;
 	}

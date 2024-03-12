@@ -34,15 +34,15 @@ public class MessageBrowsingUtil {
 			return null;
 		}
 
-		if(rawMessageWrapper instanceof MessageWrapper) {
+		if (rawMessageWrapper instanceof MessageWrapper) {
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>) rawMessageWrapper;
 			return messageWrapper.getMessage().asString();
 		}
 		Object rawMessage = rawMessageWrapper.getRawMessage();
-		if(rawMessage instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
-			return ((Message)rawMessage).asString();
-		} else if(rawMessage instanceof String) { // For backwards compatibility: earlier MessageLog messages were stored as String.
-			return (String)rawMessage;
+		if (rawMessage instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
+			return ((Message) rawMessage).asString();
+		} else if (rawMessage instanceof String) { // For backwards compatibility: earlier MessageLog messages were stored as String.
+			return (String) rawMessage;
 		} else if (listener != null) {
 			String msg = null;
 			try {

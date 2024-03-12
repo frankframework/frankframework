@@ -27,7 +27,7 @@ import org.frankframework.util.LogUtil;
 public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryConfig> {
 	private final Logger log = LogUtil.getLogger(this);
 
-	public static final String METRICS_EXPORT_PROPERTY_PREFIX="management.metrics.export.";
+	public static final String METRICS_EXPORT_PROPERTY_PREFIX = "management.metrics.export.";
 
 	private final AppConstants appConstants;
 	private CredentialFactory credentialFactory;
@@ -39,19 +39,19 @@ public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryCon
 	}
 
 	protected String getProperty(String key) {
-		String effectiveKey = METRICS_EXPORT_PROPERTY_PREFIX+key;
+		String effectiveKey = METRICS_EXPORT_PROPERTY_PREFIX + key;
 		String result = appConstants.get(effectiveKey);
 		return result;
 	}
 
 	protected CredentialFactory getCredentialFactory() {
-		return getCredentialFactory("username","password");
+		return getCredentialFactory("username", "password");
 	}
 
 	protected CredentialFactory getCredentialFactory(String usernameKey, String passwordKey) {
-		if (credentialFactory==null) {
-			String prefix = config.prefix()+".";
-			credentialFactory = new CredentialFactory(getProperty(prefix+"authAlias"), ()->getProperty(prefix+usernameKey), ()->getProperty(prefix+passwordKey));
+		if (credentialFactory == null) {
+			String prefix = config.prefix() + ".";
+			credentialFactory = new CredentialFactory(getProperty(prefix + "authAlias"), () -> getProperty(prefix + usernameKey), () -> getProperty(prefix + passwordKey));
 		}
 		return credentialFactory;
 	}
@@ -60,11 +60,11 @@ public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryCon
 	public void registerAt(CompositeMeterRegistry compositeRegistry) {
 		config = createConfig();
 		try {
-			if ("true".equals(getProperty(config.prefix()+"."+"enabled"))) {
+			if ("true".equals(getProperty(config.prefix() + "." + "enabled"))) {
 				compositeRegistry.add(createRegistry(config));
 			}
 		} catch (Exception e) {
-			log.warn("Could not configure MeterRegistry ["+config.prefix()+"]", e);
+			log.warn("Could not configure MeterRegistry [" + config.prefix() + "]", e);
 		}
 	}
 

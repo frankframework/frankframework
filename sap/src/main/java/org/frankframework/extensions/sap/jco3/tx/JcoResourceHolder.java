@@ -21,13 +21,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.transaction.support.ResourceHolderSupport;
-import org.springframework.util.Assert;
-
 import com.sap.conn.jco.JCoDestination;
 
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.extensions.sap.jco3.SapSystemImpl;
+import org.springframework.transaction.support.ResourceHolderSupport;
+import org.springframework.util.Assert;
 
 /**
  * Connection holder, wrapping a Jco destination.
@@ -36,9 +35,9 @@ import org.frankframework.extensions.sap.jco3.SapSystemImpl;
  *
  * <p>Note: This is an SPI class, not intended to be used by applications.
  *
- * @author  Gerrit van Brakel
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class JcoResourceHolder extends ResourceHolderSupport {
 //	private static final Logger logger = LogUtil.getLogger(JcoResourceHolder.class);
@@ -49,11 +48,12 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 	private final List<String> tids = new LinkedList<>();
 
-	private final Map<JCoDestination,List<String>> tidsPerDestination = new HashMap<>();
+	private final Map<JCoDestination, List<String>> tidsPerDestination = new HashMap<>();
 
 
 	/**
 	 * Create a new JcoResourceHolder that is open for resources to be added.
+	 *
 	 * @see #addDestination
 	 * @see #addTid
 	 */
@@ -62,16 +62,18 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 	/**
 	 * Create a new JcoResourceHolder that is open for resources to be added.
+	 *
 	 * @param sapSystem the SapSystem that this
-	 * resource holder is associated with (may be <code>null</code>)
+	 *                  resource holder is associated with (may be <code>null</code>)
 	 */
 	public JcoResourceHolder(SapSystemImpl sapSystem) {
 	}
 
 	/**
 	 * Create a new JcoResourceHolder for the given JCoDestination.
-	 * @param sapSystem the SapSystem that this
-	 * resource holder is associated with (may be <code>null</code>)
+	 *
+	 * @param sapSystem   the SapSystem that this
+	 *                    resource holder is associated with (may be <code>null</code>)
 	 * @param destination the JCoDestination
 	 */
 	public JcoResourceHolder(SapSystemImpl sapSystem, JCoDestination destination) {
@@ -80,8 +82,9 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 	/**
 	 * Create a new JcoResourceHolder for the given JCO resources.
+	 *
 	 * @param destination the JCoDestination
-	 * @param tid the TID
+	 * @param tid         the TID
 	 */
 	public JcoResourceHolder(JCoDestination destination, String tid) {
 		addDestination(destination);
@@ -91,10 +94,11 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 	/**
 	 * Create a new JcoResourceHolder for the given JCO resources.
-	 * @param sapSystem the SapSystem that this
-	 * resource holder is associated with (may be <code>null</code>)
+	 *
+	 * @param sapSystem   the SapSystem that this
+	 *                    resource holder is associated with (may be <code>null</code>)
 	 * @param destination the JCoDestination
-	 * @param tid the TID
+	 * @param tid         the TID
 	 */
 	public JcoResourceHolder(SapSystemImpl sapSystem, JCoDestination destination, String tid) {
 		addDestination(destination);
@@ -135,6 +139,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	public boolean containsDestination(JCoDestination destination) {
 		return this.destinations.contains(destination);
 	}
+
 	public boolean containsTid(String tid) {
 		return this.tids.contains(tid);
 	}
@@ -147,23 +152,23 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	public String getTid(JCoDestination destination) {
 		Assert.notNull(destination, "Destination must not be null");
 		List<String> tids = this.tidsPerDestination.get(destination);
-		if (tids==null) {
+		if (tids == null) {
 			return null;
 		}
-		return tids.get(tids.size()-1);
+		return tids.get(tids.size() - 1);
 	}
 
 
 	public void commitAll() throws SapException {
-		for (Iterator<JCoDestination> itc = this.destinations.iterator(); itc.hasNext();) {
+		for (Iterator<JCoDestination> itc = this.destinations.iterator(); itc.hasNext(); ) {
 			JCoDestination destination = itc.next();
 			List<String> tids = this.tidsPerDestination.get(destination);
-			for (Iterator<String> itt = tids.iterator(); itt.hasNext();) {
+			for (Iterator<String> itt = tids.iterator(); itt.hasNext(); ) {
 				String tid = itt.next();
 				try {
 					destination.confirmTID(tid);
 				} catch (Throwable t) {
-					throw new SapException("Could not confirm TID ["+tid+"]");
+					throw new SapException("Could not confirm TID [" + tid + "]");
 				}
 			}
 		}

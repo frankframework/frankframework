@@ -23,21 +23,21 @@ import net.wedjaa.ansible.vault.crypto.VaultHandler;
 
 public class AnsibleVaultCredentialFactoryTest {
 
-	public String ANSIBLE_VAULT_FILE="/credentials-vault.txt";
-	public String ANSIBLE_VAULT_KEY_FILE="/credentials-vault-key.txt";
+	public String ANSIBLE_VAULT_FILE = "/credentials-vault.txt";
+	public String ANSIBLE_VAULT_KEY_FILE = "/credentials-vault-key.txt";
 
-	public String ANSIBLE_VAULT_PASSWORD="GEHE\\uIM";
+	public String ANSIBLE_VAULT_PASSWORD = "GEHE\\uIM";
 
 	private AnsibleVaultCredentialFactory credentialFactory;
 
 	@BeforeEach
 	public void setup() throws IOException {
 		String vaultUrl = this.getClass().getResource(ANSIBLE_VAULT_FILE).toExternalForm();
-		String vaultFile =  Paths.get(vaultUrl.substring(vaultUrl.indexOf(":/")+2)).toString();
+		String vaultFile = Paths.get(vaultUrl.substring(vaultUrl.indexOf(":/") + 2)).toString();
 		assumeTrue(Files.exists(Paths.get(vaultFile)));
 
 		String keyUrl = this.getClass().getResource(ANSIBLE_VAULT_KEY_FILE).toExternalForm();
-		String keyFile =  Paths.get(keyUrl.substring(keyUrl.indexOf(":/")+2)).toString();
+		String keyFile = Paths.get(keyUrl.substring(keyUrl.indexOf(":/") + 2)).toString();
 		assumeTrue(Files.exists(Paths.get(keyFile)));
 
 		System.setProperty("credentialFactory.ansibleVault.vaultFile", vaultFile);
@@ -55,11 +55,11 @@ public class AnsibleVaultCredentialFactoryTest {
 
 // re-enable the line below to generate a vault which contains single backslashes, if you want to test with that.
 //		vaultData = vaultData.replace("\\\\", "\\");
-		System.out.println("Vault data before encryption:\n"+ vaultData);
+		System.out.println("Vault data before encryption:\n" + vaultData);
 
 		byte[] encryptedVault = VaultHandler.encrypt(vaultData.getBytes(StandardCharsets.US_ASCII), ANSIBLE_VAULT_PASSWORD);
 
-		System.out.println("Ansible Vault:\n"+new String(encryptedVault));
+		System.out.println("Ansible Vault:\n" + new String(encryptedVault));
 
 	}
 
@@ -68,25 +68,25 @@ public class AnsibleVaultCredentialFactoryTest {
 	// run this to obtain a fresh ansible vault
 	public void testSetupVault() throws IOException {
 		Properties aliases = new Properties();
-		aliases.put("noUsername/password","password from alias");
-		aliases.put("straight/username","\\username from alias");
-		aliases.put("straight/password","passw\\urd from alias");
-		aliases.put("singleValue","Plain Credential");
+		aliases.put("noUsername/password", "password from alias");
+		aliases.put("straight/username", "\\username from alias");
+		aliases.put("straight/password", "passw\\urd from alias");
+		aliases.put("singleValue", "Plain Credential");
 		setupVault(aliases, "test data for Ansible Vault");
 	}
 
 	public void testCreateVaultFromProperties(String resource, String title) throws IOException {
-		URL urlin = getClass().getResource(resource+".properties");
+		URL urlin = getClass().getResource(resource + ".properties");
 		Properties properties = new Properties();
 		properties.load(urlin.openStream());
 
-		properties.forEach((k,v) -> System.out.println(k+": "+v));
+		properties.forEach((k, v) -> System.out.println(k + ": " + v));
 		setupVault(properties, "");
 	}
 
 	//@Test
 	public void testCreateVaultFromProperties() throws IOException {
-		testCreateVaultFromProperties("","");
+		testCreateVaultFromProperties("", "");
 	}
 
 
@@ -96,21 +96,21 @@ public class AnsibleVaultCredentialFactoryTest {
 		ByteArrayOutputStream credentialData = new ByteArrayOutputStream();
 		VaultHandler.decrypt(fis, credentialData, password);
 
-		System.out.println("Decrypted Vault data:\n"+new String(credentialData.toByteArray()));
+		System.out.println("Decrypted Vault data:\n" + new String(credentialData.toByteArray()));
 	}
 
 
 	public void decryptFile(String file, String password) throws IOException {
-		try (FileOutputStream fos = new FileOutputStream(file+".txt")) {
-			try (FileInputStream fis = new FileInputStream(file+".vault")) {
+		try (FileOutputStream fos = new FileOutputStream(file + ".txt")) {
+			try (FileInputStream fis = new FileInputStream(file + ".vault")) {
 				VaultHandler.decrypt(fis, fos, password);
 			}
 		}
 	}
 
 	public void encryptFile(String file, String password) throws IOException {
-		try (FileOutputStream fos = new FileOutputStream(file+".vault")) {
-			try (FileInputStream fis = new FileInputStream(file+".txt")) {
+		try (FileOutputStream fos = new FileOutputStream(file + ".vault")) {
+			try (FileInputStream fis = new FileInputStream(file + ".txt")) {
 				VaultHandler.encrypt(fis, fos, password);
 			}
 		}
@@ -123,7 +123,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
@@ -138,7 +138,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String expectedUsername = "\\username from alias";
 		String expectedPassword = "passw\\urd from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -153,7 +153,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String expectedUsername = username;
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -167,7 +167,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String password = null;
 
 		assertThrows(NoSuchElementException.class, () -> {
-			ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+			ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 			assertEquals(username, mc.getUsername());
 			assertEquals(password, mc.getPassword());
 		});
@@ -180,7 +180,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
 	}
@@ -195,7 +195,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());

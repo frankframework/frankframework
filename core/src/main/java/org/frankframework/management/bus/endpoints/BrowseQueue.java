@@ -74,7 +74,7 @@ public class BrowseQueue extends BusEndpointBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> findMessagesOnQueue(Message<?> message) {
 		String connectionFactory = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY);
-		if(StringUtils.isEmpty(connectionFactory)) {
+		if (StringUtils.isEmpty(connectionFactory)) {
 			throw new BusException("a connectionFactory must be provided");
 		}
 		String destination = BusMessageUtils.getHeader(message, "destination");
@@ -82,7 +82,7 @@ public class BrowseQueue extends BusEndpointBase {
 		boolean showPayload = BusMessageUtils.getBooleanHeader(message, "showPayload", false);
 		boolean rowNumbersOnly = BusMessageUtils.getBooleanHeader(message, "rowNumbersOnly", false);
 		DestinationType type = BusMessageUtils.getEnumHeader(message, "type", DestinationType.class);
-		if(type == null) {
+		if (type == null) {
 			throw new BusException("a DestinationType must be provided");
 		}
 
@@ -91,7 +91,7 @@ public class BrowseQueue extends BusEndpointBase {
 		try {
 			JmsBrowser<javax.jms.Message> jmsBrowser = createBean(JmsBrowser.class);
 			jmsBrowser.setName("BrowseQueueAction");
-			if(type == DestinationType.QUEUE) {
+			if (type == DestinationType.QUEUE) {
 				jmsBrowser.setQueueConnectionFactoryName(connectionFactory);
 			} else {
 				jmsBrowser.setTopicConnectionFactoryName(connectionFactory);
@@ -110,13 +110,12 @@ public class BrowseQueue extends BusEndpointBase {
 			log.debug("Browser returned [{}] messages", messages::size);
 			returnMap.put("numberOfMessages", messages.size());
 
-			if(!rowNumbersOnly) {
+			if (!rowNumbersOnly) {
 				returnMap.put("messages", messages);
 			}
 
 			return new JsonResponseMessage(returnMap);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new BusException("Error occurred browsing messages", e);
 		}
 	}
@@ -145,7 +144,7 @@ public class BrowseQueue extends BusEndpointBase {
 			} catch (Exception e) {
 				log.warn("Could not get insertDate", e);
 			}
-			if(showPayload && item instanceof JmsMessageBrowserIteratorItem) {
+			if (showPayload && item instanceof JmsMessageBrowserIteratorItem) {
 				text = ((JmsMessageBrowserIteratorItem) item).getText();
 			}
 		}

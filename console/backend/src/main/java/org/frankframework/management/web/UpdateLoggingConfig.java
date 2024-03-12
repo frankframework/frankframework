@@ -29,24 +29,22 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.Level;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 
 /**
  * Read and update logging configuration
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
 public class UpdateLoggingConfig extends FrankApiBase {
 
 	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/server/logging")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Relation("logging")
@@ -69,7 +67,7 @@ public class UpdateLoggingConfig extends FrankApiBase {
 		Boolean enableDebugger = RequestUtils.getBooleanValue(json, "enableDebugger");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
-		builder.addHeader("logLevel", loglevel==null?null:loglevel.name());
+		builder.addHeader("logLevel", loglevel == null ? null : loglevel.name());
 		builder.addHeader("logIntermediaryResults", logIntermediaryResults);
 		builder.addHeader("maxMessageLength", maxMessageLength);
 		builder.addHeader("enableDebugger", enableDebugger);
@@ -100,16 +98,16 @@ public class UpdateLoggingConfig extends FrankApiBase {
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("level")) {
-				Level level = Level.toLevel(""+value, null);
-				if(level != null) {
+			if (key.equalsIgnoreCase("level")) {
+				Level level = Level.toLevel("" + value, null);
+				if (level != null) {
 					request.addHeader("level", level.name());
 				}
-			} else if(key.equalsIgnoreCase("logger")) {
+			} else if (key.equalsIgnoreCase("logger")) {
 				String logPackage = (String) value;
 				request.addHeader("logPackage", logPackage);
-			} else if(key.equalsIgnoreCase("reconfigure")) {
-				boolean reconfigure = Boolean.parseBoolean(""+value);
+			} else if (key.equalsIgnoreCase("reconfigure")) {
+				boolean reconfigure = Boolean.parseBoolean("" + value);
 				request.addHeader("reconfigure", reconfigure);
 			}
 		}

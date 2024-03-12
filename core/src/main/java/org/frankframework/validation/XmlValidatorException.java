@@ -21,7 +21,7 @@ public class XmlValidatorException extends IbisException {
 	private static final long serialVersionUID = 1L;
 
 	XmlValidatorException(String cause, Throwable t) {
-		super(cause,t);
+		super(cause, t);
 	}
 
 	XmlValidatorException(String cause) {

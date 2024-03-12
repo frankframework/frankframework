@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -61,7 +62,7 @@ public class PipeLineSessionTest {
 		session.put("key8", 123);
 		session.put("key8b", "456");
 		session.put("key8c", Message.asMessage("456"));
-		session.put("key8d", Message.asByteArray((Object)"456"));
+		session.put("key8d", Message.asByteArray((Object) "456"));
 		session.put("key9", true);
 		session.put("key9b", "true");
 		session.put("key9c", "false");
@@ -170,7 +171,7 @@ public class PipeLineSessionTest {
 
 	@Test
 	public void testDate() {
-    assertInstanceOf(Date.class, session.get("key7"));
+		assertInstanceOf(Date.class, session.get("key7"));
 	}
 
 	@Test
@@ -222,7 +223,7 @@ public class PipeLineSessionTest {
 
 	@Test
 	public void testMap() {
-    	assertInstanceOf(Map.class, session.get("key10"));
+		assertInstanceOf(Map.class, session.get("key10"));
 		@SuppressWarnings("unchecked")
 		Map<String, Object> map = (Map<String, Object>) session.get("key10");
 		assertEquals(3, map.size());
@@ -275,7 +276,7 @@ public class PipeLineSessionTest {
 		from.mergeToParentSession(keys, to);
 
 		// Assert
-		assertEquals(from,to);
+		assertEquals(from, to);
 	}
 
 	@Test
@@ -295,7 +296,7 @@ public class PipeLineSessionTest {
 		from.mergeToParentSession(keys, to);
 
 		// Assert
-		assertEquals(from,to);
+		assertEquals(from, to);
 	}
 
 	@ParameterizedTest
@@ -321,7 +322,7 @@ public class PipeLineSessionTest {
 		from.close();
 
 		// Assert
-		assertEquals(from,to);
+		assertEquals(from, to);
 
 		assertTrue(to.getCloseables().containsKey(message));
 		assertTrue(to.getCloseables().containsKey(closeable1));
@@ -386,7 +387,7 @@ public class PipeLineSessionTest {
 		from.put("a", 15);
 		from.put("b", 16);
 		from.mergeToParentSession("", to);
-		assertEquals(0,to.size());
+		assertEquals(0, to.size());
 	}
 
 	@Test

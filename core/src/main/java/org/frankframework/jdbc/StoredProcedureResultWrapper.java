@@ -61,7 +61,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	 * Class that wraps a CallableStatement to present its output-parameters as if they were
 	 * a {@link ResultSet}.
 	 *
-	 * @param delegate The {@link CallableStatement} to be wrapped
+	 * @param delegate           The {@link CallableStatement} to be wrapped
 	 * @param parameterPositions The position of each output-parameter in the overal list of stored procedure parameters
 	 */
 	public StoredProcedureResultWrapper(

@@ -22,11 +22,11 @@ import lombok.Setter;
 
 public class SlowListenerWithPollGuard extends SlowPushingListener implements IPortConnectedListener<Message> {
 
-    private @Getter @Setter int pollGuardInterval = 0;
-    private PollGuard pollGuard = null;
-    private Timer pollGuardTimer = null;
-    private @Getter @Setter int mockLastPollDelayMs = 10;
-    private @Setter Receiver<Message> receiver;
+	private @Getter @Setter int pollGuardInterval = 0;
+	private PollGuard pollGuard = null;
+	private Timer pollGuardTimer = null;
+	private @Getter @Setter int mockLastPollDelayMs = 10;
+	private @Setter Receiver<Message> receiver;
 	private SpringJmsConnector mockConnector;
 
 	@Override
@@ -42,45 +42,45 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
 	}
 
 	@Override
-    public void open() {
-        super.open();
+	public void open() {
+		super.open();
 
-        if (pollGuardInterval > 0) {
-            log.debug("Creating poll-guard timer with interval [" + pollGuardInterval + "ms] while starting SpringJmsConnector");
-            pollGuard = new PollGuard();
-            pollGuard.setSpringJmsConnector(mockConnector);
-            pollGuardTimer = new Timer(true);
-            pollGuardTimer.schedule(pollGuard, pollGuardInterval, pollGuardInterval);
-        }
-    }
+		if (pollGuardInterval > 0) {
+			log.debug("Creating poll-guard timer with interval [" + pollGuardInterval + "ms] while starting SpringJmsConnector");
+			pollGuard = new PollGuard();
+			pollGuard.setSpringJmsConnector(mockConnector);
+			pollGuardTimer = new Timer(true);
+			pollGuardTimer.schedule(pollGuard, pollGuardInterval, pollGuardInterval);
+		}
+	}
 
-    @Override
-    public void close() {
-        if (pollGuardTimer != null) {
-            log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
-            pollGuardTimer.cancel();
-            pollGuardTimer = null;
-        }
-        super.close();
-    }
+	@Override
+	public void close() {
+		if (pollGuardTimer != null) {
+			log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
+			pollGuardTimer.cancel();
+			pollGuardTimer = null;
+		}
+		super.close();
+	}
 
-    @Override
-    public IbisExceptionListener getExceptionListener() {
-        return null;
-    }
+	@Override
+	public IbisExceptionListener getExceptionListener() {
+		return null;
+	}
 
-    @Override
-    public IMessageHandler<Message> getHandler() {
-        return null;
-    }
+	@Override
+	public IMessageHandler<Message> getHandler() {
+		return null;
+	}
 
-    @Override
-    public Receiver<Message> getReceiver() {
-        return receiver;
-    }
+	@Override
+	public Receiver<Message> getReceiver() {
+		return receiver;
+	}
 
-    @Override
-    public IListenerConnector<Message> getListenerPortConnector() {
-        return null;
-    }
+	@Override
+	public IListenerConnector<Message> getListenerPortConnector() {
+		return null;
+	}
 }

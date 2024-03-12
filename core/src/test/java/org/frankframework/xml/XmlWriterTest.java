@@ -10,7 +10,9 @@ import java.io.StringWriter;
 
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -18,7 +20,7 @@ public class XmlWriterTest {
 
 	@Test
 	public void testBasic() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = input;
 		XmlWriter xmlWriter = new XmlWriter();
 		XmlUtils.parseXml(input, xmlWriter);
@@ -27,33 +29,33 @@ public class XmlWriterTest {
 
 	@Test
 	public void testWithXmlDeclaration() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/WithXmlDeclaration.xml");
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeXmlDeclaration(true);
 		xmlWriter.setNewlineAfterXmlDeclaration(true);
 		XmlUtils.parseXml(input, xmlWriter);
-		assertEquals(expected,xmlWriter.toString());
+		assertEquals(expected, xmlWriter.toString());
 	}
 
 	@Test
 	public void testTextMode() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsTextPlain.txt");
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setTextMode(true);
 		XmlUtils.parseXml(input, xmlWriter);
-		assertEquals(expected,xmlWriter.toString());
+		assertEquals(expected, xmlWriter.toString());
 	}
 
 	@Test
 	public void testIncludeComments() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = input;
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(true);
 		XmlUtils.parseXml(input, xmlWriter);
-		assertEquals(expected,xmlWriter.toString());
+		assertEquals(expected, xmlWriter.toString());
 	}
 
 	@Test
@@ -67,13 +69,13 @@ public class XmlWriterTest {
 			documentBuilder.addAttribute("attr", null);
 		}
 
-		assertEquals(expected,xmlWriter.toString());
+		assertEquals(expected, xmlWriter.toString());
 	}
 
 
 	@Test
 	public void testNoLexicalHandling() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/NoComments.xml");
 		XmlWriter xmlWriter = new XmlWriter();
 
@@ -84,50 +86,50 @@ public class XmlWriterTest {
 		xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", null);
 
 		xmlReader.parse(inputSource);
-		assertEquals(expected,xmlWriter.toString());
+		assertEquals(expected, xmlWriter.toString());
 	}
 
 	@Test
 	public void testBasicCheckClosedDefault() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = input;
 		CloseObservableWriter writer = new CloseObservableWriter();
 		XmlWriter xmlWriter = new XmlWriter(writer);
 		XmlUtils.parseXml(input, xmlWriter);
-		assertEquals(expected,writer.toString());
+		assertEquals(expected, writer.toString());
 		assertFalse(writer.closeCalled);
 	}
 
 	@Test
 	public void testBasicCheckClosed() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = input;
 		CloseObservableWriter writer = new CloseObservableWriter();
 		XmlWriter xmlWriter = new XmlWriter(writer, true);
 		XmlUtils.parseXml(input, xmlWriter);
-		assertEquals(expected,writer.toString());
+		assertEquals(expected, writer.toString());
 		assertTrue(writer.closeCalled);
 	}
 
 	@Test
 	public void testBasicCheckNotClosed() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = input;
 		CloseObservableWriter writer = new CloseObservableWriter();
 		XmlWriter xmlWriter = new XmlWriter(writer, false);
 		XmlUtils.parseXml(input, xmlWriter);
-		assertEquals(expected,writer.toString());
+		assertEquals(expected, writer.toString());
 		assertFalse(writer.closeCalled);
 	}
 
 	@Test
 	public void testMultinamespace() throws Exception {
-		String input    = TestFileUtils.getTestFile("/Xslt/MultiNamespace/in.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/MultiNamespace/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/MultiNamespace/out.xml");
 		CloseObservableWriter writer = new CloseObservableWriter();
 		XmlWriter xmlWriter = new XmlWriter(writer, false);
 		XmlUtils.parseXml(input, xmlWriter);
-		assertEquals(expected,writer.toString());
+		assertEquals(expected, writer.toString());
 		assertFalse(writer.closeCalled);
 	}
 

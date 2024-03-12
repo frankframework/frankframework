@@ -22,7 +22,7 @@ import org.frankframework.stream.Message;
 /**
  * ErrorMessageFormatter that returns a soap fault message.
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 public class SoapErrorMessageFormatter extends ErrorMessageFormatter {
 

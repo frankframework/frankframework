@@ -28,17 +28,17 @@ public interface CanUseSharedResource<T> extends IConfigurable, ConfigurableLife
 	@SuppressWarnings("unchecked")
 	default @Nonnull T getSharedResource(String sharedResourceName) {
 		String beanName = SharedResource.SHARED_RESOURCE_PREFIX + sharedResourceName;
-		if(getApplicationContext().containsBean(beanName)) {
+		if (getApplicationContext().containsBean(beanName)) {
 			SharedResource<?> container = getApplicationContext().getBean(beanName, SharedResource.class);
 			Object resource = container.getSharedResource();
 
-			if(getObjectType() != null && !getObjectType().isAssignableFrom(resource.getClass())) {
+			if (getObjectType() != null && !getObjectType().isAssignableFrom(resource.getClass())) {
 				// our own 'ClassCastException'
-				throw new IllegalStateException("Shared Resource ["+sharedResourceName+"] may not be used here");
+				throw new IllegalStateException("Shared Resource [" + sharedResourceName + "] may not be used here");
 			}
 			return (T) resource;
 		}
-		throw new IllegalArgumentException("Shared Resource ["+sharedResourceName+"] does not exist");
+		throw new IllegalArgumentException("Shared Resource [" + sharedResourceName + "] does not exist");
 	}
 
 	/**

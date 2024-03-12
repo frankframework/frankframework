@@ -23,8 +23,8 @@ import org.frankframework.receivers.RawMessageWrapper;
  * The <code>IPostboxListener</code> is responsible for querying a message
  * from a postbox.
  *
- * @author  John Dekker
-  */
+ * @author John Dekker
+ */
 public interface IPostboxListener<M> extends IPullingListener<M> {
 	/**
 	 * Retrieves the first message found from queue or other channel, that matches the
@@ -35,6 +35,6 @@ public interface IPostboxListener<M> extends IPullingListener<M> {
 	 *                        changes per listener, for example a JMSListener's messageSelector follows the JMS specification.
 	 * @param threadContext   context in which the method is called
 	 */
-	RawMessageWrapper<M> retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException, TimeoutException;
+	RawMessageWrapper<M> retrieveRawMessage(String messageSelector, Map<String, Object> threadContext) throws ListenerException, TimeoutException;
 
 }

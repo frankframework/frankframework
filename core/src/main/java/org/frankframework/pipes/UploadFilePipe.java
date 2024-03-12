@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -65,7 +64,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		try {
 			inputStream = session.getMessage(getSessionKey()).asInputStream();
 		} catch (IOException e) {
-			throw new PipeRunException(this, "unable to resolve ["+getSessionKey()+"] session key ", e);
+			throw new PipeRunException(this, "unable to resolve [" + getSessionKey() + "] session key ", e);
 		}
 		if (inputStream == null) {
 			throw new PipeRunException(this, "got null value from session under key [" + getSessionKey() + "]");
@@ -129,6 +128,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 
 	/**
 	 * the session key that contains the base directory where files are unzipped to
+	 *
 	 * @ff.default destination
 	 */
 	public void setDirectorySessionKey(String string) {
@@ -145,6 +145,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 
 	/**
 	 * name of the key in the <code>pipelinesession</code> which contains the inputstream
+	 *
 	 * @ff.default file
 	 */
 	public void setSessionKey(String string) {

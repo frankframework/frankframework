@@ -19,22 +19,22 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 
-import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
-import org.xml.sax.SAXException;
-
 import jakarta.json.Json;
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
 import jakarta.json.stream.JsonParserFactory;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.stream.JsonEventHandler;
+import org.frankframework.util.LogUtil;
+import org.xml.sax.SAXException;
 
 public class JsonUtils {
 	private static final Logger log = LogUtil.getLogger(JsonUtils.class);
 
 	public static void parseJson(String json, JsonEventHandler handler) throws SAXException {
-		parseJson(new StringReader(json),handler);
+		parseJson(new StringReader(json), handler);
 	}
+
 	public static void parseJson(InputStream inputStream, JsonEventHandler handler) throws SAXException {
 		JsonParserFactory factory = Json.createParserFactory(null);
 		try {
@@ -48,6 +48,7 @@ public class JsonUtils {
 			}
 		}
 	}
+
 	public static void parseJson(Reader reader, JsonEventHandler handler) throws SAXException {
 		JsonParserFactory factory = Json.createParserFactory(null);
 		try {
@@ -61,6 +62,7 @@ public class JsonUtils {
 			}
 		}
 	}
+
 	public static void parseJson(JsonParser parser, JsonEventHandler handler) throws SAXException {
 		try {
 			handler.startDocument();
@@ -107,7 +109,7 @@ public class JsonUtils {
 						handler.primitive(null);
 						break;
 					default:
-						throw new IllegalStateException("Unknown parser event ["+event+"]");
+						throw new IllegalStateException("Unknown parser event [" + event + "]");
 				}
 			}
 		} finally {

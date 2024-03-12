@@ -4,13 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.IWrapperPipe.Direction;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 
@@ -50,7 +51,7 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 				"</SOAP-ENV:Envelope>\n" +
 				""));
 
-		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator +"filename.xml.zip";
+		String expected = fxfDirectory + File.separator + "FlXwId" + File.separator + "in" + File.separator + "filename.xml.zip";
 		assertEquals(expected, pipeRunResult.getResult().asString());
 
 		String clientFileName = session.getString(pipe.getClientFilenameSessionKey());
@@ -74,7 +75,7 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 				"</SOAP-ENV:Envelope>\n" +
 				""));
 
-		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator +"filename.xml.zip";
+		String expected = fxfDirectory + File.separator + "FlXwId" + File.separator + "in" + File.separator + "filename.xml.zip";
 		assertEquals(expected, pipeRunResult.getResult().asString());
 
 		String clientFileName = session.getString(pipe.getClientFilenameSessionKey());
@@ -97,8 +98,8 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 				"</SOAP-ENV:Body>\n" +
 				"</SOAP-ENV:Envelope>\n" +
 				""));
-		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator +"ClientFilename.xml.zip";
-		assertEquals(expected,pipeRunResult.getResult().asString());
+		String expected = fxfDirectory + File.separator + "FlXwId" + File.separator + "in" + File.separator + "ClientFilename.xml.zip";
+		assertEquals(expected, pipeRunResult.getResult().asString());
 	}
 
 	@Test
@@ -118,8 +119,8 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 				"</SOAP-ENV:Body>\n" +
 				"</SOAP-ENV:Envelope>\n" +
 				""));
-		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator +"ServerFilename.xml.zip";
-		assertEquals(expected,pipeRunResult.getResult().asString());
+		String expected = fxfDirectory + File.separator + "FlXwId" + File.separator + "in" + File.separator + "ServerFilename.xml.zip";
+		assertEquals(expected, pipeRunResult.getResult().asString());
 	}
 
 	@Test
@@ -139,7 +140,7 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 				"</SOAP-ENV:Body>\n" +
 				"</SOAP-ENV:Envelope>\n" +
 				""));
-		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator + "ClientFilename.xml.zip";
+		String expected = fxfDirectory + File.separator + "FlXwId" + File.separator + "in" + File.separator + "ClientFilename.xml.zip";
 		assertEquals(expected, pipeRunResult.getResult().asString());
 	}
 }

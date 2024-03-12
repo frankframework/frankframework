@@ -40,6 +40,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
+
 import org.junit.jupiter.api.BeforeEach;
 
 @WithLiquibase(tableName = JdbcTransactionalStorageTest.tableName)

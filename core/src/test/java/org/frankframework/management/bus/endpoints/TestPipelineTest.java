@@ -21,10 +21,12 @@ import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
+
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -44,7 +46,7 @@ public class TestPipelineTest extends BusTestBase {
 	@AfterEach
 	@Override
 	public void tearDown() {
-		if(adapter != null) {
+		if (adapter != null) {
 			adapter.stopRunning();
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}
@@ -65,10 +67,9 @@ public class TestPipelineTest extends BusTestBase {
 		public PipeLineResult processMessage(String messageId, org.frankframework.stream.Message message, PipeLineSession session) {
 			try {
 				String action = message.asString();
-				if(action.startsWith("sessionKey")) {
+				if (action.startsWith("sessionKey")) {
 					assertEquals("sessionKeyValue", session.get("sessionKeyName"));
-				}
-				else if(action.startsWith("<?ibiscontext")) {
+				} else if (action.startsWith("<?ibiscontext")) {
 					assertEquals("piValue", session.get("piName"));
 				}
 			} catch (IOException e) {
@@ -106,7 +107,7 @@ public class TestPipelineTest extends BusTestBase {
 	public void testCreateContextLargeMessage() throws Exception {
 		TestPipeline tp = new TestPipeline();
 		String message = TestFileUtils.getTestFile("/test1.xml"); //File without xml declaration
-		String input = "<?ibiscontext key1=whitespace is allowed ?>"+message;
+		String input = "<?ibiscontext key1=whitespace is allowed ?>" + message;
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);
 		assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1"));
 		assertEquals("whitespace is allowed", context.get("key1"));
@@ -136,7 +137,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(roles = { "IbisTester" })
+	@WithMockUser(roles = {"IbisTester"})
 	public void testWithoutThreadContext() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("normal payload", BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		request.setHeader("configuration", getConfiguration().getName());
@@ -146,7 +147,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(roles = { "IbisTester" })
+	@WithMockUser(roles = {"IbisTester"})
 	public void testWithSession() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("sessionKey", BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		request.setHeader("configuration", getConfiguration().getName());
@@ -157,7 +158,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(roles = { "IbisTester" })
+	@WithMockUser(roles = {"IbisTester"})
 	public void testWithProcessingInstruction() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("<?ibiscontext piName=piValue ?>\n<dummy/>", BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		request.setHeader("configuration", getConfiguration().getName());
@@ -167,7 +168,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	private String responseToString(Object payload) throws IOException {
-		if(payload instanceof String) {
+		if (payload instanceof String) {
 			return (String) payload;
 		}
 

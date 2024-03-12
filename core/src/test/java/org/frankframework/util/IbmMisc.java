@@ -31,7 +31,7 @@ public class IbmMisc {
 
 	private static String getFileLocation(String filename) {
 		try {
-			URL url = TestFileUtils.getTestFileURL("/Util/IbmMisc/"+filename);
+			URL url = TestFileUtils.getTestFileURL("/Util/IbmMisc/" + filename);
 			assertNotNull(url);
 			return new File(url.toURI()).getAbsolutePath();
 		} catch (Exception e) {

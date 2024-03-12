@@ -1,17 +1,17 @@
 package org.frankframework.extensions.fxf;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.extensions.fxf.FxfXmlValidator.Direction;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.XmlValidatorException;
-
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FxfXmlValidatorTest extends PipeTestBase<FxfXmlValidator> {
 

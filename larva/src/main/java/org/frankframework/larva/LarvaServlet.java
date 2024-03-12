@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.Getter;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.SenderException;
@@ -31,8 +32,6 @@ import org.frankframework.http.HttpServletBase;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
-
-import lombok.Getter;
 
 @IbisInitializer
 public class LarvaServlet extends HttpServletBase {
@@ -50,7 +49,7 @@ public class LarvaServlet extends HttpServletBase {
 
 		private Assets(String resource, String contentType) {
 			URL resourceURL = getResource(resource);
-			if(resourceURL == null) {
+			if (resourceURL == null) {
 				throw new IllegalStateException("unable to find asset");
 			}
 
@@ -60,8 +59,8 @@ public class LarvaServlet extends HttpServletBase {
 		}
 
 		static Assets findAsset(String resource) {
-			for(Assets asset : values()) {
-				if(asset.resource.equals(resource)) {
+			for (Assets asset : values()) {
+				if (asset.resource.equals(resource)) {
 					return asset;
 				}
 			}
@@ -79,7 +78,7 @@ public class LarvaServlet extends HttpServletBase {
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if(req.getPathInfo() == null) {
+		if (req.getPathInfo() == null) {
 			resp.sendRedirect(req.getContextPath() + SERVLET_PATH + "index.jsp"); // Avoid that WebSphere removes the slash at the end of the url (causing an endless loop) by explicitly adding the welcome resource
 			return;
 		}
@@ -92,7 +91,7 @@ public class LarvaServlet extends HttpServletBase {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
 
-		if(path.equals("/") || path.equalsIgnoreCase("/index.jsp")) {
+		if (path.equals("/") || path.equalsIgnoreCase("/index.jsp")) {
 			handleIndex(req, resp);
 			return;
 		} else {
@@ -108,7 +107,7 @@ public class LarvaServlet extends HttpServletBase {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
-		if(path.equals("/") || path.equalsIgnoreCase("/index.jsp")) {
+		if (path.equals("/") || path.equalsIgnoreCase("/index.jsp")) {
 			handleIndex(req, resp);
 			return;
 		} else if (path.equals("/saveResultToFile.jsp")) {
@@ -122,7 +121,7 @@ public class LarvaServlet extends HttpServletBase {
 	private void handleAsset(Assets asset, HttpServletResponse resp) throws IOException {
 		resp.setContentType(asset.getContentType());
 
-		try(InputStream in = asset.openStream()) {
+		try (InputStream in = asset.openStream()) {
 			IOUtils.copy(in, resp.getOutputStream());
 		} catch (IOException e) {
 			log.warn("error reading or writing resource to servlet", e);
@@ -153,7 +152,7 @@ public class LarvaServlet extends HttpServletBase {
 	private void handleSaveResult(HttpServletRequest request, HttpServletResponse resp) throws IOException {
 		resp.setContentType("text/html");
 		Writer writer = resp.getWriter();
-		if(request.getParameter("cmd") != null) {
+		if (request.getParameter("cmd") != null) {
 			if (request.getParameter("cmd").equals("indentWindiff")) {
 				writer.append(getTemplate("Comparing result"));
 			} else {
@@ -196,6 +195,6 @@ public class LarvaServlet extends HttpServletBase {
 
 	@Override
 	public String[] getAccessGrantingRoles() {
-		return new String[] {"IbisTester"};
+		return new String[]{"IbisTester"};
 	}
 }

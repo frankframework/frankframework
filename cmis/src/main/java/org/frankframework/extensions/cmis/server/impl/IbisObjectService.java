@@ -22,15 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.frankframework.core.PipeLineSession;
-
-import org.frankframework.extensions.cmis.CmisUtils;
-import org.frankframework.extensions.cmis.server.CmisEvent;
-import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlUtils;
-
 import org.apache.chemistry.opencmis.commons.data.Acl;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
 import org.apache.chemistry.opencmis.commons.data.BulkUpdateObjectIdAndChangeToken;
@@ -52,6 +43,13 @@ import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.apache.chemistry.opencmis.commons.spi.ObjectService;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.extensions.cmis.CmisUtils;
+import org.frankframework.extensions.cmis.server.CmisEvent;
+import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.XmlBuilder;
+import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -75,7 +73,7 @@ public class IbisObjectService implements ObjectService {
 	private XmlBuilder buildXml(String name, Object value) {
 		XmlBuilder filterXml = new XmlBuilder(name);
 
-		if(value != null)
+		if (value != null)
 			filterXml.setValue(value.toString());
 
 		return filterXml;
@@ -83,14 +81,13 @@ public class IbisObjectService implements ObjectService {
 
 	@Override
 	public String createDocument(String repositoryId, Properties properties,
-			String folderId, ContentStream contentStream,
-			VersioningState versioningState, List<String> policies,
-			Acl addAces, Acl removeAces, ExtensionsData extension) {
+								 String folderId, ContentStream contentStream,
+								 VersioningState versioningState, List<String> policies,
+								 Acl addAces, Acl removeAces, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.CREATE_DOCUMENT)) {
+		if (!eventDispatcher.contains(CmisEvent.CREATE_DOCUMENT)) {
 			return objectService.createDocument(repositoryId, properties, folderId, contentStream, versioningState, policies, addAces, removeAces, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("folderId", folderId));
@@ -103,7 +100,7 @@ public class IbisObjectService implements ObjectService {
 			cmisXml.addSubElement(contentStreamXml);
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext();) {
+			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext(); ) {
 				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
 			}
 			cmisXml.addSubElement(propertiesXml);
@@ -118,24 +115,23 @@ public class IbisObjectService implements ObjectService {
 
 	@Override
 	public String createDocumentFromSource(String repositoryId, String sourceId, Properties properties, String folderId, VersioningState versioningState,
-			List<String> policies, Acl addAces, Acl removeAces, ExtensionsData extension) {
+										   List<String> policies, Acl addAces, Acl removeAces, ExtensionsData extension) {
 		return objectService.createDocumentFromSource(repositoryId, sourceId, properties, folderId, versioningState, policies, addAces, removeAces, extension);
 	}
 
 	@Override
 	public String createFolder(String repositoryId, Properties properties, String folderId, List<String> policies, Acl addAces, Acl removeAces, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.CREATE_FOLDER)) {
+		if (!eventDispatcher.contains(CmisEvent.CREATE_FOLDER)) {
 			return objectService.createFolder(repositoryId, properties, folderId, policies, addAces, removeAces, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("folderId", folderId));
 			cmisXml.addSubElement(buildXml("policies", policies));
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext();) {
+			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext(); ) {
 				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
 			}
 			cmisXml.addSubElement(propertiesXml);
@@ -152,26 +148,25 @@ public class IbisObjectService implements ObjectService {
 
 	@Override
 	public String createPolicy(String repositoryId, Properties properties, String folderId, List<String> policies, Acl addAces,
-			Acl removeAces, ExtensionsData extension) {
+							   Acl removeAces, ExtensionsData extension) {
 		return objectService.createPolicy(repositoryId, properties, folderId, policies, addAces, removeAces, extension);
 	}
 
 	@Override
 	public String createItem(String repositoryId, Properties properties,
-			String folderId, List<String> policies, Acl addAces,
-			Acl removeAces, ExtensionsData extension) {
+							 String folderId, List<String> policies, Acl addAces,
+							 Acl removeAces, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.CREATE_ITEM)) {
+		if (!eventDispatcher.contains(CmisEvent.CREATE_ITEM)) {
 			return objectService.createItem(repositoryId, properties, folderId, policies, addAces, removeAces, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("folderId", folderId));
 			cmisXml.addSubElement(buildXml("policies", policies));
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext();) {
+			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext(); ) {
 				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
 			}
 			cmisXml.addSubElement(propertiesXml);
@@ -184,10 +179,9 @@ public class IbisObjectService implements ObjectService {
 	@Override
 	public AllowableActions getAllowableActions(String repositoryId, String objectId, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_ALLOWABLE_ACTIONS)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_ALLOWABLE_ACTIONS)) {
 			return objectService.getAllowableActions(repositoryId, objectId, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
@@ -195,7 +189,7 @@ public class IbisObjectService implements ObjectService {
 
 			Element cmisElement = eventDispatcher.trigger(CmisEvent.GET_ALLOWABLE_ACTIONS, cmisXml.toXML(), callContext);
 			Element allowableActionsElem = XmlUtils.getFirstChildTag(cmisElement, "allowableActions");
-			if(allowableActionsElem != null) {
+			if (allowableActionsElem != null) {
 				Set<Action> actions = EnumSet.noneOf(Action.class);
 
 				Iterator<Node> actionIterator = XmlUtils.getChildTags(allowableActionsElem, "action").iterator();
@@ -212,12 +206,11 @@ public class IbisObjectService implements ObjectService {
 
 	@Override
 	public ObjectData getObject(String repositoryId, String objectId, String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
-			String renditionFilter, Boolean includePolicyIds, Boolean includeAcl, ExtensionsData extensions) {
+								String renditionFilter, Boolean includePolicyIds, Boolean includeAcl, ExtensionsData extensions) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_OBJECT)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_OBJECT)) {
 			return objectService.getObject(repositoryId, objectId, filter, includeAllowableActions, includeRelationships, renditionFilter, includePolicyIds, includeAcl, extensions);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
@@ -237,10 +230,9 @@ public class IbisObjectService implements ObjectService {
 	@Override
 	public Properties getProperties(String repositoryId, String objectId, String filter, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_PROPERTIES)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_PROPERTIES)) {
 			return objectService.getProperties(repositoryId, objectId, filter, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
@@ -250,8 +242,7 @@ public class IbisObjectService implements ObjectService {
 				Element result = eventDispatcher.trigger(CmisEvent.GET_PROPERTIES, cmisXml.toXML(), callContext);
 
 				return CmisUtils.processProperties(result);
-			}
-			catch(Exception e) {
+			} catch (Exception e) {
 				log.error("error creating CMIS objectData: " + e.getMessage(), e.getCause());
 			}
 			return new PropertiesImpl();
@@ -260,21 +251,20 @@ public class IbisObjectService implements ObjectService {
 
 	@Override
 	public List<RenditionData> getRenditions(String repositoryId, String objectId, String renditionFilter, BigInteger maxItems, BigInteger skipCount,
-			ExtensionsData extension) {
+											 ExtensionsData extension) {
 		return objectService.getRenditions(repositoryId, objectId, renditionFilter, maxItems, skipCount, extension);
 	}
 
 	@Override
 	public ObjectData getObjectByPath(String repositoryId, String path,
-			String filter, Boolean includeAllowableActions,
-			IncludeRelationships includeRelationships, String renditionFilter,
-			Boolean includePolicyIds, Boolean includeAcl,
-			ExtensionsData extension) {
+									  String filter, Boolean includeAllowableActions,
+									  IncludeRelationships includeRelationships, String renditionFilter,
+									  Boolean includePolicyIds, Boolean includeAcl,
+									  ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_OBJECT_BY_PATH)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_OBJECT_BY_PATH)) {
 			return objectService.getObjectByPath(repositoryId, path, filter, includeAllowableActions, includeRelationships, renditionFilter, includePolicyIds, includeAcl, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("path", path));
@@ -296,19 +286,18 @@ public class IbisObjectService implements ObjectService {
 	@Override
 	public void updateProperties(String repositoryId, Holder<String> objectId, Holder<String> changeToken, Properties properties, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.UPDATE_PROPERTIES)) {
+		if (!eventDispatcher.contains(CmisEvent.UPDATE_PROPERTIES)) {
 			objectService.updateProperties(repositoryId, objectId, changeToken, properties, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
-			if(objectId != null)
+			if (objectId != null)
 				cmisXml.addSubElement(buildXml("objectId", objectId.getValue()));
-			if(changeToken != null)
+			if (changeToken != null)
 				cmisXml.addSubElement(buildXml("changeToken", changeToken.getValue()));
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext();) {
+			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext(); ) {
 				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
 			}
 			cmisXml.addSubElement(propertiesXml);
@@ -319,20 +308,19 @@ public class IbisObjectService implements ObjectService {
 
 	@Override
 	public List<BulkUpdateObjectIdAndChangeToken> bulkUpdateProperties(String repositoryId, List<BulkUpdateObjectIdAndChangeToken> objectIdsAndChangeTokens,
-			Properties properties, List<String> addSecondaryTypeIds, List<String> removeSecondaryTypeIds, ExtensionsData extension) {
+																	   Properties properties, List<String> addSecondaryTypeIds, List<String> removeSecondaryTypeIds, ExtensionsData extension) {
 		return objectService.bulkUpdateProperties(repositoryId, objectIdsAndChangeTokens, properties, addSecondaryTypeIds, removeSecondaryTypeIds, extension);
 	}
 
 	@Override
 	public void moveObject(String repositoryId, Holder<String> objectId, String targetFolderId, String sourceFolderId, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.MOVE_OBJECT)) {
+		if (!eventDispatcher.contains(CmisEvent.MOVE_OBJECT)) {
 			objectService.moveObject(repositoryId, objectId, targetFolderId, sourceFolderId, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
-			if(objectId != null)
+			if (objectId != null)
 				cmisXml.addSubElement(buildXml("objectId", objectId.getValue()));
 			cmisXml.addSubElement(buildXml("targetFolderId", targetFolderId));
 			cmisXml.addSubElement(buildXml("sourceFolderId", sourceFolderId));
@@ -344,10 +332,9 @@ public class IbisObjectService implements ObjectService {
 	@Override
 	public void deleteObject(String repositoryId, String objectId, Boolean allVersions, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.DELETE_OBJECT)) {
+		if (!eventDispatcher.contains(CmisEvent.DELETE_OBJECT)) {
 			objectService.deleteObject(repositoryId, objectId, allVersions, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
@@ -359,18 +346,17 @@ public class IbisObjectService implements ObjectService {
 
 	@Override
 	public FailedToDeleteData deleteTree(String repositoryId, String folderId, Boolean allVersions, UnfileObject unfileObjects,
-			Boolean continueOnFailure, ExtensionsData extension) {
+										 Boolean continueOnFailure, ExtensionsData extension) {
 		return objectService.deleteTree(repositoryId, folderId, allVersions, unfileObjects, continueOnFailure, extension);
 	}
 
 	@Override
 	public ContentStream getContentStream(String repositoryId, String objectId,
-			String streamId, BigInteger offset, BigInteger length, ExtensionsData extension) {
+										  String streamId, BigInteger offset, BigInteger length, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_CONTENTSTREAM)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_CONTENTSTREAM)) {
 			return objectService.getContentStream(repositoryId, objectId, streamId, offset, length, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
@@ -395,7 +381,7 @@ public class IbisObjectService implements ObjectService {
 
 	@Override
 	public void setContentStream(String repositoryId, Holder<String> objectId, Boolean overwriteFlag, Holder<String> changeToken,
-			ContentStream contentStream, ExtensionsData extension) {
+								 ContentStream contentStream, ExtensionsData extension) {
 		objectService.setContentStream(repositoryId, objectId, overwriteFlag, changeToken, contentStream, extension);
 	}
 
@@ -406,7 +392,7 @@ public class IbisObjectService implements ObjectService {
 
 	@Override
 	public void appendContentStream(String repositoryId, Holder<String> objectId, Holder<String> changeToken,
-			ContentStream contentStream, boolean isLastChunk, ExtensionsData extension) {
+									ContentStream contentStream, boolean isLastChunk, ExtensionsData extension) {
 		objectService.appendContentStream(repositoryId, objectId, changeToken, contentStream, isLastChunk, extension);
 	}
 }

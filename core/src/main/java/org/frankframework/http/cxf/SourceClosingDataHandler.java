@@ -32,8 +32,8 @@ public class SourceClosingDataHandler extends DataHandler {
 	public void writeTo(OutputStream os) throws IOException {
 		super.writeTo(os);
 
-		if(getDataSource() instanceof Closeable) {
-			((Closeable)getDataSource()).close();
+		if (getDataSource() instanceof Closeable) {
+			((Closeable) getDataSource()).close();
 		}
 	}
 }

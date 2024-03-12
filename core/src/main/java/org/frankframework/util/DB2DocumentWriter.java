@@ -41,13 +41,13 @@ public class DB2DocumentWriter {
 	private String docname = "result";
 	private String recordname = "rowset";
 	private String nullValue = "";
-	private boolean trimSpaces=true;
-	private boolean decompressBlobs=false;
-	private boolean getBlobSmart=false;
+	private boolean trimSpaces = true;
+	private boolean decompressBlobs = false;
+	private boolean getBlobSmart = false;
 	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private static final boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
-	public static String getFieldType (int type) {
+	public static String getFieldType(int type) {
 		return JDBCType.valueOf(type).getName();
 	}
 
@@ -65,16 +65,16 @@ public class DB2DocumentWriter {
 		if (maxlength < 0) {
 			maxlength = Integer.MAX_VALUE;
 		}
-		Statement stmt=null;
+		Statement stmt = null;
 		try {
 			stmt = rs.getStatement();
-			if (stmt!=null) {
+			if (stmt != null) {
 				JdbcUtil.warningsToDocument(stmt.getWarnings(), documentBuilder);
 			}
 		} catch (SQLException e1) {
 			log.warn("exception obtaining statement warnings", e1);
 		}
-		int rowCounter=0;
+		int rowCounter = 0;
 		try {
 			ResultSetMetaData rsmeta = rs.getMetaData();
 			if (includeFieldDefinition) {
@@ -85,19 +85,19 @@ public class DB2DocumentWriter {
 			// Process result rows
 			//----------------------------------------
 
-			try (ArrayBuilder rows = documentBuilder.addArrayField(recordname,"row")) {
+			try (ArrayBuilder rows = documentBuilder.addArrayField(recordname, "row")) {
 				while (rs.next() && rowCounter < maxlength) {
-					writeRow(rows, dbmsSupport, rs,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
+					writeRow(rows, dbmsSupport, rs, rsmeta, getBlobCharset(), decompressBlobs, nullValue, trimSpaces, getBlobSmart);
 					rowCounter++;
 				}
 			}
 		} catch (Exception e) {
-			log.error("Error occurred at row [" + rowCounter+"]", e);
+			log.error("Error occurred at row [" + rowCounter + "]", e);
 		}
 	}
 
 	public static void addFieldDefinitions(ObjectBuilder documentBuilder, ResultSetMetaData rsmeta) throws SAXException, SQLException {
-		try (ArrayBuilder fields = documentBuilder.addArrayField("fielddefinition","field")) {
+		try (ArrayBuilder fields = documentBuilder.addArrayField("fielddefinition", "field")) {
 			addFieldDefinitionsToContainer(fields, rsmeta);
 		}
 	}
@@ -106,11 +106,11 @@ public class DB2DocumentWriter {
 		int nfields = rsmeta.getColumnCount();
 
 		for (int j = 1; j <= nfields; j++) {
-			try (INodeBuilder nodeBuilder=fields.addElement()) {
-				try (ObjectBuilder field=nodeBuilder.startObject()) {
+			try (INodeBuilder nodeBuilder = fields.addElement()) {
+				try (ObjectBuilder field = nodeBuilder.startObject()) {
 
 					String columnName = rsmeta.getColumnName(j);
-					if(convertFieldnamesToUppercase) {
+					if (convertFieldnamesToUppercase) {
 						columnName = columnName.toUpperCase();
 					}
 					field.addAttribute("name", columnName);
@@ -119,42 +119,42 @@ public class DB2DocumentWriter {
 					try {
 						field.addAttribute("type", getFieldType(rsmeta.getColumnType(j)));
 					} catch (SQLException e) {
-						log.debug("Could not determine columnType",e);
+						log.debug("Could not determine columnType", e);
 					}
 					try {
 						field.addAttribute("columnDisplaySize", rsmeta.getColumnDisplaySize(j));
 					} catch (SQLException e) {
-						log.debug("Could not determine columnDisplaySize",e);
+						log.debug("Could not determine columnDisplaySize", e);
 					}
 					try {
 						field.addAttribute("precision", rsmeta.getPrecision(j));
 					} catch (SQLException e) {
-						log.warn("Could not determine precision",e);
+						log.warn("Could not determine precision", e);
 					} catch (NumberFormatException e2) {
-						if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
+						if (log.isDebugEnabled()) log.debug("Could not determine precision: " + e2.getMessage());
 					}
 					try {
 						field.addAttribute("scale", rsmeta.getScale(j));
 					} catch (SQLException e) {
-						log.debug("Could not determine scale",e);
+						log.debug("Could not determine scale", e);
 					}
 					try {
 						field.addAttribute("isCurrency", rsmeta.isCurrency(j));
 					} catch (SQLException e) {
-						log.debug("Could not determine isCurrency",e);
+						log.debug("Could not determine isCurrency", e);
 					}
 					try {
 						String columnTypeName = rsmeta.getColumnTypeName(j);
-						if(convertFieldnamesToUppercase)
+						if (convertFieldnamesToUppercase)
 							columnTypeName = columnTypeName.toUpperCase();
 						field.addAttribute("columnTypeName", columnTypeName);
 					} catch (SQLException e) {
-						log.debug("Could not determine columnTypeName",e);
+						log.debug("Could not determine columnTypeName", e);
 					}
 					try {
 						field.addAttribute("columnClassName", rsmeta.getColumnClassName(j));
 					} catch (SQLException e) {
-						log.debug("Could not determine columnClassName",e);
+						log.debug("Could not determine columnClassName", e);
 					}
 				}
 			}
@@ -163,16 +163,16 @@ public class DB2DocumentWriter {
 
 	public static void writeRow(ArrayBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
 		try (INodeBuilder nodeBuilder = rows.addElement()) {
-			try (ObjectBuilder row=nodeBuilder.startObject()) {
+			try (ObjectBuilder row = nodeBuilder.startObject()) {
 				for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
 					String columnName = "" + rsmeta.getColumnName(i);
-					if(convertFieldnamesToUppercase) {
+					if (convertFieldnamesToUppercase) {
 						columnName = columnName.toUpperCase();
 					}
 					try {
 						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
 						if (rs.wasNull()) {
-							row.add(columnName, (String)null);
+							row.add(columnName, (String) null);
 						} else {
 							if (JdbcUtil.isSQLTypeNumeric(rsmeta.getColumnType(i))) {
 								row.addNumber(columnName, value);
@@ -181,7 +181,7 @@ public class DB2DocumentWriter {
 							}
 						}
 					} catch (Exception e) {
-						throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
+						throw new SenderException("error getting fieldvalue column [" + i + "] fieldType [" + getFieldType(rsmeta.getColumnType(i)) + "]", e);
 					}
 				}
 				//JdbcUtil.warningsToXml(rs.getWarnings(), row);
@@ -214,6 +214,7 @@ public class DB2DocumentWriter {
 	public void setTrimSpaces(boolean b) {
 		trimSpaces = b;
 	}
+
 	public boolean isTrimSpaces() {
 		return trimSpaces;
 	}
@@ -221,6 +222,7 @@ public class DB2DocumentWriter {
 	public void setDecompressBlobs(boolean b) {
 		decompressBlobs = b;
 	}
+
 	public boolean isDecompressBlobs() {
 		return decompressBlobs;
 	}
@@ -228,6 +230,7 @@ public class DB2DocumentWriter {
 	public void setGetBlobSmart(boolean b) {
 		getBlobSmart = b;
 	}
+
 	public boolean isGetBlobSmart() {
 		return getBlobSmart;
 	}

@@ -28,9 +28,9 @@ public abstract class AbstractXADataSourceFactory extends PoolingJndiDataSourceF
 			return createXADataSource((XADataSource) dataSource, dataSourceName);
 		}
 
-		if(maxPoolSize > 1) {
+		if (maxPoolSize > 1) {
 			log.info("DataSource [{}] is not XA enabled, creating connection pool for the datasource", dataSourceName);
-			return createPool((DataSource)dataSource, dataSourceName);
+			return createPool((DataSource) dataSource, dataSourceName);
 		}
 		log.info("DataSource [{}] is not XA enabled and pooling not configured, used without augmentation", dataSourceName);
 		return (DataSource) dataSource;

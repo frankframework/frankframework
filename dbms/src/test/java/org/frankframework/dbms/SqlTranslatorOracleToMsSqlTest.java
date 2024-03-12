@@ -3,6 +3,7 @@ package org.frankframework.dbms;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+
 public class SqlTranslatorOracleToMsSqlTest {
 
 	private String convertQuery(String query) throws JdbcException {
@@ -42,7 +43,7 @@ public class SqlTranslatorOracleToMsSqlTest {
 
 	@Test
 	public void testSelectForUpdate() throws JdbcException {
-		String query    = "SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE;";
+		String query = "SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE;";
 		String expected = "SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE;";
 		String result = convertQuery(query);
 		assertEquals(skipIrrelevantWhitespace(expected), skipIrrelevantWhitespace(result), query);
@@ -50,7 +51,7 @@ public class SqlTranslatorOracleToMsSqlTest {
 
 	@Test
 	public void testConvertQuerySelect() throws JdbcException {
-		String query   = " SELECT FIELD1, FIELD2, DECODE(FIELD3,'Y','true','N','false',NULL,'true') AS FIELD3, LISTAGG(FIELD4, ' + ') WITHIN GROUP (ORDER BY FIELD4) AS FIELD4 FROM TABLE1 GROUP BY FIELD1, FIELD2, FIELD3, FIELD4 ORDER BY FIELD4, FIELD2  \n";
+		String query = " SELECT FIELD1, FIELD2, DECODE(FIELD3,'Y','true','N','false',NULL,'true') AS FIELD3, LISTAGG(FIELD4, ' + ') WITHIN GROUP (ORDER BY FIELD4) AS FIELD4 FROM TABLE1 GROUP BY FIELD1, FIELD2, FIELD3, FIELD4 ORDER BY FIELD4, FIELD2  \n";
 		String expected = query;
 		String result = convertQuery(query);
 		assertEquals(skipIrrelevantWhitespace(expected), skipIrrelevantWhitespace(result), query);

@@ -14,6 +14,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.PipeLineSession;
@@ -25,11 +31,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer.MethodName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
 @TestMethodOrder(MethodName.class)
 public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -74,12 +75,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void fileSystemActorTestConfigureBasic() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 	}
 
 	@Test
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
-		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem,null,owner));
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem, null, owner));
 		assertThat(e.getMessage(), containsString("either attribute [action] or parameter [action] must be specified"));
 		assertThat(e.getMessage(), containsString("fake owner of FileSystemActor"));
 	}
@@ -96,10 +97,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(new Parameter("action", ""));
 		params.configure();
 
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
-		Message message= new Message(filename);
+		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(new Message(""), session);
 
 		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
@@ -118,10 +119,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(ParameterBuilder.create().withName("action"));
 		params.configure();
 		actor.setAction(FileSystemAction.READ);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
-		Message message= new Message(filename);
+		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(null, session);
 
 		result = actor.doAction(message, pvl, session);
@@ -144,10 +145,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.configure();
 
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
-		Message message= new Message(filename);
+		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(null, session);
 
 		result = actor.doAction(message, pvl, session);
@@ -157,7 +158,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void fileSystemActorTestBasicOpen() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 	}
 
@@ -165,7 +166,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExist() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("xxx");
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 
 		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
 		assertThat(e.getMessage(), containsString("inputFolder [xxx], canonical name ["));
@@ -177,7 +178,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.LIST);
 		actor.setCreateFolder(true);
 		actor.setInputFolder("xxx");
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 	}
 
@@ -187,14 +188,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		_createFolder("folder");
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("folder");
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 	}
 
 	@Test()
 	public void fileSystemActorListActionTestForFolderExistenceWithRoot() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 	}
 
@@ -204,7 +205,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setInputFolder("folder1");
 		ParameterList params = new ParameterList();
 		params.add(new Parameter("inputFolder", "folder2"));
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 
 		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
 		assertThat(e.getMessage(), containsString("inputFolder [folder1], canonical name ["));
@@ -212,8 +213,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	public void fileSystemActorListActionTest(String inputFolder, int numberOfFiles, int expectedNumberOfFiles) throws Exception {
-		for (int i=0; i<numberOfFiles; i++) {
-			String filename = "tobelisted"+i + FILE1;
+		for (int i = 0; i < numberOfFiles; i++) {
+			String filename = "tobelisted" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(inputFolder, filename, "is not empty");
@@ -221,10 +222,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		actor.setAction(FileSystemAction.LIST);
-		if (inputFolder!=null) {
+		if (inputFolder != null) {
 			actor.setInputFolder(inputFolder);
 		}
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		Message message = new Message("");
@@ -248,37 +249,38 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorListActionTestInRootNoFiles() throws Exception {
-		fileSystemActorListActionTest(null,0,0);
+		fileSystemActorListActionTest(null, 0, 0);
 	}
+
 	@Test
 	public void fileSystemActorListActionTestInRoot() throws Exception {
-		fileSystemActorListActionTest(null,2,2);
+		fileSystemActorListActionTest(null, 2, 2);
 	}
 
 	@Test
 	public void fileSystemActorListActionTestInFolderNoFiles() throws Exception {
 		_createFolder("folder");
-		fileSystemActorListActionTest("folder",0,0);
+		fileSystemActorListActionTest("folder", 0, 0);
 	}
 
 	@Test
 	public void fileSystemActorListActionTestInFolder() throws Exception {
 		_createFolder("folder");
-		fileSystemActorListActionTest("folder",2,2);
+		fileSystemActorListActionTest("folder", 2, 2);
 	}
 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithWildCard() throws Exception {
 		actor.setWildcard("*d0*");
 		_createFolder("folder");
-		fileSystemActorListActionTest("folder",5,1);
+		fileSystemActorListActionTest("folder", 5, 1);
 	}
 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithExcludeWildCard() throws Exception {
 		actor.setExcludeWildcard("*d0*");
 		_createFolder("folder");
-		fileSystemActorListActionTest("folder",5,4);
+		fileSystemActorListActionTest("folder", 5, 4);
 	}
 
 	@Test
@@ -286,18 +288,19 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setWildcard("*.txt");
 		actor.setExcludeWildcard("*ted1*");
 		_createFolder("folder");
-		fileSystemActorListActionTest("folder",5,4);
+		fileSystemActorListActionTest("folder", 5, 4);
 	}
+
 	@Test
 	public void migrated_localFileSystemTestListWildcard() throws Exception {
 		String filename = "create" + FILE1;
-		String filename1 = filename+".bak";
-		String filename2 = filename+".xml";
+		String filename1 = filename + ".bak";
+		String filename2 = filename + ".xml";
 		String contents = "regeltje tekst";
 
 		actor.setWildcard("*.xml");
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		createFile(null, filename1, contents);
@@ -318,13 +321,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void migrated_localFileSystemTestListExcludeWildcard() throws Exception {
 		String filename = "create" + FILE1;
-		String filename1 = filename+".bak";
-		String filename2 = filename+".xml";
+		String filename1 = filename + ".bak";
+		String filename2 = filename + ".xml";
 		String contents = "regeltje tekst";
 
 		actor.setExcludeWildcard("*.bak");
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		createFile(null, filename1, contents);
@@ -344,18 +347,17 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 
-
 	@Test
 	public void migrated_localFileSystemTestListIncludeExcludeWildcard() throws Exception {
 		String filename = "create" + FILE1;
-		String filename1 = filename+".oud.xml";
-		String filename2 = filename+".xml";
+		String filename1 = filename + ".oud.xml";
+		String filename2 = filename + ".xml";
 		String contents = "regeltje tekst";
 
 		actor.setWildcard("*.xml");
 		actor.setExcludeWildcard("*.oud.xml");
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		createFile(null, filename1, contents);
@@ -395,7 +397,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(new Parameter("inputFolder", inputFolder));
 		actor.setAction(FileSystemAction.LIST);
 		params.configure();
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		_createFolder(inputFolder);
@@ -403,13 +405,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		out.write("some content".getBytes());
 		out.close();
 		waitForActionToFinish();
-		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
+		assertTrue(_fileExists(inputFolder, filename), "File [" + filename + "] expected to be present");
 
 		OutputStream out2 = _createFile(inputFolder, filename2);
 		out2.write("some content of second file".getBytes());
 		out2.close();
 		waitForActionToFinish();
-		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"] expected to be present");
+		assertTrue(_fileExists(inputFolder, filename2), "File [" + filename2 + "] expected to be present");
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
@@ -431,10 +433,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		if (fileViaAttribute) {
 			actor.setFilename(filename);
 		}
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
-		Message message= new Message(fileViaAttribute?null:filename);
+		Message message = new Message(fileViaAttribute ? null : filename);
 		ParameterValueList pvl = null;
 
 		// Act
@@ -470,10 +472,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(new Parameter("action", "read"));
 		params.configure();
 
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
-		Message message= new Message(filename);
+		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
 
 		result = actor.doAction(message, pvl, session);
@@ -493,10 +495,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		if (fileViaAttribute) {
 			actor.setFilename(filename);
 		}
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
-		Message message= new Message(fileViaAttribute?null:filename);
+		Message message = new Message(fileViaAttribute ? null : filename);
 		ParameterValueList pvl = null;
 
 		result = Message.asMessage(actor.doAction(message, pvl, session));
@@ -507,22 +509,22 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorReadActionTest() throws Exception {
-		fileSystemActorReadActionTest(FileSystemAction.READ,false, true);
+		fileSystemActorReadActionTest(FileSystemAction.READ, false, true);
 	}
 
 	@Test
 	public void fileSystemActorReadActionTestFilenameViaAttribute() throws Exception {
-		fileSystemActorReadActionTest(FileSystemAction.READ,true, true);
+		fileSystemActorReadActionTest(FileSystemAction.READ, true, true);
 	}
 
 	@Test
 	public void fileSystemActorReadActionTestCompatiblity() throws Exception {
-		fileSystemActorReadActionTest(FileSystemAction.DOWNLOAD,false, true);
+		fileSystemActorReadActionTest(FileSystemAction.DOWNLOAD, false, true);
 	}
 
 	@Test
 	public void fileSystemActorReadDeleteActionTest() throws Exception {
-		fileSystemActorReadActionTest(FileSystemAction.READDELETE,false, false);
+		fileSystemActorReadActionTest(FileSystemAction.READDELETE, false, false);
 	}
 
 	@Test
@@ -540,14 +542,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem, null, owner);
 		actor.open();
 
-		Message message= new Message(folder+"/"+filename);
+		Message message = new Message(folder + "/" + filename);
 		ParameterValueList pvl = null;
 
 		result = Message.asMessage(actor.doAction(message, pvl, session));
 
 		assertEquals(contents, result.asString());
-		assertFalse(_fileExists(filename), "Expected file ["+filename+"] not to be present");
-		assertFalse(_fileExists(filename), "Expected file ["+filename+"] not to be present");
+		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
+		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
 
 		assertFalse(_folderExists(folder), "Expected parent folder not to be present");
 	}
@@ -562,10 +564,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setAction(FileSystemAction.READ);
 		actor.setFilename(filename);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
-		Message message= new Message(filename);
+		Message message = new Message(filename);
 		ParameterValueList pvl = null;
 
 		result = Message.asMessage(actor.doAction(message, pvl, session));
@@ -584,10 +586,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.READ);
 		actor.setFilename(filename);
 		actor.setCharset("ISO-8859-1");
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
-		Message message= new Message(filename);
+		Message message = new Message(filename);
 		ParameterValueList pvl = null;
 
 		Message result = Message.asMessage(actor.doAction(message, pvl, session));
@@ -610,10 +612,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
-		Message message= new Message(contents);
+		Message message = new Message(contents);
 		ParameterValueList pvl = params.getValues(message, session);
 
 		actor.doAction(message, pvl, session);
@@ -639,7 +641,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setAction(FileSystemAction.UPLOAD);
 		params.configure();
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -661,7 +663,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents() throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
-		String expectedFSize="1 kB";
+		String expectedFSize = "1 kB";
 
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
@@ -678,7 +680,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
 		params.configure();
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message("fakeInputMessage");
@@ -686,7 +688,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
-		String stringResult=Message.asString(result);
+		String stringResult = Message.asString(result);
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
 
@@ -715,7 +717,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setAction(FileSystemAction.WRITE);
 		params.configure();
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message("should-not-be-used");
@@ -734,7 +736,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorWriteActionWriteLineSeparatorMessageContents() throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
-		String expectedFSize="1 kB";
+		String expectedFSize = "1 kB";
 
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
@@ -747,7 +749,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
 		params.configure();
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = Message.asMessage(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
@@ -755,7 +757,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
-		String stringResult=Message.asString(result);
+		String stringResult = Message.asString(result);
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
 
@@ -783,11 +785,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setAction(FileSystemAction.WRITE);
 		params.configure();
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message(filename);
-		ParameterValueList pvl= params.getValues(message, session);
+		ParameterValueList pvl = params.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 
 		String stringResult = result.asString();
@@ -818,7 +820,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.configure();
 
 		actor.setAction(FileSystemAction.WRITE);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -841,8 +843,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorWriteActionWithBackup() throws Exception {
 		String filename = "writeAndBackupTest.txt";
 		String contents = "text content:";
-		int numOfBackups=3;
-		int numOfWrites=5;
+		int numOfBackups = 3;
+		int numOfWrites = 5;
 
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
@@ -856,13 +858,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setNumberOfBackups(numOfBackups);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
-		Message message= new Message(filename);
-		for (int i=0;i<numOfWrites;i++) {
-			session.put("fileSystemActorWriteActionWithBackupKey", contents+i);
-			ParameterValueList pvl= params.getValues(message, session);
+		Message message = new Message(filename);
+		for (int i = 0; i < numOfWrites; i++) {
+			session.put("fileSystemActorWriteActionWithBackupKey", contents + i);
+			ParameterValueList pvl = params.getValues(message, session);
 			Message result = actor.doAction(message, pvl, session);
 
 			String stringResult = result.asString();
@@ -871,10 +873,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		waitForActionToFinish();
 
-		assertFileExistsWithContents(null, filename, contents.trim()+(numOfWrites-1));
+		assertFileExistsWithContents(null, filename, contents.trim() + (numOfWrites - 1));
 
-		for (int i=1;i<=numOfBackups;i++) {
-			assertFileExistsWithContents(null, filename+"."+i, contents.trim()+(numOfWrites-1-i));
+		for (int i = 1; i <= numOfBackups; i++) {
+			assertFileExistsWithContents(null, filename + "." + i, contents.trim() + (numOfWrites - 1 - i));
 //			String actualContentsi = readFile(null, filename+"."+i);
 //			assertEquals(contents.trim()+(numOfWrites-1-i), actualContentsi.trim());
 		}
@@ -899,12 +901,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		Message message = new Message(folderName + "/" + filename); //Flat file structure, should create folder
-		ParameterValueList pvl= params.getValues(message, session);
+		ParameterValueList pvl = params.getValues(message, session);
 		Message result = actor.doAction(message, pvl, session);
 		TestAssertions.assertXpathValueEquals(filename, result.asString(), "file/@name");
 		result.close();
 
-		assertTrue(_fileExists(folderName, filename), "Expected the file ["+filename+"] to be present");
+		assertTrue(_fileExists(folderName, filename), "Expected the file [" + filename + "] to be present");
 		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen"); // we just checked the file, the folder should be there...
 
 		//Test if we can list items in the folder
@@ -924,7 +926,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String contents = "AppendActionWriteLineSeparatorEnabled";
 		StringBuilder expectedMessageBuilder = new StringBuilder(contents);
 
-		for(int i=0; i<numOfWrites; i++) {
+		for (int i = 0; i < numOfWrites; i++) {
 			expectedMessageBuilder.append(contents).append(i).append(lineSeparator);
 		}
 
@@ -938,7 +940,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String contents = "AppendAction";
 		StringBuilder expectedMessageBuilder = new StringBuilder(contents);
 
-		for(int i=0; i<numOfWrites; i++) {
+		for (int i = 0; i < numOfWrites; i++) {
 			expectedMessageBuilder.append(contents).append(i);
 		}
 
@@ -946,7 +948,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	public void fileSystemActorAppendActionWriteLineSeparatorTest(String filename, String contents, boolean isWriteLineSeparator, String expected, int numOfWrites) throws Exception {
-		if(_fileExists(filename)) {
+		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
 		createFile(null, filename, contents);
@@ -958,12 +960,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setWriteLineSeparator(isWriteLineSeparator);
 		actor.setAction(FileSystemAction.APPEND);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message(filename);
-		for(int i=0; i<numOfWrites; i++) {
-			Message sessionMessage = Message.asMessage(new ThrowingAfterCloseInputStream(new ByteArrayInputStream((contents+i).getBytes())));
+		for (int i = 0; i < numOfWrites; i++) {
+			Message sessionMessage = Message.asMessage(new ThrowingAfterCloseInputStream(new ByteArrayInputStream((contents + i).getBytes())));
 			session.put("appendWriteLineSeparatorTest", sessionMessage);
 			ParameterValueList pvl = params.getValues(message, session);
 			Message result = actor.doAction(message, pvl, session);
@@ -985,7 +987,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		int numOfWrites = 5;
 		int rotateSize = 10;
 
-		if(_fileExists(filename)) {
+		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
 		createFile(null, filename, contents);
@@ -998,12 +1000,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.APPEND);
 		actor.setRotateSize(rotateSize);
 		actor.setNumberOfBackups(numOfBackups);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message(filename);
-		for(int i=0; i<numOfWrites; i++) {
-			session.put("appendActionwString", contents+i);
+		for (int i = 0; i < numOfWrites; i++) {
+			session.put("appendActionwString", contents + i);
 			ParameterValueList pvl = params.getValues(message, session);
 			Message result = actor.doAction(message, pvl, session);
 			String resultStr = result.asString();
@@ -1012,11 +1014,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			result.close();
 		}
 
-		int lastSavedBackup=numOfWrites<numOfBackups ? numOfWrites : numOfBackups;
-		assertTrue(fileSystem.exists(fileSystem.toFile(filename+"."+lastSavedBackup)), "last backup with no "+lastSavedBackup+" does not exist");
-		for (int i=1;i<=numOfBackups;i++) {
-			String actualContentsi = readFile(null, filename+"."+i);
-			assertEquals((contents+(numOfWrites-1-i)).trim(), actualContentsi.trim(),"contents of backup no "+i+" is not correct");
+		int lastSavedBackup = numOfWrites < numOfBackups ? numOfWrites : numOfBackups;
+		assertTrue(fileSystem.exists(fileSystem.toFile(filename + "." + lastSavedBackup)), "last backup with no " + lastSavedBackup + " does not exist");
+		for (int i = 1; i <= numOfBackups; i++) {
+			String actualContentsi = readFile(null, filename + "." + i);
+			assertEquals((contents + (numOfWrites - 1 - i)).trim(), actualContentsi.trim(), "contents of backup no " + i + " is not correct");
 		}
 	}
 
@@ -1025,16 +1027,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String srcFolderName = "src" + new Date().getTime();
 		_createFolder(srcFolderName);
 		String destFolderName = "dest" + new Date().getTime();
-		for (int i=0; i < 3; i++) {
-			String filename = "tobemoved"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobemoved" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
 			}
 		}
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tostay"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tostay" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
@@ -1049,15 +1051,15 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(new Parameter("destination", destFolderName));
 		params.configure();
 		actor.setCreateFolder(true);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message m = new Message("");
 		ParameterValueList pvl = params.getValues(m, session);
 		result = actor.doAction(m, pvl, session);
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tobemoved"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobemoved" + i + FILE1;
 			assertTrue(_fileExists(destFolderName, filename));
 			assertFalse(_fileExists(srcFolderName, filename));
 		}
@@ -1068,16 +1070,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String srcFolderName = "src" + new Date().getTime();
 		_createFolder(srcFolderName);
 		String destFolderName = "dest" + new Date().getTime();
-		for (int i=0; i < 3; i++) {
-			String filename = "tobemoved"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobemoved" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
 			}
 		}
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tostay"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tostay" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
@@ -1092,15 +1094,15 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(new Parameter("destination", destFolderName));
 		params.configure();
 		actor.setCreateFolder(true);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message m = new Message("");
 		ParameterValueList pvl = params.getValues(m, session);
 		result = actor.doAction(m, pvl, session);
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tostay"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tostay" + i + FILE1;
 			assertTrue(_fileExists(destFolderName, filename));
 			assertFalse(_fileExists(srcFolderName, filename));
 		}
@@ -1110,7 +1112,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
 		actor.setAction(FileSystemAction.MOVE);
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem,null,owner));
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem, null, owner));
 		assertThat(e.getMessage(), endsWith("the [MOVE] action requires the parameter [destination] or the attribute [destination] to be present"));
 	}
 
@@ -1118,10 +1120,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 
-		if (srcFolder!=null) {
+		if (srcFolder != null) {
 			_createFolder(srcFolder);
 		}
-		if (createDestFolder && destFolder!=null) {
+		if (createDestFolder && destFolder != null) {
 			_createFolder(destFolder);
 		}
 		createFile(srcFolder, filename, contents);
@@ -1136,7 +1138,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		if (setCreateFolderAttribute) {
 			actor.setCreateFolder(true);
 		}
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -1151,26 +1153,29 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// TODO: contents of result should be contents of original file
 
 		// assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename)); // does not have to be this way. filename may have changed.
-		assertFalse(_fileExists(srcFolder, filename), "file should not exist anymore in original folder ["+srcFolder+"]");
+		assertFalse(_fileExists(srcFolder, filename), "file should not exist anymore in original folder [" + srcFolder + "]");
 	}
 
 
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolder() throws Exception {
-		fileSystemActorMoveActionTest(null,"folder",true,false);
+		fileSystemActorMoveActionTest(null, "folder", true, false);
 	}
+
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderCreateFolder() throws Exception {
-		fileSystemActorMoveActionTest(null,"folder",false,true);
+		fileSystemActorMoveActionTest(null, "folder", false, true);
 	}
+
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystemActorMoveActionTest(null,"folder",false,false));
+		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystemActorMoveActionTest(null, "folder", false, false));
 		assertThat(e.getMessage(), containsString("unable to process [MOVE] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
 	}
+
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderExistsAndAllowToCreate() throws Exception {
-		fileSystemActorMoveActionTest(null,"folder",true,true);
+		fileSystemActorMoveActionTest(null, "folder", true, true);
 	}
 
 	@Test
@@ -1192,16 +1197,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(new Parameter("destination", destinationFolder));
 		params.configure();
 
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
-		Message message = new Message("innerFolder/"+filename);
+		Message message = new Message("innerFolder/" + filename);
 		ParameterValueList pvl = params.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 
 		assertNotNull(result);
 		assertFalse(_fileExists(filename), "file should not exist anymore in original folder");
-		assertTrue(_fileExists(destinationFolder, filename),"file should not exist anymore in original folder");
+		assertTrue(_fileExists(destinationFolder, filename), "file should not exist anymore in original folder");
 
 		assertFalse(_folderExists("innerFolder"), "Expected parent folder not to be present");
 	}
@@ -1219,16 +1224,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String srcFolderName = "src" + new Date().getTime();
 		_createFolder(srcFolderName);
 		String destFolderName = "dest" + new Date().getTime();
-		for (int i=0; i < 3; i++) {
-			String filename = "tobemoved"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobemoved" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
 			}
 		}
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tostay"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tostay" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
@@ -1245,15 +1250,15 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.configure();
 
 		actor.setCreateFolder(true);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message m = new Message("");
 		ParameterValueList pvl = params.getValues(m, session);
 		result = actor.doAction(m, pvl, session);
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tobemoved"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobemoved" + i + FILE1;
 			assertTrue(_fileExists(destFolderName, filename));
 			assertTrue(_fileExists(srcFolderName, filename));
 		}
@@ -1264,16 +1269,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String srcFolderName = "src" + new Date().getTime();
 		_createFolder(srcFolderName);
 		String destFolderName = "dest" + new Date().getTime();
-		for (int i=0; i < 3; i++) {
-			String filename = "tobemoved"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobemoved" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
 			}
 		}
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tostay"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tostay" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
@@ -1290,15 +1295,15 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.configure();
 
 		actor.setCreateFolder(true);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message m = new Message("");
 		ParameterValueList pvl = params.getValues(m, session);
 		result = actor.doAction(m, pvl, session);
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tostay"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tostay" + i + FILE1;
 			assertTrue(_fileExists(destFolderName, filename));
 			assertTrue(_fileExists(srcFolderName, filename));
 		}
@@ -1308,10 +1313,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 
-		if (folder1!=null) {
+		if (folder1 != null) {
 			_createFolder(folder1);
 		}
-		if (folderExists && folder2!=null) {
+		if (folderExists && folder2 != null) {
 			_createFolder(folder2);
 		}
 		createFile(folder1, filename, contents);
@@ -1325,7 +1330,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			actor.setCreateFolder(true);
 		}
 		params.configure();
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -1340,12 +1345,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// TODO: contents of result should be contents of original file
 
 		// assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename)); // does not have to be this way. filename may have changed.
-		assertTrue(_fileExists(folder1, filename), "file should still exist anymore in original folder ["+folder1+"]");
+		assertTrue(_fileExists(folder1, filename), "file should still exist anymore in original folder [" + folder1 + "]");
 	}
 
 	@Test
 	public void fileSystemActorCopyActionTestRootToFolder() throws Exception {
-		fileSystemActorCopyActionTest(null,"folder",true,false);
+		fileSystemActorCopyActionTest(null, "folder", true, false);
 	}
 
 
@@ -1358,7 +1363,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		actor.setAction(FileSystemAction.MKDIR);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		Message message = new Message(folder);
@@ -1383,7 +1388,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		actor.setAction(FileSystemAction.RMDIR);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		Message message = new Message(folder);
@@ -1398,25 +1403,26 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// test
 		assertFalse(actual, "Expected folder [" + folder + "] " + "not to be present");
 	}
+
 	@Test
 	public void fileSystemActorRmNonEmptyDirActionTest() throws Exception {
 		String folder = DIR1;
-		String innerFolder = DIR1+"/innerFolder";
+		String innerFolder = DIR1 + "/innerFolder";
 		if (!_folderExists(DIR1)) {
 			_createFolder(folder);
 		}
 		if (!_folderExists(innerFolder)) {
 			_createFolder(innerFolder);
 		}
-		for (int i=0; i < 3; i++) {
-			String filename = "file"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "file" + i + FILE1;
 			createFile(folder, filename, "is not empty");
 			createFile(innerFolder, filename, "is not empty");
 		}
 
 		actor.setAction(FileSystemAction.RMDIR);
 		actor.setRemoveNonEmptyFolder(true);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		Message message = new Message(folder);
@@ -1435,23 +1441,23 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void fileSystemActorAttemptToRmNonEmptyDir() throws Exception {
 		String folder = DIR1;
-		String innerFolder = DIR1+"/innerFolder";
+		String innerFolder = DIR1 + "/innerFolder";
 		if (!_folderExists(DIR1)) {
 			_createFolder(folder);
 		}
 		if (!_folderExists(innerFolder)) {
 			_createFolder(innerFolder);
 		}
-		for (int i=0; i < 3; i++) {
-			String filename = "file"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "file" + i + FILE1;
 			createFile(folder, filename, "is not empty");
 			createFile(innerFolder, filename, "is not empty");
 		}
 
-		assertTrue(_fileExists(innerFolder, "file0file1.txt"), "Expected file ["+innerFolder+"/file0file1.txt] to be present");
+		assertTrue(_fileExists(innerFolder, "file0file1.txt"), "Expected file [" + innerFolder + "/file0file1.txt] to be present");
 
 		actor.setAction(FileSystemAction.RMDIR);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		Message message = new Message(folder);
@@ -1472,7 +1478,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		actor.setAction(FileSystemAction.DELETE);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -1503,7 +1509,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem, null, owner);
 		actor.open();
 
-		Message message = new Message(folder+"/"+filename);
+		Message message = new Message(folder + "/" + filename);
 		ParameterValueList pvl = null;
 		result = actor.doAction(message, pvl, session);
 
@@ -1517,14 +1523,15 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		message.close();
 	}
 
-	@Test //Should not be able to clean up directory after removing 'filename' because there are still 2 empty folders on the same root. Tests if list detects DIRECTORIES
+	@Test
+	//Should not be able to clean up directory after removing 'filename' because there are still 2 empty folders on the same root. Tests if list detects DIRECTORIES
 	public void fileSystemActorDeleteActionWithDeleteEmptyFolderRootContainsEmptyFoldersTest() throws Exception {
 		String filename = "filetobedeleted" + FILE1;
 		final String folder = "inner";
 
 		_createFolder(folder);
-		_createFolder(folder+"/innerFolder1");
-		_createFolder(folder+"/innerFolder2");
+		_createFolder(folder + "/innerFolder1");
+		_createFolder(folder + "/innerFolder2");
 		createFile(folder, filename, "is not empty");
 
 		actor.setDeleteEmptyFolder(true);
@@ -1532,7 +1539,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem, null, owner);
 		actor.open();
 
-		Message message = new Message(folder+"/"+filename);
+		Message message = new Message(folder + "/" + filename);
 		ParameterValueList pvl = null;
 		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
 
@@ -1541,7 +1548,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// test
 		assertFalse(_fileExists(filename), "Expected file [" + filename + "] " + "not to be present in the root");
 		assertTrue(_folderExists(folder), "Expected parent folder to be present");
-		assertTrue(_folderExists(folder+"/innerFolder1"), "Expected file in parent folder to be present");
+		assertTrue(_folderExists(folder + "/innerFolder1"), "Expected file in parent folder to be present");
 		message.close();
 	}
 
@@ -1550,14 +1557,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String srcFolderName = "src" + new Date().getTime();
 		_createFolder(srcFolderName);
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tobedeleted"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobedeleted" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
 			}
 
-			filename = "tostay"+i + FILE1;
+			filename = "tostay" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
@@ -1569,16 +1576,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.DELETE);
 		actor.setWildcard("tobedeleted*");
 		actor.setInputFolder(srcFolderName);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		Message m = new Message("");
 		result = actor.doAction(m, null, session);
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tobemoved"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobemoved" + i + FILE1;
 			assertFalse(_fileExists(srcFolderName, filename));
-			filename = "tostay"+i + FILE1;
+			filename = "tostay" + i + FILE1;
 			assertTrue(_fileExists(srcFolderName, filename));
 		}
 	}
@@ -1588,14 +1595,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String srcFolderName = "src" + new Date().getTime();
 		_createFolder(srcFolderName);
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tobedeleted"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobedeleted" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
 			}
 
-			filename = "tostay"+i + FILE1;
+			filename = "tostay" + i + FILE1;
 
 			if (!_fileExists(filename)) {
 				createFile(srcFolderName, filename, "is not empty");
@@ -1607,16 +1614,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.DELETE);
 		actor.setExcludeWildcard("tostay*");
 		actor.setInputFolder(srcFolderName);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		Message m = new Message("");
 		result = actor.doAction(m, null, session);
 
-		for (int i=0; i < 3; i++) {
-			String filename = "tobemoved"+i + FILE1;
+		for (int i = 0; i < 3; i++) {
+			String filename = "tobemoved" + i + FILE1;
 			assertFalse(_fileExists(srcFolderName, filename));
-			filename = "tostay"+i + FILE1;
+			filename = "tostay" + i + FILE1;
 			assertTrue(_fileExists(srcFolderName, filename));
 		}
 	}
@@ -1638,13 +1645,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(new Parameter("destination", dest));
 		actor.setAction(FileSystemAction.RENAME);
 		params.configure();
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		deleteFile(null, dest);
 
 		Message message = new Message(filename);
-		ParameterValueList pvl= params.getValues(message, session);
+		ParameterValueList pvl = params.getValues(message, session);
 		result = actor.doAction(message, pvl, session);
 
 		// test
@@ -1690,7 +1697,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setFilename(filename);
 		actor.setAction(FileSystemAction.CREATE);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message(filename);
@@ -1702,7 +1709,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		InputStream contents = _readFile(null, filename);
 		// test
-		assertEquals( "", Message.asMessage(contents).asString(), "Expected file [" + filename + "] " + "to be empty");
+		assertEquals("", Message.asMessage(contents).asString(), "Expected file [" + filename + "] " + "to be empty");
 	}
 
 	@Test

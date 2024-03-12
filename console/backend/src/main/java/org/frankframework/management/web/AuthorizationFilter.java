@@ -31,17 +31,16 @@ import org.apache.cxf.interceptor.security.AccessDeniedException;
 import org.apache.cxf.jaxrs.utils.JAXRSUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageUtils;
-
 import org.frankframework.management.bus.BusMessageUtils;
 
 /**
  * Manages authorization per resource/collection.
  * A more fine-grained version of the CXF SecureAnnotationsInterceptor.
- *
+ * <p>
  * Default JAX-RS provider and is automatically picked-up by the FF!API Spring context because of the package (component) scanner.
  *
- * @since   7.0-B1
- * @author  Niels Meijer
+ * @author Niels Meijer
+ * @since 7.0-B1
  */
 
 @Provider
@@ -52,24 +51,24 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		if(requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
+		if (requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
 			//Preflight in here should not be possible?
 			return;
 		}
 
 		Message message = JAXRSUtils.getCurrentMessage();
-		Method method = MessageUtils.getTargetMethod(message).orElseThrow(() -> new AccessDeniedException("Unauthorized") );
+		Method method = MessageUtils.getTargetMethod(message).orElseThrow(() -> new AccessDeniedException("Unauthorized"));
 
-		if(method.isAnnotationPresent(DenyAll.class)) {
+		if (method.isAnnotationPresent(DenyAll.class)) {
 			//Functionality has been disallowed.
 			requestContext.abortWith(FORBIDDEN);
 			return;
 		}
 
 		//Presume `PermitAll` when RolesAllowed annotation is not set
-		if(method.isAnnotationPresent(RolesAllowed.class)) {
+		if (method.isAnnotationPresent(RolesAllowed.class)) {
 			RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
-			if(!BusMessageUtils.hasAnyRole(rolesAnnotation.value())) {
+			if (!BusMessageUtils.hasAnyRole(rolesAnnotation.value())) {
 				requestContext.abortWith(FORBIDDEN);
 			}
 		}

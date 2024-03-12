@@ -27,10 +27,9 @@ import org.frankframework.stream.Message;
  * A JAX-WS wired message provider for handling soap messages
  *
  * @author Niels Meijer
- *
  */
 
-@ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
+@ServiceMode(value = javax.xml.ws.Service.Mode.MESSAGE)
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class MessageProvider extends SOAPProviderBase {
 
@@ -49,6 +48,6 @@ public class MessageProvider extends SOAPProviderBase {
 
 	@Override
 	protected String getLogPrefix(String correlationId) {
-		return "Listener ["+listener.getName()+"] correlationId["+correlationId+"] ";
+		return "Listener [" + listener.getName() + "] correlationId[" + correlationId + "] ";
 	}
 }

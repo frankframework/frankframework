@@ -27,11 +27,6 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
-import org.frankframework.aws.AwsBase;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.amazon.sqs.javamessaging.AmazonSQSMessagingClientWrapper;
 import com.amazon.sqs.javamessaging.ProviderConfiguration;
 import com.amazon.sqs.javamessaging.SQSConnection;
@@ -39,7 +34,9 @@ import com.amazon.sqs.javamessaging.SQSConnectionFactory;
 
 import lombok.Getter;
 import lombok.Setter;
-
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.aws.AwsBase;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.SqsClientBuilder;
@@ -51,7 +48,7 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 	@Override
 	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
 		try {
-			Reference ref = (Reference)obj; // For Tomcat, obj will always be an object of type Reference
+			Reference ref = (Reference) obj; // For Tomcat, obj will always be an object of type Reference
 
 			String objectName = name.toString();
 			String targetClassName = ref.getClassName();
@@ -59,7 +56,7 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 			log.debug("constructing object [{}] of type [{}]", objectName, targetClassName);
 
 			// fetch and set properties
-			for (Enumeration<RefAddr> refAddrEnum = ref.getAll(); refAddrEnum.hasMoreElements();) {
+			for (Enumeration<RefAddr> refAddrEnum = ref.getAll(); refAddrEnum.hasMoreElements(); ) {
 				RefAddr refAddr = refAddrEnum.nextElement();
 				String propertyName = refAddr.getType();
 				Object propertyValue = refAddr.getContent();
@@ -93,7 +90,7 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 		if (StringUtils.isNotEmpty(queues)) {
 			AmazonSQSMessagingClientWrapper client = ((SQSConnection) connection).getWrappedAmazonSQSClient();
 			String[] queueArr = queues.split(",");
-			for (int i=0; i<queueArr.length; i++) {
+			for (int i = 0; i < queueArr.length; i++) {
 				if (!client.queueExists(queueArr[i])) {
 					log.debug("creating SQS queue [{}", queueArr[i]);
 					client.createQueue(queueArr[i]);

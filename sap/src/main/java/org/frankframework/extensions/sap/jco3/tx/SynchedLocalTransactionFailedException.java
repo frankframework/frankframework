@@ -23,14 +23,15 @@ import org.frankframework.extensions.sap.SapException;
  *
  * @author Gerrit van Brakel
  * @author Jaco de Groot
- * @since  5.0
- * @see    DestinationFactoryUtils
+ * @see DestinationFactoryUtils
+ * @since 5.0
  */
 public class SynchedLocalTransactionFailedException extends RuntimeException {
 
 	/**
 	 * Create a new SynchedLocalTransactionFailedException.
-	 * @param msg the detail message
+	 *
+	 * @param msg   the detail message
 	 * @param cause the root cause
 	 */
 	public SynchedLocalTransactionFailedException(String msg, SapException cause) {

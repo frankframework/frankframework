@@ -18,17 +18,17 @@ package org.frankframework.statistics;
 /**
  * List of statistics items that can be iterated over to show all values.
  *
- * @author  Gerrit van Brakel
- * @since   4.9.9
+ * @author Gerrit van Brakel
+ * @since 4.9.9
  */
 public interface ItemList {
 
-	String ITEM_FORMAT_TIME= "######.###";
-	String ITEM_FORMAT_PERC="##0.0";
+	String ITEM_FORMAT_TIME = "######.###";
+	String ITEM_FORMAT_PERC = "##0.0";
 
-	String PRINT_FORMAT_COUNT="#,##0";
-	String PRINT_FORMAT_TIME="#,##0";
-	String PRINT_FORMAT_PERC="##0.0";
+	String PRINT_FORMAT_COUNT = "#,##0";
+	String PRINT_FORMAT_TIME = "#,##0";
+	String PRINT_FORMAT_PERC = "##0.0";
 
 	public enum Type {
 		INTEGER,
@@ -36,19 +36,22 @@ public interface ItemList {
 		FRACTION
 	}
 
-	final String ITEM_NAME_COUNT="count";
-	final String ITEM_NAME_MIN="min";
-	final String ITEM_NAME_MAX="max";
-	final String ITEM_NAME_AVERAGE="avg";
-	final String ITEM_NAME_STDDEV="stdDev";
-	final String ITEM_NAME_SUM="sum";
-	final String ITEM_NAME_SUMSQ="sumsq";
+	final String ITEM_NAME_COUNT = "count";
+	final String ITEM_NAME_MIN = "min";
+	final String ITEM_NAME_MAX = "max";
+	final String ITEM_NAME_AVERAGE = "avg";
+	final String ITEM_NAME_STDDEV = "stdDev";
+	final String ITEM_NAME_SUM = "sum";
+	final String ITEM_NAME_SUMSQ = "sumsq";
 
-	final String ITEM_VALUE_NAN="-";
+	final String ITEM_VALUE_NAN = "-";
 
 	int getItemCount();
+
 	String getItemName(int index);
+
 	Type getItemType(int index);
+
 	Object getItemValue(int index);
 
 }

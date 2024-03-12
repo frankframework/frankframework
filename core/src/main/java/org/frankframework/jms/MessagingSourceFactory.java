@@ -22,7 +22,6 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IbisException;
 import org.frankframework.util.LogUtil;
 
@@ -34,8 +33,10 @@ import org.frankframework.util.LogUtil;
 public abstract class MessagingSourceFactory {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected abstract Map<String,MessagingSource> getMessagingSourceMap();
+	protected abstract Map<String, MessagingSource> getMessagingSourceMap();
+
 	protected abstract Context createContext() throws NamingException;
+
 	protected abstract ConnectionFactory createConnectionFactory(Context context, String id, boolean createDestination) throws IbisException, NamingException;
 
 	protected MessagingSource createMessagingSource(String id, String authAlias, boolean createDestination) throws IbisException {
@@ -68,7 +69,7 @@ public abstract class MessagingSourceFactory {
 		try {
 			return createConnectionFactory(context, id, createDestination);
 		} catch (Throwable t) {
-			throw new IbisException("could not obtain connectionFactory ["+id+"]", t);
+			throw new IbisException("could not obtain connectionFactory [" + id + "]", t);
 		}
 	}
 }

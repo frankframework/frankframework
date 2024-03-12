@@ -28,28 +28,28 @@ import org.frankframework.util.ClassLoaderUtils;
  * Baseclass for Jndi lookups, using property files on the classpath.
  *
  * @author Gerrit van Brakel
- *
  */
-public class ResourceBasedObjectFactory<O, L> extends ObjectFactoryBase<O,L> {
+public class ResourceBasedObjectFactory<O, L> extends ObjectFactoryBase<O, L> {
 
 	protected L createObject(Properties properties, String jndiName) throws NamingException {
-		return (L)properties;
+		return (L) properties;
 	}
+
 	/**
 	 * Performs the actual lookup
 	 */
 	@Override
 	protected L lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
-		String propertyResource = "/"+jndiName+".properties";
+		String propertyResource = "/" + jndiName + ".properties";
 		URL url = ClassLoaderUtils.getResourceURL(propertyResource);
 		if (url == null) {
-			throw new NamingException("Could not find propertyResource ["+propertyResource+"] to lookup");
+			throw new NamingException("Could not find propertyResource [" + propertyResource + "] to lookup");
 		}
 		Properties properties = new Properties();
 		try (InputStream is = url.openStream()) {
 			properties.load(is);
 		} catch (IOException e) {
-			NamingException ne = new NamingException("Cannot read properties from url ["+url+"] for resource ["+jndiName+"]");
+			NamingException ne = new NamingException("Cannot read properties from url [" + url + "] for resource [" + jndiName + "]");
 			ne.setRootCause(e);
 			throw ne;
 		}

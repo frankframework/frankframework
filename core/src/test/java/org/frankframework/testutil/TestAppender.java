@@ -131,7 +131,7 @@ public class TestAppender extends AbstractAppender {
 
 	public boolean contains(String msg) {
 		for (String log : getLogLines()) {
-			if(log.contains(msg)) {
+			if (log.contains(msg)) {
 				return true;
 			}
 		}

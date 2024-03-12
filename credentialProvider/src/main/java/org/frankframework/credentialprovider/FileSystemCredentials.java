@@ -58,7 +58,7 @@ public class FileSystemCredentials extends Credentials {
 
 	@Override
 	protected void getCredentialsFromAlias() {
-		if (StringUtils.isNotEmpty(getAlias()) && root!=null) {
+		if (StringUtils.isNotEmpty(getAlias()) && root != null) {
 			try {
 				Path aliasPath = Paths.get(root.toString(), getAlias());
 				if (Files.exists(aliasPath)) {
@@ -69,10 +69,10 @@ public class FileSystemCredentials extends Credentials {
 						populateFieldFromFile(aliasPath, this::setPassword);
 					}
 				} else {
-					throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
+					throw new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]: alias not found");
 				}
 			} catch (IOException e) {
-				NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]");
+				NoSuchElementException nsee = new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]");
 				nsee.initCause(e);
 				throw nsee;
 			}

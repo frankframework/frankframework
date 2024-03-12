@@ -24,11 +24,11 @@ public abstract class StructureBuilder {
 
 	public void close() throws SAXException {
 		try {
-			if (field!=null) {
+			if (field != null) {
 				field.close();
 			}
 		} finally {
-			if (parent!=null) {
+			if (parent != null) {
 				parent.close();
 			}
 		}
@@ -36,18 +36,18 @@ public abstract class StructureBuilder {
 
 	@Override
 	public String toString() {
-		return parent!=null ? parent.toString() : super.toString();
+		return parent != null ? parent.toString() : super.toString();
 	}
 
 	public static ObjectBuilder asObjectBuilder(IDocumentBuilder documentBuilder) throws SAXException {
 		ObjectBuilder result = documentBuilder.startObject();
-		result.parent=documentBuilder;
+		result.parent = documentBuilder;
 		return result;
 	}
 
 	public static ArrayBuilder asArrayBuilder(IDocumentBuilder documentBuilder, String elementName) throws SAXException {
 		ArrayBuilder result = documentBuilder.startArray(elementName);
-		result.parent=documentBuilder;
+		result.parent = documentBuilder;
 		return result;
 	}
 

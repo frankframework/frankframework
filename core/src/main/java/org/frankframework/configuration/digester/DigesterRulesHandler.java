@@ -36,7 +36,7 @@ public abstract class DigesterRulesHandler extends DefaultHandler {
 	 */
 	@Override
 	public final void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		if("rule".equals(qName)) {
+		if ("rule".equals(qName)) {
 			DigesterRule rule = new DigesterRule();
 			for (int i = 0; i < attributes.getLength(); ++i) {
 				String method = attributes.getQName(i);
@@ -44,7 +44,7 @@ public abstract class DigesterRulesHandler extends DefaultHandler {
 				try {
 					BeanUtils.setProperty(rule, method, value);
 				} catch (IllegalAccessException | InvocationTargetException e) {
-					log.warn("unable to set method ["+method+"] with value ["+value+"]");
+					log.warn("unable to set method [" + method + "] with value [" + value + "]");
 					e.printStackTrace();
 				}
 			}

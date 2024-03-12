@@ -36,6 +36,7 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -244,10 +245,10 @@ public class JavaListenerTest {
 
 		// Assert
 		assertAll(
-			() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
-			() -> assertEquals("return-value", session.get("copy-this")),
-			() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
-			() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]")
+				() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
+				() -> assertEquals("return-value", session.get("copy-this")),
+				() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
+				() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]")
 		);
 	}
 
@@ -289,10 +290,10 @@ public class JavaListenerTest {
 
 		// Assert
 		assertAll(
-			() -> assertFalse(context.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
-			() -> assertEquals("return-value", context.get("copy-this")),
-			() -> assertTrue(context.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
-			() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]")
+				() -> assertFalse(context.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
+				() -> assertEquals("return-value", context.get("copy-this")),
+				() -> assertTrue(context.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
+				() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]")
 		);
 	}
 
@@ -312,10 +313,10 @@ public class JavaListenerTest {
 
 		// Assert
 		assertAll(
-			() -> assertTrue(context.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy'"),
-			() -> assertEquals("dummy", context.get("key-not-configured-for-copy")),
-			() -> assertEquals("return-value", context.get("copy-this")),
-			() -> assertFalse(context.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]")
+				() -> assertTrue(context.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy'"),
+				() -> assertEquals("dummy", context.get("key-not-configured-for-copy")),
+				() -> assertEquals("return-value", context.get("copy-this")),
+				() -> assertFalse(context.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]")
 		);
 	}
 }

@@ -26,8 +26,8 @@ import org.frankframework.util.LogUtil;
 /**
  * TimeoutGuard interrupts running thread when timeout is exceeded.
  *
- * @author  Gerrit van Brakel
- * @since   4.9.10
+ * @author Gerrit van Brakel
+ * @since 4.9.10
  */
 public class TimeoutGuard {
 	protected Logger log = LogUtil.getLogger(this);
@@ -50,15 +50,17 @@ public class TimeoutGuard {
 		@Override
 		public void run() {
 			log.warn("Thread [{}] executing task [{}] exceeds timeout of [{}] s, interrupting",
-				thread.getName(), description, timeout);
+					thread.getName(), description, timeout
+			);
 			if (log.isDebugEnabled()) {
 				String stackTrace = Arrays.stream(thread.getStackTrace())
 						.map(StackTraceElement::toString)
 						.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
 				log.debug("Execution stack for thread [{}] executing task [{}]:{}",
-						thread.getName(), description, stackTrace);
+						thread.getName(), description, stackTrace
+				);
 			}
-			threadKilled=true;
+			threadKilled = true;
 			thread.interrupt();
 			abort();
 		}
@@ -66,16 +68,18 @@ public class TimeoutGuard {
 
 	/**
 	 * Create a new TimeoutGuard
+	 *
 	 * @param description name of the guard
 	 */
 	public TimeoutGuard(String description) {
 		super();
-		this.description=description;
+		this.description = description;
 	}
 
 	/**
 	 * Create a new TimeoutGuard and activate immediately
-	 * @param timeout in seconds
+	 *
+	 * @param timeout     in seconds
 	 * @param description name of the guard
 	 */
 	public TimeoutGuard(int timeout, String description) {
@@ -85,14 +89,15 @@ public class TimeoutGuard {
 
 	/**
 	 * Sets and activates the timeout
+	 *
 	 * @param timeout in seconds
 	 */
 	public void activateGuard(int timeout) {
 		if (timeout > 0) {
-			this.timeout=timeout;
+			this.timeout = timeout;
 			if (log.isDebugEnabled()) log.debug("setting timeout of [{}s] for task [{}]", timeout, description);
-			timer = new Timer("GuardTask["+description+"]");
-			timer.schedule(new Killer(),timeout*1000L);
+			timer = new Timer("GuardTask[" + description + "]");
+			timer.schedule(new Killer(), timeout * 1000L);
 		}
 	}
 
@@ -102,8 +107,8 @@ public class TimeoutGuard {
 	 * Call this in a finally-block to verify correct execution of the guarded process or if it has been interrupted by the guard.
 	 */
 	public boolean cancel() {
-		if (timer!=null) {
-			if (log.isDebugEnabled()) log.debug("deactivating TimeoutGuard for task ["+description+"]");
+		if (timer != null) {
+			if (log.isDebugEnabled()) log.debug("deactivating TimeoutGuard for task [" + description + "]");
 			timer.cancel();
 		}
 		return Thread.interrupted() || threadKilled;
@@ -119,6 +124,7 @@ public class TimeoutGuard {
 	public String getDescription() {
 		return description;
 	}
+
 	public void setDescription(String string) {
 		description = string;
 	}

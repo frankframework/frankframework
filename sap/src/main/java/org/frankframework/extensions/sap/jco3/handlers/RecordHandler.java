@@ -20,8 +20,8 @@ import com.sap.conn.jco.JCoRecord;
 /**
  * Generic handler to be extended by other handlers.
  *
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class RecordHandler extends Handler {
 

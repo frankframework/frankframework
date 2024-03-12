@@ -30,7 +30,7 @@ import org.frankframework.filesystem.MailFileSystemBase;
  *
  * @author Gerrit van Brakel
  */
-public class ExchangeFolderSender extends FileSystemSender<ExchangeMessageReference,ExchangeFileSystem> {
+public class ExchangeFolderSender extends FileSystemSender<ExchangeMessageReference, ExchangeFileSystem> {
 
 	public ExchangeFolderSender() {
 		setFileSystem(new ExchangeFileSystem());
@@ -134,30 +134,37 @@ public class ExchangeFolderSender extends FileSystemSender<ExchangeMessageRefere
 	public void setKeystore(String keystore) {
 		getFileSystem().setKeystore(keystore);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreType(KeystoreType keystoreType) {
 		getFileSystem().setKeystoreType(keystoreType);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		getFileSystem().setKeystoreAuthAlias(keystoreAuthAlias);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystorePassword(String keystorePassword) {
 		getFileSystem().setKeystorePassword(keystorePassword);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		getFileSystem().setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreAlias(String keystoreAlias) {
 		getFileSystem().setKeystoreAlias(keystoreAlias);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		getFileSystem().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
+
 	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		getFileSystem().setKeystoreAliasPassword(keystoreAliasPassword);
@@ -167,30 +174,37 @@ public class ExchangeFolderSender extends FileSystemSender<ExchangeMessageRefere
 	public void setTruststore(String truststore) {
 		getFileSystem().setTruststore(truststore);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setTruststoreType(KeystoreType truststoreType) {
 		getFileSystem().setTruststoreType(truststoreType);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		getFileSystem().setTruststoreAuthAlias(truststoreAuthAlias);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setTruststorePassword(String truststorePassword) {
 		getFileSystem().setTruststorePassword(truststorePassword);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		getFileSystem().setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setVerifyHostname(boolean verifyHostname) {
 		getFileSystem().setVerifyHostname(verifyHostname);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		getFileSystem().setAllowSelfSignedCertificates(allowSelfSignedCertificates);
 	}
+
 	@ReferTo(HasTruststore.class)
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		getFileSystem().setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);

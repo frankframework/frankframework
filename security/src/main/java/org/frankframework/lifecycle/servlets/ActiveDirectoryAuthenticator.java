@@ -22,15 +22,14 @@ import java.util.Map;
 
 import javax.naming.Context;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.util.ClassUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.web.SecurityFilterChain;
-
-import lombok.Setter;
-import org.frankframework.util.ClassUtils;
 
 public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
 
@@ -52,13 +51,13 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
 	private void configure() throws FileNotFoundException {
 		setDefaultValues();
 
-		if(StringUtils.isEmpty(url)) {
+		if (StringUtils.isEmpty(url)) {
 			throw new IllegalArgumentException("url may not be empty");
 		}
 
 		roleMappingURL = ClassUtils.getResourceURL(roleMappingFile);
-		if(roleMappingURL == null) {
-			throw new FileNotFoundException("unable to find LDAP role-mapping file ["+roleMappingFile+"]");
+		if (roleMappingURL == null) {
+			throw new FileNotFoundException("unable to find LDAP role-mapping file [" + roleMappingFile + "]");
 		}
 		log.info("found rolemapping file [{}]", roleMappingURL);
 	}
@@ -67,11 +66,11 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
 	private void setDefaultValues() {
 		Environment env = getApplicationContext().getEnvironment();
 		String legacyURL = env.getProperty("ldap.auth.url");
-		if(StringUtils.isEmpty(url) && StringUtils.isNotBlank(legacyURL)) {
+		if (StringUtils.isEmpty(url) && StringUtils.isNotBlank(legacyURL)) {
 			this.url = legacyURL;
 		}
 		String legacyBaseDn = env.getProperty("ldap.auth.user.base");
-		if(StringUtils.isEmpty(baseDn) && StringUtils.isNotBlank(legacyBaseDn)) {
+		if (StringUtils.isEmpty(baseDn) && StringUtils.isNotBlank(legacyBaseDn)) {
 			this.baseDn = legacyBaseDn;
 		}
 	}
@@ -83,9 +82,9 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
 		ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(domainName, url, baseDn);
 		provider.setConvertSubErrorCodesToExceptions(log.isDebugEnabled());
 
-		if(StringUtils.isNotEmpty(searchFilter)) provider.setSearchFilter(searchFilter);
+		if (StringUtils.isNotEmpty(searchFilter)) provider.setSearchFilter(searchFilter);
 		Map<String, Object> environment = new HashMap<>();
-		if(followReferrals) environment.put(Context.REFERRAL, "follow");
+		if (followReferrals) environment.put(Context.REFERRAL, "follow");
 		provider.setContextEnvironmentProperties(environment);
 
 		LdapUserDetailsMapper roleMapper = new LdapUserDetailsMapper();

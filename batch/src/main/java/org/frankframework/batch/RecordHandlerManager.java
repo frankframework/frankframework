@@ -19,9 +19,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Getter;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.LogUtil;
@@ -30,8 +29,7 @@ import org.frankframework.util.LogUtil;
  * Basic implementation of RecordHandlerManager, that allows only for a single flow.
  * The manager decides which handlers to be used for a specific record.
  *
- *
- * @author  John Dekker
+ * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
@@ -49,7 +47,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 
 	@Override
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
-		for(String flowName: flowMap.keySet()) {
+		for (String flowName : flowMap.keySet()) {
 			RecordHandlingFlow flow = getFlowByName(flowName);
 			flow.configure(this, registeredManagers, registeredRecordHandlers, registeredResultHandlers, defaultHandler);
 		}
@@ -72,7 +70,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		return flowMap.values();
 	}
 
-	protected Map<String,RecordHandlingFlow> getFlowMap() {
+	protected Map<String, RecordHandlingFlow> getFlowMap() {
 		return flowMap;
 	}
 
@@ -88,9 +86,9 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	 * @return RecordHandlingFlow element to be used for handling records of type recordkey
 	 */
 	public RecordHandlingFlow getRecordHandlerByKey(String recordKey) throws Exception {
-		RecordHandlingFlow rhf =flowMap.get(recordKey);
+		RecordHandlingFlow rhf = flowMap.get(recordKey);
 		if (rhf == null) {
-			rhf =flowMap.get("*");
+			rhf = flowMap.get("*");
 			if (rhf == null) {
 				throw new Exception("No handlers (flow) found for recordKey [" + recordKey + "]");
 			}

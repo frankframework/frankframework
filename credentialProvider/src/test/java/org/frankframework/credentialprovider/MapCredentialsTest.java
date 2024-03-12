@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 public class MapCredentialsTest {
 
-	private Map<String,String> aliases;
+	private Map<String, String> aliases;
 
 	@BeforeEach
 	public void setup() {
@@ -32,7 +32,7 @@ public class MapCredentialsTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, null);
+		MapCredentials mc = new MapCredentials(alias, () -> username, () -> password, null);
 
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
@@ -45,7 +45,7 @@ public class MapCredentialsTest {
 		String password = null;
 
 		assertThrows(NoSuchElementException.class, () -> {
-			MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, null);
+			MapCredentials mc = new MapCredentials(alias, () -> username, () -> password, null);
 			assertEquals(username, mc.getUsername());
 			assertEquals(password, mc.getPassword());
 		});
@@ -57,7 +57,7 @@ public class MapCredentialsTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, aliases);
+		MapCredentials mc = new MapCredentials(alias, () -> username, () -> password, aliases);
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
 	}
@@ -68,7 +68,7 @@ public class MapCredentialsTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, aliases);
+		MapCredentials mc = new MapCredentials(alias, () -> username, () -> password, aliases);
 		assertEquals("username from alias", mc.getUsername());
 		assertEquals("password/with/slash", mc.getPassword());
 	}
@@ -81,7 +81,7 @@ public class MapCredentialsTest {
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 
-		MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, aliases);
+		MapCredentials mc = new MapCredentials(alias, () -> username, () -> password, aliases);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -95,7 +95,7 @@ public class MapCredentialsTest {
 		String expectedUsername = username;
 		String expectedPassword = "password from alias";
 
-		MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, aliases);
+		MapCredentials mc = new MapCredentials(alias, () -> username, () -> password, aliases);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -109,7 +109,7 @@ public class MapCredentialsTest {
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
-		MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, aliases);
+		MapCredentials mc = new MapCredentials(alias, () -> username, () -> password, aliases);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());

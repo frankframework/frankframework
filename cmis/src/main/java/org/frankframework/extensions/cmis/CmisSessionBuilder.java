@@ -29,7 +29,6 @@ import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.util.ClassLoaderUtils;
@@ -90,6 +89,7 @@ public class CmisSessionBuilder {
 
 	public CmisSessionBuilder() {
 	}
+
 	public static CmisSessionBuilder create() {
 		return new CmisSessionBuilder();
 	}
@@ -97,6 +97,7 @@ public class CmisSessionBuilder {
 	public CmisSessionBuilder(IScopeProvider scopeProvider) {
 		this.scopeProvider = scopeProvider;
 	}
+
 	public static CmisSessionBuilder create(IScopeProvider scopeProvider) {
 		return new CmisSessionBuilder(scopeProvider);
 	}
@@ -126,7 +127,7 @@ public class CmisSessionBuilder {
 		if (getBindingType() == null) {
 			throw new CmisSessionException("no bindingType configured");
 		}
-		if(overrideEntryPointWSDL != null && getBindingType() != BindingTypes.WEBSERVICES) {
+		if (overrideEntryPointWSDL != null && getBindingType() != BindingTypes.WEBSERVICES) {
 			throw new CmisSessionException("illegal value for bindingtype [" + getBindingType() + "], overrideEntryPointWSDL only supports webservices");
 		}
 
@@ -134,7 +135,7 @@ public class CmisSessionBuilder {
 
 		SessionParameterMap parameterMap = new SessionParameterMap();
 
-		if(StringUtils.isNotEmpty(userName))
+		if (StringUtils.isNotEmpty(userName))
 			parameterMap.setUserAndPassword(userName, password);
 
 		if (getBindingType() == BindingTypes.ATOMPUB) {
@@ -165,21 +166,20 @@ public class CmisSessionBuilder {
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,
 			// we can manually override this wsdl by reading it from the classpath.
 			//TODO: Does this work with any binding type?
-			if(overrideEntryPointWSDL != null) {
+			if (overrideEntryPointWSDL != null) {
 				URL url = ClassLoaderUtils.getResourceURL(scopeProvider, overrideEntryPointWSDL);
-				if(url != null) {
+				if (url != null) {
 					try {
 						parameterMap.put(OVERRIDE_WSDL_KEY, StreamUtil.streamToString(url.openStream()));
 
 						//We need to setup a fake URL in order to initialize the CMIS Session
 						parameterMap.setWebServicesBindingUrl(OVERRIDE_WSDL_URL);
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 						//eg. if the named charset is not supported
-						throw new CmisSessionException("error reading overrideEntryPointWSDL["+overrideEntryPointWSDL+"]");
+						throw new CmisSessionException("error reading overrideEntryPointWSDL[" + overrideEntryPointWSDL + "]");
 					}
 				} else {
-					throw new CmisSessionException("cannot find overrideEntryPointWSDL["+overrideEntryPointWSDL+"]");
+					throw new CmisSessionException("cannot find overrideEntryPointWSDL[" + overrideEntryPointWSDL + "]");
 				}
 			} else {
 				parameterMap.setWebServicesBindingUrl(url);
@@ -201,12 +201,12 @@ public class CmisSessionBuilder {
 		parameterMap.setRepositoryId(repository);
 
 		//SSL
-		if (keystore!=null || truststore!=null || allowSelfSignedCertificates) {
+		if (keystore != null || truststore != null || allowSelfSignedCertificates) {
 			CredentialFactory keystoreCf = new CredentialFactory(keystoreAuthAlias, null, keystorePassword);
 			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword)
-							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword)
-							: keystoreCf;
-			CredentialFactory truststoreCf = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
+					? new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword)
+					: keystoreCf;
+			CredentialFactory truststoreCf = new CredentialFactory(truststoreAuthAlias, null, truststorePassword);
 
 			parameterMap.put("keystoreUrl", keystore);
 			parameterMap.put("keystorePassword", keystoreCf.getPassword());
@@ -234,10 +234,10 @@ public class CmisSessionBuilder {
 			parameterMap.put("proxyPassword", pcf.getPassword());
 		}
 
-		if(maxConnections > 0)
+		if (maxConnections > 0)
 			parameterMap.put("maxConnections", maxConnections);
 
-		if(timeout > 0)
+		if (timeout > 0)
 			parameterMap.put(SessionParameter.CONNECT_TIMEOUT, timeout);
 
 		// Custom CMIS HttpSender to support ssl connections and proxies
@@ -260,7 +260,7 @@ public class CmisSessionBuilder {
 
 		CloseableCmisSession session = new CloseableCmisSession(parameterMap, null, null, null, null);
 		session.connect();
-		log.debug("connected with repository [{}]", ()->getRepositoryInfo(session));
+		log.debug("connected with repository [{}]", () -> getRepositoryInfo(session));
 
 		return session;
 	}
@@ -277,7 +277,7 @@ public class CmisSessionBuilder {
 
 	public CmisSessionBuilder setOverrideEntryPointWSDL(String overrideEntryPointWSDL) {
 		// never return an empty string, always null!
-		if(!overrideEntryPointWSDL.isEmpty())
+		if (!overrideEntryPointWSDL.isEmpty())
 			this.overrideEntryPointWSDL = overrideEntryPointWSDL;
 
 		return this;
@@ -312,10 +312,12 @@ public class CmisSessionBuilder {
 		keystoreAlias = string;
 		return this;
 	}
+
 	public CmisSessionBuilder setKeystoreAliasAuthAlias(String string) {
 		keystoreAliasAuthAlias = string;
 		return this;
 	}
+
 	public CmisSessionBuilder setKeystoreAliasPassword(String string) {
 		keystoreAliasPassword = string;
 		return this;
@@ -387,7 +389,7 @@ public class CmisSessionBuilder {
 	}
 
 	public CmisSessionBuilder setUrl(String url) {
-		if(StringUtils.isEmpty(url))
+		if (StringUtils.isEmpty(url))
 			throw new IllegalArgumentException("url must be set");
 
 		this.url = url;
@@ -395,7 +397,7 @@ public class CmisSessionBuilder {
 	}
 
 	public CmisSessionBuilder setRepository(String repository) {
-		if(StringUtils.isEmpty(repository))
+		if (StringUtils.isEmpty(repository))
 			throw new IllegalArgumentException("repository must be set");
 
 		this.repository = repository;
@@ -433,8 +435,8 @@ public class CmisSessionBuilder {
 	 * the maximum number of concurrent connections, 0 uses default
 	 */
 	public CmisSessionBuilder setMaxConnections(int i) {
-		if(i < 0)
-			throw new IllegalArgumentException("illegal value ["+i+"] for maxConnections, must be 0 or larger");
+		if (i < 0)
+			throw new IllegalArgumentException("illegal value [" + i + "] for maxConnections, must be 0 or larger");
 
 		maxConnections = i;
 		return this;
@@ -444,8 +446,8 @@ public class CmisSessionBuilder {
 	 * the maximum number of concurrent connections, 0 uses default
 	 */
 	public CmisSessionBuilder setTimeout(int i) {
-		if(i < 1)
-			throw new IllegalArgumentException("illegal value ["+i+"] for timeout, must be 1 or larger");
+		if (i < 1)
+			throw new IllegalArgumentException("illegal value [" + i + "] for timeout, must be 1 or larger");
 
 		timeout = i;
 		return this;
@@ -464,48 +466,63 @@ public class CmisSessionBuilder {
 	public String getKeystore() {
 		return keystore;
 	}
+
 	public KeystoreType getKeystoreType() {
 		return keystoreType;
 	}
+
 	public String getKeystoreAuthAlias() {
 		return keystoreAuthAlias;
 	}
+
 	public String getKeystorePassword() {
 		return keystorePassword;
 	}
+
 	public String getKeystoreAlias() {
 		return keystoreAlias;
 	}
+
 	public String getKeystoreAliasAuthAlias() {
 		return keystoreAliasAuthAlias;
 	}
+
 	public String getKeystoreAliasPassword() {
 		return keystoreAliasPassword;
 	}
+
 	public String getKeyManagerAlgorithm() {
 		return keyManagerAlgorithm;
 	}
+
 	public String getTruststore() {
 		return truststore;
 	}
+
 	public KeystoreType getTruststoreType() {
 		return truststoreType;
 	}
+
 	public String getTruststoreAuthAlias() {
 		return truststoreAuthAlias;
 	}
+
 	public String getTruststorePassword() {
 		return truststorePassword;
 	}
+
 	public String getTrustManagerAlgorithm() {
 		return trustManagerAlgorithm;
 	}
+
 	public boolean isVerifyHostname() {
 		return verifyHostname;
 	}
+
 	public boolean isAllowSelfSignedCertificates() {
 		return allowSelfSignedCertificates;
 	}
+
 	public boolean isIgnoreCertificateExpiredException() {
 		return ignoreCertificateExpiredException;
 	}

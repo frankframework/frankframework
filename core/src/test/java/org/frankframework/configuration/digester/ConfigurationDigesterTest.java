@@ -21,7 +21,9 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -52,7 +54,7 @@ public class ConfigurationDigesterTest {
 	public void testNewConfigurationPreParser() throws Exception {
 		// Arrange
 		ConfigurationDigester digester = new ConfigurationDigester();
-		digester.setConfigurationWarnings( new ConfigurationWarnings() );
+		digester.setConfigurationWarnings(new ConfigurationWarnings());
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
 		properties.setProperty("HelloWorld.active", "false");
@@ -78,7 +80,7 @@ public class ConfigurationDigesterTest {
 	public void testStubbing4TestTool() throws Exception {
 		// Arrange
 		ConfigurationDigester digester = new ConfigurationDigester();
-		digester.setConfigurationWarnings( new ConfigurationWarnings() );
+		digester.setConfigurationWarnings(new ConfigurationWarnings());
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
 		properties.setProperty("HelloWorld.active", "false");
@@ -101,7 +103,7 @@ public class ConfigurationDigesterTest {
 	public void testLegacyClassNameRewriter() throws Exception {
 		// Arrange
 		ConfigurationDigester digester = new ConfigurationDigester();
-		digester.setConfigurationWarnings( new ConfigurationWarnings() );
+		digester.setConfigurationWarnings(new ConfigurationWarnings());
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration2.xml");
 		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
 		properties.setProperty("HelloWorld.active", "true");
@@ -188,8 +190,8 @@ public class ConfigurationDigesterTest {
 		XmlWriter xmlWriter = new XmlWriter(target) {
 
 			@Override
-			public void startElement(String uri, String localName, String qName, Attributes attributes)throws SAXException {
-				if(attributes != null && attributes.getValue("className") != null) {
+			public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+				if (attributes != null && attributes.getValue("className") != null) {
 					assertFalse(attributes.getValue("className").contains("EsbJmsListener"));
 				}
 				super.startElement(uri, localName, qName, attributes);
@@ -197,7 +199,7 @@ public class ConfigurationDigesterTest {
 
 			@Override
 			public void comment(char[] ch, int start, int length) throws SAXException {
-				if(!new String(ch).startsWith("<receiver name='receiver' transactionAttribute='Required' transactionTimeout=")) {
+				if (!new String(ch).startsWith("<receiver name='receiver' transactionAttribute='Required' transactionTimeout=")) {
 					fail("Digester should have commented out the receiver that has EsbJmsListener");
 				}
 				super.comment(ch, start, length);
@@ -224,15 +226,17 @@ public class ConfigurationDigesterTest {
 	private static class XmlErrorHandler implements ErrorHandler {
 		@Override
 		public void warning(SAXParseException exception) {
-			System.err.println("Warning at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			System.err.println("Warning at line,column [" + exception.getLineNumber() + "," + exception.getColumnNumber() + "]: " + exception.getMessage());
 		}
+
 		@Override
 		public void error(SAXParseException exception) {
-			System.err.println("Error at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			System.err.println("Error at line,column [" + exception.getLineNumber() + "," + exception.getColumnNumber() + "]: " + exception.getMessage());
 		}
+
 		@Override
 		public void fatalError(SAXParseException exception) {
-			System.err.println("FatalError at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			System.err.println("FatalError at line,column [" + exception.getLineNumber() + "," + exception.getColumnNumber() + "]: " + exception.getMessage());
 		}
 	}
 }

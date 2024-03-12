@@ -3,7 +3,7 @@ package org.frankframework.filesystem.mock;
 import org.frankframework.filesystem.FileSystemWithAttachmentsTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 
-public class MockFileSystemWithAttachmentsTest extends FileSystemWithAttachmentsTest <MockFileWithAttachments, MockAttachment, MockFileSystemWithAttachments>{
+public class MockFileSystemWithAttachmentsTest extends FileSystemWithAttachmentsTest<MockFileWithAttachments, MockAttachment, MockFileSystemWithAttachments> {
 
 
 	@Override
@@ -13,7 +13,7 @@ public class MockFileSystemWithAttachmentsTest extends FileSystemWithAttachments
 
 	@Override
 	protected MockFileSystemWithAttachments createFileSystem() {
-		return ((MockFileSystemWithAttachmentsTestHelper)helper).getFileSystem();
+		return ((MockFileSystemWithAttachmentsTestHelper) helper).getFileSystem();
 	}
 
 }

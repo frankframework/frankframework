@@ -68,6 +68,7 @@ public class SchedulerHelper {
 
 	/**
 	 * Schedule a new job
+	 *
 	 * @param jobDetail
 	 * @param cronExpression null or cron expression in quartz format
 	 */
@@ -77,8 +78,9 @@ public class SchedulerHelper {
 
 	/**
 	 * Schedule a new job
+	 *
 	 * @param jobDetail
-	 * @param interval 0 or interval when to trigger
+	 * @param interval  0 or interval when to trigger
 	 */
 	public void scheduleJob(JobDetail jobDetail, long interval) throws SchedulerException {
 		scheduleJob(jobDetail, null, interval, false);
@@ -86,10 +88,11 @@ public class SchedulerHelper {
 
 	/**
 	 * Schedule a new job
+	 *
 	 * @param jobDetail
 	 * @param cronExpression null or cron expression in quartz format
-	 * @param interval 0 (trigger once) or interval (in ms) when to trigger
-	 * @param overwrite overwrite existing {@link ServiceJob job}
+	 * @param interval       0 (trigger once) or interval (in ms) when to trigger
+	 * @param overwrite      overwrite existing {@link ServiceJob job}
 	 */
 	public void scheduleJob(JobDetail jobDetail, String cronExpression, long interval, boolean overwrite) throws SchedulerException {
 
@@ -106,7 +109,7 @@ public class SchedulerHelper {
 			scheduler.scheduleJob(jobDetail, createCronTrigger(triggerKey, cronExpression));
 		} else if (interval > -1) {
 			SimpleScheduleBuilder schedule = simpleSchedule();
-			if(interval == 0) {
+			if (interval == 0) {
 				// Keep trigger active to keep it available in GUI
 				schedule.withIntervalInHours(876000);
 				schedule.withRepeatCount(1);
@@ -137,7 +140,7 @@ public class SchedulerHelper {
 	public boolean contains(String name, String group) throws SchedulerException {
 		JobKey key = null;
 
-		if(StringUtils.isEmpty(group))
+		if (StringUtils.isEmpty(group))
 			key = JobKey.jobKey(name, DEFAULT_GROUP);
 		else
 			key = JobKey.jobKey(name, group);
@@ -151,7 +154,7 @@ public class SchedulerHelper {
 
 	public Trigger getTrigger(String name, String group) throws SchedulerException {
 		TriggerKey key = null;
-		if(StringUtils.isEmpty(group))
+		if (StringUtils.isEmpty(group))
 			key = TriggerKey.triggerKey(name, DEFAULT_GROUP);
 		else
 			key = TriggerKey.triggerKey(name, group);
@@ -177,7 +180,7 @@ public class SchedulerHelper {
 
 	public void deleteTrigger(String name, String group) throws SchedulerException {
 		TriggerKey key = null;
-		if(StringUtils.isEmpty(group))
+		if (StringUtils.isEmpty(group))
 			key = TriggerKey.triggerKey(name, DEFAULT_GROUP);
 		else
 			key = TriggerKey.triggerKey(name, group);

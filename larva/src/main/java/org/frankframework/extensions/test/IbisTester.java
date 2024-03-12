@@ -35,9 +35,9 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.Adapter;
+import org.frankframework.larva.LarvaTool;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.Message;
-import org.frankframework.larva.LarvaTool;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
@@ -105,7 +105,7 @@ public class IbisTester {
 		initTest();
 		try {
 			String result = testStartAdapters();
-			if (result==null) {
+			if (result == null) {
 				result = testLarva();
 			}
 			return result;
@@ -175,21 +175,21 @@ public class IbisTester {
 		long configLoadStartTime = System.currentTimeMillis();
 		ibisContext.init(false);
 		long configLoadEndTime = System.currentTimeMillis();
-		debug("***configuration loaded in ["+ (configLoadEndTime - configLoadStartTime) + "] msec***");
+		debug("***configuration loaded in [" + (configLoadEndTime - configLoadStartTime) + "] msec***");
 
 		List<Configuration> configurations = ibisContext.getIbisManager().getConfigurations();
-		for(Configuration configuration : configurations) {
-			if(configuration.getConfigurationException() != null) {
-				error("error loading configuration ["+configuration.getName()+"]: "+ configuration.getConfigurationException().getMessage());
+		for (Configuration configuration : configurations) {
+			if (configuration.getConfigurationException() != null) {
+				error("error loading configuration [" + configuration.getName() + "]: " + configuration.getConfigurationException().getMessage());
 			} else {
-				debug("loading configuration ["+configuration.getName()+"] with ["+configuration.getRegisteredAdapters().size()+"] adapters");
+				debug("loading configuration [" + configuration.getName() + "] with [" + configuration.getRegisteredAdapters().size() + "] adapters");
 			}
 		}
 
 		debug("***starting adapters***");
 		int adaptersStarted = 0;
 		int adaptersCount = 0;
-		for (Adapter adapter: ibisContext.getIbisManager().getRegisteredAdapters()) {
+		for (Adapter adapter : ibisContext.getIbisManager().getRegisteredAdapters()) {
 			adaptersCount++;
 			RunState runState = adapter.getRunState();
 			if ((RunState.STARTED) != runState) {
@@ -250,7 +250,7 @@ public class IbisTester {
 			Collection<String> scenariosRootDirsUnselected = evaluateXPath(result.resultString, "(html/body//select[@name='scenariosrootdirectory'])[1]/option[not(@selected)]/@value");
 
 			String runScenariosResult = runScenarios(result.resultString);
-			if (runScenariosResult!=null) {
+			if (runScenariosResult != null) {
 				return runScenariosResult;
 			}
 			if (scenariosRootDirsUnselected != null
@@ -258,7 +258,8 @@ public class IbisTester {
 				for (String scenariosRootDirUnselected : scenariosRootDirsUnselected) {
 					try {
 						result = runScenario(scenariosRootDirUnselected, null,
-								null);
+								null
+						);
 					} catch (Exception e) {
 						e.printStackTrace();
 						result = null;
@@ -269,7 +270,7 @@ public class IbisTester {
 					}
 
 					runScenariosResult = runScenarios(result.resultString);
-					if (runScenariosResult!=null) {
+					if (runScenariosResult != null) {
 						return runScenariosResult;
 					}
 				}
@@ -281,15 +282,19 @@ public class IbisTester {
 	private String runScenarios(String xhtml) {
 		Collection<String> scenarios = evaluateXPath(
 				xhtml,
-				"(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]");
+				"(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]"
+		);
 		if (scenarios == null || scenarios.size() == 0) {
 			return error("No scenarios found");
 		} else {
 			String scenariosRootDir = evaluateXPathFirst(
 					xhtml,
-					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[@selected]/@value");
-			String scenariosRoot = evaluateXPathFirst(xhtml,
-					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[@selected]");
+					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[@selected]/@value"
+			);
+			String scenariosRoot = evaluateXPathFirst(
+					xhtml,
+					"(html/body//select[@name='scenariosrootdirectory'])[1]/option[@selected]"
+			);
 			debug("Found " + scenarios.size() + " scenario(s) in root ["
 					+ scenariosRoot + "]");
 			int scenariosTotal = scenarios.size();
@@ -316,7 +321,8 @@ public class IbisTester {
 
 				try {
 					result = runScenario(scenariosRootDir, scenario,
-							scenarioInfo);
+							scenarioInfo
+					);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -327,7 +333,7 @@ public class IbisTester {
 					error(scenarioInfo + " failed");
 				} else {
 					if (result.resultString != null
-						&& result.resultString.contains("passed")
+							&& result.resultString.contains("passed")
 					) {
 						debug(scenarioInfo + " passed in [" + result.duration + "] msec");
 						scenariosPassed++;
@@ -349,7 +355,7 @@ public class IbisTester {
 	}
 
 	private Result runScenario(String scenariosRootDir, String scenario,
-			String scenarioInfo) {
+							   String scenarioInfo) {
 		int count = 2;
 		String resultString = null;
 		long startTime = 0;

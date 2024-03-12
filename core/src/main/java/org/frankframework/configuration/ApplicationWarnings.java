@@ -40,7 +40,7 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 	}
 
 	private ApplicationWarnings(boolean springInstantiated) {
-		LOG.debug("ApplicationWarnings instantiated "+(springInstantiated?"through Spring":"manually"));
+		LOG.debug("ApplicationWarnings instantiated " + (springInstantiated ? "through Spring" : "manually"));
 	}
 
 	/**
@@ -58,9 +58,8 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 	}
 
 
-
 	private static synchronized ApplicationWarnings getInstance() {
-		if(instance == null) {
+		if (instance == null) {
 			instance = new ApplicationWarnings(false);
 		}
 		return instance;
@@ -71,11 +70,11 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 	}
 
 	private static synchronized void overrideInstance(ApplicationWarnings springInstance) {
-		if(instance != null) {
+		if (instance != null) {
 			List<String> warnings = instance.getWarnings();
 			springInstance.addWarnings(warnings);
-			if(!warnings.isEmpty()) {
-				LOG.debug("appending ["+warnings.size()+"] warning(s)");
+			if (!warnings.isEmpty()) {
+				LOG.debug("appending [" + warnings.size() + "] warning(s)");
 			}
 		}
 		instance = springInstance;
@@ -83,7 +82,7 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 
 	@Override
 	public void afterPropertiesSet() {
-		if(getApplicationContext() == null) {
+		if (getApplicationContext() == null) {
 			throw new IllegalArgumentException("ApplicationContext may not be NULL");
 		}
 

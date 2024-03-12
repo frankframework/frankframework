@@ -67,7 +67,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	 * Hierarchy of log directories to search for. Strings will be split by "/".
 	 * Before "/" split will be assumed to be a property, and after split will be a sub-directory.
 	 */
-	private static final String[] logDirectoryHierarchy = new String[] {
+	private static final String[] logDirectoryHierarchy = new String[]{
 			"site.logdir",
 			"user.dir/logs",
 			"user.dir/log",
@@ -78,7 +78,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 	@Override
 	protected String[] getSupportedTypes() {
-		return new String[] {".xml"};
+		return new String[]{".xml"};
 	}
 
 	@Override
@@ -99,7 +99,9 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 				@Override // Add hashcode to toString() so we can differentiate the XmlConfigurations in the startup log
 				public String toString() {
-					return this.getClass().getSuperclass().getCanonicalName() + "@" + Integer.toHexString(this.hashCode()) + "[location=" + getConfigurationSource() + "]";
+					return this.getClass()
+							.getSuperclass()
+							.getCanonicalName() + "@" + Integer.toHexString(this.hashCode()) + "[location=" + getConfigurationSource() + "]";
 				}
 			};
 		} catch (IOException e) {
@@ -116,7 +118,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 			String key = m.group(1);
 			String value = resolveValueRecursively(properties, key);
 
-			if(value != null) {
+			if (value != null) {
 				substitutions.put(key, value);
 			}
 		}
@@ -133,15 +135,15 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	@Nullable
 	private static String resolveValueRecursively(Properties properties, String key) {
 		String value = properties.getProperty(key);
-		if(StringUtils.isEmpty(value)) {
+		if (StringUtils.isEmpty(value)) {
 			return null;
 		}
 
-		if(StringResolver.needsResolution(value)) {
+		if (StringResolver.needsResolution(value)) {
 			value = StringResolver.substVars(value, properties);
 		}
 
-		if("log.dir".equals(key)) {
+		if ("log.dir".equals(key)) {
 			value = fixLogDirectorySlashes(value);
 		}
 
@@ -151,7 +153,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	@Nonnull
 	private Properties getProperties() throws IOException {
 		Properties log4jProperties = getProperties(LOG4J_PROPS_FILE);
-		if(log4jProperties == null) {
+		if (log4jProperties == null) {
 			log4jProperties = new Properties();
 			System.out.println(LOG_PREFIX + "did not find " + LOG4J_PROPS_FILE + ", leaving it up to log4j's default initialization procedure");
 		}
@@ -170,9 +172,9 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 	private @Nullable Properties getProperties(String filename) throws IOException {
 		URL url = this.getClass().getClassLoader().getResource(filename);
-		if(url != null) {
+		if (url != null) {
 			Properties properties = new Properties();
-			try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+			try (InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 				properties.load(reader);
 			}
 			return properties;
@@ -196,12 +198,12 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		try (Reader reader = new InputStreamReader(new BufferedInputStream(stream))) {
 			int n;
 			boolean checkVersionOnlyFirst1024Characters = true;
-			while ((n = reader.read(buff))!=-1) {
+			while ((n = reader.read(buff)) != -1) {
 				stringWriter.write(buff, 0, n);
 
-				if(checkVersionOnlyFirst1024Characters) {
+				if (checkVersionOnlyFirst1024Characters) {
 					//See if log4j2 prefix is somewhere in the first 1024 characters
-					if(!stringWriter.toString().contains("<log4j2:Configuration")) {
+					if (!stringWriter.toString().contains("<log4j2:Configuration")) {
 						System.err.println(LOG_PREFIX + "did not recognize configuration format, unable to configure Log4j2. Please use the log4j2 layout in file log4j4ibis.xml");
 						throw new IllegalStateException("Did not recognize configuration format, unable to configure Log4j2. Please use the log4j2 layout in file log4j4ibis.xml");
 					}
@@ -209,8 +211,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 				}
 			}
 			return stringWriter.toString();
-		}
-		finally {
+		} finally {
 			stringWriter.close();
 			stream.close();
 		}
@@ -237,7 +238,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	 * double backslashes into one backslash and after that the same
 	 * is done by Log4j:
 	 * https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
-	 * */
+	 */
 	private static String fixLogDirectorySlashes(String directory) {
 		return directory.replace("\\", "/");
 	}
@@ -254,7 +255,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 			// To make sure the IBIS can start up if no log.level property has been found, it has to be explicitly set
 			String stage = System.getProperty("dtap.stage");
 			String logLevel = "DEBUG";
-			if("ACC".equalsIgnoreCase(stage) || "PRD".equalsIgnoreCase(stage)) {
+			if ("ACC".equalsIgnoreCase(stage) || "PRD".equalsIgnoreCase(stage)) {
 				logLevel = "WARN";
 			}
 			System.setProperty("log.level", logLevel);
@@ -264,26 +265,27 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	/**
 	 * Finds the first directory in the given hierarchy.
 	 * logDirectoryHierarchy is an array of Strings.
-	 *                  Strings will be split by "/" and before split will be assumed to be property,
-	 *                  and after split will be the subdirectory.
+	 * Strings will be split by "/" and before split will be assumed to be property,
+	 * and after split will be the subdirectory.
+	 *
 	 * @return File object that is a directory. Or null, if no directories were found.
 	 */
 	private static File findLogDir() {
-		for(String option : logDirectoryHierarchy) {
+		for (String option : logDirectoryHierarchy) {
 			int splitIndex = option.indexOf('/');
 
 			String property = System.getProperty(option.substring(0, (splitIndex == -1) ? option.length() : splitIndex));
-			if(property == null)
+			if (property == null)
 				continue;
 
 			File dir;
-			if(splitIndex == -1) {
+			if (splitIndex == -1) {
 				dir = new File(property);
 			} else {
 				dir = new File(property, option.substring(splitIndex));
 			}
 
-			if(dir.isDirectory())
+			if (dir.isDirectory())
 				return dir;
 		}
 		return null;

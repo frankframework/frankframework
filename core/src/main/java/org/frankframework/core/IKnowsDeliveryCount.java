@@ -21,8 +21,8 @@ import org.frankframework.receivers.RawMessageWrapper;
  * Interface to be implemented by Listeners that can find out the delivery count
  * of the messages they receive.
  *
- * @author  Gerrit van Brakel
- * @since	4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public interface IKnowsDeliveryCount<M> {
 

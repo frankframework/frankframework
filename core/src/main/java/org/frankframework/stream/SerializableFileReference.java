@@ -100,7 +100,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * The temporary file will be deleted on calling {@link SerializableFileReference#close()}.
 	 * </p>
 	 *
-	 * @param in The {@link Reader} from which to create the {@link SerializableFileReference}. Will be closed after completion of this method.
+	 * @param in      The {@link Reader} from which to create the {@link SerializableFileReference}. Will be closed after completion of this method.
 	 * @param charset Character set of the data in the {@link Reader}.
 	 * @return A new character-data {@link SerializableFileReference}.
 	 * @throws IOException If the {@link Reader} cannot be read or a temporary file cannot be created / written to.
@@ -118,7 +118,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * The temporary file will be deleted on calling {@link SerializableFileReference#close()}.
 	 * </p>
 	 *
-	 * @param data The {@link String} from which to create the {@link SerializableFileReference}.
+	 * @param data    The {@link String} from which to create the {@link SerializableFileReference}.
 	 * @param charset Character used for writing out and reading back the data.
 	 * @return A new character-data {@link SerializableFileReference}.
 	 * @throws IOException If the {@link String} data cannot be written to a temporary file.
@@ -130,7 +130,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	/**
 	 * Create a binary {@code SerializableFileReference} for the file at given path.
 	 *
-	 * @param path {@link Path} to the file being referenced.
+	 * @param path          {@link Path} to the file being referenced.
 	 * @param deleteOnClose if the temporary file will be deleted on calling {@link SerializableFileReference#close()}.
 	 */
 	public SerializableFileReference(Path path, boolean deleteOnClose) {
@@ -144,7 +144,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * </p>
 	 *
 	 * @param charset Character set to be used when reading the file.
-	 * @param path {@link Path} to the file being referenced.
+	 * @param path    {@link Path} to the file being referenced.
 	 */
 	public SerializableFileReference(String charset, Path path) {
 		this(charset == null, charset, false, path);
@@ -237,6 +237,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	/**
 	 * Method is called by the serialization framework (from java.io.ObjectStreamClass) when deserializing an object.
+	 *
 	 * @param in ObjectInputStream to create object from
 	 * @throws IOException if there is a problem reading from the stream
 	 */
@@ -255,7 +256,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * The {@link InputStream} is not closed.
 	 * See also {@link StreamUtil#copyPartialStream(InputStream, OutputStream, long, int)}.
 	 *
-	 * @param in The {@link InputStream} from which to read data.
+	 * @param in       The {@link InputStream} from which to read data.
 	 * @param maxBytes Maximum number of bytes to be copied. If a negative number, all data will be copied.
 	 * @return {@link Path} of the temporary file to which the data has been copied.
 	 * @throws IOException Thrown if there was any exception reading or writing the data.

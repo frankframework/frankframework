@@ -7,9 +7,10 @@ import org.frankframework.pipes.XsltPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+
 import org.junit.jupiter.api.Test;
 
-public class Xslt3Test extends XsltErrorTestBase<XsltPipe>{
+public class Xslt3Test extends XsltErrorTestBase<XsltPipe> {
 
 	@Override
 	public XsltPipe createPipe() {
@@ -17,7 +18,7 @@ public class Xslt3Test extends XsltErrorTestBase<XsltPipe>{
 	}
 
 	protected void assertResultsAreCorrect(String expected, String actual) {
-		assertEquals(expected,actual);
+		assertEquals(expected, actual);
 	}
 
 	protected void testXslt(String styleSheetName, String input, String expected) throws Exception {

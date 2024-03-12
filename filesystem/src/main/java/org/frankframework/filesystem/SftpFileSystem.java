@@ -28,6 +28,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.jcraft.jsch.SftpATTRS;
+import com.jcraft.jsch.SftpException;
+
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.filesystem.ftp.SftpFileRef;
@@ -35,13 +41,6 @@ import org.frankframework.filesystem.ftp.SftpSession;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.LogUtil;
-
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.ChannelSftp.LsEntry;
-import com.jcraft.jsch.SftpATTRS;
-import com.jcraft.jsch.SftpException;
-
-import lombok.Getter;
 
 /**
  * Implementation of SFTP FileSystem
@@ -122,11 +121,11 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	private SftpFileRef findFile(SftpFileRef file) throws SftpException {
 		try {
 			LinkedList<LsEntry> files = list(file.getName());
-			if(!files.isEmpty()) {
+			if (!files.isEmpty()) {
 				return SftpFileRef.fromLsEntry(files.get(0));
 			}
 		} catch (SftpException e) {
-			if(e.id != 2) { // ID 2 == File Not Found
+			if (e.id != 2) { // ID 2 == File Not Found
 				throw e;
 			}
 		}
@@ -212,17 +211,17 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
-		if(folderExists(folder)) {
+		if (folderExists(folder)) {
 			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 
 		try {
 			String[] folders = folder.split("/");
-			for(int i = 1; i < folders.length; i++) {
+			for (int i = 1; i < folders.length; i++) {
 				folders[i] = folders[i - 1] + "/" + folders[i];
 			}
-			for(String f : folders) {
-				if(!f.isEmpty() && !folderExists(f)) {
+			for (String f : folders) {
+				if (!f.isEmpty() && !folderExists(f)) {
 					log.debug("creating folder [{}]", f);
 					ftpClient.mkdir(f);
 				}
@@ -234,18 +233,18 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
-		if(!folderExists(folder)) {
+		if (!folderExists(folder)) {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 		try {
-			if(removeNonEmptyFolder) {
+			if (removeNonEmptyFolder) {
 				removeDirectoryContent(folder);
 			} else {
 				log.debug("removing folder [{}]", folder);
 				ftpClient.rmdir(folder);
 			}
 		} catch (SftpException e) {
-			if(e.id == 18) { // Directory not empty
+			if (e.id == 18) { // Directory not empty
 				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
 			}
 			throw new FileSystemException(e);
@@ -306,7 +305,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public SftpFileRef moveFile(SftpFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		SftpFileRef destination = new SftpFileRef(getName(f), destinationFolder);
-		if(exists(destination)) {
+		if (exists(destination)) {
 			throw new FileSystemException("target already exists");
 		}
 
@@ -320,13 +319,13 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public SftpFileRef copyFile(SftpFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		if(createFolder && !folderExists(destinationFolder)) {
+		if (createFolder && !folderExists(destinationFolder)) {
 			createFolder(destinationFolder);
 		}
 
 		SftpFileRef destination = new SftpFileRef(getName(f), destinationFolder);
 
-		try (InputStream inputStream = ftpClient.get(f.getName()); SerializableFileReference ref = SerializableFileReference.of(inputStream) ) {
+		try (InputStream inputStream = ftpClient.get(f.getName()); SerializableFileReference ref = SerializableFileReference.of(inputStream)) {
 			ftpClient.put(ref.getInputStream(), destination.getName());
 		} catch (Exception e) {
 			throw new FileSystemException("unable to copy file", e);
@@ -341,7 +340,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	private SftpATTRS getFileAttributes(SftpFileRef f) {
-		if(f.getAttrs() == null) {
+		if (f.getAttrs() == null) {
 			try {
 				f.setAttrs(ftpClient.stat(f.getName()));
 			} catch (SftpException e) {
@@ -353,7 +352,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public String getName(SftpFileRef file) {
-		if(file == null) {
+		if (file == null) {
 			return null;
 		}
 		return file.getFilename();
@@ -372,7 +371,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public Date getModificationTime(SftpFileRef f) throws FileSystemException {
 		SftpATTRS attrs = getFileAttributes(f);
-		if(attrs != null) {
+		if (attrs != null) {
 			return new Date(attrs.getMTime());
 		}
 		throw new FileSystemException("unable to get modification time");
@@ -382,7 +381,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	public Map<String, Object> getAdditionalFileProperties(SftpFileRef f) {
 		Map<String, Object> attributes = new HashMap<>();
 		SftpATTRS attrs = getFileAttributes(f);
-		if(attrs != null) {
+		if (attrs != null) {
 			attributes.put("user", attrs.getUId());
 			attributes.put("group", attrs.getGId());
 			attributes.put("rawListing", attrs.toString());
@@ -394,11 +393,12 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "remote directory ["+remoteDirectory+"]";
+		return "remote directory [" + remoteDirectory + "]";
 	}
 
 	/**
 	 * Path of the file or directory to start working.
+	 *
 	 * @ff.default Home folder of the sftp user
 	 */
 	public void setRemoteDirectory(String remoteDirectory) {
@@ -413,7 +413,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		SftpFilePathIterator(String folder, LinkedList<LsEntry> fileEnties) {
 			files = new ArrayList<>();
 			for (LsEntry ftpFile : fileEnties) {
-				if(!ftpFile.getAttrs().isDir()) {
+				if (!ftpFile.getAttrs().isDir()) {
 					SftpFileRef fileRef = SftpFileRef.fromLsEntry(ftpFile, folder);
 					log.debug("adding SftpFileRef [{}] to the collection", fileRef);
 					files.add(fileRef);
@@ -428,7 +428,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 		@Override
 		public SftpFileRef next() {
-			if(!hasNext()) {
+			if (!hasNext()) {
 				throw new NoSuchElementException();
 			}
 

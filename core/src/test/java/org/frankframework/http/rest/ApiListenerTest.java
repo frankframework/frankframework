@@ -37,6 +37,7 @@ import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.lifecycle.DynamicRegistration.Servlet;
 import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -74,7 +75,7 @@ public class ApiListenerTest {
 
 	@Test
 	public void testContentTypes() throws ConfigurationException {
-		for(MediaTypes type : MediaTypes.values()) {
+		for (MediaTypes type : MediaTypes.values()) {
 			listener.setProduces(type);
 			listener.configure(); //Check if the media-type passes the 'configure' checks
 
@@ -157,17 +158,17 @@ public class ApiListenerTest {
 		acceptHeaders.add("multipart/mixed");
 
 		listener.setConsumes(MediaTypes.MULTIPART);
-		for(String header : acceptHeaders) {
-			String acceptHeader = header + "; type=text; "+header+"; level=2; boundary=--my-top-notch-boundary-";
+		for (String header : acceptHeaders) {
+			String acceptHeader = header + "; type=text; " + header + "; level=2; boundary=--my-top-notch-boundary-";
 
-			assertTrue(listener.isConsumable(acceptHeader), "can parse ["+header+"]");
+			assertTrue(listener.isConsumable(acceptHeader), "can parse [" + header + "]");
 		}
 	}
 
 	@Test
 	public void listenerAcceptsAll() {
 		String contentType = "application/octet-stream";
-		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, " + contentType + "; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.ANY);
 		assertTrue(listener.accepts(acceptHeader), "accepts anything");
@@ -193,7 +194,7 @@ public class ApiListenerTest {
 	@Test
 	public void doesNotAcceptOctetStreamWhenJSON() {
 		String contentType = "application/octet-stream";
-		String acceptHeader = contentType + "; type=text; q=0.7, "+contentType+"; level=2; q=0.4";
+		String acceptHeader = contentType + "; type=text; q=0.7, " + contentType + "; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
 		assertFalse(listener.accepts(acceptHeader), "does not accept an octet-stream when set to JSON");
@@ -202,7 +203,7 @@ public class ApiListenerTest {
 	@Test
 	public void acceptsJson() {
 		String contentType = "application/json";
-		String acceptHeader = contentType + "; type=text; q=0.7, "+contentType+"; level=2; q=0.4";
+		String acceptHeader = contentType + "; type=text; q=0.7, " + contentType + "; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
 		assertTrue(listener.accepts(acceptHeader), "listener should be able to accept JSON");
@@ -306,7 +307,7 @@ public class ApiListenerTest {
 	}
 
 	@Test
-	public void testCannotConsumeGET(){
+	public void testCannotConsumeGET() {
 		// Given
 		listener.setMethod(HttpMethod.GET);
 		listener.setConsumes(MediaTypes.JSON);
@@ -316,7 +317,7 @@ public class ApiListenerTest {
 	}
 
 	@Test
-	public void testCannotConsumeGETMultiMethod(){
+	public void testCannotConsumeGETMultiMethod() {
 		// Given
 		listener.setMethods(methodsAsString(HttpMethod.GET, HttpMethod.POST));
 		listener.setConsumes(MediaTypes.JSON);
@@ -326,7 +327,7 @@ public class ApiListenerTest {
 	}
 
 	@Test
-	public void testCannotConsumeDELETE(){
+	public void testCannotConsumeDELETE() {
 		// Given
 		listener.setMethod(HttpMethod.DELETE);
 		listener.setConsumes(MediaTypes.JSON);
@@ -336,7 +337,7 @@ public class ApiListenerTest {
 	}
 
 	@Test
-	public void testCannotConsumeDELETEMultiMethod(){
+	public void testCannotConsumeDELETEMultiMethod() {
 		// Given
 		listener.setMethods(methodsAsString(HttpMethod.DELETE, HttpMethod.POST));
 		listener.setConsumes(MediaTypes.JSON);
@@ -412,7 +413,7 @@ public class ApiListenerTest {
 	}
 
 
-	private String methodsAsString(HttpMethod ...args){
+	private String methodsAsString(HttpMethod... args) {
 		return Arrays.stream(args).map(m -> m.name()).collect(Collectors.joining(","));
 	}
 }

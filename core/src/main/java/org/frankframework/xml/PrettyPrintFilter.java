@@ -27,14 +27,14 @@ import lombok.Setter;
 
 public class PrettyPrintFilter extends FullXmlFilter {
 
-	private String indent="\t";
+	private String indent = "\t";
 	private int indentLevel;
 	private boolean charactersSeen;
 	private boolean elementsSeen;
 	private boolean elementContentSeen;
 	private @Setter boolean sortAttributes;
 
-	private Map<String,String> prefixMappings;
+	private Map<String, String> prefixMappings;
 
 	public PrettyPrintFilter(ContentHandler handler) {
 		super(handler);
@@ -52,9 +52,9 @@ public class PrettyPrintFilter extends FullXmlFilter {
 		super.characters(string.toCharArray(), 0, string.length());
 	}
 
-	private void indent() throws SAXException  {
+	private void indent() throws SAXException {
 		write("\n");
-		for(int i=0; i<indentLevel; i++) {
+		for (int i = 0; i < indentLevel; i++) {
 			write(indent);
 		}
 	}
@@ -64,19 +64,19 @@ public class PrettyPrintFilter extends FullXmlFilter {
 		if (elementsSeen) {
 			indent();
 		} else {
-			elementsSeen=true;
+			elementsSeen = true;
 		}
 		if (sortAttributes) {
-			atts =new AttributesWrapper(atts, true);
-			for(Entry<String,String> mapping: prefixMappings.entrySet()) {
+			atts = new AttributesWrapper(atts, true);
+			for (Entry<String, String> mapping : prefixMappings.entrySet()) {
 				super.startPrefixMapping(mapping.getKey(), mapping.getValue());
 			}
 			prefixMappings.clear();
 		}
 		super.startElement(uri, localName, qName, atts);
 		indentLevel++;
-		charactersSeen=false;
-		elementContentSeen=false;
+		charactersSeen = false;
+		elementContentSeen = false;
 	}
 
 	@Override
@@ -86,21 +86,21 @@ public class PrettyPrintFilter extends FullXmlFilter {
 			indent();
 		}
 		super.endElement(uri, localName, qName);
-		charactersSeen=false;
-		elementContentSeen=true;
+		charactersSeen = false;
+		elementContentSeen = true;
 	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		for (int i=0; !charactersSeen && i<length; i++) {
-			if (!Character.isWhitespace(ch[start+i])) {
-				charactersSeen=true;
+		for (int i = 0; !charactersSeen && i < length; i++) {
+			if (!Character.isWhitespace(ch[start + i])) {
+				charactersSeen = true;
 				break;
 			}
 		}
 		if (charactersSeen) {
 			super.characters(ch, start, length);
-			elementContentSeen=true;
+			elementContentSeen = true;
 		}
 	}
 

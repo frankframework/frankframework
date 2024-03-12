@@ -14,6 +14,7 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.validation.xsd.ResourceXsd;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -75,7 +76,7 @@ public class XSDTest {
 	}
 
 	public XSD getXSD(String schemaLocation) throws ConfigurationException {
-		String[] split =  schemaLocation.trim().split("\\s+");
+		String[] split = schemaLocation.trim().split("\\s+");
 		XSD xsd = new ResourceXsd();
 		xsd.initNamespace(split[0], scopeProvider, split[1]);
 		return xsd;

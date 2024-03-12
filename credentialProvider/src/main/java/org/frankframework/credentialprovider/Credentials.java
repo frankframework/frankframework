@@ -30,7 +30,7 @@ public class Credentials implements ICredentials {
 	@Setter private String password;
 	private final Supplier<String> usernameSupplier;
 	private final Supplier<String> passwordSupplier;
-	private boolean gotCredentials=false;
+	private boolean gotCredentials = false;
 
 	public Credentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		super();
@@ -48,10 +48,10 @@ public class Credentials implements ICredentials {
 					getCredentialsFromAlias();
 				} catch (RuntimeException e) {
 
-					if (usernameSupplier!=null) {
+					if (usernameSupplier != null) {
 						username = usernameSupplier.get();
 					}
-					if (passwordSupplier!=null) {
+					if (passwordSupplier != null) {
 						password = passwordSupplier.get();
 					}
 
@@ -66,7 +66,7 @@ public class Credentials implements ICredentials {
 			if ((password == null || password.isEmpty()) && passwordSupplier != null) {
 				password = passwordSupplier.get();
 			}
-			gotCredentials=true;
+			gotCredentials = true;
 		}
 	}
 
@@ -87,8 +87,9 @@ public class Credentials implements ICredentials {
 
 	public void setAlias(String string) {
 		alias = string;
-		gotCredentials=false;
+		gotCredentials = false;
 	}
+
 	@Override
 	public String getAlias() {
 		return alias;

@@ -10,21 +10,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.LocalFileSystemSender;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem>{
+public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem> {
 
 	@TempDir
 	public Path folder;
 
 	@Override
 	public LocalFileSystemSender createFileSystemSender() {
-		LocalFileSystemSender result=new LocalFileSystemSender();
+		LocalFileSystemSender result = new LocalFileSystemSender();
 		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
 	}
@@ -39,8 +40,8 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 	public void testRename() throws Exception {
 		Path folder1 = Paths.get(folder.toAbsolutePath().toString() + "/one");
 		Files.createDirectories(folder1);
-		File src = new File(folder1+"/aa.txt");
-		File dest = new File(folder1+"/bb.txt");
+		File src = new File(folder1 + "/aa.txt");
+		File dest = new File(folder1 + "/bb.txt");
 		assertFalse(dest.exists());
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
@@ -69,8 +70,8 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		Path folder2 = Paths.get(folder.toAbsolutePath().toString() + "/two");
 		Files.createDirectories(folder1);
 		Files.createDirectories(folder2);
-		File src = new File(folder1+"/aa.txt");
-		File dest = new File(folder2+"/bb.txt");
+		File src = new File(folder1 + "/aa.txt");
+		File dest = new File(folder2 + "/bb.txt");
 		assertFalse(dest.exists());
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();

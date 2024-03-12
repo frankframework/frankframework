@@ -17,9 +17,8 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
@@ -67,8 +66,8 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 			if (getParameterList() != null) {
 				ifParameter = getParameterList().findParameter(getIfParam());
 			}
-			if (ifParameter==null) {
-				ConfigurationWarnings.add(this, log, "ifParam ["+getIfParam()+"] not found");
+			if (ifParameter == null) {
+				ConfigurationWarnings.add(this, log, "ifParam [" + getIfParam() + "] not found");
 			}
 		}
 	}
@@ -82,24 +81,24 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		}
 		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
 			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
-			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
+			if (onlyIfActualValue == null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
 				log.debug("onlyIfSessionKey [{}] value [{}]: not found or not equal to value [{}]", getOnlyIfSessionKey(), onlyIfActualValue, getOnlyIfValue());
 				return true;
 			}
 		}
 		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
 			Object unlessActualValue = session.get(getUnlessSessionKey());
-			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
+			if (unlessActualValue != null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
 				log.debug("unlessSessionKey [{}] value [{}]: not found or equal to value [{}]", getUnlessSessionKey(), unlessActualValue, getUnlessValue());
 				return true;
 			}
 		}
 		try {
-			if (ifParameter!=null) {
+			if (ifParameter != null) {
 				Object paramValue = ifParameter.getValue(null, input, session, true);
 				String ifValue = getIfValue();
 				if (ifValue == null) {
-					return paramValue!=null;
+					return paramValue != null;
 				}
 				return !ifValue.equalsIgnoreCase(Message.asString(paramValue));
 			}
@@ -113,7 +112,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		ParameterList parameterList = getParameterList();
 		if (pvl != null && parameterList != null) {
 			ParameterValue pv = pvl.findParameterValue(parameterName);
-			if(pv != null) {
+			if (pv != null) {
 				return pv.asStringValue(null);
 			}
 		}
@@ -122,6 +121,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 
 	/**
 	 * If set, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty
+	 *
 	 * @ff.default false
 	 */
 	public void setSkipOnEmptyInput(boolean b) {

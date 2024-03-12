@@ -9,6 +9,7 @@ import java.net.URLEncoder;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
 import org.hamcrest.core.StringContains;
 import org.junit.Ignore;
 
@@ -28,23 +29,23 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 	protected String PROPERTY_FILE = "HttpSenderOAuth.properties";
 
 
-	protected String tokenBaseUrl  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenBaseUrl");
-	protected String dataBaseUrl   = PropertyUtil.getProperty(PROPERTY_FILE, "dataBaseUrl");
-	protected String apiContext    = PropertyUtil.getProperty(PROPERTY_FILE, "apiContext");
-	protected String tokenContext  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenContext");
-	protected String url           = dataBaseUrl + apiContext;
+	protected String tokenBaseUrl = PropertyUtil.getProperty(PROPERTY_FILE, "tokenBaseUrl");
+	protected String dataBaseUrl = PropertyUtil.getProperty(PROPERTY_FILE, "dataBaseUrl");
+	protected String apiContext = PropertyUtil.getProperty(PROPERTY_FILE, "apiContext");
+	protected String tokenContext = PropertyUtil.getProperty(PROPERTY_FILE, "tokenContext");
+	protected String url = dataBaseUrl + apiContext;
 	protected String tokenEndpoint = tokenBaseUrl + tokenContext;
-	protected String client_id     = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
+	protected String client_id = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
 	protected String client_secret = PropertyUtil.getProperty(PROPERTY_FILE, "client_secret");
 	protected boolean authTokenReq = PropertyUtil.getProperty(PROPERTY_FILE, "authenticatedTokenRequest", false);
-	protected String username      = PropertyUtil.getProperty(PROPERTY_FILE, "username");
-	protected String password      = PropertyUtil.getProperty(PROPERTY_FILE, "password");
-	protected String proxyHost     = PropertyUtil.getProperty(PROPERTY_FILE, "proxyHost");
-	protected String proxyPort     = PropertyUtil.getProperty(PROPERTY_FILE, "proxyPort");
+	protected String username = PropertyUtil.getProperty(PROPERTY_FILE, "username");
+	protected String password = PropertyUtil.getProperty(PROPERTY_FILE, "password");
+	protected String proxyHost = PropertyUtil.getProperty(PROPERTY_FILE, "proxyHost");
+	protected String proxyPort = PropertyUtil.getProperty(PROPERTY_FILE, "proxyPort");
 	protected String proxyUsername = PropertyUtil.getProperty(PROPERTY_FILE, "proxyUsername");
 	protected String proxyPassword = PropertyUtil.getProperty(PROPERTY_FILE, "proxyPassword");
 
-	protected String truststore         = PropertyUtil.getProperty(PROPERTY_FILE, "truststore");
+	protected String truststore = PropertyUtil.getProperty(PROPERTY_FILE, "truststore");
 	protected String truststorePassword = PropertyUtil.getProperty(PROPERTY_FILE, "truststorePassword");
 
 	protected boolean useProxy = false;
@@ -54,11 +55,11 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 	public void testSendResourceOwnerCredentialsRequestWithBothCredentialsAsParameters() throws Exception {
 
 		String tokenUrl = tokenEndpoint
-				+"?grant_type=password"
-				+"&username="+ URLEncoder.encode(username)
-				+"&password="+ URLEncoder.encode(password)
-				+"&client_id="+ client_id
-				+"&client_secret="+ client_secret;
+				+ "?grant_type=password"
+				+ "&username=" + URLEncoder.encode(username)
+				+ "&password=" + URLEncoder.encode(password)
+				+ "&client_id=" + client_id
+				+ "&client_secret=" + client_secret;
 
 		HttpSender sender = new HttpSender();
 		sender.setUrl(tokenUrl);
@@ -89,7 +90,7 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 
 		Message result = sender.sendMessageOrThrow(new Message("<dummy/>"), session);
 
-		log.debug("result: "+result.asString());
+		log.debug("result: " + result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 		assertThat(result.asString(), containsString("\"access_token\":"));
 	}
@@ -99,9 +100,9 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 	public void testSendResourceOwnerCredentialsRequestWithClientCredentialsAsBasicAuthentication() throws Exception {
 
 		String tokenUrl = tokenEndpoint
-				+"?grant_type=password"
-				+"&username="+ URLEncoder.encode(username)
-				+"&password="+ URLEncoder.encode(password);
+				+ "?grant_type=password"
+				+ "&username=" + URLEncoder.encode(username)
+				+ "&password=" + URLEncoder.encode(password);
 
 		HttpSender sender = new HttpSender();
 		sender.setUrl(tokenUrl);
@@ -134,11 +135,10 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 
 		Message result = sender.sendMessageOrThrow(new Message("<dummy/>"), session);
 
-		log.debug("result: "+result.asString());
+		log.debug("result: " + result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 		assertThat(result.asString(), containsString("\"access_token\":"));
 	}
-
 
 
 	@Test
@@ -172,7 +172,7 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 		PipeLineSession session = new PipeLineSession();
 
 		Message result = sender.sendMessageOrThrow(new Message(""), session);
-		log.debug("result: "+result.asString());
+		log.debug("result: " + result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 
 		log.debug("Wait 1 second");
@@ -180,21 +180,20 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 		log.debug("Test again");
 
 		result = sender.sendMessageOrThrow(new Message(""), session);
-		log.debug("result: "+result.asString());
+		log.debug("result: " + result.asString());
 		assertEquals("200", session.getMessage("StatusCode").asString());
 	}
-
 
 
 	@Test
 	public void test3917MultipleBinaryParts() throws Exception {
 		String url = PropertyUtil.getProperty(PROPERTY_FILE, "salesforceUrl");
 		String accept = "application/xml";
-		String multiPartXml = "<parts>\n<part sessionKey=\"entity_document\" mimeType=\"application/xml\"/>\n"+
+		String multiPartXml = "<parts>\n<part sessionKey=\"entity_document\" mimeType=\"application/xml\"/>\n" +
 				"<part name=\"versiondata\" sessionKey=\"versiondata\" mimeType=\"image/png\"/>\n</parts>\n";
 		String entity_document = "<document>\n" +
-		"<PathOnClient>file1.png</PathOnClient>\n" +
-		"</document>";
+				"<PathOnClient>file1.png</PathOnClient>\n" +
+				"</document>";
 
 		String versiondataB64 = "iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAIAAACQKrqGAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAfpJREFUeNo0UkuP0zAYtBM3TZt0U9LuImilslR099DyEBISFw78A8QN7lz4Y5UQB7j1zF44VnCohCr6TNs0NF3n4cSxHUzYndt8Go/n8xiyPFcByHA4S8P5rykCUC1rJQiCa6xCePGo12q1QAFFJQywjDgbutoYWtVgOUpYeghdZ8cz5nneEeP/UgQ+fSG+f3BmgEZ3hEr2nglVx91f32/2Pn5onZ97rosAME9OUPr1cxxHwWoe+E45YCUCOAUpwNv+5WTyipUq7mI2Xy76/T76XYOL+QKHLudUNzSrZpCUbik4u7ikGZ9OpxQfkyRezGpIffO2+vxlup4TkWdmzU8EEumf1fr1+3etp8+2u30ShZZlhUkM81zkOfCWq1CvILOaU6ZqyverqxePn5zZ9d1mjzHOIaAsk4khhDmyLbY/6CwRQiQp5zjertZS2jhtZlykKcmiCOVSC2BJKJAzBZmGpo1/frt3tzGZTGazhW3bjVO7UilLCwSLNxNAyEAIqeMf4xBHDx90zZqVJMlms8H42Ol0KKXopglFieN4uVw6jjMYDOr1erlclnNd12VWzrl0VcAtfN8PgqDb7bbbbUkJIVEUNZtNSaWuaOsW/84pShiGo9FI2khXXkDO5eLyJ9xINU2TFw2Hw4QQSYtdQdUwWAFZVa/X+yvAAHMyLPKLDsUAAAAAAElFTkSuQmCC";
 		byte[] versiondata = Base64.decodeBase64(versiondataB64);

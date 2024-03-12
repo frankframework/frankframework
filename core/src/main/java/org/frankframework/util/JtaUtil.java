@@ -26,8 +26,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 /**
  * Utility functions for JTA
+ *
  * @author Gerrit van Brakel
- * @since  4.1
+ * @since 4.1
  */
 public class JtaUtil {
 //	/**
@@ -51,41 +52,41 @@ public class JtaUtil {
 
 	public static String displayTransactionStatus(TransactionStatus txStatus) {
 		String result;
-		result="txName ["+TransactionSynchronizationManager.getCurrentTransactionName()+"]";
-		if (txStatus!=null) {
-			result+=" status new ["+txStatus.isNewTransaction()+"]";
-			result+=" status completeted ["+txStatus.isCompleted()+"]";
-			result+=" status rollbackOnly ["+txStatus.isRollbackOnly()+"]";
-			result+=" status hasSavepoint ["+txStatus.hasSavepoint()+"]";
+		result = "txName [" + TransactionSynchronizationManager.getCurrentTransactionName() + "]";
+		if (txStatus != null) {
+			result += " status new [" + txStatus.isNewTransaction() + "]";
+			result += " status completeted [" + txStatus.isCompleted() + "]";
+			result += " status rollbackOnly [" + txStatus.isRollbackOnly() + "]";
+			result += " status hasSavepoint [" + txStatus.hasSavepoint() + "]";
 		} else {
-			result+=" currently not in a transaction";
+			result += " currently not in a transaction";
 		}
-		result+=" isolation ["+TransactionSynchronizationManager.getCurrentTransactionIsolationLevel()+"]";
-		result+=" active ["+TransactionSynchronizationManager.isActualTransactionActive()+"]";
-		boolean syncActive=TransactionSynchronizationManager.isSynchronizationActive();
-		result+=" synchronization active ["+syncActive+"]";
-		result+="\n";
+		result += " isolation [" + TransactionSynchronizationManager.getCurrentTransactionIsolationLevel() + "]";
+		result += " active [" + TransactionSynchronizationManager.isActualTransactionActive() + "]";
+		boolean syncActive = TransactionSynchronizationManager.isSynchronizationActive();
+		result += " synchronization active [" + syncActive + "]";
+		result += "\n";
 		Map<Object, Object> resources = TransactionSynchronizationManager.getResourceMap();
 		result += "resources:\n";
-		if (resources==null) {
-			result+="  map is null\n";
+		if (resources == null) {
+			result += "  map is null\n";
 		} else {
-			for (Iterator<Object> it=resources.keySet().iterator(); it.hasNext();) {
+			for (Iterator<Object> it = resources.keySet().iterator(); it.hasNext(); ) {
 				Object key = it.next();
 				Object resource = resources.get(key);
-				result += ClassUtils.nameOf(key)+"("+key+"): "+ClassUtils.nameOf(resource)+"("+resource+")\n";
+				result += ClassUtils.nameOf(key) + "(" + key + "): " + ClassUtils.nameOf(resource) + "(" + resource + ")\n";
 				if (resource instanceof JmsResourceHolder) {
-					JmsResourceHolder jrh = (JmsResourceHolder)resource;
-					result+="  connection: "+jrh.getConnection()+", session: "+jrh.getSession()+"\n";
+					JmsResourceHolder jrh = (JmsResourceHolder) resource;
+					result += "  connection: " + jrh.getConnection() + ", session: " + jrh.getSession() + "\n";
 				}
 			}
 		}
 		if (syncActive) {
 			List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
 			result += "synchronizations:\n";
-			for (int i=0; i<synchronizations.size(); i++) {
+			for (int i = 0; i < synchronizations.size(); i++) {
 				TransactionSynchronization synchronization = synchronizations.get(i);
-				result += ClassUtils.nameOf(synchronization)+"("+synchronization+")\n";
+				result += ClassUtils.nameOf(synchronization) + "(" + synchronization + ")\n";
 			}
 		}
 		return result;

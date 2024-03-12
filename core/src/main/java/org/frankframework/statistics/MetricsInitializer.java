@@ -53,7 +53,7 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 		NodeConfig(String name, List<Tag> tags, int groupLevel) {
 			this.name = name;
-			this.tags = tags!=null ? tags : new LinkedList<>();
+			this.tags = tags != null ? tags : new LinkedList<>();
 			this.groupLevel = groupLevel;
 		}
 	}
@@ -99,12 +99,12 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void handleStatisticsKeeper(NodeConfig data, StatisticsKeeper sk) throws SenderException {
-		if (sk==null) {
+		if (sk == null) {
 			log.warn("StatisticsKeeper is null");
 			return;
 		}
-		if (data==null) {
-			log.warn("NodeConfig data is null, sk="+sk.getName());
+		if (data == null) {
+			log.warn("NodeConfig data is null, sk=" + sk.getName());
 			sk.initMetrics(registry, sk.getName(), null);
 			return;
 		}
@@ -134,7 +134,7 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 		if (StringUtils.isNotEmpty(dimensionName)) {
 			tags.add(Tag.of(type, dimensionName));
 		} else {
-			nodeName=nodeName+"."+type;
+			nodeName = nodeName + "." + type;
 		}
 		return new NodeConfig(nodeName, tags, groupLevel);
 	}

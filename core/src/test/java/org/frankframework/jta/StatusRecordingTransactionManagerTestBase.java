@@ -13,11 +13,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.util.LogUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
+
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
 
@@ -46,8 +48,8 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 
 	@BeforeEach
 	public void setup() throws IOException {
-		statusFile = folder.toAbsolutePath().toString()+"/"+STATUS_FILE;
-		tmUidFile = folder.toAbsolutePath().toString()+"/"+TMUID_FILE;
+		statusFile = folder.toAbsolutePath().toString() + "/" + STATUS_FILE;
+		tmUidFile = folder.toAbsolutePath().toString() + "/" + TMUID_FILE;
 
 		delete(tmUidFile);
 	}
@@ -61,7 +63,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 	}
 
 	protected S setupTransactionManager() {
-		log.debug("setupTransactionManager folder ["+folder+"]");
+		log.debug("setupTransactionManager folder [" + folder + "]");
 		S result = createTransactionManager();
 		result.setStatusFile(statusFile);
 		result.setUidFile(tmUidFile);
@@ -72,7 +74,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 
 	public void assertStatus(String status, String tmUid) {
 		assertEquals(status, read(statusFile));
-		if (tmUid!=null) {
+		if (tmUid != null) {
 			assertEquals(tmUid, read(tmUidFile));
 		}
 	}
@@ -84,7 +86,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 				Files.delete(file);
 			}
 		} catch (Exception e) {
-			throw new TransactionSystemException("Cannot delete file ["+file+"]", e);
+			throw new TransactionSystemException("Cannot delete file [" + file + "]", e);
 		}
 	}
 
@@ -95,7 +97,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 				fos.write(text.getBytes(StandardCharsets.UTF_8));
 			}
 		} catch (Exception e) {
-			throw new TransactionSystemException("Cannot write line ["+text+"] to file ["+file+"]", e);
+			throw new TransactionSystemException("Cannot write line [" + text + "] to file [" + file + "]", e);
 		}
 	}
 
@@ -107,7 +109,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 		try (InputStream fis = Files.newInputStream(file)) {
 			return StreamUtils.copyToString(fis, StandardCharsets.UTF_8).trim();
 		} catch (Exception e) {
-			throw new TransactionSystemException("Cannot read from file ["+file+"]", e);
+			throw new TransactionSystemException("Cannot read from file [" + file + "]", e);
 		}
 	}
 

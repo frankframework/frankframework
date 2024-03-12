@@ -20,9 +20,8 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IListener;
@@ -54,8 +53,8 @@ public class EsbSoapValidator extends SoapValidator implements WsdlGeneratorExte
 
 	static {
 		Map<String, HeaderInformation> temp = new HashMap<>();
-		temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG,1), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
-		temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG,2), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/2", "/xml/xsd/CommonMessageHeader_2.xsd"));
+		temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG, 1), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
+		temp.put(getModeKey(EsbSoapWrapperPipe.Mode.REG, 2), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/2", "/xml/xsd/CommonMessageHeader_2.xsd"));
 		temp.put(getModeKey(EsbSoapWrapperPipe.Mode.I2T), new HeaderInformation("http://nn.nl/XSD/Generic/MessageHeader/1", "/xml/xsd/CommonMessageHeader.xsd"));
 		temp.put(getModeKey(EsbSoapWrapperPipe.Mode.BIS), new HeaderInformation("http://www.ing.com/CSP/XSD/General/Message_2", "/xml/xsd/cspXML_2.xsd"));
 		GENERIC_HEADER = new HashMap<>(temp);
@@ -83,12 +82,12 @@ public class EsbSoapValidator extends SoapValidator implements WsdlGeneratorExte
 			if (cmhVersion == 0) {
 				cmhVersion = 1;
 			} else if (cmhVersion < 0 || cmhVersion > 2) {
-				ConfigurationWarnings.add(this, log, "cmhVersion ["+cmhVersion+ "] for mode ["+mode.toString()+"] should be set to '1' or '2', assuming '1'");
+				ConfigurationWarnings.add(this, log, "cmhVersion [" + cmhVersion + "] for mode [" + mode.toString() + "] should be set to '1' or '2', assuming '1'");
 				cmhVersion = 1;
 			}
 		} else {
 			if (cmhVersion != 0) {
-				ConfigurationWarnings.add(this, log, "cmhVersion ["+cmhVersion+"] for mode ["+mode.toString()+"] should not be set, assuming '0'");
+				ConfigurationWarnings.add(this, log, "cmhVersion [" + cmhVersion + "] for mode [" + mode.toString() + "] should not be set, assuming '0'");
 				cmhVersion = 0;
 			}
 		}
@@ -138,6 +137,7 @@ public class EsbSoapValidator extends SoapValidator implements WsdlGeneratorExte
 
 	/**
 	 * Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2
+	 *
 	 * @ff.default 1
 	 */
 	public void setCmhVersion(int i) {
@@ -176,7 +176,7 @@ public class EsbSoapValidator extends SoapValidator implements WsdlGeneratorExte
 			context.warn("Namespace '" + schemaLocation + "' invalid according to ESB SOAP standard");
 			IPipe outputWrapper = pipeLine.getOutputWrapper();
 			if (outputWrapper instanceof EsbSoapWrapperPipe) {
-				EsbSoapWrapperPipe esbSoapWrapper = (EsbSoapWrapperPipe)outputWrapper;
+				EsbSoapWrapperPipe esbSoapWrapper = (EsbSoapWrapperPipe) outputWrapper;
 				context.esbSoapBusinessDomain = esbSoapWrapper.getBusinessDomain();
 				context.esbSoapServiceName = esbSoapWrapper.getServiceName();
 				context.esbSoapServiceContext = esbSoapWrapper.getServiceContext();

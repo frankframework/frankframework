@@ -43,27 +43,27 @@ public class PipeLineSessionDebugger implements MethodHandler {
 		ProxyFactory factory = new ProxyFactory();
 		factory.setSuperclass(PipeLineSession.class);
 		PipeLineSessionDebugger handler = new PipeLineSessionDebugger(pipeLineSession, ibisDebugger);
-		return (PipeLineSession)factory.create(new Class[0], new Object[0], handler);
+		return (PipeLineSession) factory.create(new Class[0], new Object[0], handler);
 	}
 
 	@Override
 	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 		if (method.getName().equals("put")) {
-			return put((String)args[0], args[1]);
+			return put((String) args[0], args[1]);
 		}
 		if (method.getName().equals("putAll")) {
-			putAll((Map<String,Object>)args[0]);
+			putAll((Map<String, Object>) args[0]);
 			return null;
 		}
-		if(method.getName().equals("getMessage")) {
-			return getMessage((String)args[0]);
+		if (method.getName().equals("getMessage")) {
+			return getMessage((String) args[0]);
 		}
 		return method.invoke(pipeLineSession, args);
 	}
 
 	private Object getMessage(String name) {
 		Object value = pipeLineSession.getMessage(name);
-		ibisDebugger.showValue(pipeLineSession.getCorrelationId(), "SessionKey "+name, value);
+		ibisDebugger.showValue(pipeLineSession.getCorrelationId(), "SessionKey " + name, value);
 		return value;
 	}
 
@@ -72,14 +72,14 @@ public class PipeLineSessionDebugger implements MethodHandler {
 		if (newValue != originalValue && newValue instanceof Message) {
 			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
 			// keep the report in progress (waiting for the stream to be read, captured and closed).
-			((Message)newValue).closeOnCloseOf(pipeLineSession, this.getClass().getTypeName());
+			((Message) newValue).closeOnCloseOf(pipeLineSession, this.getClass().getTypeName());
 		}
 		return pipeLineSession.put(name, newValue);
 	}
 
-	private void putAll(Map<? extends String,? extends Object> entries) {
-		for(Entry<? extends String,? extends Object> entry: entries.entrySet()) {
-			put(entry.getKey(),entry.getValue());
+	private void putAll(Map<? extends String, ? extends Object> entries) {
+		for (Entry<? extends String, ? extends Object> entry : entries.entrySet()) {
+			put(entry.getKey(), entry.getValue());
 		}
 	}
 

@@ -24,8 +24,8 @@ import com.sap.conn.jco.JCoParameterList;
  * Handler for xml root element containing INPUT, OUTPUT and TABLES (parameter
  * lists).
  *
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class RootHandler extends Handler {
 
@@ -41,7 +41,7 @@ public class RootHandler extends Handler {
 	protected void startElement(String localName) {
 		if (!parsedRequestRoot) {
 			parsedRequestRoot = true;
-		} else  {
+		} else {
 			Iterator<JCoParameterList> iterator = parameterLists.iterator();
 			while (iterator.hasNext()) {
 				JCoParameterList jcoParameterList = iterator.next();
@@ -50,7 +50,7 @@ public class RootHandler extends Handler {
 				}
 			}
 			if (childHandler == null) {
-				log.warn("parameter list '"+localName+"' does not exist");
+				log.warn("parameter list '" + localName + "' does not exist");
 				unknownElementDepth = 1;
 			}
 		}

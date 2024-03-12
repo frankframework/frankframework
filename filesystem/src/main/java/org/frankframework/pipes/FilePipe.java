@@ -31,9 +31,7 @@ import org.frankframework.util.FileHandler;
  *
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
- *
  * @deprecated Please use {@link LocalFileSystemPipe} instead
- *
  */
 @Deprecated
 @ConfigurationWarning("Please use LocalFileSystemPipe instead, or when retrieving files from the classpath use the FixedResultPipe")
@@ -57,8 +55,7 @@ public class FilePipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			return new PipeRunResult(getSuccessForward(), fileHandler.handle(message, session, getParameterList()));
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			if (findForward(PipeForward.EXCEPTION_FORWARD_NAME) != null) {
 				return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), message);
 			}

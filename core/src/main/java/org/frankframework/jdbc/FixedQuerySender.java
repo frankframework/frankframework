@@ -18,15 +18,13 @@ package org.frankframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DB2XMLWriter;
@@ -36,22 +34,21 @@ import org.frankframework.util.DB2XMLWriter;
  *
  * <p><b>NOTE:</b> See {@link DB2XMLWriter} for ResultSet!</p>
  *
+ * @author Gerrit van Brakel
  * @ff.parameters All parameters present are applied to the query to be executed.
- *
- * @author  Gerrit van Brakel
- * @since 	4.1
+ * @since 4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext> {
 
-	private @Getter String query=null;
+	private @Getter String query = null;
 	private @Getter int batchSize;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getQuery())) {
-			throw new ConfigurationException(getLogPrefix()+"query must be specified");
+			throw new ConfigurationException(getLogPrefix() + "query must be specified");
 		}
-		if(getUseNamedParams() == null && getQuery().contains(UNP_START)) {
+		if (getUseNamedParams() == null && getQuery().contains(UNP_START)) {
 			setUseNamedParams(true);
 		}
 		super.configure();
@@ -69,16 +66,16 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			QueryExecutionContext result;
 			try {
 				QueryExecutionContext result1 = getQueryExecutionContext(connection, null);
-				if (getBatchSize()>0) {
+				if (getBatchSize() > 0) {
 					result1.getStatement().clearBatch();
 				}
 				result = result1;
 			} catch (JdbcException | SQLException e) {
-				throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+				throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext", e);
 			}
 			return result;
 		} catch (JdbcException e) {
-			throw new SenderException("cannot get StatementSet",e);
+			throw new SenderException("cannot get StatementSet", e);
 		}
 	}
 
@@ -103,16 +100,20 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		return new SenderResult(executeStatementSet(blockHandle, message, session, null).getResult());
 	}
 
-	/** The SQL query text to be executed each time sendMessage() is called
+	/**
+	 * The SQL query text to be executed each time sendMessage() is called
+	 *
 	 * @ff.mandatory
 	 */
 	public void setQuery(String query) {
 		this.query = query;
 	}
 
-	/** When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other.
-	  * @ff.default 0
-	  */
+	/**
+	 * When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other.
+	 *
+	 * @ff.default 0
+	 */
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
 	}

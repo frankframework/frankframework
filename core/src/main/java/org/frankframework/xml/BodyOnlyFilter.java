@@ -27,11 +27,10 @@ import lombok.Setter;
  * to be able to parse some additional body elements into and existing XML stream.
  *
  * @author Gerrit van Brakel
- *
  */
 public class BodyOnlyFilter extends FullXmlFilter {
 
-	private @Getter @Setter boolean skipRoot=true;
+	private @Getter @Setter boolean skipRoot = true;
 
 	private int level;
 
@@ -60,14 +59,14 @@ public class BodyOnlyFilter extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
-		if (!isSkipRoot() || level++>0) {
+		if (!isSkipRoot() || level++ > 0) {
 			super.startElement(uri, localname, qname, attributes);
 		}
 	}
 
 	@Override
 	public void endElement(String uri, String localname, String qname) throws SAXException {
-		if (!isSkipRoot() || --level>0) {
+		if (!isSkipRoot() || --level > 0) {
 			super.endElement(uri, localname, qname);
 		}
 	}

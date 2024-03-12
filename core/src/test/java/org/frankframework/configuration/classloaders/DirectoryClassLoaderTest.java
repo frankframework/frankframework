@@ -27,7 +27,7 @@ public class DirectoryClassLoaderTest extends ConfigurationClassLoaderTestBase<D
 
 		DirectoryClassLoader cl = new DirectoryClassLoader(parent);
 		cl.setDirectory(file.getFile());
-		appConstants.put("configurations."+getConfigurationName()+".directory", file.getFile());
+		appConstants.put("configurations." + getConfigurationName() + ".directory", file.getFile());
 		return cl;
 	}
 

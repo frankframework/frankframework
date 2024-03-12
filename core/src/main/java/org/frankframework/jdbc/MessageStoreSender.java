@@ -20,10 +20,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.text.StringEscapeUtils;
-
 import lombok.Getter;
 import lombok.SneakyThrows;
+import org.apache.commons.text.StringEscapeUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ITransactionalStorage;
@@ -55,17 +54,16 @@ import org.frankframework.util.StringUtil;
  * <br/><br/>
  * Example configuration:
  * <code><pre>
-	&lt;SenderPipe name="Send"&gt;
-		&lt;MessageStoreSender
-			slotId="${instance.name}/TestMessageStore"
-			onlyStoreWhenMessageIdUnique="false"
-		/&gt;
-	&lt;/SenderPipe&gt;
-</pre></code>
- *
- * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
+ * &lt;SenderPipe name="Send"&gt;
+ * &lt;MessageStoreSender
+ * slotId="${instance.name}/TestMessageStore"
+ * onlyStoreWhenMessageIdUnique="false"
+ * /&gt;
+ * &lt;/SenderPipe&gt;
+ * </pre></code>
  *
  * @author Jaco de Groot
+ * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
  */
 @ExcludeFromType(ITransactionalStorage.class)
 public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
@@ -146,7 +144,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			}
 			return new SenderResult(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(),e);
+			throw new SenderException(getLogPrefix(), e);
 		}
 	}
 

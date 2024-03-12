@@ -30,15 +30,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.queues.Queue;
 import org.frankframework.larva.queues.QueueCreator;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.XmlEncodingUtils;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
 @Getter
 @Log4j2

@@ -28,9 +28,10 @@ public class ConsoleMonitorEvent extends MonitorEvent {
 	private static EventThrowing getSource(String user) {
 		return new EventThrowing() {
 			private @Getter Adapter adapter = null;
+
 			@Override
 			public String getEventSourceName() {
-				return "Frank!Console on behalf of '"+user+"'";
+				return "Frank!Console on behalf of '" + user + "'";
 			}
 		};
 	}

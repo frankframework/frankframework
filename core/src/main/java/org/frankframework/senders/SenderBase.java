@@ -29,8 +29,8 @@ import org.frankframework.util.SpringUtils;
 /**
  * Baseclass for senders.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
@@ -75,8 +75,9 @@ public abstract class SenderBase implements ISender {
 	/** name of the sender */
 	@Override
 	public void setName(String name) {
-		this.name=name;
+		this.name = name;
 	}
+
 	@Override
 	public String getName() {
 		return name;

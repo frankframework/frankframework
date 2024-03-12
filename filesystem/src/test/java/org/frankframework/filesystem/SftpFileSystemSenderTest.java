@@ -1,10 +1,11 @@
 package org.frankframework.filesystem;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import org.apache.sshd.server.SshServer;
 import org.frankframework.filesystem.ftp.SftpFileRef;
 import org.frankframework.senders.SftpFileSystemSender;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSystemSender, SftpFileRef, SftpFileSystem> {
 
@@ -24,7 +25,7 @@ public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSyste
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
-		if("localhost".equals(host)) {
+		if ("localhost".equals(host)) {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
 			sshd = SftpFileSystemTest.createSshServer(username, password);
@@ -39,8 +40,8 @@ public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSyste
 	@Override
 	@AfterEach
 	public void tearDown() throws Exception {
-		if(sshd != null) {
-			if(sshd.isStarted()) sshd.stop();
+		if (sshd != null) {
+			if (sshd.isStarted()) sshd.stop();
 			sshd.close(true);
 			sshd = null;
 		}

@@ -23,11 +23,11 @@ import org.bouncycastle.util.io.Streams;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import org.frankframework.configuration.ConfigurationException;
 
-public class Decrypt extends PGPAction{
+public class Decrypt extends PGPAction {
 
 	public Decrypt(String secretKey, String secretPassword) throws ConfigurationException {
 		super(null, secretKey, secretPassword);
-		if(secretKey == null || secretPassword == null)
+		if (secretKey == null || secretPassword == null)
 			throw new ConfigurationException("For decryption, fields [secretKey, secretPassword] have to be set.");
 	}
 

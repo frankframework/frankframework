@@ -10,14 +10,14 @@ import java.util.List;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.jupiter.api.Test;
+
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.frankframework.management.bus.ResponseMessageBase;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
-import org.frankframework.management.bus.ResponseMessageBase;
-
-public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListener>{
+public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListener> {
 
 	@Override
 	public TestServiceListener createJaxRsResource() {
@@ -31,7 +31,7 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
 		attachments.add(new StringAttachment("message", "inputMessage"));
 
-		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/test-servicelistener", attachments));
+		ApiException e = assertThrows(ApiException.class, () -> dispatcher.dispatchRequest(HttpMethod.POST, "/test-servicelistener", attachments));
 		assertEquals("unsupported file encoding [fakeEncoding]", e.getMessage());
 	}
 
@@ -42,7 +42,7 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
 
-		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/test-servicelistener", attachments));
+		ApiException e = assertThrows(ApiException.class, () -> dispatcher.dispatchRequest(HttpMethod.POST, "/test-servicelistener", attachments));
 		assertEquals("unsupported file encoding [fakeEncoding]", e.getMessage());
 	}
 

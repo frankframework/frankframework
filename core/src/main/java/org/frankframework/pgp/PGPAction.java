@@ -98,7 +98,7 @@ public abstract class PGPAction implements IScopeProvider {
 	/**
 	 * Runs the given action (which may be any extensions of this abstract class).
 	 *
-	 * @param inputStream Input for the action.
+	 * @param inputStream  Input for the action.
 	 * @param outputStream to which the encrypted/plaintext based on the action is written to.
 	 * @throws Exception Any exception that can be thrown during the action.
 	 */

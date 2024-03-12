@@ -36,8 +36,8 @@ import lombok.extern.log4j.Log4j2;
 /**
  * Wrapper for messages that are not serializable.
  *
- * @author  Gerrit van Brakel
- * @since   4.3
+ * @author Gerrit van Brakel
+ * @since 4.3
  */
 @SuppressWarnings({"deprecation", "unchecked"})
 @Log4j2
@@ -54,7 +54,7 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 
 	public MessageWrapper(@Nonnull Message message, @Nullable String messageId, @Nullable String correlationId) {
 		// Ugly cast, but I don't think it is safe to leave it NULL
-		super((M)message.asObject(), messageId, correlationId);
+		super((M) message.asObject(), messageId, correlationId);
 		this.message = message;
 	}
 
@@ -81,7 +81,7 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 						return false;
 					}
 				})
-				.collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable)(e.getValue())));
+				.collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable) (e.getValue())));
 		stream.writeObject(serializableData);
 		stream.writeObject(id);
 		stream.writeObject(message);

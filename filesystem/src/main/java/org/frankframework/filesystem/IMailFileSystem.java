@@ -15,15 +15,14 @@
 */
 package org.frankframework.filesystem;
 
-import org.xml.sax.SAXException;
-
 import org.frankframework.stream.Message;
 import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
 
-public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
+public interface IMailFileSystem<M, A> extends IWithAttachments<M, A> {
 
 	public final String MAIL_MESSAGE_ID = "Message-ID";
-	public final String RETURN_PATH_HEADER="Return-Path";
+	public final String RETURN_PATH_HEADER = "Return-Path";
 
 	/*
 	 * IMailFileSystems should make sure the additionalProperties contain also the following keys:
@@ -38,7 +37,7 @@ public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
 	public final String DATETIME_RECEIVED_KEY = "DateTimeReceived";
 
 	public final String BEST_REPLY_ADDRESS_KEY = "bestReplyAddress";
-	public final String REPLY_ADDRESS_FIELDS_DEFAULT=REPLY_TO_RECEPIENTS_KEY+','+FROM_ADDRESS_KEY+','+SENDER_ADDRESS_KEY+','+RETURN_PATH_HEADER;
+	public final String REPLY_ADDRESS_FIELDS_DEFAULT = REPLY_TO_RECEPIENTS_KEY + ',' + FROM_ADDRESS_KEY + ',' + SENDER_ADDRESS_KEY + ',' + RETURN_PATH_HEADER;
 
 
 	public String getSubject(M emailMessage) throws FileSystemException;
@@ -48,6 +47,7 @@ public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
 	public void forwardMail(M emailMessage, String destination) throws FileSystemException;
 
 	public void extractEmail(M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException;
+
 	public void extractAttachment(A attachment, SaxElementBuilder attachmentsXml) throws FileSystemException, SAXException;
 
 	public String getReplyAddressFields();

@@ -25,7 +25,7 @@ import org.frankframework.stream.Message;
  * The <code>ISender</code> is responsible for sending a message to
  * some destination.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 @FrankDocGroup(order = 20, name = "Senders")
 @ElementType(ElementTypes.ENDPOINT)

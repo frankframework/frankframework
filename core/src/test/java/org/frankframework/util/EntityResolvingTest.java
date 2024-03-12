@@ -15,9 +15,11 @@ import org.frankframework.validation.JavaxXmlValidator;
 import org.frankframework.validation.ValidationContext;
 import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorErrorHandler;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -27,18 +29,18 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class EntityResolvingTest {
 
-	public String INPUT_FILE_SMALL_ENTITIES                ="/Entities/SmallEntity.xml";
-	public String INPUT_FILE_TOO_LARGE_ENTITIES            ="/Entities/TooLargeEntity.xml";
-	public String INPUT_FILE_FILE_EXTERNAL_ENTITIES        ="/Entities/FileExternalEntity.xml";
-	public String INPUT_FILE_HTTP_EXTERNAL_ENTITIES        ="/Entities/HttpExternalEntity.xml";
-	public String INPUT_FILE_SMALL_ENTITIES_RESULT         ="/Entities/SmallEntityResult.xml";
-	public String INPUT_FILE_TOO_LARGE_ENTITIES_RESULT     ="/Entities/TooLargeEntityResult.xml";
-	public String INPUT_FILE_FILE_EXTERNAL_ENTITIES_RESULT ="/Entities/FileExternalEntityResult.xml";
-	public String INPUT_FILE_HTTP_EXTERNAL_ENTITIES_RESULT ="/Entities/HttpExternalEntityResult.xml";
-	public String TOO_MANY_ENTITIES_ERROR_MESSAGE_PATTERN ="The parser has encountered more than \"100.000\" entity expansions in this document";
+	public String INPUT_FILE_SMALL_ENTITIES = "/Entities/SmallEntity.xml";
+	public String INPUT_FILE_TOO_LARGE_ENTITIES = "/Entities/TooLargeEntity.xml";
+	public String INPUT_FILE_FILE_EXTERNAL_ENTITIES = "/Entities/FileExternalEntity.xml";
+	public String INPUT_FILE_HTTP_EXTERNAL_ENTITIES = "/Entities/HttpExternalEntity.xml";
+	public String INPUT_FILE_SMALL_ENTITIES_RESULT = "/Entities/SmallEntityResult.xml";
+	public String INPUT_FILE_TOO_LARGE_ENTITIES_RESULT = "/Entities/TooLargeEntityResult.xml";
+	public String INPUT_FILE_FILE_EXTERNAL_ENTITIES_RESULT = "/Entities/FileExternalEntityResult.xml";
+	public String INPUT_FILE_HTTP_EXTERNAL_ENTITIES_RESULT = "/Entities/HttpExternalEntityResult.xml";
+	public String TOO_MANY_ENTITIES_ERROR_MESSAGE_PATTERN = "The parser has encountered more than \"100.000\" entity expansions in this document";
 
-	public String SCHEMA_NAMESPACE="urn:entities";
-	public String SCHEMA_LOCATION_ENTITIES         ="/Entities/schema.xsd";
+	public String SCHEMA_NAMESPACE = "urn:entities";
+	public String SCHEMA_LOCATION_ENTITIES = "/Entities/schema.xsd";
 
 
 	@NullSource
@@ -74,27 +76,27 @@ public class EntityResolvingTest {
 	}
 
 	public void testEntityExpansion(Class<? extends AbstractXmlValidator> impl, String xsd, String inputFile, boolean expectValid, String expectedResult) throws Exception {
-		String xmlIn= TestFileUtils.getTestFile(inputFile);
+		String xmlIn = TestFileUtils.getTestFile(inputFile);
 		try {
 			String actual = parseAndRenderString(impl, xsd, xmlIn);
 			if (!expectValid) {
-				fail("expected to fail with message: "+expectedResult);
+				fail("expected to fail with message: " + expectedResult);
 			}
 			String expected = TestFileUtils.getTestFile(expectedResult);
 			assertEquals(expected, actual);
 		} catch (Exception e) {
-			LogUtil.getLogger(this).error("error message: "+e.getMessage());
+			LogUtil.getLogger(this).error("error message: " + e.getMessage());
 			if (expectValid) {
-				fail("expected to be valid with result: "+expectedResult);
+				fail("expected to be valid with result: " + expectedResult);
 			}
-			if (e.getMessage().indexOf(expectedResult)<0) {
-				LogUtil.getLogger(this).error("error message does not contain ["+expectedResult+"], but is ["+e.getMessage()+"]");
+			if (e.getMessage().indexOf(expectedResult) < 0) {
+				LogUtil.getLogger(this).error("error message does not contain [" + expectedResult + "], but is [" + e.getMessage() + "]");
 			}
 		}
 	}
 
 	public String parseAndRenderString(Class<? extends AbstractXmlValidator> impl, String xsd, String xmlIn) throws Exception {
-		if(impl == null) {
+		if (impl == null) {
 			return parseAndRenderNative(xsd, xmlIn);
 		}
 		return parseAndRenderWithValidator(impl, xsd, xmlIn);
@@ -102,8 +104,8 @@ public class EntityResolvingTest {
 
 
 	public String parseAndRenderNative(String xsd, String xmlIn) throws Exception {
-		Document doc= XmlUtils.buildDomDocument(xmlIn);
-		String actual=XmlUtils.nodeToString(doc);
+		Document doc = XmlUtils.buildDomDocument(xmlIn);
+		String actual = XmlUtils.nodeToString(doc);
 		return actual;
 	}
 
@@ -140,28 +142,28 @@ public class EntityResolvingTest {
 			public void characters(char[] ch, int start, int length) throws SAXException {
 				if (elementOpen) {
 					sb.append(">");
-					elementOpen=false;
+					elementOpen = false;
 				}
 				sb.append(ch, start, length);
 			}
 
 			@Override
 			public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-				sb.append("<"+localName);
+				sb.append("<" + localName);
 				sb.append(" xmlns=\"").append(uri).append("\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
-				for (int i=0;i<atts.getLength();i++) {
+				for (int i = 0; i < atts.getLength(); i++) {
 					sb.append(' ').append(atts.getLocalName(i)).append("=\"").append(atts.getValue(i)).append('"');
 				}
-				elementOpen=true;
+				elementOpen = true;
 			}
 
 			@Override
 			public void endElement(String uri, String localName, String qName) throws SAXException {
 				if (elementOpen) {
 					sb.append("/>");
-					elementOpen=false;
+					elementOpen = false;
 				} else {
-					sb.append("</"+localName+">");
+					sb.append("</" + localName + ">");
 				}
 			}
 

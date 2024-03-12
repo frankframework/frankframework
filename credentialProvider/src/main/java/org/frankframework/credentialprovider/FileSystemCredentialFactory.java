@@ -28,13 +28,13 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
 
 public class FileSystemCredentialFactory implements ICredentialFactory {
 
-	public static final String FILESYSTEM_ROOT_PROPERTY="credentialFactory.filesystem.root";
-	public static final String USERNAME_FILE_PROPERTY="credentialFactory.filesystem.usernamefile";
-	public static final String PASSWORD_FILE_PROPERTY="credentialFactory.filesystem.passwordfile";
+	public static final String FILESYSTEM_ROOT_PROPERTY = "credentialFactory.filesystem.root";
+	public static final String USERNAME_FILE_PROPERTY = "credentialFactory.filesystem.usernamefile";
+	public static final String PASSWORD_FILE_PROPERTY = "credentialFactory.filesystem.passwordfile";
 
-	public static final String FILESYSTEM_ROOT_DEFAULT="/etc/secrets";
-	public static final String USERNAME_FILE_DEFAULT="username";
-	public static final String PASSWORD_FILE_DEFAULT="password";
+	public static final String FILESYSTEM_ROOT_DEFAULT = "/etc/secrets";
+	public static final String USERNAME_FILE_DEFAULT = "username";
+	public static final String PASSWORD_FILE_DEFAULT = "password";
 
 	private Path root;
 	private String usernamefile;
@@ -45,12 +45,12 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 		String fsroot = appConstants.getProperty(FILESYSTEM_ROOT_PROPERTY);
 		if (StringUtils.isEmpty(fsroot)) {
-			throw new IllegalStateException("No property ["+FILESYSTEM_ROOT_PROPERTY+"] found");
+			throw new IllegalStateException("No property [" + FILESYSTEM_ROOT_PROPERTY + "] found");
 		}
 		this.root = Paths.get(fsroot);
 
 		if (!Files.exists(root)) {
-			throw new IllegalArgumentException("Credential Filesystem ["+root+"] does not exist");
+			throw new IllegalArgumentException("Credential Filesystem [" + root + "] does not exist");
 		}
 
 		usernamefile = appConstants.getProperty(USERNAME_FILE_PROPERTY, USERNAME_FILE_DEFAULT);
@@ -68,10 +68,10 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public List<String> getConfiguredAliases() throws Exception{
+	public List<String> getConfiguredAliases() throws Exception {
 		List<String> aliases;
-		try(Stream<Path> stream = Files.list(Paths.get(root.toString()))) {
-			aliases = stream.map(p->p.getFileName().toString())
+		try (Stream<Path> stream = Files.list(Paths.get(root.toString()))) {
+			aliases = stream.map(p -> p.getFileName().toString())
 					.collect(Collectors.toList());
 		}
 		return aliases;

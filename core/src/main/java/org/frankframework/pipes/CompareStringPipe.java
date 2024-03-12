@@ -16,9 +16,6 @@
 package org.frankframework.pipes;
 
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -32,31 +29,31 @@ import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Pipe that lexicographically compares two strings, that must NOT be empty.
  *
+ * @author Peter Leeuwenburgh
  * @ff.parameter operand1 The first operand, holds v1. Defaults to input message
  * @ff.parameter operand2 The second operand, holds v2. Defaults to input message
  * @ff.parameter ignorepatterns (optional) contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
- * <br/><code><pre>
- *	&lt;ignores&gt;
- *		&lt;ignore&gt;
- *			&lt;after&gt;...&lt;/after&gt;
- *			&lt;before&gt;...&lt;/before&gt;
- *		&lt;/ignore&gt;
- *		&lt;ignore&gt;
- *			&lt;after&gt;...&lt;/after&gt;
- *			&lt;before&gt;...&lt;/before&gt;
- *		&lt;/ignore&gt;
- *	&lt;/ignores&gt;
- * </pre></code><br/>Substrings between "after" and "before" are ignored
- *
+ * 		<br/><code><pre>
+ * 			&lt;ignores&gt;
+ * 				&lt;ignore&gt;
+ * 					&lt;after&gt;...&lt;/after&gt;
+ * 					&lt;before&gt;...&lt;/before&gt;
+ * 				&lt;/ignore&gt;
+ * 				&lt;ignore&gt;
+ * 					&lt;after&gt;...&lt;/after&gt;
+ * 					&lt;before&gt;...&lt;/before&gt;
+ * 				&lt;/ignore&gt;
+ * 			&lt;/ignores&gt;
+ * 		</pre></code><br/>Substrings between "after" and "before" are ignored
  * @ff.forward lessthan operand1 &lt; operand2
  * @ff.forward greaterthan operand1 &gt; operand2
  * @ff.forward equals operand1 = operand2
- *
- * @author  Peter Leeuwenburgh
  */
 @Category("Basic")
 @ElementType(ElementTypes.ROUTER)
@@ -209,7 +206,7 @@ public class CompareStringPipe extends AbstractPipe {
 		ParameterList parameterList = getParameterList();
 		if (pvl != null && parameterList != null) {
 			ParameterValue pv = pvl.findParameterValue(parameterName);
-			if(pv != null) {
+			if (pv != null) {
 				return pv.asStringValue(null);
 			}
 		}
@@ -227,6 +224,7 @@ public class CompareStringPipe extends AbstractPipe {
 
 	/**
 	 * when set <code>true</code> the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form
+	 *
 	 * @ff.default false
 	 */
 	public void setXml(boolean b) {

@@ -14,6 +14,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,8 @@ public class IbisJavaSenderTest {
 		ibisJavaSender = new IbisJavaSender();
 
 		DispatcherManagerFactory.getDispatcherManager().register(ECHO_SERVICE, ((correlationId, message, requestContext) -> message));
-		DispatcherManagerFactory.getDispatcherManager().register(VALUE_FROM_CONTEXT_SERVICE, ((correlationId, message, requestContext) -> requestContext.get(message).toString()));
+		DispatcherManagerFactory.getDispatcherManager()
+				.register(VALUE_FROM_CONTEXT_SERVICE, ((correlationId, message, requestContext) -> requestContext.get(message).toString()));
 	}
 
 	@AfterEach
@@ -120,6 +122,6 @@ public class IbisJavaSenderTest {
 	@Test
 	public void testConfigure() {
 		// Act / Assert
-		assertThrows(ConfigurationException.class, ()-> ibisJavaSender.configure());
+		assertThrows(ConfigurationException.class, () -> ibisJavaSender.configure());
 	}
 }

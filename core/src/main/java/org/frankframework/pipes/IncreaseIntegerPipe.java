@@ -15,9 +15,8 @@
 */
 package org.frankframework.pipes;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -34,9 +33,8 @@ import org.frankframework.stream.Message;
  * Pipe that increases the integer value of a session variable.
  * Can be used in combination with {@link CompareIntegerPipe} to construct loops.
  *
- * @ff.parameter increment integer value to be added to the session variable
- *
  * @author Richard Punt / Gerrit van Brakel
+ * @ff.parameter increment integer value to be added to the session variable
  */
 @ElementType(ElementTypes.SESSION)
 public class IncreaseIntegerPipe extends FixedForwardPipe {
@@ -63,11 +61,11 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		}
 		int incrementBy = increment;
 		ParameterList pl = getParameterList();
-		if(pl != null && !pl.isEmpty()) {
+		if (pl != null && !pl.isEmpty()) {
 			try {
 				ParameterValueList pvl = pl.getValues(message, session);
 				ParameterValue pv = pvl.get(PARAMETER_INCREMENT);
-				if(pv != null) {
+				if (pv != null) {
 					incrementBy = pv.asIntegerValue(increment);
 				}
 			} catch (ParameterException e) {
@@ -86,7 +84,9 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 	}
 
 
-	/** Reference to the session variable whose value is to be increased
+	/**
+	 * Reference to the session variable whose value is to be increased
+	 *
 	 * @ff.mandatory
 	 */
 	public void setSessionKey(String string) {
@@ -95,6 +95,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 
 	/**
 	 * amount to increment the value. Can be set from the attribute or the parameter 'increment'
+	 *
 	 * @ff.default 1
 	 */
 	public void setIncrement(int i) {

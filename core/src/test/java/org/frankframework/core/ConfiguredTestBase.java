@@ -5,6 +5,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.LogUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -18,10 +19,10 @@ public abstract class ConfiguredTestBase {
 
 	protected PipeLine pipeline;
 	protected Adapter adapter;
-	private static  TestConfiguration configuration;
+	private static TestConfiguration configuration;
 
 	protected TestConfiguration getConfiguration() {
-		if(configuration == null) {
+		if (configuration == null) {
 			configuration = new TestConfiguration();
 		}
 		return configuration;
@@ -31,7 +32,7 @@ public abstract class ConfiguredTestBase {
 	public void setUp() throws Exception {
 		pipeline = getConfiguration().createBean(PipeLine.class);
 		adapter = getConfiguration().createBean(Adapter.class);
-		adapter.setName("TestAdapter of "+getClass().getSimpleName());
+		adapter.setName("TestAdapter of " + getClass().getSimpleName());
 		adapter.setPipeLine(pipeline);
 		session = new PipeLineSession();
 	}
@@ -42,7 +43,7 @@ public abstract class ConfiguredTestBase {
 		getConfigurationWarnings().afterPropertiesSet();
 		pipeline = null;
 		adapter = null;
-		if(session != null) {
+		if (session != null) {
 			session.close();
 		}
 	}

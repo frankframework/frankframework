@@ -29,9 +29,8 @@ import org.frankframework.util.ClassUtils;
 /**
  * Translate a record into XML, then send it using a sender.
  *
+ * @author John Dekker
  * @ff.parameters any parameters defined on the recordHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
- *
- * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
@@ -42,8 +41,8 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (sender==null) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
+		if (sender == null) {
+			throw new ConfigurationException(ClassUtils.nameOf(this) + " has no sender");
 		}
 		sender.configure();
 	}
@@ -53,6 +52,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 		super.open();
 		sender.open();
 	}
+
 	@Override
 	public void close() throws SenderException {
 		super.close();
@@ -61,7 +61,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 
 	@Override
 	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
-		String xml = super.handleRecord(session,parsedRecord);
+		String xml = super.handleRecord(session, parsedRecord);
 		try (Message message = getSender().sendMessageOrThrow(new Message(xml), session)) {
 			return message.asString();
 		}

@@ -31,7 +31,7 @@ import org.frankframework.stream.Message;
 
 /**
  * Retrieves a message using an {@link IPostboxListener}.
- *
+ * <p>
  * Note that most listeners allow you to specify a timeout. The timeout has the following
  * meaning:
  * <ul>
@@ -44,11 +44,11 @@ import org.frankframework.stream.Message;
  * <tr><td>{@link IPostboxListener listener}</td><td>specification of postbox listener to retrieve messages from</td></tr>
  * </table>
  * </p>
-  *
- * @author  John Dekker
+ *
+ * @author John Dekker
  */
 @Deprecated
-public class PostboxRetrieverPipe  extends FixedForwardPipe {
+public class PostboxRetrieverPipe extends FixedForwardPipe {
 
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
@@ -58,7 +58,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		super.configure();
 
 		if (getListener() == null) {
-				throw new ConfigurationException("no sender defined ");
+			throw new ConfigurationException("no sender defined ");
 		}
 	}
 
@@ -74,8 +74,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 	public void start() throws PipeStartException {
 		try {
 			getListener().open();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new PipeStartException(e);
 		}
 	}
@@ -84,8 +83,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 	public void stop() {
 		try {
 			getListener().close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.warn("exception closing sender", e);
 		}
 	}
@@ -110,15 +108,13 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 			Message result = getListener().extractMessage(rawMessage, threadContext);
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (Exception e) {
-			throw new PipeRunException( this, "caught exception", e);
-		}
-		finally {
+			throw new PipeRunException(this, "caught exception", e);
+		} finally {
 			try {
 				if (threadContext != null) {
 					getListener().closeThread(threadContext);
 				}
-			}
-			catch (ListenerException le) {
+			} catch (ListenerException le) {
 				log.error("got error closing listener");
 			}
 		}
@@ -130,6 +126,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 
 	/**
 	 * result when no object is on postbox
+	 *
 	 * @ff.default empty postbox
 	 */
 	public void setResultOnEmptyPostbox(String string) {

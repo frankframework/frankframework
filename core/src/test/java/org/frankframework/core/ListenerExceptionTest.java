@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.NoSuchElementException;
 
 import org.frankframework.pipes.FixedResultPipe;
+
 import org.junit.jupiter.api.Test;
 
 public class ListenerExceptionTest {
@@ -19,7 +20,7 @@ public class ListenerExceptionTest {
 		Exception exception3 = new ListenerException(exception2);
 		String result = exception3.getMessage();
 
-		assertEquals("Pipe [null] "+message2+": ("+rootException.getClass().getSimpleName()+") "+rootMessage, result);
+		assertEquals("Pipe [null] " + message2 + ": (" + rootException.getClass().getSimpleName() + ") " + rootMessage, result);
 	}
 
 	@Test
@@ -30,7 +31,7 @@ public class ListenerExceptionTest {
 		Exception exception3 = new ListenerException(exception2);
 		String result = exception3.getMessage();
 
-		assertEquals("Caught Exception: ("+rootException.getClass().getSimpleName()+") "+rootMessage, result);
+		assertEquals("Caught Exception: (" + rootException.getClass().getSimpleName() + ") " + rootMessage, result);
 	}
 
 	@Test
@@ -51,6 +52,6 @@ public class ListenerExceptionTest {
 		Exception exception2 = new ListenerException(message2, rootException);
 		String result = exception2.getMessage();
 
-		assertEquals(message2+": Pipe [null] "+rootMessage, result);
+		assertEquals(message2 + ": Pipe [null] " + rootMessage, result);
 	}
 }

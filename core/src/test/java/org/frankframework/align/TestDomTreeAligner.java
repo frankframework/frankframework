@@ -14,8 +14,10 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.XSModel;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
 import org.w3c.dom.Document;
 
 /**

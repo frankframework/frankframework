@@ -23,8 +23,8 @@ public class EsbConnectionFactoryInfo {
 	private final String password;
 
 	public EsbConnectionFactoryInfo(Object managedConnectionFactory,
-			String contextFactoryClassname, String url, String userName,
-			String password) {
+									String contextFactoryClassname, String url, String userName,
+									String password) {
 		super();
 		this.managedConnectionFactory = managedConnectionFactory;
 		this.contextFactoryClassname = contextFactoryClassname;

@@ -38,11 +38,12 @@ public class AwsUtil {
 	private static final boolean REUSE_LAST_PROVIDER = true;
 
 	// S3
+
 	/** com.amazonaws.auth based CredentialProvider */
 	public static @Nonnull AWSCredentialsProvider createCredentialProviderChain(@Nullable CredentialFactory cf) {
 		List<AWSCredentialsProvider> chain = new ArrayList<>();
 
-		if(cf != null) {
+		if (cf != null) {
 			BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
 			chain.add(new AWSStaticCredentialsProvider(awsCreds));
 		}
@@ -57,6 +58,7 @@ public class AwsUtil {
 	}
 
 	// SQS
+
 	/** software.amazon.awssdk.auth.credentials based CredentialProvider */
 	private static AwsCredentials getAwsCredentials(CredentialFactory cf) {
 		return new AwsCredentials() {
@@ -76,7 +78,7 @@ public class AwsUtil {
 	public static @Nonnull AwsCredentialsProvider getAwsCredentialsProvider(@Nullable CredentialFactory cf) {
 		Builder chain = AwsCredentialsProviderChain.builder();
 
-		if(cf != null) {
+		if (cf != null) {
 			chain.addCredentialsProvider(StaticCredentialsProvider.create(getAwsCredentials(cf)));
 		}
 

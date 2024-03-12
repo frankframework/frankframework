@@ -38,7 +38,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.http.HttpResponseHandler;
@@ -57,72 +56,71 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 		HttpRequestBase method = null;
 
 		HttpMethod methodType = (HttpMethod) session.get("method");
-		if(methodType == null) {
+		if (methodType == null) {
 			throw new SenderException("unable to determine method from pipeline session");
 		}
 
 		try {
 			switch (methodType) {
-			case GET:
-				method = new HttpGet(uri);
-				break;
+				case GET:
+					method = new HttpGet(uri);
+					break;
 
-			case POST:
-				HttpPost httpPost = new HttpPost(uri);
+				case POST:
+					HttpPost httpPost = new HttpPost(uri);
 
-				// send data
-				if (pvl.get("writer") != null) {
-					Output writer = (Output) pvl.get("writer").getValue();
-					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					// send data
+					if (pvl.get("writer") != null) {
+						Output writer = (Output) pvl.get("writer").getValue();
+						ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
-					if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
-						httpPost.setHeader("Content-Encoding", "gzip");
-						writer.write(new GZIPOutputStream(out, 4096));
-					} else {
-						writer.write(out);
+						Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
+						if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
+							httpPost.setHeader("Content-Encoding", "gzip");
+							writer.write(new GZIPOutputStream(out, 4096));
+						} else {
+							writer.write(out);
+						}
+
+						HttpEntity entity = new BufferedHttpEntity(new ByteArrayEntity(out.toByteArray()));
+						httpPost.setEntity(entity);
+						out.close();
+
+						method = httpPost;
 					}
+					break;
 
-					HttpEntity entity = new BufferedHttpEntity( new ByteArrayEntity(out.toByteArray()) );
-					httpPost.setEntity(entity);
-					out.close();
+				case PUT:
+					HttpPut httpPut = new HttpPut(uri);
 
-					method = httpPost;
-				}
-				break;
+					// send data
+					if (pvl.get("writer") != null) {
+						Output writer = (Output) pvl.get("writer").getValue();
+						ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-			case PUT:
-				HttpPut httpPut = new HttpPut(uri);
+						Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
+						if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
+							httpPut.setHeader("Content-Encoding", "gzip");
+							writer.write(new GZIPOutputStream(out, 4096));
+						} else {
+							writer.write(out);
+						}
 
-				// send data
-				if (pvl.get("writer") != null) {
-					Output writer = (Output) pvl.get("writer").getValue();
-					ByteArrayOutputStream out = new ByteArrayOutputStream();
+						HttpEntity entity = new BufferedHttpEntity(new ByteArrayEntity(out.toByteArray()));
+						httpPut.setEntity(entity);
+						out.close();
 
-					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
-					if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
-						httpPut.setHeader("Content-Encoding", "gzip");
-						writer.write(new GZIPOutputStream(out, 4096));
-					} else {
-						writer.write(out);
+						method = httpPut;
 					}
+					break;
+				case DELETE:
+					method = new HttpDelete(uri);
+					break;
 
-					HttpEntity entity = new BufferedHttpEntity( new ByteArrayEntity(out.toByteArray()) );
-					httpPut.setEntity(entity);
-					out.close();
-
-					method = httpPut;
-				}
-				break;
-			case DELETE:
-				method = new HttpDelete(uri);
-				break;
-
-			default:
-				throw new MethodNotSupportedException("method ["+methodType+"] not implemented");
+				default:
+					throw new MethodNotSupportedException("method [" + methodType + "] not implemented");
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 
@@ -130,14 +128,14 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			@SuppressWarnings("unchecked")
 			Map<String, String> headers = (Map<String, String>) session.get("headers");
 
-			for(Map.Entry<String, String> entry : headers.entrySet()) {
-				if(log.isTraceEnabled()) log.trace("appending header [{}] with value [{}]", entry.getKey(), entry.getValue());
+			for (Map.Entry<String, String> entry : headers.entrySet()) {
+				if (log.isTraceEnabled()) log.trace("appending header [{}] with value [{}]", entry.getKey(), entry.getValue());
 
 				method.addHeader(entry.getKey(), entry.getValue());
 			}
 		}
 
-		log.debug(getLogPrefix()+"HttpSender constructed "+methodType+"-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
+		log.debug(getLogPrefix() + "HttpSender constructed " + methodType + "-method [" + method.getURI() + "] query [" + method.getURI().getQuery() + "] ");
 		return method;
 	}
 
@@ -156,14 +154,12 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			Map<String, List<String>> headerFields = responseHandler.getHeaderFields();
 			if (responseCode == 200 || responseCode == 201 || responseCode == 203 || responseCode == 206) {
 				responseStream = responseMessage.asInputStream();
-			}
-			else {
+			} else {
 				errorStream = responseMessage.asInputStream();
 			}
 			Response response = new Response(responseCode, statusline.toString(), headerFields, responseStream, errorStream);
 			session.put("response", response);
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			throw new CmisConnectionException(getUrl(), responseCode, e);
 		}
 

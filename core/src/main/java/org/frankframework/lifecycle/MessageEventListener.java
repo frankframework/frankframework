@@ -37,6 +37,7 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 	 * Get MessageKeeper for the application. The MessageKeeper is not
 	 * stored at the Configuration object instance to prevent messages being
 	 * lost after configuration reload.
+	 *
 	 * @return MessageKeeper for the application
 	 */
 	public MessageKeeper getMessageKeeper() {
@@ -47,6 +48,7 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 	 * Get MessageKeeper for a specific configuration. The MessageKeeper is not
 	 * stored at the Configuration object instance to prevent messages being
 	 * lost after configuration reload.
+	 *
 	 * @param configurationName configuration name to get the MessageKeeper object from
 	 * @return MessageKeeper for specified configurations
 	 */
@@ -69,7 +71,7 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 
 	@Override
 	public void onApplicationEvent(ApplicationMessageEvent event) {
-		if(event instanceof ConfigurationMessageEvent) {
+		if (event instanceof ConfigurationMessageEvent) {
 			String configurationName = ((ConfigurationMessageEvent) event).getSource().getName();
 			configLog(configurationName).add(event.getMessageKeeperMessage());
 		}

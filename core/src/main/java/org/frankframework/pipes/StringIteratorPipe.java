@@ -35,29 +35,29 @@ import org.frankframework.util.XmlEncodingUtils;
  */
 public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
-	private @Getter int stringIteratorPipeBlockSize=0;
-	private @Getter int startPosition=-1;
-	private @Getter int endPosition=-1;
-	private @Getter boolean combineBlocks=true;
+	private @Getter int stringIteratorPipeBlockSize = 0;
+	private @Getter int startPosition = -1;
+	private @Getter int endPosition = -1;
+	private @Getter boolean combineBlocks = true;
 
-	private @Getter String blockPrefix="<block>";
-	private @Getter String blockSuffix="</block>";
-	private @Getter String linePrefix="";
-	private @Getter String lineSuffix="";
+	private @Getter String blockPrefix = "<block>";
+	private @Getter String blockSuffix = "</block>";
+	private @Getter String linePrefix = "";
+	private @Getter String lineSuffix = "";
 
-	private boolean processInBlocksBySize=false;
-	private boolean processInBlocksByKey=false;
-	private @Getter boolean escapeXml=false;
+	private boolean processInBlocksBySize = false;
+	private boolean processInBlocksByKey = false;
+	private @Getter boolean escapeXml = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		processInBlocksBySize = getStringIteratorPipeBlockSize()>0;
-		processInBlocksByKey = getStartPosition()>=0 && getEndPosition()>getStartPosition();
+		processInBlocksBySize = getStringIteratorPipeBlockSize() > 0;
+		processInBlocksByKey = getStartPosition() >= 0 && getEndPosition() > getStartPosition();
 		if ((processInBlocksBySize || processInBlocksByKey) && !isCombineBlocks() && !(getSender() instanceof IBlockEnabledSender)) {
 			ConfigurationWarnings.add(this, log, "configured to process in blocks, but combineBlocks=false, and sender is not Block Enabled. There will be no block behaviour effectively");
 		}
-		if (getStringIteratorPipeBlockSize()>0) {
+		if (getStringIteratorPipeBlockSize() > 0) {
 			super.setBlockSize(isCombineBlocks() ? 1 : getStringIteratorPipeBlockSize());
 		}
 	}
@@ -66,20 +66,21 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 	protected IteratingPipe<String>.ItemCallback createItemCallBack(PipeLineSession session, ISender sender, Writer writer) {
 		return new ItemCallback(session, sender, writer) {
 
-			private int itemCounter=0;
-			private int totalItems=0;
+			private int itemCounter = 0;
+			private int totalItems = 0;
 			private StringBuilder items = new StringBuilder();
-			private String previousKey=null;
-			private boolean processingInBlocks=false;
+			private String previousKey = null;
+			private boolean processingInBlocks = false;
 
 			@Override
 			public void endIterating() throws SenderException, IOException, TimeoutException {
 				finalizeBlock();
 				super.endIterating();
 			}
+
 			@Override
 			public void startBlock() throws SenderException, TimeoutException {
-				processingInBlocks=true;
+				processingInBlocks = true;
 				super.startBlock();
 				if (isCombineBlocks()) {
 					items.append(getBlockPrefix());
@@ -87,8 +88,8 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 			}
 
 			private StopReason finalizeBlock() throws SenderException, TimeoutException, IOException {
-				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
-					itemCounter=0;
+				if (processingInBlocks && isCombineBlocks() && itemCounter > 0) {
+					itemCounter = 0;
 					items.append(getBlockSuffix());
 					StopReason stopReason = super.handleItem(items.toString());
 					items.setLength(0);
@@ -99,32 +100,32 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 			@Override
 			public StopReason handleItem(String item) throws SenderException, TimeoutException, IOException {
-				if (processInBlocksBySize && itemCounter==0) {
+				if (processInBlocksBySize && itemCounter == 0) {
 					startBlock();
 				}
 				if (processInBlocksByKey) {
 					String key = getKey(item);
 					if (!key.equals(previousKey)) {
 						StopReason stopReason = finalizeBlock();
-						if(stopReason != null) {
+						if (stopReason != null) {
 							return stopReason;
 						}
 						startBlock();
-						previousKey=key;
+						previousKey = key;
 					}
 				}
-				String itemInEnvelope = getLinePrefix()+(isEscapeXml() ? XmlEncodingUtils.encodeChars(item) : item)+getLineSuffix();
+				String itemInEnvelope = getLinePrefix() + (isEscapeXml() ? XmlEncodingUtils.encodeChars(item) : item) + getLineSuffix();
 				StopReason result = null;
 				if (processingInBlocks && isCombineBlocks()) {
 					items.append(itemInEnvelope);
 					++itemCounter;
-					if (processInBlocksBySize && itemCounter>=getStringIteratorPipeBlockSize()) {
+					if (processInBlocksBySize && itemCounter >= getStringIteratorPipeBlockSize()) {
 						finalizeBlock();
 					}
 				} else {
 					result = super.handleItem(itemInEnvelope);
 				}
-				if (getMaxItems()>0 && ++totalItems>=getMaxItems()) {
+				if (getMaxItems() > 0 && ++totalItems >= getMaxItems()) {
 					log.debug("count [{}] reached maxItems [{}], stopping loop", totalItems, getMaxItems());
 					return StopReason.MAX_ITEMS_REACHED;
 				}
@@ -152,6 +153,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 	/**
 	 * If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0);
 	 * A sequence of lines with the same key is put in one block and send to the sender. Cannot be used in combination with blockSize.
+	 *
 	 * @ff.default -1
 	 */
 	public void setStartPosition(int i) {
@@ -160,6 +162,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 	/**
 	 * If <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record
+	 *
 	 * @ff.default -1
 	 */
 	public void setEndPosition(int i) {
@@ -168,6 +171,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 	/**
 	 * If <code>true</code>, all items in a block are sent at once. If set false, items are sent individually, potentially leveraging block enabled sending capabilities of the sender
+	 *
 	 * @ff.default true
 	 */
 	public void setCombineBlocks(boolean combineBlocks) {
@@ -176,6 +180,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 	/**
 	 * If <code>combineBlocks = true</code>, this string is inserted at the start of each block. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.
+	 *
 	 * @ff.default &lt;block&gt;
 	 */
 	public void setBlockPrefix(String string) {
@@ -184,6 +189,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 	/**
 	 * If <code>combineBlocks = true</code>, this string is inserted at the end of the set of lines. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.
+	 *
 	 * @ff.default &lt;/block&gt;
 	 */
 	public void setBlockSuffix(String string) {
@@ -202,6 +208,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 	/**
 	 * Escape XML characters in each item
+	 *
 	 * @ff.default false
 	 */
 	public void setEscapeXml(boolean escapeXml) {

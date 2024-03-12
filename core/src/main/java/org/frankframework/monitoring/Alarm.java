@@ -18,8 +18,8 @@ package org.frankframework.monitoring;
 
 /**
  * A Trigger that starts its life with type = ALARM. The type of the trigger can be changed dynamically.
- * @author martijn
  *
+ * @author martijn
  */
 public class Alarm extends Trigger {
 	public Alarm() {

@@ -23,6 +23,7 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.ValidatorTestBase;
 import org.frankframework.validation.XmlValidatorContentHandler;
 import org.frankframework.validation.XmlValidatorException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -30,21 +31,22 @@ import org.junit.jupiter.api.Test;
 
 
 /**
-  * @author Michiel Meeuwissen
+ * @author Michiel Meeuwissen
  */
 
 public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
-	private static final String SIMPLE					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple.wsdl";
-	private static final String SIMPLE_WITH_INCLUDE		= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple_withinclude.wsdl";
-	private static final String SIMPLE_WITH_REFERENCE 	= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple_withreference.wsdl";
-	private static final String TIBCO					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1.wsdl";
-	private static final String DOUBLE_BODY				= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetailsDoubleBody.wsdl";
-	private static final String BASIC					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
-	private static final String SIVTR					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1.wsdl";
-	private static final String SIVTRX					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1x.wsdl";
-	private static final String MULTIPLE_OPERATIONS		= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/multipleOperations.wsdl";
+	private static final String SIMPLE = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/SimpleWsdl/simple.wsdl";
+	private static final String SIMPLE_WITH_INCLUDE = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/SimpleWsdl/simple_withinclude.wsdl";
+	private static final String SIMPLE_WITH_REFERENCE = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/SimpleWsdl/simple_withreference.wsdl";
+	private static final String TIBCO = ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1.wsdl";
+	private static final String DOUBLE_BODY = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetails/GetPolicyDetailsDoubleBody.wsdl";
+	private static final String BASIC = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
+	private static final String SIVTR = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1.wsdl";
+	private static final String SIVTRX = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1x.wsdl";
+	private static final String MULTIPLE_OPERATIONS = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/multipleOperations.wsdl";
 
 	TestAppender testAppender;
+
 	@BeforeEach
 	void before() {
 		testAppender = TestAppender.newBuilder().build();
@@ -122,9 +124,11 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		// Assert
 		assertTrue(testAppender.getLogLines()
-				.stream().anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
+				.stream()
+				.anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
 		assertTrue(getConfigurationWarnings().getWarnings()
-				.stream().anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
+				.stream()
+				.anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
 
 		// Act pt2
 		validator.start();
@@ -294,7 +298,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
-			val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbolERROR>foo</tickerSymbolERROR></TradePriceRequest></Body></Envelope>", session)
+				val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbolERROR>foo</tickerSymbolERROR></TradePriceRequest></Body></Envelope>", session)
 		);
 	}
 
@@ -348,30 +352,30 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		assertThrows(XmlValidatorException.class, () ->
 
 				val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"  <BodyERROR>\n" +
-				"	<MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
-				"	  <From>\n" +
-				"		<Id>Ibis4Toegang</Id>\n" +
-				"	  </From>\n" +
-				"	  <HeaderFields>\n" +
-				"		<ConversationId/>\n" +
-				"		<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>\n" +
-				"		<ExternalRefToMessageId/>\n" +
-				"		<Timestamp>2001-12-17T09:30:47</Timestamp>\n" +
-				"	  </HeaderFields>\n" +
-				"	</MessageHeader>\n" +
-				"	<Request xmlns=\"http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01\">\n" +
-				"	  <BankSparen xmlns=\"http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01\">\n" +
-				"		<PRD>\n" +
-				"		  <KLT>\n" +
-				"			<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>\n" +
-				"		  </KLT>\n" +
-				"		</PRD>\n" +
-				"	  </BankSparen>\n" +
-				"	</Request>\n" +
-				"  </BodyERROR>\n" +
-				"</Envelope>\n" +
-				"", session)
+						"  <BodyERROR>\n" +
+						"	<MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
+						"	  <From>\n" +
+						"		<Id>Ibis4Toegang</Id>\n" +
+						"	  </From>\n" +
+						"	  <HeaderFields>\n" +
+						"		<ConversationId/>\n" +
+						"		<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>\n" +
+						"		<ExternalRefToMessageId/>\n" +
+						"		<Timestamp>2001-12-17T09:30:47</Timestamp>\n" +
+						"	  </HeaderFields>\n" +
+						"	</MessageHeader>\n" +
+						"	<Request xmlns=\"http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01\">\n" +
+						"	  <BankSparen xmlns=\"http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01\">\n" +
+						"		<PRD>\n" +
+						"		  <KLT>\n" +
+						"			<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>\n" +
+						"		  </KLT>\n" +
+						"		</PRD>\n" +
+						"	  </BankSparen>\n" +
+						"	</Request>\n" +
+						"  </BodyERROR>\n" +
+						"</Envelope>\n" +
+						"", session)
 		);
 	}
 
@@ -386,30 +390,30 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		assertThrows(XmlValidatorException.class, () ->
 
 				val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"  <Body>\n" +
-				"	<MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
-				"	  <From>\n" +
-				"		<Id>Ibis4Toegang</Id>\n" +
-				"	  </From>\n" +
-				"	  <HeaderFields>\n" +
-				"		<ConversationId/>\n" +
-				"		<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>\n" +
-				"		<ExternalRefToMessageId/>\n" +
-				"		<Timestamp>2001-12-17T09:30:47</Timestamp>\n" +
-				"	  </HeaderFields>\n" +
-				"	</MessageHeader>\n" +
-				"	<Request xmlns=\"http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01\">\n" +
-				"	  <BankSparen xmlns=\"http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01\">\n" +
-				"		<PRD>\n" +
-				"		  <KLTERROR>\n" +
-				"			<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>\n" +
-				"		  </KLTERROR>\n" +
-				"		</PRD>\n" +
-				"	  </BankSparen>\n" +
-				"	</Request>\n" +
-				"  </Body>\n" +
-				"</Envelope>\n" +
-				"", session)
+						"  <Body>\n" +
+						"	<MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
+						"	  <From>\n" +
+						"		<Id>Ibis4Toegang</Id>\n" +
+						"	  </From>\n" +
+						"	  <HeaderFields>\n" +
+						"		<ConversationId/>\n" +
+						"		<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>\n" +
+						"		<ExternalRefToMessageId/>\n" +
+						"		<Timestamp>2001-12-17T09:30:47</Timestamp>\n" +
+						"	  </HeaderFields>\n" +
+						"	</MessageHeader>\n" +
+						"	<Request xmlns=\"http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01\">\n" +
+						"	  <BankSparen xmlns=\"http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01\">\n" +
+						"		<PRD>\n" +
+						"		  <KLTERROR>\n" +
+						"			<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>\n" +
+						"		  </KLTERROR>\n" +
+						"		</PRD>\n" +
+						"	  </BankSparen>\n" +
+						"	</Request>\n" +
+						"  </Body>\n" +
+						"</Envelope>\n" +
+						"", session)
 		);
 	}
 
@@ -507,7 +511,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.registerForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
-		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
+		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/IgnoreImport/in-ok.xml");
 		PipeForward forward = pipe.validate(input, session);
 
 		assertEquals("success", forward.getName());
@@ -523,8 +527,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.registerForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
-		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");
-		Exception e = assertThrows(Exception.class, ()->pipe.validate(input, session));
+		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/IgnoreImport/in-err.xml");
+		Exception e = assertThrows(Exception.class, () -> pipe.validate(input, session));
 
 		assertThat(e.getMessage(), containsString("Invalid content was found starting with element"));
 		assertThat(e.getMessage(), containsString("CountryKode"));
@@ -540,7 +544,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.registerForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
-		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
+		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/IgnoreImport/in-ok.xml");
 		PipeForward forward = pipe.validate(input, session);
 
 		assertEquals("success", forward.getName());
@@ -556,8 +560,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.registerForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
-		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");
-		Exception e = assertThrows(Exception.class, ()->pipe.validate(input, session));
+		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/IgnoreImport/in-err.xml");
+		Exception e = assertThrows(Exception.class, () -> pipe.validate(input, session));
 
 		assertThat(e.getMessage(), containsString("Invalid content was found starting with element"));
 		assertThat(e.getMessage(), containsString("CountryKode"));

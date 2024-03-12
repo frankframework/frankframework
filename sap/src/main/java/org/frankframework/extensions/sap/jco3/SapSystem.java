@@ -16,6 +16,7 @@
 package org.frankframework.extensions.sap.jco3;
 
 import org.frankframework.configuration.ConfigurationWarning;
+
 @Deprecated
 @ConfigurationWarning("Please do not specify jco version in package name")
 public class SapSystem extends SapSystemImpl {

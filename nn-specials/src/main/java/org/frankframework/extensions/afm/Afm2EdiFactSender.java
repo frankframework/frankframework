@@ -17,14 +17,9 @@ package org.frankframework.extensions.afm;
 
 import java.text.DecimalFormat;
 
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -35,6 +30,10 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
+import org.springframework.context.ApplicationContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Domparser om AFM-XML berichten om te zetten in edifactberichten (voor de backoffice).
@@ -83,7 +82,7 @@ public class Afm2EdiFactSender implements ISender {
 		try {
 			return new SenderResult(execute(message.asString()));
 		} catch (Exception e) {
-			throw new SenderException("transforming AFM-XML to EdiFact",e);
+			throw new SenderException("transforming AFM-XML to EdiFact", e);
 		}
 	}
 
@@ -91,6 +90,7 @@ public class Afm2EdiFactSender implements ISender {
 		String aStr = new String(aArray);
 		appendString(aStr, aRes);
 	}
+
 	private void appendString(String aStr, StringBuilder aRes) {
 		if (aStr != null) {
 			String lHlpStr = aStr.trim();  //TODO: checken of dit wel klopt, stond zo in originele EvdW-code
@@ -99,6 +99,7 @@ public class Afm2EdiFactSender implements ISender {
 			}
 		}
 	}
+
 	private boolean bevatWaarde(Node aNode) {
 		String lWaarde = getWaardeForNode(aNode);
 		boolean lRes = false;
@@ -124,18 +125,19 @@ public class Afm2EdiFactSender implements ISender {
 		}
 		return lRes;
 	}
+
 	private void closeList(StringBuilder aRes, int regelTeller) {
 		// UNT
 		char untRegel[] = new char[21];
-		for (int i = 0; i < 21; i++)
-			untRegel[i] = ' ';
+		for (int i = 0; i < 21; i++) {untRegel[i] = ' ';}
 		"UNT".getChars(0, "UNT".length(), untRegel, 0);
 		DecimalFormat df = new DecimalFormat("000000");
 		regelTeller++; //de UNT Regel zelf
-		df.format(regelTeller).getChars(0,df.format(regelTeller).length(),untRegel,3);
+		df.format(regelTeller).getChars(0, df.format(regelTeller).length(), untRegel, 3);
 		appendArray(untRegel, aRes);
 		regelTeller = 0;
 	}
+
 	public String execute(String aInput) throws DomBuilderException {
 		Document doc = XmlUtils.buildDomDocument(aInput);
 
@@ -159,11 +161,11 @@ public class Afm2EdiFactSender implements ISender {
 
 		return resultaat.toString();
 	}
+
 	public char[] getCloseResultaat() {
 		// UNZ
 		char unzRegel[] = new char[23];
-		for (int i = 0; i < 23; i++)
-			unzRegel[i] = ' ';
+		for (int i = 0; i < 23; i++) {unzRegel[i] = ' ';}
 		"UNZ000001".getChars(0, "UNZ000001".length(), unzRegel, 0);
 		return unzRegel;
 	}
@@ -171,8 +173,7 @@ public class Afm2EdiFactSender implements ISender {
 	public char[] getInitResultaat() {
 		// UNB
 		char unbRegel[] = new char[206];
-		for (int i = 0; i < 206; i++)
-			unbRegel[i] = ' ';
+		for (int i = 0; i < 206; i++) {unbRegel[i] = ' ';}
 		String lStart = "UNBUNOC1INFONET " + getDestination() + "     TP";
 		lStart.getChars(0, lStart.length(), unbRegel, 0);
 		getTpnummer().getChars(0, getTpnummer().length(), unbRegel, 26);
@@ -184,6 +185,7 @@ public class Afm2EdiFactSender implements ISender {
 		"0".getChars(0, "0".length(), unbRegel, 205);
 		return unbRegel;
 	}
+
 	private String getLabelNaam(String aLabel) {
 
 		String lRes = aLabel;
@@ -194,10 +196,10 @@ public class Afm2EdiFactSender implements ISender {
 		}
 		return lRes;
 	}
+
 	private char[] getNewDocInit() {
 		char unhRegel[] = new char[74];
-		for (int i = 0; i < 74; i++)
-			unhRegel[i] = ' ';
+		for (int i = 0; i < 74; i++) {unhRegel[i] = ' ';}
 		"UNH".getChars(0, "UNH".length(), unhRegel, 0);
 		"INSLBW001000IN".getChars(0, "INSLBW001000IN".length(), unhRegel, 17);
 		"00".getChars(0, "00".length(), unhRegel, 72);
@@ -209,6 +211,7 @@ public class Afm2EdiFactSender implements ISender {
 		String lRes = aNode.getNodeName() + "_" + VERWERKTAG;
 		return lRes;
 	}
+
 	private String getVerwerkCdWaarde(Node aNode) {
 		NodeList aList = aNode.getChildNodes();
 		String lRes = "";
@@ -222,18 +225,20 @@ public class Afm2EdiFactSender implements ISender {
 		}
 		return lRes;
 	}
+
 	private String getWaardeForNode(Node aNode) {
 		String lRes = "";
 		NodeList lList = aNode.getChildNodes();
 		for (int i = 0; i <= lList.getLength() - 1; i++) {
 			Node aSubNode = lList.item(i);
 			if ((aSubNode.getNodeType() == Node.TEXT_NODE)
-				|| (aSubNode.getNodeType() == Node.CDATA_SECTION_NODE)) {
+					|| (aSubNode.getNodeType() == Node.CDATA_SECTION_NODE)) {
 				lRes = lRes + aSubNode.getNodeValue();
 			}
 		}
 		return lRes;
 	}
+
 	private StringBuilder HandleList(NodeList aList, StringBuilder aRes) {
 		if (aList != null) {
 			if (aList.getLength() > 0) {
@@ -243,12 +248,13 @@ public class Afm2EdiFactSender implements ISender {
 					Node aNode = aList.item(i);
 					NodeList aSubList = aNode.getChildNodes();
 					regelTeller = HandleSubList(aSubList, aRes, regelTeller);
-					closeList(aRes,regelTeller);
+					closeList(aRes, regelTeller);
 				}
 			}
 		}
 		return aRes;
 	}
+
 	private int HandleSubList(NodeList aList, StringBuilder aRes, int regelTeller) {
 		String lHlp = "";
 		if (aList != null) {
@@ -257,7 +263,7 @@ public class Afm2EdiFactSender implements ISender {
 				if (aNode.getNodeType() == Node.ELEMENT_NODE) {
 					if (bevatWaarde(aNode)) {
 						String labelNaam =
-							this.getLabelNaam(aNode.getNodeName());
+								this.getLabelNaam(aNode.getNodeName());
 						if (labelNaam.length() == 2) {
 							// Entiteit gevonden
 							lHlp = "ENT" + labelNaam + getVerwerkCdWaarde(aNode);
@@ -277,7 +283,7 @@ public class Afm2EdiFactSender implements ISender {
 								}
 								String lWaarde = this.getWaardeForNode(aNode);
 								if ((lWaarde != null)
-									&& (!lWaarde.equalsIgnoreCase(""))) {
+										&& (!lWaarde.equalsIgnoreCase(""))) {
 									lHlp = lHlp + lWaarde;
 									this.appendString(lHlp, aRes);
 									regelTeller++;
@@ -293,8 +299,9 @@ public class Afm2EdiFactSender implements ISender {
 
 	@Override
 	public void setName(String name) {
-		this.name=name;
+		this.name = name;
 	}
+
 	@Override
 	public String getName() {
 		return name;
@@ -303,6 +310,7 @@ public class Afm2EdiFactSender implements ISender {
 	public void setDestination(String newDestination) {
 		destination = newDestination;
 	}
+
 	public String getDestination() {
 		return destination;
 	}
@@ -310,6 +318,7 @@ public class Afm2EdiFactSender implements ISender {
 	public void setPostbus(String newPostbus) {
 		postbus = newPostbus;
 	}
+
 	public String getPostbus() {
 		return postbus;
 	}
@@ -318,6 +327,7 @@ public class Afm2EdiFactSender implements ISender {
 		logger.info("Tpnr: " + newTpnummer);
 		tpnummer = newTpnummer;
 	}
+
 	public String getTpnummer() {
 		return tpnummer;
 	}

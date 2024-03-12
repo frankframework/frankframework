@@ -31,20 +31,20 @@ import org.xml.sax.SAXParseException;
  * In such a situation the ExceptionInsertingFilter can be used in the head of the chain, to receive unhandled exceptions of the tail.
  *
  * @author Gerrit van Brakel
- *
  * @see TransformerFilter
  */
 public class ExceptionInsertingFilter extends FullXmlFilter {
 
-	private SAXException insertedException=null;
+	private SAXException insertedException = null;
 
 	public ExceptionInsertingFilter(ContentHandler handler) {
 		super(handler);
 	}
 
 	public void insertException(SAXException exception) {
-		if(insertedException != null) {
-			log.error("exception ("+exception.getClass().getCanonicalName()+") ["+exception.getMessage()+"] overwrites existing exception", insertedException);
+		if (insertedException != null) {
+			log.error("exception (" + exception.getClass()
+					.getCanonicalName() + ") [" + exception.getMessage() + "] overwrites existing exception", insertedException);
 		}
 
 		insertedException = exception;
@@ -52,7 +52,7 @@ public class ExceptionInsertingFilter extends FullXmlFilter {
 
 
 	private void checkInserted() throws SAXException {
-		if (insertedException!=null) {
+		if (insertedException != null) {
 			SAXException exceptionToThrow = insertedException;
 			insertedException = null;
 			throw exceptionToThrow;

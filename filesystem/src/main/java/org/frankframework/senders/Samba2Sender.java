@@ -21,16 +21,15 @@ import org.frankframework.filesystem.smb.Samba2FileSystemDelegator;
 import org.frankframework.filesystem.smb.SmbFileRef;
 
 /**
-*
-* Uses the (newer) SMB 2 and 3 protocol.
-*
-* Possible error codes:
-* <br/>
-* Pre-authentication information was invalid (24) or Identifier doesn't match expected value (906): login information is incorrect
-* Server not found in Kerberos database (7): Verify that the hostname is the FQDN and the server is using a valid SPN.
-*
-* @author Niels Meijer
-*/
+ * Uses the (newer) SMB 2 and 3 protocol.
+ * <p>
+ * Possible error codes:
+ * <br/>
+ * Pre-authentication information was invalid (24) or Identifier doesn't match expected value (906): login information is incorrect
+ * Server not found in Kerberos database (7): Verify that the hostname is the FQDN and the server is using a valid SPN.
+ *
+ * @author Niels Meijer
+ */
 public class Samba2Sender extends FileSystemSender<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
 
 	public Samba2Sender() {

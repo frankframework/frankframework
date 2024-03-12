@@ -18,6 +18,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -25,18 +26,26 @@ import org.junit.jupiter.api.Test;
 
 public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestBase<P> {
 
-	public static final String IDENTITY_STYLESHEET="/Xslt/identity.xslt";
+	public static final String IDENTITY_STYLESHEET = "/Xslt/identity.xslt";
 
 	protected abstract void setXpathExpression(String xpathExpression);
+
 	protected abstract void setStyleSheetName(String styleSheetName);
+
 	protected abstract void setStyleSheetNameSessionKey(String styleSheetNameSessionKey);
+
 	protected abstract void setOmitXmlDeclaration(boolean omitXmlDeclaration);
+
 	protected abstract void setIndent(boolean indent);
+
 	protected abstract void setSkipEmptyTags(boolean skipEmptyTags);
+
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
 
 	protected abstract void setXsltVersion(int xsltVersion);
+
 	protected abstract void setOutputType(OutputType outputType);
+
 	protected abstract void setHandleLexicalEvents(boolean handleLexicalEvents);
 
 
@@ -48,21 +57,21 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	protected void assertResultsAreCorrect(String expected, String actual, PipeLineSession session) {
-		assertEquals(expected,actual);
+		assertEquals(expected, actual);
 	}
 
 	protected void testXslt(String styleSheetName, String input, String expected, Boolean omitXmlDeclaration, Boolean indent, Boolean skipEmptyTags, Boolean removeNamespaces, Boolean xslt2) throws Exception {
 		setStyleSheetName(styleSheetName);
-		if (omitXmlDeclaration!=null) {
+		if (omitXmlDeclaration != null) {
 			setOmitXmlDeclaration(omitXmlDeclaration);
 		}
-		if (indent!=null) {
+		if (indent != null) {
 			setIndent(indent);
 		}
-		if (skipEmptyTags!=null) {
+		if (skipEmptyTags != null) {
 			setSkipEmptyTags(skipEmptyTags);
 		}
-		if (removeNamespaces!=null) {
+		if (removeNamespaces != null) {
 			setRemoveNamespaces(removeNamespaces);
 		}
 		pipe.configure();
@@ -70,46 +79,46 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		assertResultsAreCorrect(expected,result.trim(),session);
+		assertResultsAreCorrect(expected, result.trim(), session);
 
 	}
 
 	@Test
 	void basic() throws Exception {
-		String styleSheetName=  "/Xslt3/orgchart.xslt";
-		String input   = TestFileUtils.getTestFile("/Xslt3/employees.xml");
-		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
-		Boolean omitXmlDeclaration=null;
-		Boolean indent=null; // follows indent of stylesheet
-		Boolean skipEmptyTags=null;
-		Boolean removeNamespaces=null;
-		Boolean xslt2=true;
+		String styleSheetName = "/Xslt3/orgchart.xslt";
+		String input = TestFileUtils.getTestFile("/Xslt3/employees.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
+		Boolean omitXmlDeclaration = null;
+		Boolean indent = null; // follows indent of stylesheet
+		Boolean skipEmptyTags = null;
+		Boolean removeNamespaces = null;
+		Boolean xslt2 = true;
 		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2);
 	}
 
 	@Test
 	void basicIndent() throws Exception {
-		String styleSheetName=  "/Xslt3/orgchart.xslt";
-		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
-		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
-		Boolean omitXmlDeclaration=null;
-		Boolean indent=true;
-		Boolean skipEmptyTags=null;
-		Boolean removeNamespaces=null;
-		Boolean xslt2=true;
+		String styleSheetName = "/Xslt3/orgchart.xslt";
+		String input = TestFileUtils.getTestFile("/Xslt3/employees.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
+		Boolean omitXmlDeclaration = null;
+		Boolean indent = true;
+		Boolean skipEmptyTags = null;
+		Boolean removeNamespaces = null;
+		Boolean xslt2 = true;
 		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2);
 	}
 
 	@Test
 	void basicNoIndent() throws Exception {
-		String styleSheetName=  "/Xslt3/orgchart.xslt";
-		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
-		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart-noindent.xml");
-		Boolean omitXmlDeclaration=null;
-		Boolean indent=false;
-		Boolean skipEmptyTags=null;
-		Boolean removeNamespaces=null;
-		Boolean xslt2=true;
+		String styleSheetName = "/Xslt3/orgchart.xslt";
+		String input = TestFileUtils.getTestFile("/Xslt3/employees.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt3/orgchart-noindent.xml");
+		Boolean omitXmlDeclaration = null;
+		Boolean indent = false;
+		Boolean skipEmptyTags = null;
+		Boolean removeNamespaces = null;
+		Boolean xslt2 = true;
 		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2);
 	}
 
@@ -142,36 +151,36 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 
 	@Test
 	void testSkipEmptyTagsNoOmitNoIndent() throws Exception {
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a></root>",false,false);
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a></root>", false, false);
 	}
 
 	@Test
 	void testSkipEmptyTagsNoOmitIndent() throws Exception {
-		String lineSeparator="\n";
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+lineSeparator+"<root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"</root>",false,true);
+		String lineSeparator = "\n";
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + lineSeparator + "<root>" + lineSeparator + "\t<a>a</a>" + lineSeparator + "</root>", false, true);
 	}
 
 	@Test
 	void testSkipEmptyTagsOmitNoIndent() throws Exception {
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root><a>a</a></root>",true,false);
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>", "<root><a>a</a></root>", true, false);
 	}
 
 	@Test
 	void testSkipEmptyTagsOmitIndent() throws Exception {
-		String lineSeparator="\n";
-		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"</root>",true,true);
+		String lineSeparator = "\n";
+		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>", "<root>" + lineSeparator + "\t<a>a</a>" + lineSeparator + "</root>", true, true);
 	}
 
 	@Test
 	void testRemoveNamespacesNoOmitNoIndent() throws Exception {
-		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
+		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>", false, false);
 	}
 
 	@Test
 	@Disabled("Indent appears not to work in combination with Streaming and RemoveNamespaces. Ignore the test for now...")
 	void testRemoveNamespacesNoOmitIndent() throws Exception {
-		String lineSeparator=System.getProperty("line.separator");
-		testRemoveNamespaces("<ns:root xmlns:ns=\"urn:fakenamespace\"><ns:a>a</ns:a><ns:b></ns:b><c/></ns:root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"\t<b/>"+lineSeparator+"\t<c/>"+lineSeparator+"</root>",false,true);
+		String lineSeparator = System.getProperty("line.separator");
+		testRemoveNamespaces("<ns:root xmlns:ns=\"urn:fakenamespace\"><ns:a>a</ns:a><ns:b></ns:b><c/></ns:root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>" + lineSeparator + "\t<a>a</a>" + lineSeparator + "\t<b/>" + lineSeparator + "\t<c/>" + lineSeparator + "</root>", false, true);
 	}
 
 	public void testBasic(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws Exception {
@@ -180,7 +189,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 
 	@Test
 	void testBasicNoOmitNoIndent() throws Exception {
-		testBasic("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
+		testBasic("<root><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>", false, false);
 	}
 
 	@Test
@@ -197,7 +206,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 
 	@Test
 	void documentIncludedInSourceRelativeWithDynamicStylesheetXslt1() throws Exception {
-		String stylesheetName="/Xslt/importDocument/importLookupRelative1.xsl";
+		String stylesheetName = "/Xslt/importDocument/importLookupRelative1.xsl";
 		session.put("Stylesheet", stylesheetName);
 		setStyleSheetNameSessionKey("Stylesheet");
 		runPipeAndValidate(1);
@@ -205,7 +214,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 
 	@Test
 	void documentIncludedInSourceRelativeWithDynamicStylesheetXslt2() throws Exception {
-		String stylesheetname="/Xslt/importDocument/importLookupRelative1.xsl";
+		String stylesheetname = "/Xslt/importDocument/importLookupRelative1.xsl";
 		session.put("Stylesheet", stylesheetname);
 		setStyleSheetNameSessionKey("Stylesheet");
 		runPipeAndValidate(2);

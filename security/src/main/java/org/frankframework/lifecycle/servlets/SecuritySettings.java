@@ -17,11 +17,10 @@ package org.frankframework.lifecycle.servlets;
 
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.env.PropertyResolver;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.EnumUtils;
+import org.springframework.core.env.PropertyResolver;
 
 @Log4j2
 public class SecuritySettings {
@@ -40,10 +39,10 @@ public class SecuritySettings {
 		if (StringUtils.isNotEmpty(constraintType)) {
 			try {
 				defaultTransportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
-			} catch(IllegalArgumentException e) {
+			} catch (IllegalArgumentException e) {
 				log.error("unable to set TransportGuarantee", e);
 			}
-		} else if(isDtapStageLoc) {
+		} else if (isDtapStageLoc) {
 			defaultTransportGuarantee = TransportGuarantee.NONE;
 		}
 	}

@@ -30,7 +30,9 @@ public interface IXmlValidator extends IValidator {
 	 * @return noNamespaceSchemalocation, if specified
 	 */
 	String getSchema();
+
 	String getSchemaLocation();
+
 	Set<IXSD> getXsds() throws ConfigurationException;
 
 	/**
