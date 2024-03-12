@@ -28,6 +28,7 @@ import nl.nn.testtool.metadata.DefaultValueMetadataFieldExtractor;
 public class JuiceServiceName extends DefaultValueMetadataFieldExtractor {
 	private MetadataFieldExtractor serviceTypeExtractor;
 	private static final Map serviceNames = new HashMap();
+
 	static {
 		// Based on ING_REQ_tabel.doc received from Hou, K.W. (Kwok Wah) on 20100616
 		// Updated by Dorus van der Kroft on 20101228
@@ -152,7 +153,7 @@ public class JuiceServiceName extends DefaultValueMetadataFieldExtractor {
 
 	public Object extractMetadata(Report report) {
 		Object serviceType = serviceTypeExtractor.extractMetadata(report);
-		String value = (String)serviceNames.get(serviceType);
+		String value = (String) serviceNames.get(serviceType);
 		if (value == null) {
 			value = defaultValue;
 		}

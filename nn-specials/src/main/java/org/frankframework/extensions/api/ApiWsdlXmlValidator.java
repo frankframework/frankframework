@@ -21,7 +21,7 @@ import org.frankframework.pipes.WsdlXmlValidator;
 
 /**
  * Extension to WsdlXmlValidator for API Management.
- *
+ * <p>
  * The SOAP header can only contain the following schema (or it's empty):
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>mandatory</th></tr>
@@ -51,6 +51,7 @@ public class ApiWsdlXmlValidator extends WsdlXmlValidator {
 
 	/**
 	 * indicates whether the message is multipart/form-data. If so, the wsdl only represents the first part, other parts are attachments. This attribute is only used for generating the 'real' wsdl which is available in the ibis console (../rest/webservices)
+	 *
 	 * @ff.default false
 	 */
 	public void setMultipart(boolean b) {

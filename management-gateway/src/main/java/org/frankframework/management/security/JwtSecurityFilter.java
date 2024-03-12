@@ -30,15 +30,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
-
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
@@ -51,6 +42,14 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
 public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRequestFilter
 	private static final String JWT_TOKEN_CONTEXT_KEY = "JWT_TOKEN_CONTEXT_KEY";
@@ -84,7 +83,7 @@ public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRe
 
 	private Authentication getAuthenticationToken(HttpServletRequest req) throws IOException {
 		String jwtHeader = req.getHeader("Authentication");
-		if(StringUtils.isEmpty(jwtHeader) || !jwtHeader.contains("Bearer")) {
+		if (StringUtils.isEmpty(jwtHeader) || !jwtHeader.contains("Bearer")) {
 			this.securityContextHolderStrategy.clearContext();
 			log.debug("Failed to process authentication request");
 			throw new IOException("no (valid) JWT provided");
@@ -94,7 +93,7 @@ public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRe
 		HttpSession session = req.getSession(true);
 		JwtAuthenticationToken storedJWT = (JwtAuthenticationToken) session.getAttribute(JWT_TOKEN_CONTEXT_KEY);
 
-		if(storedJWT != null && storedJWT.verifyJWT(jwt)) {
+		if (storedJWT != null && storedJWT.verifyJWT(jwt)) {
 			log.debug("using stored authentication token [{}]", storedJWT);
 			return storedJWT;
 		}
@@ -128,7 +127,7 @@ public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRe
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(StringUtils.isBlank(jwksEndpoint)) {
+		if (StringUtils.isBlank(jwksEndpoint)) {
 			throw new IllegalStateException("no JWKS endpoint specified");
 		}
 

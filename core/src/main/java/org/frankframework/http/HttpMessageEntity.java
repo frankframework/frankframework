@@ -46,10 +46,10 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 		this.message = message;
 
 		String charset = message.getCharset();
-		if(contentType != null) {
+		if (contentType != null) {
 			Charset contentTypeCharset = contentType.getCharset();
-			if(contentTypeCharset != null) {
-				if(!contentTypeCharset.name().equalsIgnoreCase(charset)) {
+			if (contentTypeCharset != null) {
+				if (!contentTypeCharset.name().equalsIgnoreCase(charset)) {
 					log.warn("overriding Message [{}] charset with value supplied from content-type [{}]", message::getCharset, contentTypeCharset::name);
 				}
 				charset = contentTypeCharset.name();
@@ -63,7 +63,7 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override //overridden because we don't want to set empty values
 	public void setContentEncoding(String charset) {
-		if(charset == null || charset.length() > 0) {
+		if (charset == null || charset.length() > 0) {
 			super.setContentEncoding(charset);
 		}
 	}
@@ -95,17 +95,17 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 		try (InputStream inStream = getContent()) {
 			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
 			int readLen;
-			if(length < 0) {
+			if (length < 0) {
 				// consume until EOF
-				while((readLen = inStream.read(buffer)) != -1) {
+				while ((readLen = inStream.read(buffer)) != -1) {
 					outStream.write(buffer, 0, readLen);
 				}
 			} else {
 				// consume no more than length
 				long remaining = length;
-				while(remaining > 0) {
+				while (remaining > 0) {
 					readLen = inStream.read(buffer, 0, (int) Math.min(OUTPUT_BUFFER_SIZE, remaining));
-					if(readLen == -1) {
+					if (readLen == -1) {
 						break;
 					}
 					outStream.write(buffer, 0, readLen);

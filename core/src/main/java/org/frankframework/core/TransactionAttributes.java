@@ -39,8 +39,9 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	}
 
 	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) {
-		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+transactionAttribute+"], timeout ["+transactionTimeout+"]");
-		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(),transactionTimeout);
+		if (log.isDebugEnabled())
+			log.debug("creating TransactionDefinition for transactionAttribute [" + transactionAttribute + "], timeout [" + transactionTimeout + "]");
+		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(), transactionTimeout);
 	}
 
 	@Deprecated
@@ -52,14 +53,15 @@ public class TransactionAttributes implements HasTransactionAttribute {
 			setTransactionAttribute(TransactionAttribute.SUPPORTS);
 		}
 	}
+
 	public boolean isTransacted() {
 		return isTransacted(getTransactionAttribute());
 	}
 
 	public static boolean isTransacted(TransactionAttribute txAtt) {
-		return  txAtt==TransactionAttribute.REQUIRED ||
-				txAtt==TransactionAttribute.REQUIRESNEW ||
-				txAtt==TransactionAttribute.MANDATORY;
+		return txAtt == TransactionAttribute.REQUIRED ||
+				txAtt == TransactionAttribute.REQUIRESNEW ||
+				txAtt == TransactionAttribute.MANDATORY;
 	}
 
 	@Override

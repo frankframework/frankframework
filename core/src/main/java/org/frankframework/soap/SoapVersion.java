@@ -28,7 +28,7 @@ import org.frankframework.doc.EnumLabel;
 
 public enum SoapVersion implements DocumentedEnum {
 
-	@EnumLabel("1.1") SOAP11(SOAPConstants.URI_NS_SOAP_ENVELOPE,     "/xml/xsd/soap/envelope.xsd"),
+	@EnumLabel("1.1") SOAP11(SOAPConstants.URI_NS_SOAP_ENVELOPE, "/xml/xsd/soap/envelope.xsd"),
 	@EnumLabel("1.2") SOAP12(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE, "/xml/xsd/soap/envelope-1.2.xsd"),
 	/** No wrapping or unwrapping will be done */
 	@EnumLabel("none") NONE(null, null),
@@ -59,28 +59,28 @@ public enum SoapVersion implements DocumentedEnum {
 	public Set<String> getNamespaces() {
 		Set<String> result = new HashSet<>();
 		switch (this) {
-		case SOAP11:
-		case SOAP12:
-			result.add(namespace);
-			break;
-		case AUTO:
-			result.add(SOAP11.namespace);
-			result.add(SOAP12.namespace);
-			break;
-		default:
+			case SOAP11:
+			case SOAP12:
+				result.add(namespace);
+				break;
+			case AUTO:
+				result.add(SOAP11.namespace);
+				result.add(SOAP12.namespace);
+				break;
+			default:
 		}
 		return result;
 	}
 
 	public String getSchemaLocation() {
 		switch (this) {
-		case SOAP11:
-		case SOAP12:
-			return toString();
-		case AUTO:
-			return SOAP11 + " " + SOAP12;
-		default:
-			return "";
+			case SOAP11:
+			case SOAP12:
+				return toString();
+			case AUTO:
+				return SOAP11 + " " + SOAP12;
+			default:
+				return "";
 		}
 	}
 

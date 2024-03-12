@@ -19,21 +19,20 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import jakarta.mail.BodyPart;
-import jakarta.mail.internet.MimeMultipart;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
-import org.springframework.mock.web.DelegatingServletInputStream;
-
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.mime.MultipartEntityBuilder;
 import org.frankframework.util.LogUtil;
+import org.springframework.mock.web.DelegatingServletInputStream;
 
 public class MtomRequestWrapper extends HttpServletRequestWrapper {
 	protected Logger log = LogUtil.getLogger(this);
@@ -49,31 +48,31 @@ public class MtomRequestWrapper extends HttpServletRequestWrapper {
 		super(request);
 
 		String contentType = super.getHeader("content-type");
-		if("POST".equalsIgnoreCase(request.getMethod())) {
+		if ("POST".equalsIgnoreCase(request.getMethod())) {
 			try {
-				if(log.isTraceEnabled()) log.trace("found message with ContentType ["+contentType+"]");
+				if (log.isTraceEnabled()) log.trace("found message with ContentType [" + contentType + "]");
 				boolean isMultipartRequest = contentType.contains("multipart");
 				MultipartEntityBuilder multipart = MultipartEntityBuilder.create();
 				multipart.setMtomMultipart();
 
-				if(isMultipartRequest) { // Multiple parts we need to iterate over
+				if (isMultipartRequest) { // Multiple parts we need to iterate over
 					InputStreamDataSource dataSource = new InputStreamDataSource(contentType, super.getInputStream());
 					MimeMultipart mp = new MimeMultipart(dataSource);
 
 					int count = mp.getCount();
-					for(int i = 0; i < count; i++) {
+					for (int i = 0; i < count; i++) {
 						BodyPart bp = mp.getBodyPart(i);
 						String bodyPartName = "part" + i;
 						String fileName = bp.getFileName();
 
 						String[] partName = bp.getHeader("content-id");
-						if(partName != null && partName.length > 0) {
+						if (partName != null && partName.length > 0) {
 							String contentId = partName[0];
 							bodyPartName = contentId.substring(1, contentId.length() - 1); // Remove pre and post-fix: < & >
 						}
 
 						ContentType partType = ContentType.parse(bp.getContentType());
-						if(log.isTraceEnabled()) log.trace("FileName ["+fileName+"] PartName ["+bodyPartName+"] ContentType [" + partType + "]");
+						if (log.isTraceEnabled()) log.trace("FileName [" + fileName + "] PartName [" + bodyPartName + "] ContentType [" + partType + "]");
 						multipart.addBinaryBody(bodyPartName, bp.getInputStream(), partType, fileName);
 
 					}
@@ -92,7 +91,7 @@ public class MtomRequestWrapper extends HttpServletRequestWrapper {
 	// Override this to ensure the correct Content-Type header is used
 	@Override
 	public String getHeader(String name) {
-		if("Content-Type".equalsIgnoreCase(name)) {
+		if ("Content-Type".equalsIgnoreCase(name)) {
 			return getContentType();
 		}
 
@@ -101,7 +100,7 @@ public class MtomRequestWrapper extends HttpServletRequestWrapper {
 
 	@Override
 	public String getContentType() {
-		if(entity != null) {
+		if (entity != null) {
 			return entity.getContentType().getValue();
 		} else {
 			return super.getContentType();
@@ -110,7 +109,7 @@ public class MtomRequestWrapper extends HttpServletRequestWrapper {
 
 	@Override
 	public ServletInputStream getInputStream() throws IOException {
-		if(entity != null) {
+		if (entity != null) {
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			entity.writeTo(outputStream);
 			return new DelegatingServletInputStream(new ByteArrayInputStream(outputStream.toByteArray()));

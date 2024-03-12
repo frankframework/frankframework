@@ -34,14 +34,14 @@ public abstract class MockListenerBase implements IListener<String> {
 
 	@Override
 	public void open() throws ListenerException {
-		if(!isOpen.compareAndSet(false, true)) {
+		if (!isOpen.compareAndSet(false, true)) {
 			throw new ListenerException("not in state closed");
 		}
 	}
 
 	@Override
 	public void close() throws ListenerException {
-		if(!isOpen.compareAndSet(true, false)) {
+		if (!isOpen.compareAndSet(true, false)) {
 			throw new ListenerException("not in state open");
 		}
 	}
@@ -49,7 +49,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	@Override
 	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> context) throws ListenerException {
 		String text = rawMessage.getRawMessage();
-		if(text.equals("extractMessageException")) {
+		if (text.equals("extractMessageException")) {
 			throw new ListenerException(text);
 		}
 		return Message.asMessage(text);

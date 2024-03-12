@@ -30,6 +30,7 @@ import java.util.NoSuchElementException;
 
 import javax.annotation.Nullable;
 
+import lombok.Getter;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -39,8 +40,6 @@ import org.frankframework.filesystem.ftp.FtpSession;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.LogUtil;
-
-import lombok.Getter;
 
 /**
  * Implementation of FTP and FTPs FileSystem
@@ -88,7 +87,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		try {
 			FTPFile[] files = ftpClient.listFiles(folder, FTPFile::isFile);
-			return files == null? 0 : files.length;
+			return files == null ? 0 : files.length;
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -111,10 +110,10 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	private @Nullable FTPFileRef findFile(FTPFileRef file) throws FileSystemException {
 		try {
 			FTPFile[] files = ftpClient.listFiles(file.getFolder(), f -> f.getName().equals(file.getFileName()));
-			if(files != null && files.length > 0) {
+			if (files != null && files.length > 0) {
 				return FTPFileRef.fromFTPFile(files[0], file.getFolder());
 			}
-		} catch(IOException e) {
+		} catch (IOException e) {
 			throw new FileSystemException("unable to browse remote directory", e);
 		}
 		return null;
@@ -125,7 +124,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			@Override
 			public void close() throws IOException {
 				super.close();
-				if(ftpClient.getReplyCode() == FTPReply.FILE_STATUS_OK) {
+				if (ftpClient.getReplyCode() == FTPReply.FILE_STATUS_OK) {
 					ftpClient.completePendingCommand();
 				}
 			}
@@ -202,11 +201,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
-		if(!folderExists(folder)) {
+		if (!folderExists(folder)) {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 		try {
-			if(removeNonEmptyFolder) {
+			if (removeNonEmptyFolder) {
 				removeDirectoryContent(folder);
 			} else {
 				log.debug("removing folder [{}]", folder);
@@ -222,20 +221,21 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	/**
 	 * Recursively remove directory
+	 *
 	 * @param folder
 	 * @throws IOException
 	 * @throws FileSystemException
 	 */
 	private void removeDirectoryContent(String folder) throws IOException, FileSystemException {
 		String pwd = ftpClient.printWorkingDirectory();
-		if(ftpClient.changeWorkingDirectory(pwd+"/"+folder)) {
+		if (ftpClient.changeWorkingDirectory(pwd + "/" + folder)) {
 			FTPFile[] files = ftpClient.listFiles();
 			for (FTPFile ftpFile : files) {
-				String fileName=ftpFile.getName();
+				String fileName = ftpFile.getName();
 				if (fileName.equals(".") || fileName.equals("..")) {
 					continue;
 				}
-				if(ftpFile.isDirectory()) {
+				if (ftpFile.isDirectory()) {
 					removeDirectoryContent(fileName);
 				} else {
 					FTPFileRef ftpFileRef = FTPFileRef.fromFTPFile(ftpFile);
@@ -265,10 +265,10 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	public FTPFileRef moveFile(FTPFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		FTPFileRef destination = new FTPFileRef(getName(f), destinationFolder);
 		try {
-			if(exists(destination)) {
+			if (exists(destination)) {
 				throw new FileSystemException("target already exists");
 			}
-			if(ftpClient.rename(getCanonicalName(f), destination.getName())) {
+			if (ftpClient.rename(getCanonicalName(f), destination.getName())) {
 				return destination;
 			}
 			throw new FileSystemException("unable to move file");
@@ -279,15 +279,15 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFileRef copyFile(FTPFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		if(createFolder && !folderExists(destinationFolder)) {
+		if (createFolder && !folderExists(destinationFolder)) {
 			createFolder(destinationFolder);
 		}
 
 		FTPFileRef destination = new FTPFileRef(getName(f), destinationFolder);
 
-		try (InputStream inputStream = ftpClient.retrieveFileStream(f.getName()); SerializableFileReference ref = SerializableFileReference.of(inputStream) ) {
+		try (InputStream inputStream = ftpClient.retrieveFileStream(f.getName()); SerializableFileReference ref = SerializableFileReference.of(inputStream)) {
 			ftpClient.completePendingCommand();
-			if(ftpClient.storeFile(destination.getName(), ref.getInputStream())) {
+			if (ftpClient.storeFile(destination.getName(), ref.getInputStream())) {
 				return destination;
 			}
 
@@ -305,7 +305,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public String getName(FTPFileRef file) {
-		if(file == null) {
+		if (file == null) {
 			return null;
 		}
 		return file.getFileName();
@@ -328,9 +328,9 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	private FTPFile updateFileAttributes(FTPFileRef file) throws FileSystemException {
-		if(file.getTimestamp() == null) {
+		if (file.getTimestamp() == null) {
 			FTPFile fetch = findFile(file);
-			if(fetch == null) {
+			if (fetch == null) {
 				throw new FileSystemException("file does not exist on remote server");
 			}
 			file.updateFTPFile(fetch);
@@ -353,11 +353,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "remote directory ["+remoteDirectory+"]";
+		return "remote directory [" + remoteDirectory + "]";
 	}
 
 	/**
 	 * pathname of the file or directory to list.
+	 *
 	 * @ff.default Home folder of the ftp user
 	 */
 	public void setRemoteDirectory(String remoteDirectory) {
@@ -372,7 +373,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		FTPFilePathIterator(String folder, FTPFile[] filesArr) {
 			files = new ArrayList<>();
 			for (FTPFile ftpFile : filesArr) {
-				if(ftpFile.isFile()) {
+				if (ftpFile.isFile()) {
 					FTPFileRef fileRef = FTPFileRef.fromFTPFile(ftpFile, folder);
 					log.debug("adding FTPFileRef [{}] to the collection", fileRef);
 					files.add(fileRef);
@@ -387,7 +388,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 		@Override
 		public FTPFileRef next() {
-			if(!hasNext()) {
+			if (!hasNext()) {
 				throw new NoSuchElementException();
 			}
 

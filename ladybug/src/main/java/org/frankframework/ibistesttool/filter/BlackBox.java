@@ -48,7 +48,8 @@ public class BlackBox extends GrayBox {
 			"org.frankframework.compression.ZipWriterSender",
 			"org.frankframework.senders.LocalFileSystemSender",
 			// Not in stub4testtool.xsl
-			"org.frankframework.senders.XmlValidatorSender"));
+			"org.frankframework.senders.XmlValidatorSender"
+	));
 
 	@Override
 	protected boolean isSender(Checkpoint checkpoint) {

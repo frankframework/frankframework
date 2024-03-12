@@ -27,7 +27,6 @@ import org.frankframework.core.PipeLineSession;
 
 /**
  * Log4j can now be started from any LogManager.getLogger() call
- *
  */
 public class LogUtil {
 
@@ -62,7 +61,7 @@ public class LogUtil {
 	 * Must be called during configure after setName has been set!
 	 */
 	public static Logger getMsgLogger(IAdapter adapter) {
-		if(StringUtils.isEmpty(adapter.getName())) {
+		if (StringUtils.isEmpty(adapter.getName())) {
 			return getLogger(MESSAGE_LOGGER);
 		}
 
@@ -73,7 +72,7 @@ public class LogUtil {
 	 * Must be called during configure after setName has been set!
 	 */
 	public static Logger getMsgLogger(IAdapter adapter, INamedObject object) {
-		if(adapter == null || StringUtils.isEmpty(adapter.getName()) || StringUtils.isEmpty(object.getName())) {
+		if (adapter == null || StringUtils.isEmpty(adapter.getName()) || StringUtils.isEmpty(object.getName())) {
 			return getLogger(MESSAGE_LOGGER);
 		}
 
@@ -81,13 +80,13 @@ public class LogUtil {
 	}
 
 	public static CloseableThreadContext.Instance getThreadContext(IAdapter adapter, String messageId, PipeLineSession session) {
-		String lastAdapter= ThreadContext.get(MDC_ADAPTER_KEY);
-		String currentAdapter= adapter.getName();
+		String lastAdapter = ThreadContext.get(MDC_ADAPTER_KEY);
+		String currentAdapter = adapter.getName();
 		CloseableThreadContext.Instance ctc = CloseableThreadContext.put(MDC_ADAPTER_KEY, currentAdapter);
-		if (lastAdapter!=null && !lastAdapter.equals(currentAdapter)) {
-			ctc.push("caller="+lastAdapter);
+		if (lastAdapter != null && !lastAdapter.equals(currentAdapter)) {
+			ctc.push("caller=" + lastAdapter);
 		}
-		setIdsToThreadContext(ctc, messageId, session!=null ? session.getCorrelationId() : null);
+		setIdsToThreadContext(ctc, messageId, session != null ? session.getCorrelationId() : null);
 		return ctc;
 	}
 

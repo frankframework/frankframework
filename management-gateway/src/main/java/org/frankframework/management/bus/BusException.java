@@ -15,11 +15,10 @@
 */
 package org.frankframework.management.bus;
 
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
-
-import lombok.Getter;
 
 /**
  * Serialized and send as an ExceptionMessage over the Spring Bus
@@ -56,7 +55,7 @@ public class BusException extends RuntimeException {
 	private BusException(String message, int statusCode, Throwable exception) {
 		super(new IbisException(message, exception).getMessage());
 		this.statusCode = statusCode;
-		if(exception == null) {
+		if (exception == null) {
 			LOG.warn(super.getMessage()); // expanded message is logged directly
 		} else {
 			LOG.error(message, exception); // normal message, expanded by printing the stacktrace

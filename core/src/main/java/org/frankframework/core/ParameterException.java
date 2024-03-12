@@ -21,7 +21,7 @@ import lombok.Getter;
  * Exception thrown by the ISender (implementation) to notify
  * that the sending did not succeed.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public class ParameterException extends IbisException {
 	private final @Getter String parameterName;
@@ -30,14 +30,17 @@ public class ParameterException extends IbisException {
 		super();
 		this.parameterName = parameterName;
 	}
+
 	public ParameterException(String parameterName, String errMsg) {
 		super(errMsg);
 		this.parameterName = parameterName;
 	}
+
 	public ParameterException(String parameterName, String errMsg, Throwable t) {
 		super(errMsg, t);
 		this.parameterName = parameterName;
 	}
+
 	public ParameterException(String parameterName, Throwable t) {
 		super(t);
 		this.parameterName = parameterName;

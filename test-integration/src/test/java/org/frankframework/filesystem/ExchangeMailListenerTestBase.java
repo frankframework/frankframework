@@ -39,7 +39,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	protected String accessToken;
 	protected String username;
 	protected String password;
-	protected String baseurl     = "https://outlook.office365.com/EWS/Exchange.asmx"; // leave empty to use autodiscovery
+	protected String baseurl = "https://outlook.office365.com/EWS/Exchange.asmx"; // leave empty to use autodiscovery
 
 	protected String recipient;
 
@@ -61,28 +61,28 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new MailSendingTestHelper(mailaddress,senderSmtpHost,senderSmtpPort, senderSsl, senderUserId, senderPassword);
+		return new MailSendingTestHelper(mailaddress, senderSmtpHost, senderSmtpPort, senderSsl, senderUserId, senderPassword);
 	}
 
 	@Override
 	public void setUp() throws Exception {
-		Properties properties=new Properties();
+		Properties properties = new Properties();
 		properties.load(ClassLoaderUtils.getResourceURL(testProperties).openStream());
 		mailaddress = properties.getProperty("mailaddress");
 		mailaddress_fancy = properties.getProperty("mailaddress.fancy");
 		accessToken = properties.getProperty("accessToken");
 		username = properties.getProperty("username");
 		password = properties.getProperty("password");
-		recipient=  properties.getProperty("recipient");
+		recipient = properties.getProperty("recipient");
 		basefolder1 = properties.getProperty("basefolder1");
 		basefolder2 = properties.getProperty("basefolder2");
 		senderSmtpHost = properties.getProperty("senderSmtpHost");
 		senderSmtpPort = Integer.parseInt(properties.getProperty("senderSmtpPort"));
-		senderSsl      = Boolean.parseBoolean(properties.getProperty("mailaddress"));
-		senderUserId   = properties.getProperty("senderUserId");
+		senderSsl = Boolean.parseBoolean(properties.getProperty("mailaddress"));
+		senderUserId = properties.getProperty("senderUserId");
 		senderPassword = properties.getProperty("senderPassword");
 		super.setUp();
-		mailListener=createExchangeMailListener();
+		mailListener = createExchangeMailListener();
 		mailListener.setMailAddress(mailaddress);
 		mailListener.setUsername(username);
 		mailListener.setPassword(password);
@@ -92,7 +92,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	@Override
 	public void tearDown() {
-		if (mailListener!=null) {
+		if (mailListener != null) {
 			mailListener.close();
 		}
 		super.tearDown();
@@ -100,8 +100,8 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 
 	public void configureAndOpen(String folder, String filter) throws ConfigurationException, ListenerException {
-		if (folder!=null) mailListener.setInputFolder(folder);
-		if (filter!=null) mailListener.setFilter(filter);
+		if (folder != null) mailListener.setInputFolder(folder);
+		if (filter != null) mailListener.setFilter(filter);
 		mailListener.configure();
 		mailListener.open();
 	}
@@ -111,7 +111,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	@Override
 	public void waitForActionToFinish() throws FileSystemException {
 		try {
-			((MailSendingTestHelper)helper)._commitFile();
+			((MailSendingTestHelper) helper)._commitFile();
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -256,208 +256,208 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	@Test
 	@Ignore("skip NDR filter for now")
 	public void readFileBounce1() {
-		String targetFolder="Onbestelbaar 1";
-		String originalRecipient="onbestelbaar@weetikwaarwelniet.nl";
-		String originalFrom="";
-		String originalSubject="onbestelbaar met attachments";
-		String originalMessageId="<AM0PR02MB3732B19ECFCCFA4DF3499604AAEE0@AM0PR02MB3732.eurprd02.prod.outlook.com>";
-		int    originalAttachmentCount=1;
+		String targetFolder = "Onbestelbaar 1";
+		String originalRecipient = "onbestelbaar@weetikwaarwelniet.nl";
+		String originalFrom = "";
+		String originalSubject = "onbestelbaar met attachments";
+		String originalMessageId = "<AM0PR02MB3732B19ECFCCFA4DF3499604AAEE0@AM0PR02MB3732.eurprd02.prod.outlook.com>";
+		int originalAttachmentCount = 1;
 
-		String mainRecipient=originalRecipient;
-		String mainSubject="Onbestelbaar: "+originalSubject;
-		String expectedAttachmentName="onbestelbaar met attachments";
+		String mainRecipient = originalRecipient;
+		String mainSubject = "Onbestelbaar: " + originalSubject;
+		String expectedAttachmentName = "onbestelbaar met attachments";
 
 		mailListener.setFilter("NDR");
-		configureAndOpen(targetFolder,null);
+		configureAndOpen(targetFolder, null);
 
-		Map<String,Object> threadContext=new HashMap<>();
+		Map<String, Object> threadContext = new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		assertNotNull(rawMessage.getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
-		System.out.println("message ["+message+"]");
+		System.out.println("message [" + message + "]");
 
-		TestAssertions.assertXpathValueEquals(mainRecipient, 			message, "/email/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals(mainFrom,      			message, "/email/from");
-		TestAssertions.assertXpathValueEquals(mainSubject,   			message, "/email/subject");
+		TestAssertions.assertXpathValueEquals(mainRecipient, message, "/email/recipients/recipient[@type='to']");
+		TestAssertions.assertXpathValueEquals(mainFrom, message, "/email/from");
+		TestAssertions.assertXpathValueEquals(mainSubject, message, "/email/subject");
 
-		TestAssertions.assertXpathValueEquals(1,  						message, "count(/email/attachments/attachment)");
-		TestAssertions.assertXpathValueEquals(expectedAttachmentName,   message, "/email/attachments/attachment/@name");
+		TestAssertions.assertXpathValueEquals(1, message, "count(/email/attachments/attachment)");
+		TestAssertions.assertXpathValueEquals(expectedAttachmentName, message, "/email/attachments/attachment/@name");
 
-		TestAssertions.assertXpathValueEquals(originalRecipient, 		message, "/email/attachments/attachment/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals(originalFrom,      		message, "/email/attachments/attachment/from");
-		TestAssertions.assertXpathValueEquals(originalSubject,  		message, "/email/attachments/attachment/subject");
+		TestAssertions.assertXpathValueEquals(originalRecipient, message, "/email/attachments/attachment/recipients/recipient[@type='to']");
+		TestAssertions.assertXpathValueEquals(originalFrom, message, "/email/attachments/attachment/from");
+		TestAssertions.assertXpathValueEquals(originalSubject, message, "/email/attachments/attachment/subject");
 
-		TestAssertions.assertXpathValueEquals(originalAttachmentCount,  message, "count(/email/attachments/attachment/attachments/attachment)");
+		TestAssertions.assertXpathValueEquals(originalAttachmentCount, message, "count(/email/attachments/attachment/attachments/attachment)");
 
-		TestAssertions.assertXpathValueEquals(originalMessageId,      	message, "/email/attachments/attachment/headers/header[@name='Message-ID']");
-		TestAssertions.assertXpathValueEquals(originalSubject,      	message, "/email/attachments/attachment/headers/header[@name='Subject']");
+		TestAssertions.assertXpathValueEquals(originalMessageId, message, "/email/attachments/attachment/headers/header[@name='Message-ID']");
+		TestAssertions.assertXpathValueEquals(originalSubject, message, "/email/attachments/attachment/headers/header[@name='Subject']");
 	}
 
 	@Test
 	@Ignore("skip NDR filter for now")
 	public void readFileBounce2() {
-		String targetFolder="Bounce 2";
-		String originalRecipient="";
-		String originalFrom="";
-		String originalSubject="";
-		String originalReturnPath="<>";
-		String originalMessageId="<"+ndrMessageId+">";
-		String xEnvironment="TST";
-		String xCorrelationId="";
-		int    originalAttachmentCount=0;
+		String targetFolder = "Bounce 2";
+		String originalRecipient = "";
+		String originalFrom = "";
+		String originalSubject = "";
+		String originalReturnPath = "<>";
+		String originalMessageId = "<" + ndrMessageId + ">";
+		String xEnvironment = "TST";
+		String xCorrelationId = "";
+		int originalAttachmentCount = 0;
 
-		String mainRecipient=originalRecipient;
-		String mainSubject="Onbestelbaar: "+originalSubject;
-		String expectedAttachmentName="Undelivered Message";
+		String mainRecipient = originalRecipient;
+		String mainSubject = "Onbestelbaar: " + originalSubject;
+		String expectedAttachmentName = "Undelivered Message";
 
 		mailListener.setFilter("NDR");
-		configureAndOpen(targetFolder,null);
+		configureAndOpen(targetFolder, null);
 
-		Map<String,Object> threadContext=new HashMap<>();
+		Map<String, Object> threadContext = new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		assertNotNull(rawMessage.getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
-		System.out.println("message ["+message+"]");
+		System.out.println("message [" + message + "]");
 
-		TestAssertions.assertXpathValueEquals(mainRecipient, 			message, "/email/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals(mainFrom,      			message, "/email/from");
-		TestAssertions.assertXpathValueEquals(mainSubject,   			message, "/email/subject");
+		TestAssertions.assertXpathValueEquals(mainRecipient, message, "/email/recipients/recipient[@type='to']");
+		TestAssertions.assertXpathValueEquals(mainFrom, message, "/email/from");
+		TestAssertions.assertXpathValueEquals(mainSubject, message, "/email/subject");
 
-		TestAssertions.assertXpathValueEquals(1,  						message, "count(/email/attachments/attachment)");
-		TestAssertions.assertXpathValueEquals(expectedAttachmentName,   message, "/email/attachments/attachment/@name");
+		TestAssertions.assertXpathValueEquals(1, message, "count(/email/attachments/attachment)");
+		TestAssertions.assertXpathValueEquals(expectedAttachmentName, message, "/email/attachments/attachment/@name");
 
-		TestAssertions.assertXpathValueEquals(originalRecipient, 		message, "/email/attachments/attachment/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals(originalFrom,      		message, "/email/attachments/attachment/from");
-		TestAssertions.assertXpathValueEquals(originalSubject,  		message, "/email/attachments/attachment/subject");
+		TestAssertions.assertXpathValueEquals(originalRecipient, message, "/email/attachments/attachment/recipients/recipient[@type='to']");
+		TestAssertions.assertXpathValueEquals(originalFrom, message, "/email/attachments/attachment/from");
+		TestAssertions.assertXpathValueEquals(originalSubject, message, "/email/attachments/attachment/subject");
 
-		TestAssertions.assertXpathValueEquals(originalAttachmentCount,  message, "count(/email/attachments/attachment/attachments/attachment)");
+		TestAssertions.assertXpathValueEquals(originalAttachmentCount, message, "count(/email/attachments/attachment/attachments/attachment)");
 		//TestAssertions.assertXpathValueEquals(originalAttachmentName,   message, "/email/attachments/attachment/attachments/attachment/@name");
 
-		TestAssertions.assertXpathValueEquals(originalReturnPath,      	message, "/email/attachments/attachment/headers/header[@name='Return-Path']");
-		TestAssertions.assertXpathValueEquals(originalMessageId,      	message, "/email/attachments/attachment/headers/header[@name='Message-ID']");
-		TestAssertions.assertXpathValueEquals(originalSubject,      	message, "/email/attachments/attachment/headers/header[@name='Subject']");
+		TestAssertions.assertXpathValueEquals(originalReturnPath, message, "/email/attachments/attachment/headers/header[@name='Return-Path']");
+		TestAssertions.assertXpathValueEquals(originalMessageId, message, "/email/attachments/attachment/headers/header[@name='Message-ID']");
+		TestAssertions.assertXpathValueEquals(originalSubject, message, "/email/attachments/attachment/headers/header[@name='Subject']");
 
-		TestAssertions.assertXpathValueEquals(xEnvironment,      		message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
-		TestAssertions.assertXpathValueEquals(xCorrelationId,      		message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
+		TestAssertions.assertXpathValueEquals(xEnvironment, message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
+		TestAssertions.assertXpathValueEquals(xCorrelationId, message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
 	}
 
 	@Test
 	@Ignore("skip NDR filter for now")
 	public void readFileBounce3WithAttachmentInOriginalMail() {
-		String targetFolder="Bounce 3";
-		String originalRecipient="";
-		String originalFrom="";
-		String originalSubject="Invoice 123";
-		String originalReturnPath="<>";
-		String originalMessageId="<"+ndrMessageId+">";
-		String xEnvironment="TST";
-		String xCorrelationId="ID:EMS.C7F75BA93B09872C7C:67234";
-		int originalAttachmentCount=1;
-		String originalAttachmentName="Invoice_1800000078.pdf";
+		String targetFolder = "Bounce 3";
+		String originalRecipient = "";
+		String originalFrom = "";
+		String originalSubject = "Invoice 123";
+		String originalReturnPath = "<>";
+		String originalMessageId = "<" + ndrMessageId + ">";
+		String xEnvironment = "TST";
+		String xCorrelationId = "ID:EMS.C7F75BA93B09872C7C:67234";
+		int originalAttachmentCount = 1;
+		String originalAttachmentName = "Invoice_1800000078.pdf";
 
-		String mainRecipient=originalRecipient;
-		String mainSubject="Onbestelbaar: "+originalSubject;
-		String expectedAttachmentName="Undelivered Message";
+		String mainRecipient = originalRecipient;
+		String mainSubject = "Onbestelbaar: " + originalSubject;
+		String expectedAttachmentName = "Undelivered Message";
 
 		mailListener.setFilter("NDR");
-		configureAndOpen(targetFolder,null);
+		configureAndOpen(targetFolder, null);
 
-		Map<String,Object> threadContext=new HashMap<>();
+		Map<String, Object> threadContext = new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		assertNotNull(rawMessage.getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
-		System.out.println("message ["+message+"]");
+		System.out.println("message [" + message + "]");
 
-		TestAssertions.assertXpathValueEquals(mainRecipient, 			message, "/email/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals(mainFrom,      			message, "/email/from");
-		TestAssertions.assertXpathValueEquals(mainSubject,   			message, "/email/subject");
+		TestAssertions.assertXpathValueEquals(mainRecipient, message, "/email/recipients/recipient[@type='to']");
+		TestAssertions.assertXpathValueEquals(mainFrom, message, "/email/from");
+		TestAssertions.assertXpathValueEquals(mainSubject, message, "/email/subject");
 
-		TestAssertions.assertXpathValueEquals(1,  						message, "count(/email/attachments/attachment)");
-		TestAssertions.assertXpathValueEquals(expectedAttachmentName,   message, "/email/attachments/attachment/@name");
+		TestAssertions.assertXpathValueEquals(1, message, "count(/email/attachments/attachment)");
+		TestAssertions.assertXpathValueEquals(expectedAttachmentName, message, "/email/attachments/attachment/@name");
 
-		TestAssertions.assertXpathValueEquals(originalRecipient, 		message, "/email/attachments/attachment/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals(originalFrom,      		message, "/email/attachments/attachment/from");
-		TestAssertions.assertXpathValueEquals(originalSubject,  		message, "/email/attachments/attachment/subject");
+		TestAssertions.assertXpathValueEquals(originalRecipient, message, "/email/attachments/attachment/recipients/recipient[@type='to']");
+		TestAssertions.assertXpathValueEquals(originalFrom, message, "/email/attachments/attachment/from");
+		TestAssertions.assertXpathValueEquals(originalSubject, message, "/email/attachments/attachment/subject");
 
-		TestAssertions.assertXpathValueEquals(originalAttachmentCount,  message, "count(/email/attachments/attachment/attachments/attachment)");
-		TestAssertions.assertXpathValueEquals(originalAttachmentName,   message, "/email/attachments/attachment/attachments/attachment/@name");
+		TestAssertions.assertXpathValueEquals(originalAttachmentCount, message, "count(/email/attachments/attachment/attachments/attachment)");
+		TestAssertions.assertXpathValueEquals(originalAttachmentName, message, "/email/attachments/attachment/attachments/attachment/@name");
 
-		TestAssertions.assertXpathValueEquals(originalReturnPath,      	message, "/email/attachments/attachment/headers/header[@name='Return-Path']");
-		TestAssertions.assertXpathValueEquals(originalMessageId,      	message, "/email/attachments/attachment/headers/header[@name='Message-ID']");
-		TestAssertions.assertXpathValueEquals(originalSubject,      	message, "/email/attachments/attachment/headers/header[@name='Subject']");
+		TestAssertions.assertXpathValueEquals(originalReturnPath, message, "/email/attachments/attachment/headers/header[@name='Return-Path']");
+		TestAssertions.assertXpathValueEquals(originalMessageId, message, "/email/attachments/attachment/headers/header[@name='Message-ID']");
+		TestAssertions.assertXpathValueEquals(originalSubject, message, "/email/attachments/attachment/headers/header[@name='Subject']");
 
-		TestAssertions.assertXpathValueEquals(xEnvironment,      		message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
-		TestAssertions.assertXpathValueEquals(xCorrelationId,      		message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
+		TestAssertions.assertXpathValueEquals(xEnvironment, message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
+		TestAssertions.assertXpathValueEquals(xCorrelationId, message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
 	}
 
 	@Test
 	@Ignore("skip NDR filter for now")
 	public void readFileBounce4() {
-		String targetFolder="Bounce 4";
-		String originalRecipient="";
-		String originalFrom="";
-		String originalSubject="Factuur 23";
-		String originalReturnPath="<>";
-		String originalMessageId="<"+ndrMessageId+">";
-		String xEnvironment="TST";
-		String xCorrelationId="ID:EMS.19DA5B995492D6613E2:15033";
-		int originalAttachmentCount=0;
+		String targetFolder = "Bounce 4";
+		String originalRecipient = "";
+		String originalFrom = "";
+		String originalSubject = "Factuur 23";
+		String originalReturnPath = "<>";
+		String originalMessageId = "<" + ndrMessageId + ">";
+		String xEnvironment = "TST";
+		String xCorrelationId = "ID:EMS.19DA5B995492D6613E2:15033";
+		int originalAttachmentCount = 0;
 		//String originalAttachmentName="Invoice_1800000045.pdf";
 
-		String mainRecipient=originalRecipient;
-		String mainSubject="Onbestelbaar: "+originalSubject;
-		String expectedAttachmentName="Undelivered Message";
+		String mainRecipient = originalRecipient;
+		String mainSubject = "Onbestelbaar: " + originalSubject;
+		String expectedAttachmentName = "Undelivered Message";
 
 		mailListener.setFilter("NDR");
-		configureAndOpen(targetFolder,null);
+		configureAndOpen(targetFolder, null);
 
-		Map<String,Object> threadContext=new HashMap<>();
+		Map<String, Object> threadContext = new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		assertNotNull(rawMessage.getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
-		System.out.println("message ["+message+"]");
+		System.out.println("message [" + message + "]");
 
-		TestAssertions.assertXpathValueEquals(mainRecipient, 			message, "/email/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals(mainFrom,      			message, "/email/from");
-		TestAssertions.assertXpathValueEquals(mainSubject,   			message, "/email/subject");
+		TestAssertions.assertXpathValueEquals(mainRecipient, message, "/email/recipients/recipient[@type='to']");
+		TestAssertions.assertXpathValueEquals(mainFrom, message, "/email/from");
+		TestAssertions.assertXpathValueEquals(mainSubject, message, "/email/subject");
 
-		TestAssertions.assertXpathValueEquals(1,  						message, "count(/email/attachments/attachment)");
-		TestAssertions.assertXpathValueEquals(expectedAttachmentName,   message, "/email/attachments/attachment/@name");
+		TestAssertions.assertXpathValueEquals(1, message, "count(/email/attachments/attachment)");
+		TestAssertions.assertXpathValueEquals(expectedAttachmentName, message, "/email/attachments/attachment/@name");
 
-		TestAssertions.assertXpathValueEquals(originalRecipient, 		message, "/email/attachments/attachment/recipients/recipient[@type='to']");
-		TestAssertions.assertXpathValueEquals(originalFrom,      		message, "/email/attachments/attachment/from");
-		TestAssertions.assertXpathValueEquals(originalSubject,  		message, "/email/attachments/attachment/subject");
+		TestAssertions.assertXpathValueEquals(originalRecipient, message, "/email/attachments/attachment/recipients/recipient[@type='to']");
+		TestAssertions.assertXpathValueEquals(originalFrom, message, "/email/attachments/attachment/from");
+		TestAssertions.assertXpathValueEquals(originalSubject, message, "/email/attachments/attachment/subject");
 
-		TestAssertions.assertXpathValueEquals(originalAttachmentCount,  message, "count(/email/attachments/attachment/attachments/attachment)");
+		TestAssertions.assertXpathValueEquals(originalAttachmentCount, message, "count(/email/attachments/attachment/attachments/attachment)");
 		//TestAssertions.assertXpathValueEquals(originalAttachmentName,   message, "/email/attachments/attachment/attachments/attachment/@name");
 
-		TestAssertions.assertXpathValueEquals(originalReturnPath,      	message, "/email/attachments/attachment/headers/header[@name='Return-Path']");
-		TestAssertions.assertXpathValueEquals(originalMessageId,      	message, "/email/attachments/attachment/headers/header[@name='Message-ID']");
-		TestAssertions.assertXpathValueEquals(originalSubject,      	message, "/email/attachments/attachment/headers/header[@name='Subject']");
+		TestAssertions.assertXpathValueEquals(originalReturnPath, message, "/email/attachments/attachment/headers/header[@name='Return-Path']");
+		TestAssertions.assertXpathValueEquals(originalMessageId, message, "/email/attachments/attachment/headers/header[@name='Message-ID']");
+		TestAssertions.assertXpathValueEquals(originalSubject, message, "/email/attachments/attachment/headers/header[@name='Subject']");
 
-		TestAssertions.assertXpathValueEquals(xEnvironment,      		message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
-		TestAssertions.assertXpathValueEquals(xCorrelationId,      		message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
+		TestAssertions.assertXpathValueEquals(xEnvironment, message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
+		TestAssertions.assertXpathValueEquals(xCorrelationId, message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
 	}
 
 	@Test
 	public void readEmptyFolder() {
-		String targetFolder="Empty";
+		String targetFolder = "Empty";
 		mailListener.setCreateFolders(true);
-		configureAndOpen(targetFolder,null);
+		configureAndOpen(targetFolder, null);
 
-		Map<String,Object> threadContext=new HashMap<>();
+		Map<String, Object> threadContext = new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNull(rawMessage);
@@ -543,8 +543,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //	}
 
 
-
-
 //
 //	@Test
 //	public void fileSystemTestListFile() throws Exception {
@@ -575,15 +573,15 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
 
 					String id = item.getId();
-					log.debug("ID ["+id+"]");
+					log.debug("ID [" + id + "]");
 					itemIds.add(id);
 				}
 			}
 		}
-		for (String id:itemIds) {
+		for (String id : itemIds) {
 			ExchangeMessageReference email = browser.browseMessage(id);
 			Message message = mailListener.getFileSystem().readFile(email, null);
-			log.debug("Id: "+id+"\nEmail: "+message.asString());
+			log.debug("Id: " + id + "\nEmail: " + message.asString());
 		}
 		assertEquals(itemIds.size(), messageCount);
 	}
@@ -607,15 +605,15 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
 
 					String id = item.getId();
-					log.debug("ID ["+id+"]");
+					log.debug("ID [" + id + "]");
 					itemIds.add(id);
 				}
 			}
 		}
-		for (String id:itemIds) {
+		for (String id : itemIds) {
 			ExchangeMessageReference email = browser.browseMessage(id);
 			Message message = mailListener.getFileSystem().readFile(email, null);
-			log.debug("Id: "+id+"\nEmail: "+message.asString());
+			log.debug("Id: " + id + "\nEmail: " + message.asString());
 		}
 	}
 
@@ -637,7 +635,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
 
 					boolean filterResult = filter.matchAny(item);
-					log.debug("ID ["+item.getId()+"] match ["+filterResult+"]");
+					log.debug("ID [" + item.getId() + "] match [" + filterResult + "]");
 				}
 			}
 		}

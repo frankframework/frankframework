@@ -21,10 +21,10 @@ import org.frankframework.stream.Message;
 /**
  * Interface that {@link IPushingListener PushingListeners} can use to handle the messages they receive.
  * A call to any of the method defined in this interface will do to process the message.
- * @param <M> the raw message type
  *
- * @author  Gerrit van Brakel
- * @since   4.2
+ * @param <M> the raw message type
+ * @author Gerrit van Brakel
+ * @since 4.2
  */
 public interface IMessageHandler<M> {
 
@@ -34,7 +34,7 @@ public interface IMessageHandler<M> {
 	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Same as {@link #processRawMessage(IListener,RawMessageWrapper,PipeLineSession, boolean)}, but now updates IdleStatistics too
+	 * Same as {@link #processRawMessage(IListener, RawMessageWrapper, PipeLineSession, boolean)}, but now updates IdleStatistics too
 	 */
 	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
 
@@ -44,8 +44,8 @@ public interface IMessageHandler<M> {
 	Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;
 
 	/**
-	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
-	 *  Can be used if the calling system has no other way of returning the exception to the caller.
+	 * Formats any exception thrown by any of the above methods to a message that can be returned.
+	 * Can be used if the calling system has no other way of returning the exception to the caller.
 	 */
 	Message formatException(String extraInfo, String correlationId, Message message, Throwable t);
 }

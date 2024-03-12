@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
-
 import org.frankframework.lifecycle.DynamicRegistration;
 
 /**

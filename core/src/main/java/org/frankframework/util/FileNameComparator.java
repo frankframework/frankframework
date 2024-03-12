@@ -20,13 +20,13 @@ import java.io.File;
 /**
  * Compares filenames, so directory listings appear in a kind of natural order.
  *
- * @author  Gerrit van Brakel
- * @since   4.3
+ * @author Gerrit van Brakel
+ * @since 4.3
  */
 public class FileNameComparator extends NameComparatorBase<File> {
 
 	public static int compareFilenames(File f0, File f1) {
-		if (f0.isDirectory()!=f1.isDirectory()) {
+		if (f0.isDirectory() != f1.isDirectory()) {
 			if (f0.isDirectory()) {
 				return -1;
 			}

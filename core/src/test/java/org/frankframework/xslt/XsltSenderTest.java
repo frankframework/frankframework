@@ -6,6 +6,7 @@ import org.frankframework.senders.XsltSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+
 import org.junit.jupiter.api.Test;
 
 public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
@@ -14,7 +15,7 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 
 	@Override
 	public SenderPipe createPipe() {
-		SenderPipe pipe=new SenderPipe();
+		SenderPipe pipe = new SenderPipe();
 		sender = new XsltSender();
 		autowireByType(sender);
 		pipe.setSender(sender);
@@ -44,7 +45,6 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 
 		assertResultsAreCorrect(expected, result, session);
 	}
-
 
 
 	@Override

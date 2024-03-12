@@ -11,6 +11,7 @@ import java.util.List;
 import org.frankframework.core.IMessageBrowser.HideMethod;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -55,7 +56,7 @@ public class MiscTest {
 
 	@Test
 	public void testNegativeToFileSize512MB() {
-		String size = Misc.toFileSize(1024*1024*5);
+		String size = Misc.toFileSize(1024 * 1024 * 5);
 		assertEquals("5MB", size);
 	}
 
@@ -201,45 +202,45 @@ public class MiscTest {
 
 	@Test
 	public void testAuthorityInUrlString1() {
-		String username="user";
-		String password="password";
-		String url="http://aa:bb@host.nl";
+		String username = "user";
+		String password = "password";
+		String url = "http://aa:bb@host.nl";
 		String expected = "http://user:password@host.nl";
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
 	@Test
 	public void testAuthorityInUrlString2() {
-		String username="user";
-		String password="password";
-		String url="http://host.nl";
+		String username = "user";
+		String password = "password";
+		String url = "http://host.nl";
 		String expected = "http://user:password@host.nl";
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
 	@Test
 	public void testAuthorityInUrlString3() {
-		String username=null;
-		String password=null;
-		String url="http://aa:bb@host.nl";
+		String username = null;
+		String password = null;
+		String url = "http://aa:bb@host.nl";
 		String expected = "http://aa:bb@host.nl";
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
 	@Test
 	public void testAuthorityInUrlString4() {
-		String username="user";
-		String password="password";
-		String url="aa:bb@host.nl";
+		String username = "user";
+		String password = "password";
+		String url = "aa:bb@host.nl";
 		String expected = "user:password@host.nl";
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
 	@Test
 	public void testAuthorityInUrlString5() {
-		String username="user";
-		String password="password";
-		String url="host.nl";
+		String username = "user";
+		String password = "password";
+		String url = "host.nl";
 		String expected = "user:password@host.nl";
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}

@@ -41,19 +41,18 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Manager for Monitoring.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
- *
+ * @author Gerrit van Brakel
  * @author Niels Meijer
  * @version 2.0
+ * @since 4.9
  */
 @FrankDocGroup(name = "Monitoring")
 public class MonitorManager extends ConfigurableLifecyleBase implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
 
 	private @Getter @Setter ApplicationContext applicationContext;
-	private List<Monitor> monitors = new ArrayList<>();							// All monitors managed by this MonitorManager
-	private Map<String, Event> events = new HashMap<>();						// All events that can be thrown
-	private Map<String, IMonitorDestination> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
+	private List<Monitor> monitors = new ArrayList<>();                            // All monitors managed by this MonitorManager
+	private Map<String, Event> events = new HashMap<>();                        // All events that can be thrown
+	private Map<String, IMonitorDestination> destinations = new LinkedHashMap<>();    // All destinations (that can receive status messages) managed by this MonitorManager
 
 	/**
 	 * (re)configure all destinations and all monitors.
@@ -61,29 +60,31 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"configuring destinations");
-		for(String name : destinations.keySet()) {
+		if (log.isDebugEnabled()) log.debug(getLogPrefix() + "configuring destinations");
+		for (String name : destinations.keySet()) {
 			IMonitorDestination destination = getDestination(name);
 			destination.configure();
 		}
 
 		//Only configure Monitors if all destinations were able to configure successfully
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"configuring monitors");
-		for(Monitor monitor : monitors) {
+		if (log.isDebugEnabled()) log.debug(getLogPrefix() + "configuring monitors");
+		for (Monitor monitor : monitors) {
 			monitor.configure();
 		}
 	}
 
 	private String getLogPrefix() {
-		return "Manager@"+this.hashCode();
+		return "Manager@" + this.hashCode();
 	}
 
 	public void registerDestination(IMonitorDestination monitorAdapter) {
 		destinations.put(monitorAdapter.getName(), monitorAdapter);
 	}
+
 	public IMonitorDestination getDestination(String name) {
 		return destinations.get(name);
 	}
+
 	public Map<String, IMonitorDestination> getDestinations() {
 		return destinations;
 	}
@@ -94,7 +95,8 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		String eventCode = event.getEventCode();
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
+			log.debug(getLogPrefix() + "registerEvent [" + eventCode + "] for adapter [" + (thrower.getAdapter() == null ? null : thrower.getAdapter()
+					.getName()) + "] object [" + thrower.getEventSourceName() + "]");
 		}
 
 		registerEvent(thrower, eventCode);
@@ -107,7 +109,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 
 	public void removeMonitor(Monitor monitor) {
 		int index = monitors.indexOf(monitor);
-		if(index > -1) {
+		if (index > -1) {
 			String name = monitor.getName();
 			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 			factory.destroyBean(monitor);
@@ -119,12 +121,13 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	public Monitor getMonitor(int index) {
 		return monitors.get(index);
 	}
+
 	public Monitor findMonitor(String name) {
-		if(name == null) {
+		if (name == null) {
 			return null;
 		}
 
-		for (int i=0; i<monitors.size(); i++) {
+		for (int i = 0; i < monitors.size(); i++) {
 			Monitor monitor = monitors.get(i);
 			if (name.equals(monitor.getName())) {
 				return monitor;
@@ -140,12 +143,12 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 
 	private void registerEvent(EventThrowing eventThrowing, String eventCode) {
 		Adapter adapter = eventThrowing.getAdapter();
-		if(adapter == null || StringUtils.isEmpty(adapter.getName())) {
-			throw new IllegalStateException("adapter ["+adapter+"] has no (usable) name");
+		if (adapter == null || StringUtils.isEmpty(adapter.getName())) {
+			throw new IllegalStateException("adapter [" + adapter + "] has no (usable) name");
 		}
 
 		//Update the list with potential events that can be thrown
-		Event event = events.computeIfAbsent(eventCode, e->new Event());
+		Event event = events.computeIfAbsent(eventCode, e -> new Event());
 		event.addThrower(eventThrowing);
 		events.put(eventCode, event);
 	}
@@ -155,18 +158,18 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	}
 
 	public XmlBuilder toXml() {
-		XmlBuilder configXml=new XmlBuilder("monitoring");
-		for(String name : destinations.keySet()) {
-			IMonitorDestination ma=getDestination(name);
+		XmlBuilder configXml = new XmlBuilder("monitoring");
+		for (String name : destinations.keySet()) {
+			IMonitorDestination ma = getDestination(name);
 
-			XmlBuilder destinationXml=new XmlBuilder("destination");
-			destinationXml.addAttribute("name",ma.getName());
-			destinationXml.addAttribute("className",ma.getClass().getName());
+			XmlBuilder destinationXml = new XmlBuilder("destination");
+			destinationXml.addAttribute("name", ma.getName());
+			destinationXml.addAttribute("className", ma.getClass().getName());
 
 			configXml.addSubElement(ma.toXml());
 		}
-		for (int i=0; i<monitors.size(); i++) {
-			Monitor monitor=getMonitor(i);
+		for (int i = 0; i < monitors.size(); i++) {
+			Monitor monitor = getMonitor(i);
 			configXml.addSubElement(monitor.toXml());
 		}
 

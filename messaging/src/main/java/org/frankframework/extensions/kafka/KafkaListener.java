@@ -28,6 +28,10 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -49,11 +53,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.StringUtil;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Experimental {@link IListener} for listening to a topic in
@@ -124,9 +123,16 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 			consumer = buildConsumer();
 			consumer.subscribe(topicPattern);
 			waiting = consumer.poll(Duration.ofMillis(100)).iterator();
-			if (waiting.hasNext()) return; //TODO implement IPeekableListener. We shouldn't this logic in open.. it should only open/create the connection. The subscribe method will throw a Runtime (KafkaException) if it cannot connect!
+			if (waiting.hasNext())
+				return; //TODO implement IPeekableListener. We shouldn't this logic in open.. it should only open/create the connection. The subscribe method will throw a Runtime (KafkaException) if it cannot connect!
 
-			Double metric = (Double) consumer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new ListenerException("Failed to get response-total metric.")).metricValue();
+			Double metric = (Double) consumer.metrics()
+					.values()
+					.stream()
+					.filter(item -> item.metricName().name().equals("response-total"))
+					.findFirst()
+					.orElseThrow(() -> new ListenerException("Failed to get response-total metric."))
+					.metricValue();
 			if (metric.intValue() == 0) throw new ListenerException("Didn't get a response from Kafka while connecting for Listening.");
 		} catch (RuntimeException e) {
 			throw new ListenerException(e);

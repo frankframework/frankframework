@@ -27,44 +27,62 @@ import org.frankframework.stream.Message;
  * Interface to be implemented by an Ibis debugger. The debugger will be
  * notified of events by a call to the appropriate method for that event.
  *
- * @author  Jaco de Groot (jaco@dynasol.nl)
+ * @author Jaco de Groot (jaco@dynasol.nl)
  */
 public interface IbisDebugger {
 
 	public void setIbisManager(IbisManager ibisManager);
+
 	public IbisManager getIbisManager();
 
 	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input);
+
 	public Message pipeLineOutput(PipeLine pipeLine, String correlationId, Message output);
+
 	public Throwable pipeLineAbort(PipeLine pipeLine, String correlationId, Throwable throwable);
 
 	public Object pipeLineSessionKey(String correlationId, String sessionKey, Object sessionValue);
 
 	public <T> T pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, T input);
+
 	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output);
+
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable);
 
 	public <T> T senderInput(ISender sender, String correlationId, T input);
+
 	public <T> T senderOutput(ISender sender, String correlationId, T output);
+
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable);
 
 	public String replyListenerInput(IListener<?> listener, String messageId, String correlationId);
+
 	public <M> M replyListenerOutput(IListener<M> listener, String correlationId, M output);
+
 	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable);
 
 	public void createThread(Object sourceObject, String threadId, String correlationId);
+
 	public void cancelThread(Object sourceObject, String threadId, String correlationId);
+
 	public Object startThread(Object sourceObject, String threadId, String correlationId, Object input);
+
 	public Object endThread(Object sourceObject, String correlationId, Object output);
+
 	public Throwable abortThread(Object sourceObject, String correlationId, Throwable throwable);
 
 	public Object getInputFromSessionKey(String correlationId, String sessionKey, Object sessionValue);
+
 	public Object getInputFromFixedValue(String correlationId, Object fixedValue);
+
 	public Object getEmptyInputReplacement(String correlationId, Object replacementValue);
+
 	public Object storeInSessionKey(String correlationId, String sessionKey, Object result);
+
 	public Message preserveInput(String correlationId, Message input);
 
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value);
+
 	public <T> T showValue(String correlationId, String label, T value);
 
 	public boolean stubSender(ISender sender, String correlationId);

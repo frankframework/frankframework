@@ -26,7 +26,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.IListener;
 import org.frankframework.core.PipeLine;
 import org.frankframework.jms.JmsListener;
@@ -39,10 +38,10 @@ import org.frankframework.util.StreamUtil;
 
 public class EsbSoapWsdlGeneratorContext implements WsdlGeneratorExtensionContext {
 	// Tibco BW will not detect the transport when SOAP_JMS_NAMESPACE is being used instead of ESB_SOAP_JMS_NAMESPACE.
-	protected static final String ESB_SOAP_JMS_NAMESPACE		 = "http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS";
-	protected static final String ESB_SOAP_JNDI_NAMESPACE		= "http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi";
+	protected static final String ESB_SOAP_JMS_NAMESPACE = "http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS";
+	protected static final String ESB_SOAP_JNDI_NAMESPACE = "http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi";
 	protected static final String ESB_SOAP_JNDI_NAMESPACE_PREFIX = "jndi";
-	protected static final String ESB_SOAP_TNS_BASE_URI		  = "http://nn.nl/WSDL";
+	protected static final String ESB_SOAP_TNS_BASE_URI = "http://nn.nl/WSDL";
 
 	String esbSoapBusinessDomain;
 	String esbSoapServiceName;
@@ -55,7 +54,7 @@ public class EsbSoapWsdlGeneratorContext implements WsdlGeneratorExtensionContex
 	Set<String> warnings = new LinkedHashSet<>();
 
 	protected void warn(String warning, Exception e) {
-		warn(warning+": ("+ ClassUtils.nameOf(e)+") "+e.getMessage());
+		warn(warning + ": (" + ClassUtils.nameOf(e) + ") " + e.getMessage());
 	}
 
 	protected void warn(String warning) {
@@ -89,10 +88,12 @@ public class EsbSoapWsdlGeneratorContext implements WsdlGeneratorExtensionContex
 				+ esbSoapOperationName + "/"
 				+ esbSoapOperationVersion;
 	}
+
 	@Override
 	public boolean hasSOAPActionName() {
 		return esbSoapOperationName != null && esbSoapOperationVersion != null;
 	}
+
 	@Override
 	public String getSOAPActionName() {
 		return esbSoapOperationName + "_" + esbSoapOperationVersion;
@@ -124,14 +125,16 @@ public class EsbSoapWsdlGeneratorContext implements WsdlGeneratorExtensionContex
 	@Override
 	public void addJmsServiceInfo(XMLStreamWriter w, JmsListener listener) throws XMLStreamException {
 		writeEsbSoapJndiContext(w, listener);
-		w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "connectionFactory"); {
+		w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "connectionFactory");
+		{
 			w.writeCharacters("externalJndiName-for-"
 					+ listener.getQueueConnectionFactoryName()
 					+ "-on-"
 					+ AppConstants.getInstance().getProperty("dtap.stage"));
 			w.writeEndElement();
 		}
-		w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "targetAddress"); {
+		w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "targetAddress");
+		{
 			w.writeAttribute("destination", listener.getDestinationType().name().toLowerCase());
 			String queueName = listener.getPhysicalDestinationShortName();
 			if (queueName == null) {
@@ -145,14 +148,17 @@ public class EsbSoapWsdlGeneratorContext implements WsdlGeneratorExtensionContex
 	}
 
 	protected void writeEsbSoapJndiContext(XMLStreamWriter w, JmsListener listener) throws XMLStreamException {
-		w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "context"); {
-			w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property"); {
+		w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "context");
+		{
+			w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property");
+			{
 				w.writeAttribute("name", "java.naming.factory.initial");
 				w.writeAttribute("type", "java.lang.String");
 				w.writeCharacters("com.tibco.tibjms.naming.TibjmsInitialContextFactory");
 				w.writeEndElement();
 			}
-			w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property"); {
+			w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property");
+			{
 				w.writeAttribute("name", "java.naming.provider.url");
 				w.writeAttribute("type", "java.lang.String");
 				String qcf = listener.getQueueConnectionFactoryName();
@@ -178,7 +184,8 @@ public class EsbSoapWsdlGeneratorContext implements WsdlGeneratorExtensionContex
 				w.writeCharacters("tibjmsnaming://host-for-" + qcf + "-on-" + stage + ":37222");
 				w.writeEndElement();
 			}
-			w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property"); {
+			w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property");
+			{
 				w.writeAttribute("name", "java.naming.factory.object");
 				w.writeAttribute("type", "java.lang.String");
 				w.writeCharacters("com.tibco.tibjms.custom.CustomObjectFactory");

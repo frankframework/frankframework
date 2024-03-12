@@ -15,6 +15,7 @@ import org.frankframework.pipes.IteratingPipe.StopReason;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 
 class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIteratorPipe> {
@@ -173,7 +174,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(true);
-		pipe.registerForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(),"dummy"));
+		pipe.registerForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
 		configurePipe();
 		pipe.start();
 

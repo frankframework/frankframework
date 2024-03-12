@@ -34,6 +34,7 @@ import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.MessageKeeper;
+
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
@@ -62,19 +63,20 @@ public class MigratorTest {
 	}
 
 	private boolean isTablePresent(String tableName) throws Exception {
-		try(Connection connection = env.getConnection()) {
+		try (Connection connection = env.getConnection()) {
 			return env.getDbmsSupport().isTablePresent(connection, tableName);
 		}
 	}
+
 	private void dropTableIfPresent(String tableName) throws Exception {
-		try(Connection connection = env.getConnection()) {
-			if(env.getDbmsSupport().isTablePresent(connection, tableName)) {
-				JdbcTestUtil.executeStatement(connection, "DROP TABLE "+tableName);
+		try (Connection connection = env.getConnection()) {
+			if (env.getDbmsSupport().isTablePresent(connection, tableName)) {
+				JdbcTestUtil.executeStatement(connection, "DROP TABLE " + tableName);
 				SQLWarning warnings = connection.getWarnings();
-				if(warnings != null) {
+				if (warnings != null) {
 					log.warn(JdbcUtil.warningsToString(warnings));
 				}
-				assertFalse(env.getDbmsSupport().isTablePresent(connection, tableName), "table ["+tableName+"] should not exist");
+				assertFalse(env.getDbmsSupport().isTablePresent(connection, tableName), "table [" + tableName + "] should not exist");
 			}
 		}
 	}
@@ -88,8 +90,9 @@ public class MigratorTest {
 		assertNotNull(messageKeeper, "no message logged to the messageKeeper");
 		System.err.println(messageKeeper.toString()); // == empty?
 		assertEquals(1, messageKeeper.size());
-		assertEquals("Configuration ["+env.getName()+"] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
-		assertFalse(isTablePresent(tableName), "table ["+tableName+"] should not exist");
+		assertEquals("Configuration [" + env.getName() + "] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0)
+				.getMessageText());
+		assertFalse(isTablePresent(tableName), "table [" + tableName + "] should not exist");
 	}
 
 	@TxManagerTest
@@ -104,7 +107,7 @@ public class MigratorTest {
 		assertThat(warning, containsString("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); //Test ObjectName + Error
 		assertThat(warning, containsString("Migration failed for changeset Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); //Test liquibase exception
 		//H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
-		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
+		assertTrue(isTablePresent(tableName), "table [" + tableName + "] should exist");
 	}
 
 	@TxManagerTest
@@ -115,7 +118,7 @@ public class MigratorTest {
 		StringWriter writer = new StringWriter();
 		migrator.update(writer, resource);
 
-		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+env.getDataSourceName().toLowerCase()+".sql");
+		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_" + env.getDataSourceName().toLowerCase() + ".sql");
 
 		String result = applyIgnores(writer.toString());
 		result = removeComments(result);
@@ -126,7 +129,7 @@ public class MigratorTest {
 	public void testSQLWriterBytesResource(DatabaseTestEnvironment env) throws Exception {
 		// Arrange
 		Resource resource = Resource.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
-		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+env.getDataSourceName().toLowerCase()+".sql");
+		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_" + env.getDataSourceName().toLowerCase() + ".sql");
 		assertNotNull(resource);
 
 		resource = new BytesResource(resource.openStream(), "inputstreamresource.xml", new GlobalScopeProvider());
@@ -149,7 +152,7 @@ public class MigratorTest {
 		StringBuilder string = new StringBuilder();
 		String line = buf.readLine();
 		while (line != null) {
-			if(line.startsWith("--") || "\n".equals(line)) {
+			if (line.startsWith("--") || "\n".equals(line)) {
 				line = buf.readLine();
 				continue;
 			}
@@ -165,7 +168,7 @@ public class MigratorTest {
 	private String applyIgnores(String sqlScript) {
 		Pattern regex = Pattern.compile("(\\d+)\\'\\)");
 		Matcher match = regex.matcher(sqlScript);
-		if(match.find()) {
+		if (match.find()) {
 			String deploymentId = match.group(1);
 			sqlScript = sqlScript.replace(deploymentId, "IGNORE");
 		} else {
@@ -200,9 +203,10 @@ public class MigratorTest {
 			migrator.update();
 
 			String msg = "LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]";
-			assertFalse(appender.contains(msg), "expected message not to be logged but found ["+appender.getLogLines()+"]"); //Validate Liquibase doesn't log
+			assertFalse(appender.contains(msg), "expected message not to be logged but found [" + appender.getLogLines() + "]"); //Validate Liquibase doesn't log
 
-			ConfigurationMessageEventListener configurationMessages = env.getConfiguration().getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
+			ConfigurationMessageEventListener configurationMessages = env.getConfiguration()
+					.getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
 			assertTrue(configurationMessages.contains(msg)); //Validate Liquibase did run
 		} finally {
 			TestAppender.removeAppender(appender);

@@ -16,18 +16,16 @@
 package org.frankframework.jdbc;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ProcessState;
 
 /**
-
-/**
+ * /**
  * Database Listener that operates on a table having at least a key and a status field.
  *
- * @since   4.7
+ * @since 4.7
  */
 @Deprecated
 @ConfigurationWarning("Please replace with JdbcTableListener for ease of configuration and improved manageability")
@@ -45,12 +43,12 @@ public class JdbcQueryListener extends JdbcListener {
 			throw new ConfigurationException("keyField must be specified");
 		}
 		if (!knownProcessStates().contains(ProcessState.ERROR)) {
-			log.info(getLogPrefix()+"has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead");
-			setUpdateStatusQuery(ProcessState.ERROR,getUpdateStatusQuery(ProcessState.DONE));
+			log.info(getLogPrefix() + "has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead");
+			setUpdateStatusQuery(ProcessState.ERROR, getUpdateStatusQuery(ProcessState.DONE));
 		}
 		super.configure();
 		if (!knownProcessStates().contains(ProcessState.INPROCESS) && !getDbmsSupport().hasSkipLockedFunctionality()) {
-			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs updateStatusToInProcessQuery to run in multiple threads");
+			ConfigurationWarnings.add(this, log, "Database [" + getDbmsSupport().getDbmsName() + "] needs updateStatusToInProcessQuery to run in multiple threads");
 		}
 	}
 
@@ -65,6 +63,7 @@ public class JdbcQueryListener extends JdbcListener {
 
 	/**
 	 * SQL statement to set the status of a row to 'processed'. Must contain one parameter, that is set to the value of the key
+	 *
 	 * @ff.mandatory
 	 */
 	public void setUpdateStatusToProcessedQuery(String query) {
@@ -73,6 +72,7 @@ public class JdbcQueryListener extends JdbcListener {
 
 	/**
 	 * SQL statement to set the status of a row to 'error'. Must contain one parameter, that is set to the value of the key
+	 *
 	 * @ff.default same as <code>updateStatusToProcessedQuery</code>
 	 */
 	public void setUpdateStatusToErrorQuery(String query) {

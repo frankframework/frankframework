@@ -29,7 +29,6 @@ import lombok.Setter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-
 import org.frankframework.stream.Message;
 
 public class LargeBlockTester extends FixedForwardPipe {
@@ -37,7 +36,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 	private @Setter int blockSize = 10000;
 	private @Setter int blockCount = 20;
 	private @Setter int sleepBetweenServedBlocks = 0;
-	private @Setter Direction direction=Direction.PRODUCE;
+	private @Setter Direction direction = Direction.PRODUCE;
 
 	private static AtomicInteger totalBlocksServed = new AtomicInteger();
 
@@ -49,7 +48,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message result;
-		if (direction==Direction.PRODUCE) {
+		if (direction == Direction.PRODUCE) {
 
 			final byte[] filler = buildDataBuffer();
 			final long bytesToServe = blockCount * (long) blockSize;
@@ -105,17 +104,17 @@ public class LargeBlockTester extends FixedForwardPipe {
 
 			});
 		} else {
-			try (Reader reader=message.asReader()) {
-				int blocksServedAfterFirstBlockRead=Integer.MAX_VALUE;
-				int buflen=blockSize;
-				int displaylen=40;
-				int bytesRead=0;
+			try (Reader reader = message.asReader()) {
+				int blocksServedAfterFirstBlockRead = Integer.MAX_VALUE;
+				int buflen = blockSize;
+				int displaylen = 40;
+				int bytesRead = 0;
 				char[] buf = new char[buflen];
-				int block=0;
+				int block = 0;
 
 				while (true) {
-					int len = reader.read(buf,0,buflen);
-					if (block==0) {
+					int len = reader.read(buf, 0, buflen);
+					if (block == 0) {
 						blocksServedAfterFirstBlockRead = totalBlocksServed.get();
 					}
 					if (len < 0) {

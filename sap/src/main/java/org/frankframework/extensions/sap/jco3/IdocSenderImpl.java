@@ -34,9 +34,9 @@ import org.frankframework.util.XmlUtils;
  * Implementation of {@link ISender sender} that sends an IDoc to SAP.
  * N.B. The sending of the iDoc is committed right after the XA transaction is completed.
  *
- * @author  Gerrit van Brakel
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public abstract class IdocSenderImpl extends SapSenderBase {
 
@@ -45,9 +45,9 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 		IdocXmlHandler handler = new IdocXmlHandler(sapSystem);
 
 		try {
-			log.debug(getLogPrefix()+"start parsing Idoc");
+			log.debug(getLogPrefix() + "start parsing Idoc");
 			XmlUtils.parseXml(message.asInputSource(), handler);
-			log.debug(getLogPrefix()+"finished parsing Idoc");
+			log.debug(getLogPrefix() + "finished parsing Idoc");
 			return handler.getIdoc();
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -56,33 +56,32 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String tid=null;
+		String tid = null;
 		try {
 			ParameterValueList pvl = null;
-			if (paramList!=null) {
+			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
 			}
 			SapSystemImpl sapSystem = getSystem(pvl);
 
-			IDocDocument idoc = parseIdoc(sapSystem,message);
+			IDocDocument idoc = parseIdoc(sapSystem, message);
 
 			try {
-				log.trace(getLogPrefix()+"checking syntax");
+				log.trace(getLogPrefix() + "checking syntax");
 				idoc.checkSyntax();
-			}
-			catch ( IDocException e ) {
+			} catch (IDocException e) {
 				throw new SenderException("Syntax error in idoc", e);
 			}
 
-			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+JCoIDoc.getIDocFactory().getIDocXMLProcessor().render(idoc)+"]"); }
+			if (log.isDebugEnabled()) {log.debug(getLogPrefix() + "parsed idoc [" + JCoIDoc.getIDocFactory().getIDocXMLProcessor().render(idoc) + "]");}
 
 
 			JCoDestination destination = getDestination(session, sapSystem);
-			tid=getTid(destination,sapSystem);
-			if (tid==null) {
+			tid = getTid(destination, sapSystem);
+			if (tid == null) {
 				throw new SenderException("could not obtain TID to send Idoc");
 			}
-			JCoIDoc.send(idoc,IDocFactory.IDOC_VERSION_DEFAULT ,destination,tid);
+			JCoIDoc.send(idoc, IDocFactory.IDOC_VERSION_DEFAULT, destination, tid);
 			return new SenderResult(tid);
 		} catch (Exception e) {
 			throw new SenderException(e);

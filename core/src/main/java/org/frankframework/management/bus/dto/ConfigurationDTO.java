@@ -61,24 +61,24 @@ public class ConfigurationDTO {
 		stubbed = configuration.isStubbed();
 		state = configuration.getState();
 		type = configuration.getClassLoaderType();
-		if(configuration.getConfigurationException() != null) {
+		if (configuration.getConfigurationException() != null) {
 			exception = configuration.getConfigurationException().getMessage();
 		}
 
 		ClassLoader classLoader = configuration.getClassLoader();
-		if(classLoader instanceof DatabaseClassLoader) {
+		if (classLoader instanceof DatabaseClassLoader) {
 			setDatabaseAttributes((DatabaseClassLoader) classLoader);
 		}
 
-		if(configuration.isActive()) {
+		if (configuration.isActive()) {
 			DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-			if(databaseMigrator.hasMigrationScript()) {
+			if (databaseMigrator.hasMigrationScript()) {
 				jdbcMigrator = true;
 			}
 		}
 
 		String parentConfig = AppConstants.getInstance().getString("configurations." + configuration.getName() + ".parentConfig", null);
-		if(parentConfig != null) {
+		if (parentConfig != null) {
 			parent = parentConfig;
 		}
 	}
@@ -116,9 +116,9 @@ public class ConfigurationDTO {
 		public int compare(ConfigurationDTO lhs, ConfigurationDTO rhs) {
 			String name1 = lhs.getName();
 			String name2 = rhs.getName();
-			if(name1 == null || name2 == null) return 0;
+			if (name1 == null || name2 == null) return 0;
 
-			if(name1.startsWith(DEFAULT_FF_CONFIGURATION_PREFIX)) {
+			if (name1.startsWith(DEFAULT_FF_CONFIGURATION_PREFIX)) {
 				return -1;
 			}
 			return name2.startsWith(DEFAULT_FF_CONFIGURATION_PREFIX) ? 1 : compareNames(name1, name2);

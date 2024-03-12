@@ -22,16 +22,14 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import org.springframework.http.MediaType;
-
 import lombok.Getter;
 import lombok.Setter;
-
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.util.XmlBuilder;
+import org.springframework.http.MediaType;
+
 /**
- * @author
- * 	Gerard van der Hoorn
+ * @author Gerard van der Hoorn
  */
 public class CisConversionResult {
 
@@ -62,7 +60,7 @@ public class CisConversionResult {
 	@Setter @Getter private File pdfResultFile;
 
 	public static CisConversionResult createCisConversionResult(ConversionOption conversionOption, MediaType mediaType,
-			String documentName, File pdfResultFile, String failureReason, List<CisConversionResult> argAttachments) {
+																String documentName, File pdfResultFile, String failureReason, List<CisConversionResult> argAttachments) {
 
 		CisConversionResult cisConversionResult = new CisConversionResult();
 		cisConversionResult.setConversionOption(conversionOption);
@@ -83,26 +81,28 @@ public class CisConversionResult {
 	 * Create a successful CisConversionResult
 	 */
 	public static CisConversionResult createSuccessResult(ConversionOption conversionOption,
-			MediaType mediaTypeReceived, String documentName, File pdfResultFile,
-			List<CisConversionResult> attachments) {
+														  MediaType mediaTypeReceived, String documentName, File pdfResultFile,
+														  List<CisConversionResult> attachments) {
 		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, pdfResultFile, null,
-				attachments);
+				attachments
+		);
 	}
 
 	public static CisConversionResult createFailureResult(ConversionOption conversionOption,
-			MediaType mediaTypeReceived, String documentName, String failureReason) {
+														  MediaType mediaTypeReceived, String documentName, String failureReason) {
 		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, null, failureReason, null);
 	}
 
 	public static CisConversionResult createFailureResult(ConversionOption conversionOption,
-			MediaType mediaTypeReceived, String documentName, String failureReason,
-			List<CisConversionResult> attachments) {
+														  MediaType mediaTypeReceived, String documentName, String failureReason,
+														  List<CisConversionResult> attachments) {
 		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, null, failureReason,
-				attachments);
+				attachments
+		);
 	}
 
 	public static CisConversionResult createPasswordFailureResult(String filename, ConversionOption conversionOption,
-			MediaType mediaTypeReceived) {
+																  MediaType mediaTypeReceived) {
 		StringBuilder msg = new StringBuilder();
 		if (filename != null) {
 			msg.append(filename);
@@ -144,8 +144,9 @@ public class CisConversionResult {
 	public void buildXmlFromResult(XmlBuilder main, boolean isRoot) {
 		buildXmlFromResult(main, this, isRoot);
 	}
+
 	private void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult, boolean isRoot) {
-		if(isRoot) {
+		if (isRoot) {
 			main.addAttribute("conversionOption", this.getConversionOption().getValue());
 			main.addAttribute("mediaType", this.getMediaType().toString());
 			main.addAttribute("documentName", this.getDocumentName());

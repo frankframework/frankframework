@@ -22,9 +22,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Some utilities for working with HTTP.
@@ -60,7 +59,7 @@ public class HttpUtils {
 				+ getParametersAsString(request, secLogParamNames)
 				+ "] method [" + request.getMethod() + "]" + getCommandIssuedBy(request))
 				+ (message == null ? "" : System.getProperty("line.separator")
-						+ message);
+				+ message);
 	}
 
 	private static String getParametersAsString(HttpServletRequest request, List<String> secLogParamNames) {

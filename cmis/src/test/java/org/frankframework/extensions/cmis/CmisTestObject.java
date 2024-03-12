@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.ObjectId;
@@ -21,9 +25,6 @@ import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.commons.codec.binary.Base64;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 public abstract class CmisTestObject extends Mockito implements Document, Answer<CmisObject> {
 	protected String objectId = "dummy_id";
@@ -35,16 +36,16 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 	@Override
 	public CmisObject answer(InvocationOnMock invocation) throws Throwable {
 		Object obj = invocation.getArguments()[0];
-		if(obj instanceof ObjectId) {
+		if (obj instanceof ObjectId) {
 			ObjectId id = (ObjectId) obj;
 			objectId = id.getId();
-		} else if(obj instanceof Map) {
+		} else if (obj instanceof Map) {
 			@SuppressWarnings({"unchecked", "rawtypes"})
 			Map<String, Object> properties = (Map) obj;
 			objectId = (String) properties.get(PropertyIds.NAME);
 		}
 
-		if(objectId != null && objectId.equals("NOT_FOUND")) {
+		if (objectId != null && objectId.equals("NOT_FOUND")) {
 			throw new CmisObjectNotFoundException();
 		}
 
@@ -55,6 +56,7 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 	public String getId() {
 		return Base64.encodeBase64String(objectId.getBytes());
 	}
+
 	public String getObjectId() {
 		return Base64.encodeBase64String(objectId.getBytes());
 	}

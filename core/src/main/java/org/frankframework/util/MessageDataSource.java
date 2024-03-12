@@ -38,7 +38,7 @@ public class MessageDataSource implements javax.activation.DataSource, jakarta.a
 	}
 
 	public MessageDataSource(Message message, String newContentType) throws IOException {
-		if(Message.isNull(message)) {
+		if (Message.isNull(message)) {
 			throw new IllegalArgumentException("message may not be null");
 		}
 
@@ -50,19 +50,19 @@ public class MessageDataSource implements javax.activation.DataSource, jakarta.a
 	}
 
 	private void determineContentType(String newContentType) {
-		if(StringUtils.isNotEmpty(newContentType)) {
+		if (StringUtils.isNotEmpty(newContentType)) {
 			MimeType mimeType = MimeType.valueOf(newContentType);
-			if(mimeType != DEFAULT_MIMETYPE) {
+			if (mimeType != DEFAULT_MIMETYPE) {
 				this.contentType = mimeType.toString(); //use the parsed MimeType to ensure its validity
 			}
 		}
 
-		if(contentType == null) { //if the contentType is still null try to compute
+		if (contentType == null) { //if the contentType is still null try to compute
 			MimeType mimeType = MessageUtils.computeMimeType(message);
-			if(mimeType != null) {
+			if (mimeType != null) {
 				contentType = mimeType.toString();
 			}
-			if(contentType == null) { //if unable to compute, fall back to the default
+			if (contentType == null) { //if unable to compute, fall back to the default
 				contentType = DEFAULT_MIMETYPE.toString();
 			}
 		}
@@ -73,6 +73,7 @@ public class MessageDataSource implements javax.activation.DataSource, jakarta.a
 	 * See http://docs.oracle.com/javase/7/docs/api/javax/activation/DataSource.html#getContentType():
 	 * This method returns the MIME type of the data in the form of a string.
 	 * It should always return a valid type.
+	 *
 	 * @return "application/octet-stream" if the DataSource implementation can not determine the data type.
 	 */
 	@Override
@@ -82,7 +83,7 @@ public class MessageDataSource implements javax.activation.DataSource, jakarta.a
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		if(Message.isNull(message)) {
+		if (Message.isNull(message)) {
 			throw new IOException("unable to read message, already closed");
 		}
 

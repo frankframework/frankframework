@@ -76,6 +76,7 @@ public class JavascriptSender extends SenderSeries {
 		J2V8(J2V8.class);
 
 		private final Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
+
 		JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
 			this.engine = engine;
 		}
@@ -211,6 +212,7 @@ public class JavascriptSender extends SenderSeries {
 
 	/**
 	 * the name of the javascript function that will be called (first)
+	 *
 	 * @ff.default main
 	 */
 	public void setJsFunctionName(String jsFunctionName) {
@@ -219,6 +221,7 @@ public class JavascriptSender extends SenderSeries {
 
 	/**
 	 * the name of the JavaScript engine to be used.
+	 *
 	 * @ff.default J2V8
 	 */
 	public void setEngineName(JavaScriptEngines engineName) {

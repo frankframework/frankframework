@@ -33,37 +33,37 @@ import org.frankframework.stream.Message;
 /**
  * Baseclass for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String,String> {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String, String> {
 
 	private @Getter String getInputFromSessionKey;
-	private @Getter String getInputFromFixedValue=null;
+	private @Getter String getInputFromFixedValue = null;
 	private @Getter String storeResultInSessionKey;
 	private @Getter String storeInputInSessionKey;
-	private @Getter boolean preserveInput=false;
+	private @Getter boolean preserveInput = false;
 
 	protected @Setter SenderWrapperProcessor senderWrapperProcessor;
-	private @Getter @Setter ICache<String,String> cache=null;
+	private @Getter @Setter ICache<String, String> cache = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSenderConfigured()) {
-			throw new ConfigurationException(getLogPrefix()+"must have at least a sender configured");
+			throw new ConfigurationException(getLogPrefix() + "must have at least a sender configured");
 		}
 		if (StringUtils.isNotEmpty(getGetInputFromSessionKey()) && StringUtils.isNotEmpty(getGetInputFromFixedValue())) {
-			throw new ConfigurationException(getLogPrefix()+"cannot have both attributes inputFromSessionKey and inputFromFixedValue configured");
+			throw new ConfigurationException(getLogPrefix() + "cannot have both attributes inputFromSessionKey and inputFromFixedValue configured");
 		}
-		if (cache!=null) {
+		if (cache != null) {
 			cache.configure(getName());
 		}
 	}
 
 	@Override
 	public void open() throws SenderException {
-		if (cache!=null) {
+		if (cache != null) {
 			cache.open();
 		}
 		super.open();
@@ -74,7 +74,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		try {
 			super.close();
 		} finally {
-			if (cache!=null) {
+			if (cache != null) {
 				cache.close();
 			}
 		}
@@ -86,7 +86,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		if (senderWrapperProcessor!=null) {
+		if (senderWrapperProcessor != null) {
 			return senderWrapperProcessor.sendMessage(this, message, session);
 		}
 		return doSendMessage(message, session);
@@ -110,6 +110,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	/**
 	 * If set <code>true</code>, the input of a pipe is restored before processing the next one
+	 *
 	 * @ff.default false
 	 */
 	public void setPreserveInput(boolean preserveInput) {

@@ -18,26 +18,25 @@ package org.frankframework.pipes;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-
 import org.frankframework.stream.Message;
 import org.frankframework.util.ProcessMetrics;
 
 /**
  * Pipe that returns metrics about current memory usage
+ * <p>
+ * Output example:
  *
- * 	Output example:
+ * <processMetrics>
+ * <properties>
+ * <property name="freeMemory">201M</property>
+ * <property name="totalMemory">245M</property>
+ * <property name="heapSize">43M</property>
+ * <property name="maxMemory">480M</property>
+ * <property name="currentTime">2018-12-24 14:27:29.730</property>
+ * </properties>
+ * </processMetrics>
  *
- * 	<processMetrics>
- * 		<properties>
- * 			<property name="freeMemory">201M</property>
- * 			<property name="totalMemory">245M</property>
- * 			<property name="heapSize">43M</property>
- * 			<property name="maxMemory">480M</property>
- * 			<property name="currentTime">2018-12-24 14:27:29.730</property>
- * 		</properties>
- * 	</processMetrics>
- *
- * @author	Laurens Mäkel
+ * @author Laurens Mäkel
  */
 
 public class IbisMetricsPipe extends FixedForwardPipe {

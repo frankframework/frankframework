@@ -15,10 +15,9 @@
 */
 package org.frankframework.stream.document;
 
-import org.xml.sax.SAXException;
-
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
 
 public class XmlNodeBuilder implements INodeBuilder {
 
@@ -45,7 +44,7 @@ public class XmlNodeBuilder implements INodeBuilder {
 
 	@Override
 	public void setValue(String value) throws SAXException {
-		if (value!=null) {
+		if (value != null) {
 			current.addValue(value).close();
 		} else {
 			current.addAttribute("nil", "true").close();

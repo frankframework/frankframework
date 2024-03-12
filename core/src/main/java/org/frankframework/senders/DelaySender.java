@@ -26,33 +26,35 @@ import org.frankframework.stream.Message;
  * Sender that sleeps for a specified time, which defaults to 5000 msecs.
  * Useful for testing purposes.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 @Category("Advanced")
 public class DelaySender extends SenderBase {
 
-	private long delayTime=5000;
+	private long delayTime = 5000;
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
+			log.info(getLogPrefix() + "starts waiting for " + getDelayTime() + " ms.");
 			Thread.sleep(getDelayTime());
 		} catch (InterruptedException e) {
-			throw new SenderException(getLogPrefix()+"delay interrupted", e);
+			throw new SenderException(getLogPrefix() + "delay interrupted", e);
 		}
-		log.info(getLogPrefix()+"ends waiting for " + getDelayTime() + " ms.");
+		log.info(getLogPrefix() + "ends waiting for " + getDelayTime() + " ms.");
 		return new SenderResult(message);
 	}
 
 	/**
 	 * The time <i>in milliseconds</i> the thread will be put to sleep
+	 *
 	 * @ff.default 5000 [ms]
 	 */
 	public void setDelayTime(long l) {
 		delayTime = l;
 	}
+
 	public long getDelayTime() {
 		return delayTime;
 	}

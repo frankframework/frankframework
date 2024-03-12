@@ -29,21 +29,20 @@ import javax.ws.rs.core.Response;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 
 /**
  * Executes a query.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
 public final class ExecuteJdbcQuery extends FrankApiBase {
 
 	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Relation("jdbc")
@@ -66,7 +65,7 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 		String query = RequestUtils.getValue(json, "query");
 		String resultType = RequestUtils.getValue(json, "resultType");
 
-		if(resultType == null || query == null) {
+		if (resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
 		}
 		builder.addHeader("query", query);
@@ -76,12 +75,12 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 		builder.addHeader("trimSpaces", RequestUtils.getBooleanValue(json, "trimSpaces"));
 
 		String queryType = RequestUtils.getValue(json, "queryType");
-		if("AUTO".equals(queryType)) {
+		if ("AUTO".equals(queryType)) {
 			queryType = "other"; // defaults to other
 
-			String[] commands = new String[] {"select", "show"}; //if it matches, set it to select
+			String[] commands = new String[]{"select", "show"}; //if it matches, set it to select
 			for (String command : commands) {
-				if(query.toLowerCase().startsWith(command)) {
+				if (query.toLowerCase().startsWith(command)) {
 					queryType = "select";
 					break;
 				}

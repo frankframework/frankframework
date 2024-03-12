@@ -10,12 +10,12 @@ import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import org.apache.commons.codec.binary.Base64;
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
@@ -46,7 +46,8 @@ public class TestCreateAction extends CmisSenderTestBase {
 				Arguments.of(BindingTypes.WEBSERVICES, EMPTY_INPUT),
 				Arguments.of(BindingTypes.WEBSERVICES, INPUT),
 				Arguments.of(BindingTypes.BROWSER, EMPTY_INPUT),
-				Arguments.of(BindingTypes.BROWSER, INPUT));
+				Arguments.of(BindingTypes.BROWSER, INPUT)
+		);
 	}
 
 	@ParameterizedTest(name = "{0} - {1}")
@@ -57,12 +58,12 @@ public class TestCreateAction extends CmisSenderTestBase {
 	}
 
 	public void setup(String input) {
-		if(EMPTY_INPUT.equals(input)) {
+		if (EMPTY_INPUT.equals(input)) {
 			assumeTrue(STUBBED); //Only test empty named objects when stubbed
 			this.expectedResult = EMPTY_RESULT;
 			this.input = new Message(EMPTY_INPUT);
 		} else {
-			String filename = "/fileInput-"+atomicInt.getAndIncrement()+".txt";
+			String filename = "/fileInput-" + atomicInt.getAndIncrement() + ".txt";
 			this.input = new Message(input.replace("${filename}", filename));
 			this.expectedResult = filename;
 		}
@@ -73,7 +74,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		sender.setAction(CmisSender.CmisAction.CREATE);
 		sender.configure();
 
-		if(!STUBBED) {
+		if (!STUBBED) {
 			sender.open();
 		}
 	}

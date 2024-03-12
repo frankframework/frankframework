@@ -29,15 +29,15 @@ import org.frankframework.util.EnumUtils;
 /**
  * PipelineProcessor that handles caching.
  *
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
 public class CachePipeLineProcessor extends PipeLineProcessorBase {
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-		ICache<String,String> cache=pipeLine.getCache();
-		if (cache==null) {
+		ICache<String, String> cache = pipeLine.getCache();
+		if (cache == null) {
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
 
@@ -47,8 +47,8 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 		} catch (IOException e) {
 			throw new PipeRunException(pipeLine.getPipe(firstPipe), "cannot open stream", e);
 		}
-		String key=cache.transformKey(input, pipeLineSession);
-		if (key==null) {
+		String key = cache.transformKey(input, pipeLineSession);
+		if (key == null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
@@ -57,25 +57,25 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 		Message result;
 		String state;
 		synchronized (cache) {
-			result = new Message(cache.get("r"+key));
-			state = cache.get("s"+key);
+			result = new Message(cache.get("r" + key));
+			state = cache.get("s" + key);
 		}
 
-		if (!result.isNull() && state!=null) {
+		if (!result.isNull() && state != null) {
 			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key [{}]", key);
-			PipeLineResult plr=new PipeLineResult();
+			PipeLineResult plr = new PipeLineResult();
 			plr.setState(EnumUtils.parse(ExitState.class, state));
 			plr.setResult(result);
 			return plr;
 		}
 
 		if (log.isDebugEnabled()) log.debug("no cached results found using key [{}]", key);
-		PipeLineResult plr=pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+		PipeLineResult plr = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		if (log.isDebugEnabled()) log.debug("caching result using key [{}]", key);
-		String cacheValue=cache.transformValue(plr.getResult(), pipeLineSession);
+		String cacheValue = cache.transformValue(plr.getResult(), pipeLineSession);
 		synchronized (cache) {
-			cache.put("r"+key, cacheValue);
-			cache.put("s"+key, plr.getState().name());
+			cache.put("r" + key, cacheValue);
+			cache.put("s" + key, plr.getState().name());
 		}
 		return plr;
 	}

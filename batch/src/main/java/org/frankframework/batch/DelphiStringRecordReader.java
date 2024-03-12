@@ -22,14 +22,12 @@ import java.io.Reader;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.util.LogUtil;
 
 /**
- *
- * @author  Gerrit van Brakel
- * @since   4.10
+ * @author Gerrit van Brakel
+ * @since 4.10
  * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
@@ -45,35 +43,35 @@ public class DelphiStringRecordReader extends Reader {
 	private String separatorReplacement;
 
 	private StringBuilder buffer;
-	private int bufferLen=0;
-	private int bufferPos=0;
-	boolean eof=false;
+	private int bufferLen = 0;
+	private int bufferPos = 0;
+	boolean eof = false;
 
-	private final boolean trace=false;
+	private final boolean trace = false;
 
 	public DelphiStringRecordReader(InputStream in, String charsetName, int stringLength, int stringsPerRecord, String separator, String separatorReplacement) {
 		super();
-		this.in=in;
-		this.charsetName=charsetName;
-		this.stringLength=stringLength;
-		this.stringsPerRecord=stringsPerRecord;
-		this.separator=separator;
-		this.separatorReplacement=separatorReplacement;
+		this.in = in;
+		this.charsetName = charsetName;
+		this.stringLength = stringLength;
+		this.stringsPerRecord = stringsPerRecord;
+		this.separator = separator;
+		this.separatorReplacement = separatorReplacement;
 	}
 
 	/*
 	 * Fill buffer if empty, then copy characters as required.
 	 */
 	public int read(char[] cbuf, int off, int len) throws IOException {
-		if (buffer==null || bufferPos>=bufferLen) {
+		if (buffer == null || bufferPos >= bufferLen) {
 			fillBuffer();
 		}
-		if (buffer==null) {
+		if (buffer == null) {
 			return -1;
 		}
-		int bytesRead=0;
-		while (bufferPos<bufferLen && bytesRead++<len) {
-			cbuf[off++]=buffer.charAt(bufferPos++);
+		int bytesRead = 0;
+		while (bufferPos < bufferLen && bytesRead++ < len) {
+			cbuf[off++] = buffer.charAt(bufferPos++);
 		}
 		return bytesRead;
 	}
@@ -87,38 +85,38 @@ public class DelphiStringRecordReader extends Reader {
 	 */
 	private String readString() throws IOException {
 		int len;
-		len=in.read(); // first read the byte that holds the length of the string
-		if (len<0) {
+		len = in.read(); // first read the byte that holds the length of the string
+		if (len < 0) {
 			return null;
 		}
-		if (trace && log.isDebugEnabled()) log.debug("read byte for string length ["+len+"]");
-		byte[] buf=new byte[len]; // allocate space for the bytes of the string
-		int bytesToRead=len;
-		int pos=0;
-		while (bytesToRead>0) {
-			int bytesRead = in.read(buf,pos,bytesToRead);
-			if (bytesRead>0) {
-				pos+=bytesRead;
-				bytesToRead-=bytesRead;
+		if (trace && log.isDebugEnabled()) log.debug("read byte for string length [" + len + "]");
+		byte[] buf = new byte[len]; // allocate space for the bytes of the string
+		int bytesToRead = len;
+		int pos = 0;
+		while (bytesToRead > 0) {
+			int bytesRead = in.read(buf, pos, bytesToRead);
+			if (bytesRead > 0) {
+				pos += bytesRead;
+				bytesToRead -= bytesRead;
 			} else {
-				String currentResult=null;
+				String currentResult = null;
 				try {
-					currentResult=new String(buf,charsetName);
+					currentResult = new String(buf, charsetName);
 				} catch (Exception e) {
-					currentResult=e.getClass().getName()+": "+e.getMessage();
+					currentResult = e.getClass().getName() + ": " + e.getMessage();
 				}
-				throw new EOFException("unexpected EOF after reading ["+pos+"] bytes of a string of length ["+len+"], current result ["+currentResult+"]");
+				throw new EOFException("unexpected EOF after reading [" + pos + "] bytes of a string of length [" + len + "], current result [" + currentResult + "]");
 			}
 		}
-		if (pos<stringLength) {
-			if (trace && log.isDebugEnabled()) log.debug("skipping ["+(stringLength-pos)+"] bytes");
-			in.skip(stringLength-pos);
+		if (pos < stringLength) {
+			if (trace && log.isDebugEnabled()) log.debug("skipping [" + (stringLength - pos) + "] bytes");
+			in.skip(stringLength - pos);
 		}
-		String result=new String(buf,charsetName);
+		String result = new String(buf, charsetName);
 		if (StringUtils.isNotEmpty(separatorReplacement)) {
-			result= result.replace(separator, separatorReplacement);
+			result = result.replace(separator, separatorReplacement);
 		}
-		if (trace && log.isDebugEnabled()) log.debug("read string ["+result+"]");
+		if (trace && log.isDebugEnabled()) log.debug("read string [" + result + "]");
 		return result;
 	}
 
@@ -126,24 +124,24 @@ public class DelphiStringRecordReader extends Reader {
 	 * accumulate strings in buffer.
 	 */
 	private void fillBuffer() throws IOException {
-		int stringsRead=0;
-		buffer=new StringBuilder();
-		while (!eof && (stringsPerRecord==0 || stringsRead<stringsPerRecord)) {
-			String part=readString();
-			if (part==null) {
-				eof=true;
+		int stringsRead = 0;
+		buffer = new StringBuilder();
+		while (!eof && (stringsPerRecord == 0 || stringsRead < stringsPerRecord)) {
+			String part = readString();
+			if (part == null) {
+				eof = true;
 			} else {
 				buffer.append(part).append(separator);
 				stringsRead++;
 			}
 		}
-		if (trace && log.isDebugEnabled()) log.debug("read ["+stringsRead+"] strings");
-		if (stringsRead==0) {
-			buffer=null;
+		if (trace && log.isDebugEnabled()) log.debug("read [" + stringsRead + "] strings");
+		if (stringsRead == 0) {
+			buffer = null;
 		} else {
 			buffer.append("\n");
-			bufferLen=buffer.length();
-			bufferPos=0;
+			bufferLen = buffer.length();
+			bufferPos = 0;
 		}
 	}
 

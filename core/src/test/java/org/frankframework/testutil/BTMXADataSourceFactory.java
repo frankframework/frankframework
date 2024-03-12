@@ -26,7 +26,7 @@ public class BTMXADataSourceFactory extends URLXADataSourceFactory {
 	public synchronized void destroy() throws Exception {
 		for (DataSource dataSource : objects.values()) {
 			DataSource originalDataSource = getOriginalDataSource(dataSource);
-			if(originalDataSource instanceof PoolingDataSource) {
+			if (originalDataSource instanceof PoolingDataSource) {
 				((PoolingDataSource) originalDataSource).close();
 			}
 		}
@@ -34,7 +34,7 @@ public class BTMXADataSourceFactory extends URLXADataSourceFactory {
 	}
 
 	private DataSource getOriginalDataSource(DataSource dataSource) {
-		if(dataSource instanceof DelegatingDataSource) {
+		if (dataSource instanceof DelegatingDataSource) {
 			return getOriginalDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
 		}
 		return dataSource;

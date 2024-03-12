@@ -22,8 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
- *
+ * 		Hoorn</a> (d937275)
  */
 public class ConvertorUtil {
 
@@ -60,7 +59,7 @@ public class ConvertorUtil {
 	 * replaced with the given extension.
 	 *
 	 * @param argFilename
-	 * @param extension (without the period).
+	 * @param extension   (without the period).
 	 */
 	public static String createTidyFilename(@Nullable String argFilename, @Nonnull String extension) {
 		String extensionWithDelim = extension.startsWith(EXTENSION_DELIMITER) ? extension : EXTENSION_DELIMITER + extension;

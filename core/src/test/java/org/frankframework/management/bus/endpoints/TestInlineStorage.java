@@ -41,14 +41,16 @@ import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.util.SpringUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-@WithMockUser(roles = { "IbisTester" })
+@WithMockUser(roles = {"IbisTester"})
 public class TestInlineStorage extends BusTestBase {
 	private Adapter adapter;
 
@@ -88,7 +90,7 @@ public class TestInlineStorage extends BusTestBase {
 	@AfterEach
 	@Override
 	public void tearDown() {
-		if(adapter != null) {
+		if (adapter != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}
 		super.tearDown();
@@ -108,7 +110,7 @@ public class TestInlineStorage extends BusTestBase {
 	public class DummyListenerWithMessageBrowsers extends JavaListener implements IProvidesMessageBrowsers<String> {
 
 		private Set<ProcessState> knownProcessStates = ProcessState.getMandatoryKnownStates();
-		private Map<ProcessState,Set<ProcessState>> targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
+		private Map<ProcessState, Set<ProcessState>> targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 
 		@Override
 		public Set<ProcessState> knownProcessStates() {

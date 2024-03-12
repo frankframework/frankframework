@@ -29,9 +29,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
@@ -40,7 +39,6 @@ import org.frankframework.stream.PathMessage;
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
  *
  * @author Gerrit van Brakel
- *
  */
 public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path> {
 	private final @Getter String domain = "LocalFilesystem";
@@ -59,18 +57,18 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public Path toFile(String folder, String filename) {
-		if (filename==null) {
-			filename="";
+		if (filename == null) {
+			filename = "";
 		}
 		if (StringUtils.isNotEmpty(folder) && !(filename.contains("/") || filename.contains("\\"))) {
-			filename = folder +"/" + filename;
+			filename = folder + "/" + filename;
 		}
 		if (StringUtils.isNotEmpty(getRoot())) {
 			Path result = Paths.get(filename);
 			if (result.isAbsolute()) {
 				return result;
 			}
-			filename = getRoot()+"/"+ filename;
+			filename = getRoot() + "/" + filename;
 		}
 		return Paths.get(filename);
 	}
@@ -88,7 +86,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		try {
 			return Files.newDirectoryStream(dir, filter);
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot list files in ["+folder+"]", e);
+			throw new FileSystemException("Cannot list files in [" + folder + "]", e);
 		}
 	}
 
@@ -136,7 +134,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 			try {
 				Files.createDirectories(toFile(folder));
 			} catch (IOException e) {
-				throw new FileSystemException("Cannot create folder ["+ folder +"]", e);
+				throw new FileSystemException("Cannot create folder [" + folder + "]", e);
 			}
 		} else {
 			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
@@ -147,19 +145,19 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (folderExists(folder)) {
 			try {
-				if(removeNonEmptyFolder) {
+				if (removeNonEmptyFolder) {
 					try (Stream<Path> directoryStream = Files.walk(toFile(folder))) {
 						directoryStream.sorted(Comparator.reverseOrder())
-						.map(Path::toFile)
-						.forEach(File::delete);
+								.map(Path::toFile)
+								.forEach(File::delete);
 					}
 				} else {
 					Files.delete(toFile(folder));
 				}
 			} catch (IOException e) {
-				throw new FileSystemException("Cannot remove folder ["+ folder +"]",e);
+				throw new FileSystemException("Cannot remove folder [" + folder + "]", e);
 			}
-		}else {
+		} else {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 	}
@@ -169,39 +167,40 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		try {
 			return Files.move(source, destination);
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot rename file ["+ source.toString() +"] to ["+ destination.toString() +"]", e);
+			throw new FileSystemException("Cannot rename file [" + source.toString() + "] to [" + destination.toString() + "]", e);
 		}
 	}
 
 	@Override
 	public Path moveFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		if(createFolder && !folderExists(destinationFolder)) {
+		if (createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
 			} catch (IOException e) {
-				throw new FileSystemException("Cannot create folder ["+ destinationFolder +"]", e);
+				throw new FileSystemException("Cannot create folder [" + destinationFolder + "]", e);
 			}
 		}
 		try {
 			return Files.move(f, toFile(destinationFolder, getName(f)));
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot move file ["+ f.toString() +"] to ["+ destinationFolder+"]", e);
+			throw new FileSystemException("Cannot move file [" + f.toString() + "] to [" + destinationFolder + "]", e);
 		}
 	}
+
 	@Override
 	public Path copyFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		if(createFolder && !folderExists(destinationFolder)) {
+		if (createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
 			} catch (IOException e) {
-				throw new FileSystemException("Cannot create folder ["+ destinationFolder +"]", e);
+				throw new FileSystemException("Cannot create folder [" + destinationFolder + "]", e);
 			}
 		}
 		Path target = toFile(destinationFolder, getName(f));
 		try {
 			Files.copy(f, target);
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot copy file ["+ f.toString()+"] to ["+ destinationFolder+"]", e);
+			throw new FileSystemException("Cannot copy file [" + f.toString() + "] to [" + destinationFolder + "]", e);
 		}
 		return target;
 	}
@@ -217,7 +216,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public String getName(Path f) {
-		if(f.getFileName() != null) {
+		if (f.getFileName() != null) {
 			return f.getFileName().toString();
 		}
 		return null;
@@ -253,7 +252,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "root ["+(getRoot()==null?"":getRoot())+"]";
+		return "root [" + (getRoot() == null ? "" : getRoot()) + "]";
 	}
 
 	/**
@@ -263,6 +262,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public void setRoot(String root) {
 		this.root = root;
 	}
+
 	public String getRoot() {
 		return root;
 	}

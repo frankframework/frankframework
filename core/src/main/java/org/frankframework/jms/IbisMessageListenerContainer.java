@@ -22,14 +22,13 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.unmanaged.SpringJmsConnector;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.LogUtil;
 import org.springframework.jms.connection.JmsResourceHolder;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.TransactionStatus;
-
-import org.frankframework.unmanaged.SpringJmsConnector;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
 
 /**
  * Extend the DefaultMessageListenerContainer from Spring to add trace logging and make it possible to monitor the last
@@ -46,57 +45,63 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	@Override
 	protected Connection createConnection() throws JMSException {
 		Connection conn;
-		if (credentialFactory!=null) {
+		if (credentialFactory != null) {
 			conn = getConnectionFactory().createConnection(credentialFactory.getUsername(), credentialFactory.getPassword());
 		} else {
 			conn = super.createConnection();
 		}
-		if (log.isTraceEnabled()) log.trace("createConnection() - connection["+(conn==null?"null":conn.toString())+"]");
+		if (log.isTraceEnabled()) log.trace("createConnection() - connection[" + (conn == null ? "null" : conn.toString()) + "]");
 		return conn;
 	}
 
 	@Override
 	protected Session createSession(Connection conn) throws JMSException {
 		Session session = super.createSession(conn);
-		if (log.isTraceEnabled()) log.trace("createSession() - ackMode["+getSessionAcknowledgeMode()+"] connection["+(conn==null?"null":conn.toString())+"] session["+(session==null?"null":session.toString())+"]");
+		if (log.isTraceEnabled())
+			log.trace("createSession() - ackMode[" + getSessionAcknowledgeMode() + "] connection[" + (conn == null ? "null" : conn.toString()) + "] session[" + (session == null ? "null" : session.toString()) + "]");
 		return session;
 	}
 
 	@Override
 	protected Connection getConnection(JmsResourceHolder holder) {
 		Connection conn = super.getConnection(holder);
-		if (log.isTraceEnabled()) log.trace("getConnection() - jmsResourceHolder[" + holder.toString() + "] connection["+(conn==null?"null":conn.toString())+"]");
+		if (log.isTraceEnabled())
+			log.trace("getConnection() - jmsResourceHolder[" + holder.toString() + "] connection[" + (conn == null ? "null" : conn.toString()) + "]");
 		return conn;
 	}
 
 	@Override
 	protected Session getSession(JmsResourceHolder holder) {
 		Session session = super.getSession(holder);
-		if (log.isTraceEnabled()) log.trace("getSession() - ackMode["+getSessionAcknowledgeMode()+"] jmsResourceHolder[" + holder.toString() + "] session["+(session==null?"null":session.toString())+"]");
+		if (log.isTraceEnabled())
+			log.trace("getSession() - ackMode[" + getSessionAcknowledgeMode() + "] jmsResourceHolder[" + holder.toString() + "] session[" + (session == null ? "null" : session.toString()) + "]");
 		return session;
 	}
 
 	@Override
 	protected Connection createSharedConnection() throws JMSException {
 		Connection conn = super.createSharedConnection();
-		if (log.isTraceEnabled()) log.trace("createSharedConnection() - ackMode["+getSessionAcknowledgeMode()+"] connection["+(conn==null?"null":conn.toString())+"]");
+		if (log.isTraceEnabled())
+			log.trace("createSharedConnection() - ackMode[" + getSessionAcknowledgeMode() + "] connection[" + (conn == null ? "null" : conn.toString()) + "]");
 		return conn;
 	}
 
 	@Override
 	protected boolean receiveAndExecute(Object asyncMessageListenerInvoker, Session session, MessageConsumer consumer) throws JMSException {
-		if (log.isTraceEnabled()) log.trace("receiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
+		if (log.isTraceEnabled())
+			log.trace("receiveAndExecute() - destination[" + getDestinationName() + "] clientId[" + getClientId() + "] session[" + session + "]");
 		return super.receiveAndExecute(asyncMessageListenerInvoker, session, consumer);
 	}
 
 	@Override
 	protected boolean doReceiveAndExecute(Object invoker, Session session, MessageConsumer consumer, TransactionStatus txStatus) throws JMSException {
-		if (log.isTraceEnabled()) log.trace("doReceiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
+		if (log.isTraceEnabled())
+			log.trace("doReceiveAndExecute() - destination[" + getDestinationName() + "] clientId[" + getClientId() + "] session[" + session + "]");
 		try {
 			return super.doReceiveAndExecute(invoker, session, consumer, txStatus);
 		} finally {
 			if (getMessageListener() instanceof SpringJmsConnector) {
-				SpringJmsConnector springJmsConnector = (SpringJmsConnector)getMessageListener();
+				SpringJmsConnector springJmsConnector = (SpringJmsConnector) getMessageListener();
 				springJmsConnector.setLastPollFinishedTime(System.currentTimeMillis());
 			}
 		}
@@ -104,9 +109,9 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 
 	@Override
 	protected void commitIfNecessary(Session session, @Nullable Message message) throws JMSException {
-		if (message!=null && !session.getTransacted() && getMessageListener() instanceof SpringJmsConnector) {
-			SpringJmsConnector springJmsConnector = (SpringJmsConnector)getMessageListener();
-			JmsListener listener = (JmsListener)springJmsConnector.getListener();
+		if (message != null && !session.getTransacted() && getMessageListener() instanceof SpringJmsConnector) {
+			SpringJmsConnector springJmsConnector = (SpringJmsConnector) getMessageListener();
+			JmsListener listener = (JmsListener) springJmsConnector.getListener();
 			if (listener.getAcknowledgeMode() == JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 				// Avoid message.acknowledge() in super.commitIfNecessray if AcknowledgeMode=CLIENT_ACKNOWLEDGE
 				// Acknowledgement for CLIENT_ACKNOWLEDGE is done in afterMessageProcessed
@@ -120,6 +125,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	public void setCredentialFactory(CredentialFactory credentialFactory) {
 		this.credentialFactory = credentialFactory;
 	}
+
 	public CredentialFactory getCredentialFactory() {
 		return credentialFactory;
 	}

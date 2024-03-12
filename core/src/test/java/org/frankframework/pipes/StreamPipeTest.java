@@ -15,8 +15,10 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.ClassLoaderUtils;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 class StreamPipeTest extends PipeTestBase<StreamPipe> {
@@ -137,7 +139,7 @@ class StreamPipeTest extends PipeTestBase<StreamPipe> {
 			if (antiVirusLastPartFailed) {
 				antiVirusLastPartMessage = "Fail";
 				if (antiVirusLastPartMessage.equalsIgnoreCase(pipe.getAntiVirusPassedMessage())) {
-					throw new Exception("fail message ["+antiVirusLastPartMessage+"] must differ from pass message ["+pipe.getAntiVirusPassedMessage()+"]");
+					throw new Exception("fail message [" + antiVirusLastPartMessage + "] must differ from pass message [" + pipe.getAntiVirusPassedMessage() + "]");
 				}
 			} else {
 				antiVirusLastPartMessage = pipe.getAntiVirusPassedMessage();

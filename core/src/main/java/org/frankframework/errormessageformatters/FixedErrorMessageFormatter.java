@@ -32,8 +32,8 @@ import org.frankframework.util.TransformerPool;
 /**
  * ErrorMessageFormatter that returns a fixed message with replacements.
  *
- * @author  Peter Leeuwenburgh
- * @since   4.3
+ * @author Peter Leeuwenburgh
+ * @since 4.3
  */
 public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 	private @Getter String filename = null;
@@ -47,7 +47,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 
 		Message messageToReturn = new Message(getReturnString());
 		if (messageToReturn.isEmpty()) {
-			messageToReturn=new Message("");
+			messageToReturn = new Message("");
 		}
 		if (StringUtils.isNotEmpty(getFilename())) {
 			try {
@@ -69,7 +69,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		}
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
-			try{
+			try {
 				Resource xsltSource = Resource.getResource(this, getStyleSheetName());
 				TransformerPool transformerPool = TransformerPool.getInstance(xsltSource, 0);
 				String xsltResult = transformerPool.transform(messageToReturn.asSource());
@@ -92,15 +92,15 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		this.filename = filename;
 	}
 
-	public void setReplaceFrom (String replaceFrom){
-		this.replaceFrom=replaceFrom;
+	public void setReplaceFrom(String replaceFrom) {
+		this.replaceFrom = replaceFrom;
 	}
 
-	public void setReplaceTo (String replaceTo){
-		this.replaceTo=replaceTo;
+	public void setReplaceTo(String replaceTo) {
+		this.replaceTo = replaceTo;
 	}
 
-	public void setStyleSheetName (String styleSheetName){
-		this.styleSheetName=styleSheetName;
+	public void setStyleSheetName(String styleSheetName) {
+		this.styleSheetName = styleSheetName;
 	}
 }

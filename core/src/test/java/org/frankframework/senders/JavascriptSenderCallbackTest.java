@@ -15,6 +15,7 @@ import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
+
 import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
@@ -65,7 +66,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.open();
 
 		// See function 4, validates if input to the nested sender is the same as the output of the nested sender
-		assertEquals("true", sender.sendMessageOrThrow(dummyInput,session).asString());
+		assertEquals("true", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
 	@Test
@@ -97,5 +98,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 			promiseResult = message;
 			return new SenderResult(Message.nullMessage());
 		}
-	};
+	}
+
+	;
 }

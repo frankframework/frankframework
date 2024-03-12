@@ -43,32 +43,32 @@ import org.frankframework.util.StreamUtil;
 /**
  * Servlet that listens for REST requests, and handles them over to the RestServiceDispatcher.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 @IbisInitializer
 public class RestListenerServlet extends HttpServletBase {
-	protected Logger log=LogUtil.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private final String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
 	private final String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
-	private RestServiceDispatcher sd=null;
+	private RestServiceDispatcher sd = null;
 
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		if (sd==null) {
-			sd= RestServiceDispatcher.getInstance();
+		if (sd == null) {
+			sd = RestServiceDispatcher.getInstance();
 		}
 	}
 
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		String path=request.getPathInfo();
-		String restPath=request.getServletPath();
+		String path = request.getPathInfo();
+		String restPath = request.getServletPath();
 		String body = "";
 
-		if(restPath.contains("rest-public")) {
+		if (restPath.contains("rest-public")) {
 			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
 			String headers = request.getHeader("Access-Control-Request-Headers");
 			if (headers != null)
@@ -76,7 +76,7 @@ public class RestListenerServlet extends HttpServletBase {
 			response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
 
 			String pattern = sd.findMatchingPattern(path);
-			if(pattern!=null) {
+			if (pattern != null) {
 				Map<String, Object> methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
 				if (methodConfig == null) { //If set, it means the adapter handles the OPTIONS request
 					Iterator<String> iter = sd.getAvailableMethods(pattern).iterator();
@@ -87,7 +87,7 @@ public class RestListenerServlet extends HttpServletBase {
 					}
 					response.setHeader("Access-Control-Allow-Methods", sb.toString());
 
-					if("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+					if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
 						response.setStatus(200);
 						//Preflight OPTIONS request should not return any data.
 						return;
@@ -96,60 +96,61 @@ public class RestListenerServlet extends HttpServletBase {
 			}
 		}
 
-		String ifNoneMatch=request.getHeader("If-None-Match");
-		String ifMatch=request.getHeader("If-Match");
-		String contentType=request.getHeader("accept");
+		String ifNoneMatch = request.getHeader("If-None-Match");
+		String ifMatch = request.getHeader("If-Match");
+		String contentType = request.getHeader("accept");
 
-		if (log.isTraceEnabled()) log.trace("path ["+path+"] If-Match ["+ifMatch+"] If-None-Match ["+ifNoneMatch+"] contentType ["+contentType+"]");
+		if (log.isTraceEnabled())
+			log.trace("path [" + path + "] If-Match [" + ifMatch + "] If-None-Match [" + ifNoneMatch + "] contentType [" + contentType + "]");
 
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-		try (PipeLineSession messageContext= new PipeLineSession()) {
+		try (PipeLineSession messageContext = new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
 			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, request.getMethod());
 
-			Enumeration<String> paramnames=request.getParameterNames();
+			Enumeration<String> paramnames = request.getParameterNames();
 			while (paramnames.hasMoreElements()) {
 				String paramname = paramnames.nextElement();
 				String paramvalue = request.getParameter(paramname);
-				if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
+				if (log.isTraceEnabled()) log.trace("setting parameter [" + paramname + "] to [" + paramvalue + "]");
 				messageContext.put(paramname, paramvalue);
 			}
 			if (!MultipartUtils.isMultipart(request)) {
-				body = StreamUtil.streamToString(request.getInputStream(),"\n",false);
+				body = StreamUtil.streamToString(request.getInputStream(), "\n", false);
 			}
 			try {
-				log.trace("RestListenerServlet calling service ["+path+"]");
+				log.trace("RestListenerServlet calling service [" + path + "]");
 				Message result = sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
 
-				if(Message.isNull(result) && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
-					int status = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+				if (Message.isNull(result) && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
+					int status = Integer.parseInt("" + messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 					response.setStatus(status);
 					log.trace("aborted request with status [{}]", status);
 					return;
 				}
 
-				String etag=(String)messageContext.get("etag");
+				String etag = (String) messageContext.get("etag");
 				if (StringUtils.isNotEmpty(etag))
 					response.setHeader("etag", etag);
 
 				int statusCode = 0;
-				if(messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY))
-					statusCode = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
-				if(statusCode > 0)
+				if (messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY))
+					statusCode = Integer.parseInt("" + messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+				if (statusCode > 0)
 					response.setStatus(statusCode);
 
 				if (Message.isEmpty(result)) {
 					log.trace("RestListenerServlet finished with result set in pipeline");
 				} else {
-					contentType=messageContext.getString("contentType");
+					contentType = messageContext.getString("contentType");
 					if (StringUtils.isNotEmpty(contentType)) {
 						response.setHeader("Content-Type", contentType);
 					}
-					String contentDisposition=(String)messageContext.get("contentDisposition");
+					String contentDisposition = (String) messageContext.get("contentDisposition");
 					if (StringUtils.isNotEmpty(contentDisposition)) {
 						response.setHeader("Content-Disposition", contentDisposition);
 					}
-					String allowedMethods=(String)messageContext.get("allowedMethods");
+					String allowedMethods = (String) messageContext.get("allowedMethods");
 					if (StringUtils.isNotEmpty(allowedMethods)) {
 						response.setHeader("Allow", allowedMethods);
 					}
@@ -162,11 +163,11 @@ public class RestListenerServlet extends HttpServletBase {
 				}
 			} catch (ListenerException e) {
 				if (!response.isCommitted()) {
-					log.warn("RestListenerServlet caught exception, return internal server error",e);
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
+					log.warn("RestListenerServlet caught exception, return internal server error", e);
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 				} else {
-					log.warn("RestListenerServlet caught exception, response already committed",e);
-					throw new ServletException("RestListenerServlet caught exception, response already committed",e);
+					log.warn("RestListenerServlet caught exception, response already committed", e);
+					throw new ServletException("RestListenerServlet caught exception, response already committed", e);
 				}
 			}
 		}

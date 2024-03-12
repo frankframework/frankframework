@@ -39,10 +39,10 @@ public class NamedThreadFactory implements ThreadFactory {
 
 	private String getThreadName(Runnable runnable) {
 		String threadName = runnable.getClass().getSimpleName();
-		if(runnable instanceof INamedObject) {
-			threadName += "["+((INamedObject) runnable).getName()+"]";
+		if (runnable instanceof INamedObject) {
+			threadName += "[" + ((INamedObject) runnable).getName() + "]";
 		}
-		threadName += "-"+this.threadCount.incrementAndGet();
+		threadName += "-" + this.threadCount.incrementAndGet();
 
 		return threadName;
 	}

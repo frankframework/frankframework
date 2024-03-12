@@ -9,6 +9,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
+
 import org.junit.jupiter.api.Test;
 
 class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {

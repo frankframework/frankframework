@@ -33,7 +33,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private ThreadLifeCycleEventListener<T> threadLifeCycleEventListener;
 	private Thread parentThread;
 	private Thread childThread;
-	private Map<String,String> savedThreadContext;
+	private Map<String, String> savedThreadContext;
 	private T threadInfo;
 	private Set<String> hideRegex;
 
@@ -41,10 +41,12 @@ public class ThreadConnector<T> implements AutoCloseable {
 		ANNOUNCED,
 		CREATED,
 		FINISHED;
-	};
+	}
 
-	private ThreadState threadState=ThreadState.ANNOUNCED;
-	private TransactionConnector<?,?> transactionConnector;
+	;
+
+	private ThreadState threadState = ThreadState.ANNOUNCED;
+	private TransactionConnector<?, ?> transactionConnector;
 
 
 	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
@@ -57,8 +59,9 @@ public class ThreadConnector<T> implements AutoCloseable {
 		transactionConnector = TransactionConnector.getInstance(txManager, owner, description);
 		saveThreadContext();
 	}
+
 	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
-		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getCorrelationId());
+		this(owner, description, threadLifeCycleEventListener, txManager, session == null ? null : session.getCorrelationId());
 	}
 
 	protected void saveThreadContext() {
@@ -85,7 +88,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		if (childThread != parentThread) {
 			childThread.setName(parentThread.getName() + "/" + childThread.getName());
 			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
-			if (threadLifeCycleEventListener!=null) {
+			if (threadLifeCycleEventListener != null) {
 				threadState = ThreadState.CREATED;
 				log.trace("[{}] start thread [{}]", this, threadInfo);
 				return threadLifeCycleEventListener.threadCreated(threadInfo, input);
@@ -167,19 +170,19 @@ public class ThreadConnector<T> implements AutoCloseable {
 		} finally {
 			if (threadLifeCycleEventListener != null) {
 				switch (threadState) {
-				case ANNOUNCED:
-					log.trace("[{}] cancel thread [{}] in close", this, threadInfo);
-					threadLifeCycleEventListener.cancelChildThread(threadInfo);
-					break;
-				case CREATED:
-					log.warn("thread was not properly closed");
-					log.trace("[{}] end thread [{}] in close", this, threadInfo);
-					threadLifeCycleEventListener.threadEnded(threadInfo, null);
-					break;
-				case FINISHED:
-					break;
-				default:
-					throw new IllegalStateException("Unknown ThreadState [" + threadState + "]");
+					case ANNOUNCED:
+						log.trace("[{}] cancel thread [{}] in close", this, threadInfo);
+						threadLifeCycleEventListener.cancelChildThread(threadInfo);
+						break;
+					case CREATED:
+						log.warn("thread was not properly closed");
+						log.trace("[{}] end thread [{}] in close", this, threadInfo);
+						threadLifeCycleEventListener.threadEnded(threadInfo, null);
+						break;
+					case FINISHED:
+						break;
+					default:
+						throw new IllegalStateException("Unknown ThreadState [" + threadState + "]");
 				}
 			}
 		}

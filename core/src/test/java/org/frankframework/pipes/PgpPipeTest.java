@@ -17,6 +17,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -120,7 +121,8 @@ public class PgpPipeTest {
 
 	/**
 	 * Sets the parameters of the pipes
-	 * @param pipe Pipe to be configured.
+	 *
+	 * @param pipe   Pipe to be configured.
 	 * @param params Parameters to be set.
 	 * @throws ConfigurationException When there's an exception during configuration.
 	 */
@@ -138,6 +140,7 @@ public class PgpPipeTest {
 
 	/**
 	 * Adds folder's path to every file in the given parameters.
+	 *
 	 * @param param A list of files separated by semicolon.
 	 * @return A list of files separated by semicolon including the parent folder's path.
 	 */
@@ -151,6 +154,7 @@ public class PgpPipeTest {
 
 	/**
 	 * Recursively check if the exception thrown is equal to the exception expected.
+	 *
 	 * @param t Throwable to be checked.
 	 * @param c Class to be checked
 	 * @return True if one of the causes of the exception is the given class, false otherwise.
@@ -168,6 +172,7 @@ public class PgpPipeTest {
 
 	/**
 	 * Recursively check if the exception thrown is equal to the exception expected.
+	 *
 	 * @param t Throwable to be checked.
 	 * @param c Class to be checked
 	 * @return True if one of the causes of the exception is the given class, false otherwise.
@@ -183,7 +188,8 @@ public class PgpPipeTest {
 
 	/**
 	 * Asserts that the message is a PGP message, and that it does not contain the secret message.
-	 * @param message Encrypted message
+	 *
+	 * @param message       Encrypted message
 	 * @param secretMessage Plaintext of the same message.
 	 */
 	private void assertMessage(String message, String secretMessage) {

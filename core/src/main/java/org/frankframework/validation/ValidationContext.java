@@ -27,12 +27,14 @@ public abstract class ValidationContext {
 	private XmlValidatorErrorHandler errorHandler;
 
 	public abstract String getSchemasId();
+
 	public abstract Set<String> getNamespaceSet();
+
 	public abstract List<XSModel> getXsModels();
 
 	public void init(SchemasProvider schemasProvider, String schemasId, Set<String> validNamespaces, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, Boolean ignoreUnknownNamespaces) {
 		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
-		contentHandler = new XmlValidatorContentHandler(validNamespaces,rootValidations, invalidRootNamespaces, ignoreUnknownNamespaces);
+		contentHandler = new XmlValidatorContentHandler(validNamespaces, rootValidations, invalidRootNamespaces, ignoreUnknownNamespaces);
 		errorHandler = new XmlValidatorErrorHandler(contentHandler, mainFailureMessage);
 		contentHandler.setXmlValidatorErrorHandler(errorHandler);
 	}
@@ -40,6 +42,7 @@ public abstract class ValidationContext {
 	public XmlValidatorContentHandler getContentHandler() {
 		return contentHandler;
 	}
+
 	public void setContentHandler(XmlValidatorContentHandler contentHandler) {
 		this.contentHandler = contentHandler;
 	}
@@ -47,6 +50,7 @@ public abstract class ValidationContext {
 	public XmlValidatorErrorHandler getErrorHandler() {
 		return errorHandler;
 	}
+
 	public void setErrorHandler(XmlValidatorErrorHandler errorHandler) {
 		this.errorHandler = errorHandler;
 	}

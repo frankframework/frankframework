@@ -33,17 +33,19 @@ import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-@WithMockUser(roles = { "IbisTester" })
+@WithMockUser(roles = {"IbisTester"})
 public class TestWebServices extends BusTestBase {
 	private static final String API_LISTENER_ENDPOINT = "/api-uri-pattern";
 	private Adapter adapterWithRestListener;
@@ -135,13 +137,13 @@ public class TestWebServices extends BusTestBase {
 	@AfterEach
 	@Override
 	public void tearDown() {
-		if(adapterWithRestListener != null) {
+		if (adapterWithRestListener != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapterWithRestListener);
 		}
-		if(adapterWithWebServiceListener != null) {
+		if (adapterWithWebServiceListener != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapterWithWebServiceListener);
 		}
-		if(apiListener != null) {
+		if (apiListener != null) {
 			ApiServiceDispatcher.getInstance().unregisterServiceClient(apiListener);
 		}
 		super.tearDown();
@@ -162,7 +164,7 @@ public class TestWebServices extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.setHeader("type", "openapi");
 		request.setHeader("uri", "dummy");
-		MessageHandlingException e = assertThrows(MessageHandlingException.class, ()-> callSyncGateway(request));
+		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 		assertTrue(e.getCause() instanceof BusException);
 		assertEquals("unable to find Dispatch configuration for uri", e.getCause().getMessage());
 	}
@@ -202,7 +204,7 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("type", "wsdl");
 		request.setHeader("adapter", adapterWithRestListener.getName());
 		request.setHeader("configuration", getConfiguration().getName());
-		MessageHandlingException e = assertThrows(MessageHandlingException.class, ()-> callSyncGateway(request));
+		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 		assertTrue(e.getCause() instanceof BusException);
 		assertEquals("unable to create WSDL generator: (IllegalStateException) No inputvalidator provided", e.getCause().getMessage());
 	}
@@ -273,14 +275,14 @@ public class TestWebServices extends BusTestBase {
 		InputStream payload = (InputStream) response.getPayload();
 
 		String wsdl = null;
-		try(ZipInputStream archive = new ZipInputStream(payload)) {
+		try (ZipInputStream archive = new ZipInputStream(payload)) {
 			byte[] buffer = new byte[2048];
-			for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
+			for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
 				String name = entry.getName();
-				if(name.equals("wsl-adapter.wsdl")) {
+				if (name.equals("wsl-adapter.wsdl")) {
 					int len;
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					while((len = archive.read(buffer)) > 0) {
+					while ((len = archive.read(buffer)) > 0) {
 						bos.write(buffer, 0, len);
 					}
 					wsdl = new String(bos.toByteArray());

@@ -19,9 +19,9 @@ import java.io.IOException;
 
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.stream.Message;
+
 /**
- * @author
- * 	Gerard van der Hoorn
+ * @author Gerard van der Hoorn
  */
 public interface CisConversionService {
 
@@ -31,12 +31,10 @@ public interface CisConversionService {
 	 * The given document stream is <em>not</em> closed by this method.
 	 *
 	 * @param input
-	 * @param filename
-	 *            (without the path). Is used to detect mediatype and inform the
-	 *            user of the name of the file. Is allowed to be null.
+	 * @param filename (without the path). Is used to detect mediatype and inform the
+	 *                 user of the name of the file. Is allowed to be null.
 	 * @throws IOException
-	 * @throws CisConversionException
-	 *             when a failure occurs.
+	 * @throws CisConversionException when a failure occurs.
 	 */
 	CisConversionResult convertToPdf(Message input, String filename, ConversionOption conversionOption) throws IOException;
 }

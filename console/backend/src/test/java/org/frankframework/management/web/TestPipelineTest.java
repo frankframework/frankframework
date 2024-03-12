@@ -12,16 +12,16 @@ import java.util.List;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.support.GenericMessage;
 
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.frankframework.management.bus.BinaryResponseMessage;
 import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.management.bus.ResponseMessageBase;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.GenericMessage;
 
 public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 

@@ -36,31 +36,32 @@ public class CoreListenerProcessor<M> implements ListenerProcessor<M> {
 
 	@Override
 	public Message getMessage(ICorrelatedPullingListener<M> listener, String correlationID, PipeLineSession pipeLineSession) throws ListenerException, TimeoutException {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix(listener, pipeLineSession) + "starts listening for return message with correlationID ["+ correlationID	+ "]");
+		if (log.isDebugEnabled())
+			log.debug(getLogPrefix(listener, pipeLineSession) + "starts listening for return message with correlationID [" + correlationID + "]");
 		Message result;
-		Map<String,Object> threadContext = new HashMap<>();
+		Map<String, Object> threadContext = new HashMap<>();
 		try {
 			threadContext = listener.openThread();
 			RawMessageWrapper<M> msg = listener.getRawMessage(correlationID, threadContext);
 			// TODO: Add a method to check if it is an empty / null RawMessageWrapper?
-			if (msg==null) {
-				log.info(getLogPrefix(listener, pipeLineSession)+"received null reply message");
+			if (msg == null) {
+				log.info(getLogPrefix(listener, pipeLineSession) + "received null reply message");
 			} else {
-				log.info(getLogPrefix(listener, pipeLineSession)+"received reply message");
+				log.info(getLogPrefix(listener, pipeLineSession) + "received reply message");
 			}
 			result = listener.extractMessage(msg, threadContext);
 		} finally {
 			try {
-				log.debug(getLogPrefix(listener, pipeLineSession)+"is closing");
+				log.debug(getLogPrefix(listener, pipeLineSession) + "is closing");
 				listener.closeThread(threadContext);
 			} catch (ListenerException le) {
-				log.error(getLogPrefix(listener, pipeLineSession)+"got error on closing", le);
+				log.error(getLogPrefix(listener, pipeLineSession) + "got error on closing", le);
 			}
 		}
 		return result;
 	}
 
-	protected String getLogPrefix(ICorrelatedPullingListener<M> listener, PipeLineSession session){
+	protected String getLogPrefix(ICorrelatedPullingListener<M> listener, PipeLineSession session) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Listener [" + listener.getName() + "] ");
 		if (session != null) {

@@ -27,8 +27,8 @@ import org.frankframework.util.JdbcUtil;
 /**
  * Pipe that batch-transforms the lines in a BLOB.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 @Deprecated
 @ConfigurationWarning("BatchBlobTransformerPipe: Not tested and maintained, please look for alternatives if you use BatchBlobTransformerPipe inform WeAreFrank! that there are no suitable alternatives for your use-case")
@@ -37,7 +37,7 @@ public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 	@Override
 	protected Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException {
 		try {
-			InputStream blobStream=JdbcUtil.getBlobInputStream(querySender.getDbmsSupport(), rs ,1 , querySender.isBlobsCompressed());
+			InputStream blobStream = JdbcUtil.getBlobInputStream(querySender.getDbmsSupport(), rs, 1, querySender.isBlobsCompressed());
 			return getReaderFactory().getReader(blobStream, charset, streamId, session);
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -52,6 +52,7 @@ public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 
 	/**
 	 * controls whether blobdata is stored compressed in the database
+	 *
 	 * @ff.default true
 	 */
 	public void setBlobsCompressed(boolean compressed) {

@@ -8,7 +8,7 @@ public class MockFileWithAttachments extends MockFile {
 	private List<MockAttachment> attachments;
 
 	public MockFileWithAttachments(String name, MockFolder owner) {
-		super(name,owner);
+		super(name, owner);
 	}
 
 	public List<MockAttachment> getAttachments() {
@@ -16,8 +16,8 @@ public class MockFileWithAttachments extends MockFile {
 	}
 
 	public void addAttachment(MockAttachment attachment) {
-		if (attachments==null) {
-			attachments=new LinkedList<>();
+		if (attachments == null) {
+			attachments = new LinkedList<>();
 		}
 		attachments.add(attachment);
 	}

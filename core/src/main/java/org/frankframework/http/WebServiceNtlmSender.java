@@ -66,15 +66,15 @@ import org.frankframework.util.StreamUtil;
 /**
  * Sender that sends a message via a WebService based on NTLM authentication.
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 public class WebServiceNtlmSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private final @Getter String domain = "Http";
-	private String contentType = "text/xml; charset="+ StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private String contentType = "text/xml; charset=" + StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private String url;
 	private int timeout = 10000;
-	private int maxConnections=10;
+	private int maxConnections = 10;
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
@@ -130,7 +130,8 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		httpClient = new DefaultHttpClient(connectionManager, httpParameters);
 		httpClient.getAuthSchemes().register("NTLM", new NTLMSchemeFactory());
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-		httpClient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new NTCredentials(cf.getUsername(), cf.getPassword(), Misc.getHostname(), getAuthDomain()));
+		httpClient.getCredentialsProvider()
+				.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new NTCredentials(cf.getUsername(), cf.getPassword(), Misc.getHostname(), getAuthDomain()));
 		if (StringUtils.isNotEmpty(getProxyHost())) {
 			HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
 			httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
@@ -147,7 +148,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 	public void close() {
 //		httpClient.getConnectionManager().shutdown();
 		connectionManager.shutdown();
-		connectionManager=null;
+		connectionManager = null;
 	}
 
 
@@ -206,6 +207,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 
 	/**
 	 * content-type of the request
+	 *
 	 * @ff.default text/html; charset=utf-8
 	 */
 	public void setContentType(String string) {
@@ -220,7 +222,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		return url;
 	}
 
-	/** url or base of url to be used  */
+	/** url or base of url to be used */
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -231,6 +233,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 
 	/**
 	 * timeout in ms of obtaining a connection/result. 0 means no timeout
+	 *
 	 * @ff.default 10000
 	 */
 	public void setTimeout(int i) {
@@ -243,6 +246,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 
 	/**
 	 * the maximum number of concurrent connections
+	 *
 	 * @ff.default 10
 	 */
 	public void setMaxConnections(int i) {
@@ -261,6 +265,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 
 	/**
 	 * password used to authenticate with the host
+	 *
 	 * @ff.default
 	 */
 	public void setPassword(String string) {
@@ -280,7 +285,6 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 	}
 
 	/**
-	 *
 	 * @ff.default
 	 */
 	public void setProxyHost(String string) {
@@ -292,7 +296,6 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 	}
 
 	/**
-	 *
 	 * @ff.default 80
 	 */
 	public void setProxyPort(int i) {

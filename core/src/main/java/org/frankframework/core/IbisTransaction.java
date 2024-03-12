@@ -33,7 +33,7 @@ import org.frankframework.util.UUIDUtil;
 /**
  * Class which generates extra logging when starting and committing transactions.
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 
 public class IbisTransaction {
@@ -71,11 +71,11 @@ public class IbisTransaction {
 			txName = UUIDUtil.createSimpleUUID();
 			TransactionSynchronizationManager.setCurrentTransactionName(txName);
 			int txTimeout = txDef.getTimeout();
-			log.debug("Transaction manager [{}] created a new transaction [{}] for {} with timeout [{}]", this::getRealTransactionManagerName, ()->txName, ()->descriptionOfOwner, ()->(txTimeout<0 ? "system default(=120s)" : ""+txTimeout));
+			log.debug("Transaction manager [{}] created a new transaction [{}] for {} with timeout [{}]", this::getRealTransactionManagerName, () -> txName, () -> descriptionOfOwner, () -> (txTimeout < 0 ? "system default(=120s)" : "" + txTimeout));
 		} else {
 			txName = TransactionSynchronizationManager.getCurrentTransactionName();
 			if (txClientIsActive && !txIsActive) {
-				log.debug("Transaction manager [{}] suspended the transaction [{}] for {}", this::getRealTransactionManagerName, ()->txClientName, ()->descriptionOfOwner);
+				log.debug("Transaction manager [{}] suspended the transaction [{}] for {}", this::getRealTransactionManagerName, () -> txClientName, () -> descriptionOfOwner);
 			}
 		}
 	}
@@ -102,8 +102,8 @@ public class IbisTransaction {
 	}
 
 	public static boolean isDistributedTransactionsSupported(PlatformTransactionManager txManager) {
-		if((txManager instanceof SpringTxManagerProxy)) {
-			return isDistributedTransactionsSupported(((SpringTxManagerProxy)txManager).getRealTxManager());
+		if ((txManager instanceof SpringTxManagerProxy)) {
+			return isDistributedTransactionsSupported(((SpringTxManagerProxy) txManager).getRealTxManager());
 		}
 		return txManager instanceof JtaTransactionManager;
 	}
@@ -130,9 +130,9 @@ public class IbisTransaction {
 		boolean mustRollback = isRollbackOnly();
 		if (txIsNew) {
 			if (mustRollback) {
-				log.debug("Transaction [{}] marked for rollback, so transaction manager [{}] is rolling back the transaction for {}", ()->txName, this::getRealTransactionManagerName, ()->object);
+				log.debug("Transaction [{}] marked for rollback, so transaction manager [{}] is rolling back the transaction for {}", () -> txName, this::getRealTransactionManagerName, () -> object);
 			} else {
-				log.debug("Transaction [{}] is not marked for rollback, so transaction manager [{}] is committing the transaction for {}", ()->txName, this::getRealTransactionManagerName, ()->object);
+				log.debug("Transaction [{}] is not marked for rollback, so transaction manager [{}] is committing the transaction for {}", () -> txName, this::getRealTransactionManagerName, () -> object);
 			}
 		}
 		if (mustRollback) {
@@ -141,7 +141,7 @@ public class IbisTransaction {
 			txManager.commit(txStatus);
 		}
 		if (!txIsNew && txClientIsActive && !txIsActive) {
-			log.debug("Transaction manager [{}] resumed the transaction [{}] for {}", this::getRealTransactionManagerName, ()->txClientName, ()->object);
+			log.debug("Transaction manager [{}] resumed the transaction [{}] for {}", this::getRealTransactionManagerName, () -> txClientName, () -> object);
 		}
 	}
 }

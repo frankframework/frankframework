@@ -32,12 +32,11 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
 import org.frankframework.align.content.DocumentContainer;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.XmlUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
-
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlUtils;
 
 /**
  * XML Schema guided XML converter;
@@ -47,75 +46,78 @@ import org.frankframework.util.XmlUtils;
 public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private boolean writeAttributes=true;
+	private boolean writeAttributes = true;
 
 	private final XmlAligner aligner;
 
 	private final C documentContainer;
-	Stack<String> element=new Stack<>();
+	Stack<String> element = new Stack<>();
 	String topElement;
 
 	public XmlTo(XmlAligner aligner, C documentContainer) {
-		this.aligner=aligner;
-		this.documentContainer=documentContainer;
+		this.aligner = aligner;
+		this.documentContainer = documentContainer;
 	}
 
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		boolean xmlArrayContainer=aligner.isParentOfSingleMultipleOccurringChildElement();
-		boolean repeatedElement=aligner.isMultipleOccurringChildInParentElement(localName);
-		XSTypeDefinition typeDefinition=aligner.getTypeDefinition();
+		boolean xmlArrayContainer = aligner.isParentOfSingleMultipleOccurringChildElement();
+		boolean repeatedElement = aligner.isMultipleOccurringChildInParentElement(localName);
+		XSTypeDefinition typeDefinition = aligner.getTypeDefinition();
 		if (!localName.equals(topElement)) {
-			if (topElement!=null) {
-				if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
+			if (topElement != null) {
+				if (log.isTraceEnabled()) log.trace("endElementGroup [" + topElement + "]");
 				documentContainer.endElementGroup(topElement);
 			}
-			if (log.isTraceEnabled()) log.trace("startElementGroup ["+localName+"]");
+			if (log.isTraceEnabled()) log.trace("startElementGroup [" + localName + "]");
 			documentContainer.startElementGroup(localName, xmlArrayContainer, repeatedElement, typeDefinition);
-			topElement=localName;
+			topElement = localName;
 		}
 		element.push(topElement);
-		topElement=null;
-		if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] xml array container ["+aligner.isParentOfSingleMultipleOccurringChildElement()+"] repeated element ["+aligner.isMultipleOccurringChildInParentElement(localName)+"]");
-		documentContainer.startElement(localName,xmlArrayContainer,repeatedElement, typeDefinition);
+		topElement = null;
+		if (log.isTraceEnabled())
+			log.trace("startElement [" + localName + "] xml array container [" + aligner.isParentOfSingleMultipleOccurringChildElement() + "] repeated element [" + aligner.isMultipleOccurringChildInParentElement(localName) + "]");
+		documentContainer.startElement(localName, xmlArrayContainer, repeatedElement, typeDefinition);
 		super.startElement(uri, localName, qName, atts);
 		if (aligner.isNil(atts)) {
 			documentContainer.setNull();
 		} else {
 			if (writeAttributes) {
-				XSObjectList attributeUses=aligner.getAttributeUses();
-				XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition ? ((XSComplexTypeDefinition)typeDefinition).getAttributeWildcard():null;
-				if (attributeUses==null && wildcard==null) {
-					if (atts.getLength()>0) {
-						log.warn("found ["+atts.getLength()+"] attributes, but no declared AttributeUses");
+				XSObjectList attributeUses = aligner.getAttributeUses();
+				XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition ? ((XSComplexTypeDefinition) typeDefinition).getAttributeWildcard() : null;
+				if (attributeUses == null && wildcard == null) {
+					if (atts.getLength() > 0) {
+						log.warn("found [" + atts.getLength() + "] attributes, but no declared AttributeUses");
 					}
 				} else {
-					if (wildcard!=null) {
+					if (wildcard != null) {
 						// if wildcard (xs:anyAttribute namespace="##any" processContents="lax") is present, then any attribute will be parsed
-						for (int i=0;i<atts.getLength(); i++) {
-							String name=atts.getLocalName(i);
-							String namespace=atts.getURI(i);
-							String value=atts.getValue(i);
+						for (int i = 0; i < atts.getLength(); i++) {
+							String name = atts.getLocalName(i);
+							String namespace = atts.getURI(i);
+							String value = atts.getValue(i);
 							XSSimpleTypeDefinition attTypeDefinition = findAttributeTypeDefinition(attributeUses, namespace, name);
-							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+namespace+":"+name+"] value ["+value+"]");
+							if (log.isTraceEnabled())
+								log.trace("startElement [" + localName + "] attribute [" + namespace + ":" + name + "] value [" + value + "]");
 							if (StringUtils.isNotEmpty(value)) {
 								documentContainer.setAttribute(name, value, attTypeDefinition);
 							}
 						}
 					} else {
 						// if no wildcard is found, then only declared attributes will be parsed
-						for (int i=0;i<attributeUses.getLength(); i++) {
-							XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
-							XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
-							XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
-							String attName=attributeDeclaration.getName();
-							String attNS=attributeDeclaration.getNamespace();
-							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] searching attribute ["+attNS+":"+attName+"]");
-							int attIndex=attNS!=null? atts.getIndex(attNS, attName):atts.getIndex(attName);
-							if (attIndex>=0) {
-								String value=atts.getValue(attIndex);
-								if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+attNS+":"+attName+"] value ["+value+"]");
+						for (int i = 0; i < attributeUses.getLength(); i++) {
+							XSAttributeUse attributeUse = (XSAttributeUse) attributeUses.item(i);
+							XSAttributeDeclaration attributeDeclaration = attributeUse.getAttrDeclaration();
+							XSSimpleTypeDefinition attTypeDefinition = attributeDeclaration.getTypeDefinition();
+							String attName = attributeDeclaration.getName();
+							String attNS = attributeDeclaration.getNamespace();
+							if (log.isTraceEnabled()) log.trace("startElement [" + localName + "] searching attribute [" + attNS + ":" + attName + "]");
+							int attIndex = attNS != null ? atts.getIndex(attNS, attName) : atts.getIndex(attName);
+							if (attIndex >= 0) {
+								String value = atts.getValue(attIndex);
+								if (log.isTraceEnabled())
+									log.trace("startElement [" + localName + "] attribute [" + attNS + ":" + attName + "] value [" + value + "]");
 								if (StringUtils.isNotEmpty(value)) {
 									documentContainer.setAttribute(attName, value, attTypeDefinition);
 								}
@@ -128,15 +130,15 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	}
 
 	private XSSimpleTypeDefinition findAttributeTypeDefinition(XSObjectList attributeUses, String namespace, String name) {
-		if (attributeUses==null) {
+		if (attributeUses == null) {
 			return null;
 		}
-		for (int i=0;i<attributeUses.getLength(); i++) {
-			XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
-			XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
-			String attUseName=attributeDeclaration.getName();
-			String attUseNS=attributeDeclaration.getNamespace();
-			if ((namespace==null && attUseNS==null || namespace!=null && namespace.equals(attUseNS)) && name.equals(attUseName)) {
+		for (int i = 0; i < attributeUses.getLength(); i++) {
+			XSAttributeUse attributeUse = (XSAttributeUse) attributeUses.item(i);
+			XSAttributeDeclaration attributeDeclaration = attributeUse.getAttrDeclaration();
+			String attUseName = attributeDeclaration.getName();
+			String attUseNS = attributeDeclaration.getNamespace();
+			if ((namespace == null && attUseNS == null || namespace != null && namespace.equals(attUseNS)) && name.equals(attUseName)) {
 				return attributeDeclaration.getTypeDefinition();
 			}
 		}
@@ -145,26 +147,26 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (topElement!=null) {
-			if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
+		if (topElement != null) {
+			if (log.isTraceEnabled()) log.trace("endElementGroup [" + topElement + "]");
 			documentContainer.endElementGroup(topElement);
 		}
-		topElement=element.pop();
-		if (log.isTraceEnabled()) log.trace("endElement ["+localName+"]");
+		topElement = element.pop();
+		if (log.isTraceEnabled()) log.trace("endElement [" + localName + "]");
 		documentContainer.endElement(localName);
 		super.endElement(uri, localName, qName);
 		if (element.isEmpty()) {
-			if (log.isTraceEnabled()) log.trace("endElementGroup ["+localName+"]");
+			if (log.isTraceEnabled()) log.trace("endElementGroup [" + localName + "]");
 			documentContainer.endElementGroup(localName);
 		}
 	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		XSSimpleType simpleType=aligner.getElementType();
-		ScalarType scalarType=ScalarType.findType(simpleType);
-		if (log.isTraceEnabled() && simpleType!=null) {
-			log.trace("SimpleType ["+simpleType+"] ScalarType ["+scalarType+"] characters ["+new String(ch,start,length)+"]");
+		XSSimpleType simpleType = aligner.getElementType();
+		ScalarType scalarType = ScalarType.findType(simpleType);
+		if (log.isTraceEnabled() && simpleType != null) {
+			log.trace("SimpleType [" + simpleType + "] ScalarType [" + scalarType + "] characters [" + new String(ch, start, length) + "]");
 		}
 		documentContainer.characters(ch, start, length);
 		super.characters(ch, start, length);
@@ -199,6 +201,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	public boolean isWriteAttributes() {
 		return writeAttributes;
 	}
+
 	public void setWriteAttributes(boolean writeAttributes) {
 		this.writeAttributes = writeAttributes;
 	}

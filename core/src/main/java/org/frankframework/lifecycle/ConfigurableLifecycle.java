@@ -31,6 +31,7 @@ public interface ConfigurableLifecycle extends Lifecycle {
 	 * Configure this component.
 	 * <p>In the case of a container, this will propagate the start signal to all
 	 * components that apply.</p>
+	 *
 	 * @throws ConfigurationException in case it was not able to configure the component.
 	 */
 	public void configure() throws ConfigurationException;

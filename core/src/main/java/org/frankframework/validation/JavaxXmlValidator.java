@@ -51,22 +51,24 @@ import org.frankframework.core.PipeRunException;
 
 /**
  * Straightforward XML-validation based on javax.validation. This is work in programs.
+ *
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
 public class JavaxXmlValidator extends AbstractXmlValidator {
 
-	public static final String PARSING_FEATURE_SECURE="http://javax.xml.XMLConstants/feature/secure-processing";
-	public static final String PARSING_FEATURE_EXTERNAL_GENERAL_ENTITIES="http://xml.org/sax/features/external-general-entities";
-	public static final String PARSING_FEATURE_EXTERNAL_PARAMETER_ENTITIES="http://xml.org/sax/features/external-parameter-entities";
-	public static final String PARSING_FEATURE_DISALLOW_INLINE_DOCTYPE="http://apache.org/xml/features/disallow-doctype-decl";
+	public static final String PARSING_FEATURE_SECURE = "http://javax.xml.XMLConstants/feature/secure-processing";
+	public static final String PARSING_FEATURE_EXTERNAL_GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities";
+	public static final String PARSING_FEATURE_EXTERNAL_PARAMETER_ENTITIES = "http://xml.org/sax/features/external-parameter-entities";
+	public static final String PARSING_FEATURE_DISALLOW_INLINE_DOCTYPE = "http://apache.org/xml/features/disallow-doctype-decl";
 
 	private final Map<String, Schema> javaxSchemas = new LinkedHashMap<>();
 
 	@Override
 	public void configure(IConfigurationAware owner) throws ConfigurationException {
 		if (!isXmlSchema1_0()) {
-			throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0, no ["+getXmlSchemaVersion()+"]");
+			throw new ConfigurationException("class (" + this.getClass()
+					.getName() + ") only supports XmlSchema version 1.0, no [" + getXmlSchemaVersion() + "]");
 		}
 		super.configure(owner);
 	}
@@ -99,12 +101,12 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		}
 		schema = javaxSchemas.get(schemasId);
 
-		if (schema!=null) {
-			org.apache.xerces.jaxp.validation.XSGrammarPoolContainer xercesSchema = (org.apache.xerces.jaxp.validation.XSGrammarPoolContainer)schema;
+		if (schema != null) {
+			org.apache.xerces.jaxp.validation.XSGrammarPoolContainer xercesSchema = (org.apache.xerces.jaxp.validation.XSGrammarPoolContainer) schema;
 			xercesSchema.getGrammarPool();
 
 			xsModels = new ArrayList<>();
-			Grammar[] grammars=xercesSchema.getGrammarPool().retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+			Grammar[] grammars = xercesSchema.getGrammarPool().retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
 			//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
 			for (Grammar grammar : grammars) {
 				XSModel model = ((XSGrammar) grammar).toXSModel();
@@ -124,17 +126,16 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 
 	@Override
 	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
-		Schema schema=getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
+		Schema schema = getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
 		return schema.newValidatorHandler();
 	}
-
 
 
 	/**
 	 * Returns the {@link Schema} associated with this validator. This is an XSD schema containing knowledge about the
 	 * schema source as returned by {@link #getSchemaSources(List)}
 	 */
-	protected synchronized Schema getSchemaObject(String schemasId, List<org.frankframework.validation.Schema> schemas) throws  ConfigurationException {
+	protected synchronized Schema getSchemaObject(String schemasId, List<org.frankframework.validation.Schema> schemas) throws ConfigurationException {
 		Schema schema = javaxSchemas.get(schemasId);
 		if (schema == null) {
 			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -209,10 +210,10 @@ class JavaxValidationContext extends ValidationContext {
 
 	JavaxValidationContext(String schemasId, Schema schema, Set<String> namespaceSet, List<XSModel> xsModels) {
 		super();
-		this.schemasId=schemasId;
-		this.schema=schema;
-		this.namespaceSet=namespaceSet;
-		this.xsModels=xsModels;
+		this.schemasId = schemasId;
+		this.schema = schema;
+		this.namespaceSet = namespaceSet;
+		this.xsModels = xsModels;
 	}
 
 	@Override

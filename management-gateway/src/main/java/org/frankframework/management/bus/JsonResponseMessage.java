@@ -15,9 +15,8 @@
 */
 package org.frankframework.management.bus;
 
-import org.springframework.http.MediaType;
-
 import org.frankframework.util.JacksonUtils;
+import org.springframework.http.MediaType;
 
 public class JsonResponseMessage extends StringResponseMessage {
 

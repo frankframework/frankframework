@@ -64,6 +64,7 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 	public final void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
+
 	protected final ApplicationContext getApplicationContext() {
 		return applicationContext;
 	}
@@ -79,8 +80,8 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 
 	private String prefixLogMessage(Object source, String message) {
 		String msg = "";
-		if(source != null) {
-			msg = ClassUtils.nameOf(source)+" ";
+		if (source != null) {
+			msg = ClassUtils.nameOf(source) + " ";
 		}
 
 		return msg += message;
@@ -120,7 +121,7 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 			log.warn(logMessage, t);
 		}
 
-		if (t!=null || !warnings.contains(message)) {
+		if (t != null || !warnings.contains(message)) {
 			warnings.add(message);
 		}
 	}

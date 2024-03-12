@@ -26,6 +26,7 @@ public class QueryOutputToJson extends AbstractQueryOutputTransformer {
 	public QueryOutputToJson() throws SAXException {
 		super();
 	}
+
 	public QueryOutputToJson(XMLReader parent) {
 		super(parent);
 	}
@@ -83,7 +84,7 @@ public class QueryOutputToJson extends AbstractQueryOutputTransformer {
 	@Override
 	protected void addFieldDefinition(Attributes atts) {
 		output.append("\t\t{\n");
-		for(int i = 0; i < atts.getLength(); i ++) {
+		for (int i = 0; i < atts.getLength(); i++) {
 			output
 					.append("\t\t\t\"")
 					.append(StringEscapeUtils.escapeEcmaScript(atts.getLocalName(i)))

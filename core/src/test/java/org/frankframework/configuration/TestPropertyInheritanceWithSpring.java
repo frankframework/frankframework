@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
@@ -20,7 +21,7 @@ public class TestPropertyInheritanceWithSpring {
 		applicationContext.setParent(parent);
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
-		if(parent != null) {
+		if (parent != null) {
 			propertySources.addBefore(APPLICATION, propertySource);
 		} else {
 			propertySources.addLast(propertySource);

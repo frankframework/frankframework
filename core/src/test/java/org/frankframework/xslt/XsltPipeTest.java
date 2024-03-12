@@ -7,6 +7,7 @@ import org.frankframework.pipes.XsltPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+
 import org.junit.jupiter.api.Test;
 
 public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {

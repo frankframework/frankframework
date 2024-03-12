@@ -26,7 +26,7 @@ public class CacheEntry<V> {
 
 	public CacheEntry(V value, int timeToLiveMillis) {
 		this.value = value;
-		expiry = System.currentTimeMillis()+timeToLiveMillis;
+		expiry = System.currentTimeMillis() + timeToLiveMillis;
 	}
 
 	public boolean isExpired() {
@@ -39,6 +39,6 @@ public class CacheEntry<V> {
 
 	public void update(V value, int timeToLiveMillis) {
 		this.value = value;
-		expiry = System.currentTimeMillis()+timeToLiveMillis;
+		expiry = System.currentTimeMillis() + timeToLiveMillis;
 	}
 }

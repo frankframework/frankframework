@@ -30,17 +30,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 
 /**
  * This class exists to provide backwards compatibility for endpoints from before #4069.
  *
- * @since	7.8.1
- * @author	Niels Meijer
+ * @since 7.8.1
+ * @author Niels Meijer
  */
 @Path("/")
 public final class CompatibilityShowScheduler extends FrankApiBase {

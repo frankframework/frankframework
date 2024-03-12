@@ -9,14 +9,15 @@ import java.io.InputStream;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 
 public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 
-	private final String CRL_FILE="/Pipes/CrlPipe/LatestCRL.crl";
-	private final String CRL_AS_XML="/Pipes/CrlPipe/LatestCRL.xml";
-	private final String CRL_ISSUER_CERT_FILE="/Pipes/CrlPipe/ABC-issuer.cer";
-	private final String CRL_ISSUER_CERT_FILE_WRONG="/Pipes/CrlPipe/ABC2-issuer.cer";
+	private final String CRL_FILE = "/Pipes/CrlPipe/LatestCRL.crl";
+	private final String CRL_AS_XML = "/Pipes/CrlPipe/LatestCRL.xml";
+	private final String CRL_ISSUER_CERT_FILE = "/Pipes/CrlPipe/ABC-issuer.cer";
+	private final String CRL_ISSUER_CERT_FILE_WRONG = "/Pipes/CrlPipe/ABC2-issuer.cer";
 
 	@Override
 	public CrlPipe createPipe() {
@@ -26,7 +27,7 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 	@Test
 	public void testCrlViaMessage() throws Exception {
 		// arrange
-		String issuerKey="issuer";
+		String issuerKey = "issuer";
 		pipe.setIssuerSessionKey(issuerKey);
 		configureAndStartPipe();
 
@@ -45,7 +46,7 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 	@Test
 	public void testCrlViaInputStream() throws Exception {
 		// arrange
-		String issuerKey="issuer";
+		String issuerKey = "issuer";
 		pipe.setIssuerSessionKey(issuerKey);
 		configureAndStartPipe();
 
@@ -64,7 +65,7 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 	@Test
 	public void testCrlWrongIssuer() throws Exception {
 		// arrange
-		String issuerKey="issuer";
+		String issuerKey = "issuer";
 		pipe.setIssuerSessionKey(issuerKey);
 		configureAndStartPipe();
 
@@ -76,8 +77,8 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 		PipeRunResult prr = doPipe(crl);
 
 		// assert
-		assertEquals("success", prr.getPipeForward().getName()); 	// CrlPipe could return exception forward here
-		assertNull(prr.getResult().asString());						// CrlPipe could return error message here
+		assertEquals("success", prr.getPipeForward().getName());    // CrlPipe could return exception forward here
+		assertNull(prr.getResult().asString());                        // CrlPipe could return error message here
 	}
 
 

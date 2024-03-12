@@ -44,17 +44,16 @@ import lombok.Getter;
 /**
  * FixedResultSender, same behaviour as {@link FixedResultPipe}, but now as a ISender.
  *
+ * @author Gerrit van Brakel
  * @ff.parameters Any parameters defined on the sender will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file fileName will be replaced by its corresponding value-of-parameter. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}.
- *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @since 4.9
  */
 @Category("Basic")
 public class FixedResultSender extends SenderWithParametersBase {
 
 	private @Getter String filename;
 	private @Getter String returnString;
-	private @Getter boolean substituteVars=false;
+	private @Getter boolean substituteVars = false;
 	private @Getter String replaceFrom = null;
 	private @Getter String replaceTo = null;
 	private @Getter String styleSheetName = null;
@@ -69,13 +68,13 @@ public class FixedResultSender extends SenderWithParametersBase {
 			try {
 				returnString = StreamUtil.resourceToString(ClassLoaderUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+getFilename()+"]", e);
+				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading [" + getFilename() + "]", e);
 			}
 		}
-		if ((StringUtils.isEmpty(getFilename())) && getReturnString()==null) {  // allow an empty returnString to be specified
+		if ((StringUtils.isEmpty(getFilename())) && getReturnString() == null) {  // allow an empty returnString to be specified
 			throw new ConfigurationException("Pipe [" + getName() + "] has neither fileName nor returnString specified");
 		}
-		if(StringUtils.isNotEmpty(getStyleSheetName())) {
+		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			transformerPool = TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), 0);
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
@@ -85,34 +84,34 @@ public class FixedResultSender extends SenderWithParametersBase {
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String result=returnString;
-		if (paramList!=null) {
+		String result = returnString;
+		if (paramList != null) {
 			ParameterValueList pvl;
 			try {
 				pvl = paramList.getValues(message, session);
 			} catch (ParameterException e) {
-				throw new SenderException("exception extracting parameters",e);
+				throw new SenderException("exception extracting parameters", e);
 			}
-			if (pvl!=null) {
-				for(ParameterValue pv : pvl) {
-					String from = "${"+pv.getDefinition().getName()+"}";
+			if (pvl != null) {
+				for (ParameterValue pv : pvl) {
+					String from = "${" + pv.getDefinition().getName() + "}";
 					String to = pv.asStringValue("");
-					result= result.replace(from, to);
+					result = result.replace(from, to);
 				}
 			}
 		}
 
-		if (isSubstituteVars()){
-			result=StringResolver.substVars(returnString, session);
+		if (isSubstituteVars()) {
+			result = StringResolver.substVars(returnString, session);
 		}
 
 		if (transformerPool != null) {
-			try{
+			try {
 				result = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(result));
 			} catch (IOException | TransformerException e) {
-				throw new SenderException(getLogPrefix()+"got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
+				throw new SenderException(getLogPrefix() + "got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
 			} catch (SAXException se) {
-				throw new SenderException(getLogPrefix()+"got error converting string [" + result + "] to source", se);
+				throw new SenderException(getLogPrefix() + "got error converting string [" + result + "] to source", se);
 			}
 		}
 		log.debug("returning fixed result [" + result + "]");
@@ -126,10 +125,11 @@ public class FixedResultSender extends SenderWithParametersBase {
 
 	/**
 	 * should values between ${ and } be resolved from the pipelinesession
+	 *
 	 * @ff.default false
 	 */
-	public void setSubstituteVars(boolean substitute){
-		this.substituteVars=substitute;
+	public void setSubstituteVars(boolean substitute) {
+		this.substituteVars = substitute;
 	}
 
 	/** Name of the file containing the result message */
@@ -142,16 +142,16 @@ public class FixedResultSender extends SenderWithParametersBase {
 		this.returnString = returnString;
 	}
 
-	public void setReplaceFrom (String replaceFrom){
-		this.replaceFrom=replaceFrom;
+	public void setReplaceFrom(String replaceFrom) {
+		this.replaceFrom = replaceFrom;
 	}
 
-	public void setReplaceTo (String replaceTo){
-		this.replaceTo=replaceTo;
+	public void setReplaceTo(String replaceTo) {
+		this.replaceTo = replaceTo;
 	}
 
-	public void setStyleSheetName (String styleSheetName){
-		this.styleSheetName=styleSheetName;
+	public void setStyleSheetName(String styleSheetName) {
+		this.styleSheetName = styleSheetName;
 	}
 
 }

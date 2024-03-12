@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Setter;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -37,8 +38,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.LogUtil;
-
-import lombok.Setter;
 
 /**
  * Translates the request, adds required headers per action, creates a hash and signs the message.
@@ -80,15 +79,15 @@ public class NetStorageRequest {
 				method = new HttpPost(uri);
 				break;
 			default:
-				throw new NotImplementedException("unknown action ["+action+"]");
+				throw new NotImplementedException("unknown action [" + action + "]");
 		}
 	}
 
 	public String compileHeader() {
-		if(method instanceof HttpGet) {
+		if (method instanceof HttpGet) {
 			actionHeader.put("format", "xml");
 		}
-		actionHeader.put("version", version+"");
+		actionHeader.put("version", version + "");
 
 		return NetStorageUtils.convertMapAsQueryParams(actionHeader);
 	}
@@ -98,54 +97,51 @@ public class NetStorageRequest {
 	}
 
 	public void mapParameters(ParameterValueList pvl) throws SenderException {
-		if(action == Action.UPLOAD && pvl.contains(NetStorageSender.FILE_PARAM_KEY)) {
+		if (action == Action.UPLOAD && pvl.contains(NetStorageSender.FILE_PARAM_KEY)) {
 			file = pvl.get(NetStorageSender.FILE_PARAM_KEY).asMessage();
-			if(Message.isEmpty(file)) {
+			if (Message.isEmpty(file)) {
 				throw new SenderException("no file specified");
 			}
 
-			if(hashAlgorithm != null) {
+			if (hashAlgorithm != null) {
 				generateHash(pvl);
 			}
 
 			setEntity(file);
 
-			if(pvl.contains("size")) {
+			if (pvl.contains("size")) {
 				int size = pvl.get("size").asIntegerValue(0);
-				actionHeader.put("size", size+"");
+				actionHeader.put("size", size + "");
 			}
 		}
 
-		if(action == Action.RENAME && pvl.contains(NetStorageSender.DESTINATION_PARAM_KEY)) {
+		if (action == Action.RENAME && pvl.contains(NetStorageSender.DESTINATION_PARAM_KEY)) {
 			String destination = pvl.get(NetStorageSender.DESTINATION_PARAM_KEY).asStringValue(null);
 			actionHeader.put("destination", destination);
 		}
 
-		if(pvl.contains(NetStorageSender.MTIME_PARAM_KEY)) {
+		if (pvl.contains(NetStorageSender.MTIME_PARAM_KEY)) {
 			long mtime = pvl.get(NetStorageSender.MTIME_PARAM_KEY).asLongValue(-1L);
-			actionHeader.put("mtime", mtime+"");
+			actionHeader.put("mtime", mtime + "");
 		}
 	}
 
 	private void generateHash(ParameterValueList pvl) throws SenderException {
 		String hash = null;
 		String algorithm = hashAlgorithm.name().toLowerCase();
-		if(pvl.contains(NetStorageSender.HASHVALUE_PARAM_KEY)) {
+		if (pvl.contains(NetStorageSender.HASHVALUE_PARAM_KEY)) {
 			hash = pvl.get(NetStorageSender.HASHVALUE_PARAM_KEY).asStringValue(null);
-		}
-		else if(pvl.contains(algorithm)) { //backwards compatibility
+		} else if (pvl.contains(algorithm)) { //backwards compatibility
 			hash = pvl.get(algorithm).asStringValue(null);
-		}
-		else {
+		} else {
 			try {
 				hash = hashAlgorithm.computeHash(file);
-			}
-			catch (IOException | IllegalStateException e) {
-				throw new SenderException("error while calculating ["+hashAlgorithm+"] hash", e);
+			} catch (IOException | IllegalStateException e) {
+				throw new SenderException("error while calculating [" + hashAlgorithm + "] hash", e);
 			}
 		}
 
-		if(StringUtils.isNotEmpty(hash)) {
+		if (StringUtils.isNotEmpty(hash)) {
 			actionHeader.put(algorithm, hash);
 		}
 	}
@@ -163,7 +159,7 @@ public class NetStorageRequest {
 		Map<String, String> headers = signer.computeHeaders(this);
 
 		for (Map.Entry<String, String> entry : headers.entrySet()) {
-			if(log.isDebugEnabled()) log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+			if (log.isDebugEnabled()) log.debug("append header [" + entry.getKey() + "] with value [" + entry.getValue() + "]");
 
 			method.setHeader(entry.getKey(), entry.getValue());
 		}

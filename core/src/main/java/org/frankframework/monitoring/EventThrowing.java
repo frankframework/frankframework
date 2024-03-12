@@ -20,10 +20,11 @@ import org.frankframework.core.Adapter;
 /**
  * Interface to be implemented by objects to be monitored; Is called by code that handles event.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public interface EventThrowing {
 	public String getEventSourceName();
+
 	public Adapter getAdapter();
 }

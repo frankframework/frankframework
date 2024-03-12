@@ -23,15 +23,15 @@ import org.frankframework.doc.FrankDocGroup;
 /**
  * Filter on Adapters, used by Triggers.
  *
- * @author  Gerrit van Brakel
- * @since   4.9.8
+ * @author Gerrit van Brakel
+ * @since 4.9.8
  */
 @FrankDocGroup(name = "Monitoring")
 public class AdapterFilter {
 
 	private String adapter;
 
-	private List<String> subObjectList=new ArrayList<>();
+	private List<String> subObjectList = new ArrayList<>();
 
 	/**
 	 * Set the name of the Adapter that this AdapterFilter filters on.
@@ -39,6 +39,7 @@ public class AdapterFilter {
 	public void setAdapter(String string) {
 		adapter = string;
 	}
+
 	public String getAdapter() {
 		return adapter;
 	}
@@ -53,6 +54,7 @@ public class AdapterFilter {
 	public void registerSubObject(String name) {
 		subObjectList.add(name);
 	}
+
 	/**
 	 * Get the list of registered names of SubObjects included in the filter.
 	 */

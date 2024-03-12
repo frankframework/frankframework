@@ -68,7 +68,7 @@ public class LocalDistributionSummary extends AbstractDistributionSummary {
 		this.amount.add(amount);
 		max.record(amount);
 
-		if(histogram != null) {
+		if (histogram != null) {
 			histogram.recordDouble(amount);
 		}
 	}
@@ -106,10 +106,11 @@ public class LocalDistributionSummary extends AbstractDistributionSummary {
 	public double getVariance() {
 		return calculateVariance(count(), Math.round(totalAmount()), sumOfSquares.sum());
 	}
+
 	private double calculateVariance(long count, long sum, long sumOfSquares) {
 		if (count > 1) {
-			long sumSQ = (sumOfSquares-((sum*sum)/count));
-			return (double) sumSQ / (count-1);
+			long sumSQ = (sumOfSquares - ((sum * sum) / count));
+			return (double) sumSQ / (count - 1);
 		} else {
 			return Double.NaN;
 		}
@@ -121,7 +122,7 @@ public class LocalDistributionSummary extends AbstractDistributionSummary {
 
 	public long getMin() {
 		long value = min.get();
-		if(value == Long.MAX_VALUE) {
+		if (value == Long.MAX_VALUE) {
 			return 0;
 		}
 		return value;
@@ -155,7 +156,7 @@ public class LocalDistributionSummary extends AbstractDistributionSummary {
 	public HistogramSnapshot takeSnapshot() {
 		HistogramSnapshot snapshot = super.takeSnapshot();
 
-		if(histogram == null) {
+		if (histogram == null) {
 			return snapshot;
 		}
 

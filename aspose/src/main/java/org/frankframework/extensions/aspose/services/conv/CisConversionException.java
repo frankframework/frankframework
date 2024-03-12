@@ -16,8 +16,7 @@
 package org.frankframework.extensions.aspose.services.conv;
 
 /**
- * @author
- * 	Gerard van der Hoorn
+ * @author Gerard van der Hoorn
  */
 public class CisConversionException extends RuntimeException {
 

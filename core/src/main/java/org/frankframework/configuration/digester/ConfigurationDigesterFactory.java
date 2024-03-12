@@ -18,7 +18,7 @@ package org.frankframework.configuration.digester;
 /**
  * Factory for retrieving ConfigurationDigester instance from BeanFactory, for
  * use with the 'include' element in the IBIS Configuration XML.
- *
+ * <p>
  * The GenericFactory can not be used because it is not desirable to add an
  * alias to the bean 'configurationDigester' under the name 'proto-include',
  * which would be chosen by the GenericFactory, and because the

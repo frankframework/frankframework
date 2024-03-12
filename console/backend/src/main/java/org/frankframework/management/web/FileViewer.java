@@ -15,12 +15,9 @@
  */
 package org.frankframework.management.web;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.util.ResponseUtils;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
@@ -31,9 +28,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.util.ResponseUtils;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
 
 @Path("/")
 public class FileViewer extends FrankApiBase {

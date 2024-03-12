@@ -34,14 +34,13 @@ import org.frankframework.stream.Message;
 /**
  * Pipe to calculate checksum on input.
  *
- *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class ChecksumPipe extends FixedForwardPipe {
 
 	private @Getter String charset;
-	private @Getter ChecksumType type=ChecksumType.MD5;
+	private @Getter ChecksumType type = ChecksumType.MD5;
 	private @Getter boolean inputIsFile;
 
 	public enum ChecksumType {
@@ -57,23 +56,26 @@ public class ChecksumPipe extends FixedForwardPipe {
 		ChecksumType(String algorithm) {
 			this.algorithm = algorithm;
 		}
+
 		ChecksumType() {
 			this(null);
 		}
 
 		public String getAlgorithm() {
-			return algorithm!=null ? algorithm : name();
+			return algorithm != null ? algorithm : name();
 		}
 	}
 
 	protected interface ChecksumGenerator {
 		public void update(int b);
+
 		public void update(byte[] b, int offset, int length);
+
 		public String getResult();
 	}
 
 	protected ChecksumGenerator createChecksumGenerator() throws NoSuchAlgorithmException {
-		switch(getType()) {
+		switch (getType()) {
 			case MD5:
 			case SHA:
 			case SHA256:
@@ -84,7 +86,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 			case ADLER32:
 				return new ZipChecksumGenerator(new Adler32());
 			default:
-				throw new NoSuchAlgorithmException("unsupported algorithm ["+getType()+"]");
+				throw new NoSuchAlgorithmException("unsupported algorithm [" + getType() + "]");
 		}
 	}
 
@@ -94,22 +96,22 @@ public class ChecksumPipe extends FixedForwardPipe {
 
 		ZipChecksumGenerator(Checksum checksum) {
 			super();
-			this.checksum=checksum;
+			this.checksum = checksum;
 			checksum.reset();
 		}
 
 		@Override
-		public void update(int b){
+		public void update(int b) {
 			checksum.update(b);
 		}
 
 		@Override
-		public void update(byte[] b, int offset, int length){
-			checksum.update(b,offset,length);
+		public void update(byte[] b, int offset, int length) {
+			checksum.update(b, offset, length);
 		}
 
 		@Override
-		public String getResult(){
+		public String getResult() {
 			return Long.toHexString(checksum.getValue());
 		}
 	}
@@ -120,39 +122,39 @@ public class ChecksumPipe extends FixedForwardPipe {
 
 		MessageDigestChecksumGenerator(ChecksumType type) throws NoSuchAlgorithmException {
 			super();
-			this.messageDigest=MessageDigest.getInstance(type.getAlgorithm());
+			this.messageDigest = MessageDigest.getInstance(type.getAlgorithm());
 		}
 
 		@Override
-		public void update(int b){
-			messageDigest.update((byte)b);
+		public void update(int b) {
+			messageDigest.update((byte) b);
 		}
 
 		@Override
-		public void update(byte[] b, int offset, int length){
-			messageDigest.update(b,offset,length);
+		public void update(byte[] b, int offset, int length) {
+			messageDigest.update(b, offset, length);
 		}
 
 		@Override
-		public String getResult(){
-			return new BigInteger(1,messageDigest.digest()).toString(16);
+		public String getResult() {
+			return new BigInteger(1, messageDigest.digest()).toString(16);
 		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			ChecksumGenerator cg=createChecksumGenerator();
-			byte[] barr=new byte[1000];
-			try (InputStream fis = isInputIsFile() ? new FileInputStream(message.asString()) : message.asInputStream(getCharset())){
+			ChecksumGenerator cg = createChecksumGenerator();
+			byte[] barr = new byte[1000];
+			try (InputStream fis = isInputIsFile() ? new FileInputStream(message.asString()) : message.asInputStream(getCharset())) {
 				int c;
-				while ((c=fis.read(barr))>=0) {
+				while ((c = fis.read(barr)) >= 0) {
 					cg.update(barr, 0, c);
 				}
 			}
 			return new PipeRunResult(getSuccessForward(), cg.getResult());
 		} catch (Exception e) {
-			throw new PipeRunException(this,"cannot calculate ["+getType()+"]"+(isInputIsFile()?" on file ["+message+"]":" using charset ["+getCharset()+"]"),e);
+			throw new PipeRunException(this, "cannot calculate [" + getType() + "]" + (isInputIsFile() ? " on file [" + message + "]" : " using charset [" + getCharset() + "]"), e);
 		}
 	}
 
@@ -165,6 +167,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 
 	/**
 	 * Type of checksum to be calculated
+	 *
 	 * @ff.default MD5
 	 */
 	public void setType(ChecksumType value) {
@@ -173,6 +176,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 
 	/**
 	 * If set <code>true</code>, the input is assumed to be a filename; otherwise the input itself is used in the calculations.
+	 *
 	 * @ff.default false
 	 */
 	@Deprecated

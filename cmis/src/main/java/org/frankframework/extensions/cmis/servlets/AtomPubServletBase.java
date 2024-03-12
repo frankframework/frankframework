@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
-
 import org.frankframework.lifecycle.DynamicRegistration;
 
 /**
@@ -31,6 +30,7 @@ import org.frankframework.lifecycle.DynamicRegistration;
 public abstract class AtomPubServletBase extends CmisAtomPubServlet implements DynamicRegistration.ServletWithParameters {
 
 	private static final long serialVersionUID = 1L;
+
 	protected abstract String getCmisVersionStr();
 
 	@Override

@@ -27,7 +27,6 @@ import org.xml.sax.Attributes;
  * Base class for transforming SAX Attributes-lists.
  *
  * @author Gerrit van Brakel
- *
  */
 public class AttributesWrapper implements Attributes {
 

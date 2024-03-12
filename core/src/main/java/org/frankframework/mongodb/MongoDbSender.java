@@ -75,24 +75,22 @@ import org.frankframework.util.StringResolver;
 /**
  * Sender to perform action on a MongoDB database.
  *
+ * @author Gerrit van Brakel
  * @ff.parameter database Database to connect to. Overrides attribute <code>database</code>
  * @ff.parameter collection Collection to act upon. Overrides attribute <code>collection</code>
  * @ff.parameter filter Filter. Can contain references to parameters between '?{' and '}'. Overrides attribute <code>filter</code>
  * @ff.parameter limit Limit to number of results returned. A value of 0 means 'no limit'. Overrides attribute <code>limit</code>
- *
- * @author Gerrit van Brakel
- *
  */
 public class MongoDbSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private final @Getter String domain = "Mongo";
-	public static final String PARAM_DATABASE="database";
-	public static final String PARAM_COLLECTION="collection";
-	public static final String PARAM_FILTER="filter";
-	public static final String PARAM_LIMIT="limit";
+	public static final String PARAM_DATABASE = "database";
+	public static final String PARAM_COLLECTION = "collection";
+	public static final String PARAM_FILTER = "filter";
+	public static final String PARAM_LIMIT = "limit";
 
-	public static final String NAMED_PARAM_START=JdbcQuerySenderBase.UNP_START;
-	public static final String NAMED_PARAM_END=JdbcQuerySenderBase.UNP_END;
+	public static final String NAMED_PARAM_START = JdbcQuerySenderBase.UNP_START;
+	public static final String NAMED_PARAM_END = JdbcQuerySenderBase.UNP_END;
 
 
 	private @Getter String datasourceName;
@@ -100,10 +98,10 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	private @Getter String collection;
 	private @Getter MongoAction action;
 	private @Getter String filter;
-	private @Getter int limit=0;
-	private @Getter boolean countOnly=false;
-	private @Getter DocumentFormat outputFormat=DocumentFormat.JSON;
-	private @Getter boolean prettyPrint=false;
+	private @Getter int limit = 0;
+	private @Getter boolean countOnly = false;
+	private @Getter DocumentFormat outputFormat = DocumentFormat.JSON;
+	private @Getter boolean prettyPrint = false;
 
 	private @Setter @Getter IMongoClientFactory mongoClientFactory = null; // Spring should wire this!
 
@@ -126,18 +124,19 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getString(JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, JndiMongoClientFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader())
+					.getString(JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, JndiMongoClientFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
 		}
-		if (mongoClientFactory==null) {
+		if (mongoClientFactory == null) {
 			throw new ConfigurationException("no mongoClientFactory available");
 		}
 		checkStringAttributeOrParameter("database", getDatabase(), PARAM_DATABASE);
 		checkStringAttributeOrParameter("collection", getCollection(), PARAM_COLLECTION);
-		if (getAction()==null) {
+		if (getAction() == null) {
 			throw new ConfigurationException("attribute action not specified");
 		}
-		if ((getLimit()>0 || (getParameterList()!=null && getParameterList().findParameter(PARAM_LIMIT)!=null)) && getAction()!=MongoAction.FINDMANY) {
-			throw new ConfigurationException("attribute limit or parameter "+PARAM_LIMIT+" can only be used for action "+MongoAction.FINDMANY);
+		if ((getLimit() > 0 || (getParameterList() != null && getParameterList().findParameter(PARAM_LIMIT) != null)) && getAction() != MongoAction.FINDMANY) {
+			throw new ConfigurationException("attribute limit or parameter " + PARAM_LIMIT + " can only be used for action " + MongoAction.FINDMANY);
 		}
 	}
 
@@ -146,7 +145,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		try {
 			mongoClient = mongoClientFactory.getMongoClient(getDatasourceName());
 		} catch (NamingException e) {
-			throw new SenderException("cannot open MongoDB datasource ["+getDatasourceName()+"]", e);
+			throw new SenderException("cannot open MongoDB datasource [" + getDatasourceName() + "]", e);
 		}
 		super.open();
 	}
@@ -156,9 +155,9 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		try {
 			super.close();
 		} finally {
-			if (mongoClient!=null) {
+			if (mongoClient != null) {
 				mongoClient.close();
-				mongoClient=null;
+				mongoClient = null;
 				mongoDatabases.clear();
 			}
 		}
@@ -168,41 +167,41 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		message.closeOnCloseOf(session, this);
 		MongoAction mngaction = getAction();
-		try (MessageOutputStream target = mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, null) : new MessageOutputStreamCap(this, null)) {
+		try (MessageOutputStream target = mngaction == MongoAction.FINDONE || mngaction == MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, null) : new MessageOutputStreamCap(this, null)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);
 			switch (mngaction) {
-			case INSERTONE:
-				renderResult(mongoCollection.insertOne(getDocument(message)), target);
-				break;
-			case INSERTMANY:
-				renderResult(mongoCollection.insertMany(getDocuments(message)), target);
-				break;
-			case FINDONE:
-				renderResult(mongoCollection.find(getFilter(pvl, message)).first(), target);
-				break;
-			case FINDMANY:
-				renderResult(mongoCollection.find(getFilter(pvl, message)).limit(getLimit(pvl)), target);
-				break;
-			case UPDATEONE:
-				renderResult(mongoCollection.updateOne(getFilter(pvl, null), getDocument(message)), target);
-				break;
-			case UPDATEMANY:
-				renderResult(mongoCollection.updateMany(getFilter(pvl, null), getDocument(message)), target);
-				break;
-			case DELETEONE:
-				renderResult(mongoCollection.deleteOne(getFilter(pvl, message)), target);
-				break;
-			case DELETEMANY:
-				renderResult(mongoCollection.deleteMany(getFilter(pvl, message)), target);
-				break;
-			default:
-				throw new SenderException("Unknown action ["+getAction()+"]");
+				case INSERTONE:
+					renderResult(mongoCollection.insertOne(getDocument(message)), target);
+					break;
+				case INSERTMANY:
+					renderResult(mongoCollection.insertMany(getDocuments(message)), target);
+					break;
+				case FINDONE:
+					renderResult(mongoCollection.find(getFilter(pvl, message)).first(), target);
+					break;
+				case FINDMANY:
+					renderResult(mongoCollection.find(getFilter(pvl, message)).limit(getLimit(pvl)), target);
+					break;
+				case UPDATEONE:
+					renderResult(mongoCollection.updateOne(getFilter(pvl, null), getDocument(message)), target);
+					break;
+				case UPDATEMANY:
+					renderResult(mongoCollection.updateMany(getFilter(pvl, null), getDocument(message)), target);
+					break;
+				case DELETEONE:
+					renderResult(mongoCollection.deleteOne(getFilter(pvl, message)), target);
+					break;
+				case DELETEMANY:
+					renderResult(mongoCollection.deleteMany(getFilter(pvl, message)), target);
+					break;
+				default:
+					throw new SenderException("Unknown action [" + getAction() + "]");
 			}
 			return new SenderResult(target.getPipeRunResult().getResult());
 		} catch (Exception e) {
-			throw new SenderException("Cannot execute action ["+getAction()+"]", e);
+			throw new SenderException("Cannot execute action [" + getAction() + "]", e);
 		}
 	}
 
@@ -222,7 +221,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 				try (ObjectBuilder objectBuilder = builder.addObjectField("insertedIds")) {
 					Map<Integer, BsonValue> insertedIds = insertManyResult.getInsertedIds();
 
-					insertedIds.forEach((k,v)->{
+					insertedIds.forEach((k, v) -> {
 						try {
 							objectBuilder.add(Integer.toString(k), renderField(v));
 						} catch (SAXException e) {
@@ -249,7 +248,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		try {
 			if (isCountOnly()) {
 				try (Writer writer = target.asWriter()) {
-					int count=0;
+					int count = 0;
 					for (Document doc : findResults) {
 						count++;
 					}
@@ -303,8 +302,8 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	}
 
 	protected void addOptionalValue(ObjectBuilder builder, String name, BsonValue bsonValue) throws SAXException {
-		if (bsonValue!=null) {
-			builder.add(name, bsonValue.isObjectId()? bsonValue.asObjectId().getValue().toString() : bsonValue.asString().getValue());
+		if (bsonValue != null) {
+			builder.add(name, bsonValue.isObjectId() ? bsonValue.asObjectId().getValue().toString() : bsonValue.asString().getValue());
 		}
 	}
 
@@ -320,7 +319,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 	protected List<Document> getDocuments(Message message) throws IOException {
 		JsonArray array = Json.createReader(message.asReader()).readArray();
 		List<Document> documents = new ArrayList<>();
-		for (JsonObject object:array.getValuesAs(JsonObject.class)) {
+		for (JsonObject object : array.getValuesAs(JsonObject.class)) {
 			documents.add(getDocument(object.toString()));
 		}
 		return documents;
@@ -331,7 +330,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		if (StringUtils.isEmpty(databaseName)) {
 			throw new SenderException("no database found from attribute or parameter");
 		}
-		return mongoDatabases.computeIfAbsent(databaseName, (d)->mongoClient.getDatabase(databaseName));
+		return mongoDatabases.computeIfAbsent(databaseName, (d) -> mongoClient.getDatabase(databaseName));
 	}
 
 	protected MongoCollection<Document> getCollection(MongoDatabase mongoDatabase, ParameterValueList pvl) throws SenderException {
@@ -359,11 +358,11 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String result = "datasource ["+getDatasourceName()+"]";
-		if (mongoClient!=null) {
+		String result = "datasource [" + getDatasourceName() + "]";
+		if (mongoClient != null) {
 			List<ServerDescription> serverDescriptions = mongoClient.getClusterDescription().getServerDescriptions();
 			if (!serverDescriptions.isEmpty()) {
-				result += " server ["+serverDescriptions.get(0).getAddress()+"]";
+				result += " server [" + serverDescriptions.get(0).getAddress() + "]";
 			}
 		}
 		return result;
@@ -372,6 +371,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 
 	/**
 	 * The MongoDB datasource
+	 *
 	 * @ff.default {@value JndiMongoClientFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
@@ -400,6 +400,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 
 	/**
 	 * Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter {@value #PARAM_LIMIT}.
+	 *
 	 * @ff.default 0
 	 */
 	public void setLimit(int limit) {
@@ -408,6 +409,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 
 	/**
 	 * Only for find operation: return only the count and not the full document(s)
+	 *
 	 * @ff.default false
 	 */
 	public void setCountOnly(boolean countOnly) {
@@ -416,6 +418,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 
 	/**
 	 * OutputFormat
+	 *
 	 * @ff.default JSON
 	 */
 	public void setOutputFormat(DocumentFormat outputFormat) {

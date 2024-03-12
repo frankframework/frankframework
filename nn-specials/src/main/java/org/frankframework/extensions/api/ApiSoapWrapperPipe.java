@@ -16,7 +16,6 @@
 package org.frankframework.extensions.api;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
@@ -52,6 +51,7 @@ import org.frankframework.util.SpringUtils;
  * <tr><td>conversationId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
  * </table>
  * </p>
+ *
  * @author Peter Leeuwenburgh
  */
 
@@ -62,7 +62,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getDirection()==Direction.WRAP) {
+		if (getDirection() == Direction.WRAP) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
 			}

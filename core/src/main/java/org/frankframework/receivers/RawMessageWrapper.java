@@ -29,7 +29,7 @@ public class RawMessageWrapper<M> {
 	protected @Getter M rawMessage;
 	protected @Getter String id;
 	protected @Getter String correlationId;
-	protected @Getter Map<String,Object> context = new LinkedHashMap<>();
+	protected @Getter Map<String, Object> context = new LinkedHashMap<>();
 
 	protected RawMessageWrapper() {
 		// For Serialisation
@@ -47,11 +47,11 @@ public class RawMessageWrapper<M> {
 	/**
 	 * Create new instance with raw message, id and correlation ID.
 	 *
-	 * @param rawMessage The raw message.
-	 * @param id The ID of the message. May be null. If not null, will be copied to the message context with the
-	 *           key {@link PipeLineSession#MESSAGE_ID_KEY}.
+	 * @param rawMessage    The raw message.
+	 * @param id            The ID of the message. May be null. If not null, will be copied to the message context with the
+	 *                      key {@link PipeLineSession#MESSAGE_ID_KEY}.
 	 * @param correlationId The Correlation ID of the message. May be null. If not null, will be copied to the
-	 *                       message context with the key {@link PipeLineSession#CORRELATION_ID_KEY}.
+	 *                      message context with the key {@link PipeLineSession#CORRELATION_ID_KEY}.
 	 */
 	public RawMessageWrapper(@Nonnull M rawMessage, @Nullable String id, @Nullable String correlationId) {
 		this.rawMessage = rawMessage;
@@ -67,8 +67,8 @@ public class RawMessageWrapper<M> {
 	 * All values from the given context are copied into the message context.
 	 *
 	 * @param rawMessage The raw message data.
-	 * @param context Context for the message. If containing the keys {@link PipeLineSession#MESSAGE_ID_KEY} and / or
-	 *                {@link PipeLineSession#CORRELATION_ID_KEY}, these will be copied to their respective fields.
+	 * @param context    Context for the message. If containing the keys {@link PipeLineSession#MESSAGE_ID_KEY} and / or
+	 *                   {@link PipeLineSession#CORRELATION_ID_KEY}, these will be copied to their respective fields.
 	 */
 	public RawMessageWrapper(M rawMessage, @Nonnull Map<String, Object> context) {
 		this(rawMessage);

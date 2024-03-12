@@ -26,11 +26,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 
 @Path("/")
@@ -53,12 +51,12 @@ public final class BrowseJdbcTable extends FrankApiBase {
 		Integer minRow = RequestUtils.getIntegerValue(json, "minRow");
 		Integer maxRow = RequestUtils.getIntegerValue(json, "maxRow");
 
-		if(tableName == null) {
+		if (tableName == null) {
 			throw new ApiException("tableName not defined.", 400);
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.FIND);
-		if(StringUtils.isNotEmpty(datasource)) {
+		if (StringUtils.isNotEmpty(datasource)) {
 			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
 		builder.addHeader("table", tableName);

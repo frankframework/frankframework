@@ -33,7 +33,7 @@ import org.frankframework.stream.document.INodeBuilder;
 
 /**
  * BSON writer to write to FF DocumentBuilder, to generate JSON or XML.
- *
+ * <p>
  * Based on org.bson.json.JsonWriter, called in Document.toJson();
  *
  * @author Gerrit van Brakel
@@ -55,17 +55,19 @@ public class JsonDocumentWriter extends AbstractBsonWriter {
 	 * Creates a new instance which uses {@code writer} to write JSON to and uses
 	 * the given settings.
 	 *
-	 * @param nodeBuilder   the handler to write JSON to.
-	 * @param settings the settings to apply to this writer.
+	 * @param nodeBuilder the handler to write JSON to.
+	 * @param settings    the settings to apply to this writer.
 	 */
 	public JsonDocumentWriter(final INodeBuilder nodeBuilder, final JsonWriterSettings settings) {
 		super(settings);
 		this.settings = settings;
 		setContext(new Context(null, BsonContextType.TOP_LEVEL));
-		strictJsonWriter = new StrictJsonDocumentWriter(nodeBuilder,
+		strictJsonWriter = new StrictJsonDocumentWriter(
+				nodeBuilder,
 				StrictCharacterStreamJsonWriterSettings.builder().indent(settings.isIndent())
 						.newLineCharacters(settings.getNewLineCharacters())
-						.indentCharacters(settings.getIndentCharacters()).maxLength(settings.getMaxLength()).build());
+						.indentCharacters(settings.getIndentCharacters()).maxLength(settings.getMaxLength()).build()
+		);
 	}
 
 
@@ -242,8 +244,8 @@ public class JsonDocumentWriter extends AbstractBsonWriter {
 	 * specified in {@link JsonWriterSettings#getMaxLength()}.
 	 *
 	 * @return true if the output has been truncated
-	 * @since 3.7
 	 * @see JsonWriterSettings#getMaxLength()
+	 * @since 3.7
 	 */
 	public boolean isTruncated() {
 		return strictJsonWriter.isTruncated();
@@ -279,4 +281,3 @@ public class JsonDocumentWriter extends AbstractBsonWriter {
 		}
 	}
 }
-

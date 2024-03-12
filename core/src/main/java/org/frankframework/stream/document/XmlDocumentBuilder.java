@@ -18,10 +18,9 @@ package org.frankframework.stream.document;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.frankframework.xml.SaxDocumentBuilder;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-
-import org.frankframework.xml.SaxDocumentBuilder;
 
 public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuilder {
 
@@ -43,7 +42,7 @@ public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuild
 
 	private XmlDocumentBuilder(SaxDocumentBuilder saxDocumentBuilder, String rootElement) throws SAXException {
 		super(saxDocumentBuilder, rootElement);
-		this.saxDocumentBuilder=saxDocumentBuilder;
+		this.saxDocumentBuilder = saxDocumentBuilder;
 	}
 
 	@Override

@@ -53,11 +53,11 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(servletManager == null) {
+		if (servletManager == null) {
 			throw new IllegalStateException("unable to initialize Spring Security, ServletManager not set");
 		}
 
-		if(!(beanFactory instanceof ConfigurableListableBeanFactory)) {
+		if (!(beanFactory instanceof ConfigurableListableBeanFactory)) {
 			throw new IllegalStateException("beanFactory not set or not instanceof ConfigurableListableBeanFactory");
 		}
 
@@ -69,7 +69,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 
 	@Override
 	public void init(WebSecurity webSecurity) {
-		if(servletContext != null) servletContext.log("Enabling Spring WebSecurity");
+		if (servletContext != null) servletContext.log("Enabling Spring WebSecurity");
 		servletManager.startAuthenticators();
 	}
 
@@ -79,7 +79,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 		Map<String, SecurityFilterChain> filters = factory.getBeansOfType(SecurityFilterChain.class);
 		webSecurity.debug(log.isTraceEnabled());
 
-		for(SecurityFilterChain chain : filters.values()) {
+		for (SecurityFilterChain chain : filters.values()) {
 			log.info("adding SecurityFilterChain [{}] to WebSecurity", chain);
 			webSecurity.addSecurityFilterChainBuilder(() -> chain);
 		}

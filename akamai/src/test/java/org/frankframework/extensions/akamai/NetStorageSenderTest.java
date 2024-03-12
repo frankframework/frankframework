@@ -21,13 +21,13 @@ import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 
-import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.frankframework.http.HttpResponseHandler;
 import org.frankframework.http.HttpSenderTestBase;
 import org.frankframework.parameters.Parameter;
@@ -55,7 +55,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		return spy(new NetStorageSender() {
 			@Override
 			public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
-				return new Message( getResponseBodyAsString(responseHandler, true) );
+				return new Message(getResponseBodyAsString(responseHandler, true));
 			}
 		});
 	}
@@ -230,7 +230,9 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setHashAlgorithm(HashAlgorithm.MD5);
 		Message input = new Message("my/special/path/");
 
-		sender.addParameter(ParameterBuilder.create().withName("md5").withValue("a1658c154b6af0fba9d93aa86e5be06f")); //Matches response file but uses a different input message
+		sender.addParameter(ParameterBuilder.create()
+				.withName("md5")
+				.withValue("a1658c154b6af0fba9d93aa86e5be06f")); //Matches response file but uses a different input message
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>----");
@@ -285,7 +287,9 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setHashAlgorithm(HashAlgorithm.SHA1);
 		Message input = new Message("my/special/path/");
 
-		sender.addParameter(ParameterBuilder.create().withName("sha1").withValue("51e8bbf813bdbcede109d13b863a58132e80b2e2")); //Matches response file but uses a different input message
+		sender.addParameter(ParameterBuilder.create()
+				.withName("sha1")
+				.withValue("51e8bbf813bdbcede109d13b863a58132e80b2e2")); //Matches response file but uses a different input message
 		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>----");

@@ -9,7 +9,9 @@ import org.frankframework.core.Resource;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXParseException;
 
 public class IncludeFilterTest {
@@ -35,7 +37,7 @@ public class IncludeFilterTest {
 		XmlWriter writer = new XmlWriter();
 		IncludeFilter filter = new IncludeFilter(writer, root);
 
-		SAXParseException e = assertThrows(SAXParseException.class, ()->XmlUtils.parseXml(root, filter));
+		SAXParseException e = assertThrows(SAXParseException.class, () -> XmlUtils.parseXml(root, filter));
 
 		assertThat(e.getSystemId(), containsString("ErrA.xml"));
 		assertEquals(expected, writer.toString().trim());

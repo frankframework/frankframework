@@ -19,10 +19,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -30,11 +26,14 @@ import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
  * Output bytes as specified by the input XML.
- *
+ * <p>
  * Actions are taken on every field
  * tag found in the input XML. Every field tag should have a type attribute
  * that specifies the type of conversion that needs to be done on the string
@@ -45,7 +44,7 @@ import org.frankframework.util.XmlUtils;
  *   <li><code>GetBytesFromString</code>, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)</li>
  *   <li><code>PackedDecimal</code>, a conversion from string to Packed-decimal</li>
  * </ul>
- *
+ * <p>
  * An additional charset attribute is needed for a GetBytesFromString
  * conversion. An input XML that would encode the string &quot; TEST 1234 &quot;
  * into EBCDIC format would look like:
@@ -55,7 +54,7 @@ import org.frankframework.util.XmlUtils;
  *   &lt;field type=&quot;GetBytesFromString&quot; value=&quot; TEST 1234 &quot; charset=&quot;Cp037&quot;/&gt;
  * &lt;/fields&gt;
  * </pre>
- *
+ * <p>
  * The Packed-decimal conversion has been implemented according to information
  * found in the following resources:
  *
@@ -63,7 +62,7 @@ import org.frankframework.util.XmlUtils;
  *   <li>A description as found at <a href="http://www.simotime.com/datapk01.htm">http://www.simotime.com/datapk01.htm</a></li>
  *   <li>AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at <a href="http://jt400.sourceforge.net/">http://jt400.sourceforge.net/</a></li>
  * </ul>
- *
+ * <p>
  * Some examples:
  *
  * <ul>
@@ -72,11 +71,11 @@ import org.frankframework.util.XmlUtils;
  *   <li>The string 12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5F</li>
  *   <li>The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F</li>
  * </ul>
- *
+ * <p>
  * The Packed-decimal is prefixed with zero's when the specified size is bigger
  * than the number of decimals. An exception is thrown when the specified size
  * is smaller than the number of decimals.
- *
+ * <p>
  * An input XML that would generate a number of Packed-decimals could look like:
  *
  * <pre>
@@ -109,8 +108,8 @@ import org.frankframework.util.XmlUtils;
  * &lt;/fields&gt;
  * </pre>
  *
- * @author  Jaco de Groot (***@dynasol.nl)
- * @since   4.9
+ * @author Jaco de Groot (***@dynasol.nl)
+ * @since 4.9
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class BytesOutputPipe extends FixedForwardPipe {
@@ -146,13 +145,13 @@ public class BytesOutputPipe extends FixedForwardPipe {
 							try {
 								appendToResult(value.getBytes(charset));
 							} catch (UnsupportedEncodingException e) {
-								throw new SAXException("UnsupportedEncodingException for charset ["	+ charset + "] for value [" + value + "]", e);
+								throw new SAXException("UnsupportedEncodingException for charset [" + charset + "] for value [" + value + "]", e);
 							}
 						} else {
-							throw new SAXException("No value found for field with type ["+ type + "] and charset [" + charset + "]");
+							throw new SAXException("No value found for field with type [" + type + "] and charset [" + charset + "]");
 						}
 					} else {
-						throw new SAXException("No charset specified for field with type ["+ type + "]");
+						throw new SAXException("No charset specified for field with type [" + type + "]");
 					}
 				} else if ("PackedDecimal".equals(type)) {
 					String value = attributes.getValue("value");
@@ -210,7 +209,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 					int valuePos = value.length() - 1;
 					int bytesPos = bytes.length - 1;
 					firstNibble = (value.charAt(valuePos) & 0x000F) << 4;
-					bytes[bytesPos] = (byte)(firstNibble + secondNibble);
+					bytes[bytesPos] = (byte) (firstNibble + secondNibble);
 					valuePos--;
 					bytesPos--;
 					while (valuePos > -1 && bytesPos > -1) {
@@ -221,7 +220,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 							valuePos--;
 							firstNibble = (value.charAt(valuePos) & 0x000F) << 4;
 						}
-						bytes[bytesPos] = (byte)(firstNibble + secondNibble);
+						bytes[bytesPos] = (byte) (firstNibble + secondNibble);
 						valuePos--;
 						bytesPos--;
 					}
@@ -249,4 +248,3 @@ public class BytesOutputPipe extends FixedForwardPipe {
 
 
 }
-

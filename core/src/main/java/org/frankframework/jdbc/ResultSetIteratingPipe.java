@@ -20,28 +20,24 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.frankframework.dbms.JdbcException;
-
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.util.AppConstants;
-
 import org.frankframework.util.StreamUtil;
 
 /**
  * Pipe that iterates over rows in in ResultSet.
- *
+ * <p>
  * Each row is send passed to the sender in the same format a row is usually returned from a query.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 
@@ -51,7 +47,7 @@ public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		try(Connection connection=querySender.getConnection()){
+		try (Connection connection = querySender.getConnection()) {
 			DatabaseMetaData md = connection.getMetaData();
 			if (!suppressResultSetHoldabilityWarning && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
 				// For (some?) combinations of WebSphere and (XA) Databases this seems to be the default and result in the following exception:
@@ -64,10 +60,10 @@ public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 				ApplicationWarnings.add(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT). This may cause 'DSRA9110E: ResultSet is closed' error on WebSphere if the subadapter has a different transactionality than the main adapter.");
 			}
 		} catch (JdbcException | SQLException e) {
-			log.warn("Exception determining databaseinfo",e);
+			log.warn("Exception determining databaseinfo", e);
 		}
 
-		if(StringUtils.isNotBlank(querySender.getBlobCharset())) {
+		if (StringUtils.isNotBlank(querySender.getBlobCharset())) {
 			blobCharset = querySender.getBlobCharset();
 		}
 	}

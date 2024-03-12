@@ -9,6 +9,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.JsonPipe.Direction;
 import org.frankframework.testutil.MatchUtils;
+
 import org.junit.jupiter.api.Test;
 
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
@@ -23,7 +24,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()-> doPipe(pipe, null, session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, null, session));
 		assertThat(e.getMessage(), containsString("got null input"));
 	}
 
@@ -32,7 +33,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()-> doPipe(pipe, null, session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, null, session));
 		assertThat(e.getMessage(), containsString("got null input"));
 	}
 
@@ -104,7 +105,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		pipe.start();
 
 		String input = "<root><value>a</value><empty1></empty1><empty2/><null nil=\"true\"/></root>";
-		String expected ="{\"value\":\"a\",\"empty1\":\"\",\"empty2\":\"\",\"null\":null}";
+		String expected = "{\"value\":\"a\",\"empty1\":\"\",\"empty2\":\"\",\"null\":null}";
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 
@@ -119,7 +120,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		pipe.start();
 
 		String input = "<root><values><value>a</value><value>a</value><value>a</value></values></root>";
-		String expected ="{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}";
+		String expected = "{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}";
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 
@@ -165,7 +166,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		pipe.configure();
 		pipe.start();
 
-		String input ="{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}";
+		String input = "{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}";
 		String expected = "<values><value>a</value><value>a</value><value>a</value></values>";
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -180,7 +181,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		pipe.configure();
 		pipe.start();
 
-		String input ="{\"values\":{\"value\":[\"a\"]}}";
+		String input = "{\"values\":{\"value\":[\"a\"]}}";
 		String expected = "<values><value>a</value></values>";
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -194,7 +195,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		pipe.configure();
 		pipe.start();
 
-		String input ="{\"value\":[\"a\",\"a\",\"a\"]}";
+		String input = "{\"value\":[\"a\",\"a\",\"a\"]}";
 		String expected = "<root><value>a</value><value>a</value><value>a</value></root>";
 
 		PipeRunResult prr = doPipe(pipe, input, session);

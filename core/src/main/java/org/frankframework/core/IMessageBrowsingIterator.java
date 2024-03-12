@@ -18,15 +18,16 @@ package org.frankframework.core;
 /**
  * Interface for helper class for MessageBrowsers.
  *
- * @author  Gerrit van Brakel
- * @since   4.3
+ * @author Gerrit van Brakel
+ * @since 4.3
  */
 public interface IMessageBrowsingIterator extends AutoCloseable {
 
 	boolean hasNext() throws ListenerException;
-	IMessageBrowsingIteratorItem  next() throws ListenerException;
+
+	IMessageBrowsingIteratorItem next() throws ListenerException;
 
 	@Override
-	void  close() throws ListenerException;
+	void close() throws ListenerException;
 
 }

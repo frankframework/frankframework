@@ -39,6 +39,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 			handleException(e);
 		}
 	}
+
 	@Override
 	public void endDocument() throws SAXException {
 		try {

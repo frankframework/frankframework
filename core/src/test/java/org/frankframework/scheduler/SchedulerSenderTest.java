@@ -27,8 +27,10 @@ import java.io.IOException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.quartz.SchedulerException;
 
 public class SchedulerSenderTest extends SchedulerTestBase {

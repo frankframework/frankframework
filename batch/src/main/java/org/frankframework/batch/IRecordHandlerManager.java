@@ -24,7 +24,7 @@ import org.frankframework.doc.FrankDocGroup;
 
 /**
  * Interface for handling a transformed record.
- *
+ * <p>
  * A RecordHandlerManager decides, based on some implementation dependent algorithm, which record handler
  * is to be used to process a record.
  * A record manager keeps a table of flow-elements, that each define a recordhandler, resulthandler and,
@@ -52,5 +52,6 @@ public interface IRecordHandlerManager extends INamedObject {
 
 	/** indicates if this manager is the initial manager */
 	void setInitial(boolean initialFactory);
+
 	boolean isInitial();
 }

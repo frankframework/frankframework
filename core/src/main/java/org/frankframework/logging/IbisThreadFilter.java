@@ -64,6 +64,7 @@ public class IbisThreadFilter extends AbstractFilter {
 	/**
 	 * Sets the pattern to match. If no pattern is given or pattern is empty,
 	 * then it will match nothing.
+	 *
 	 * @param regex Regular expression to match.
 	 */
 	public void setRegex(String regex) {

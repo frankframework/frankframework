@@ -27,11 +27,11 @@ import org.frankframework.util.AppConstants;
 
 /**
  * General Cache provider.
- *
+ * <p>
  * N.B. the default values shown can be overridden using properties in appConstants. The property names are found by prefixing the attribute name with <code>cache.default.</code>.
  *
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
 public class EhCache<V> extends CacheAdapterBase<V> {
 
@@ -46,15 +46,15 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	private static final String KEY_DISK_PERSISTENT = KEY_PREFIX + "diskPersistent";
 	private static final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS = KEY_PREFIX + "diskExpiryThreadIntervalSeconds";
 
-	private int maxElementsInMemory=100;
-	private String memoryStoreEvictionPolicy="LRU";
-	private boolean eternal=false;
-	private int timeToLiveSeconds=36000;
-	private int timeToIdleSeconds=36000;
-	private boolean overflowToDisk=false;
-	private int maxElementsOnDisk=10000;
-	private boolean diskPersistent=false;
-	private int diskExpiryThreadIntervalSeconds=600;
+	private int maxElementsInMemory = 100;
+	private String memoryStoreEvictionPolicy = "LRU";
+	private boolean eternal = false;
+	private int timeToLiveSeconds = 36000;
+	private int timeToIdleSeconds = 36000;
+	private boolean overflowToDisk = false;
+	private int maxElementsOnDisk = 10000;
+	private boolean diskPersistent = false;
+	private int diskExpiryThreadIntervalSeconds = 600;
 
 	private Ehcache cache = null;
 	private IbisCacheManager cacheManager = null;
@@ -62,15 +62,15 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	public EhCache() {
 		super();
 		AppConstants ac = AppConstants.getInstance();
-		maxElementsInMemory=ac.getInt(KEY_MAX_ELEMENTS_IN_MEMORY, maxElementsInMemory);
-		memoryStoreEvictionPolicy=ac.getProperty(KEY_MEMORYSTORE_EVICTION_POLICY, memoryStoreEvictionPolicy);
-		eternal=ac.getBoolean(KEY_ETERNAL, eternal);
-		timeToLiveSeconds=ac.getInt(KEY_TIME_TO_LIVE_SECONDS, timeToLiveSeconds);
-		timeToIdleSeconds=ac.getInt(KEY_TIME_TO_IDLE_SECONDS, timeToIdleSeconds);
-		overflowToDisk=ac.getBoolean(KEY_OVERFLOW_TO_DISK, overflowToDisk);
-		maxElementsOnDisk=ac.getInt(KEY_MAX_ELEMENTS_ON_DISK, maxElementsOnDisk);
-		diskPersistent=ac.getBoolean(KEY_DISK_PERSISTENT, diskPersistent);
-		diskExpiryThreadIntervalSeconds=ac.getInt(KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS, diskExpiryThreadIntervalSeconds);
+		maxElementsInMemory = ac.getInt(KEY_MAX_ELEMENTS_IN_MEMORY, maxElementsInMemory);
+		memoryStoreEvictionPolicy = ac.getProperty(KEY_MEMORYSTORE_EVICTION_POLICY, memoryStoreEvictionPolicy);
+		eternal = ac.getBoolean(KEY_ETERNAL, eternal);
+		timeToLiveSeconds = ac.getInt(KEY_TIME_TO_LIVE_SECONDS, timeToLiveSeconds);
+		timeToIdleSeconds = ac.getInt(KEY_TIME_TO_IDLE_SECONDS, timeToIdleSeconds);
+		overflowToDisk = ac.getBoolean(KEY_OVERFLOW_TO_DISK, overflowToDisk);
+		maxElementsOnDisk = ac.getInt(KEY_MAX_ELEMENTS_ON_DISK, maxElementsOnDisk);
+		diskPersistent = ac.getBoolean(KEY_DISK_PERSISTENT, diskPersistent);
+		diskExpiryThreadIntervalSeconds = ac.getInt(KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS, diskExpiryThreadIntervalSeconds);
 	}
 
 	@Override
@@ -99,39 +99,39 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 				null,
 				null,
 				getMaxElementsOnDisk()
-				);
-		cacheManager=IbisCacheManager.getInstance();
+		);
+		cacheManager = IbisCacheManager.getInstance();
 		cache = cacheManager.addCache(configCache);
 	}
 
 	@Override
 	public void close() {
 		if (isDiskPersistent()) {
-			log.debug("cache ["+getName()+"] flushing to disk");
+			log.debug("cache [" + getName() + "] flushing to disk");
 			cache.flush();
 		} else {
-			log.debug("cache ["+getName()+"] clearing data");
+			log.debug("cache [" + getName() + "] clearing data");
 			cache.removeAll();
 		}
-		if (cacheManager!=null) {
+		if (cacheManager != null) {
 			cacheManager.destroyCache(cache.getName());
-			cacheManager=null;
+			cacheManager = null;
 		}
-		cache=null;
+		cache = null;
 	}
 
 	@Override
 	protected V getElement(String key) {
 		Element element = cache.get(key);
-		if (element==null) {
+		if (element == null) {
 			return null;
 		}
-		return (V)element.getValue();
+		return (V) element.getValue();
 	}
 
 	@Override
 	protected void putElement(String key, V value) {
-		Element element=new Element(key,value);
+		Element element = new Element(key, value);
 		cache.put(element);
 	}
 
@@ -143,7 +143,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	@Override
 	protected V toValue(Message value) {
 		try {
-			return (V)value.asString();
+			return (V) value.asString();
 		} catch (IOException e) {
 			log.warn("Could not perform toValue() by asString()", e);
 			return null;
@@ -152,99 +152,117 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 
 	/**
 	 * The maximum number of elements in memory, before they are evicted
+	 *
 	 * @ff.default 100
 	 */
 	public void setMaxElementsInMemory(int maxElementsInMemory) {
 		this.maxElementsInMemory = maxElementsInMemory;
 	}
+
 	public int getMaxElementsInMemory() {
 		return maxElementsInMemory;
 	}
 
 	/**
 	 * Either <code>LRU</code>=Least Recent Use,<code>LFU</code>=Least Frequent Use or <code>FIFO</code>=First In - First Out
+	 *
 	 * @ff.default LRU
 	 */
 	public void setMemoryStoreEvictionPolicy(String memoryStoreEvictionPolicy) {
 		this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
 	}
+
 	public String getMemoryStoreEvictionPolicy() {
 		return memoryStoreEvictionPolicy;
 	}
 
 	/**
 	 * If <code>true</code>, the elements in the cache are eternal, i.e. never expire
+	 *
 	 * @ff.default false
 	 */
 	public void setEternal(boolean eternal) {
 		this.eternal = eternal;
 	}
+
 	public boolean isEternal() {
 		return eternal;
 	}
 
 	/**
 	 * The amount of time <i>in seconds</i> to live for an element from its creation date
+	 *
 	 * @ff.default 36000
 	 */
 	public void setTimeToLiveSeconds(int timeToLiveSeconds) {
 		this.timeToLiveSeconds = timeToLiveSeconds;
 	}
+
 	public int getTimeToLiveSeconds() {
 		return timeToLiveSeconds;
 	}
 
 	/**
 	 * The amount of time <i>in seconds</i> to live for an element from its last accessed or modified date
+	 *
 	 * @ff.default 36000
 	 */
 	public void setTimeToIdleSeconds(int timeToIdleSeconds) {
 		this.timeToIdleSeconds = timeToIdleSeconds;
 	}
+
 	public int getTimeToIdleSeconds() {
 		return timeToIdleSeconds;
 	}
 
 	/**
 	 * If <code>true</code>, the elements that are evicted from memory are spooled to disk
+	 *
 	 * @ff.default false
 	 */
 	public void setOverflowToDisk(boolean overflowToDisk) {
 		this.overflowToDisk = overflowToDisk;
 	}
+
 	public boolean isOverflowToDisk() {
 		return overflowToDisk;
 	}
 
 	/**
 	 * The maximum number of elements on disk, before they are removed
+	 *
 	 * @ff.default 10000
 	 */
 	public void setMaxElementsOnDisk(int maxElementsOnDisk) {
 		this.maxElementsOnDisk = maxElementsOnDisk;
 	}
+
 	public int getMaxElementsOnDisk() {
 		return maxElementsOnDisk;
 	}
 
 	/**
 	 * If <code>true</code>, the the cache is reloaded after the JVM restarts
+	 *
 	 * @ff.default false
 	 */
 	public void setDiskPersistent(boolean diskPersistent) {
 		this.diskPersistent = diskPersistent;
 	}
+
 	public boolean isDiskPersistent() {
 		return diskPersistent;
 	}
 
 	/**
 	 * How often to run the disk store expiry thread
+	 *
 	 * @ff.default 600
 	 */
 	public void setDiskExpiryThreadIntervalSeconds(int diskExpiryThreadIntervalSeconds) {
 		this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;
 	}
+
 	public int getDiskExpiryThreadIntervalSeconds() {
 		return diskExpiryThreadIntervalSeconds;
 	}

@@ -21,5 +21,6 @@ import org.springframework.context.ApplicationContextAware;
 public interface IConfigurationAware extends IScopeProvider, ApplicationContextAware {
 
 	String getName();
+
 	ApplicationContext getApplicationContext();
 }

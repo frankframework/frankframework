@@ -26,7 +26,6 @@ import org.frankframework.stream.Message;
  * Publisher to wrap the monitoring events and publish them to the Spring Context
  *
  * @author Niels Meijer
- *
  */
 public class EventPublisher implements ApplicationEventPublisherAware {
 	private ApplicationEventPublisher applicationEventPublisher;

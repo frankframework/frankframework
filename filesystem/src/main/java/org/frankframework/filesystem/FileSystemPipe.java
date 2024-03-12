@@ -32,7 +32,6 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
-
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -43,15 +42,13 @@ import org.frankframework.util.SpringUtils;
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
  *
- * @see FileSystemActor
- *
+ * @author Gerrit van Brakel
  * @ff.parameter action overrides attribute <code>action</code>.
  * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
  * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
  * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
  * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
- *
- * @author Gerrit van Brakel
+ * @see FileSystemActor
  */
 @ElementType(ElementTypes.ENDPOINT)
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination {
@@ -73,11 +70,11 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	public void start() throws PipeStartException {
 		super.start();
 		try {
-			FS fileSystem=getFileSystem();
+			FS fileSystem = getFileSystem();
 			fileSystem.open();
 			actor.open();
 		} catch (FileSystemException e) {
-			throw new PipeStartException("Cannot open fileSystem",e);
+			throw new PipeStartException("Cannot open fileSystem", e);
 		}
 	}
 
@@ -86,7 +83,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {
-			log.warn("Cannot close fileSystem",e);
+			log.warn("Cannot close fileSystem", e);
 		} finally {
 			super.stop();
 		}
@@ -94,15 +91,15 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 
 	@Override
 	@Nullable
-	public PipeRunResult doPipe (@Nonnull Message message, @Nonnull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@Nonnull Message message, @Nonnull PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
-		ParameterValueList pvl=null;
+		ParameterValueList pvl = null;
 		try {
 			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new PipeRunException(this,"Pipe caught exception evaluating parameters", e);
+			throw new PipeRunException(this, "Pipe caught exception evaluating parameters", e);
 		}
 
 		Message result;
@@ -110,7 +107,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException e) {
 			Map<String, PipeForward> forwards = getForwards();
-			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
+			if (forwards != null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
 				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
@@ -147,6 +144,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	public void setAction(FileSystemActor.FileSystemAction action) {
 		actor.setAction(action);
 	}
+
 	public FileSystemActor.FileSystemAction getAction() {
 		return actor.getAction();
 	}

@@ -20,21 +20,17 @@ import net.wedjaa.ansible.vault.crypto.decoders.implementation.CypherAES;
 import net.wedjaa.ansible.vault.crypto.decoders.implementation.CypherAES256;
 import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
 
-public class CypherFactory
-{
-    public static CypherInterface getCypher(String cypherName)
-    {
-        if (cypherName.equals(CypherAES.CYPHER_ID))
-        {
-            return new CypherAES();
-        }
+public class CypherFactory {
+	public static CypherInterface getCypher(String cypherName) {
+		if (cypherName.equals(CypherAES.CYPHER_ID)) {
+			return new CypherAES();
+		}
 
-        if (cypherName.equals(CypherAES256.CYPHER_ID))
-        {
-            return new CypherAES256();
-        }
+		if (cypherName.equals(CypherAES256.CYPHER_ID)) {
+			return new CypherAES256();
+		}
 
-        return null;
-    }
+		return null;
+	}
 
 }

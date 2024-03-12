@@ -24,11 +24,11 @@ import org.frankframework.core.SenderException;
 
 /**
  * Pipe that batch-transforms the lines in a CLOB.
- *
+ * <p>
  * N.B. the readerFactory is not used by this class.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 @Deprecated
 @ConfigurationWarning("BatchClobTransformerPipe: Not tested and maintained, please look for alternatives if you use BatchClobTransformerPipe inform WeAreFrank! that there are no suitable alternatives for your use-case")

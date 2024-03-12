@@ -17,8 +17,10 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
@@ -58,7 +60,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		statusFile = txManagerReal.getStatusFile();
 		tmUidFile = txManagerReal.getUidFile();
 		log.debug("statusFile [{}], tmUidFile [{}]", statusFile, tmUidFile);
-		tableName = "tmp_"+env.getName();
+		tableName = "tmp_" + env.getName();
 		return txManagerReal;
 	}
 
@@ -70,14 +72,14 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 
 	protected String getTMUID() {
 		switch (env.getName()) {
-		case "DATASOURCE":
-			return null;
-		case "BTM":
-			return TransactionManagerServices.getConfiguration().getServerId();
-		case "NARAYANA":
-			return arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
-		default:
-			throw new NotImplementedException("Unknown transaction manager type ["+env.getName()+"]");
+			case "DATASOURCE":
+				return null;
+			case "BTM":
+				return TransactionManagerServices.getConfiguration().getServerId();
+			case "NARAYANA":
+				return arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
+			default:
+				throw new NotImplementedException("Unknown transaction manager type [" + env.getName() + "]");
 		}
 	}
 
@@ -143,12 +145,12 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		fs1.configure();
 		fs1.open();
 		try {
-			fs1.sendMessageOrThrow(new Message("DROP TABLE "+tableName),null);
+			fs1.sendMessageOrThrow(new Message("DROP TABLE " + tableName), null);
 		} catch (Exception e) {
 			log.warn(e);
 		}
 
-		fs1.sendMessageOrThrow(new Message("CREATE TABLE "+tableName+"(id char(1))"),null);
+		fs1.sendMessageOrThrow(new Message("CREATE TABLE " + tableName + "(id char(1))"), null);
 		fs1.close();
 	}
 
@@ -181,8 +183,8 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 			TransactionStatus txStatus = txManager.getTransaction(txDef);
 			try {
 
-				fs1.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
-				fs2.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
+				fs1.sendMessageOrThrow(new Message("INSERT INTO " + tableName + " (id) VALUES ('x')"), null);
+				fs2.sendMessageOrThrow(new Message("INSERT INTO " + tableName + " (id) VALUES ('x')"), null);
 			} finally {
 				txManager.commit(txStatus);
 			}

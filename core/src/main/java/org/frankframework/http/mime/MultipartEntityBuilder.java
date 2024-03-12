@@ -38,7 +38,7 @@ import org.frankframework.stream.Message;
 
 /**
  * Builder for (mtom-)multipart {@link HttpEntity}s.
- *
+ * <p>
  * See: https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
  */
 public class MultipartEntityBuilder {
@@ -102,21 +102,20 @@ public class MultipartEntityBuilder {
 			this.bodyParts = new ArrayList<>();
 		}
 
-		if(mtom) {
+		if (mtom) {
 			Header header = bodyPart.getHeader();
 			String contentID;
 			String fileName = bodyPart.getBody().getFilename();
 			header.removeFields("Content-Disposition");
-			if(fileName == null) {
-				contentID = "<"+bodyPart.getName()+">";
-			}
-			else {
-				bodyPart.addField("Content-Disposition", "attachment; name=\""+bodyPart.getName()+"\"; filename=\""+fileName+"\"");
-				contentID = "<"+fileName+">";
+			if (fileName == null) {
+				contentID = "<" + bodyPart.getName() + ">";
+			} else {
+				bodyPart.addField("Content-Disposition", "attachment; name=\"" + bodyPart.getName() + "\"; filename=\"" + fileName + "\"");
+				contentID = "<" + fileName + ">";
 			}
 			bodyPart.addField("Content-ID", contentID);
 
-			if(firstPart == null)
+			if (firstPart == null)
 				firstPart = contentID;
 		}
 
@@ -138,6 +137,7 @@ public class MultipartEntityBuilder {
 	public MultipartEntityBuilder addTextBody(String name, final String text) {
 		return addTextBody(name, text, ContentType.DEFAULT_TEXT); //ISO-8859-1
 	}
+
 	public MultipartEntityBuilder addTextBody(String name, String text, ContentType contentType) {
 		return addPart(name, new StringBody(text, contentType));
 	}
@@ -145,6 +145,7 @@ public class MultipartEntityBuilder {
 	public MultipartEntityBuilder addBinaryBody(String name, InputStream stream) {
 		return addBinaryBody(name, stream, ContentType.DEFAULT_BINARY, null);
 	}
+
 	public MultipartEntityBuilder addBinaryBody(String name, InputStream stream, ContentType contentType, String filename) {
 		return addPart(name, new InputStreamBody(stream, contentType, filename));
 	}
@@ -153,7 +154,7 @@ public class MultipartEntityBuilder {
 	private String generateBoundary() {
 		//See: https://tools.ietf.org/html/rfc2046#section-5.1.1
 		StringBuilder buffer = new StringBuilder();
-		if(mtom)
+		if (mtom)
 			buffer.append("----=_Part_");
 
 		int count = RANDOM.nextInt(11) + 30; // a random size from 30 to 40
@@ -183,7 +184,7 @@ public class MultipartEntityBuilder {
 		}
 
 		String subtypeCopy = DEFAULT_SUBTYPE;
-		if(mtom) {
+		if (mtom) {
 			paramsList.add(new BasicNameValuePair("type", "application/xop+xml"));
 			paramsList.add(new BasicNameValuePair("start", firstPart));
 			paramsList.add(new BasicNameValuePair("start-info", "text/xml"));

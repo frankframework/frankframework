@@ -17,7 +17,7 @@ public class TestXml2Json extends AlignTestBase {
 
 	@Override
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
-		boolean expectValidRoundTrip=true;
+		boolean expectValidRoundTrip = true;
 
 		testXml2Json(schemaFile, inputFile, rootElement, false, false, expectValidRoundTrip, expectedFailureReason);
 		testXml2Json(schemaFile, inputFile, rootElement, true, false, expectValidRoundTrip, expectedFailureReason);
@@ -26,50 +26,50 @@ public class TestXml2Json extends AlignTestBase {
 	}
 
 	public void testXml2Json(String schemaFile, String xml, String rootElement, boolean compactArrays, boolean skipJsonRootElements, boolean expectValidRoundTrip, String expectedFailureReason) throws Exception {
-		URL schemaUrl=getSchemaURL(schemaFile);
-		String xmlString=getTestFile(xml+".xml");
+		URL schemaUrl = getSchemaURL(schemaFile);
+		String xmlString = getTestFile(xml + ".xml");
 
-		boolean expectValid=expectedFailureReason==null;
+		boolean expectValid = expectedFailureReason == null;
 
 		// check the validity of the input XML
 		if (expectValid) {
 			assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "XML invalid");
 		}
 
-		LOG.debug("input xml:"+xmlString);
+		LOG.debug("input xml:" + xmlString);
 		JsonStructure json;
 		String jsonOut;
 		try {
-			jsonOut= Xml2Json.translate(xmlString, schemaUrl, compactArrays, skipJsonRootElements).toString(true);
-			LOG.debug("result compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"] json:\n" +jsonOut);
+			jsonOut = Xml2Json.translate(xmlString, schemaUrl, compactArrays, skipJsonRootElements).toString(true);
+			LOG.debug("result compactArrays [" + compactArrays + "] skipJsonRootElements [" + skipJsonRootElements + "] json:\n" + jsonOut);
 			if (!expectValid) {
-				fail("expected to fail with reason ["+ expectedFailureReason +"]");
+				fail("expected to fail with reason [" + expectedFailureReason + "]");
 			}
 			json = Utils.string2Json(jsonOut);
 		} catch (Exception e) {
 			if (expectValid) {
 				e.printStackTrace();
-				LOG.error("exception compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"]");
+				LOG.error("exception compactArrays [" + compactArrays + "] skipJsonRootElements [" + skipJsonRootElements + "]");
 				fail(e.getMessage());
 			}
 			return;
 		}
 		if (expectValidRoundTrip) {
-			if(LOG.isDebugEnabled()) {
-				String backToXml1= Json2Xml.translate(json, schemaUrl, compactArrays, skipJsonRootElements?rootElement:null, null);
-				LOG.debug("back to xml compactArrays ["+compactArrays+"] xml:\n" +backToXml1);
-				String backToXml2=Json2Xml.translate(json, schemaUrl, !compactArrays, skipJsonRootElements?rootElement:null, null);
-				LOG.debug("back to xml compactArrays ["+!compactArrays+"] xml:\n" +backToXml2);
+			if (LOG.isDebugEnabled()) {
+				String backToXml1 = Json2Xml.translate(json, schemaUrl, compactArrays, skipJsonRootElements ? rootElement : null, null);
+				LOG.debug("back to xml compactArrays [" + compactArrays + "] xml:\n" + backToXml1);
+				String backToXml2 = Json2Xml.translate(json, schemaUrl, !compactArrays, skipJsonRootElements ? rootElement : null, null);
+				LOG.debug("back to xml compactArrays [" + !compactArrays + "] xml:\n" + backToXml2);
 			}
 
-			String jsonCompactExpected=getTestFile(xml+"-compact.json");
-			String jsonFullExpected=getTestFile(xml+"-full.json");
+			String jsonCompactExpected = getTestFile(xml + "-compact.json");
+			String jsonFullExpected = getTestFile(xml + "-full.json");
 
-			if (jsonCompactExpected!=null && compactArrays && skipJsonRootElements) {
-				assertEquals(jsonCompactExpected,jsonOut);
+			if (jsonCompactExpected != null && compactArrays && skipJsonRootElements) {
+				assertEquals(jsonCompactExpected, jsonOut);
 			}
-			if (jsonFullExpected!=null && !compactArrays && !skipJsonRootElements) {
-				assertEquals(jsonFullExpected,jsonOut);
+			if (jsonFullExpected != null && !compactArrays && !skipJsonRootElements) {
+				assertEquals(jsonFullExpected, jsonOut);
 			}
 		}
 
@@ -131,7 +131,7 @@ public class TestXml2Json extends AlignTestBase {
 //		return string;
 //	}
 
-//	private String getTestXml(String testxml) throws IOException {
+	//	private String getTestXml(String testxml) throws IOException {
 //		BufferedReader buf = new BufferedReader(new InputStreamReader(Utils.class.getResourceAsStream(testxml)));
 //		StringBuilder string = new StringBuilder();
 //		String line = buf.readLine();

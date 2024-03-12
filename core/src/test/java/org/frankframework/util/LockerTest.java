@@ -25,7 +25,9 @@ import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
+
 import org.junit.jupiter.api.BeforeEach;
+
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
@@ -44,9 +46,9 @@ public class LockerTest {
 		locker.setFirstDelay(0);
 
 
-		try(Connection conn = env.getConnection()) {
+		try (Connection conn = env.getConnection()) {
 			if (env.getDbmsSupport().isTablePresent(conn, TABLENAME)) {
-				JdbcTestUtil.executeStatement(conn, "DELETE FROM "+TABLENAME);
+				JdbcTestUtil.executeStatement(conn, "DELETE FROM " + TABLENAME);
 			}
 		}
 	}
@@ -110,7 +112,7 @@ public class LockerTest {
 		locker.setObjectId("myLocker");
 		locker.configure();
 
-		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
+		TimeoutGuard testTimeout = new TimeoutGuard(10, "Testtimeout");
 		try {
 			Semaphore otherReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
@@ -142,7 +144,7 @@ public class LockerTest {
 		locker.setObjectId("myLocker");
 		locker.configure();
 
-		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
+		TimeoutGuard testTimeout = new TimeoutGuard(10, "Testtimeout");
 		try {
 			Semaphore otherReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
@@ -157,11 +159,11 @@ public class LockerTest {
 			otherReady.acquire();
 			Timer timer = new Timer("let other thread commit after one second");
 			timer.schedule(new TimerTask() {
-								@Override
-								public void run() {
-									otherContinue.release();
-								}
-							}, 1000L);
+				@Override
+				public void run() {
+					otherContinue.release();
+				}
+			}, 1000L);
 			String objectId = locker.acquire();
 			otherFinished.acquire();
 
@@ -177,7 +179,8 @@ public class LockerTest {
 
 	@TxManagerTest
 	public void testLockWaitTimeout(DatabaseTestEnvironment env) throws Exception {
-		assumeFalse(env.getDbmsSupport().getDbms() == Dbms.ORACLE, "works on Oracle, but causes '(SQLRecoverableException) SQLState [08003], errorCode [17008]: Gesloten verbinding' on subsequent tests");
+		assumeFalse(env.getDbmsSupport()
+				.getDbms() == Dbms.ORACLE, "works on Oracle, but causes '(SQLRecoverableException) SQLState [08003], errorCode [17008]: Gesloten verbinding' on subsequent tests");
 		locker.setObjectId("myLocker");
 		locker.setLockWaitTimeout(1);
 		locker.configure();
@@ -185,7 +188,7 @@ public class LockerTest {
 		boolean lockerUnderTestReturned = false;
 
 		log.debug("Creating Timeout Guard");
-		TimeoutGuard testTimeout = new TimeoutGuard(20,"Testtimeout");
+		TimeoutGuard testTimeout = new TimeoutGuard(20, "Testtimeout");
 		try {
 			Semaphore otherInsertReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
@@ -218,7 +221,7 @@ public class LockerTest {
 				// This test is not about the other thread to complete without problems,
 				// only about this thread to wait at most <timeout> seconds for the lock.
 				boolean interrupted = Thread.interrupted();
-				log.warn("Ignoring exception waiting for other thread to complete, interrupted ["+interrupted+"]", t);
+				log.warn("Ignoring exception waiting for other thread to complete, interrupted [" + interrupted + "]", t);
 			}
 
 			// N.B. commented out test for other thread:
@@ -252,7 +255,7 @@ public class LockerTest {
 		locker.setObjectId("myLocker");
 		locker.configure();
 
-		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
+		TimeoutGuard testTimeout = new TimeoutGuard(10, "Testtimeout");
 		try {
 			Semaphore waitBeforeInsert = new Semaphore();
 			Semaphore insertDone = new Semaphore();
@@ -267,40 +270,40 @@ public class LockerTest {
 
 			IbisTransaction mainItx = null;
 			PlatformTransactionManager txManager = env.getConfiguration().getBean("txManager", PlatformTransactionManager.class);
-			TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
+			TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 20);
 			mainItx = new IbisTransaction(txManager, txdef, "locker ");
 
 			try (Connection conn = env.getConnection()) {
 				waitBeforeInsert.release(); // now this thread has started its transaction, let the other thread do its insert
-				insertDone.acquire();		// and wait that to be finished
+				insertDone.acquire();        // and wait that to be finished
 
 				try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')")) {
 
 					try {
 						Timer timer = new Timer("let other thread commit after one second");
 						timer.schedule(new TimerTask() {
-											@Override
-											public void run() {
-												waitBeforeCommit.release();
-											}
-										}, 1000L);
+							@Override
+							public void run() {
+								waitBeforeCommit.release();
+							}
+						}, 1000L);
 						stmt.executeUpdate();
 						log.debug("lock inserted");
 						fail("should not be possible to do a second insert");
 					} catch (SQLException e) {
 						if (locker.getDbmsSupport().isConstraintViolation(e) || e.getMessage().toLowerCase().contains("timeout")) {
-							log.debug("Caught expected UniqueConstraintViolation or Timeout ("+e.getClass().getName()+"): "+e.getMessage());
+							log.debug("Caught expected UniqueConstraintViolation or Timeout (" + e.getClass().getName() + "): " + e.getMessage());
 						} else {
-							fail("Expected UniqueConstraintViolation, but was: ("+e.getClass().getName()+"): "+e.getMessage());
+							fail("Expected UniqueConstraintViolation, but was: (" + e.getClass().getName() + "): " + e.getMessage());
 						}
 					}
 				}
 
 				waitBeforeCommit.release();
 			} catch (Exception e) {
-				log.warn("exception for second insert: "+e.getMessage(), e);
+				log.warn("exception for second insert: " + e.getMessage(), e);
 			} finally {
-				if(mainItx != null) {
+				if (mainItx != null) {
 					mainItx.complete();
 				}
 			}
@@ -337,7 +340,7 @@ public class LockerTest {
 	}
 
 	public int getRowCount(DatabaseTestEnvironment env) throws Exception {
-		try(Connection connection = env.getConnection()) {
+		try (Connection connection = env.getConnection()) {
 			return JdbcTestUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
 		}
 	}
@@ -360,13 +363,13 @@ public class LockerTest {
 
 		@Override
 		public void action() throws SQLException, JdbcException {
-			JdbcTestUtil.executeStatement(conn, "INSERT INTO "+LockerTest.TABLENAME+" (OBJECTID) VALUES('myLocker')");
+			JdbcTestUtil.executeStatement(conn, "INSERT INTO " + LockerTest.TABLENAME + " (OBJECTID) VALUES('myLocker')");
 		}
 
 		@Override
 		public void finalizeAction() throws SQLException {
 			try {
-				if (conn!=null) {
+				if (conn != null) {
 					conn.close();
 				}
 			} finally {

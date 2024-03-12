@@ -29,14 +29,14 @@ public class ApiCacheManager {
 
 	/**
 	 * Get the etagCache, defaults to EhCache when no type has been specified.
+	 *
 	 * @return IRestEtagCache
 	 */
 	public static synchronized IApiCache getInstance() {
-		if( cache == null ) {
-			if(etagCacheType.equalsIgnoreCase("memcached")) {
+		if (cache == null) {
+			if (etagCacheType.equalsIgnoreCase("memcached")) {
 				cache = new ApiMemcached();
-			}
-			else {
+			} else {
 				cache = new ApiEhcache();
 			}
 		}
@@ -45,6 +45,7 @@ public class ApiCacheManager {
 
 	/**
 	 * Creates an IBIS independent cachePrefix so multiple IBIS can connect to the same cache
+	 *
 	 * @return cachePrefix 'instanceName_dtapStage_'
 	 */
 	public static String buildCacheKey(String uriPattern) {
@@ -54,9 +55,9 @@ public class ApiCacheManager {
 	public static String getParentCacheKey(ApiListener listener, String uri, HttpMethod method) {
 		String pattern = listener.getCleanPattern();
 		// Not only remove the eTag for the selected resources but also the collection
-		if((method == HttpMethod.PUT || method == HttpMethod.PATCH || method == HttpMethod.DELETE) && pattern != null && pattern.endsWith("/*")) {
+		if ((method == HttpMethod.PUT || method == HttpMethod.PATCH || method == HttpMethod.DELETE) && pattern != null && pattern.endsWith("/*")) {
 			//Check the amount of asterisks, if there is only 1, this will return false
-			if(listener.getCleanPattern().indexOf("*") < listener.getCleanPattern().lastIndexOf("*")) {
+			if (listener.getCleanPattern().indexOf("*") < listener.getCleanPattern().lastIndexOf("*")) {
 				//Get collection uri
 				String parentUri = uri.substring(0, uri.lastIndexOf("/"));
 				return buildCacheKey(parentUri);

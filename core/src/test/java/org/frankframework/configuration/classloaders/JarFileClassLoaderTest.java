@@ -26,6 +26,7 @@ import java.util.jar.JarFile;
 
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.TestAppender;
+
 import org.junit.jupiter.api.Test;
 
 public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
@@ -42,13 +43,13 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 	private JarFileClassLoader createClassLoader(ClassLoader parent, String jarFile) throws Exception {
 		URL file = this.getClass().getResource(jarFile);
-		assertNotNull(file, "jar url ["+jarFile+"] not found");
+		assertNotNull(file, "jar url [" + jarFile + "] not found");
 
 		assertNotNull(new JarFile(file.getFile()), "jar file not found"); // verify the jar file
 
 		JarFileClassLoader cl = new JarFileClassLoader(parent);
 		cl.setJar(file.getFile());
-		appConstants.put("configurations."+getConfigurationName()+".jar", file.getFile());
+		appConstants.put("configurations." + getConfigurationName() + ".jar", file.getFile());
 		return cl;
 	}
 
@@ -118,7 +119,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
 		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
-		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
+		assertEquals(3, loadedCustomClasses.size(), "too many classes: " + loadedCustomClasses.toString()); // base + 2 inner classes
 		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
 	}
 }

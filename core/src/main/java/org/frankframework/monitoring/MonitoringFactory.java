@@ -19,12 +19,11 @@ import org.frankframework.configuration.digester.AbstractSpringPoweredDigesterFa
 
 /**
  * Factory for the MonitorManagers, returns the context's manager
- *
+ * <p>
  * This bean is a singleton, not a prototype, which is why the GenericFactory
  * can not be used.
  *
  * @author Niels Meijer
- *
  */
 public class MonitoringFactory extends AbstractSpringPoweredDigesterFactory {
 

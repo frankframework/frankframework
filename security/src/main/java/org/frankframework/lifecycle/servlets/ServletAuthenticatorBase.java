@@ -24,6 +24,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -39,8 +40,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-
-import lombok.Getter;
 
 public abstract class ServletAuthenticatorBase implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
@@ -65,11 +64,11 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	}
 
 	protected final synchronized Properties getEnvironmentProperties() {
-		if(applicationConstants == null) {
+		if (applicationConstants == null) {
 			applicationConstants = new Properties();
 
 			PropertySources pss = ((ConfigurableEnvironment) applicationContext.getEnvironment()).getPropertySources();
-			for(PropertySource<?> propertySource : pss) {
+			for (PropertySource<?> propertySource : pss) {
 				if (propertySource instanceof MapPropertySource) {
 					applicationConstants.putAll(((MapPropertySource) propertySource).getSource());
 				}
@@ -87,11 +86,11 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	/**
 	 * For SpringSecurity we MUST register all (required) roles when Anonymous authentication is used.
 	 * The SecurityRoles may be used in the implementing class to configure Spring Security with.
-	 *
+	 * <p>
 	 * See {@link #configureHttpSecurity(HttpSecurity)} for the configuring process.
 	 */
 	private void addSecurityRoles(List<String> securityRoles) {
-		if(securityRoles.isEmpty()) {
+		if (securityRoles.isEmpty()) {
 			this.securityRoles.addAll(DEFAULT_IBIS_ROLES);
 		} else {
 			this.securityRoles.addAll(securityRoles);
@@ -101,17 +100,17 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	/**
 	 * We need to make a distinct difference between public and private endpoints as on public endpoints
 	 * you don't want Spring Security to trigger the pre-authentication filters/providers.
-	 *
+	 * <p>
 	 * See {@link #configureHttpSecurity(HttpSecurity)} for the configuring process.
 	 */
 	private void addEndpoints(ServletConfiguration config) {
-		for(String url : config.getUrlMapping()) {
-			if(publicEndpoints.contains(url) || privateEndpoints.contains(url)) {
+		for (String url : config.getUrlMapping()) {
+			if (publicEndpoints.contains(url) || privateEndpoints.contains(url)) {
 				throw new IllegalStateException("endpoint already configured");
 			}
 
 			boolean isExcludedUrl = url.charAt(0) == '!';
-			if(isExcludedUrl || config.getSecurityRoles().isEmpty()) {
+			if (isExcludedUrl || config.getSecurityRoles().isEmpty()) {
 				String publicUrl = isExcludedUrl ? url.substring(1) : url;
 				log.info("registering public endpoint with url [{}]", publicUrl);
 				publicEndpoints.add(publicUrl);
@@ -131,16 +130,16 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	@Override
 	public void build() {
-		if(applicationContext == null) {
+		if (applicationContext == null) {
 			throw new IllegalStateException("Authenticator is not wired through local BeanFactory");
 		}
-		if(privateEndpoints.isEmpty()) { //No servlets registered so no need to build/enable this Authenticator
+		if (privateEndpoints.isEmpty()) { //No servlets registered so no need to build/enable this Authenticator
 			log.info("no url matchers found, ignoring Authenticator [{}]", this::getClass);
 			return;
 		}
 
-		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext)applicationContext).getBeanFactory();
-		String name = "HttpSecurityChain-"+this.getClass().getSimpleName()+"-"+this.hashCode();
+		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
+		String name = "HttpSecurityChain-" + this.getClass().getSimpleName() + "-" + this.hashCode();
 
 		//Register the SecurityFilter in the (WebXml)BeanFactory so the WebSecurityConfiguration can configure them
 		beanFactory.registerSingleton(name, createSecurityFilterChain());
@@ -163,7 +162,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			http.logout().disable(); //Disable the logout endpoint on every filter
 //			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Disables cookies
 
-			if(!publicEndpoints.isEmpty()) { //Enable anonymous access on public endpoints
+			if (!publicEndpoints.isEmpty()) { //Enable anonymous access on public endpoints
 				http.authorizeHttpRequests().requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll();
 				http.anonymous();
 			} else {
@@ -182,6 +181,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	/**
 	 * RequestMatcher which determines when a client has to log in.
+	 *
 	 * @return when !(property {@value #ALLOW_OPTIONS_REQUESTS_KEY} == true, and request == OPTIONS).
 	 */
 	protected boolean authorizationRequestMatcher(HttpServletRequest request) {

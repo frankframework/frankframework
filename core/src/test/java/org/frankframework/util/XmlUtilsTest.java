@@ -31,12 +31,14 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.xml.StringBuilderContentHandler;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
@@ -68,7 +70,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	public void testRemoveUnusedNamespacesXslt2(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException {
-		testXslt(XmlUtils.makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration, indent),input,expected);
+		testXslt(XmlUtils.makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration, indent), input, expected);
 //		testTransformerPool(XmlUtils.getRemoveUnusedNamespacesXslt2TransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
 
@@ -132,7 +134,8 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		});
 
 		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [URLResource ";
-		assertTrue(thrown.getMessage().startsWith(errorMessage), "SaxParseException should start with [Cannot get resource ...] but is [" + thrown.getMessage() + "]");
+		assertTrue(thrown.getMessage()
+				.startsWith(errorMessage), "SaxParseException should start with [Cannot get resource ...] but is [" + thrown.getMessage() + "]");
 	}
 
 	@Test
@@ -316,7 +319,8 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	private static Stream<Arguments> xmlDateTimeData() {
-		return Stream.of(Arguments.of("2013-12-10", 1386633600000L),
+		return Stream.of(
+				Arguments.of("2013-12-10", 1386633600000L),
 				Arguments.of("2013-12-10T12:41:43", 1386679303000L),
 				Arguments.of("2023-12-09", 1702080000000L),
 				Arguments.of("2024-02-29T00:00:00", 1709164800000L),

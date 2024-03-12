@@ -22,15 +22,16 @@ import org.frankframework.stream.Message;
 /**
  * Interface to be implemented by cache-providers.
  *
- * @author  Gerrit van Brakel
- * @since   4.11
- *
+ * @author Gerrit van Brakel
  * @ff.defaultElement org.frankframework.cache.EhCache
+ * @since 4.11
  */
-public interface ICache<K,V> {
+public interface ICache<K, V> {
 
 	void configure(String ownerName) throws ConfigurationException;
+
 	void open();
+
 	void close();
 
 	/**
@@ -50,6 +51,7 @@ public interface ICache<K,V> {
 	 * Obtain a potentially cached value, set by put().
 	 */
 	V get(K key);
+
 	/**
 	 * store a value in the cache, that can be retrieved later using get().
 	 */

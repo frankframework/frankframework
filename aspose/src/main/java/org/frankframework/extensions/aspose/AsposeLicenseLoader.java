@@ -49,31 +49,32 @@ public class AsposeLicenseLoader {
 
 	// We only need to load the license once
 	public static synchronized void loadLicenses(URL asposeLicenseLocation) throws Exception {
-		if(self == null) {
+		if (self == null) {
 			self = new AsposeLicenseLoader(asposeLicenseLocation);
 		}
 	}
 
 	private interface LicenseWrapper {
 		void loadLicense(InputStream licenseInputStream) throws Exception;
+
 		boolean isLicenseLoaded();
 	}
 
 	public AsposeLicenseLoader(URL asposeLicenseLocation) throws Exception {
-		if(asposeLicenseLocation == null) {
+		if (asposeLicenseLocation == null) {
 			throw new IllegalStateException("license url must be set");
 		} else {
 			license = asposeLicenseLocation;
 		}
 
-		for(AsposeLibrary library: AsposeLibrary.values()) {
+		for (AsposeLibrary library : AsposeLibrary.values()) {
 			loadAsposeLicense(library);
 		}
 	}
 
 	private void loadAsposeLicense(AsposeLibrary library) throws Exception {
 		LicenseWrapper licenseWrapper = loadedLicenses.get(library);
-		if(licenseWrapper.isLicenseLoaded()) {
+		if (licenseWrapper.isLicenseLoaded()) {
 			log.debug("loading Aspose [{}] license", library::name);
 
 			try (InputStream inputStream = license.openStream()) {

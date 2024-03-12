@@ -8,8 +8,10 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -34,7 +36,7 @@ public class TestSecurityItems extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	@WithMockUser(authorities = {"ROLE_IbisTester"})
 	public void getSecurityItems() throws Exception {
 		mockFixedQuerySenderResult("select datasource from database", ResultSetBuilder.create().build());
 

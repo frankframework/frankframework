@@ -14,7 +14,7 @@ import org.frankframework.util.TransformerPool.OutputType;
 
 public abstract class FileSystemTestBase extends ConfiguredTestBase {
 
-	protected boolean doTimingTests=false;
+	protected boolean doTimingTests = false;
 
 	public static final String FILE1 = "file1.txt";
 	public static final String FILE2 = "file2.txt";
@@ -26,7 +26,8 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 
 	/**
 	 * Checks if a file with the specified name exists.
-	 * @param folder to search in for the file, set to null for root folder.
+	 *
+	 * @param folder   to search in for the file, set to null for root folder.
 	 * @param filename
 	 */
 	protected abstract boolean _fileExists(String folder, String filename) throws Exception;
@@ -67,7 +68,7 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 
 
 	public void deleteFile(String folder, String filename) throws Exception {
-		if (_fileExists(folder,filename)) {
+		if (_fileExists(folder, filename)) {
 			_deleteFile(folder, filename);
 		}
 	}
@@ -90,6 +91,7 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 	 * Pause current thread. Since creating an object takes a bit time
 	 * this method can be used to make sure object is created in the server.
 	 * Added for Amazon S3 sender.
+	 *
 	 * @throws FileSystemException
 	 */
 	public void waitForActionToFinish() throws FileSystemException {
@@ -105,13 +107,13 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 	}
 
 	protected void assertFileExistsWithContents(String folder, String filename, String contents) throws Exception {
-		assertTrue(_fileExists(folder, filename),"file ["+filename+"] does not exist in folder ["+folder+"]");
+		assertTrue(_fileExists(folder, filename), "file [" + filename + "] does not exist in folder [" + folder + "]");
 		String actualContents = readFile(folder, filename);
-		assertEquals(contents, actualContents==null?null:actualContents.trim(), filename);
+		assertEquals(contents, actualContents == null ? null : actualContents.trim(), filename);
 	}
 
 	protected void assertFileDoesNotExist(String folder, String filename) throws Exception {
-		assertFalse(_fileExists(folder, filename), filename+" should not exist");
+		assertFalse(_fileExists(folder, filename), filename + " should not exist");
 	}
 
 	protected void assertFileCountEquals(Object result, int expectedFileCount) throws Exception {

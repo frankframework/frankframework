@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.frankframework.testutil.TransactionManagerType;
+
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -58,16 +59,16 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 			this.arguments = arguments;
 
 			DatabaseTest annotation = AnnotationUtils.findAnnotation(testMethod, DatabaseTest.class)
-					.orElseThrow(()->new JUnitException("unable to find DatabaseTest annotation"));
+					.orElseThrow(() -> new JUnitException("unable to find DatabaseTest annotation"));
 			boolean cleanupBeforeUse = annotation.cleanupBeforeUse();
 			cleanupAfterUse = annotation.cleanupAfterUse();
 
-			if(cleanupBeforeUse) {
+			if (cleanupBeforeUse) {
 				log.info("cleanup TransactionManager before executing test");
 				TransactionManagerType.closeAllConfigurationContexts();
 			}
 
-			this.dte = new DatabaseTestEnvironment((TransactionManagerType) arguments[0], (String)arguments[1]);
+			this.dte = new DatabaseTestEnvironment((TransactionManagerType) arguments[0], (String) arguments[1]);
 		}
 
 		@Override
@@ -81,7 +82,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 
 		@Override
 		public void afterEach(ExtensionContext context) throws Exception {
-			if(cleanupAfterUse) {
+			if (cleanupAfterUse) {
 				log.info("cleanup TransactionManager after executing test");
 				TransactionManagerType.closeAllConfigurationContexts();
 			}
@@ -93,15 +94,15 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 				int index = field.getDeclaredAnnotation(DatabaseTest.Parameter.class).value();
 
 				Object valueToSet = arguments[index];
-				if(valueToSet != null) { //Skip null values
-					if(!field.getType().isAssignableFrom(valueToSet.getClass())) {
-						throw new ExtensionConfigurationException("Unable to set @Parameter field ["+field.getName()+"] to value ["+valueToSet+"] type mismatch.");
+				if (valueToSet != null) { //Skip null values
+					if (!field.getType().isAssignableFrom(valueToSet.getClass())) {
+						throw new ExtensionConfigurationException("Unable to set @Parameter field [" + field.getName() + "] to value [" + valueToSet + "] type mismatch.");
 					}
 
 					try {
 						makeAccessible(field).set(instance, valueToSet);
 					} catch (IllegalArgumentException | IllegalAccessException e) {
-						throw new ExtensionConfigurationException("Unable to set @Parameter field ["+field.getName()+"] to value ["+valueToSet+"].", e);
+						throw new ExtensionConfigurationException("Unable to set @Parameter field [" + field.getName() + "] to value [" + valueToSet + "].", e);
 					}
 				}
 			});

@@ -51,8 +51,9 @@ import org.frankframework.http.HttpSessionBase;
 
 /**
  * Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
- *
+ * <p>
  * Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml
+ *
  * @author alisihab
  */
 public class SendGridSender extends MailSenderBase implements HasKeystore, HasTruststore {
@@ -76,7 +77,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		httpSession.start();
 
 		CloseableHttpClient httpClient = httpSession.getHttpClient();
-		if(httpClient == null)
+		if (httpClient == null)
 			throw new SenderException("no HttpClient found, did it initialize properly?");
 
 		Client client = new Client(httpClient);
@@ -95,7 +96,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		Mail mail;
 
 		try {
-			mail = createEmail((GridMailSession)mailSession);
+			mail = createEmail((GridMailSession) mailSession);
 		} catch (Exception e) {
 			throw new SenderException("Exception occurred while composing email", e);
 		}
@@ -154,9 +155,10 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	/**
 	 * Sets header of mail object if header exists
-	 * @param mail {@link Mail} address to send to
+	 *
+	 * @param mail            {@link Mail} address to send to
 	 * @param personalization {@link Personalization} options of the mail
-	 * @param headers Mail headers, as {@link Collection<Node>}
+	 * @param headers         Mail headers, as {@link Collection<Node>}
 	 */
 	private void setHeader(Mail mail, Personalization personalization, Collection<Node> headers) {
 		if (headers != null && !headers.isEmpty()) {
@@ -214,6 +216,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	/**
 	 * Sets subject to the mail address
+	 *
 	 * @param mail
 	 * @param personalization
 	 * @param subject
@@ -439,6 +442,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		httpSession.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
+
 	@Override
 	public String getTrustManagerAlgorithm() {
 		return httpSession.getTrustManagerAlgorithm();
@@ -449,6 +453,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setVerifyHostname(boolean verifyHostname) {
 		httpSession.setVerifyHostname(verifyHostname);
 	}
+
 	@Override
 	public boolean isVerifyHostname() {
 		return httpSession.isVerifyHostname();
@@ -459,6 +464,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		httpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
+
 	@Override
 	public boolean isAllowSelfSignedCertificates() {
 		return httpSession.isAllowSelfSignedCertificates();
@@ -469,6 +475,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		httpSession.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
+
 	@Override
 	public boolean isIgnoreCertificateExpiredException() {
 		return httpSession.isIgnoreCertificateExpiredException();
@@ -532,8 +539,8 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 			List<Email> bccs = personalization.getBccs();
 
 			return (tos != null && !tos.isEmpty())
-				|| (ccs != null && !ccs.isEmpty())
-				|| (bccs != null && !bccs.isEmpty());
+					|| (ccs != null && !ccs.isEmpty())
+					|| (bccs != null && !bccs.isEmpty());
 		}
 	}
 }

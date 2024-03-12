@@ -11,10 +11,6 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.testutil.PropertyUtil;
-import org.frankframework.util.StringUtil;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -30,6 +26,9 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import io.findify.s3mock.S3Mock;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.util.StringUtil;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
@@ -55,13 +54,13 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void setUp() throws Exception {
-		if(runLocalStub) {
+		if (runLocalStub) {
 			s3Mock = new S3Mock.Builder().withPort(S3_PORT).withInMemoryBackend().build();
 			s3Mock.start();
 		}
 
 		s3Client = createS3Client();
-		if(!runLocalStub) {
+		if (!runLocalStub) {
 			cleanUpFolder(null);
 		}
 
@@ -79,7 +78,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 				.enablePathStyleAccess();
 
 		BasicAWSCredentials awsCreds;
-		if(runLocalStub) {
+		if (runLocalStub) {
 			awsCreds = new BasicAWSCredentials("user", "pass");
 			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, clientRegion.getName()));
 		} else {
@@ -93,7 +92,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void tearDown() throws Exception {
-		if(s3Mock != null) {
+		if (s3Mock != null) {
 			s3Mock.shutdown();
 		}
 	}
@@ -101,28 +100,28 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public boolean _fileExists(String folder, String filename) {
 		String objectName;
-		if(filename == null) {
+		if (filename == null) {
 			objectName = folder;
-		}else {
-			objectName = folder == null ? filename : folder +"/"+ filename;
+		} else {
+			objectName = folder == null ? filename : folder + "/" + filename;
 		}
 		try {
 			return s3Client.doesObjectExist(bucketName, objectName);
-		} catch(AmazonS3Exception e) {
+		} catch (AmazonS3Exception e) {
 			return false;
 		}
 	}
 
 	@Override
 	public void _deleteFile(String folder, String filename) {
-		String filePath = folder == null ? filename : folder +"/" + filename;
+		String filePath = folder == null ? filename : folder + "/" + filename;
 		s3Client.deleteObject(bucketName, filePath);
 	}
 
 	@Override
 	public OutputStream _createFile(final String foldername, final String filename) throws IOException {
 
-		String fileName = tempFolder.toAbsolutePath()+"tempFile";
+		String fileName = tempFolder.toAbsolutePath() + "tempFile";
 
 		final File file = new File(fileName);
 		final FileOutputStream fos = new FileOutputStream(file);
@@ -162,7 +161,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _createFolder(String folderName) {
-		String foldername = folderName.endsWith("/") ? folderName : folderName +"/";
+		String foldername = folderName.endsWith("/") ? folderName : folderName + "/";
 		s3Client.putObject(bucketName, foldername, "");
 	}
 
@@ -175,14 +174,14 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
 		String folder = null;
-		if(folderName != null) {
+		if (folderName != null) {
 			folder = folderName.endsWith("/") ? folderName : folderName + "/";
 		}
 		cleanUpFolder(folder);
 	}
 
 	private void cleanUpFolder(String foldername) {
-		ObjectListing objectListing = foldername!=null ? s3Client.listObjects(bucketName, foldername) : s3Client.listObjects(bucketName);
+		ObjectListing objectListing = foldername != null ? s3Client.listObjects(bucketName, foldername) : s3Client.listObjects(bucketName);
 		while (true) {
 			Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
 			while (objIter.hasNext()) {

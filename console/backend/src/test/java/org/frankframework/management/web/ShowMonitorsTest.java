@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.messaging.Message;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
@@ -27,12 +26,11 @@ import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
-
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.JsonResponseMessage;
-
 import org.frankframework.util.StreamUtil;
+import org.springframework.messaging.Message;
 
 public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 
@@ -46,7 +44,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		@Override
 		public Message<String> answer(InvocationOnMock invocation) {
 			Object input = invocation.getArguments()[0];
-			RequestMessageBuilder request = (RequestMessageBuilder)input;
+			RequestMessageBuilder request = (RequestMessageBuilder) input;
 			assertEquals(BusTopic.MONITORING, request.getTopic());
 			return new JsonResponseMessage(request);
 		}
@@ -85,7 +83,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()),
 				() -> assertEquals("UPLOAD", request.getHeaders().get("action")),
 				() -> assertEquals("{\"type\":\"FUNCTIONAL\",\"destinations\":[\"one\",\"two\",\"three\"],\"name\":\"MonitorName\"}", request.getPayload())
-			);
+		);
 	}
 
 	@Test
@@ -107,7 +105,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 				() -> assertEquals("edit", BusMessageUtils.getHeader(request, "state")),
 				() -> assertEquals("monitorName", BusMessageUtils.getHeader(request, "monitor")),
 				() -> assertEquals("{\"type\":\"FUNCTIONAL\",\"destinations\":[\"mockDestination\"]}", request.getPayload())
-			);
+		);
 	}
 
 	@Test
@@ -128,7 +126,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 				() -> assertEquals("UPLOAD", request.getHeaders().get("action")),
 				() -> assertEquals("monitorName", BusMessageUtils.getHeader(request, "monitor")),
 				() -> assertEquals(jsonInput, request.getPayload())
-			);
+		);
 	}
 
 	@Test
@@ -152,12 +150,12 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 				() -> assertNull(BusMessageUtils.getHeader(request, "trigger")),
 				() -> assertEquals("MANAGE", request.getHeaders().get("action")),
 				() -> assertEquals(jsonPretty(jsonInput), jsonPretty(String.valueOf(request.getPayload())))
-			);
+		);
 	}
 
 	private static String jsonPretty(String json) {
 		StringWriter sw = new StringWriter();
-		try(JsonReader jr = Json.createReader(new StringReader(json))) {
+		try (JsonReader jr = Json.createReader(new StringReader(json))) {
 			JsonStructure jobj = jr.read();
 
 			Map<String, Object> properties = new HashMap<>(1);

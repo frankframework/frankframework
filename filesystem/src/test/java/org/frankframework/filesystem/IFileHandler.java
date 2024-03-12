@@ -11,7 +11,9 @@ public interface IFileHandler {
 	public Object handle(Message input, PipeLineSession session, ParameterList paramList) throws Exception;
 
 	public void setActions(String actions);
+
 	public void setCharset(String charset);
+
 	public void setOutputType(String outputType);
 
 	public void setFileSource(String fileSource);
@@ -41,10 +43,13 @@ public interface IFileHandler {
 	public void setCreateDirectory(boolean b);
 
 	public void setWriteLineSeparator(boolean b);
+
 	public void setTestCanWrite(boolean b);
 
 	public void setSkipBOM(boolean b);
+
 	public void setDeleteEmptyDirectory(boolean b);
+
 	public void setStreamResultToServlet(boolean b);
 
 }

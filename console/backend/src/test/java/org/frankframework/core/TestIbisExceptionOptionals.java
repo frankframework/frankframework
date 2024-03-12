@@ -16,16 +16,17 @@ public class TestIbisExceptionOptionals {
 		public IbisExceptionSubClass(Throwable t) {
 			this("", t);
 		}
+
 		public IbisExceptionSubClass(String errMsg, Throwable t) {
-			super("prefix"+errMsg, t);
+			super("prefix" + errMsg, t);
 		}
 	}
 
 	@BeforeAll
 	public static void ensureOptionalDependenciesAreNotOnTheClasspath() {
 		assertAll(
-			() -> assertFalse(isPresent("jakarta.mail.internet.AddressException"), "found AddressException on the classpath, unable to test optional dependency"),
-			() -> assertFalse(isPresent("oracle.jdbc.xa.OracleXAException"), "found OracleXAException on the classpath, unable to test optional dependency")
+				() -> assertFalse(isPresent("jakarta.mail.internet.AddressException"), "found AddressException on the classpath, unable to test optional dependency"),
+				() -> assertFalse(isPresent("oracle.jdbc.xa.OracleXAException"), "found OracleXAException on the classpath, unable to test optional dependency")
 		);
 	}
 

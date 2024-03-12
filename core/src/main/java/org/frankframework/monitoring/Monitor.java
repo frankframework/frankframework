@@ -53,11 +53,11 @@ import org.frankframework.util.XmlBuilder;
  * }
  *
  * </code></pre>
- * @author  Gerrit van Brakel
- * @since   4.9
  *
- * @version 2.0
+ * @author Gerrit van Brakel
  * @author Niels Meijer
+ * @version 2.0
+ * @since 4.9
  */
 @FrankDocGroup(name = "Monitoring")
 public class Monitor implements IConfigurable, DisposableBean {
@@ -85,13 +85,13 @@ public class Monitor implements IConfigurable, DisposableBean {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		for(String destination : destinations) {
-			if(getManager().getDestination(destination) == null) {
-				throw new ConfigurationException("destination ["+destination+"] does not exist");
+		for (String destination : destinations) {
+			if (getManager().getDestination(destination) == null) {
+				throw new ConfigurationException("destination [" + destination + "] does not exist");
 			}
 		}
 
-		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
+		if (log.isDebugEnabled()) log.debug("monitor [" + getName() + "] configuring triggers");
 		for (ITrigger trigger : triggers) {
 			if (!trigger.isConfigured()) {
 				trigger.configure();
@@ -101,18 +101,18 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public void changeState(boolean alarm, Severity severity, MonitorEvent event) throws MonitorException {
-		boolean up=alarm && (!raised || getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<0);
-		boolean clear=raised && (!alarm || (up && getAlarmSeverity()!=null && getAlarmSeverity()!=severity));
+		boolean up = alarm && (!raised || getAlarmSeverity() == null || getAlarmSeverity().compareTo(severity) < 0);
+		boolean clear = raised && (!alarm || (up && getAlarmSeverity() != null && getAlarmSeverity() != severity));
 		if (clear) {
-			Severity clearSeverity=getAlarmSeverity()!=null?getAlarmSeverity():severity;
-			String originalEventCode = eventCode!=null ? eventCode : event.getEventCode();
+			Severity clearSeverity = getAlarmSeverity() != null ? getAlarmSeverity() : severity;
+			String originalEventCode = eventCode != null ? eventCode : event.getEventCode();
 			log.info("{}clearing event [{}] state with severity [{}] from source [{}]", getLogPrefix(), originalEventCode, clearSeverity, event.getEventSourceName());
 
 			changeMonitorState(EventType.CLEARING, clearSeverity, originalEventCode, event);
 			clearRaisedBy();
 		}
 		if (up) {
-			log.debug("{}state [{}] will be raised to [{}]", this::getLogPrefix, this::getAlarmSeverity, ()->severity);
+			log.debug("{}state [{}] will be raised to [{}]", this::getLogPrefix, this::getAlarmSeverity, () -> severity);
 			changeMonitorState(getType(), severity, event.getEventCode(), event);
 			storeRaisedBy(event);
 			setAlarmSeverity(severity);
@@ -121,30 +121,30 @@ public class Monitor implements IConfigurable, DisposableBean {
 		} else {
 			if (alarm && isHit(severity)) {
 				setLastHit(event.getEventTime());
-				setAdditionalHitCount(getAdditionalHitCount()+1);
+				setAdditionalHitCount(getAdditionalHitCount() + 1);
 			}
 		}
-		raised=alarm;
+		raised = alarm;
 		clearEvents(alarm);
 	}
 
 	private boolean isHit(Severity severity) {
-		return (getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<=0);
+		return (getAlarmSeverity() == null || getAlarmSeverity().compareTo(severity) <= 0);
 	}
 
 	public void changeMonitorState(EventType eventType, Severity severity, String eventCode, MonitorEvent event) throws MonitorException {
-		if (eventType==null) {
+		if (eventType == null) {
 			throw new MonitorException("eventType cannot be null");
 		}
-		if (severity==null) {
+		if (severity == null) {
 			throw new MonitorException("severity cannot be null");
 		}
 
 		setStateChanged(event.getEventTime());
 
-		for(String destination : destinations) {
+		for (String destination : destinations) {
 			IMonitorDestination monitorAdapter = getManager().getDestination(destination);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "firing event on destination [" + destination + "]");
 
 			if (monitorAdapter != null) {
 				monitorAdapter.fireEvent(name, eventType, severity, eventCode, event);
@@ -171,10 +171,10 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public XmlBuilder toXml() {
-		XmlBuilder monitor=new XmlBuilder("monitor");
-		monitor.addAttribute("name",getName());
-		monitor.addAttribute("type",getType().name());
-		monitor.addAttribute("destinations",getDestinationsAsString());
+		XmlBuilder monitor = new XmlBuilder("monitor");
+		monitor.addAttribute("name", getName());
+		monitor.addAttribute("type", getType().name());
+		monitor.addAttribute("destinations", getDestinationsAsString());
 		for (ITrigger trigger : triggers) {
 			trigger.toXml(monitor);
 		}
@@ -182,12 +182,12 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public String getDestinationsAsString() {
-		String result=null;
-		for(String destination : getDestinationSet()) {
-			if (result==null) {
-				result=destination;
+		String result = null;
+		for (String destination : getDestinationSet()) {
+			if (result == null) {
+				result = destination;
 			} else {
-				result+=","+destination;
+				result += "," + destination;
 			}
 		}
 		return result;
@@ -202,22 +202,23 @@ public class Monitor implements IConfigurable, DisposableBean {
 	public Set<String> getDestinationSet() {
 		return Collections.unmodifiableSet(destinations);
 	}
+
 	public void setDestinationSet(Set<String> newDestinations) {
-		if (newDestinations==null) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"clearing destinations");
+		if (newDestinations == null) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "clearing destinations");
 			destinations.clear();
 		} else {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting destinations to ["+newDestinations+"]");
-			for(String destination : newDestinations) {
-				if(getManager().getDestination(destination) == null) {
-					throw new IllegalArgumentException("destination ["+destination+"] does not exist");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "setting destinations to [" + newDestinations + "]");
+			for (String destination : newDestinations) {
+				if (getManager().getDestination(destination) == null) {
+					throw new IllegalArgumentException("destination [" + destination + "] does not exist");
 				}
 			}
 
 			//Only proceed if all destinations exist
 			destinations.clear();
-			for(String destination : newDestinations) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"adding destination ["+destination+"]");
+			for (String destination : newDestinations) {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix() + "adding destination [" + destination + "]");
 				destinations.add(destination);
 			}
 		}
@@ -230,7 +231,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 
 	public void removeTrigger(ITrigger trigger) {
 		int index = triggers.indexOf(trigger);
-		if(index > -1) {
+		if (index > -1) {
 			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 			factory.destroyBean(trigger);
 			triggers.remove(trigger);
@@ -238,12 +239,13 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public String getLogPrefix() {
-		return "Monitor ["+getName()+"] ";
+		return "Monitor [" + getName() + "] ";
 	}
 
 	public void setManager(MonitorManager manager) {
 		this.manager = manager;
 	}
+
 	private MonitorManager getManager() {
 		return manager;
 	}
@@ -251,6 +253,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	public List<ITrigger> getTriggers() {
 		return triggers;
 	}
+
 	public ITrigger getTrigger(int index) {
 		return triggers.get(index);
 	}
@@ -263,6 +266,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	public void setRaised(boolean b) {
 		raised = b;
 	}
+
 	public boolean isRaised() {
 		return raised;
 	}
@@ -278,6 +282,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	public void setAdditionalHitCount(int i) {
 		additionalHitCount = i;
 	}
+
 	public int getAdditionalHitCount() {
 		return additionalHitCount;
 	}
@@ -287,7 +292,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	 */
 	@Override
 	public void destroy() {
-		log.info("removing monitor ["+this+"]");
+		log.info("removing monitor [" + this + "]");
 
 		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 		for (ITrigger trigger : triggers) {

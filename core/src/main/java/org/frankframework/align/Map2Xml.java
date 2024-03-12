@@ -31,14 +31,14 @@ import org.xml.sax.SAXException;
  *
  * @author Gerrit van Brakel
  */
-public abstract class Map2Xml<K,V,N,M extends Map<K,V>> extends ToXml<M,N> {
+public abstract class Map2Xml<K, V, N, M extends Map<K, V>> extends ToXml<M, N> {
 
 	{
 		setDeepSearch(true);
 	}
 
 	public Map2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
-		super(validatorHandler,schemaInformation);
+		super(validatorHandler, schemaInformation);
 	}
 
 	@Override

@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 import javax.jms.Message;
 
 import org.frankframework.configuration.ConfigurationException;
-
 import org.frankframework.extensions.esb.EsbJmsListener;
 import org.frankframework.jta.narayana.NarayanaTransactionHelper;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -34,7 +33,7 @@ import org.frankframework.receivers.Receiver;
  * This class creates a scenario where a message with a high Delivery-Count (JMS header) is offered to the Frank!Application.
  * While attempting to read the message of the Queue and put it in an ErrorStorage, the TX timeout should kick in, resulting
  * in a message that keeps bouncing between EMS and the application.
- *
+ * <p>
  * Don't forget to change the default transaction timeout to < 30 seconds, to speed up testing.
  */
 public class CustomHighDeliveryCountEsbJmsListener extends EsbJmsListener {

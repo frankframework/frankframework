@@ -5,11 +5,11 @@ import org.xml.sax.SAXException;
 
 public class CloseObservableJsonWriter extends JsonWriter {
 
-	private boolean closeCalled=false;
+	private boolean closeCalled = false;
 
 	@Override
 	public void endDocument() throws SAXException {
-		closeCalled=true;
+		closeCalled = true;
 		super.endDocument();
 	}
 

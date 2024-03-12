@@ -16,7 +16,6 @@
 package org.frankframework.extensions.esb;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;

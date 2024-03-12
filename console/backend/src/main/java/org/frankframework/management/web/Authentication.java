@@ -43,11 +43,11 @@ public class Authentication {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response logout() {
 
-		if(httpServletRequest.getUserPrincipal() != null) {
+		if (httpServletRequest.getUserPrincipal() != null) {
 			String user = httpServletRequest.getUserPrincipal().getName();
 			try {
 				httpServletRequest.logout();
-				log.debug("successfully logged out user ["+user+"]");
+				log.debug("successfully logged out user [" + user + "]");
 			} catch (ServletException e) {
 				throw new ApiException(e);
 			}

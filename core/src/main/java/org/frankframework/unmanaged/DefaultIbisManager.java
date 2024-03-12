@@ -45,8 +45,8 @@ import org.frankframework.receivers.Receiver;
  * Implementation of IbisManager which does not use EJB for
  * managing IBIS Adapters.
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public class DefaultIbisManager implements IbisManager {
 	protected Logger log = LogUtil.getLogger(this);
@@ -122,121 +122,121 @@ public class DefaultIbisManager implements IbisManager {
 	@Override
 	public void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin) {
 		switch (action) {
-		case STOPADAPTER:
-			Assert.notNull(adapterName, "no adapterName provided");
-			Assert.notNull(configurationName, "no configurationName provided");
+			case STOPADAPTER:
+				Assert.notNull(adapterName, "no adapterName provided");
+				Assert.notNull(configurationName, "no configurationName provided");
 
-			if (adapterName.equals(ALL_CONFIGS_KEY)) {
-				if (configurationName.equals(ALL_CONFIGS_KEY)) {
-					log.info("Stopping all adapters on request of [{}]", commandIssuedBy);
-					for (Configuration configuration : configurations) {
-						stopAdapters(configuration);
+				if (adapterName.equals(ALL_CONFIGS_KEY)) {
+					if (configurationName.equals(ALL_CONFIGS_KEY)) {
+						log.info("Stopping all adapters on request of [{}]", commandIssuedBy);
+						for (Configuration configuration : configurations) {
+							stopAdapters(configuration);
+						}
+					} else {
+						log.info("Stopping all adapters for configuration [{}] on request of [{}]", configurationName, commandIssuedBy);
+						stopAdapters(getConfiguration(configurationName));
 					}
 				} else {
-					log.info("Stopping all adapters for configuration [{}] on request of [{}]", configurationName, commandIssuedBy);
-					stopAdapters(getConfiguration(configurationName));
-				}
-			} else {
-				Configuration configuration = getConfiguration(configurationName);
-				Assert.notNull(configuration, ()->"configuration ["+configuration+"] not found");
-				Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-				Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
-
-				log.info("Stopping adapter [{}], on request of [{}]", adapterName, commandIssuedBy);
-				configuration.getRegisteredAdapter(adapterName).stopRunning();
-			}
-			break;
-
-		case STARTADAPTER:
-			Assert.notNull(adapterName, "no adapterName provided");
-			Assert.notNull(configurationName, "no configurationName provided");
-
-			if (adapterName.equals(ALL_CONFIGS_KEY)) {
-				if (configurationName.equals(ALL_CONFIGS_KEY)) {
-					log.info("Starting all adapters on request of [{}]", commandIssuedBy);
-					for (Configuration configuration : configurations) {
-						startAdapters(configuration);
-					}
-				} else {
-					log.info("Starting all adapters for configuration [{}] on request of [{}]", configurationName, commandIssuedBy);
-					startAdapters(getConfiguration(configurationName));
-				}
-			} else {
-				try {
 					Configuration configuration = getConfiguration(configurationName);
-					Assert.notNull(configuration, ()->"configuration ["+configuration+"] not found");
+					Assert.notNull(configuration, () -> "configuration [" + configuration + "] not found");
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-					Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
+					Assert.notNull(adapter, () -> "adapter [" + adapterName + "] not found");
 
-					log.info("Starting adapter [{}] on request of [{}]", adapterName, commandIssuedBy);
-					configuration.getRegisteredAdapter(adapterName).startRunning();
+					log.info("Stopping adapter [{}], on request of [{}]", adapterName, commandIssuedBy);
+					configuration.getRegisteredAdapter(adapterName).stopRunning();
+				}
+				break;
+
+			case STARTADAPTER:
+				Assert.notNull(adapterName, "no adapterName provided");
+				Assert.notNull(configurationName, "no configurationName provided");
+
+				if (adapterName.equals(ALL_CONFIGS_KEY)) {
+					if (configurationName.equals(ALL_CONFIGS_KEY)) {
+						log.info("Starting all adapters on request of [{}]", commandIssuedBy);
+						for (Configuration configuration : configurations) {
+							startAdapters(configuration);
+						}
+					} else {
+						log.info("Starting all adapters for configuration [{}] on request of [{}]", configurationName, commandIssuedBy);
+						startAdapters(getConfiguration(configurationName));
+					}
+				} else {
+					try {
+						Configuration configuration = getConfiguration(configurationName);
+						Assert.notNull(configuration, () -> "configuration [" + configuration + "] not found");
+						Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+						Assert.notNull(adapter, () -> "adapter [" + adapterName + "] not found");
+
+						log.info("Starting adapter [{}] on request of [{}]", adapterName, commandIssuedBy);
+						configuration.getRegisteredAdapter(adapterName).startRunning();
+					} catch (Exception e) {
+						log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]", e);
+					}
+				}
+				break;
+
+			case STOPRECEIVER:
+				stopReceiver(configurationName, adapterName, receiverName, commandIssuedBy);
+				break;
+
+			case STARTRECEIVER:
+				startReceiver(configurationName, adapterName, receiverName, commandIssuedBy);
+				break;
+
+			case RELOAD:
+				String msg = "Reload configuration [" + configurationName + "] on request of [" + commandIssuedBy + "]";
+				log.info(msg);
+				secLog.info(msg);
+				ibisContext.reload(configurationName);
+				break;
+
+			case FULLRELOAD:
+				if (isAdmin) {
+					String msg2 = "Full reload on request of [" + commandIssuedBy + "]";
+					log.info(msg2);
+					secLog.info(msg2);
+					ibisContext.fullReload();
+				} else {
+					log.warn("Full reload not allowed for [" + commandIssuedBy + "]");
+				}
+				break;
+
+			case INCTHREADS:
+				try {
+					Adapter adapter = getAdapterByName(configurationName, adapterName);
+
+					Assert.notNull(receiverName, "no receiverName provided");
+					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+					Assert.notNull(receiver, () -> "receiver [" + receiverName + "] not found");
+					if (receiver.isThreadCountControllable()) {
+						receiver.increaseThreadCount();
+					}
+					log.info("receiver [{}] increased threadcount on request of [{}]", receiverName, commandIssuedBy);
 				} catch (Exception e) {
-					log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]", e);
+					log.error("error increasing threadcount for receiver [{}]", receiverName, e);
 				}
-			}
-			break;
+				break;
 
-		case STOPRECEIVER:
-			stopReceiver(configurationName, adapterName, receiverName, commandIssuedBy);
-			break;
+			case DECTHREADS:
+				try {
+					Adapter adapter = getAdapterByName(configurationName, adapterName);
 
-		case STARTRECEIVER:
-			startReceiver(configurationName, adapterName, receiverName, commandIssuedBy);
-			break;
-
-		case RELOAD:
-			String msg = "Reload configuration [" + configurationName + "] on request of [" + commandIssuedBy+"]";
-			log.info(msg);
-			secLog.info(msg);
-			ibisContext.reload(configurationName);
-			break;
-
-		case FULLRELOAD:
-			if (isAdmin) {
-				String msg2 = "Full reload on request of [" + commandIssuedBy+"]";
-				log.info(msg2);
-				secLog.info(msg2);
-				ibisContext.fullReload();
-			} else {
-				log.warn("Full reload not allowed for [" + commandIssuedBy+"]");
-			}
-			break;
-
-		case INCTHREADS:
-			try {
-				Adapter adapter = getAdapterByName(configurationName, adapterName);
-
-				Assert.notNull(receiverName, "no receiverName provided");
-				Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-				Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
-				if (receiver.isThreadCountControllable()) {
-					receiver.increaseThreadCount();
+					Assert.notNull(receiverName, "no receiverName provided");
+					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+					Assert.notNull(receiver, () -> "receiver [" + receiverName + "] not found");
+					if (receiver.isThreadCountControllable()) {
+						receiver.decreaseThreadCount();
+					}
+					log.info("receiver [{}] decreased threadcount on request of [{}]", receiverName, commandIssuedBy);
+				} catch (Exception e) {
+					log.error("error decreasing threadcount for receiver [{}]", receiverName, e);
 				}
-				log.info("receiver [{}] increased threadcount on request of [{}]", receiverName, commandIssuedBy);
-			} catch (Exception e) {
-				log.error("error increasing threadcount for receiver [{}]", receiverName, e);
-			}
-			break;
-
-		case DECTHREADS:
-			try {
-				Adapter adapter = getAdapterByName(configurationName, adapterName);
-
-				Assert.notNull(receiverName, "no receiverName provided");
-				Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-				Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
-				if (receiver.isThreadCountControllable()) {
-					receiver.decreaseThreadCount();
-				}
-				log.info("receiver [{}] decreased threadcount on request of [{}]", receiverName, commandIssuedBy);
-			} catch (Exception e) {
-				log.error("error decreasing threadcount for receiver [{}]", receiverName, e);
-			}
-			break;
+				break;
 
 
-		default:
-			throw new NotImplementedException("action ["+action.name()+"] not implemented");
+			default:
+				throw new NotImplementedException("action [" + action.name() + "] not implemented");
 		}
 	}
 
@@ -244,14 +244,14 @@ public class DefaultIbisManager implements IbisManager {
 	private Adapter getAdapterByName(String configurationName, String adapterName) {
 		Assert.notNull(configurationName, "no configurationName provided");
 		Configuration configuration = getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new IllegalArgumentException("configuration ["+configuration+"] not found");
+		if (configuration == null) {
+			throw new IllegalArgumentException("configuration [" + configuration + "] not found");
 		}
 
 		Assert.notNull(adapterName, "no adapterName provided");
 		Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-		if(adapter == null) {
-			throw new IllegalArgumentException("adapter ["+adapterName+"] not found");
+		if (adapter == null) {
+			throw new IllegalArgumentException("adapter [" + adapterName + "] not found");
 		}
 
 		return adapter;
@@ -262,10 +262,10 @@ public class DefaultIbisManager implements IbisManager {
 
 		Assert.notNull(receiverName, "no receiverName provided");
 		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
+		Assert.notNull(receiver, () -> "receiver [" + receiverName + "] not found");
 
 		RunState receiverRunState = receiver.getRunState();
-		switch(receiverRunState) {
+		switch (receiverRunState) {
 			case STOPPING:
 			case STOPPED:
 				adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
@@ -287,10 +287,10 @@ public class DefaultIbisManager implements IbisManager {
 
 		Assert.notNull(receiverName, "no receiverName provided");
 		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		Assert.notNull(receiver, ()->"receiver ["+receiverName+"] not found");
+		Assert.notNull(receiver, () -> "receiver [" + receiverName + "] not found");
 
 		RunState receiverRunState = receiver.getRunState();
-		switch(receiverRunState) {
+		switch (receiverRunState) {
 			case STARTING:
 			case STARTED:
 				adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
@@ -334,7 +334,7 @@ public class DefaultIbisManager implements IbisManager {
 	public List<Adapter> getRegisteredAdapters() {
 		List<Adapter> registeredAdapters = new ArrayList<>();
 		for (Configuration configuration : configurations) {
-			if(configuration.isActive()) {
+			if (configuration.isActive()) {
 				registeredAdapters.addAll(configuration.getRegisteredAdapters());
 			}
 		}
@@ -343,7 +343,7 @@ public class DefaultIbisManager implements IbisManager {
 
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.applicationEventPublisher=applicationEventPublisher;
+		this.applicationEventPublisher = applicationEventPublisher;
 	}
 
 	@Override

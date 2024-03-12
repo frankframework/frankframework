@@ -18,17 +18,15 @@ package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.springframework.http.MediaType;
-
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Convertor factory instantiates all convertor types and keeps them in a map.
  *
  * @author Gerard van der Hoorn
- *
  */
 @Log4j2
 public class ConvertorFactory {

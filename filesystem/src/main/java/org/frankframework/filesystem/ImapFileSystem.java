@@ -27,14 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.http.PartMessage;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StringUtil;
-import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
-
 import com.sun.mail.imap.AppendUID;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPMessage;
@@ -58,6 +50,13 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.http.PartMessage;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StringUtil;
+import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter String domain = "IMAP";
@@ -84,26 +83,26 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			try {
 				store.connect(getHost(), getPort(), cf.getUsername(), cf.getPassword());
 			} catch (Exception e) {
-				throw new FileSystemException("Cannot connect to Store at host ["+getHost()+"] port ["+getPort()+"] user ["+cf.getUsername()+"]", e);
+				throw new FileSystemException("Cannot connect to Store at host [" + getHost() + "] port [" + getPort() + "] user [" + cf.getUsername() + "]", e);
 			}
 			if (!store.isConnected()) {
-				throw new FileSystemException("Cannot connect to Store at host ["+getHost()+"] port ["+getPort()+"] user ["+cf.getUsername()+"]");
+				throw new FileSystemException("Cannot connect to Store at host [" + getHost() + "] port [" + getPort() + "] user [" + cf.getUsername() + "]");
 			}
-			IMAPFolder inbox = (IMAPFolder)store.getFolder("INBOX");
+			IMAPFolder inbox = (IMAPFolder) store.getFolder("INBOX");
 			IMAPFolder folder;
 			String baseFolder = getBaseFolder();
 			if (StringUtils.isNotEmpty(baseFolder)) {
-				folder = (IMAPFolder)inbox.getFolder(baseFolder);
+				folder = (IMAPFolder) inbox.getFolder(baseFolder);
 				if (!folder.exists()) {
-					folder = (IMAPFolder)store.getFolder(baseFolder);
+					folder = (IMAPFolder) store.getFolder(baseFolder);
 				}
 				if (!folder.exists()) {
-					throw new FileSystemException("Could not find baseFolder ["+baseFolder+"]");
+					throw new FileSystemException("Could not find baseFolder [" + baseFolder + "]");
 				}
 			} else {
 				folder = inbox;
 				if (!folder.exists()) {
-					throw new FileSystemException("Could not find baseFolder ["+folder+"]");
+					throw new FileSystemException("Could not find baseFolder [" + folder + "]");
 				}
 			}
 			return folder;
@@ -125,7 +124,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 
 	private IMAPFolder getFolder(IMAPFolder baseFolder, String name) throws MessagingException {
 		if (StringUtils.isNotEmpty(name)) {
-			return (IMAPFolder)baseFolder.getFolder(name);
+			return (IMAPFolder) baseFolder.getFolder(name);
 		}
 		return baseFolder;
 	}
@@ -225,7 +224,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	public DirectoryStream<Message> listFiles(String foldername) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
-		if (baseFolder==null) {
+		if (baseFolder == null) {
 			return null;
 		}
 		try {
@@ -477,7 +476,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	public Map<String, Object> getAdditionalAttachmentProperties(MimeBodyPart a) throws FileSystemException {
 		try {
 			Map<String, Object> result = new LinkedHashMap<>();
-			for (Enumeration<Header> headers = a.getAllHeaders(); headers.hasMoreElements();) {
+			for (Enumeration<Header> headers = a.getAllHeaders(); headers.hasMoreElements(); ) {
 				Header header = headers.nextElement();
 				result.put(header.getName(), header.getValue());
 			}
@@ -534,7 +533,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			result.put(REPLY_TO_RECEPIENTS_KEY, getReplyTo(f));
 			result.put(DATETIME_SENT_KEY, f.getSentDate());
 			result.put(DATETIME_RECEIVED_KEY, f.getReceivedDate());
-			for (Enumeration<Header> headerEnum = f.getAllHeaders(); headerEnum.hasMoreElements();) {
+			for (Enumeration<Header> headerEnum = f.getAllHeaders(); headerEnum.hasMoreElements(); ) {
 				Header header = headerEnum.nextElement();
 				result.put(header.getName(), header.getValue());
 			}
@@ -590,7 +589,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			}
 		}
 		String name = urlName == null ? "<no url>" : urlName.toString();
-		return StringUtil.concatStrings(name," ", super.getPhysicalDestinationName());
+		return StringUtil.concatStrings(name, " ", super.getPhysicalDestinationName());
 	}
 
 	@Override
@@ -628,6 +627,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 
 	/**
 	 * The hostname of the IMAP server
+	 *
 	 * @ff.mandatory
 	 */
 	public void setHost(String host) {
@@ -636,6 +636,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 
 	/**
 	 * The port of the IMAP server
+	 *
 	 * @ff.default 993
 	 */
 	public void setPort(int port) {

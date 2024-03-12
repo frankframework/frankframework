@@ -14,11 +14,12 @@
    limitations under the License.
 */
 package org.frankframework.monitoring;
+
 /**
  * Enumeration of Severities for monitoring.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public enum Severity {
 	HARMLESS, WARNING, CRITICAL, FATAL;

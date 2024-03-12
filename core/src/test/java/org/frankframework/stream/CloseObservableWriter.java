@@ -5,12 +5,12 @@ import java.io.StringWriter;
 
 public class CloseObservableWriter extends StringWriter {
 
-	private boolean closeCalled=false;
+	private boolean closeCalled = false;
 
 	@Override
 	public void close() throws IOException {
 		super.close();
-		closeCalled=true;
+		closeCalled = true;
 	}
 
 	public boolean isCloseCalled() {

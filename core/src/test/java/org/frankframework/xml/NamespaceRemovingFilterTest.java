@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.StringWriter;
 
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.Test;
 
 public class NamespaceRemovingFilterTest {
@@ -39,22 +40,22 @@ public class NamespaceRemovingFilterTest {
 
 		XmlUtils.parseXml(source, filter);
 
-		String actual = new String (target.toString());
+		String actual = new String(target.toString());
 		assertEquals(expected, actual);
 	}
 
 	@Test
 	public void testToWriterNoNamespace() throws Exception {
-		testToWriter(messageBasicNoNS,messageBasicNoNS);
+		testToWriter(messageBasicNoNS, messageBasicNoNS);
 	}
 
 	@Test
 	public void testToWriterNamespacesNoPrefix() throws Exception {
-		testToWriter(messageBasicNS1,messageBasicNoNS);
+		testToWriter(messageBasicNS1, messageBasicNoNS);
 	}
 
 	@Test
 	public void testToWriterNamespacePrefixed() throws Exception {
-		testToWriter(messageBasicNS2,messageBasicNoNS);
+		testToWriter(messageBasicNS2, messageBasicNoNS);
 	}
 }

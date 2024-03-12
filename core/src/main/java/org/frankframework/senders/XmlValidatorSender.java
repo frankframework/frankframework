@@ -32,10 +32,10 @@ import org.frankframework.validation.XercesXmlValidator;
 
 /**
  * Sender that validates the input message against a XML Schema.
- *
+ * <p>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  * @since
  */
 @Category("Advanced")
@@ -51,6 +51,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	@Override
 	public void close() throws SenderException {
 	}
+
 	@Override
 	public void open() throws SenderException {
 	}
@@ -68,9 +69,9 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String fullReasons="";
+		String fullReasons = "";
 		try {
-			ValidationResult validationResult = validate(message, session, getLogPrefix(),null,null);
+			ValidationResult validationResult = validate(message, session, getLogPrefix(), null, null);
 
 			if (validationResult == ValidationResult.VALID || validationResult == ValidationResult.VALID_WITH_WARNINGS) {
 				return new SenderResult(message);
@@ -96,7 +97,7 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	}
 
 	protected String getLogPrefix() {
-		return "["+this.getClass().getName()+"] ["+getName()+"] ";
+		return "[" + this.getClass().getName() + "] [" + getName() + "] ";
 	}
 
 }

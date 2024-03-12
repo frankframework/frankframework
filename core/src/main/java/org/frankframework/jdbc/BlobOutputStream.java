@@ -42,25 +42,25 @@ public class BlobOutputStream extends FilterOutputStream {
 
 	public BlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, int blobColumn, OutputStream blobOutputStream, ResultSet resultSet, XmlBuilder warnings) {
 		super(blobOutputStream);
-		this.dbmsSupport=dbmsSupport;
-		this.blobUpdateHandle=blobUpdateHandle;
-		this.blobColumn=blobColumn;
-		this.resultSet=resultSet;
-		this.warnings=warnings;
-		open=true;
+		this.dbmsSupport = dbmsSupport;
+		this.blobUpdateHandle = blobUpdateHandle;
+		this.blobColumn = blobColumn;
+		this.resultSet = resultSet;
+		this.warnings = warnings;
+		open = true;
 	}
 
 	@Override
 	public void close() throws IOException {
 		if (open) {
-			open=false;
+			open = false;
 			try {
 				super.close();
 				dbmsSupport.updateBlob(resultSet, blobColumn, blobUpdateHandle);
 				resultSet.updateRow();
-				JdbcUtil.warningsToXml(resultSet.getWarnings(),warnings);
+				JdbcUtil.warningsToXml(resultSet.getWarnings(), warnings);
 			} catch (JdbcException | SQLException e) {
-				throw new IOException("cannot write BLOB",e);
+				throw new IOException("cannot write BLOB", e);
 			} finally {
 				JdbcUtil.fullClose(null, resultSet);
 			}

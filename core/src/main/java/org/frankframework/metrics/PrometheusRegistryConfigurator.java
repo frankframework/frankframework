@@ -21,7 +21,8 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 
 public class PrometheusRegistryConfigurator extends MetricsRegistryConfiguratorBase<PrometheusConfig> {
 
-	private class Config extends MeterRegistryConfigBase implements PrometheusConfig {}
+	private class Config extends MeterRegistryConfigBase implements PrometheusConfig {
+	}
 
 	@Override
 	protected PrometheusConfig createConfig() {

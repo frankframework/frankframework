@@ -12,6 +12,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.pipes.XmlValidator;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -32,16 +33,16 @@ public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
 
 		// Note: the tests in Xsd1.1 folder are taken from
 		// https://www.w3.org/TR/xmlschema-guide2versioning/ examples
-		return Arrays.asList(new Object[][] {
-			{ "Test Override Default", 	"/Validation/OverrideAndRedefine/Override.xsd", 			"/Validation/OverrideAndRedefine/in_OK.xml", "success", null },
-			{ "Test Override", 			"/Validation/OverrideAndRedefine/Override.xsd", 			"/Validation/OverrideAndRedefine/in_OK.xml", "success", "1.1" },
-			{ "Test Override Fail", 	"/Validation/OverrideAndRedefine/Override.xsd", 			"/Validation/OverrideAndRedefine/in_OK.xml", "configurationException", "1.0" },
-			{ "Test Redefine", 			"/Validation/OverrideAndRedefine/Redefine.xsd", 			"/Validation/OverrideAndRedefine/in_OK.xml", "success", "1.1" },
-			{ "Test Wildcard", 			"/Validation/Xsd1.1/Wildcard/wildcard.xsd", 				"/Validation/Xsd1.1/Wildcard/in_OK.xml", "success", "1.1" },
-			{ "Test Negative Wildcard", "/Validation/Xsd1.1/NegativeWildcard/negativeWildcard.xsd", "/Validation/Xsd1.1/NegativeWildcard/in_OK.xml", "org.frankframework.core.PipeRunException", "1.1" },
-			{ "Test Assert", 			"/Validation/Xsd1.1/Assert/assert.xsd", 					"/Validation/Xsd1.1/Assert/in_OK.xml", "success", "1.1" },
-			{ "Test Assert Fail", 		"/Validation/Xsd1.1/Assert/assert.xsd", 					"/Validation/Xsd1.1/Assert/in_ERROR.xml", "java.lang.Exception", "1.1" },
-			{ "Test Year 0000", 		"/Validation/Xsd1.1/Year0000/dateTime.xsd", 				"/Validation/Xsd1.1/Year0000/in_OK.xml", "success", "1.1" }, });
+		return Arrays.asList(new Object[][]{
+				{"Test Override Default", "/Validation/OverrideAndRedefine/Override.xsd", "/Validation/OverrideAndRedefine/in_OK.xml", "success", null},
+				{"Test Override", "/Validation/OverrideAndRedefine/Override.xsd", "/Validation/OverrideAndRedefine/in_OK.xml", "success", "1.1"},
+				{"Test Override Fail", "/Validation/OverrideAndRedefine/Override.xsd", "/Validation/OverrideAndRedefine/in_OK.xml", "configurationException", "1.0"},
+				{"Test Redefine", "/Validation/OverrideAndRedefine/Redefine.xsd", "/Validation/OverrideAndRedefine/in_OK.xml", "success", "1.1"},
+				{"Test Wildcard", "/Validation/Xsd1.1/Wildcard/wildcard.xsd", "/Validation/Xsd1.1/Wildcard/in_OK.xml", "success", "1.1"},
+				{"Test Negative Wildcard", "/Validation/Xsd1.1/NegativeWildcard/negativeWildcard.xsd", "/Validation/Xsd1.1/NegativeWildcard/in_OK.xml", "org.frankframework.core.PipeRunException", "1.1"},
+				{"Test Assert", "/Validation/Xsd1.1/Assert/assert.xsd", "/Validation/Xsd1.1/Assert/in_OK.xml", "success", "1.1"},
+				{"Test Assert Fail", "/Validation/Xsd1.1/Assert/assert.xsd", "/Validation/Xsd1.1/Assert/in_ERROR.xml", "java.lang.Exception", "1.1"},
+				{"Test Year 0000", "/Validation/Xsd1.1/Year0000/dateTime.xsd", "/Validation/Xsd1.1/Year0000/in_OK.xml", "success", "1.1"},});
 	}
 
 

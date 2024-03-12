@@ -15,7 +15,7 @@
  */
 package org.frankframework.ldap;
 
-public interface Callback<K,V> {
+public interface Callback<K, V> {
 
 	public void handle(K key, V value);
 

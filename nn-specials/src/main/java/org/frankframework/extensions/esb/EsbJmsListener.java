@@ -29,6 +29,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -51,12 +52,10 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
 
-import lombok.Getter;
-
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 @Category("NN-Special")
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
@@ -68,7 +67,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	private @Getter MessageProtocol messageProtocol = null;
 	private @Getter boolean copyAEProperties = false;
-	private @Getter String xPathLoggingKeys=null;
+	private @Getter String xPathLoggingKeys = null;
 
 	private final Map<String, String> xPathLogMap = new HashMap<>();
 
@@ -89,7 +88,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 					setForceMessageIdAsCorrelationId(true);
 				}
 			}
-			if (getCacheMode()==CacheMode.CACHE_CONSUMER) {
+			if (getCacheMode() == CacheMode.CACHE_CONSUMER) {
 				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CacheMode.CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
 			}
 			setCacheMode(CacheMode.CACHE_CONSUMER);
@@ -106,7 +105,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	private void configureXPathLogging() {
 		String logKeys;
-		if(getXPathLoggingKeys() != null) //Override on listener level
+		if (getXPathLoggingKeys() != null) //Override on listener level
 			logKeys = getXPathLoggingKeys();
 		else
 			logKeys = MSGLOG_KEYS;
@@ -116,7 +115,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 		for (String name : StringUtil.split(logKeys)) {
 			String xPath = APP_CONSTANTS.getProperty("msg.log.xPath." + name);
-			if(xPath != null)
+			if (xPath != null)
 				xPathLogMap.put(name, xPath);
 		}
 	}
@@ -132,7 +131,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				log.debug("ignoring JMSException in getPropertyName()", e);
 			}
 			while (propertyNames != null && propertyNames.hasMoreElements()) {
-				String propertyName = (String) propertyNames.nextElement ();
+				String propertyName = (String) propertyNames.nextElement();
 				if (propertyName.startsWith("ae_")) {
 					try {
 						Object object = rawMessage.getObjectProperty(propertyName);
@@ -187,15 +186,15 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	protected String getResultFromxPath(String message, String xPathExpression) {
 		String found = "";
-		if(message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
+		if (message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
 			try {
 				TransformerPool test = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
 				found = test.transform(message, null);
 
 				//xPath not found and message length is 0 but not null nor ""
-				if(found.isEmpty()) found = "";
+				if (found.isEmpty()) found = "";
 			} catch (Exception e) {
-				log.debug("could not evaluate xpath expression",e);
+				log.debug("could not evaluate xpath expression", e);
 			}
 		}
 		return found;
@@ -217,7 +216,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		Map<String, Object> properties = super.getMessageProperties(session);
 
 		if (isCopyAEProperties() && session != null) {
-			if(properties == null)
+			if (properties == null)
 				properties = new HashMap<>();
 
 			properties.putAll(session.entrySet().stream()

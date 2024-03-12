@@ -19,9 +19,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.ParameterList;
@@ -35,18 +34,17 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Encapsulates a record in XML, optionally translates it using XSLT or XPath.
  *
- *
- * @author  John Dekker / Gerrit van Brakel
+ * @author John Dekker / Gerrit van Brakel
  * @deprecated Warning: non-maintained functionality.
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
 
-	private @Getter String rootTag="record";
-	private @Getter String xpathExpression=null;
+	private @Getter String rootTag = "record";
+	private @Getter String xpathExpression = null;
 	private @Getter String namespaceDefs = null;
 	private @Getter String styleSheetName;
-	private @Getter OutputType outputType=OutputType.TEXT;
-	private @Getter boolean omitXmlDeclaration=true;
+	private @Getter OutputType outputType = OutputType.TEXT;
+	private @Getter boolean omitXmlDeclaration = true;
 	private @Getter String endOfRecord;
 
 	private TransformerPool transformerPool;
@@ -61,38 +59,37 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ParameterList params = getParameterList();
-		if (params!=null) {
+		if (params != null) {
 			try {
 				params.configure();
 			} catch (ConfigurationException e) {
-				throw new ConfigurationException("while configuring parameters",e);
+				throw new ConfigurationException("while configuring parameters", e);
 			}
 		}
-		if (StringUtils.isNotEmpty(getStyleSheetName())||StringUtils.isNotEmpty(getXpathExpression())) {
+		if (StringUtils.isNotEmpty(getStyleSheetName()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			transformerPool = TransformerPool.configureTransformer(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
 		}
 	}
 
 
-
 	@Override
 	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = getXml(parsedRecord);
-		if (transformerPool!=null) {
+		if (transformerPool != null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Transformer ["+getName()+"] record before XSL transformation ["+xml+"]");
+				log.debug("Transformer [" + getName() + "] record before XSL transformation [" + xml + "]");
 			}
 			Message message = new Message(xml);
-			ParameterValueList pvl = paramList==null?null:paramList.getValues(message, session);
+			ParameterValueList pvl = paramList == null ? null : paramList.getValues(message, session);
 			return transformerPool.transform(message.asSource(), pvl);
 		}
 		return xml;
 	}
 
 	protected String getXml(List<String> parsedRecord) {
-		XmlBuilder record=new XmlBuilder(getRootTag());
+		XmlBuilder record = new XmlBuilder(getRootTag());
 		int ndx = 0;
-		for (Iterator<String> it = outputFields.iterator(); it.hasNext();) {
+		for (Iterator<String> it = outputFields.iterator(); it.hasNext(); ) {
 			// get tagname
 			String tagName = it.next();
 			// get value
@@ -107,9 +104,9 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 				}
 			}
 			// if tagname is empty, then it is not added to the XML
-			if (! StringUtils.isEmpty(tagName)) {
+			if (!StringUtils.isEmpty(tagName)) {
 				XmlBuilder field = new XmlBuilder(tagName);
-				field.setValue(value,true);
+				field.setValue(value, true);
 				record.addSubElement(field);
 			}
 		}
@@ -124,6 +121,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	/**
 	 * Root tag for the generated xml document that will be send to the Sender
+	 *
 	 * @ff.default record
 	 */
 	public void setRootTag(String string) {
@@ -147,6 +145,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	/**
 	 * Only valid for <code>xpathExpression</code>
+	 *
 	 * @ff.default text
 	 */
 	public void setOutputType(OutputType outputType) {
@@ -155,6 +154,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	/**
 	 * Force the transformer generated from the xpath-expression to omit the xml declaration
+	 *
 	 * @ff.default true
 	 */
 	public void setOmitXmlDeclaration(boolean b) {

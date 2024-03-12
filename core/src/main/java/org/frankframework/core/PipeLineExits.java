@@ -45,6 +45,7 @@ public class PipeLineExits {
 
 	/**
 	 * PipeLine exits.
+	 *
 	 * @ff.mandatory
 	 */
 	public void registerPipeLineExit(PipeLineExit exit) {

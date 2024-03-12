@@ -46,8 +46,8 @@ package org.frankframework.configuration.digester;
  * no way to configure a factory instance with a bean-name from the digester-rules.
  * </p>
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public class GenericFactory extends AbstractSpringPoweredDigesterFactory {
 

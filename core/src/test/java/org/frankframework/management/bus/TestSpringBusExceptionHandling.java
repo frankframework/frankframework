@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.frankframework.management.bus.BusTestEndpoints.ExceptionTestTypes;
 import org.frankframework.stream.StreamingException;
 import org.frankframework.testutil.SpringRootInitializer;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -45,7 +47,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 		// Assert
 		assertInstanceOf(BusException.class, e.getCause());
 		assertEquals("Resource not found", e.getCause().getMessage());
-		assertEquals(404, ((BusException)e.getCause()).getStatusCode());
+		assertEquals(404, ((BusException) e.getCause()).getStatusCode());
 	}
 
 	@Test
@@ -92,7 +94,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "lala" })
+	@WithMockUser(authorities = {"lala"})
 	public void testEndpointMessageWithAuthorizationError() {
 		// Arrange
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);

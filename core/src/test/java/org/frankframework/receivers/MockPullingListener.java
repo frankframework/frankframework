@@ -29,8 +29,8 @@ public class MockPullingListener extends MockListenerBase implements IPullingLis
 	@Override
 	public RawMessageWrapper<String> getRawMessage(Map<String, Object> threadContext) throws ListenerException {
 		String message = value.poll();
-		if(message != null) {
-			if(message.equals("getRawMessageException")) {
+		if (message != null) {
+			if (message.equals("getRawMessageException")) {
 				throw new ListenerException(message);
 			}
 			return new RawMessageWrapper<>(message);

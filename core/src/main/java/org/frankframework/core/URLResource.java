@@ -23,7 +23,6 @@ import java.net.URL;
  * Reference to a resource, within the Configuration scope. Can be accessed multiple times.
  *
  * @author Niels Meijer
- *
  */
 public class URLResource extends Resource {
 
@@ -49,6 +48,6 @@ public class URLResource extends Resource {
 
 	@Override
 	public String toString() {
-		return "URLResource url ["+url+"] systemId ["+systemId+"] scope ["+scopeProvider+"]";
+		return "URLResource url [" + url + "] systemId [" + systemId + "] scope [" + scopeProvider + "]";
 	}
 }

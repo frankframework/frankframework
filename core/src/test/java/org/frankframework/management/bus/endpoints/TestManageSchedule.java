@@ -19,15 +19,17 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-@WithMockUser(roles = { "IbisTester" })
+@WithMockUser(roles = {"IbisTester"})
 public class TestManageSchedule extends BusTestBase {
 	private Adapter adapter;
 
@@ -60,7 +62,7 @@ public class TestManageSchedule extends BusTestBase {
 	@AfterEach
 	@Override
 	public void tearDown() {
-		if(adapter != null) {
+		if (adapter != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}
 		super.tearDown();

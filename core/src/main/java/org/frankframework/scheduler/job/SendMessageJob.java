@@ -57,7 +57,7 @@ public class SendMessageJob extends JobDef {
 	@Override
 	public void execute() throws JobExecutionException, TimeoutException {
 		try (Message toSendMessage = getMessage() == null ? Message.nullMessage() : new Message(getMessage());
-				PipeLineSession session = new PipeLineSession()) {
+			 PipeLineSession session = new PipeLineSession()) {
 			//Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
 			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());
 
@@ -76,6 +76,7 @@ public class SendMessageJob extends JobDef {
 
 	/**
 	 * JavaListener to send the message to
+	 *
 	 * @ff.mandatory
 	 */
 	public void setJavaListener(String javaListener) {
@@ -84,7 +85,7 @@ public class SendMessageJob extends JobDef {
 
 	/** message to be sent into the pipeline */
 	public void setMessage(String message) {
-		if(StringUtils.isNotEmpty(message)) {
+		if (StringUtils.isNotEmpty(message)) {
 			this.message = message;
 		}
 	}

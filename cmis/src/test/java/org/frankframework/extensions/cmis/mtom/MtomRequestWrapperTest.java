@@ -7,32 +7,32 @@ import java.net.URL;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 public class MtomRequestWrapperTest {
 	private static final String BASEPATH = "/proxy/";
 
 	private String getInputFile(String testFileName) throws Throwable {
-		String request_in_path = BASEPATH+testFileName+"_request_in.txt";
+		String request_in_path = BASEPATH + testFileName + "_request_in.txt";
 		URL request_in = TestFileUtils.getTestFileURL(request_in_path);
-		assertNotNull(request_in, "request input file ["+request_in_path+"] not found");
+		assertNotNull(request_in, "request input file [" + request_in_path + "] not found");
 		return TestFileUtils.getTestFile(request_in, "UTF-8");
 	}
 
 	private String getOutputFile(String testFileName) throws Throwable {
-		String request_out_path = BASEPATH+testFileName+"_request_out.txt";
+		String request_out_path = BASEPATH + testFileName + "_request_out.txt";
 		URL request_out = TestFileUtils.getTestFileURL(request_out_path);
-		assertNotNull(request_out, "request output file ["+request_out_path+"] not found");
+		assertNotNull(request_out, "request output file [" + request_out_path + "] not found");
 		return TestFileUtils.getTestFile(request_out, "UTF-8");
 	}
 
 	private static String getBoundary(String contentType) {
-		String boundary = contentType.substring(contentType.indexOf("=_Part_")+7);
-		boundary = boundary.substring(0, boundary.indexOf(";")-1);
+		String boundary = contentType.substring(contentType.indexOf("=_Part_") + 7);
+		boundary = boundary.substring(0, boundary.indexOf(";") - 1);
 		return boundary.trim();
 	}
 

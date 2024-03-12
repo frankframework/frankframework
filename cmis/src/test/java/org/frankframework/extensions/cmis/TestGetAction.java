@@ -116,7 +116,7 @@ public class TestGetAction extends CmisSenderTestBase {
 		}
 
 		Message message = (Message) session.get(sender.getFileSessionKey());
-		if(!getProperties || getDocumentContent) {
+		if (!getProperties || getDocumentContent) {
 			assertEquals(GET_RESULT_FOR_INPUT, message.asString());
 		} else {
 			assertNull(message);

@@ -38,9 +38,9 @@ import org.frankframework.jms.JMSFacade.DeliveryMode;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.jms.PullingJmsListener;
-import org.frankframework.stream.Message;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.TestConfig;
+import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 
 public class QueueCreator {
@@ -72,13 +72,13 @@ public class QueueCreator {
 
 			Iterator iterator = properties.keySet().iterator();
 			while (iterator.hasNext()) {
-				String key = (String)iterator.next();
+				String key = (String) iterator.next();
 				int i = key.indexOf('.');
 				if (i != -1) {
 					int j = key.indexOf('.', i + 1);
 					if (j != -1) {
 						String queueName = key.substring(0, j);
-						if(manuallyCreatedQueues.contains(queueName)) continue;
+						if (manuallyCreatedQueues.contains(queueName)) continue;
 						manuallyCreatedQueues.add(queueName);
 
 						debugMessage("queuename openqueue: " + queueName);
@@ -92,13 +92,13 @@ public class QueueCreator {
 							debugMessage("Adding jdbcFixedQuerySender queue: " + queueName);
 							jdbcFixedQuerySenders.add(queueName);
 						} else {
-							String className = properties.getProperty(queueName+".className");
-							if(StringUtils.isEmpty(className)) continue;
+							String className = properties.getProperty(queueName + ".className");
+							if (StringUtils.isEmpty(className)) continue;
 							Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
 
 							//Deprecation warning
-							if(queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
-								errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout");
+							if (queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
+								errorMessage("properties " + queueName + ".requestTimeOut/" + queueName + ".responseTimeOut have been replaced with " + queueName + ".timeout");
 							}
 
 							IConfigurable configurable = QueueUtils.createInstance(directoryClassLoader, className);
@@ -107,7 +107,7 @@ public class QueueCreator {
 							queue.configure();
 							queue.open();
 							queues.put(queueName, queue);
-							debugMessage("Opened ["+className+"] '" + queueName + "'");
+							debugMessage("Opened [" + className + "] '" + queueName + "'");
 						}
 					}
 				}
@@ -119,7 +119,7 @@ public class QueueCreator {
 		} catch (Exception e) {
 			closeQueues(queues, properties, null);
 			queues = null;
-			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
+			errorMessage(e.getClass().getSimpleName() + ": " + e.getMessage(), e);
 		}
 
 		return queues;
@@ -130,7 +130,7 @@ public class QueueCreator {
 		Iterator<String> iterator = jmsSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = iterator.next();
-			String queue = (String)properties.get(queueName + ".queue");
+			String queue = (String) properties.get(queueName + ".queue");
 			if (queue == null) {
 				closeQueues(queues, properties, correlationId);
 				queues = null;
@@ -141,8 +141,8 @@ public class QueueCreator {
 				jmsSender.setDestinationName(queue);
 				jmsSender.setDestinationType(DestinationType.QUEUE);
 				jmsSender.setAcknowledgeMode(JMSFacade.AcknowledgeMode.AUTO_ACKNOWLEDGE);
-				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
-				if (jmsRealm!=null) {
+				String jmsRealm = (String) properties.get(queueName + ".jmsRealm");
+				if (jmsRealm != null) {
 					jmsSender.setJmsRealm(jmsRealm);
 				} else {
 					jmsSender.setJmsRealm("default");
@@ -184,13 +184,13 @@ public class QueueCreator {
 		Iterator<String> iterator = jmsListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
 			String queueName = iterator.next();
-			String queue = (String)properties.get(queueName + ".queue");
-			String timeout = (String)properties.get(queueName + ".timeout");
+			String queue = (String) properties.get(queueName + ".queue");
+			String timeout = (String) properties.get(queueName + ".timeout");
 
 			int nTimeout = defaultTimeout;
 			if (timeout != null && !timeout.isEmpty()) {
 				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+defaultTimeout+" with "+ nTimeout);
+				debugMessage("Overriding default timeout setting of " + defaultTimeout + " with " + nTimeout);
 			}
 
 			if (queue == null) {
@@ -203,8 +203,8 @@ public class QueueCreator {
 				pullingJmsListener.setDestinationName(queue);
 				pullingJmsListener.setDestinationType(DestinationType.QUEUE);
 				pullingJmsListener.setAcknowledgeMode(JMSFacade.AcknowledgeMode.AUTO_ACKNOWLEDGE);
-				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
-				if (jmsRealm!=null) {
+				String jmsRealm = (String) properties.get(queueName + ".jmsRealm");
+				if (jmsRealm != null) {
 					pullingJmsListener.setJmsRealm(jmsRealm);
 				} else {
 					pullingJmsListener.setJmsRealm("default");
@@ -225,7 +225,7 @@ public class QueueCreator {
 				// - Ibis4Juice build 20051104-1351
 				// - y01\rr\getAgent1003\scenario01.properties
 				pullingJmsListener.setTimeout(nTimeout);
-				String setForceMessageIdAsCorrelationId = (String)properties.get(queueName + ".setForceMessageIdAsCorrelationId");
+				String setForceMessageIdAsCorrelationId = (String) properties.get(queueName + ".setForceMessageIdAsCorrelationId");
 				if ("true".equals(setForceMessageIdAsCorrelationId)) {
 					pullingJmsListener.setForceMessageIdAsCorrelationId(true);
 				}
@@ -251,14 +251,14 @@ public class QueueCreator {
 			boolean allFound = false;
 			String preDelete = "";
 			int preDeleteIndex = 1;
-			String getBlobSmartString = (String)properties.get(name + ".getBlobSmart");
-			if(StringUtils.isNotEmpty(getBlobSmartString)) {
+			String getBlobSmartString = (String) properties.get(name + ".getBlobSmart");
+			if (StringUtils.isNotEmpty(getBlobSmartString)) {
 				queueProperties.setProperty("blobSmartGet", getBlobSmartString);
 			}
 
 			Queue querySendersInfo = new QuerySenderQueue();
 			while (!allFound && queues != null) {
-				preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
+				preDelete = (String) properties.get(name + ".preDel" + preDeleteIndex);
 				if (preDelete != null) {
 					FixedQuerySender deleteQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 					deleteQuerySender.setName("Test Tool pre delete query sender");
@@ -272,15 +272,15 @@ public class QueueCreator {
 						deleteQuerySender.open();
 						deleteQuerySender.sendMessageOrThrow(LarvaTool.TESTTOOL_DUMMY_MESSAGE, null).close();
 						deleteQuerySender.close();
-					} catch(ConfigurationException e) {
+					} catch (ConfigurationException e) {
 						closeQueues(queues, properties, correlationId);
 						queues = null;
 						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
-					} catch(TimeoutException e) {
+					} catch (TimeoutException e) {
 						closeQueues(queues, properties, correlationId);
 						queues = null;
 						errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e);
-					} catch(Exception e) {
+					} catch (Exception e) {
 						closeQueues(queues, properties, correlationId);
 						queues = null;
 						errorMessage("Could not execute pre delete query for '" + name + "': " + e.getMessage(), e);
@@ -291,7 +291,7 @@ public class QueueCreator {
 				}
 			}
 			if (queues != null) {
-				String prePostQuery = (String)properties.get(name + ".prePostQuery");
+				String prePostQuery = (String) properties.get(name + ".prePostQuery");
 				if (prePostQuery != null) {
 					FixedQuerySender prePostFixedQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 					prePostFixedQuerySender.setName("Test Tool query sender");
@@ -300,7 +300,7 @@ public class QueueCreator {
 						prePostFixedQuerySender.setQuery(prePostQuery);
 						prePostFixedQuerySender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
 						prePostFixedQuerySender.configure();
-					} catch(Exception e) {
+					} catch (Exception e) {
 						closeQueues(queues, properties, correlationId);
 						queues = null;
 						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
@@ -308,7 +308,7 @@ public class QueueCreator {
 					if (queues != null) {
 						try {
 							prePostFixedQuerySender.open();
-						} catch(SenderException e) {
+						} catch (SenderException e) {
 							closeQueues(queues, properties, correlationId);
 							queues = null;
 							errorMessage("Could not open (pre/post) '" + name + "': " + e.getMessage(), e);
@@ -322,11 +322,11 @@ public class QueueCreator {
 							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 							querySendersInfo.put("prePostQueryResult", result);
 							message.close();
-						} catch(TimeoutException e) {
+						} catch (TimeoutException e) {
 							closeQueues(queues, properties, correlationId);
 							queues = null;
 							errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
-						} catch(IOException | SenderException e) {
+						} catch (IOException | SenderException e) {
 							closeQueues(queues, properties, correlationId);
 							queues = null;
 							errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e);
@@ -335,7 +335,7 @@ public class QueueCreator {
 				}
 			}
 			if (queues != null) {
-				String readQuery = (String)properties.get(name + ".readQuery");
+				String readQuery = (String) properties.get(name + ".readQuery");
 				if (readQuery != null) {
 					FixedQuerySender readQueryFixedQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 					readQueryFixedQuerySender.setName("Test Tool query sender");
@@ -345,7 +345,7 @@ public class QueueCreator {
 						QueueUtils.invokeSetters(readQueryFixedQuerySender, queueProperties);
 						readQueryFixedQuerySender.setQuery(readQuery);
 						readQueryFixedQuerySender.configure();
-					} catch(Exception e) {
+					} catch (Exception e) {
 						closeQueues(queues, properties, correlationId);
 						queues = null;
 						errorMessage("Could not configure '" + name + "': " + e.getMessage(), e);
@@ -354,7 +354,7 @@ public class QueueCreator {
 						try {
 							readQueryFixedQuerySender.open();
 							querySendersInfo.put("readQueryQueryFixedQuerySender", readQueryFixedQuerySender);
-						} catch(SenderException e) {
+						} catch (SenderException e) {
 							closeQueues(queues, properties, correlationId);
 							queues = null;
 							errorMessage("Could not open '" + name + "': " + e.getMessage(), e);
@@ -363,11 +363,11 @@ public class QueueCreator {
 				}
 			}
 			if (queues != null) {
-				String waitBeforeRead = (String)properties.get(name + ".waitBeforeRead");
+				String waitBeforeRead = (String) properties.get(name + ".waitBeforeRead");
 				if (waitBeforeRead != null) {
 					try {
 						querySendersInfo.put("readQueryWaitBeforeRead", Integer.valueOf(waitBeforeRead));
-					} catch(NumberFormatException e) {
+					} catch (NumberFormatException e) {
 						errorMessage("Value of '" + name + ".waitBeforeRead' not a number: " + e.getMessage(), e);
 					}
 				}

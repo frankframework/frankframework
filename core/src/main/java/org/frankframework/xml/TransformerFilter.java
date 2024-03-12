@@ -41,9 +41,9 @@ public class TransformerFilter extends FullXmlFilter {
 		SAXResult transformedStream = new SAXResult();
 		transformedStream.setHandler(handler);
 		if (handler instanceof LexicalHandler) {
-			transformedStream.setLexicalHandler((LexicalHandler)handler);
+			transformedStream.setLexicalHandler((LexicalHandler) handler);
 		}
-		this.transformerHandler=transformerHandler;
+		this.transformerHandler = transformerHandler;
 		transformerHandler.setResult(transformedStream);
 		errorListener = transformerHandler.getTransformer().getErrorListener();
 		ContentHandler inputHandler = transformerHandler;
@@ -61,7 +61,7 @@ public class TransformerFilter extends FullXmlFilter {
 				@Override
 				public void error(TransformerException paramTransformerException) throws TransformerException {
 					try {
-						if (errorListener!=null) {
+						if (errorListener != null) {
 							errorListener.error(paramTransformerException);
 						}
 					} catch (TransformerException e) {
@@ -75,7 +75,7 @@ public class TransformerFilter extends FullXmlFilter {
 				@Override
 				public void fatalError(TransformerException paramTransformerException) throws TransformerException {
 					try {
-						if (errorListener!=null) {
+						if (errorListener != null) {
 							errorListener.fatalError(paramTransformerException);
 						}
 					} catch (TransformerException e) {
@@ -90,7 +90,7 @@ public class TransformerFilter extends FullXmlFilter {
 				@Override
 				public void warning(TransformerException paramTransformerException) throws TransformerException {
 					try {
-						if (errorListener!=null) {
+						if (errorListener != null) {
 							errorListener.warning(paramTransformerException);
 						}
 					} catch (TransformerException e) {

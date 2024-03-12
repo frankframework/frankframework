@@ -36,79 +36,83 @@ import org.frankframework.stream.Message;
  * <tr><td>&lt;filenname part of the path&gt;</td><td>default</td></tr>
  * </table>
  * </p>
- * @author  Gerrit van Brakel
- * @since   4.8
+ *
+ * @author Gerrit van Brakel
+ * @since 4.8
  */
 @Deprecated
 @ConfigurationWarning("Please replace with XmlSwitch with an xpathExpression or serviceSelectionStylesheetFilename")
 public class FilenameSwitch extends AbstractPipe {
 
-	private String notFoundForwardName=null;
-	private boolean toLowercase=true;
+	private String notFoundForwardName = null;
+	private boolean toLowercase = true;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getNotFoundForwardName()!=null) {
-			if (findForward(getNotFoundForwardName())==null){
-				ConfigurationWarnings.add(this, log, "has notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
+		if (getNotFoundForwardName() != null) {
+			if (findForward(getNotFoundForwardName()) == null) {
+				ConfigurationWarnings.add(this, log, "has notFoundForwardName attribute. However, this forward [" + getNotFoundForwardName() + "] is not configured.");
 			}
 		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String forward="";
+		String forward = "";
 		String sInput;
 		try {
 			sInput = message.asString();
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
-		PipeForward pipeForward=null;
+		PipeForward pipeForward = null;
 
-		int slashPos=sInput.lastIndexOf('/');
-		if (slashPos>0) {
-			sInput=sInput.substring(slashPos+1);
+		int slashPos = sInput.lastIndexOf('/');
+		if (slashPos > 0) {
+			sInput = sInput.substring(slashPos + 1);
 		}
-		slashPos=sInput.lastIndexOf('\\');
-		if (slashPos>0) {
-			sInput=sInput.substring(slashPos+1);
+		slashPos = sInput.lastIndexOf('\\');
+		if (slashPos > 0) {
+			sInput = sInput.substring(slashPos + 1);
 		}
-		forward=sInput;
+		forward = sInput;
 		if (isToLowercase()) {
-			forward=forward.toLowerCase();
+			forward = forward.toLowerCase();
 		}
 		log.debug("determined forward [{}]", forward);
 
 		if (findForward(forward) != null)
-			pipeForward=findForward(forward);
+			pipeForward = findForward(forward);
 		else {
 			log.info("determined forward [{}], which is not defined. Will use [{}] instead", forward, getNotFoundForwardName());
-			pipeForward=findForward(getNotFoundForwardName());
+			pipeForward = findForward(getNotFoundForwardName());
 		}
 
-		if (pipeForward==null) {
-			throw new PipeRunException (this, "cannot find forward or pipe named ["+forward+"]");
+		if (pipeForward == null) {
+			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
 		}
 		return new PipeRunResult(pipeForward, message);
 	}
 
 	/** forward returned when the forward or pipename derived from the filename that was the input could not be found. */
-	public void setNotFoundForwardName(String notFound){
-		notFoundForwardName=notFound;
+	public void setNotFoundForwardName(String notFound) {
+		notFoundForwardName = notFound;
 	}
-	public String getNotFoundForwardName(){
+
+	public String getNotFoundForwardName() {
 		return notFoundForwardName;
 	}
 
 	/**
 	 * convert the result to lowercase, before searching for a corresponding forward
+	 *
 	 * @ff.default true
 	 */
 	public void setToLowercase(boolean b) {
 		toLowercase = b;
 	}
+
 	public boolean isToLowercase() {
 		return toLowercase;
 	}

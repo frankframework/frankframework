@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import org.frankframework.configuration.filters.OnlyActiveFilter;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.Test;
 
 public class OnlyActiveFilterTest {
@@ -38,7 +39,7 @@ public class OnlyActiveFilterTest {
 
 		XmlUtils.parseXml(source, filter);
 
-		String actual = new String (target.toString());
+		String actual = new String(target.toString());
 		assertEquals(expected, actual);
 	}
 

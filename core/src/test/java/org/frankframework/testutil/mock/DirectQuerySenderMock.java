@@ -20,25 +20,25 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.stream.Message;
+
 import org.mockito.Mockito;
 
 /**
  * Enables the ability to provide a mockable DirectQuerySender. In some places a new QuerySender is created to execute (custom) statements.
  * This allows the result to be mocked.
  *
- * @See {@link BusTestBase#mockDirectQuerySenderResult(String, Message)}
- *
  * @author Niels Meijer
+ * @See {@link BusTestBase#mockDirectQuerySenderResult(String, Message)}
  */
 public class DirectQuerySenderMock extends DirectQuerySender {
 	private final Map<String, Message> mocks = new HashMap<>();
 
 	@Override
 	public Connection getConnection() throws JdbcException {
-		if(mocks.containsKey(getName())) {
+		if (mocks.containsKey(getName())) {
 			try {
 				Connection conn = Mockito.mock(Connection.class);
-				DatabaseMetaData md= Mockito.mock(DatabaseMetaData.class);
+				DatabaseMetaData md = Mockito.mock(DatabaseMetaData.class);
 				Mockito.doReturn(md).when(conn).getMetaData();
 				PreparedStatement stmt = Mockito.mock(PreparedStatement.class);
 				Mockito.doReturn(stmt).when(conn).prepareStatement(Mockito.anyString());
@@ -54,7 +54,7 @@ public class DirectQuerySenderMock extends DirectQuerySender {
 
 	@Override
 	protected DataSource getDatasource() throws JdbcException {
-		if(mocks.containsKey(getName())) {
+		if (mocks.containsKey(getName())) {
 			return Mockito.mock(DataSource.class);
 		}
 		return super.getDatasource();
@@ -73,7 +73,7 @@ public class DirectQuerySenderMock extends DirectQuerySender {
 	@Override
 	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Message mockResult = mocks.get(getName());
-		if(!Message.isNull(mockResult)) {
+		if (!Message.isNull(mockResult)) {
 			return new SenderResult(mockResult);
 		}
 		return new SenderResult(message);

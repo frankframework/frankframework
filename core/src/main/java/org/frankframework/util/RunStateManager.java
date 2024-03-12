@@ -33,8 +33,8 @@ public class RunStateManager implements RunStateEnquirer {
 	}
 
 	public synchronized void setRunState(RunState newRunState) {
-		if(runState != newRunState) {
-			if(log.isDebugEnabled())
+		if (runState != newRunState) {
+			if (log.isDebugEnabled())
 				log.debug("Runstate [" + this + "] set from " + runState + " to " + newRunState);
 
 			runState = newRunState;

@@ -15,9 +15,11 @@ import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.util.UUIDUtil;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -52,7 +54,7 @@ public class ClassLoaderEntityResolverTest {
 
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(TestScopeProvider.wrap(cl));
 
-		String systemId="/ClassLoader/Xslt/names.xsl";
+		String systemId = "/ClassLoader/Xslt/names.xsl";
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
 		assertNotNull(inputSource);
 
@@ -73,7 +75,7 @@ public class ClassLoaderEntityResolverTest {
 
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(TestScopeProvider.wrap(cl));
 
-		String systemId="ClassLoader/Xslt/names.xsl";
+		String systemId = "ClassLoader/Xslt/names.xsl";
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
 		assertNotNull(inputSource);
 	}
@@ -85,7 +87,7 @@ public class ClassLoaderEntityResolverTest {
 		assertNotNull(context);
 
 		//Get a random filename
-		final String randomName = "myFile-"+ UUIDUtil.createRandomUUID();
+		final String randomName = "myFile-" + UUIDUtil.createRandomUUID();
 
 		//Find a file which does not exist, but also does not return NULL
 		URL file = new URL(context, randomName);
@@ -93,10 +95,9 @@ public class ClassLoaderEntityResolverTest {
 
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localScopeProvider);
 
-		try(InputStream is = file.openStream()) {
+		try (InputStream is = file.openStream()) {
 			fail("This should fail!"); //Make sure the file cannot be found!
-		}
-		catch (IOException e) {}
+		} catch (IOException e) {}
 		String systemId = file.getFile(); //Get the full absolute path to the non-existing file
 
 		// Act

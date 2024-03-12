@@ -18,7 +18,6 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -31,9 +30,8 @@ import org.frankframework.stream.Message;
  * Selects an exitState, based on if the input is a XML string.
  * The input is an XML string if it, after removing leading white-space characters, starts with '&lt;'.
  *
- *
- * @author  Peter Leeuwenburgh
- * @since   4.3
+ * @author Peter Leeuwenburgh
+ * @since 4.3
  */
 @ElementType(ElementTypes.ROUTER)
 public class IsXmlPipe extends AbstractPipe {
@@ -45,7 +43,7 @@ public class IsXmlPipe extends AbstractPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward = "";
-		if (message==null) {
+		if (message == null) {
 			if (isElseForwardOnEmptyInput()) {
 				forward = elseForwardName;
 			} else {
@@ -87,6 +85,7 @@ public class IsXmlPipe extends AbstractPipe {
 
 	/**
 	 * forward returned when <code>'true'</code>
+	 *
 	 * @ff.default then
 	 */
 	public void setThenForwardName(String thenForwardName) {
@@ -99,6 +98,7 @@ public class IsXmlPipe extends AbstractPipe {
 
 	/**
 	 * forward returned when 'false'
+	 *
 	 * @ff.default else
 	 */
 	public void setElseForwardName(String elseForwardName) {
@@ -115,6 +115,7 @@ public class IsXmlPipe extends AbstractPipe {
 
 	/**
 	 * return elseforward when input is empty (or thenforward)
+	 *
 	 * @ff.default true
 	 */
 	public void setElseForwardOnEmptyInput(boolean b) {

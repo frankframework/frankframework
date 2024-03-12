@@ -36,7 +36,7 @@ import lombok.Setter;
 
 /**
  * Factory through which (TX-enabled) Pooling DataSources can be retrieved.
- *
+ * <p>
  * Already created DataSources are stored in a ConcurrentHashMap.
  * Every DataSource can be augmented before it is added.
  */
@@ -64,9 +64,9 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if(maxPoolSize > 1) {
+		if (maxPoolSize > 1) {
 			log.info("Creating connection pool for datasource [{}]", dataSourceName);
-			return createPool((DataSource)dataSource, dataSourceName);
+			return createPool((DataSource) dataSource, dataSourceName);
 		}
 		log.info("Pooling not configured, using datasource [{}] without augmentation", dataSourceName);
 		return (DataSource) dataSource;

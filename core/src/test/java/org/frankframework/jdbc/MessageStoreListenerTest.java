@@ -20,6 +20,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -48,7 +49,7 @@ public class MessageStoreListenerTest {
 
 	@AfterEach
 	public void teardown() throws Exception {
-		if(listener != null) {
+		if (listener != null) {
 			listener.close(); //does this trigger an exception
 		}
 	}
@@ -70,7 +71,7 @@ public class MessageStoreListenerTest {
 	public void testSelectQuery() throws ConfigurationException {
 		listener.configure();
 
-		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M' AND (SLOTID='slot')";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM " + TEST_TABLE_NAME + " t WHERE TYPE='M' AND (SLOTID='slot')";
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
@@ -80,7 +81,7 @@ public class MessageStoreListenerTest {
 		listener.setSlotId(null);
 		listener.configure();
 
-		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M'";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM " + TEST_TABLE_NAME + " t WHERE TYPE='M'";
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
@@ -90,7 +91,7 @@ public class MessageStoreListenerTest {
 		listener.setSelectCondition("t.TVARCHAR='x'");
 		listener.configure();
 
-		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M' AND (SLOTID='slot' AND (t.TVARCHAR='x'))";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM " + TEST_TABLE_NAME + " t WHERE TYPE='M' AND (SLOTID='slot' AND (t.TVARCHAR='x'))";
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
@@ -101,7 +102,7 @@ public class MessageStoreListenerTest {
 		listener.setSelectCondition("t.TVARCHAR='x'");
 		listener.configure();
 
-		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM "+TEST_TABLE_NAME+" t WHERE TYPE='M' AND ((t.TVARCHAR='x'))";
+		String expected = "SELECT MESSAGEKEY,MESSAGEID,CORRELATIONID,MESSAGE FROM " + TEST_TABLE_NAME + " t WHERE TYPE='M' AND ((t.TVARCHAR='x'))";
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
@@ -110,7 +111,7 @@ public class MessageStoreListenerTest {
 	public void testUpdateStatusQueryDone() throws ConfigurationException {
 		listener.configure();
 
-		String expected = "UPDATE "+TEST_TABLE_NAME+" SET TYPE='A',MESSAGEDATE=NOW(),COMMENTS=?,EXPIRYDATE = NOW() + 30 WHERE TYPE!='A' AND MESSAGEKEY=?";
+		String expected = "UPDATE " + TEST_TABLE_NAME + " SET TYPE='A',MESSAGEDATE=NOW(),COMMENTS=?,EXPIRYDATE = NOW() + 30 WHERE TYPE!='A' AND MESSAGEKEY=?";
 
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
 	}
@@ -120,7 +121,7 @@ public class MessageStoreListenerTest {
 		listener.setMoveToMessageLog(false);
 		listener.configure();
 
-		String expected = "DELETE FROM "+TEST_TABLE_NAME+" WHERE MESSAGEKEY = ?";
+		String expected = "DELETE FROM " + TEST_TABLE_NAME + " WHERE MESSAGEKEY = ?";
 
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
 	}
@@ -129,7 +130,7 @@ public class MessageStoreListenerTest {
 	public void testUpdateStatusQueryError() throws ConfigurationException {
 		listener.configure();
 
-		String expected = "UPDATE "+TEST_TABLE_NAME+" SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
+		String expected = "UPDATE " + TEST_TABLE_NAME + " SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
 
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
 	}
@@ -139,7 +140,7 @@ public class MessageStoreListenerTest {
 		listener.setSelectCondition("1=1");
 		listener.configure();
 
-		String expected = "UPDATE "+TEST_TABLE_NAME+" SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
+		String expected = "UPDATE " + TEST_TABLE_NAME + " SET TYPE='E',MESSAGEDATE=NOW(),COMMENTS=? WHERE TYPE!='E' AND MESSAGEKEY=?";
 
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
 	}
@@ -150,7 +151,7 @@ public class MessageStoreListenerTest {
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
 
-		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='M' AND (SLOTID='slot'))";
+		String expected = "SELECT COUNT(*) FROM " + TEST_TABLE_NAME + " t WHERE (TYPE='M' AND (SLOTID='slot'))";
 
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
@@ -161,7 +162,7 @@ public class MessageStoreListenerTest {
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
 
-		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='E' AND (SLOTID='slot'))";
+		String expected = "SELECT COUNT(*) FROM " + TEST_TABLE_NAME + " t WHERE (TYPE='E' AND (SLOTID='slot'))";
 
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
@@ -173,7 +174,7 @@ public class MessageStoreListenerTest {
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
 
-		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='M' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
+		String expected = "SELECT COUNT(*) FROM " + TEST_TABLE_NAME + " t WHERE (TYPE='M' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
 
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
@@ -185,7 +186,7 @@ public class MessageStoreListenerTest {
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
 
-		String expected = "SELECT COUNT(*) FROM "+TEST_TABLE_NAME+" t WHERE (TYPE='E' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
+		String expected = "SELECT COUNT(*) FROM " + TEST_TABLE_NAME + " t WHERE (TYPE='E' AND (SLOTID='slot' AND (t.VARCHAR='A')))";
 
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
@@ -195,7 +196,7 @@ public class MessageStoreListenerTest {
 		listener.configure();
 		listener.open();
 
-		String message ="fakeMessage";
+		String message = "fakeMessage";
 		insertARecord(message, 'M');
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
@@ -208,7 +209,7 @@ public class MessageStoreListenerTest {
 		listener.configure();
 		listener.open();
 
-		String message ="fakeMessage";
+		String message = "fakeMessage";
 		insertARecord(message, 'M');
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
@@ -221,10 +222,10 @@ public class MessageStoreListenerTest {
 		listener.configure();
 		listener.open();
 
-		String message ="fakeMessage";
+		String message = "fakeMessage";
 		String storageKey = insertARecord(message, 'M');
 		if (storageKey.startsWith("<id>")) {
-			storageKey = storageKey.substring(4, storageKey.length()-5);
+			storageKey = storageKey.substring(4, storageKey.length() - 5);
 		}
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
@@ -233,7 +234,7 @@ public class MessageStoreListenerTest {
 		assertEquals(storageKey, ro.getId());
 		Object o = ro.getRawMessage();
 		if (o instanceof MessageWrapper) {
-			MessageWrapper mw = (MessageWrapper)o;
+			MessageWrapper mw = (MessageWrapper) o;
 			assertEquals(message, mw.getMessage().asString());
 		} else {
 			assertEquals(message, o);
@@ -245,10 +246,10 @@ public class MessageStoreListenerTest {
 		listener.configure();
 		listener.open();
 
-		String message ="fakeMessage";
+		String message = "fakeMessage";
 		String storageKey = insertARecord(message, 'M');
 		if (storageKey.startsWith("<id>")) {
-			storageKey = storageKey.substring(4, storageKey.length()-5);
+			storageKey = storageKey.substring(4, storageKey.length() - 5);
 		}
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
@@ -266,7 +267,7 @@ public class MessageStoreListenerTest {
 	}
 
 	private String insertARecord(String message, char type) throws SenderException, ConfigurationException {
-		storage.setType(type+"");
+		storage.setType(type + "");
 		storage.configure();
 		storage.open();
 		try {

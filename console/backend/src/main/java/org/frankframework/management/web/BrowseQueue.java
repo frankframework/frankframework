@@ -27,18 +27,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 
 /**
  * Send a message with JMS.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
@@ -70,22 +68,22 @@ public final class BrowseQueue extends FrankApiBase {
 		Boolean lookupDestination = RequestUtils.getBooleanValue(json, "lookupDestination");
 		String type = RequestUtils.getValue(json, "type");
 
-		if(StringUtils.isNotEmpty(destination))
+		if (StringUtils.isNotEmpty(destination))
 			throw new ApiException("No destination provided");
-		if(StringUtils.isNotEmpty(type))
+		if (StringUtils.isNotEmpty(type))
 			throw new ApiException("No type provided");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
 		builder.addHeader("destination", destination);
 		builder.addHeader("type", type);
-		if(rowNumbersOnly != null) {
+		if (rowNumbersOnly != null) {
 			builder.addHeader("rowNumbersOnly", rowNumbersOnly);
 		}
-		if(showPayload != null) {
+		if (showPayload != null) {
 			builder.addHeader("showPayload", showPayload);
 		}
-		if(lookupDestination != null) {
+		if (lookupDestination != null) {
 			builder.addHeader("lookupDestination", lookupDestination);
 		}
 		return callSyncGateway(builder);

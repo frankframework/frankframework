@@ -28,30 +28,32 @@ import org.frankframework.logging.IbisMaskingLayout;
  * Although this could be an inner class of the MessageKeeper,
  * it's made "standalone" to provide the use of iterators and
  * enumerators with the MessageKeeper.
+ *
  * @author Johan Verrips IOS
  */
 public class MessageKeeperMessage {
 
-	private Date messageDate=new Date();
+	private Date messageDate = new Date();
 	private String messageText;
 	private MessageKeeper.MessageKeeperLevel messageLevel;
 
 	/**
-	* Set the messagetext of this message. The text will be xml-encoded.
-	*/
-	public MessageKeeperMessage(String message, MessageKeeper.MessageKeeperLevel level){
-	//	this.messageText=XmlUtils.encodeChars(message);
-		this.messageText=maskMessage(message);
-		this.messageLevel=level;
+	 * Set the messagetext of this message. The text will be xml-encoded.
+	 */
+	public MessageKeeperMessage(String message, MessageKeeper.MessageKeeperLevel level) {
+		//	this.messageText=XmlUtils.encodeChars(message);
+		this.messageText = maskMessage(message);
+		this.messageLevel = level;
 	}
+
 	/**
-	* Set the messagetext and -date of this message. The text will be xml-encoded.
-	*/
+	 * Set the messagetext and -date of this message. The text will be xml-encoded.
+	 */
 	public MessageKeeperMessage(String message, Date date, MessageKeeper.MessageKeeperLevel level) {
-	//	this.messageText=XmlUtils.encodeChars(message);
-		this.messageText=maskMessage(message);
-		this.messageDate=date;
-		this.messageLevel=level;
+		//	this.messageText=XmlUtils.encodeChars(message);
+		this.messageText = maskMessage(message);
+		this.messageDate = date;
+		this.messageLevel = level;
 	}
 
 	private String maskMessage(String message) {
@@ -68,11 +70,13 @@ public class MessageKeeperMessage {
 	public Date getMessageDate() {
 		return messageDate;
 	}
+
 	public String getMessageText() {
 		return messageText;
 	}
+
 	public String getMessageLevel() {
-		return messageLevel!=null ? messageLevel.name() : null;
+		return messageLevel != null ? messageLevel.name() : null;
 	}
 
 	@Override

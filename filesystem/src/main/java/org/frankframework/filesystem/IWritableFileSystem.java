@@ -23,23 +23,22 @@ import org.frankframework.util.StreamUtil;
 
 /**
  * Extension to {@link IBasicFileSystem} that can be implemented to allow creation of files and folders.
- *
+ * <p>
  * For writable filesystems, the name of a file can be freely chosen, and:
  * - moving or copying a file to a folder probably will not change its name
  * - moving or copying a file to a folder can 'overwrite' a file already present in the folder
  * To accommodate these situations, for writable filesystems we support overwrite protection and rollover.
  * This requires that writeableFileSystem.getName() returns the name of the file in the directory, not the full name including the folder name.
  *
- * @author Gerrit van Brakel
- *
  * @param <F> File representation
+ * @author Gerrit van Brakel
  */
 public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 
 	public OutputStream createFile(F f) throws FileSystemException, IOException;
 
 	/**
-	 * @param file FileSystem file reference
+	 * @param file    FileSystem file reference
 	 * @param content to write or NULL. When NULL existing files should be overwritten, and new files should be created.
 	 */
 	default void createFile(F file, InputStream content) throws FileSystemException, IOException {

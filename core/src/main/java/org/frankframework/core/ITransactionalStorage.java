@@ -27,10 +27,11 @@ import org.frankframework.receivers.Receiver;
 /**
  * The <code>ITransactionalStorage</code> is responsible for storing and
  * retrieving-back messages under transaction control.
+ *
+ * @author Gerrit van Brakel
  * @see Receiver
- * @author  Gerrit van Brakel
- * @since   4.1
-*/
+ * @since 4.1
+ */
 @FrankDocGroup(order = 55, name = "TransactionalStorages")
 public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
@@ -41,13 +42,14 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	 * method is called the storeMessage() and retrieveMessage() methods may be called
 	 */
 	void open() throws Exception;
+
 	void close();
 
 	void configure() throws ConfigurationException;
 
 	/**
 	 * Store the message, returns storageKey.
-	 *
+	 * <p>
 	 * The messageId should be unique.
 	 */
 	String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
@@ -59,14 +61,17 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 
 	/** Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes. */
 	void setSlotId(String string);
+
 	String getSlotId();
 
 	/**
 	 * Possible values are <code>E</code> (error store), <code>M</code> (message store), <code>L</code> (message log for Pipe) or <code>A</code> (message log for Receiver).<br/>
 	 * Receiver will always set type to <code>E</code> for errorStorage and always set type to <code>A</code> for messageLog. SenderPipe will set type to <code>L</code> for messageLog (when type isn't specified).<br/>
 	 * See {@link MessageStoreSender} for type <code>M</code>.
+	 *
 	 * @ff.default <code>E</code> for errorStorage on Receiver<br/><code>A</code> for messageLog on Receiver<br/><code>L</code> for messageLog on Pipe
 	 */
 	void setType(String string);
+
 	String getType();
 }

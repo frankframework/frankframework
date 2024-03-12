@@ -30,18 +30,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
 import org.frankframework.util.RequestUtils;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
@@ -144,12 +142,12 @@ public class ShowScheduler extends FrankApiBase {
 
 		builder.addHeader("persistent", RequestUtils.resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false));
 		builder.addHeader("locker", RequestUtils.resolveTypeFromMap(inputDataMap, "locker", boolean.class, false));
-		builder.addHeader("lockkey", RequestUtils.resolveTypeFromMap(inputDataMap, "lockkey", String.class, "lock4["+jobName+"]"));
+		builder.addHeader("lockkey", RequestUtils.resolveTypeFromMap(inputDataMap, "lockkey", String.class, "lock4[" + jobName + "]"));
 
 		builder.addHeader("message", RequestUtils.resolveStringFromMap(inputDataMap, "message"));
 
 		builder.addHeader("description", RequestUtils.resolveStringFromMap(inputDataMap, "description"));
-		if(overwrite) {
+		if (overwrite) {
 			builder.addHeader("overwrite", overwrite);
 		}
 

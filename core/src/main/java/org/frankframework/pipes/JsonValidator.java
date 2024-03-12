@@ -20,14 +20,10 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.leadpony.justify.api.JsonSchema;
-import org.leadpony.justify.api.JsonValidationService;
-import org.leadpony.justify.api.ProblemHandler;
-
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParsingException;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -37,6 +33,9 @@ import org.frankframework.core.Resource;
 import org.frankframework.doc.Category;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
+import org.leadpony.justify.api.JsonSchema;
+import org.leadpony.justify.api.JsonValidationService;
+import org.leadpony.justify.api.ProblemHandler;
 
 
 /**
@@ -49,7 +48,7 @@ public class JsonValidator extends ValidatorBase {
 
 	private @Getter String schema;
 	//private @Getter String jsonSchemaVersion=null;
-	private @Getter String subSchemaPrefix="/definitions/";
+	private @Getter String subSchemaPrefix = "/definitions/";
 	private @Getter String reasonSessionKey = "failureReason";
 
 	private JsonValidationService service = JsonValidationService.newInstance();
@@ -58,7 +57,7 @@ public class JsonValidator extends ValidatorBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getSubSchemaPrefix()==null) {
+		if (getSubSchemaPrefix() == null) {
 			setSubSchemaPrefix("");
 		}
 	}
@@ -90,10 +89,10 @@ public class JsonValidator extends ValidatorBase {
 				messageRoot = responseMode ? getResponseRoot() : getRoot();
 			}
 			if (StringUtils.isNotEmpty(messageRoot)) {
-				log.debug("validation to messageRoot ["+messageRoot+"]");
-				curSchema = jsonSchema.getSubschemaAt(getSubSchemaPrefix()+messageRoot);
-				if (curSchema==null) {
-					throw new PipeRunException(this, "No schema found for ["+getSubSchemaPrefix()+messageRoot+"]");
+				log.debug("validation to messageRoot [" + messageRoot + "]");
+				curSchema = jsonSchema.getSubschemaAt(getSubSchemaPrefix() + messageRoot);
+				if (curSchema == null) {
+					throw new PipeRunException(this, "No schema found for [" + getSubSchemaPrefix() + messageRoot + "]");
 				}
 			}
 			// Parses the JSON instance by JsonParser
@@ -102,7 +101,7 @@ public class JsonValidator extends ValidatorBase {
 					JsonParser.Event event = parser.next();
 					// Could do something useful here, like posting the event on a JsonEventHandler.
 				}
-				resultEvent = problems.isEmpty()? ValidationResult.VALID : ValidationResult.INVALID;
+				resultEvent = problems.isEmpty() ? ValidationResult.VALID : ValidationResult.INVALID;
 			} catch (JsonParsingException e) {
 				resultEvent = ValidationResult.PARSER_ERROR;
 				problems.add(e.getMessage());
@@ -120,8 +119,8 @@ public class JsonValidator extends ValidatorBase {
 	protected JsonSchema getJsonSchema() throws IOException {
 		String schemaName = getSchema();
 		Resource schemaRes = Resource.getResource(this, schemaName);
-		if (schemaRes==null) {
-			throw new FileNotFoundException("Cannot find schema ["+schemaName+"]");
+		if (schemaRes == null) {
+			throw new FileNotFoundException("Cannot find schema [" + schemaName + "]");
 		}
 		JsonSchema result = service.readSchema(schemaRes.openStream());
 		return result;
@@ -129,11 +128,12 @@ public class JsonValidator extends ValidatorBase {
 
 	/** The JSON Schema to validate to */
 	public void setSchema(String schema) {
-		this.schema=schema;
+		this.schema = schema;
 	}
 
 	/**
 	 * Prefix to element name to find subschema in schema
+	 *
 	 * @ff.default /definitions/
 	 */
 	public void setSubSchemaPrefix(String prefix) {
@@ -142,6 +142,7 @@ public class JsonValidator extends ValidatorBase {
 
 	/**
 	 * If set: key of session variable to store reasons of mis-validation in
+	 *
 	 * @ff.default failureReason
 	 */
 	public void setReasonSessionKey(String reasonSessionKey) {

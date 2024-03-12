@@ -50,7 +50,7 @@ public abstract class WsdlGeneratorUtils {
 
 	public static Collection<IListener> getListeners(IAdapter adapter) {
 		List<IListener> result = new ArrayList<>();
-		for (Receiver receiver: adapter.getReceivers()) {
+		for (Receiver receiver : adapter.getReceivers()) {
 			result.add(receiver.getListener());
 		}
 		return result;
@@ -58,9 +58,9 @@ public abstract class WsdlGeneratorUtils {
 
 	public static String getEsbSoapParadigm(IXmlValidator xmlValidator) {
 		String soapBody = xmlValidator.getMessageRoot();
-		if(soapBody != null) {
+		if (soapBody != null) {
 			int i = soapBody.lastIndexOf('_');
-			if(i != -1) {
+			if (i != -1) {
 				return soapBody.substring(i + 1);
 			}
 		}
@@ -69,9 +69,9 @@ public abstract class WsdlGeneratorUtils {
 
 	public static String getFirstNamespaceFromSchemaLocation(IXmlValidator inputValidator) {
 		String schemaLocation = inputValidator.getSchemaLocation();
-		if(schemaLocation != null) {
+		if (schemaLocation != null) {
 			String[] split = schemaLocation.trim().split("\\s+");
-			if(split.length > 0) {
+			if (split.length > 0) {
 				return split[0];
 			}
 		}
@@ -80,7 +80,7 @@ public abstract class WsdlGeneratorUtils {
 
 	public static XMLStreamWriter getWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
 		XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(out, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		if(indentWsdl) {
+		if (indentWsdl) {
 			IndentingXMLStreamWriter iw = new IndentingXMLStreamWriter(w);
 			iw.setIndent("\t");
 			w = iw;
@@ -90,8 +90,8 @@ public abstract class WsdlGeneratorUtils {
 
 	static String getNCName(String name) {
 		StringBuilder buf = new StringBuilder();
-		for(int i = 0; i < name.length(); i++) {
-			if(i == 0) {
+		for (int i = 0; i < name.length(); i++) {
+			if (i == 0) {
 				buf.append(XMLChar.isNCNameStart(name.charAt(i)) ? name.charAt(i) : '_');
 			} else {
 				buf.append(XMLChar.isNCName(name.charAt(i)) ? name.charAt(i) : '_');
@@ -111,18 +111,18 @@ public abstract class WsdlGeneratorUtils {
 		boolean hasWebServiceListener = false;
 		String webServiceListenerNamespace = null;
 		for (IListener<?> listener : WsdlGeneratorUtils.getListeners(adapter)) {
-			if(listener instanceof WebServiceListener) {
+			if (listener instanceof WebServiceListener) {
 				hasWebServiceListener = true;
-				webServiceListenerNamespace = ((WebServiceListener)listener).getServiceNamespaceURI();
+				webServiceListenerNamespace = ((WebServiceListener) listener).getServiceNamespaceURI();
 			}
 		}
 
 		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
-		if(inputValidator instanceof SoapValidator) { //We have to check this first as the SoapValidator cannot use getSchema()
+		if (inputValidator instanceof SoapValidator) { //We have to check this first as the SoapValidator cannot use getSchema()
 			return true;
-		} else if(inputValidator instanceof IXmlValidator) {
-			IXmlValidator xmlValidator = (IXmlValidator)inputValidator;
-			if(xmlValidator.getSchema() != null) {
+		} else if (inputValidator instanceof IXmlValidator) {
+			IXmlValidator xmlValidator = (IXmlValidator) inputValidator;
+			if (xmlValidator.getSchema() != null) {
 				return StringUtils.isNotEmpty(webServiceListenerNamespace);
 			}
 		}

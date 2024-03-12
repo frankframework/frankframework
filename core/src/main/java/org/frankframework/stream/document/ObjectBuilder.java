@@ -56,14 +56,14 @@ public abstract class ObjectBuilder extends StructureBuilder implements IObjectB
 	public ObjectBuilder addObjectField(String name) throws SAXException {
 		INodeBuilder field = addField(name);
 		ObjectBuilder result = field.startObject();
-		result.field=field;
+		result.field = field;
 		return result;
 	}
 
 	public ArrayBuilder addArrayField(String name, String elementName) throws SAXException {
 		INodeBuilder field = addField(name);
 		ArrayBuilder result = field.startArray(elementName);
-		result.field=field;
+		result.field = field;
 		return result;
 	}
 

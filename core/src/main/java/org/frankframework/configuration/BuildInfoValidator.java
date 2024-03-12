@@ -46,7 +46,7 @@ public class BuildInfoValidator {
 
 	protected BuildInfoValidator(InputStream stream) throws ConfigurationException {
 		String buildInfo = "BuildInfo";
-		if(StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX)) {
+		if (StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX)) {
 			buildInfo += ADDITIONAL_PROPERTIES_FILE_SUFFIX;
 		}
 		this.buildInfoFilename = buildInfo + ".properties";
@@ -56,7 +56,7 @@ public class BuildInfoValidator {
 
 			read();
 			validate();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			throw new ConfigurationException("unable to read jarfile", e);
 		}
 	}
@@ -70,10 +70,10 @@ public class BuildInfoValidator {
 					String entryName = zipEntry.getName();
 					String fileName = FilenameUtils.getName(entryName);
 
-					if(buildInfoFilename.equals(fileName)) {
+					if (buildInfoFilename.equals(fileName)) {
 						name = FilenameUtils.getPathNoEndSeparator(entryName);
 						Properties props = new Properties();
-						try(Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(zipInputStream)) {
+						try (Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(zipInputStream)) {
 							props.load(reader);
 							LOG.info("properties loaded from archive, filename [{}]", name);
 						}
@@ -85,24 +85,26 @@ public class BuildInfoValidator {
 				}
 			}
 		}
-		if(!isBuildInfoPresent) {
-			throw new ConfigurationException("no ["+buildInfoFilename+"] present in configuration");
+		if (!isBuildInfoPresent) {
+			throw new ConfigurationException("no [" + buildInfoFilename + "] present in configuration");
 		}
 	}
 
 	private void validate() throws ConfigurationException {
-		if(StringUtils.isEmpty(name))
+		if (StringUtils.isEmpty(name))
 			throw new ConfigurationException("unknown configuration name");
-		if(StringUtils.isEmpty(version))
+		if (StringUtils.isEmpty(version))
 			throw new ConfigurationException("unknown configuration version");
 	}
 
 	public InputStream getJar() {
 		return new ByteArrayInputStream(jar);
 	}
+
 	public String getName() {
 		return name;
 	}
+
 	public String getVersion() {
 		return version;
 	}

@@ -28,6 +28,7 @@ import org.springframework.http.MediaType;
 public interface IFlowGenerator extends InitializingBean, DisposableBean {
 
 	public String getFileExtension();
+
 	public MediaType getMediaType();
 
 	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException;

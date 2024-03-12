@@ -17,25 +17,24 @@ package org.frankframework.stream.xml;
 
 import java.io.IOException;
 
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
 import lombok.Getter;
 import lombok.Setter;
 import org.frankframework.stream.JsonEventHandler;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 
 public class JsonXslt3XmlHandler implements JsonEventHandler {
 
-	private String TARGETNAMESPACE="http://www.w3.org/2013/XSL/json";
+	private String TARGETNAMESPACE = "http://www.w3.org/2013/XSL/json";
 
 	private @Getter @Setter ContentHandler contentHandler;
 
-	private boolean elementEnded=false;
-	private String parsedKey=null;
+	private boolean elementEnded = false;
+	private String parsedKey = null;
 
 	public JsonXslt3XmlHandler() {
 		super();
@@ -50,32 +49,33 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 		Event event = parser.next();
 		if (event == Event.START_OBJECT) {
 			startElement("map", key);
-			while ((event = parser.next())!=Event.END_OBJECT) {
-				if (event!=Event.KEY_NAME) {
-					throw new SAXException("expected key name at "+parser.getLocation());
+			while ((event = parser.next()) != Event.END_OBJECT) {
+				if (event != Event.KEY_NAME) {
+					throw new SAXException("expected key name at " + parser.getLocation());
 				}
-				key=parser.getString();
-				parse(key,parser);
-			};
+				key = parser.getString();
+				parse(key, parser);
+			}
+			;
 			endElement("map");
-		} else if (event==Event.END_ARRAY) {
+		} else if (event == Event.END_ARRAY) {
 			return false;
-		} else if (event==Event.START_ARRAY) {
+		} else if (event == Event.START_ARRAY) {
 			startElement("array", key);
-			while (parse(null,parser)); // parse array elements until the close
+			while (parse(null, parser)) ; // parse array elements until the close
 			endElement("array");
 		} else {
-			if (event==Event.VALUE_NULL) {
+			if (event == Event.VALUE_NULL) {
 				simpleElement("null", key, null);
 			} else {
-				if (event==Event.VALUE_FALSE) {
+				if (event == Event.VALUE_FALSE) {
 					simpleElement("boolean", key, "false");
 				} else {
-					if (event==Event.VALUE_TRUE) {
+					if (event == Event.VALUE_TRUE) {
 						simpleElement("boolean", key, "true");
 					} else {
-						String value =parser.getString();
-						if (event==Event.VALUE_NUMBER) {
+						String value = parser.getString();
+						if (event == Event.VALUE_NUMBER) {
 							simpleElement("number", key, value);
 						} else {
 							simpleElement("string", key, value);
@@ -88,47 +88,49 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 	}
 
 	private void newLine() throws SAXException {
-		ContentHandler ch=getContentHandler();
+		ContentHandler ch = getContentHandler();
 		ch.characters("\n".toCharArray(), 0, 1);
 	}
 
 	private void addAttribute(AttributesImpl attr, String name, String value) {
 		attr.addAttribute("", name, name, "", value); // Saxon requires type to be not null
 	}
+
 	private void startElement(String typename, String key) throws SAXException {
 		startElement(typename, key, null, null);
 	}
+
 	private void startElement(String typename, String key, String attrName, String attrValue) throws SAXException {
-		ContentHandler ch=getContentHandler();
-		AttributesImpl attr=new AttributesImpl(); // Saxon requires attr to be not null
-		if (key!=null) {
+		ContentHandler ch = getContentHandler();
+		AttributesImpl attr = new AttributesImpl(); // Saxon requires attr to be not null
+		if (key != null) {
 			addAttribute(attr, "key", key);
 		}
-		if (attrName!=null) {
+		if (attrName != null) {
 			addAttribute(attr, attrName, attrValue);
 		}
 		newLine();
 		ch.startElement(TARGETNAMESPACE, typename, typename, attr);
-		elementEnded=false;
+		elementEnded = false;
 	}
+
 	private void endElement(String typename) throws SAXException {
 		if (elementEnded) {
 			newLine();
 		}
-		ContentHandler ch=getContentHandler();
+		ContentHandler ch = getContentHandler();
 		ch.endElement(TARGETNAMESPACE, typename, typename);
-		elementEnded=true;
+		elementEnded = true;
 	}
 
 	private void simpleElement(String typename, String key, Object value) throws SAXException {
 		startElement(typename, key);
-		if (value!=null) {
+		if (value != null) {
 			String valueString = value.toString();
 			getContentHandler().characters(valueString.toCharArray(), 0, valueString.length());
 		}
 		endElement(typename);
 	}
-
 
 
 	@Override
@@ -150,7 +152,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 
 	@Override
 	public void startObjectEntry(String key) throws SAXException {
-		parsedKey=key;
+		parsedKey = key;
 	}
 
 	@Override

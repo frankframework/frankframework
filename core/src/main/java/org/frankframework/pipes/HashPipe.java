@@ -23,11 +23,9 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -44,7 +42,7 @@ import org.frankframework.util.StreamUtil;
 /**
  * Pipe that hashes the input message.
  *
- * @author	Niels Meijer
+ * @author Niels Meijer
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class HashPipe extends FixedForwardPipe {
@@ -59,18 +57,19 @@ public class HashPipe extends FixedForwardPipe {
 	public enum HashAlgorithm {
 		HmacMD5, HmacSHA1, HmacSHA256, HmacSHA384, HmacSHA512;
 	}
+
 	public enum HashEncoding {
 		Base64, Hex;
 	}
 
 	@Override
-	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String authAlias = getAuthAlias();
 		String secret = getSecret();
 		try {
 			ParameterList parameterList = getParameterList();
-			ParameterValueList pvl = parameterList==null ? null : parameterList.getValues(message, session);
-			if(pvl != null) { // at this location, it would never be useful that the parameterValue defaults to inputMessage
+			ParameterValueList pvl = parameterList == null ? null : parameterList.getValues(message, session);
+			if (pvl != null) { // at this location, it would never be useful that the parameterValue defaults to inputMessage
 				ParameterValue authAliasParamValue = pvl.get("authAlias");
 				if (authAliasParamValue != null) {
 					authAlias = authAliasParamValue.asStringValue();
@@ -80,15 +79,14 @@ public class HashPipe extends FixedForwardPipe {
 					secret = secretParamValue.asStringValue();
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new PipeRunException(this, "exception extracting authAlias", e);
 		}
 
 		CredentialFactory accessTokenCf = new CredentialFactory(authAlias, "", secret);
 		String cfSecret = accessTokenCf.getPassword();
 
-		if(cfSecret == null || cfSecret.isEmpty())
+		if (cfSecret == null || cfSecret.isEmpty())
 			throw new PipeRunException(this, "empty secret, unable to hash");
 
 		try {
@@ -120,17 +118,16 @@ public class HashPipe extends FixedForwardPipe {
 			}
 
 			return new PipeRunResult(getSuccessForward(), hash);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new PipeRunException(this, "error reading input", e);
-		}
-		catch (IllegalStateException | InvalidKeyException | NoSuchAlgorithmException e) {
+		} catch (IllegalStateException | InvalidKeyException | NoSuchAlgorithmException e) {
 			throw new PipeRunException(this, "error creating hash", e);
 		}
 	}
 
 	/**
 	 * Hash Algorithm to use
+	 *
 	 * @ff.default HmacSHA256
 	 */
 	public void setAlgorithm(HashAlgorithm algorithm) {
@@ -142,8 +139,10 @@ public class HashPipe extends FixedForwardPipe {
 	public void setEncoding(String encoding) {
 		setCharset(encoding);
 	}
+
 	/**
 	 * Character set to use for converting the secret from String to bytes
+	 *
 	 * @ff.default UTF-8
 	 */
 	public void setCharset(String charset) {
@@ -152,11 +151,13 @@ public class HashPipe extends FixedForwardPipe {
 
 	/**
 	 * Method to use for converting the hash from bytes to String
+	 *
 	 * @ff.default Base64
 	 */
 	public void setHashEncoding(HashEncoding hashEncoding) {
 		this.hashEncoding = hashEncoding;
 	}
+
 	@Deprecated
 	@ConfigurationWarning("use attribute hashEncoding instead")
 	public void setBinaryToTextEncoding(HashEncoding hashEncoding) {

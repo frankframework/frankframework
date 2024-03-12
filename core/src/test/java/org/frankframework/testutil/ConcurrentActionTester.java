@@ -25,20 +25,25 @@ public class ConcurrentActionTester extends Thread {
 
 	private @Getter Exception caught;
 
-	public void initAction() throws SQLException, ConfigurationException, SenderException, TimeoutException, DbmsException {}
-	public void action() throws SQLException, JdbcException, ConfigurationException, SenderException, TimeoutException {}
-	public void finalizeAction() throws SQLException {}
+	public void initAction() throws SQLException, ConfigurationException, SenderException, TimeoutException, DbmsException {
+	}
+
+	public void action() throws SQLException, JdbcException, ConfigurationException, SenderException, TimeoutException {
+	}
+
+	public void finalizeAction() throws SQLException {
+	}
 
 	@Override
 	public void run() {
 		try {
 			initAction();
-			if (initActionDone!=null) initActionDone.release();
+			if (initActionDone != null) initActionDone.release();
 			try {
-				if (waitBeforeAction!=null) waitBeforeAction.acquire();
+				if (waitBeforeAction != null) waitBeforeAction.acquire();
 				action();
-				if (actionDone!=null) actionDone.release();
-				if (waitAfterAction!=null) waitAfterAction.acquire();
+				if (actionDone != null) actionDone.release();
+				if (waitAfterAction != null) waitAfterAction.acquire();
 			} finally {
 				finalizeAction();
 			}
@@ -47,7 +52,7 @@ public class ConcurrentActionTester extends Thread {
 			log.warn("Exception in ConcurrentActionTester: ", e);
 			caught = e;
 		} finally {
-			if (finalizeActionDone!=null) finalizeActionDone.release();
+			if (finalizeActionDone != null) finalizeActionDone.release();
 		}
 	}
 

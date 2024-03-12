@@ -60,11 +60,11 @@ class IbisLoggerConfigurationFactoryTest {
 		// Arrange
 		String config =
 				"<test-xml>\n" +
-				"    <tag>${ctx:log.dir}</tag>\n" +
-				"    <tag>${ctx:security.log.level:-INFO}</tag>\n" +
-				"    <tag>${ctx:config.log.level:DEBUG}</tag>\n" + // This entry not picked up b/c not correctly specified
-				"    <tag attrib=\"${ctx:log.maxFileSize}\"/>\n" +
-				"</test-xml>\n";
+						"    <tag>${ctx:log.dir}</tag>\n" +
+						"    <tag>${ctx:security.log.level:-INFO}</tag>\n" +
+						"    <tag>${ctx:config.log.level:DEBUG}</tag>\n" + // This entry not picked up b/c not correctly specified
+						"    <tag attrib=\"${ctx:log.maxFileSize}\"/>\n" +
+						"</test-xml>\n";
 
 		Properties properties = new Properties();
 		properties.setProperty("security.log.level", "${global.log.level}");

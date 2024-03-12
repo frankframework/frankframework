@@ -34,10 +34,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.StreamUtil;
-
-import lombok.SneakyThrows;
 
 /**
  * Support for PostgreSQL.

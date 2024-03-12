@@ -78,7 +78,7 @@ public class ServerStatistics extends BusEndpointBase {
 		returnMap.put("dtap.side", dtapSide);
 
 		String upn = BusMessageUtils.getUserPrincipalName();
-		if(upn != null && !"anonymousUser".equals(upn)) {
+		if (upn != null && !"anonymousUser".equals(upn)) {
 			returnMap.put("userName", upn);
 		}
 
@@ -91,7 +91,7 @@ public class ServerStatistics extends BusEndpointBase {
 		returnMap.put("processMetrics", ProcessMetrics.toMap());
 		Date date = new Date();
 		returnMap.put("serverTime", date.getTime());
-		returnMap.put("machineName" , Misc.getHostname());
+		returnMap.put("machineName", Misc.getHostname());
 		try {
 			returnMap.put("uptime", getApplicationContext().getStartupDate());
 		} catch (Exception e) {
@@ -108,14 +108,14 @@ public class ServerStatistics extends BusEndpointBase {
 		MessageEventListener eventListener = getBean("MessageEventListener", MessageEventListener.class);
 
 		long totalErrorStoreCount = 0;
-		if(!showCountErrorStore)
+		if (!showCountErrorStore)
 			totalErrorStoreCount = -1;
 
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			Map<String, Object> configurationsMap = new HashMap<>();
 
 			//Configuration specific exceptions
-			if (configuration.getConfigurationException()!=null) {
+			if (configuration.getConfigurationException() != null) {
 				String message = configuration.getConfigurationException().getMessage();
 				configurationsMap.put("exception", message);
 			}
@@ -125,14 +125,14 @@ public class ServerStatistics extends BusEndpointBase {
 				if (showCountErrorStore) {
 					long esr = 0;
 					for (Adapter adapter : configuration.getRegisteredAdapters()) {
-						for (Receiver<?> receiver: adapter.getReceivers()) {
+						for (Receiver<?> receiver : adapter.getReceivers()) {
 							IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
 							if (errorStorage != null) {
 								try {
 									esr += errorStorage.getMessageCount();
 								} catch (Exception e) {
 									//error("error occurred on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-									log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+									log.warn("Assuming there are no errorlog records for adapter [" + adapter.getName() + "]");
 								}
 							}
 						}
@@ -143,15 +143,15 @@ public class ServerStatistics extends BusEndpointBase {
 
 				//Configuration specific warnings
 				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
-				if(configWarns != null && configWarns.size() > 0) {
+				if (configWarns != null && configWarns.size() > 0) {
 					configurationsMap.put("warnings", configWarns.getWarnings());
 				}
 
 				//Configuration specific messages
 				MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
-				if(messageKeeper != null) {
+				if (messageKeeper != null) {
 					List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-					if(!messages.isEmpty()) {
+					if (!messages.isEmpty()) {
 						configurationsMap.put("messages", messages);
 					}
 				}
@@ -165,9 +165,9 @@ public class ServerStatistics extends BusEndpointBase {
 
 		//Global warnings
 		ApplicationWarnings globalConfigWarnings = getBean("applicationWarnings", ApplicationWarnings.class);
-		if (globalConfigWarnings.size()>0) {
+		if (globalConfigWarnings.size() > 0) {
 			List<Object> warnings = new ArrayList<>();
-			for (int j=0; j<globalConfigWarnings.size(); j++) {
+			for (int j = 0; j < globalConfigWarnings.size(); j++) {
 				warnings.add(globalConfigWarnings.get(j));
 			}
 			returnMap.put("warnings", warnings);
@@ -176,7 +176,7 @@ public class ServerStatistics extends BusEndpointBase {
 		//Global messages
 		MessageKeeper messageKeeper = eventListener.getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-		if(!messages.isEmpty()) {
+		if (!messages.isEmpty()) {
 			returnMap.put("messages", messages);
 		}
 
@@ -206,13 +206,13 @@ public class ServerStatistics extends BusEndpointBase {
 	}
 
 	private String getApplicationServer(ApplicationContext ac) {
-		if(ac instanceof WebApplicationContext) {
+		if (ac instanceof WebApplicationContext) {
 			ServletContext sc = ((WebApplicationContext) ac).getServletContext();
-			if(sc != null) {
+			if (sc != null) {
 				return sc.getServerInfo();
 			}
 		}
-		if(ac.getParent() != null) {
+		if (ac.getParent() != null) {
 			return getApplicationServer(ac.getParent());
 		}
 		return "unknown";

@@ -35,31 +35,44 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 	}
 
 	boolean isAlarm();
+
 	void clearEvents();
+
 	void configure() throws ConfigurationException;
+
 	boolean isConfigured();
+
 	void setMonitor(Monitor monitor);
+
 	void toXml(XmlBuilder monitor);
 
 	void setSourceFiltering(SourceFiltering filtering);
+
 	SourceFiltering getSourceFiltering();
 
 	void setEventCodes(List<String> events);
+
 	List<String> getEventCodes();
 
 	void setSeverity(Severity severity);
+
 	Severity getSeverity();
 
 	void setThreshold(int i);
+
 	int getThreshold();
 
 	void setPeriod(int i);
+
 	int getPeriod();
 
 	void registerAdapterFilter(AdapterFilter af);
+
 	Map<String, AdapterFilter> getAdapterFilters();
+
 	void clearAdapterFilters();
 
 	void setTriggerType(TriggerType type);
+
 	TriggerType getTriggerType();
 }

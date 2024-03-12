@@ -20,10 +20,9 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class URLRequestMatcher implements RequestMatcher {
@@ -33,18 +32,18 @@ public class URLRequestMatcher implements RequestMatcher {
 	public URLRequestMatcher(Set<String> rawEndpointsWithExcludes) {
 		absoluteEndpoints = new HashSet<>();
 		wildcardEndpoints = new HashSet<>();
-		for(String endpoint : rawEndpointsWithExcludes) {
-			if(endpoint.charAt(0) == '!') {
+		for (String endpoint : rawEndpointsWithExcludes) {
+			if (endpoint.charAt(0) == '!') {
 				throw new IllegalArgumentException("endpoint may not start with [!]");
 			}
-			if(endpoint.charAt(endpoint.length()-1) == '*') {
-				wildcardEndpoints.add(endpoint.substring(0, endpoint.length()-1));
+			if (endpoint.charAt(endpoint.length() - 1) == '*') {
+				wildcardEndpoints.add(endpoint.substring(0, endpoint.length() - 1));
 			} else {
 				absoluteEndpoints.add(endpoint);
 			}
 		}
 
-		if(absoluteEndpoints.isEmpty() && wildcardEndpoints.isEmpty()) {
+		if (absoluteEndpoints.isEmpty() && wildcardEndpoints.isEmpty()) {
 			throw new IllegalArgumentException("must provided at least 1 endpoint");
 		}
 	}
@@ -53,13 +52,13 @@ public class URLRequestMatcher implements RequestMatcher {
 	public boolean matches(HttpServletRequest request) {
 		String path = getRequestPath(request);
 
-		if(absoluteEndpoints.contains(path)) { //absolute match
+		if (absoluteEndpoints.contains(path)) { //absolute match
 			log.trace("absolute match with path [{}]", path);
 			return true;
 		}
 
-		for(String url : wildcardEndpoints) {
-			if(path.startsWith(url)) { //wildcard match
+		for (String url : wildcardEndpoints) {
+			if (path.startsWith(url)) { //wildcard match
 				log.trace("relative match with url [{}] and path [{}]", url, path);
 				return true;
 			}

@@ -11,6 +11,7 @@ import java.io.InputStream;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -88,7 +89,7 @@ public class PipeLineSessionBaseTest {
 		assertEquals("", session.get("string3", "not empty"));
 		assertEquals("null", session.get("string4", "null"));
 		assertEquals("null", session.get("string4", "not null"));
-    	assertNull(session.get("string5", null));
+		assertNull(session.get("string5", null));
 		assertEquals("", session.get("string5", ""));
 	}
 
@@ -146,12 +147,12 @@ public class PipeLineSessionBaseTest {
 		protected String name;
 
 		StateObservableInputStream(String name) {
-			this.name=name;
+			this.name = name;
 		}
 
 		@Override
 		public void close() {
-			log.debug("closing inputstream ["+name+"]");
+			log.debug("closing inputstream [" + name + "]");
 			closes++;
 		}
 
@@ -178,7 +179,7 @@ public class PipeLineSessionBaseTest {
 		ma.closeOnCloseOf(session, "testCloseables()");
 		InputStream q = ma.asInputStream();
 
-    	assertSame(p, q, "scheduling a resource twice must yield the same object");
+		assertSame(p, q, "scheduling a resource twice must yield the same object");
 
 		mb.closeOnCloseOf(session, "testCloseables()");
 		mc.closeOnCloseOf(session, "testCloseables()");

@@ -1,6 +1,7 @@
 package org.frankframework.mailsenders;
 
 import org.apache.logging.log4j.Logger;
+
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;

@@ -41,12 +41,11 @@ import org.frankframework.util.LogUtil;
 
 /**
  * {@link DataSource} implementation wrapping {@link XADataSource} because Narayana doesn't provide their own DataSource.
- *
+ * <p>
  * Bypasses the {@link TransactionalDriver} in order to create connections and
  * uses the {@link ConnectionManager} directly in order to acquire {@link XADataSource} connections.
- *
+ * <p>
  * {@link ConnectionImple} requires an {@link XADataSource}
- *
  */
 public class NarayanaDataSource implements DataSource {
 	private final Logger log = LogUtil.getLogger(NarayanaDataSource.class);
@@ -72,7 +71,7 @@ public class NarayanaDataSource implements DataSource {
 			int major = metadata.getDriverMajorVersion();
 			int minor = metadata.getDriverMinorVersion();
 
-			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
+			if (ModifierFactory.getModifier(driverName, major, minor) == null) {
 				log.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
 				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
 			}
@@ -90,14 +89,14 @@ public class NarayanaDataSource implements DataSource {
 	public Connection getConnection(String username, String password) throws SQLException {
 		Properties properties = new Properties();
 		properties.put(TransactionalDriver.XADataSource, getTargetDataSource());
-		if (username!=null) {
+		if (username != null) {
 			properties.put(TransactionalDriver.userName, username);
 		}
-		if (password!=null) {
+		if (password != null) {
 			properties.put(TransactionalDriver.password, password);
 		}
-		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
-		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
+		properties.setProperty(TransactionalDriver.poolConnections, "" + connectionPooling);
+		properties.setProperty(TransactionalDriver.maxConnections, "" + maxConnections);
 		return ConnectionManager.create(name, properties);
 	}
 
@@ -129,7 +128,7 @@ public class NarayanaDataSource implements DataSource {
 
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		return iface.isInstance(this) || ((Wrapper)targetDataSource).isWrapperFor(iface);
+		return iface.isInstance(this) || ((Wrapper) targetDataSource).isWrapperFor(iface);
 	}
 
 	@Override
@@ -138,6 +137,6 @@ public class NarayanaDataSource implements DataSource {
 		if (iface.isInstance(this)) {
 			return (T) this;
 		}
-		return ((Wrapper)targetDataSource).unwrap(iface);
+		return ((Wrapper) targetDataSource).unwrap(iface);
 	}
 }

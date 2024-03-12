@@ -18,6 +18,7 @@ package org.frankframework.ibistesttool.config;
 import java.lang.reflect.Method;
 import java.util.stream.Collectors;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.AuthenticationType;
@@ -41,8 +42,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-import lombok.Setter;
-
 @Configuration
 @EnableWebSecurity //Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
@@ -53,7 +52,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	private IAuthenticator createAuthenticator() {
 		String properyPrefix = "application.security.testtool.authentication.";
-		String type = environment.getProperty(properyPrefix+"type", "NONE");
+		String type = environment.getProperty(properyPrefix + "type", "NONE");
 		AuthenticationType auth = null;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);
@@ -63,13 +62,13 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		Class<? extends IAuthenticator> clazz = auth.getAuthenticator();
 		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
 
-		for(Method method: clazz.getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+		for (Method method : clazz.getMethods()) {
+			if (!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = environment.getProperty(properyPrefix+setter);
-			if(StringUtils.isEmpty(value))
+			String value = environment.getProperty(properyPrefix + setter);
+			if (StringUtils.isEmpty(value))
 				continue;
 
 			ClassUtils.invokeSetter(authenticator, method, value);

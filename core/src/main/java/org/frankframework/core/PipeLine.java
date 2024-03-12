@@ -67,12 +67,12 @@ import lombok.Setter;
  * <br/><br/>
  * <b>Transaction control</b><br/><br/>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'
- *
+ * <p>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be processed
  * under transaction control. Processing by XA-compliant pipes (i.e. Pipes that implement the
  * IXAEnabled-interface, set their transacted-attribute to <code>true</code> and use XA-compliant
  * resources) will then either be committed or rolled back in one transaction.
- *
+ * <p>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, either an existing transaction
  * (started by a transactional receiver) is joined, or new one is created (if the message processing request
  * is not initiated by a receiver under transaction control.
@@ -80,50 +80,50 @@ import lombok.Setter;
  * the pipeline joined an existing transaction, the commit or rollback is left to the object that started
  * the transaction, i.e. the receiver. In the latter case the pipeline can indicate to the receiver that the
  * transaction should be rolled back (by calling UserTransaction.setRollBackOnly()).
- *
+ * <p>
  * The choice whether to either commit (by Pipeline or Receiver) or rollback (by Pipeline or Receiver)
  * is made as follows:
- *
+ * <p>
  * If the processing of the message concluded without exceptions and the status of the transaction is
  * STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be rolled back,
  * or marked for roll back by the calling party.
  *
- * @author  Johan Verrips
+ * @author Johan Verrips
  */
 @Category("Basic")
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String, String>, HasStatistics, IConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
+	public static final String INPUT_VALIDATOR_NAME = "- pipeline inputValidator";
 	public static final String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
-	public static final String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
-	public static final String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
+	public static final String INPUT_WRAPPER_NAME = "- pipeline inputWrapper";
+	public static final String OUTPUT_WRAPPER_NAME = "- pipeline outputWrapper";
 
-	public static final String PIPELINE_DURATION_STATS  = "duration";
-	public static final String PIPELINE_WAIT_STATS  = "wait";
-	public static final String PIPELINE_SIZE_STATS  = "msgsize";
+	public static final String PIPELINE_DURATION_STATS = "duration";
+	public static final String PIPELINE_WAIT_STATS = "wait";
+	public static final String PIPELINE_SIZE_STATS = "msgsize";
 
 	public static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
-	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
+	private long messageSizeWarn = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
 	private @Getter String adapterToRunBeforeOnEmptyInput = null;
 
-	private @Getter IValidator inputValidator  = null;
+	private @Getter IValidator inputValidator = null;
 	private @Getter IValidator outputValidator = null;
-	private @Getter IWrapperPipe inputWrapper    = null;
-	private @Getter IWrapperPipe outputWrapper   = null;
+	private @Getter IWrapperPipe inputWrapper = null;
+	private @Getter IWrapperPipe outputWrapper = null;
 	private @Getter final Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<>();
 	private @Getter final Map<String, PipeForward> globalForwards = new HashMap<>();
 	private @Getter Locker locker;
-	private @Getter ICache<String,String> cache;
+	private @Getter ICache<String, String> cache;
 
 	private final Map<String, IPipe> pipesByName = new LinkedHashMap<>();
-	private @Getter final List<IPipe> pipes	  = new ArrayList<>();
+	private @Getter final List<IPipe> pipes = new ArrayList<>();
 
 	private @Getter Adapter adapter;    // for transaction managing
 	private @Setter @Getter INamedObject owner; // for logging purposes
@@ -138,7 +138,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter final List<IPipeLineExitHandler> exitHandlers = new ArrayList<>();
 
 	private boolean configurationSucceeded = false;
-	private boolean inputMessageConsumedMultipleTimes=false;
+	private boolean inputMessageConsumedMultipleTimes = false;
 
 	public enum ExitState {
 		SUCCESS,
@@ -151,18 +151,20 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public IPipe getPipe(String pipeName) {
 		return pipesByName.get(pipeName);
 	}
+
 	public IPipe getPipe(int index) {
 		return pipes.get(index);
 	}
 
 	public void registerExitHandler(IPipeLineExitHandler exitHandler) {
 		exitHandlers.add(exitHandler);
-		log.info("registered exithandler ["+exitHandler.getName()+"]");
+		log.info("registered exithandler [" + exitHandler.getName() + "]");
 	}
 
 	/**
 	 * Configures the pipes of this Pipeline and does some basic checks. It also
 	 * registers the <code>PipeLineSession</code> object at the pipes.
+	 *
 	 * @see IPipe
 	 */
 	@Override
@@ -177,14 +179,14 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			defaultExit.setName(DEFAULT_SUCCESS_EXIT_NAME);
 			defaultExit.setState(ExitState.SUCCESS);
 			registerPipeLineExit(defaultExit);
-			log.debug("Created default Exit named ["+defaultExit.getName()+"], state ["+defaultExit.getState()+"]");
+			log.debug("Created default Exit named [" + defaultExit.getName() + "], state [" + defaultExit.getState() + "]");
 		}
-		for (int i=0; i < pipes.size(); i++) {
+		for (int i = 0; i < pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 
 			log.debug("configuring Pipe [{}]", pipe::getName);
 			if (pipe instanceof FixedForwardPipe) {
-				FixedForwardPipe ffPipe = (FixedForwardPipe)pipe;
+				FixedForwardPipe ffPipe = (FixedForwardPipe) pipe;
 				// getSuccessForward will return null if it has not been set. See below configure(pipe)
 				if (ffPipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
 					int i2 = i + 1;
@@ -199,7 +201,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						// This is the last pipe, so forwards to a PipeLineExit
 						PipeLineExit plExit = findExitByState(ExitState.SUCCESS)
 								// if there is no success exit, then apparently only error exits are configured; Just get the first configured one
-								.orElseGet( ()-> pipeLineExits.values().iterator().next());
+								.orElseGet(() -> pipeLineExits.values().iterator().next());
 
 						// By this point there is always at least 1 PipeLineExit, so plExit cannot be NULL.
 						PipeForward pf = new PipeForward();
@@ -219,7 +221,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			throw new ConfigurationException("no Pipes in PipeLine");
 		}
 		if (this.firstPipe == null) {
-			firstPipe=pipes.get(0).getName();
+			firstPipe = pipes.get(0).getName();
 		}
 		if (getPipe(firstPipe) == null) {
 			throw new ConfigurationException("no pipe found for firstPipe [" + firstPipe + "]");
@@ -323,12 +325,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 			pipe.configure();
 
-			for(PipeForward forward : pipe.getForwards().values()) {
-				String path=forward.getPath();
-				if (path!=null) {
-					PipeLineExit plExit= getPipeLineExits().get(path);
-					if (plExit==null && getPipe(path)==null){
-						ConfigurationWarnings.add(pipe, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
+			for (PipeForward forward : pipe.getForwards().values()) {
+				String path = forward.getPath();
+				if (path != null) {
+					PipeLineExit plExit = getPipeLineExits().get(path);
+					if (plExit == null && getPipe(path) == null) {
+						ConfigurationWarnings.add(pipe, log, "has a forward of which the pipe to execute [" + path + "] is not defined");
 					}
 				}
 			}
@@ -341,8 +343,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			}
 			pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
 		} catch (Throwable t) {
-			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
-			getAdapter().getMessageKeeper().error("Error initializing adapter ["+ getAdapter().getName()+"]: " +e.getMessage());
+			ConfigurationException e = new ConfigurationException("Exception configuring " + ClassUtils.nameOf(pipe), t);
+			getAdapter().getMessageKeeper().error("Error initializing adapter [" + getAdapter().getName() + "]: " + e.getMessage());
 			throw e;
 		}
 		log.debug("Pipe successfully configured");
@@ -362,17 +364,17 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/**
 	 * @return the number of pipes in the pipeline
 	 */
-	public int getPipeLineSize(){
+	public int getPipeLineSize() {
 		return pipesByName.size();
 	}
 
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object pipeStatsData = hski.openGroup(data, null, PIPELINE_DURATION_STATS);
-		handlePipeStat(getInputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
-		handlePipeStat(getOutputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
-		handlePipeStat(getInputWrapper(),pipeStatistics,pipeStatsData, hski, true, action);
-		handlePipeStat(getOutputWrapper(),pipeStatistics,pipeStatsData, hski, true, action);
+		handlePipeStat(getInputValidator(), pipeStatistics, pipeStatsData, hski, true, action);
+		handlePipeStat(getOutputValidator(), pipeStatistics, pipeStatsData, hski, true, action);
+		handlePipeStat(getInputWrapper(), pipeStatistics, pipeStatsData, hski, true, action);
+		handlePipeStat(getOutputWrapper(), pipeStatistics, pipeStatsData, hski, true, action);
 		for (IPipe pipe : adapter.getPipeLine().getPipes()) {
 			handlePipeStat(pipe, pipeStatistics, pipeStatsData, hski, true, action);
 			if (pipe instanceof MessageSendingPipe) {
@@ -390,7 +392,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 					handlePipeStat(messageSendingPipe.getOutputWrapper(), pipeStatistics, pipeStatsData, hski, true, action);
 				}
 				if (messageSendingPipe.getMessageLog() != null) {
-					handlePipeStat(messageSendingPipe.getMessageLog(),pipeStatistics,pipeStatsData,hski, true, action);
+					handlePipeStat(messageSendingPipe.getMessageLog(), pipeStatistics, pipeStatsData, hski, true, action);
 				}
 			}
 		}
@@ -405,7 +407,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 
 		Object sizeStatsData = hski.openGroup(data, null, PIPELINE_SIZE_STATS);
-		hski.handleStatisticsKeeper(sizeStatsData,getRequestSizeStats());
+		hski.handleStatisticsKeeper(sizeStatsData, getRequestSizeStats());
 		for (IPipe pipe : adapter.getPipeLine().getPipes()) {
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe aPipe = (AbstractPipe) pipe;
@@ -427,25 +429,27 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			return;
 		}
 		StatisticsKeeper pstat = pipelineStatistics.get(pipe.getName());
-		handler.handleStatisticsKeeper(pipeStatsData,pstat);
+		handler.handleStatisticsKeeper(pipeStatsData, pstat);
 		if (deep && pipe instanceof HasStatistics) {
-			((HasStatistics)pipe).iterateOverStatistics(handler,pipeStatsData,action);
+			((HasStatistics) pipe).iterateOverStatistics(handler, pipeStatsData, action);
 		}
 	}
 
-	public StatisticsKeeper getPipeStatistics(INamedObject pipe){
+	public StatisticsKeeper getPipeStatistics(INamedObject pipe) {
 		return pipeStatistics.get(pipe.getName());
 	}
-	public StatisticsKeeper getPipeWaitingStatistics(IPipe pipe){
+
+	public StatisticsKeeper getPipeWaitingStatistics(IPipe pipe) {
 		return pipeWaitingStatistics.get(pipe.getName());
 	}
-	public StatisticsKeeper getPipeSizeStatistics(IPipe pipe){
+
+	public StatisticsKeeper getPipeSizeStatistics(IPipe pipe) {
 		return pipeSizeStats.get(pipe.getName());
 	}
-	public StatisticsKeeper getPipeSizeStatistics(INamedObject no){
+
+	public StatisticsKeeper getPipeSizeStatistics(INamedObject no) {
 		return pipeSizeStats.get(no.getName());
 	}
-
 
 
 	/**
@@ -453,7 +457,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * It retrieves the first pipe to execute from the <code>firstPipe</code field,
 	 * the call results in a PipRunResult, containing the next pipe to activate.
 	 * While processing the process method keeps statistics.
-	 * @param message The message as received from the Listener
+	 *
+	 * @param message   The message as received from the Listener
 	 * @param messageId A unique id for this message, used for logging purposes.
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
@@ -478,26 +483,27 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * Find the destination of the forward, i.e. the {@link IForwardTarget object} (Pipe or PipeLineExit) where the forward points to.
 	 */
 	public IForwardTarget resolveForward(IPipe pipe, PipeForward forward) throws PipeRunException {
-		if (forward==null){
-			throw new PipeRunException(pipe, "Pipeline of ["+getOwner().getName()+"] got a null forward from pipe ["+pipe.getName()+"].");
+		if (forward == null) {
+			throw new PipeRunException(pipe, "Pipeline of [" + getOwner().getName() + "] got a null forward from pipe [" + pipe.getName() + "].");
 		}
 		String path = forward.getPath();
-		if (StringUtils.isEmpty(path)){
-			throw new PipeRunException(pipe, "Pipeline of ["+getOwner().getName()+"] got a forward ["+forward.getName()+"] with a path that equals null or has a zero-length value from pipe ["+pipe.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
+		if (StringUtils.isEmpty(path)) {
+			throw new PipeRunException(pipe, "Pipeline of [" + getOwner().getName() + "] got a forward [" + forward.getName() + "] with a path that equals null or has a zero-length value from pipe [" + pipe.getName() + "]. Check the configuration, probably forwards are not defined for this pipe.");
 		}
-		PipeLineExit plExit= getPipeLineExits().get(path);
-		if (plExit != null ) {
+		PipeLineExit plExit = getPipeLineExits().get(path);
+		if (plExit != null) {
 			return plExit;
 		}
-		IPipe nextPipe=getPipe(path);
-		if (nextPipe==null) {
-			throw new PipeRunException(pipe, "Pipeline of adapter ["+ getOwner().getName()+"] got an erroneous definition from pipe ["+pipe.getName()+"]. Target to execute ["+path+ "] is not defined as a Pipe or an Exit.");
+		IPipe nextPipe = getPipe(path);
+		if (nextPipe == null) {
+			throw new PipeRunException(pipe, "Pipeline of adapter [" + getOwner().getName() + "] got an erroneous definition from pipe [" + pipe.getName() + "]. Target to execute [" + path + "] is not defined as a Pipe or an Exit.");
 		}
 		return nextPipe;
 	}
 
 	/**
 	 * Register the adapterName of this Pipelineprocessor.
+	 *
 	 * @param adapter
 	 */
 	public void setAdapter(Adapter adapter) {
@@ -509,17 +515,17 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public void start() throws PipeStartException {
 		log.info("starting pipeline");
 
-		if (cache!=null) {
+		if (cache != null) {
 			log.debug("starting cache");
 			cache.open();
 		}
 
-		startPipe("InputWrapper",getInputWrapper());
-		startPipe("InputValidator",getInputValidator());
-		startPipe("OutputValidator",getOutputValidator());
-		startPipe("OutputWrapper",getOutputWrapper());
+		startPipe("InputWrapper", getInputWrapper());
+		startPipe("InputValidator", getInputValidator());
+		startPipe("OutputValidator", getOutputValidator());
+		startPipe("OutputWrapper", getOutputWrapper());
 
-		for (int i=0; i<pipes.size(); i++) {
+		for (int i = 0; i < pipes.size(); i++) {
 			startPipe("Pipe", getPipe(i));
 		}
 
@@ -527,7 +533,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	protected void startPipe(String type, IPipe pipe) throws PipeStartException {
-		if (pipe!=null) {
+		if (pipe != null) {
 			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
 				log.debug("starting {}", type);
 				pipe.start();
@@ -539,6 +545,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/**
 	 * Close the pipeline. This will call the <code>stop()</code> method
 	 * of all registered <code>Pipes</code>
+	 *
 	 * @see IPipe#stop
 	 */
 	public void stop() {
@@ -549,11 +556,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		stopPipe("OutputValidator", getOutputValidator());
 		stopPipe("OutputWrapper", getOutputWrapper());
 
-		for (int i=0; i<pipes.size(); i++) {
+		for (int i = 0; i < pipes.size(); i++) {
 			stopPipe("Pipe", getPipe(i));
 		}
 
-		if (cache!=null) {
+		if (cache != null) {
 			log.debug("closing cache");
 			cache.close();
 		}
@@ -562,7 +569,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	protected void stopPipe(String type, IPipe pipe) {
-		if (pipe!=null) {
+		if (pipe != null) {
 			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
 				log.debug("stopping {}", type);
 				pipe.stop();
@@ -574,27 +581,26 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	@Override
 	public String getName() {
 		String name = "PipeLine";
-		if(owner != null) {
+		if (owner != null) {
 			name += " of [" + owner.getName() + "]";
 		}
 		return name;
 	}
 
 	/**
-	 *
 	 * @return an enumeration of all pipenames in the pipeline and the
-	 * startpipe and endpath
+	 * 		startpipe and endpath
 	 * @see #setFirstPipe
 	 */
 	@Override
-	public String toString(){
+	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("[ownerName=").append(owner == null ? "-none-" : owner.getName()).append("]");
 		result.append("[adapterName=").append(adapter == null ? "-none-" : adapter.getName()).append("]");
 		result.append("[startPipe=").append(firstPipe).append("]");
 //		result+="[transacted="+transacted+"]";
 		result.append("[transactionAttribute=").append(getTransactionAttribute()).append("]");
-		for (int i=0; i<pipes.size(); i++) {
+		for (int i = 0; i < pipes.size(); i++) {
 			result.append("pipe").append(i).append("=[").append(getPipe(i).getName()).append("]");
 		}
 		for (String exitName : pipeLineExits.keySet()) {
@@ -627,7 +633,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** PipeLine exits. If no exits are specified, a default one is created with name={@value #DEFAULT_SUCCESS_EXIT_NAME} and state={@value PipeLine.ExitState#SUCCESS_EXIT_STATE} */
 	public void setPipeLineExits(PipeLineExits exits) {
-		for(PipeLineExit exit:exits.getExits()) {
+		for (PipeLineExit exit : exits.getExits()) {
 			registerPipeLineExit(exit);
 		}
 	}
@@ -638,12 +644,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	@Deprecated
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getName())) {
-			ConfigurationWarnings.add(this, log, "exit named ["+exit.getName()+"] already exists");
+			ConfigurationWarnings.add(this, log, "exit named [" + exit.getName() + "] already exists");
 		}
-		if (exit.getExitCode()>0) {
-			for(PipeLineExit item: pipeLineExits.values()) {
-				if (item.getExitCode()==exit.getExitCode()) {
-					ConfigurationWarnings.add(this, log, "exit ["+exit.getName()+"] has code ["+exit.getExitCode()+"] that is already defined. Only the first exit ["+item.getName()+"] with this code will be represented in OpenAPI schema when it is generated");
+		if (exit.getExitCode() > 0) {
+			for (PipeLineExit item : pipeLineExits.values()) {
+				if (item.getExitCode() == exit.getExitCode()) {
+					ConfigurationWarnings.add(this, log, "exit [" + exit.getName() + "] has code [" + exit.getExitCode() + "] that is already defined. Only the first exit [" + item.getName() + "] with this code will be represented in OpenAPI schema when it is generated");
 					break;
 				}
 			}
@@ -655,8 +661,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * Optional global forwards that will be added to every pipe, when the forward name has not been explicitly set.
 	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>'exception'</code> forward to every pipe in the pipeline.
 	 */
-	public void setGlobalForwards(PipeForwards forwards){
-		for(PipeForward forward: forwards.getForwards()) {
+	public void setGlobalForwards(PipeForwards forwards) {
+		for (PipeForward forward : forwards.getForwards()) {
 			registerForward(forward);
 		}
 	}
@@ -716,6 +722,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/**
 	 * Name of the first pipe to execute when a message is to be processed
+	 *
 	 * @ff.default first pipe of the pipeline
 	 */
 	public void setFirstPipe(String pipeName) {
@@ -724,6 +731,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/**
 	 * Maximum number of threads that may execute this Pipeline simultaneously, use 0 to disable limit
+	 *
 	 * @ff.default 0
 	 */
 	public void setMaxThreads(int newMaxThreads) {
@@ -732,6 +740,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/**
 	 * If set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces
+	 *
 	 * @ff.default false
 	 */
 	public void setStoreOriginalMessageWithoutNamespaces(boolean b) {
@@ -740,11 +749,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/**
 	 * If messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes <code>KB</code>, <code>MB</code> or <code>GB</code>
+	 *
 	 * @ff.default application default (30MB)
 	 */
 	public void setMessageSizeWarn(String s) {
 		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);
 	}
+
 	public long getMessageSizeWarnNum() {
 		return messageSizeWarn;
 	}

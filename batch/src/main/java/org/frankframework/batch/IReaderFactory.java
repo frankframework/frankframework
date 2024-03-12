@@ -24,7 +24,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.doc.FrankDocGroup;
 
 /**
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  * @since
  */
 @FrankDocGroup(name = "Batch")

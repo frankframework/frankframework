@@ -65,27 +65,28 @@ public class Misc {
 			int posPrefixEnd;
 			String prefix;
 			String tail;
-			if ((posPrefixEnd=url.indexOf("://"))>0) {
-				prefix=url.substring(0, posPrefixEnd+3);
-				tail=url.substring(posPrefixEnd+3);
+			if ((posPrefixEnd = url.indexOf("://")) > 0) {
+				prefix = url.substring(0, posPrefixEnd + 3);
+				tail = url.substring(posPrefixEnd + 3);
 			} else {
-				prefix="";
-				tail=url;
+				prefix = "";
+				tail = url;
 			}
 			int posTail2Start;
-			if ((posTail2Start=tail.indexOf("@"))>0) {
-				tail=tail.substring(posTail2Start+1);
+			if ((posTail2Start = tail.indexOf("@")) > 0) {
+				tail = tail.substring(posTail2Start + 1);
 			}
-			url=prefix+cf.getUsername()+":"+cf.getPassword()+"@"+tail;
+			url = prefix + cf.getUsername() + ":" + cf.getPassword() + "@" + tail;
 		}
 		return url;
 	}
 
 	/**
 	 * Converts a byte array into a string, and adds a specified string to the end of the converted string.
+	 *
 	 * @see StreamUtil#streamToString(InputStream, String, boolean)
 	 */
-	public static String byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode) throws IOException{
+	public static String byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode) throws IOException {
 		ByteArrayInputStream bis = new ByteArrayInputStream(input);
 		return StreamUtil.streamToString(bis, endOfLineString, xmlEncode);
 	}
@@ -95,8 +96,8 @@ public class Misc {
 		try {
 			InetAddress localMachine = InetAddress.getLocalHost();
 			localHost = localMachine.getHostName();
-		} catch(UnknownHostException uhe) {
-			localHost="unknown ("+uhe.getMessage()+")";
+		} catch (UnknownHostException uhe) {
+			localHost = "unknown (" + uhe.getMessage() + ")";
 		}
 		return localHost;
 	}
@@ -106,23 +107,21 @@ public class Misc {
 	 * <pre>Misc.toFileSize("14GB", 20); // gives out 15032385536</pre>
 	 */
 	public static long toFileSize(String value, long defaultValue) {
-		if(value == null)
+		if (value == null)
 			return defaultValue;
 
 		String s = value.trim().toUpperCase();
 		long multiplier = 1;
 		int index;
 
-		if((index = s.indexOf("KB")) != -1) {
+		if ((index = s.indexOf("KB")) != -1) {
 			multiplier = 1024;
 			s = s.substring(0, index);
-		}
-		else if((index = s.indexOf("MB")) != -1) {
-			multiplier = 1024L*1024;
+		} else if ((index = s.indexOf("MB")) != -1) {
+			multiplier = 1024L * 1024;
 			s = s.substring(0, index);
-		}
-		else if((index = s.indexOf("GB")) != -1) {
-			multiplier = 1024L*1024*1024;
+		} else if ((index = s.indexOf("GB")) != -1) {
+			multiplier = 1024L * 1024 * 1024;
 			s = s.substring(0, index);
 		}
 		try {
@@ -216,23 +215,24 @@ public class Misc {
 
 	/**
 	 * Adds items on a string, added by comma separator (ex: "1,2,3"), into a list.
+	 *
 	 * @param collectionDescription description of the list
 	 */
 	public static void addItemsToList(Collection<String> collection, String list, String collectionDescription, boolean lowercase) {
-		if (list==null) {
+		if (list == null) {
 			return;
 		}
 		StringTokenizer st = new StringTokenizer(list, ",");
 		while (st.hasMoreTokens()) {
 			String item = st.nextToken().trim();
 			if (lowercase) {
-				item=item.toLowerCase();
+				item = item.toLowerCase();
 			}
-			log.debug("adding item to "+collectionDescription+" ["+item+"]");
+			log.debug("adding item to " + collectionDescription + " [" + item + "]");
 			collection.add(item);
 		}
 		if (list.trim().endsWith(",")) {
-			log.debug("adding item to "+collectionDescription+" <empty string>");
+			log.debug("adding item to " + collectionDescription + " <empty string>");
 			collection.add("");
 		}
 	}
@@ -243,8 +243,8 @@ public class Misc {
 			if (systemDir == null) return null;
 			long l = systemDir.getTotalSpace();
 			return toFileSize(l);
-		} catch ( Exception e ) {
-			log.debug("Caught Exception",e);
+		} catch (Exception e) {
+			log.debug("Caught Exception", e);
 			return null;
 		}
 	}
@@ -255,17 +255,17 @@ public class Misc {
 			if (systemDir == null) return null;
 			long l = systemDir.getFreeSpace();
 			return toFileSize(l);
-		} catch ( Exception e ) {
-			log.debug("Caught Exception",e);
+		} catch (Exception e) {
+			log.debug("Caught Exception", e);
 			return null;
 		}
 	}
 
 	private static File getSystemDir() {
 		String dirName = System.getProperty("APPSERVER_ROOT_DIR");
-		if (dirName==null) {
+		if (dirName == null) {
 			dirName = System.getProperty("user.dir");
-			if (dirName==null) {
+			if (dirName == null) {
 				return null;
 			}
 		}
@@ -328,6 +328,7 @@ public class Misc {
 
 	/**
 	 * Edits the input string according to the regex and the hide method specified.
+	 *
 	 * @see StringUtil#hideFirstHalf(String, String)
 	 * @see StringUtil#hideAll(String, String)
 	 */
@@ -394,7 +395,7 @@ public class Misc {
 
 	public static String jsonPretty(String json) {
 		StringWriter sw = new StringWriter();
-		try(JsonReader jr = Json.createReader(new StringReader(json))) {
+		try (JsonReader jr = Json.createReader(new StringReader(json))) {
 			JsonStructure jobj = jr.read();
 
 			Map<String, Object> properties = new HashMap<>(1);

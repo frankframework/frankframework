@@ -47,13 +47,13 @@ public class ConnectionOverview extends BusEndpointBase {
 	public Message<String> getAllConnections(Message<?> message) {
 		List<Object> connectionsIncoming = new LinkedList<>();
 
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			for(Adapter adapter: config.getRegisteredAdapters()) {
-				for (Receiver<?> receiver: adapter.getReceivers()) {
-					IListener<?> listener=receiver.getListener();
+		for (Configuration config : getIbisManager().getConfigurations()) {
+			for (Adapter adapter : config.getRegisteredAdapters()) {
+				for (Receiver<?> receiver : adapter.getReceivers()) {
+					IListener<?> listener = receiver.getListener();
 					if (listener instanceof HasPhysicalDestination) {
-						String destination = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
-						String domain = ((HasPhysicalDestination)receiver.getListener()).getDomain();
+						String destination = ((HasPhysicalDestination) receiver.getListener()).getPhysicalDestinationName();
+						String domain = ((HasPhysicalDestination) receiver.getListener()).getDomain();
 						connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
 					}
 				}
@@ -61,17 +61,17 @@ public class ConnectionOverview extends BusEndpointBase {
 				PipeLine pipeline = adapter.getPipeLine();
 				for (IPipe pipe : pipeline.getPipes()) {
 					if (pipe instanceof MessageSendingPipe) {
-						MessageSendingPipe msp=(MessageSendingPipe)pipe;
+						MessageSendingPipe msp = (MessageSendingPipe) pipe;
 						ISender sender = msp.getSender();
 						if (sender instanceof HasPhysicalDestination) {
-							String destination = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
-							String domain = ((HasPhysicalDestination)sender).getDomain();
+							String destination = ((HasPhysicalDestination) sender).getPhysicalDestinationName();
+							String domain = ((HasPhysicalDestination) sender).getDomain();
 							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", domain));
 						}
 						IListener<?> listener = msp.getListener();
 						if (listener instanceof HasPhysicalDestination) {
-							String destination = ((HasPhysicalDestination)listener).getPhysicalDestinationName();
-							String domain = ((HasPhysicalDestination)listener).getDomain();
+							String destination = ((HasPhysicalDestination) listener).getPhysicalDestinationName();
+							String domain = ((HasPhysicalDestination) listener).getDomain();
 							connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
 						}
 					}

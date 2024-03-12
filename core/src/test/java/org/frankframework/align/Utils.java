@@ -85,7 +85,7 @@ public class Utils {
 		return schema;
 	}
 
-	public static boolean validate(URL schemaURL, Source input)  {
+	public static boolean validate(URL schemaURL, Source input) {
 		try {
 			Schema schema = getSchemaFromResource(schemaURL);
 			Validator validator = schema.newValidator();
@@ -93,7 +93,7 @@ public class Utils {
 			validator.validate(input);
 			return true;
 		} catch (Exception e) {
-			LOG.warn("("+e.getClass().getName()+"): "+e.getMessage(), e);
+			LOG.warn("(" + e.getClass().getName() + "): " + e.getMessage(), e);
 			return false;
 		}
 	}
@@ -103,18 +103,18 @@ public class Utils {
 
 			@Override
 			public void error(SAXParseException e) throws SAXException {
-				LOG.error(prefix+"validation error: "+e);
+				LOG.error(prefix + "validation error: " + e);
 				throw e;
 			}
 
 			@Override
 			public void fatalError(SAXParseException e) throws SAXException {
-				LOG.error(prefix+"validation fatalError: "+e);
+				LOG.error(prefix + "validation fatalError: " + e);
 			}
 
 			@Override
 			public void warning(SAXParseException e) throws SAXException {
-				LOG.warn(prefix+"validation warning: "+e);
+				LOG.warn(prefix + "validation warning: " + e);
 			}
 
 		};
@@ -167,7 +167,7 @@ public class Utils {
 //	}
 
 	public static Source string2Source(String xml) {
-		LOG.debug("xml:"+xml);
+		LOG.debug("xml:" + xml);
 		return new StreamSource(new StringReader(xml));
 	}
 
@@ -255,7 +255,7 @@ public class Utils {
 		BufferedReader buf = new BufferedReader(new InputStreamReader(Utils.class.getResourceAsStream(resourcename)));
 		StringBuilder string = new StringBuilder();
 		String line = buf.readLine();
-		while(line != null) {
+		while (line != null) {
 			string.append(line);
 			line = buf.readLine();
 		}
@@ -269,20 +269,20 @@ public class Utils {
 	public static void clean(Node node) {
 		Node child = node.getFirstChild();
 		while (child != null) {
-			Node next= child.getNextSibling();
+			Node next = child.getNextSibling();
 			switch (child.getNodeType()) {
-			case Node.ELEMENT_NODE:
-				clean(child);
-				break;
-			case Node.TEXT_NODE:
-				if ("".equals(child.getNodeValue().trim())) {
+				case Node.ELEMENT_NODE:
+					clean(child);
+					break;
+				case Node.TEXT_NODE:
+					if ("".equals(child.getNodeValue().trim())) {
+						node.removeChild(child);
+					}
+					break;
+				case Node.COMMENT_NODE:
 					node.removeChild(child);
-				}
-				break;
-			case Node.COMMENT_NODE:
-				node.removeChild(child);
 			}
-			child=next;
+			child = next;
 		}
 	}
 }

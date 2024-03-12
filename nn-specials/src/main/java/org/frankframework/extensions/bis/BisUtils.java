@@ -23,10 +23,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -39,6 +35,9 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * Some utilities for working with BIS.
@@ -63,11 +62,11 @@ public class BisUtils {
 	private static final String bisErrorXPath = "soapenv:Envelope/soapenv:Body/*/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
 	private static final String bisErrorListXPath = "soapenv:Envelope/soapenv:Body/*/bis:Result/bis:ErrorList";
 
-	private static final String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
-			"ERR6003", "Invalid Request Message" }, {
-			"ERR6004", "Invalid Backend system response" }, {
-			"ERR6005", "Backend system failure response" }, {
-			"ERR6999", "Unspecified Errors" }
+	private static final String[][] BISERRORS = {{"ERR6002", "Service Interface Request Time Out"}, {
+			"ERR6003", "Invalid Request Message"}, {
+			"ERR6004", "Invalid Backend system response"}, {
+			"ERR6005", "Backend system failure response"}, {
+			"ERR6999", "Unspecified Errors"}
 	};
 
 	private TransformerPool messageHeaderConversationIdTp;
@@ -200,6 +199,7 @@ public class BisUtils {
 		}
 		return resultElement.toXML();
 	}
+
 	public Message prepareReply(Message rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
 		List<String> messages = new ArrayList<>();
 		if (messageHeader != null) {

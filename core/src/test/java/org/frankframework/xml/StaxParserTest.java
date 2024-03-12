@@ -16,7 +16,7 @@ import microsoft.exchange.webservices.data.security.XmlNodeType;
 
 public class StaxParserTest {
 
-	private final String validDocument   = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>testContent</test>";
+	private final String validDocument = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>testContent</test>";
 	private final String invalidDocument = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>test&#x3;Content</test>";
 
 	@Test

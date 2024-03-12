@@ -79,7 +79,7 @@ public enum MediaTypes {
 		if (StringUtils.isBlank(contentTypeHeader)) {
 			return false;
 		}
-		return parseAndEvaluate(contentTypeHeader, parsedType->mimeType.includes(parsedType) && parsedType.getParameter("q") == null);
+		return parseAndEvaluate(contentTypeHeader, parsedType -> mimeType.includes(parsedType) && parsedType.getParameter("q") == null);
 	}
 
 	/**
@@ -91,8 +91,8 @@ public enum MediaTypes {
 		}
 		//The Accept header may consist out of multiple parts.
 		String[] headerParts = acceptHeader.split(",");
-		for(String headerPart : headerParts) {
-			if(parseAndEvaluate(headerPart, mimeType::isCompatibleWith)) {
+		for (String headerPart : headerParts) {
+			if (parseAndEvaluate(headerPart, mimeType::isCompatibleWith)) {
 				return true;
 			}
 		}
@@ -121,14 +121,14 @@ public enum MediaTypes {
 
 	public MimeType getMimeType(String charset) {
 		Charset withCharset = defaultCharset;
-		if(StringUtils.isNotEmpty(charset)) {
-			if(defaultCharset == null) {
+		if (StringUtils.isNotEmpty(charset)) {
+			if (defaultCharset == null) {
 				throw new UnsupportedCharsetException("provided mediatype does not support setting charset");
 			}
 			withCharset = Charset.forName(charset);
 		}
 
-		if(withCharset == null) {
+		if (withCharset == null) {
 			return mimeType;
 		}
 

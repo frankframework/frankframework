@@ -18,9 +18,8 @@ package org.frankframework.cache;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.commons.lang3.StringUtils;
-
 import net.sf.ehcache.Cache;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -33,7 +32,6 @@ import org.frankframework.util.TransformerPool.OutputType;
 
 /**
  * Remove specified cache key from cache with specified name.
- *
  *
  * @author Jaco de Groot
  */
@@ -59,12 +57,12 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 			String cacheKey = keyTransformer.transformKey(message.asString(), session);
 			Cache cache = ibisCacheManager.getCache(cacheName);
 			if (cache == null) {
-				log.warn("cache ["+cacheName+"] not found");
+				log.warn("cache [" + cacheName + "] not found");
 			} else {
-				if (cache.remove("r"+cacheKey) && cache.remove("s"+cacheKey)) {
-					log.debug("removed cache key [" + cacheKey + "] from cache ["+cacheName+"]");
+				if (cache.remove("r" + cacheKey) && cache.remove("s" + cacheKey)) {
+					log.debug("removed cache key [" + cacheKey + "] from cache [" + cacheName + "]");
 				} else {
-					log.warn("could not find cache key [" + cacheKey + "] to remove from cache ["+cacheName+"]");
+					log.warn("could not find cache key [" + cacheKey + "] to remove from cache [" + cacheName + "]");
 				}
 			}
 			return new PipeRunResult(getSuccessForward(), message);
@@ -78,6 +76,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	public void setCacheName(String cacheName) {
 		this.cacheName = cacheName;
 	}
+
 	public String getCacheName() {
 		return cacheName;
 	}
@@ -86,17 +85,20 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	public void setKeyXPath(String keyXPath) {
 		keyTransformer.setKeyXPath(keyXPath);
 	}
+
 	public String getKeyXPath() {
 		return keyTransformer.getKeyXPath();
 	}
 
 	/**
 	 * Output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'
+	 *
 	 * @ff.default text
 	 */
 	public void setKeyXPathOutputType(OutputType keyXPathOutputType) {
 		keyTransformer.setKeyXPathOutputType(keyXPathOutputType);
 	}
+
 	public OutputType getKeyXPathOutputType() {
 		return keyTransformer.getKeyXPathOutputType();
 	}
@@ -105,6 +107,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	public void setKeyNamespaceDefs(String keyNamespaceDefs) {
 		keyTransformer.setKeyNamespaceDefs(keyNamespaceDefs);
 	}
+
 	public String getKeyNamespaceDefs() {
 		return keyTransformer.getKeyNamespaceDefs();
 	}
@@ -113,6 +116,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	public void setKeyStyleSheet(String keyStyleSheet) {
 		keyTransformer.setKeyStyleSheet(keyStyleSheet);
 	}
+
 	public String getKeyStyleSheet() {
 		return keyTransformer.getKeyStyleSheet();
 	}
@@ -121,6 +125,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	public void setKeyInputSessionKey(String keyInputSessionKey) {
 		keyTransformer.setKeyInputSessionKey(keyInputSessionKey);
 	}
+
 	public String getKeyInputSessionKey() {
 		return keyTransformer.getKeyInputSessionKey();
 	}
@@ -129,10 +134,8 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 }
 
 /**
- *
  * Helper class to use the transformKey method of the abstract CacheAdapterBase
  * class.
- *
  */
 class KeyTransformer extends CacheAdapterBase {
 

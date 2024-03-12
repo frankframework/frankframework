@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
  * Custom errorHandler for the FF!API to unpack and re-pack {@link WebApplicationException}s.
  * Has to be explicitly configured to override the CXF default {@link WebApplicationException}Listener.
  *
- * @author	Niels Meijer
+ * @author Niels Meijer
  */
 
 @Provider
@@ -39,7 +39,7 @@ public class ApiExceptionHandler implements ExceptionMapper<WebApplicationExcept
 	@Override
 	public Response toResponse(WebApplicationException exception) {
 		//If the message has already been wrapped in an exception we don't need to `convert` it!
-		if(exception instanceof ApiException) {
+		if (exception instanceof ApiException) {
 			return ((ApiException) exception).getResponse();
 		}
 
@@ -47,7 +47,7 @@ public class ApiExceptionHandler implements ExceptionMapper<WebApplicationExcept
 
 		Status status = Status.INTERNAL_SERVER_ERROR;
 		Response response = exception.getResponse();
-		if(response != null && response.getStatus() > 0) {
+		if (response != null && response.getStatus() > 0) {
 			status = Status.fromStatusCode(response.getStatus());
 		}
 		return ApiException.formatExceptionResponse(exception.getMessage(), status);

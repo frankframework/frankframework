@@ -18,7 +18,7 @@ public class FileSystemCredentialsTest {
 	@BeforeEach
 	public void setup() {
 		String url = this.getClass().getResource("/secrets").toExternalForm();
-		root =  Paths.get(url.substring(url.indexOf(":/")+2));
+		root = Paths.get(url.substring(url.indexOf(":/") + 2));
 		assumeTrue(Files.exists(root));
 	}
 
@@ -29,7 +29,7 @@ public class FileSystemCredentialsTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, null);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, () -> username, () -> password, null);
 
 		assertEquals(username, fsc.getUsername());
 		assertEquals(password, fsc.getPassword());
@@ -42,7 +42,7 @@ public class FileSystemCredentialsTest {
 		String username = null;
 		String password = null;
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, null);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, () -> username, () -> password, null);
 
 		assertEquals(username, fsc.getUsername());
 		assertEquals(password, fsc.getPassword());
@@ -55,7 +55,7 @@ public class FileSystemCredentialsTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, null);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, () -> username, () -> password, null);
 
 		assertEquals(username, fsc.getUsername());
 		assertEquals(password, fsc.getPassword());
@@ -70,7 +70,7 @@ public class FileSystemCredentialsTest {
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, root);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, () -> username, () -> password, root);
 
 		assertEquals(expectedUsername, fsc.getUsername());
 		assertEquals(expectedPassword, fsc.getPassword());
@@ -85,7 +85,7 @@ public class FileSystemCredentialsTest {
 		String expectedUsername = username;
 		String expectedPassword = "password from alias";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, root);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, () -> username, () -> password, root);
 
 		assertEquals(expectedUsername, fsc.getUsername());
 		assertEquals(expectedPassword, fsc.getPassword());
@@ -100,7 +100,7 @@ public class FileSystemCredentialsTest {
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, root);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, () -> username, () -> password, root);
 
 		assertEquals(expectedUsername, fsc.getUsername());
 		assertEquals(expectedPassword, fsc.getPassword());

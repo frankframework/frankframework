@@ -22,31 +22,38 @@ package org.frankframework.util;
  */
 public class Counter {
 
-	private long value = 0 ;
+	private long value = 0;
 
 	public Counter(int startValue) {
 		super();
 		value = startValue;
 	}
+
 	public synchronized long decrease() {
 		return --value;
 	}
+
 	public synchronized long decrease(long amount) {
-		return value-=amount;
+		return value -= amount;
 	}
+
 	public synchronized long increase() {
 		return ++value;
 	}
+
 	public synchronized long increase(long amount) {
-		return value+=amount;
+		return value += amount;
 	}
+
 	public synchronized void clear() {
-		value=0;
+		value = 0;
 	}
+
 	public synchronized long getValue() {
 		return value;
 	}
+
 	public synchronized void setValue(long newValue) {
-		value=newValue;
+		value = newValue;
 	}
 }

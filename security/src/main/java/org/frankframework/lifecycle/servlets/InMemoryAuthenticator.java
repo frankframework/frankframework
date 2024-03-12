@@ -46,7 +46,7 @@ public class InMemoryAuthenticator extends ServletAuthenticatorBase {
 
 		UserDetails user = User.builder()
 				.username(username)
-				.password("{noop}"+password)
+				.password("{noop}" + password)
 				.roles(getSecurityRoles().toArray(new String[0]))
 				.build();
 

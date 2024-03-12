@@ -26,14 +26,13 @@ import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionContainer
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionList;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import org.frankframework.extensions.cmis.CmisUtils;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Wrapper that delegates when a matching CmisEvent is present.
@@ -54,7 +53,7 @@ public class IbisRepositoryService implements RepositoryService {
 	private XmlBuilder buildXml(String name, Object value) {
 		XmlBuilder filterXml = new XmlBuilder(name);
 
-		if(value != null)
+		if (value != null)
 			filterXml.setValue(value.toString());
 
 		return filterXml;
@@ -63,17 +62,16 @@ public class IbisRepositoryService implements RepositoryService {
 	@Override
 	public List<RepositoryInfo> getRepositoryInfos(ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_REPOSITORIES)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_REPOSITORIES)) {
 			return repositoryService.getRepositoryInfos(extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 
 			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORIES, cmisXml.toXML(), callContext);
 			Element repositories = XmlUtils.getFirstChildTag(cmisResult, "repositories");
 
 			List<RepositoryInfo> repositoryInfoList = new ArrayList<>();
-			for(Node node : XmlUtils.getChildTags(repositories, "repository")) {
+			for (Node node : XmlUtils.getChildTags(repositories, "repository")) {
 				repositoryInfoList.add(CmisUtils.xml2repositoryInfo((Element) node));
 			}
 			return repositoryInfoList;
@@ -83,10 +81,9 @@ public class IbisRepositoryService implements RepositoryService {
 	@Override
 	public RepositoryInfo getRepositoryInfo(String repositoryId, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_REPOSITORY_INFO)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_REPOSITORY_INFO)) {
 			return repositoryService.getRepositoryInfo(repositoryId, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 
@@ -101,18 +98,17 @@ public class IbisRepositoryService implements RepositoryService {
 
 	@Override
 	public TypeDefinitionList getTypeChildren(String repositoryId, String typeId, Boolean includePropertyDefinitions,
-			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
+											  BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 		return repositoryService.getTypeChildren(repositoryId, typeId, includePropertyDefinitions, maxItems, skipCount, extension);
 	}
 
 	@Override
 	public List<TypeDefinitionContainer> getTypeDescendants(String repositoryId, String typeId, BigInteger depth,
-			Boolean includePropertyDefinitions, ExtensionsData extension) {
+															Boolean includePropertyDefinitions, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_TYPE_DESCENDANTS)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_TYPE_DESCENDANTS)) {
 			return repositoryService.getTypeDescendants(repositoryId, typeId, depth, includePropertyDefinitions, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("typeId", typeId));
@@ -129,10 +125,9 @@ public class IbisRepositoryService implements RepositoryService {
 	@Override
 	public TypeDefinition getTypeDefinition(String repositoryId, String typeId, ExtensionsData extension) {
 
-		if(!eventDispatcher.contains(CmisEvent.GET_TYPE_DEFINITION)) {
+		if (!eventDispatcher.contains(CmisEvent.GET_TYPE_DEFINITION)) {
 			return repositoryService.getTypeDefinition(repositoryId, typeId, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("typeId", typeId));

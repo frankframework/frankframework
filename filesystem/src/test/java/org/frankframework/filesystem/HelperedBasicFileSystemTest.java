@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTest<F,FS> {
+public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTest<F, FS> {
 
 	protected IFileSystemTestHelper helper;
 
@@ -14,12 +14,13 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 
 	/**
 	 * Checks if a file with the specified name exists.
-	 * @param folder to search in for the file, set to null for root folder.
+	 *
+	 * @param folder   to search in for the file, set to null for root folder.
 	 * @param filename
 	 */
 	@Override
 	protected boolean _fileExists(String folder, String filename) throws Exception {
-		return helper._fileExists(folder,filename);
+		return helper._fileExists(folder, filename);
 	}
 
 	/**
@@ -82,7 +83,7 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
-		if (helper!=null) helper.tearDown();
+		if (helper != null) helper.tearDown();
 		super.tearDown();
 	}
 

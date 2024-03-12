@@ -31,6 +31,7 @@ import org.frankframework.doc.FrankDocGroup;
 public interface IRecordHandler extends IConfigurable {
 
 	public void open() throws SenderException;
+
 	public void close() throws SenderException;
 
 	/**

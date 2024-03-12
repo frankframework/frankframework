@@ -3,16 +3,17 @@ package org.frankframework.filesystem.mock;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.filesystem.FileSystemActorExtraTest;
 import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
-public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,MockFileSystem<MockFile>>{
+public class MockFileSystemActorTest extends FileSystemActorExtraTest<MockFile, MockFileSystem<MockFile>> {
 
 
 	@Override
@@ -22,7 +23,7 @@ public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,
 
 	@Override
 	protected MockFileSystem<MockFile> createFileSystem() {
-		return ((MockFileSystemTestHelper<MockFile>)helper).getFileSystem();
+		return ((MockFileSystemTestHelper<MockFile>) helper).getFileSystem();
 	}
 
 	@Test
@@ -33,13 +34,13 @@ public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,
 
 	@Test
 	public void testListStrangeFilenames() throws Exception {
-		String filename = "list" + FILE1+"\tx\r\ny";
+		String filename = "list" + FILE1 + "\tx\r\ny";
 		String contents = "regeltje tekst";
-		String normalizedfFilename="listfile1.txt x y";
+		String normalizedfFilename = "listfile1.txt x y";
 
 
 		actor.setAction(FileSystemAction.LIST);
-		actor.configure(fileSystem,null,owner);
+		actor.configure(fileSystem, null, owner);
 		actor.open();
 
 		createFile(null, filename, contents);

@@ -30,6 +30,7 @@ import org.frankframework.senders.MailSenderBase.MailSessionBase;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
+
 import org.junit.jupiter.api.Test;
 
 import com.sun.mail.smtp.SMTPMessage;
@@ -45,7 +46,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
 				+ "<message>My Message Goes Here</message>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -74,7 +75,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		rawResult = rawResult.replaceAll(" +\\r?\\n", "\n");
 		rawResult = rawResult.replaceFirst("Date: (.+)", "Date: DATE");
 		int i = rawResult.indexOf("boundary=\"----");
-		if(i > 0) {
+		if (i > 0) {
 			Pattern pattern = Pattern.compile("(boundary=.+)\\w");
 			Matcher matcher = pattern.matcher(rawResult);
 			matcher.find();
@@ -105,7 +106,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 	private void validateNDR(Session session, String ndr) {
 		String from = session.getProperty("mail.smtp.from");
-		log.debug("mail NDR address ["+from+"]");
+		log.debug("mail NDR address [" + from + "]");
 
 		assertEquals(ndr, from);
 	}
@@ -114,12 +115,12 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void testExtract() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
-					+ "<recipient type=\"cc\">cc@address.org</recipient>"
-					+ "<recipient type=\"bcc\">bcc@address.org</recipient>"
-					+ "<recipient type=\"bcc\" name=\"name\">i@address.org</recipient>"
-					+ "<recipient type=\"bcc\">\"personalpart1\" &lt;addresspart1@address.org&gt;</recipient>"
-					+ "<recipient type=\"bcc\">personalpart2 &lt;addresspart2@address.org&gt;</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"cc\">cc@address.org</recipient>"
+				+ "<recipient type=\"bcc\">bcc@address.org</recipient>"
+				+ "<recipient type=\"bcc\" name=\"name\">i@address.org</recipient>"
+				+ "<recipient type=\"bcc\">\"personalpart1\" &lt;addresspart1@address.org&gt;</recipient>"
+				+ "<recipient type=\"bcc\">personalpart2 &lt;addresspart2@address.org&gt;</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -128,19 +129,19 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
 				+ "<headers>"
-					+ "<header name=\"x-custom\">TEST</header>"
-					+ "<header name=\"does-this-work\">yes</header>"
+				+ "<header name=\"x-custom\">TEST</header>"
+				+ "<header name=\"does-this-work\">yes</header>"
 				+ "</headers>"
-			+ "</email>";
+				+ "</email>";
 		sender.configure();
 		MailSessionBase mailSession = sender.extract(new Message(mailInput), session);
-		validateAddress(mailSession.getRecipientList().get(0),"to", "dummy","me@address.org");
-		validateAddress(mailSession.getRecipientList().get(1),"cc", null,"cc@address.org");
-		validateAddress(mailSession.getRecipientList().get(2),"bcc", null,"bcc@address.org");
-		validateAddress(mailSession.getRecipientList().get(3),"bcc", "name","i@address.org");
-		validateAddress(mailSession.getRecipientList().get(4),"bcc", "personalpart1","addresspart1@address.org");
-		validateAddress(mailSession.getRecipientList().get(5),"bcc", "personalpart2","addresspart2@address.org");
-		validateAddress(mailSession.getFrom(),"from", "Me, Myself and I","myself@address.org");
+		validateAddress(mailSession.getRecipientList().get(0), "to", "dummy", "me@address.org");
+		validateAddress(mailSession.getRecipientList().get(1), "cc", null, "cc@address.org");
+		validateAddress(mailSession.getRecipientList().get(2), "bcc", null, "bcc@address.org");
+		validateAddress(mailSession.getRecipientList().get(3), "bcc", "name", "i@address.org");
+		validateAddress(mailSession.getRecipientList().get(4), "bcc", "personalpart1", "addresspart1@address.org");
+		validateAddress(mailSession.getRecipientList().get(5), "bcc", "personalpart2", "addresspart2@address.org");
+		validateAddress(mailSession.getFrom(), "from", "Me, Myself and I", "myself@address.org");
 	}
 
 	public void validateAddress(EMail address, String expectedType, String expectedPersonal, String expectedAddress) {
@@ -153,12 +154,12 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void mailWithMultipleRecipients() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
-					+ "<recipient type=\"cc\">cc@address.org</recipient>"
-					+ "<recipient type=\"bcc\">bcc@address.org</recipient>"
-					+ "<recipient type=\"bcc\" name=\"name\">i@address.org</recipient>"
-					+ "<recipient type=\"bcc\" name=\"fulladdress\">personalpart1 &lt;addresspart1@address.org&gt;</recipient>"
-					+ "<recipient type=\"bcc\">personalpart2 &lt;addresspart2@address.org&gt;</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"cc\">cc@address.org</recipient>"
+				+ "<recipient type=\"bcc\">bcc@address.org</recipient>"
+				+ "<recipient type=\"bcc\" name=\"name\">i@address.org</recipient>"
+				+ "<recipient type=\"bcc\" name=\"fulladdress\">personalpart1 &lt;addresspart1@address.org&gt;</recipient>"
+				+ "<recipient type=\"bcc\">personalpart2 &lt;addresspart2@address.org&gt;</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -167,10 +168,10 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
 				+ "<headers>"
-					+ "<header name=\"x-custom\">TEST</header>"
-					+ "<header name=\"does-this-work\">yes</header>"
+				+ "<header name=\"x-custom\">TEST</header>"
+				+ "<header name=\"does-this-work\">yes</header>"
 				+ "</headers>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -188,10 +189,10 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void mailWithIllegalContentType() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
-					+ "<recipient type=\"cc\">cc@address.org</recipient>"
-					+ "<recipient type=\"bcc\">bcc@address.org</recipient>"
-					+ "<recipient type=\"bcc\" name=\"name\">i@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"cc\">cc@address.org</recipient>"
+				+ "<recipient type=\"bcc\">bcc@address.org</recipient>"
+				+ "<recipient type=\"bcc\" name=\"name\">i@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -200,10 +201,10 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
 				+ "<headers>"
-					+ "<header name=\"x-custom\">TEST</header>"
-					+ "<header name=\"does-this-work\">yes</header>"
+				+ "<header name=\"x-custom\">TEST</header>"
+				+ "<header name=\"does-this-work\">yes</header>"
 				+ "</headers>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -216,7 +217,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void mailWithBase64Message() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -225,7 +226,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
 				+ "<messageBase64>true</messageBase64>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -243,7 +244,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void mailWithoutBase64Message() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -252,7 +253,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
 				+ "<messageBase64>true</messageBase64>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -264,7 +265,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void mailWithAttachment() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -273,9 +274,9 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
 				+ "<attachments>"
-					+ "<attachment name=\"test.txt\">This is a test file.</attachment>"
+				+ "<attachment name=\"test.txt\">This is a test file.</attachment>"
 				+ "</attachments>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -293,7 +294,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void mailWithBase64Attachment() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -303,9 +304,9 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<charset>UTF-8</charset>"
 				+ "<messageBase64>false</messageBase64>"
 				+ "<attachments>"
-					+ "<attachment name=\"test.txt\" base64=\"true\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
+				+ "<attachment name=\"test.txt\" base64=\"true\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
 				+ "</attachments>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -323,7 +324,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void mailWithBase64MessageAndAttachment() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -333,9 +334,9 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<charset>UTF-8</charset>"
 				+ "<messageBase64>true</messageBase64>"
 				+ "<attachments>"
-					+ "<attachment name=\"test.txt\" base64=\"true\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
+				+ "<attachment name=\"test.txt\" base64=\"true\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
 				+ "</attachments>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -353,7 +354,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void mailWithBase64MessageAndAttachmentWithContentType() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -363,9 +364,9 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<charset>UTF-8</charset>"
 				+ "<messageBase64>true</messageBase64>"
 				+ "<attachments>"
-					+ "<attachment name=\"test.txt\" base64=\"true\" type=\"abc/def\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
+				+ "<attachment name=\"test.txt\" base64=\"true\" type=\"abc/def\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
 				+ "</attachments>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -383,7 +384,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	public void mailWithBase64MessageAndAttachmentWithIllegalContentType() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -393,9 +394,9 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<charset>UTF-8</charset>"
 				+ "<messageBase64>true</messageBase64>"
 				+ "<attachments>"
-					+ "<attachment name=\"test.txt\" base64=\"true\" type=\"messageTypeWithoutASlash\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
+				+ "<attachment name=\"test.txt\" base64=\"true\" type=\"messageTypeWithoutASlash\">VGhpcyBpcyBhIHRlc3QgZmlsZS4=</attachment>"
 				+ "</attachments>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -477,11 +478,11 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 	@Test
 	public void mailWithNDR() throws Exception {
-		if(!(sender instanceof MailSender)) return;
+		if (!(sender instanceof MailSender)) return;
 
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -489,7 +490,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<messageType>text/plain</messageType>"
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.setBounceAddress("my@bounce.nl");
 
@@ -508,11 +509,11 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 	@Test
 	public void mailWithDynamicNDR() throws Exception {
-		if(!(sender instanceof MailSender)) return;
+		if (!(sender instanceof MailSender)) return;
 
 		String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -521,7 +522,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
 				+ "<bounceAddress>my@bounce.nl</bounceAddress>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -538,11 +539,11 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 	@Test
 	public void parallelMailWithNDR() throws Throwable {
-		if(!(sender instanceof MailSender)) return;
+		if (!(sender instanceof MailSender)) return;
 
 		final String mailInput = "<email>"
 				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -550,7 +551,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<messageType>text/plain</messageType>"
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
-			+ "</email>";
+				+ "</email>";
 
 		int threads = 50;
 		ExecutorService service = Executors.newFixedThreadPool(10);
@@ -560,7 +561,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				@Override
 				public Session call() throws Exception {
 					ISenderWithParameters sender2 = createSender();
-					String bounce = "my"+Math.random()+"@bounce.com";
+					String bounce = "my" + Math.random() + "@bounce.com";
 					((MailSender) sender2).setBounceAddress(bounce);
 
 					sender2.configure();
@@ -588,7 +589,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		for (Future<Session> sessionFuture : futures) {
 			try {
 				Session session = sessionFuture.get();
-				assertFalse(sessions.contains(session), "session ["+session+"] should not already exist");
+				assertFalse(sessions.contains(session), "session [" + session + "] should not already exist");
 
 				validateAuthentication(session);
 				validateNDR(session, session.getProperty("bounce"));

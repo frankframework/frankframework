@@ -25,6 +25,7 @@ import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.LogUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
@@ -40,14 +41,14 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 	protected S listener;
 
 	@Mock
-	protected Map<String,Object> threadContext;
+	protected Map<String, Object> threadContext;
 
 	public abstract S createListener() throws Exception;
 
 	@BeforeEach
 	@SuppressWarnings("unchecked")
 	public void setUp() throws Exception {
-		if(listener instanceof IPullingListener) {
+		if (listener instanceof IPullingListener) {
 			threadContext = ((IPullingListener<M>) listener).openThread();
 		} else {
 			threadContext = new HashMap<>();
@@ -59,7 +60,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 
 	protected RawMessageWrapper<M> getRawMessage(String mockedResult) throws ListenerException {
 		threadContext.put(STUB_RESULT_KEY, mockedResult);
-		if(listener instanceof IPullingListener) {
+		if (listener instanceof IPullingListener) {
 			@SuppressWarnings("unchecked")
 			IPullingListener<M> pullingListener = (IPullingListener<M>) listener;
 			return pullingListener.getRawMessage(threadContext);

@@ -16,16 +16,16 @@
 package org.frankframework.statistics;
 
 /**
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  * @since
  */
-public class SizeStatisticsKeeper<B extends IBasics<S>, S> extends StatisticsKeeper<B,S> {
+public class SizeStatisticsKeeper<B extends IBasics<S>, S> extends StatisticsKeeper<B, S> {
 
-	private static final String statConfigKey="Statistics.size.boundaries";
-	public static final String DEFAULT_BOUNDARY_LIST="10000,100000,1000000";
+	private static final String statConfigKey = "Statistics.size.boundaries";
+	public static final String DEFAULT_BOUNDARY_LIST = "10000,100000,1000000";
 
 	public SizeStatisticsKeeper(String name) {
-		super(name, (B)new BigBasics(), statConfigKey, DEFAULT_BOUNDARY_LIST);
+		super(name, (B) new BigBasics(), statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
 	public String getUnits() {

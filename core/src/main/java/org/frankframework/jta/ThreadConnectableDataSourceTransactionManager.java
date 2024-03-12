@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionException;
 
-public class ThreadConnectableDataSourceTransactionManager extends DataSourceTransactionManager implements IThreadConnectableTransactionManager<Object,Object> {
+public class ThreadConnectableDataSourceTransactionManager extends DataSourceTransactionManager implements IThreadConnectableTransactionManager<Object, Object> {
 
 	public ThreadConnectableDataSourceTransactionManager() {
 		super();
@@ -42,7 +42,7 @@ public class ThreadConnectableDataSourceTransactionManager extends DataSourceTra
 
 	@Override
 	public void resumeTransaction(Object transaction, Object resources) {
-		resume(transaction, (SuspendedResourcesHolder)resources);
+		resume(transaction, (SuspendedResourcesHolder) resources);
 	}
 
 }

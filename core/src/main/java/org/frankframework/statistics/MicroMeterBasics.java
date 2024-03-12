@@ -26,17 +26,17 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Container for basic statistical estimators, based on MicroMeter DistributionSummary.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 
-	public static final int NUM_BASIC_ITEMS=6;
+	public static final int NUM_BASIC_ITEMS = 6;
 
 	private @Setter DistributionSummary distributionSummary;
 	private HistogramSnapshot snapshot;
 
 	protected long min = Long.MAX_VALUE;
-	protected long sumOfSquares=0;
+	protected long sumOfSquares = 0;
 
 	protected class MicroMeterSnapshot {
 		protected HistogramSnapshot histogramSnapshot;
@@ -49,14 +49,14 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 	@Override
 	public MicroMeterSnapshot takeSnapshot() {
 		MicroMeterSnapshot result = new MicroMeterSnapshot();
-		result.histogramSnapshot = distributionSummary!=null ? distributionSummary.takeSnapshot() : null;
-		result.sumOfSquares= sumOfSquares;
+		result.histogramSnapshot = distributionSummary != null ? distributionSummary.takeSnapshot() : null;
+		result.sumOfSquares = sumOfSquares;
 		return result;
 	}
 
 	@Override
 	public void addValue(long value) {
-		if (distributionSummary!=null) {
+		if (distributionSummary != null) {
 			distributionSummary.record(value);
 		}
 		checkMinMax(value);
@@ -87,13 +87,14 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 
 	@Override
 	public void updateIntervalMinMax(MicroMeterSnapshot mark, long value) {
-		if (mark.min>value) {
+		if (mark.min > value) {
 			mark.min = value;
 		}
-		if (mark.max<value) {
+		if (mark.max < value) {
 			mark.max = value;
 		}
 	}
+
 	@Override
 	public long getIntervalSum(MicroMeterSnapshot mark) {
 		return getSum() - Math.round(mark.histogramSnapshot.total());
@@ -106,11 +107,11 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 
 	@Override
 	public double getIntervalAverage(MicroMeterSnapshot mark) {
-		long intervalCount=getIntervalCount(mark);
-		if (intervalCount==0) {
+		long intervalCount = getIntervalCount(mark);
+		if (intervalCount == 0) {
 			return 0;
 		}
-		return getIntervalSum(mark)/(double)(intervalCount);
+		return getIntervalSum(mark) / (double) (intervalCount);
 	}
 
 	@Override
@@ -119,16 +120,15 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 	}
 
 
-
 	protected void addSums(long value) {
 		sumOfSquares += value * value;
 	}
 
 	private double calculateVariance(long count, long sum, long sumOfSquares) {
 		double result;
-		if (count>1) {
-			result=(sumOfSquares-((sum*sum)/count))/(count-1);
-		} else result=Double.NaN;
+		if (count > 1) {
+			result = (sumOfSquares - ((sum * sum) / count)) / (count - 1);
+		} else result = Double.NaN;
 		return result;
 	}
 
@@ -141,39 +141,65 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 	@Override
 	public String getItemName(int index) {
 		switch (index) {
-			case 0: return ITEM_NAME_COUNT;
-			case 1: return ITEM_NAME_MIN;
-			case 2: return ITEM_NAME_MAX;
-			case 3: return ITEM_NAME_AVERAGE;
-			case 4: return ITEM_NAME_STDDEV;
-			case 5: return ITEM_NAME_SUM;
-			default : throw new IllegalArgumentException("item index ["+index+"] outside allowed range [0,"+(NUM_BASIC_ITEMS-1)+"]");
+			case 0:
+				return ITEM_NAME_COUNT;
+			case 1:
+				return ITEM_NAME_MIN;
+			case 2:
+				return ITEM_NAME_MAX;
+			case 3:
+				return ITEM_NAME_AVERAGE;
+			case 4:
+				return ITEM_NAME_STDDEV;
+			case 5:
+				return ITEM_NAME_SUM;
+			default:
+				throw new IllegalArgumentException("item index [" + index + "] outside allowed range [0," + (NUM_BASIC_ITEMS - 1) + "]");
 		}
 	}
 
 	@Override
 	public Type getItemType(int index) {
 		switch (index) {
-			case 0: return Type.INTEGER;
-			case 1: return Type.TIME;
-			case 2: return Type.TIME;
-			case 3: return Type.TIME;
-			case 4: return Type.TIME;
-			case 5: return Type.TIME;
-			default : throw new IllegalArgumentException("item index ["+index+"] outside allowed range [0,"+(NUM_BASIC_ITEMS-1)+"]");
+			case 0:
+				return Type.INTEGER;
+			case 1:
+				return Type.TIME;
+			case 2:
+				return Type.TIME;
+			case 3:
+				return Type.TIME;
+			case 4:
+				return Type.TIME;
+			case 5:
+				return Type.TIME;
+			default:
+				throw new IllegalArgumentException("item index [" + index + "] outside allowed range [0," + (NUM_BASIC_ITEMS - 1) + "]");
 		}
 	}
 
 	@Override
 	public Object getItemValue(int index) {
 		switch (index) {
-			case 0: return new Long(getCount());
-			case 1: if (getCount() == 0) return null; else return new Long(getMin());
-			case 2: if (getCount() == 0) return null; else return new Long(getMax());
-			case 3: if (getCount() == 0) return null; else return new Double(getAverage());
-			case 4: if (getCount() == 0) return null; else return new Double(getStdDev());
-			case 5: if (getCount() == 0) return null; else return new Long(getSum());
-			default : throw new IllegalArgumentException("item index ["+index+"] outside allowed range [0,"+(NUM_BASIC_ITEMS-1)+"]");
+			case 0:
+				return new Long(getCount());
+			case 1:
+				if (getCount() == 0) return null;
+				else return new Long(getMin());
+			case 2:
+				if (getCount() == 0) return null;
+				else return new Long(getMax());
+			case 3:
+				if (getCount() == 0) return null;
+				else return new Double(getAverage());
+			case 4:
+				if (getCount() == 0) return null;
+				else return new Double(getStdDev());
+			case 5:
+				if (getCount() == 0) return null;
+				else return new Long(getSum());
+			default:
+				throw new IllegalArgumentException("item index [" + index + "] outside allowed range [0," + (NUM_BASIC_ITEMS - 1) + "]");
 		}
 	}
 
@@ -182,18 +208,18 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 	}
 
 
-
 	@Override
 	public long getCount() {
-		return distributionSummary!=null ? distributionSummary.count() : 0;
+		return distributionSummary != null ? distributionSummary.count() : 0;
 	}
+
 	public long getIntervalCount(MicroMeterBasics mark) {
-		return getCount()-mark.getCount();
+		return getCount() - mark.getCount();
 	}
 
 	@Override
 	public long getMax() {
-		return distributionSummary!=null ? Math.round(distributionSummary.max()) : 0;
+		return distributionSummary != null ? Math.round(distributionSummary.max()) : 0;
 	}
 
 	@Override
@@ -203,46 +229,50 @@ public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 
 	@Override
 	public long getSum() {
-		return distributionSummary!=null ? Math.round(distributionSummary.totalAmount()) : 0;
+		return distributionSummary != null ? Math.round(distributionSummary.totalAmount()) : 0;
 	}
+
 	@Override
 	public long getSumOfSquares() {
 		return sumOfSquares;
 	}
 
 	public long getIntervalSum(MicroMeterBasics mark) {
-		return getSum()-Math.round(mark.snapshot.total());
+		return getSum() - Math.round(mark.snapshot.total());
 	}
+
 	public long getIntervalSumOfSquares(MicroMeterBasics mark) {
-		return sumOfSquares-mark.getSumOfSquares();
+		return sumOfSquares - mark.getSumOfSquares();
 	}
 
 	@Override
 	public double getAverage() {
-		return distributionSummary!=null ? distributionSummary.mean() : 0;
+		return distributionSummary != null ? distributionSummary.mean() : 0;
 	}
+
 	public double getIntervalAverage(MicroMeterBasics mark) {
-		long intervalCount=getIntervalCount(mark);
-		if (intervalCount==0) {
+		long intervalCount = getIntervalCount(mark);
+		if (intervalCount == 0) {
 			return 0;
 		}
-		return getIntervalSum(mark)/(double)(intervalCount);
+		return getIntervalSum(mark) / (double) (intervalCount);
 	}
 
 	@Override
 	public double getVariance() {
-		if (distributionSummary==null) {
+		if (distributionSummary == null) {
 			return Double.NaN;
 		}
 		HistogramSnapshot snapshot = distributionSummary.takeSnapshot();
 		return calculateVariance(snapshot.count(), Math.round(snapshot.total()), sumOfSquares);
 	}
+
 	public double getIntervalVariance(MicroMeterBasics mark) {
-		if (distributionSummary==null) {
+		if (distributionSummary == null) {
 			return Double.NaN;
 		}
 		HistogramSnapshot snapshot = distributionSummary.takeSnapshot();
-		return calculateVariance(snapshot.count()-mark.getCount(), Math.round(snapshot.total())-mark.getSum(), sumOfSquares-mark.getSumOfSquares());
+		return calculateVariance(snapshot.count() - mark.getCount(), Math.round(snapshot.total()) - mark.getSum(), sumOfSquares - mark.getSumOfSquares());
 	}
 
 	@Override

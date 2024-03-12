@@ -26,18 +26,17 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
-import org.frankframework.extensions.akamai.NetStorageCmsSigner.SignType;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import org.frankframework.http.HttpResponseHandler;
 import org.frankframework.http.HttpSenderBase;
 import org.frankframework.parameters.Parameter;
@@ -58,9 +57,8 @@ import org.frankframework.util.XmlUtils;
  * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>
  *
  * @ff.parameters Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.
- *
- * @author	Niels Meijer
- * @since	7.0-B4
+ * @author Niels Meijer
+ * @since 7.0-B4
  */
 public class NetStorageSender extends HttpSenderBase {
 	private static final String URL_PARAM_KEY = "urlParameter";
@@ -70,6 +68,7 @@ public class NetStorageSender extends HttpSenderBase {
 	public static final String HASHVALUE_PARAM_KEY = "hashValue";
 
 	private @Getter Action action = null;
+
 	public enum Action {
 		DU, DIR, DELETE, UPLOAD, MKDIR, RMDIR, RENAME, MTIME, DOWNLOAD;
 	}
@@ -98,38 +97,38 @@ public class NetStorageSender extends HttpSenderBase {
 		super.configure();
 
 		//Safety checks
-		if(getAction() == null)
-			throw new ConfigurationException(getLogPrefix()+"action must be specified");
+		if (getAction() == null)
+			throw new ConfigurationException(getLogPrefix() + "action must be specified");
 
-		if(getCpCode() == null)
-			throw new ConfigurationException(getLogPrefix()+"cpCode must be specified");
-		if(!getUrl().startsWith("http"))
-			throw new ConfigurationException(getLogPrefix()+"url must be start with http(s)");
+		if (getCpCode() == null)
+			throw new ConfigurationException(getLogPrefix() + "cpCode must be specified");
+		if (!getUrl().startsWith("http"))
+			throw new ConfigurationException(getLogPrefix() + "url must be start with http(s)");
 
-		if(getSignVersion() < 3 || getSignVersion() > 5)
-			throw new ConfigurationException(getLogPrefix()+"signVersion must be either 3, 4 or 5");
+		if (getSignVersion() < 3 || getSignVersion() > 5)
+			throw new ConfigurationException(getLogPrefix() + "signVersion must be either 3, 4 or 5");
 
 
 		ParameterList parameterList = getParameterList();
-		if(getAction() == Action.UPLOAD && parameterList.findParameter(FILE_PARAM_KEY) == null) {
-			throw new ConfigurationException(getLogPrefix()+"the upload action requires a file parameter to be present");
+		if (getAction() == Action.UPLOAD && parameterList.findParameter(FILE_PARAM_KEY) == null) {
+			throw new ConfigurationException(getLogPrefix() + "the upload action requires a file parameter to be present");
 		}
-		if(getAction() == Action.RENAME && parameterList.findParameter(DESTINATION_PARAM_KEY) == null) {
-			throw new ConfigurationException(getLogPrefix()+"the rename action requires a destination parameter to be present");
+		if (getAction() == Action.RENAME && parameterList.findParameter(DESTINATION_PARAM_KEY) == null) {
+			throw new ConfigurationException(getLogPrefix() + "the rename action requires a destination parameter to be present");
 		}
-		if(getAction() == Action.MTIME && parameterList.findParameter(MTIME_PARAM_KEY) == null) {
-			throw new ConfigurationException(getLogPrefix()+"the mtime action requires a mtime parameter to be present");
+		if (getAction() == Action.MTIME && parameterList.findParameter(MTIME_PARAM_KEY) == null) {
+			throw new ConfigurationException(getLogPrefix() + "the mtime action requires a mtime parameter to be present");
 		}
 
 		//check if md5/sha1/sha256 -> geef deprecated warning + parse hashAlgorithme
 		//hashValue  parameterList
-		for(HashAlgorithm algorithm : HashAlgorithm.values()) {
+		for (HashAlgorithm algorithm : HashAlgorithm.values()) {
 			String simpleName = algorithm.name().toLowerCase();
 			Parameter hashValue = parameterList.findParameter(simpleName);
 
-			if(hashValue != null) {
+			if (hashValue != null) {
 				setHashAlgorithm(algorithm);
-				ConfigurationWarnings.add(this, log, "deprecated parameter ["+simpleName+"]: please use attribute [hashAlgorithm] in combination with parameter ["+HASHVALUE_PARAM_KEY+"]");
+				ConfigurationWarnings.add(this, log, "deprecated parameter [" + simpleName + "]: please use attribute [hashAlgorithm] in combination with parameter [" + HASHVALUE_PARAM_KEY + "]");
 			}
 		}
 
@@ -139,6 +138,7 @@ public class NetStorageSender extends HttpSenderBase {
 	/**
 	 * Builds the URI with the rootDirectory, optional CpCode and makes sure the
 	 * path never ends with a slash '/'.
+	 *
 	 * @param path to append to the root
 	 * @return full path to use as endpoint
 	 */
@@ -147,13 +147,13 @@ public class NetStorageSender extends HttpSenderBase {
 		if (!path.startsWith("/")) path = "/" + path;
 		String url = getUrl() + getCpCode();
 
-		if(getRootDir() != null)
+		if (getRootDir() != null)
 			url += getRootDir();
 
 		url += path;
 
-		if(url.endsWith("/")) //The path should never end with a '/'
-			url = url.substring(0, url.length() -1);
+		if (url.endsWith("/")) //The path should never end with a '/'
+			url = url.substring(0, url.length() - 1);
 
 		return new URIBuilder(url).build();
 	}
@@ -182,12 +182,12 @@ public class NetStorageSender extends HttpSenderBase {
 		request.setVersion(actionVersion);
 		request.setHashAlgorithm(hashAlgorithm);
 
-		if(parameters != null) {
+		if (parameters != null) {
 			request.mapParameters(parameters);
 		}
 
 		setMethodType(request.getMethodType()); //For logging purposes
-		if(log.isDebugEnabled()) log.debug("opening ["+request.getMethodType()+"] connection to ["+uri+"] with action ["+getAction()+"]");
+		if (log.isDebugEnabled()) log.debug("opening [" + request.getMethodType() + "] connection to [" + uri + "] with action [" + getAction() + "]");
 
 		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf, getSignType());
 		request.sign(signer);
@@ -204,7 +204,7 @@ public class NetStorageSender extends HttpSenderBase {
 			session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
 			ok = true;
 		} else {
-			if (statusCode==HttpServletResponse.SC_OK) {
+			if (statusCode == HttpServletResponse.SC_OK) {
 				ok = true;
 			} else if (isFollowRedirects() &&
 					statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY ||
@@ -223,7 +223,7 @@ public class NetStorageSender extends HttpSenderBase {
 		XmlBuilder result = new XmlBuilder("result");
 
 		HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-		if(response == null) {
+		if (response == null) {
 			XmlBuilder statuscode = new XmlBuilder("statuscode");
 			statuscode.setValue(statusCode + "");
 			result.addSubElement(statuscode);
@@ -236,11 +236,10 @@ public class NetStorageSender extends HttpSenderBase {
 				XmlBuilder message = new XmlBuilder("message");
 				message.setValue(responseString, false);
 				result.addSubElement(message);
-			}
-			else {
+			} else {
 				// Validate Server-Time drift
 				String dateString = responseHandler.getHeader("Date");
-				if(!StringUtils.isEmpty(dateString)) {
+				if (!StringUtils.isEmpty(dateString)) {
 					Date currentDate = new Date();
 					DateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
 					long responseDate = 0;
@@ -248,10 +247,9 @@ public class NetStorageSender extends HttpSenderBase {
 					try {
 						Date date = format.parse(dateString);
 						responseDate = date.getTime();
-					}
-					catch (Exception e) {}
+					} catch (Exception e) {}
 
-					if (responseDate != 0 && currentDate.getTime() - responseDate > 30*1000)
+					if (responseDate != 0 && currentDate.getTime() - responseDate > 30 * 1000)
 						throw new SenderException("Local server Date is more than 30s out of sync with Remote server");
 				}
 				XmlBuilder message = new XmlBuilder("error");
@@ -259,7 +257,8 @@ public class NetStorageSender extends HttpSenderBase {
 				result.addSubElement(message);
 
 				log.warn(String.format("Unexpected Response from Server: %d %s\n%s",
-						statusCode, responseString, responseHandler.getHeaderFields()));
+						statusCode, responseString, responseHandler.getHeaderFields()
+				));
 			}
 		}
 
@@ -272,21 +271,21 @@ public class NetStorageSender extends HttpSenderBase {
 	 */
 	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
 		String charset = responseHandler.getCharset();
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix() + "response body uses charset [" + charset + "]");
 
 		Message response = responseHandler.getResponseMessage();
 
 		try {
 			return response.asString();
-		} catch(IOException e) {
-			if(throwIOExceptionWhenParsingResponse) {
+		} catch (IOException e) {
+			if (throwIOExceptionWhenParsingResponse) {
 				throw e;
 			}
 			return null;
 		}
 	}
 
-	/** Only works in combination with the UPLOAD action. If set, and not specified as parameter, the sender will sign the file to be uploaded.*/
+	/** Only works in combination with the UPLOAD action. If set, and not specified as parameter, the sender will sign the file to be uploaded. */
 	public void setHashAlgorithm(HashAlgorithm hashAlgorithm) {
 		this.hashAlgorithm = hashAlgorithm;
 	}
@@ -296,8 +295,11 @@ public class NetStorageSender extends HttpSenderBase {
 		this.action = action;
 	}
 
-	/** At the time of writing, NetStorage only supports version 1
-	 * @ff.default 1 */
+	/**
+	 * At the time of writing, NetStorage only supports version 1
+	 *
+	 * @ff.default 1
+	 */
 	public void setActionVersion(int actionVersion) {
 		this.actionVersion = actionVersion;
 	}
@@ -310,12 +312,13 @@ public class NetStorageSender extends HttpSenderBase {
 	/** The destination URL for the Akamai NetStorage. (Only the hostname, without CpCode; eq. xyz-nsu.akamaihd.net) */
 	@Override
 	public void setUrl(String url) {
-		if(!url.endsWith("/")) url += "/";
+		if (!url.endsWith("/")) url += "/";
 		super.setUrl(url);
 	}
 
 	/**
 	 * Login is done via a Nonce and AccessToken
+	 *
 	 * @param nonce to use when logging in
 	 */
 	public void setNonce(String nonce) {
@@ -324,16 +327,18 @@ public class NetStorageSender extends HttpSenderBase {
 
 	/**
 	 * Version to validate queries made to NetStorage backend.
+	 *
 	 * @param signVersion supports 3 types; 3:MD5, 4:SHA1, 5: SHA256
 	 * @ff.default 5
 	 */
 	public void setSignVersion(int signVersion) {
 		this.signVersion = signVersion;
 	}
+
 	public SignType getSignType() {
-		if(getSignVersion() == 3)
+		if (getSignVersion() == 3)
 			return SignType.HMACMD5;
-		else if(getSignVersion() == 4)
+		else if (getSignVersion() == 4)
 			return SignType.HMACSHA1;
 		else
 			return SignType.HMACSHA256;
@@ -341,6 +346,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 	/**
 	 * Login is done via a Nonce and AccessToken
+	 *
 	 * @param accessToken to use when logging in
 	 */
 	public void setAccessToken(String accessToken) {
@@ -349,14 +355,14 @@ public class NetStorageSender extends HttpSenderBase {
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "URL ["+getUrl()+"] cpCode ["+getCpCode()+"] action ["+getAction()+"]";
+		return "URL [" + getUrl() + "] cpCode [" + getCpCode() + "] action [" + getAction() + "]";
 	}
 
 	/** Root directory (appended to the url + cpCode) */
 	public void setRootDir(String rootDir) {
-		if(!rootDir.startsWith("/")) rootDir = "/" + rootDir;
-		if(rootDir.endsWith("/"))
-			rootDir = rootDir.substring(0, rootDir.length()-1);
+		if (!rootDir.startsWith("/")) rootDir = "/" + rootDir;
+		if (rootDir.endsWith("/"))
+			rootDir = rootDir.substring(0, rootDir.length() - 1);
 		this.rootDir = rootDir;
 	}
 

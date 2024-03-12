@@ -34,8 +34,8 @@ import org.frankframework.util.XmlUtils;
  * <p>It is possible to set the name of the configuration with the parameter 'name'.</p>
  * <p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p>
  *
- * @author	Lars Sinke
- * @author	Niels Meijer
+ * @author Lars Sinke
+ * @author Niels Meijer
  */
 public class ReloadSender extends SenderWithParametersBase {
 
@@ -53,28 +53,28 @@ public class ReloadSender extends SenderWithParametersBase {
 		try {
 			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
-				if(pvl.get("name") != null)
+				if (pvl.get("name") != null)
 					configName = pvl.get("name").asStringValue();
-				if(pvl.get("forceReload") != null)
+				if (pvl.get("forceReload") != null)
 					forceReload = pvl.get("forceReload").asBooleanValue(false);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
+			throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
 		try {
-			if(configName == null)
+			if (configName == null)
 				configName = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='NAME']");
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression configName", e);
+			throw new SenderException(getLogPrefix() + "error evaluating Xpath expression configName", e);
 		}
 
 		try {
-			if(!forceReload) {
+			if (!forceReload) {
 				newVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='VERSION']");
 			}
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
+			throw new SenderException(getLogPrefix() + "error evaluating Xpath expression activeVersion", e);
 		}
 
 		Configuration configuration = ibisManager.getConfiguration(configName);
@@ -94,11 +94,13 @@ public class ReloadSender extends SenderWithParametersBase {
 
 	/**
 	 * reload the configuration regardless of the version
+	 *
 	 * @ff.default false
 	 */
 	public void setForceReload(boolean forceReload) {
-		this.forceReload  = forceReload;
+		this.forceReload = forceReload;
 	}
+
 	public boolean getForceReload() {
 		return this.forceReload;
 	}

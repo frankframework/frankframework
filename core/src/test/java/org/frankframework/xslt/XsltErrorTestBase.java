@@ -16,6 +16,7 @@ import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS = 0;
 	private final String FILE_NOT_FOUND_EXCEPTION = "Cannot get resource for href [";
 	private final boolean testForEmptyOutputStream = false;
+
 	protected int getMultiplicity() {
 		return 1;
 	}
@@ -50,14 +52,14 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	public void setup() {
 		// Force reconfigure to clean list appender.
 		testAppender = TestAppender.newBuilder()
-			.useIbisPatternLayout("%level %m")
-			.minLogLevel(Level.WARN)
-			.build();
+				.useIbisPatternLayout("%level %m")
+				.minLogLevel(Level.WARN)
+				.build();
 		TestAppender.addToRootLogger(testAppender);
 
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();
-			prevStdErr=System.err;
+			prevStdErr = System.err;
 			System.setErr(new PrintStream(errorOutputStream));
 		}
 	}
@@ -69,7 +71,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		if (testForEmptyOutputStream) {
 			// Xslt processing should not log to stderr
 			System.setErr(prevStdErr);
-			System.err.println("ErrorStream:"+errorOutputStream);
+			System.err.println("ErrorStream:" + errorOutputStream);
 			assertEquals("", errorOutputStream.toString());
 		}
 		super.tearDown();
@@ -88,7 +90,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		setXsltVersion(1);
 		pipe.configure();
-		checkTestAppender(0,null);
+		checkTestAppender(0, null);
 	}
 
 	// detect duplicate imports in configure()
@@ -98,7 +100,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		setXsltVersion(2);
 		pipe.configure();
 		pipe.start();
-		checkTestAppender(getMultiplicity(),"is included or imported more than once");
+		checkTestAppender(getMultiplicity(), "is included or imported more than once");
 	}
 
 	public void duplicateImportErrorProcessing(boolean xslt2) throws Exception {
@@ -108,11 +110,11 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		pipe.configure();
 		pipe.start();
 
-		String input= TestFileUtils.getTestFile("/Xslt/duplicateImport/in.xml");
-		log.debug("inputfile ["+input+"]");
-		String expected=TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
+		String input = TestFileUtils.getTestFile("/Xslt/duplicateImport/in.xml");
+		log.debug("inputfile [" + input + "]");
+		String expected = TestFileUtils.getTestFile("/Xslt/duplicateImport/out.xml");
 
-		PipeRunResult prr=doPipe(pipe, input, session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
 
 		assertResultsAreCorrect(expected, result, session);
@@ -141,14 +143,14 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 			doPipe(pipe, input, session);
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
+			assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION));
-		System.out.println("ErrorMessage: "+errorMessage);
+		assertThat(testAppender.toString(), containsString(FILE_NOT_FOUND_EXCEPTION));
+		System.out.println("ErrorMessage: " + errorMessage);
 		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream= new ErrorOutputStream();
+			errorOutputStream = new ErrorOutputStream();
 		}
 	}
 
@@ -165,17 +167,17 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 			doPipe(pipe, input, session);
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
+			assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
 		// Saxon 9.8 no longer considers a missing import to be fatal. This is similar to Xalan
 		String FILE_NOT_FOUND_EXCEPTION_SAXON_10 = "WARN Fatal transformation error: Exception thrown by URIResolver resolving `";
 		assertThat(testAppender.toString(), containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
 
-		System.out.println("ErrorMessage: "+errorMessage);
+		System.out.println("ErrorMessage: " + errorMessage);
 		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream= new ErrorOutputStream();
+			errorOutputStream = new ErrorOutputStream();
 		}
 	}
 
@@ -189,9 +191,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 			fail("Expected to run into an exception");
 		} catch (ConfigurationException e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
+			assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender(1,FILE_NOT_FOUND_EXCEPTION);
+		checkTestAppender(1, FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
@@ -204,9 +206,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 			fail("expected configuration to fail because an import could not be found");
 		} catch (ConfigurationException e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
+			assertThat(errorMessage, containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
-		checkTestAppender(1,FILE_NOT_FOUND_EXCEPTION);
+		checkTestAppender(1, FILE_NOT_FOUND_EXCEPTION);
 	}
 
 	@Test
@@ -218,12 +220,12 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 			pipe.configure();
 			fail("expected configuration to fail");
 		} catch (ConfigurationException e) {
-			log.warn("final exception: "+e.getMessage());
+			log.warn("final exception: " + e.getMessage());
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("Cannot find a 2-argument function named Q{http://exslt.org/strings}tokenize()"));
+			assertThat(errorMessage, containsString("Cannot find a 2-argument function named Q{http://exslt.org/strings}tokenize()"));
 		}
 
-		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(2+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
+		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(2 + EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
 	}
 
 	@Test
@@ -237,14 +239,14 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 			fail("Expected to run into an exception");
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("cannot compare xs:integer to xs:string"));
+			assertThat(errorMessage, containsString("cannot compare xs:integer to xs:string"));
 		}
-		checkTestAppender(1,null);
-		System.out.println("ErrorMessage: "+errorMessage);
+		checkTestAppender(1, null);
+		System.out.println("ErrorMessage: " + errorMessage);
 		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream= new ErrorOutputStream();
+			errorOutputStream = new ErrorOutputStream();
 		}
 	}
 
@@ -259,15 +261,15 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 			fail("Expected to run into an exception");
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
-			assertThat(errorMessage,containsString("A location path was expected, but the following token was encountered:  <"));
+			assertThat(errorMessage, containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
+			assertThat(errorMessage, containsString("A location path was expected, but the following token was encountered:  <"));
 		}
 		checkTestAppender(2, null);
-		System.out.println("ErrorMessage: "+errorMessage);
+		System.out.println("ErrorMessage: " + errorMessage);
 		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream= new ErrorOutputStream();
+			errorOutputStream = new ErrorOutputStream();
 		}
 	}
 
@@ -282,15 +284,15 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 			fail("Expected to run into an exception");
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
-			assertThat(errorMessage,containsString("Unexpected token \"<\" at start of expression"));
+			assertThat(errorMessage, containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
+			assertThat(errorMessage, containsString("Unexpected token \"<\" at start of expression"));
 		}
-		checkTestAppender(1,null);
-		System.out.println("ErrorMessage: "+errorMessage);
+		checkTestAppender(1, null);
+		System.out.println("ErrorMessage: " + errorMessage);
 		if (testForEmptyOutputStream) {
-			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
+			System.out.println("ErrorStream(=stderr): " + errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream= new ErrorOutputStream();
+			errorOutputStream = new ErrorOutputStream();
 		}
 	}
 }

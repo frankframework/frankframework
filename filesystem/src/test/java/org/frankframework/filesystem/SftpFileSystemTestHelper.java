@@ -4,9 +4,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Vector;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.filesystem.ftp.SftpSession;
-import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -14,7 +11,11 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpException;
 
-public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.ftp.SftpSession;
+import org.frankframework.util.LogUtil;
+
+public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 
 	private final String username;
 	private final String password;
@@ -54,20 +55,20 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	private void removeDirectoryContent(String folder) throws SftpException {
-		Vector<LsEntry> files = ftpClient.ls((folder==null) ? "*" : folder);
+		Vector<LsEntry> files = ftpClient.ls((folder == null) ? "*" : folder);
 		for (LsEntry ftpFile : files) {
 			String fileName = ftpFile.getFilename();
 			if (fileName.equals(".") || fileName.equals("..")) {
 				continue;
 			}
 			String recursiveName = (folder != null) ? folder + "/" + ftpFile.getFilename() : ftpFile.getFilename();
-			if(ftpFile.getAttrs().isDir()) {
+			if (ftpFile.getAttrs().isDir()) {
 				removeDirectoryContent(recursiveName);
 			} else {
 				ftpClient.rm(recursiveName);
 			}
 		}
-		if(folder != null) {
+		if (folder != null) {
 			ftpClient.rmdir(folder);
 		}
 	}
@@ -91,7 +92,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 			ftpClient.ls(path);
 			return true;
 		} catch (SftpException e) {
-			if(e.id == 2) {
+			if (e.id == 2) {
 				return false;
 			}
 			throw new FileSystemException(e);
@@ -110,7 +111,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public OutputStream _createFile(String folder, String filename) throws Exception {
-		if(folder != null && !_folderExists(folder)) {
+		if (folder != null && !_folderExists(folder)) {
 			_createFolder(folder);
 		}
 		String path = folder != null ? folder + "/" + filename : filename;
@@ -135,11 +136,11 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 	public void _createFolder(String folder) throws Exception {
 		try {
 			String[] folders = folder.split("/");
-			for(int i = 1; i < folders.length; i++) {
+			for (int i = 1; i < folders.length; i++) {
 				folders[i] = folders[i - 1] + "/" + folders[i];
 			}
-			for(String f : folders) {
-				if(f.length() != 0 && !_folderExists(f)) {
+			for (String f : folders) {
+				if (f.length() != 0 && !_folderExists(f)) {
 					ftpClient.mkdir(f);
 				}
 			}
@@ -160,7 +161,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 				ftpClient.cd(pwd);
 			}
 		} catch (SftpException e) {
-			if(e.id == 2) {
+			if (e.id == 2) {
 				return false;
 			}
 			throw new FileSystemException(e);
@@ -169,7 +170,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		if(folderName != null && _folderExists(folderName)) {
+		if (folderName != null && _folderExists(folderName)) {
 			ftpClient.rmdir(folderName);
 		}
 	}

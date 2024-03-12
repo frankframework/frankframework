@@ -13,7 +13,9 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXException;
 
 public class Stub4TesttoolTest {
@@ -122,6 +124,7 @@ public class Stub4TesttoolTest {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/LogSender";
 		stub4testtoolTest(directory, false);
 	}
+
 	@Test
 	public void stub4testtoolParallelSenders() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/ParallelSenders";
@@ -372,7 +375,7 @@ public class Stub4TesttoolTest {
 			return XmlUtils.transformXml(transformer, originalConfig, true);
 		} catch (IOException e) {
 			throw new ConfigurationException("cannot retrieve [" + xslt + "]", e);
-		} catch (SAXException|TransformerConfigurationException e) {
+		} catch (SAXException | TransformerConfigurationException e) {
 			throw new ConfigurationException("got error creating transformer from file [" + xslt + "]", e);
 		} catch (TransformerException te) {
 			throw new ConfigurationException("got error transforming resource [" + xsltSource + "] from [" + xslt + "]", te);

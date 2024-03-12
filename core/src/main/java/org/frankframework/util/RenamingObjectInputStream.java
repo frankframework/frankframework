@@ -21,10 +21,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.lang.reflect.Field;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.frankframework.configuration.ClassNameRewriter;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class RenamingObjectInputStream extends ObjectInputStream {

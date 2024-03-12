@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -35,11 +34,10 @@ import org.frankframework.util.XmlBuilder;
  * <code>{@link #setSessionKey(String) sessionKey}</code>.
  *
  * @author Johan Verrips
- *
  * @see PipeLineSession
  */
 @ElementType(ElementTypes.SESSION)
-public class GetFromSession  extends FixedForwardPipe {
+public class GetFromSession extends FixedForwardPipe {
 
 	private String sessionKey;
 	private ParameterType type = null;
@@ -47,7 +45,7 @@ public class GetFromSession  extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String key = getSessionKey();
-		if(StringUtils.isEmpty(key)) {
+		if (StringUtils.isEmpty(key)) {
 			try {
 				key = message.asString();
 			} catch (IOException e) {
@@ -59,13 +57,12 @@ public class GetFromSession  extends FixedForwardPipe {
 
 		if (result == null) {
 			//why is null returned when nothing can be found?
-			log.warn("got null value from session under key ["+getSessionKey()+"]");
-		}
-		else {
-			if (getType()==ParameterType.MAP && result instanceof Map) {
+			log.warn("got null value from session under key [" + getSessionKey() + "]");
+		} else {
+			if (getType() == ParameterType.MAP && result instanceof Map) {
 				Map<String, String> items = (Map<String, String>) result;
 				XmlBuilder itemsXml = new XmlBuilder("items");
-				for (Iterator<String> it = items.keySet().iterator(); it.hasNext();) {
+				for (Iterator<String> it = items.keySet().iterator(); it.hasNext(); ) {
 					String item = it.next();
 					XmlBuilder itemXml = new XmlBuilder("item");
 					itemXml.addAttribute("name", item);
@@ -94,11 +91,13 @@ public class GetFromSession  extends FixedForwardPipe {
 
 	/**
 	 * <ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>
+	 *
 	 * @ff.default string
 	 */
 	public void setType(ParameterType type) {
 		this.type = type;
 	}
+
 	public ParameterType getType() {
 		return type;
 	}

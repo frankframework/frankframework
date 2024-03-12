@@ -24,11 +24,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.springframework.http.MediaType;
-
 import com.aspose.imaging.extensions.ImageExtensions;
 import com.aspose.imaging.fileformats.tiff.TiffFrame;
 import com.aspose.imaging.fileformats.tiff.TiffImage;
@@ -39,11 +34,16 @@ import com.aspose.pdf.LoadOptions;
 import com.aspose.pdf.Page;
 import com.aspose.pdf.SaveFormat;
 
+import org.apache.logging.log4j.Logger;
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
+import org.springframework.http.MediaType;
 
 /**
  * Converts the files which are required and supported by the Aspose image library.
+ *
  * @author Gerard van der Hoorn
  */
 public class PdfImageConvertor extends AbstractConvertor {
@@ -101,13 +101,13 @@ public class PdfImageConvertor extends AbstractConvertor {
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
 			image = com.aspose.imaging.Image.load(message.asInputStream());
-			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
-				TiffFrame[] frames = ((TiffImage)image).getFrames();
+			if (mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
+				TiffFrame[] frames = ((TiffImage) image).getFrames();
 				PngOptions pngOptions = new PngOptions();
-				for(int i=0; i<frames.length;i++) {
+				for (int i = 0; i < frames.length; i++) {
 					Image pdfImage = new Image();
-					frames[i].save(tmpImageFile.getAbsolutePath()+i, pngOptions);
-					pdfImage.setFile(tmpImageFile.getAbsolutePath()+i);
+					frames[i].save(tmpImageFile.getAbsolutePath() + i, pngOptions);
+					pdfImage.setFile(tmpImageFile.getAbsolutePath() + i);
 					page.getParagraphs().add(pdfImage);
 				}
 			} else {
@@ -149,10 +149,10 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 			// Delete always the temporary file.
 
-			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
-				int length = ((TiffImage)image).getFrames().length;
-				for(int i=0; i<length; i++) {
-					Files.delete(Paths.get(tmpImageFile.getAbsolutePath()+i));
+			if (mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
+				int length = ((TiffImage) image).getFrames().length;
+				for (int i = 0; i < length; i++) {
+					Files.delete(Paths.get(tmpImageFile.getAbsolutePath() + i));
 				}
 			}
 

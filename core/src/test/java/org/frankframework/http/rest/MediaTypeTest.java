@@ -40,7 +40,7 @@ public class MediaTypeTest {
 
 	@Test
 	public void fromValueUnknown() {
-		assertThrows(IllegalArgumentException.class, ()->MediaTypes.fromValue("something/unknown"));
+		assertThrows(IllegalArgumentException.class, () -> MediaTypes.fromValue("something/unknown"));
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class MediaTypeTest {
 	@ParameterizedTest
 	@CsvSource({"application/*+xml", "application/xml;q=0.9", "*/*;q=0.8"})
 	public void testWeightedXMLHeaders(String mimeType) {
-		assertTrue(MediaTypes.XML.accepts(mimeType), "XML should accept weighted header ["+mimeType+"]");
+		assertTrue(MediaTypes.XML.accepts(mimeType), "XML should accept weighted header [" + mimeType + "]");
 		assertFalse(MediaTypes.XML.includes(mimeType), "Should not allow weighted header");
 	}
 
@@ -89,7 +89,7 @@ public class MediaTypeTest {
 		//Test at least the 3 most commonly used multiparts
 		String acceptHeader = header + "; type=text; boundary=--my-top-notch-boundary-";
 
-		assertTrue(MediaTypes.MULTIPART.includes(acceptHeader), "can parse ["+header+"]");
+		assertTrue(MediaTypes.MULTIPART.includes(acceptHeader), "can parse [" + header + "]");
 	}
 
 	@Test
@@ -127,11 +127,11 @@ public class MediaTypeTest {
 
 	@Test
 	public void faultyCharset() {
-		assertThrows(UnsupportedCharsetException.class, ()->MediaTypes.TEXT.getMimeType("ISO-1234"));
+		assertThrows(UnsupportedCharsetException.class, () -> MediaTypes.TEXT.getMimeType("ISO-1234"));
 	}
 
 	@Test
 	public void mimeTypeDoesNotSupportCharset() {
-		assertThrows(UnsupportedCharsetException.class, ()->MediaTypes.PDF.getMimeType("ISO-8859-1"));
+		assertThrows(UnsupportedCharsetException.class, () -> MediaTypes.PDF.getMimeType("ISO-8859-1"));
 	}
 }

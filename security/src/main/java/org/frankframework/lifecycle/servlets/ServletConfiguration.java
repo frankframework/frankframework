@@ -70,7 +70,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 	}
 
 	public void setSecurityRoles(String[] accessGrantingRoles) {
-		if(accessGrantingRoles != null) {
+		if (accessGrantingRoles != null) {
 			this.securityRoles = Arrays.asList(accessGrantingRoles);
 		}
 	}
@@ -82,7 +82,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	public void setName(String servletName) {
 		this.name = servletName;
-		if(this.name.contains(" ")) {
+		if (this.name.contains(" ")) {
 			throw new IllegalArgumentException("unable to instantiate servlet, servlet name may not contain spaces");
 		}
 	}
@@ -96,7 +96,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 		setEnabled(servlet.isEnabled());
 		setServlet(servlet);
 
-		if(servlet instanceof DynamicRegistration.ServletWithParameters) {
+		if (servlet instanceof DynamicRegistration.ServletWithParameters) {
 			Map<String, String> initParams = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
 			initParams.entrySet().stream().forEach(e -> addInitParameter(e.getKey(), e.getValue()));
 		}
@@ -126,37 +126,37 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 	 * Overwrites servlet defaults with properties.
 	 */
 	public void loadProperties() {
-		String propertyPrefix = "servlet."+name+".";
+		String propertyPrefix = "servlet." + name + ".";
 
-		this.enabled = environment.getProperty(propertyPrefix+"enabled", boolean.class, enabled);
+		this.enabled = environment.getProperty(propertyPrefix + "enabled", boolean.class, enabled);
 		configureServletSecurity(propertyPrefix);
-		String constraintType = environment.getProperty(propertyPrefix+"transportGuarantee");
-		if(StringUtils.isNotEmpty(constraintType)) {
+		String constraintType = environment.getProperty(propertyPrefix + "transportGuarantee");
+		if (StringUtils.isNotEmpty(constraintType)) {
 			this.transportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
 		}
-		this.loadOnStartup = environment.getProperty(propertyPrefix+"loadOnStartup", int.class, loadOnStartup);
-		String mapping = environment.getProperty(propertyPrefix+"urlMapping");
-		if(StringUtils.isNotEmpty(mapping)) {
+		this.loadOnStartup = environment.getProperty(propertyPrefix + "loadOnStartup", int.class, loadOnStartup);
+		String mapping = environment.getProperty(propertyPrefix + "urlMapping");
+		if (StringUtils.isNotEmpty(mapping)) {
 			setUrlMapping(mapping);
 		}
-		this.authenticatorName = environment.getProperty(propertyPrefix+"authenticator", authenticatorName);
+		this.authenticatorName = environment.getProperty(propertyPrefix + "authenticator", authenticatorName);
 	}
 
 	private void configureServletSecurity(String propertyPrefix) {
-		String roleNames = environment.getProperty(propertyPrefix+"securityRoles");
-		if(environment.containsProperty(propertyPrefix+"securityroles")) { //Deprecated warning
-			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
-			roleNames = environment.getProperty(propertyPrefix+"securityroles");
+		String roleNames = environment.getProperty(propertyPrefix + "securityRoles");
+		if (environment.containsProperty(propertyPrefix + "securityroles")) { //Deprecated warning
+			log.warn("property [" + propertyPrefix + "securityroles] has been replaced with [" + propertyPrefix + "securityRoles" + "]");
+			roleNames = environment.getProperty(propertyPrefix + "securityroles");
 		}
 
-		if(StringUtils.isNotEmpty(roleNames)) {
+		if (StringUtils.isNotEmpty(roleNames)) {
 			String[] rolesCopy = roleNames.split(",");
 			securityRoles = Arrays.asList(rolesCopy);
 		}
 	}
 
 	private void setUrlMapping(List<String> urlMappings) {
-		if(urlMappings == null || urlMappings.isEmpty()) {
+		if (urlMappings == null || urlMappings.isEmpty()) {
 			throw new IllegalStateException("servlet must have an URL to map to");
 		}
 
@@ -165,22 +165,22 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	public void setUrlMapping(String urlMappingArray) {
 		String[] urlMappingsCopy = new String[0];
-		if(StringUtils.isNotEmpty(urlMappingArray)) {
+		if (StringUtils.isNotEmpty(urlMappingArray)) {
 			urlMappingsCopy = urlMappingArray.split(",");
 		}
 
 		List<String> mappings = new ArrayList<>();
-		for(final String rawMapping : urlMappingsCopy) {
+		for (final String rawMapping : urlMappingsCopy) {
 			String mapping = rawMapping.trim();
-			if(StringUtils.isBlank(mapping)) continue;
-			if("*".equals(mapping)) mapping = "/*";
+			if (StringUtils.isBlank(mapping)) continue;
+			if ("*".equals(mapping)) mapping = "/*";
 
 			char firstChar = mapping.charAt(0);
-			if(firstChar == '!' && (mapping.charAt(1) != SLASH || mapping.charAt(mapping.length()-1) == '*')) {
+			if (firstChar == '!' && (mapping.charAt(1) != SLASH || mapping.charAt(mapping.length() - 1) == '*')) {
 				throw new IllegalStateException("when excluding an URL you it must start with '!/' and may not end with a wildcard");
 			}
-			if(firstChar != SLASH && firstChar != '*' && firstChar != '!') { //Add a conditional slash
-				mapping = "/"+mapping;
+			if (firstChar != SLASH && firstChar != '*' && firstChar != '!') { //Add a conditional slash
+				mapping = "/" + mapping;
 			}
 			log.debug("converted raw mapping [{}] to [{}]", rawMapping, mapping);
 			mappings.add(mapping);
@@ -191,14 +191,14 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(" servlet ["+name+"]");
-		builder.append(" url(s) "+urlMapping);
-		builder.append(" loadOnStartup ["+loadOnStartup+"]");
-		builder.append(" protocol "+(transportGuarantee==TransportGuarantee.CONFIDENTIAL?"[HTTPS]":"[HTTP]"));
-		builder.append(" authenticatior ["+authenticatorName+"]");
+		StringBuilder builder = new StringBuilder(" servlet [" + name + "]");
+		builder.append(" url(s) " + urlMapping);
+		builder.append(" loadOnStartup [" + loadOnStartup + "]");
+		builder.append(" protocol " + (transportGuarantee == TransportGuarantee.CONFIDENTIAL ? "[HTTPS]" : "[HTTP]"));
+		builder.append(" authenticatior [" + authenticatorName + "]");
 
-		if(isAuthenticationEnabled()) {
-			builder.append(" roles "+getSecurityRoles());
+		if (isAuthenticationEnabled()) {
+			builder.append(" roles " + getSecurityRoles());
 		} else {
 			builder.append(" with no authentication enabled!");
 		}

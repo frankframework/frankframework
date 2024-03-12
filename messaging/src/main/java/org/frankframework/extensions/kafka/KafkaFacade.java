@@ -17,20 +17,19 @@ package org.frankframework.extensions.kafka;
 
 import java.util.Properties;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.context.ApplicationContext;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
+import org.springframework.context.ApplicationContext;
 
 @Log4j2
 public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurable {
@@ -48,8 +47,8 @@ public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurab
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(StringUtils.isEmpty(bootstrapServers)) throw new ConfigurationException("bootstrapServers must be specified");
-		if(StringUtils.isEmpty(clientId)) throw new ConfigurationException("clientId must be specified");
+		if (StringUtils.isEmpty(bootstrapServers)) throw new ConfigurationException("bootstrapServers must be specified");
+		if (StringUtils.isEmpty(clientId)) throw new ConfigurationException("clientId must be specified");
 
 		properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG, clientId);

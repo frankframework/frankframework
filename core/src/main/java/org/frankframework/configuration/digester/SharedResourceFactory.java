@@ -36,19 +36,19 @@ public class SharedResourceFactory extends AbstractSpringPoweredDigesterFactory 
 	protected Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
 		Object object = super.createObject(attrs);
 
-		if(!(object instanceof SharedResource)) {
+		if (!(object instanceof SharedResource)) {
 			throw new IllegalStateException("bean must be of type Shared Resource");
 		}
 
 		String objectName = attrs.get("name");
-		if(StringUtils.isBlank(objectName)) {
+		if (StringUtils.isBlank(objectName)) {
 			throw new IllegalStateException("Shared Resource must have a name");
 		}
 
 		String beanName = SharedResource.SHARED_RESOURCE_PREFIX + objectName;
 
-		if(getApplicationContext().containsBean(beanName)) {
-			throw new IllegalStateException("shared resource ["+objectName+"] already exists");
+		if (getApplicationContext().containsBean(beanName)) {
+			throw new IllegalStateException("shared resource [" + objectName + "] already exists");
 		}
 
 		ConfigurableBeanFactory configurableListableBeanFactory = (ConfigurableBeanFactory) getApplicationContext().getAutowireCapableBeanFactory();

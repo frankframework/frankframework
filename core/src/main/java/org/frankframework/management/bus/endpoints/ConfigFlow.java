@@ -44,7 +44,7 @@ public class ConfigFlow extends BusEndpointBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<?> getFlowDiagram(Message<?> message) throws IOException {
 		InputStream flow = getFlow(message);
-		if(flow != null) {
+		if (flow != null) {
 			return new BinaryResponseMessage(flow, flowDiagramManager.getMediaType());
 		}
 
@@ -53,13 +53,13 @@ public class ConfigFlow extends BusEndpointBase {
 
 	private InputStream getFlow(Message<?> message) throws IOException {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
-		if(StringUtils.isNotEmpty(configurationName)) {
+		if (StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getIbisManager().getConfiguration(configurationName);
-			if (configuration==null) {
-				throw new IOException("configuration ["+configurationName+"] not found");
+			if (configuration == null) {
+				throw new IOException("configuration [" + configurationName + "] not found");
 			}
 			String adapterName = BusMessageUtils.getHeader(message, "adapter");
-			if(StringUtils.isNotEmpty(adapterName)) {
+			if (StringUtils.isNotEmpty(adapterName)) {
 				return getAdapterFlow(configuration, adapterName);
 			}
 			return getConfigurationFlow(configuration);
@@ -78,7 +78,7 @@ public class ConfigFlow extends BusEndpointBase {
 	private InputStream getAdapterFlow(Configuration configuration, String adapterName) throws IOException {
 		Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
-		if(adapter == null) {
+		if (adapter == null) {
 			throw new BusException("Adapter not found!");
 		}
 

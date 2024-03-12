@@ -2,9 +2,9 @@ package org.frankframework.extensions.cmis;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.junit.jupiter.api.Test;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.senders.SenderTestBase;
@@ -18,12 +18,12 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 
 	@Test
 	public void testEmptyUrlOverrideEntryPointWSDLNull() {
-		assertThrows(IllegalArgumentException.class, ()->sender.setUrl(""));
+		assertThrows(IllegalArgumentException.class, () -> sender.setUrl(""));
 	}
 
 	@Test
 	public void testEmptyRepository() {
-		assertThrows(IllegalArgumentException.class, ()->sender.setRepository(""));
+		assertThrows(IllegalArgumentException.class, () -> sender.setRepository(""));
 	}
 
 	@Test

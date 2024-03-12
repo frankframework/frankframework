@@ -27,6 +27,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,9 +41,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
-
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Contains the component annotation so it will be picked up by the core (SpringEnvironmentContext.xml).
@@ -65,10 +64,11 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 
 	@Override
 	public void afterPropertiesSet() {
-		if(environment != null && Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
+		if (environment != null && Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
 			String devFrontendLocation = environment.getProperty("frontend.resources.location");
-			if(devFrontendLocation == null) {
-				Path rootPath = Paths.get("").toAbsolutePath(); // get default location based on current working directory, in IntelliJ this is the project root.
+			if (devFrontendLocation == null) {
+				Path rootPath = Paths.get("")
+						.toAbsolutePath(); // get default location based on current working directory, in IntelliJ this is the project root.
 				devFrontendLocation = rootPath.resolve("console/frontend/target/frontend/").toString(); //Navigate to the target of the frontend module
 			}
 
@@ -93,14 +93,14 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 	 */
 	private void doGetSafely(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
-		if(StringUtils.isBlank(path)) { //getPathInfo may return null, redirect to {base}+'/' when that happens.
+		if (StringUtils.isBlank(path)) { //getPathInfo may return null, redirect to {base}+'/' when that happens.
 			String fullPath = req.getRequestURI();
-			if(!fullPath.endsWith("/")) {
+			if (!fullPath.endsWith("/")) {
 				resp.sendRedirect(req.getContextPath() + req.getServletPath() + "/");
 				return;
 			} else {
 				//WebSphere likes to add a slash to the requestURI but leaves it out of the pathInfo
-				if(path == null) {
+				if (path == null) {
 					path = "/";
 				} else {
 					resp.sendError(404);
@@ -108,12 +108,12 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 				}
 			}
 		}
-		if(path.equals("/")) {
+		if (path.equals("/")) {
 			path += WELCOME_FILE;
 		}
 
 		URL resource = findResource(path);
-		if(resource == null) {
+		if (resource == null) {
 			resp.sendError(404);
 			return;
 		}
@@ -121,7 +121,7 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 		String mimeType = getServletContext().getMimeType(path);
 		resp.setContentType(mimeType != null ? mimeType : "application/octet-stream");
 
-		try(InputStream in = resource.openStream()) {
+		try (InputStream in = resource.openStream()) {
 			IOUtils.copy(in, resp.getOutputStream());
 
 			resp.flushBuffer();
@@ -133,10 +133,10 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 
 	private @Nullable URL findResource(String path) {
 		try {
-			String normalized = FilenameUtils.normalize(frontendPath+path, true);
+			String normalized = FilenameUtils.normalize(frontendPath + path, true);
 			log.trace("trying to find resource [{}]", normalized);
 			URL resource = ClassUtils.getResourceURL(normalized);
-			if(resource == null) {
+			if (resource == null) {
 				log.debug("unable to locate resource [{}]", path);
 			}
 			return resource;

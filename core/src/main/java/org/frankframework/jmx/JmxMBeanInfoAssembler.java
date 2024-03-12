@@ -44,9 +44,9 @@ public class JmxMBeanInfoAssembler extends AbstractConfigurableMBeanInfoAssemble
 	@Override
 	protected String getAttributeDescription(PropertyDescriptor propertyDescriptor, String beanKey) {
 		Method method = propertyDescriptor.getReadMethod(); //In JMX, attribute setters don't have a description?
-		if(method != null) {
+		if (method != null) {
 			JmxAttribute attr = AnnotationUtils.findAnnotation(method, JmxAttribute.class);
-			if(attr != null) {
+			if (attr != null) {
 				return attr.description();
 			}
 		}
@@ -57,19 +57,21 @@ public class JmxMBeanInfoAssembler extends AbstractConfigurableMBeanInfoAssemble
 	@Override
 	protected ModelMBeanOperationInfo createModelMBeanOperationInfo(Method method, String name, String beanKey) {
 		JmxOperation operation = AnnotationUtils.findAnnotation(method, JmxOperation.class);
-		if(operation != null) {
+		if (operation != null) {
 			int operationType;
-			if(void.class.equals(method.getReturnType())) {
+			if (void.class.equals(method.getReturnType())) {
 				operationType = MBeanOperationInfo.ACTION;
 			} else {
 				operationType = MBeanOperationInfo.ACTION_INFO;
 			}
 
-			return new ModelMBeanOperationInfo(method.getName(),
+			return new ModelMBeanOperationInfo(
+					method.getName(),
 					operation.description(),
 					getOperationParameters(method, beanKey),
 					method.getReturnType().getName(),
-					operationType);
+					operationType
+			);
 		} else {
 			return super.createModelMBeanOperationInfo(method, name, beanKey);
 		}

@@ -29,10 +29,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
-
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
@@ -208,6 +206,7 @@ public class CompressPipe extends FixedForwardPipe {
 
 	/**
 	 * if <code>true</code> the pipe compresses, otherwise it decompress
+	 *
 	 * @ff.default false
 	 */
 	public void setCompress(boolean b) {
@@ -221,6 +220,7 @@ public class CompressPipe extends FixedForwardPipe {
 
 	/**
 	 * flag indicates whether the message is the content or the path to a file with the contents. for multiple files use ';' as delimiter
+	 *
 	 * @ff.default false
 	 */
 	public void setMessageIsContent(boolean b) {
@@ -234,6 +234,7 @@ public class CompressPipe extends FixedForwardPipe {
 
 	/**
 	 * flag indicates whether the result must be written to the message or to a file (filename = message)
+	 *
 	 * @ff.default false
 	 */
 	public void setResultIsContent(boolean b) {

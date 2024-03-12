@@ -16,6 +16,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 
 public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
@@ -30,7 +31,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 	}
 
 	protected String getExpectedTestFile(String path) throws IOException {
-		return TestFileUtils.getTestFile(BASEPATH+path);
+		return TestFileUtils.getTestFile(BASEPATH + path);
 	}
 
 	protected static class TestSender extends DelaySender {
@@ -44,7 +45,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 	public void test10SubSenders() throws Exception {
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < 10; i++) {
-			sender.registerSender(new TestSender("Sender"+i));
+			sender.registerSender(new TestSender("Sender" + i));
 		}
 
 		sender.configure();
@@ -59,14 +60,14 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 		long duration = System.currentTimeMillis() - startTime;
 		int maxDuration = DELAY + 1000;
-		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
+		assertTrue(duration < maxDuration, "Test took [" + duration + "]s, maxDuration [" + maxDuration + "]s");
 	}
 
 	@Test
 	public void test10SubSendersNonRepeatableMessage() throws Exception {
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < 10; i++) {
-			sender.registerSender(new TestSender("Sender"+i));
+			sender.registerSender(new TestSender("Sender" + i));
 		}
 
 		sender.configure();
@@ -81,7 +82,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 		long duration = System.currentTimeMillis() - startTime;
 		int maxDuration = DELAY + 1000;
-		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
+		assertTrue(duration < maxDuration, "Test took [" + duration + "]s, maxDuration [" + maxDuration + "]s");
 	}
 
 	@Test
@@ -91,9 +92,9 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		int amountOfDelaySendersInWrapper = 5;
 		for (int i = 0; i < 10; i++) {
 			SenderSeries wrapper = new SenderSeries();
-			wrapper.setName("Wrapper"+i);
+			wrapper.setName("Wrapper" + i);
 			for (int j = 0; j < amountOfDelaySendersInWrapper; j++) {
-				wrapper.registerSender(new TestSender("Wrapper"+i+"-Sender"+j));
+				wrapper.registerSender(new TestSender("Wrapper" + i + "-Sender" + j));
 			}
 			sender.registerSender(wrapper);
 		}
@@ -110,7 +111,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 		long duration = System.currentTimeMillis() - startTime;
 		int maxDuration = (DELAY * amountOfDelaySendersInWrapper) + 1000;
-		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
+		assertTrue(duration < maxDuration, "Test took [" + duration + "]s, maxDuration [" + maxDuration + "]s");
 	}
 
 	@Test
@@ -122,7 +123,8 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		SenderResult result = sender.sendMessage(new Message("fakeInput"), session);
 
 		assertFalse(result.isSuccess());
-		assertThat(result.getResult().asString(), containsString("<result senderClass=\"ExceptionThrowingSender\" type=\"SenderException\" success=\"false\">fakeException</result>"));
+		assertThat(result.getResult()
+				.asString(), containsString("<result senderClass=\"ExceptionThrowingSender\" type=\"SenderException\" success=\"false\">fakeException</result>"));
 	}
 
 	@Test

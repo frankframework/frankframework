@@ -28,7 +28,7 @@ import org.frankframework.validation.RootValidations;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD to the set of XSD's used for validation.
- *
+ * <p>
  * Before the <code>outputSoapBody</code> attribute was introduced, two validators were used for a request-reply pattern (an inputValidator for the request and an outputValidator for the reply).
  * These inputValidator and outputValidator were identical except for the child element of the SOAP body. Because validators use relatively a lot of memory, the <code>outputSoapBody</code> attribute was added which replaces the outputValidator.
  * Both the request and the reply are then validated by the inputValidator.
@@ -62,7 +62,7 @@ public class SoapValidator extends Json2XmlValidator {
 		setSoapNamespace("");
 		if (isAllowPlainXml()) {
 			//super.setRoot("Envelope,"+soapBody);
-			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME+","+soapBody));
+			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME + "," + soapBody));
 		} else {
 			super.setRoot(getRoot());
 		}
@@ -90,7 +90,7 @@ public class SoapValidator extends Json2XmlValidator {
 	@Override
 	protected RootValidations createRootValidation(String messageRoot) {
 		if (isAllowPlainXml()) {
-			return new RootValidations(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME+","+messageRoot)); // cannot test for messageRoot in SOAP message with current rootvalidation structure
+			return new RootValidations(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME + "," + messageRoot)); // cannot test for messageRoot in SOAP message with current rootvalidation structure
 		}
 		return new RootValidations(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, messageRoot));
 	}
@@ -128,6 +128,7 @@ public class SoapValidator extends Json2XmlValidator {
 
 	/**
 	 * always envelope (not allowed to change)
+	 *
 	 * @ff.default envelope
 	 */
 	@Override
@@ -158,6 +159,7 @@ public class SoapValidator extends Json2XmlValidator {
 
 	/**
 	 * SOAP envelope XSD version to use
+	 *
 	 * @ff.default 1.1
 	 */
 	public void setSoapVersion(SoapVersion soapVersion) {
@@ -166,6 +168,7 @@ public class SoapValidator extends Json2XmlValidator {
 
 	/**
 	 * Allow plain XML, without a SOAP Envelope, too. Be aware that setting this true inhibits the capability to test for exit specific response roots in SOAP messages
+	 *
 	 * @ff.default false
 	 */
 	public void setAllowPlainXml(boolean allowPlainXml) {
@@ -175,6 +178,7 @@ public class SoapValidator extends Json2XmlValidator {
 	/**
 	 * Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that
 	 * this will inhibit the validator to detect validation failures of namespaceless subelements of the SoapBody.
+	 *
 	 * @ff.default true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise
 	 */
 	@Override

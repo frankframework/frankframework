@@ -6,6 +6,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.EscapePipe.Direction;
 import org.frankframework.testutil.TestAssertions;
+
 import org.junit.jupiter.api.Test;
 
 public class EscapePipeTest extends PipeTestBase<EscapePipe> {

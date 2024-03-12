@@ -15,6 +15,7 @@
 */
 package org.frankframework.ibistesttool;
 
+import liquibase.integration.spring.SpringLiquibase;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.util.OptionConverter;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
-import liquibase.integration.spring.SpringLiquibase;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
@@ -46,14 +46,14 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 			// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
 			// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 
-			boolean testToolEnabled=true;
-			String testToolEnabledProperty=APP_CONSTANTS.getProperty("testtool.enabled");
+			boolean testToolEnabled = true;
+			String testToolEnabledProperty = APP_CONSTANTS.getProperty("testtool.enabled");
 			if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
-				testToolEnabled="true".equalsIgnoreCase(testToolEnabledProperty);
+				testToolEnabled = "true".equalsIgnoreCase(testToolEnabledProperty);
 			} else {
 				String stage = APP_CONSTANTS.getProperty("dtap.stage");
 				if ("ACC".equals(stage) || "PRD".equals(stage)) {
-					testToolEnabled=false;
+					testToolEnabled = false;
 				}
 				APP_CONSTANTS.setProperty("testtool.enabled", testToolEnabled);
 			}
@@ -66,19 +66,19 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
 			String maxFileSize = APP_CONSTANTS.getProperty("ibistesttool.maxFileSize");
 			if (maxFileSize != null) {
-				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
+				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage) bean;
 				long maxFileSizeLong = OptionConverter.toFileSize(maxFileSize, nl.nn.testtool.storage.file.Storage.DEFAULT_MAXIMUM_FILE_SIZE);
 				loggingStorage.setMaximumFileSize(maxFileSizeLong);
 			}
 			String maxBackupIndex = APP_CONSTANTS.getProperty("ibistesttool.maxBackupIndex");
 			if (maxBackupIndex != null) {
-				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
+				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage) bean;
 				int maxBackupIndexInt = Integer.parseInt(maxBackupIndex);
 				loggingStorage.setMaximumBackupIndex(maxBackupIndexInt);
 			}
 			String freeSpaceMinimum = APP_CONSTANTS.getProperty("ibistesttool.freeSpaceMinimum");
 			if (freeSpaceMinimum != null) {
-				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
+				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage) bean;
 				long freeSpaceMinimumLong = OptionConverter.toFileSize(freeSpaceMinimum, -1);
 				loggingStorage.setFreeSpaceMinimum(freeSpaceMinimumLong);
 			}
@@ -86,7 +86,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 		if (bean instanceof Views) {
 			String defaultView = APP_CONSTANTS.getProperty("ibistesttool.defaultView");
 			if (defaultView != null) {
-				Views views = (Views)bean;
+				Views views = (Views) bean;
 				View view = views.setDefaultView(defaultView);
 				if (view == null) {
 					throw new BeanCreationException("Default view '" + defaultView + "' not found");
@@ -94,9 +94,11 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 			}
 		}
 		if (bean instanceof SpringLiquibase) {
-			boolean active = APP_CONSTANTS.getBoolean("ladybug.jdbc.migrator.active",
-					APP_CONSTANTS.getBoolean("jdbc.migrator.active", false));
-			SpringLiquibase springLiquibase = (SpringLiquibase)bean;
+			boolean active = APP_CONSTANTS.getBoolean(
+					"ladybug.jdbc.migrator.active",
+					APP_CONSTANTS.getBoolean("jdbc.migrator.active", false)
+			);
+			SpringLiquibase springLiquibase = (SpringLiquibase) bean;
 			springLiquibase.setShouldRun(active);
 		}
 		return bean;

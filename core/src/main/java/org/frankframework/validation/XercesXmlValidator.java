@@ -63,8 +63,9 @@ import org.frankframework.core.PipeRunException;
 
 /**
  * Xerces based XML validator.
- *
+ * <p>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
+ *
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
@@ -110,6 +111,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private PreparseResult preparseResult;
 
 	private static EhCache<PreparseResult> cache;
+
 	static {
 		if (maxInitialised != -1) {
 			cache = new EhCache<>();
@@ -134,7 +136,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		if (StringUtils.isEmpty(getXmlSchemaVersion())) {
 			setXmlSchemaVersion(AppConstants.getInstance(getConfigurationClassLoader()).getString("xml.schema.version", DEFAULT_XML_SCHEMA_VERSION));
 			if (!isXmlSchema1_0() && !"1.1".equals(getXmlSchemaVersion())) {
-				throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0 and 1.1, no ["+getXmlSchemaVersion()+"]");
+				throw new ConfigurationException("class (" + this.getClass()
+						.getName() + ") only supports XmlSchema version 1.0 and 1.1, no [" + getXmlSchemaVersion() + "]");
 			}
 		}
 		super.configure(owner);
@@ -190,14 +193,14 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		try {
 			preparser.setProperty(XML_SCHEMA_VERSION_PROPERTY, isXmlSchema1_0() ? Constants.W3C_XML_SCHEMA10EX_NS_URI : Constants.W3C_XML_SCHEMA11_NS_URI);
 		} catch (NoSuchFieldError e) {
-			String msg="Cannot set property ["+XML_SCHEMA_VERSION_PROPERTY+"], requested xmlSchemaVersion ["+getXmlSchemaVersion()+"] xercesVersion ["+org.apache.xerces.impl.Version.getVersion()+"]";
+			String msg = "Cannot set property [" + XML_SCHEMA_VERSION_PROPERTY + "], requested xmlSchemaVersion [" + getXmlSchemaVersion() + "] xercesVersion [" + org.apache.xerces.impl.Version.getVersion() + "]";
 			if (isXmlSchema1_0()) {
-				log.warn(msg+", assuming XML Schema version 1.0 will be supported", e);
+				log.warn(msg + ", assuming XML Schema version 1.0 will be supported", e);
 			} else {
 				throw new ConfigurationException(msg, e);
 			}
 		}
-		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this, warn);
+		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner() != null ? getOwner() : this, warn);
 		preparser.setErrorHandler(errorHandler);
 		//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
 		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
@@ -226,10 +229,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		namespaceRegisteredGrammars.add(grammar);
 		namespaces.add(grammar.getGrammarDescription().getNamespace());
 		if (grammar instanceof SchemaGrammar) {
-			List<?> imported = ((SchemaGrammar)grammar).getImportedGrammars();
+			List<?> imported = ((SchemaGrammar) grammar).getImportedGrammars();
 			if (imported != null) {
 				for (Object g : imported) {
-					Grammar gr = (Grammar)g;
+					Grammar gr = (Grammar) g;
 					if (!namespaceRegisteredGrammars.contains(gr)) {
 						registerNamespaces(gr, namespaces, namespaceRegisteredGrammars);
 					}
@@ -284,7 +287,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				schemaObject = schemaFactory.newSchema(((XercesValidationContext) context).getGrammarPool());
 			}
 
-			validatorHandler=schemaObject.newValidatorHandler();
+			validatorHandler = schemaObject.newValidatorHandler();
 		} catch (SAXException e) {
 			throw new ConfigurationException(logPrefix + " Cannot create schema", e);
 		}
@@ -309,9 +312,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 		return validatorHandler;
 	}
+
 	public XMLReader createValidatingParser(PipeLineSession session, ValidationContext context) throws XmlValidatorException {
-		SymbolTable symbolTable = ((XercesValidationContext)context).getSymbolTable();
-		XMLGrammarPool grammarPool = ((XercesValidationContext)context).getGrammarPool();
+		SymbolTable symbolTable = ((XercesValidationContext) context).getSymbolTable();
+		XMLGrammarPool grammarPool = ((XercesValidationContext) context).getGrammarPool();
 
 		XMLReader parser = new SAXParser(new ShadowedSymbolTable(symbolTable), grammarPool);
 		try {

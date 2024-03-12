@@ -15,11 +15,10 @@
 */
 package org.frankframework.filesystem;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A reference to an Exchange folder or object and its mailbox.
@@ -44,9 +43,9 @@ public class ExchangeObjectReference {
 			this.objectName = items[1];
 			this.isStatic = false;
 		} else {
-			if(staticMailAddress == null){
+			if (staticMailAddress == null) {
 				throw new IllegalArgumentException("Cannot create ExchangeObjectReference when staticMailAddress is null " +
-					"and objectName ["+objectName+"] does not contain separator ["+separator+"]!");
+						"and objectName [" + objectName + "] does not contain separator [" + separator + "]!");
 			}
 			this.mailbox = staticMailAddress;
 			this.objectName = objectName;

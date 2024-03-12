@@ -22,6 +22,7 @@ public interface OutboundGateway<T> extends IntegrationPattern {
 
 	/**
 	 * T in T out.
+	 *
 	 * @param in Message to send
 	 * @return Response message
 	 */
@@ -29,6 +30,7 @@ public interface OutboundGateway<T> extends IntegrationPattern {
 
 	/**
 	 * T in, no reply
+	 *
 	 * @param in Message to send
 	 */
 	public void sendAsyncMessage(Message<T> in);

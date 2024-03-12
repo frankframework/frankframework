@@ -48,19 +48,17 @@ import lombok.Setter;
 
 /**
  * Provides functions for JDBC connections.
- *
+ * <p>
  * N.B. Note on using XA transactions:
  * If transactions are used, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
  * <pre>
-   The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
-	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
-   </pre>
+ * The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
+ * at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
+ * </pre>
  *
- *
- *
- * @author  Gerrit van Brakel
- * @since 	4.1
+ * @author Gerrit van Brakel
+ * @since 4.1
  */
 public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
 	private final @Getter String domain = "JDBC";
@@ -70,11 +68,11 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	private String password = null;
 
 	private boolean transacted = false;
-	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
+	private boolean connectionsArePooled = true; // TODO: make this a property of the DataSourceFactory
 
-	private DbmsSupportFactory dbmsSupportFactory=null;
-	private IDbmsSupport dbmsSupport=null;
-	private CredentialFactory cf=null;
+	private DbmsSupportFactory dbmsSupportFactory = null;
+	private IDbmsSupport dbmsSupport = null;
+	private CredentialFactory cf = null;
 	private StatisticsKeeper connectionStatistics;
 
 	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
@@ -82,7 +80,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	private DataSource datasource = null;
 
 	protected String getLogPrefix() {
-		return "["+this.getClass().getName()+"] ["+getName()+"] ";
+		return "[" + this.getClass().getName() + "] [" + getName() + "] ";
 	}
 
 	@Override
@@ -101,19 +99,19 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getAuthAlias())) {
 			cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		}
-		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());
+		connectionStatistics = new StatisticsKeeper("getConnection for " + getName());
 	}
 
 	protected DataSource getDatasource() throws JdbcException {
-		if (datasource==null) {
+		if (datasource == null) {
 			String dsName = getDatasourceName();
 			try {
 				datasource = getDataSourceFactory().getDataSource(dsName, getJndiEnv());
 			} catch (NamingException e) {
-				throw new JdbcException("Could not find Datasource ["+dsName+"]", e);
+				throw new JdbcException("Could not find Datasource [" + dsName + "]", e);
 			}
-			if (datasource==null) {
-				throw new JdbcException("Could not find Datasource ["+dsName+"]");
+			if (datasource == null) {
+				throw new JdbcException("Could not find Datasource [" + dsName + "]");
 			}
 
 			String dsinfo = datasource.toString();
@@ -124,14 +122,15 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	@Deprecated
 	public String getDatasourceInfo() throws JdbcException {
-		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+		if (getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
 			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
 		}
-		throw new IllegalStateException("Datasource should always be of type TransactionalDbmsSupportAwareDataSourceProxy, found: " + getDatasource().getClass().getName());
+		throw new IllegalStateException("Datasource should always be of type TransactionalDbmsSupportAwareDataSourceProxy, found: " + getDatasource().getClass()
+				.getName());
 	}
 
 	public void setDbmsSupportFactory(DbmsSupportFactory dbmsSupportFactory) {
-		this.dbmsSupportFactory=dbmsSupportFactory;
+		this.dbmsSupportFactory = dbmsSupportFactory;
 	}
 
 	public IDbmsSupport getDbmsSupport() {
@@ -161,23 +160,23 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		try {
 			DataSource ds = getDatasource();
 			try {
-				if (cf!=null) {
+				if (cf != null) {
 					return ds.getConnection(cf.getUsername(), cf.getPassword());
 				}
 				return ds.getConnection();
 			} catch (SQLException e) {
-				throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDatasourceName()+"]", e);
+				throw new JdbcException(getLogPrefix() + "cannot open connection on datasource [" + getDatasourceName() + "]", e);
 			}
 		} finally {
-			if (connectionStatistics!=null) {
-				long t1= System.currentTimeMillis();
-				connectionStatistics.addValue(t1-t0);
+			if (connectionStatistics != null) {
+				long t1 = System.currentTimeMillis();
+				connectionStatistics.addValue(t1 - t0);
 			}
 		}
 	}
 
 	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
-		if (timeout<=0) {
+		if (timeout <= 0) {
 			return getConnection();
 		}
 		TimeoutGuard tg = new TimeoutGuard("Connection ");
@@ -186,7 +185,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			return getConnection();
 		} finally {
 			if (tg.cancel()) {
-				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
+				throw new TimeoutException(getLogPrefix() + "thread has been interrupted");
 			}
 		}
 	}
@@ -201,8 +200,8 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		super.setJmsRealm(jmsRealmName); //super.setJmsRealm(...) sets the jmsRealmName only when a realm is found
-		if(StringUtils.isEmpty(getJmsRealmName())) { //confirm that the configured jmsRealm exists
-			throw new IllegalStateException("JmsRealm ["+jmsRealmName+"] not found");
+		if (StringUtils.isEmpty(getJmsRealmName())) { //confirm that the configured jmsRealm exists
+			throw new IllegalStateException("JmsRealm [" + jmsRealmName + "] not found");
 		}
 	}
 
@@ -218,10 +217,10 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			try {
 				dataSource = getDatasource();
 			} catch (Exception e) {
-				return "no datasource found for datasourceName ["+getDatasourceName()+"]";
+				return "no datasource found for datasourceName [" + getDatasourceName() + "]";
 			}
 			//Try to minimise the amount of DB connections
-			if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+			if (dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
 				return ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getDestinationName();
 			}
 
@@ -229,24 +228,26 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 				DatabaseMetaData metadata = connection.getMetaData();
 				String result = metadata.getURL();
 
-				String catalog=null;
-				catalog=connection.getCatalog();
-				result += catalog!=null ? ("/"+catalog):"";
+				String catalog = null;
+				catalog = connection.getCatalog();
+				result += catalog != null ? ("/" + catalog) : "";
 				return result;
 			}
 		} catch (Exception e) {
-			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);
+			log.warn(getLogPrefix() + "exception retrieving PhysicalDestinationName", e);
 		}
 		return "unknown";
 	}
 
 	/**
 	 * JNDI name of datasource to be used, can be configured via jmsRealm, too
+	 *
 	 * @ff.default {@value JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
+
 	public String getDatasourceName() {
 		return datasourceName;
 	}
@@ -265,6 +266,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
 	protected String getPassword() {
 		return password;
 	}
@@ -275,6 +277,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}
+
 	@Override
 	public boolean isTransacted() {
 		return transacted;
@@ -282,11 +285,13 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	/**
 	 * informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed)
+	 *
 	 * @ff.default true
 	 */
 	public void setConnectionsArePooled(boolean b) {
 		connectionsArePooled = b;
 	}
+
 	public boolean isConnectionsArePooled() {
 		return connectionsArePooled || isTransacted();
 	}

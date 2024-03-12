@@ -89,7 +89,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	}
 
 	private boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {
-		Hashtable<String,Object> env = new Hashtable<>();
+		Hashtable<String, Object> env = new Hashtable<>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		String provUrl = retrieveUrl(host, port, dnSearchIn, useSsl);
 		env.put(Context.PROVIDER_URL, provUrl);
@@ -105,7 +105,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 			try {
 				ctx = new InitialDirContext(env);
 			} catch (CommunicationException e) {
-				log.info("Cannot create constructor for DirContext ["+ e.getMessage() + "], will try again with dummy SocketFactory",e);
+				log.info("Cannot create constructor for DirContext [" + e.getMessage() + "], will try again with dummy SocketFactory", e);
 				ctx = new InitialLdapContext(env, null); //Try again without connection request controls.
 			}
 			Attribute attrs = ctx.getAttributes("").get("member");
@@ -118,7 +118,8 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 					} else {
 						if (recursiveSearch) {
 							found = findMember(host, port, dnFound, useSsl,
-									dnFind, recursiveSearch);
+									dnFind, recursiveSearch
+							);
 						}
 					}
 				}
@@ -140,6 +141,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	public void setDnSearchIn(String string) {
 		dnSearchIn = string;
 	}
+
 	public String getDnSearchIn() {
 		return dnSearchIn;
 	}
@@ -148,17 +150,20 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	public void setDnFind(String string) {
 		dnFind = string;
 	}
+
 	public String getDnFind() {
 		return dnFind;
 	}
 
 	/**
 	 * when <code>true</code>, the member attribute is also searched in all the found members
+	 *
 	 * @ff.default true
 	 */
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}
+
 	public boolean isRecursiveSearch() {
 		return recursiveSearch;
 	}

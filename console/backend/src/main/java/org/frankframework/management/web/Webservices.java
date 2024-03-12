@@ -26,7 +26,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -34,8 +33,8 @@ import org.frankframework.management.bus.BusTopic;
 /**
  * Shows all monitors.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
@@ -60,7 +59,7 @@ public final class Webservices extends FrankApiBase {
 	public Response getOpenApiSpec(@QueryParam("uri") String uri) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.addHeader("type", "openapi");
-		if(StringUtils.isNotBlank(uri)) {
+		if (StringUtils.isNotBlank(uri)) {
 			request.addHeader("uri", uri);
 		}
 		return callSyncGateway(request);
@@ -84,9 +83,9 @@ public final class Webservices extends FrankApiBase {
 		request.addHeader("type", "wsdl");
 
 		String adapterName;
-		int dotPos=resourceName.lastIndexOf('.');
-		if (dotPos>=0) {
-			adapterName = resourceName.substring(0,dotPos);
+		int dotPos = resourceName.lastIndexOf('.');
+		if (dotPos >= 0) {
+			adapterName = resourceName.substring(0, dotPos);
 			boolean zip = resourceName.substring(dotPos).equals(".zip");
 			request.addHeader("zip", zip);
 		} else {

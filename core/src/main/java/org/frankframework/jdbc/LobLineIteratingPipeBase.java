@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.ReaderLineIterator;
@@ -29,8 +28,8 @@ import org.frankframework.util.ReaderLineIterator;
 /**
  * abstract baseclass for Pipes that iterate over the lines in a lob.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 
@@ -42,8 +41,8 @@ public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 
 		ResultStreamIterator(Connection conn, ResultSet rs, Reader reader) throws SenderException {
 			super(reader);
-			this.conn=conn;
-			this.rs=rs;
+			this.conn = conn;
+			this.rs = rs;
 		}
 
 		@Override

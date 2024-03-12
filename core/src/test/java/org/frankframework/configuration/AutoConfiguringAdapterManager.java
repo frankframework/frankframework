@@ -13,7 +13,9 @@ public class AutoConfiguringAdapterManager extends AdapterManager {
 		try {
 			adapter.configure();
 		} catch (ConfigurationException e) {
-			log.error("error configuring adapter ["+adapter.getName()+"]", e);
+			log.error("error configuring adapter [" + adapter.getName() + "]", e);
 		}
-	};
+	}
+
+	;
 }

@@ -43,26 +43,26 @@ public class ClassLoaderURIResolver implements URIResolver {
 	private final List<String> allowedProtocols = ClassLoaderUtils.getAllowedProtocols();
 
 	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
-		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider ["+scopeProvider+"]");
+		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider [" + scopeProvider + "]");
 		this.scopeProvider = scopeProvider;
 	}
 
 	public Resource resolveToResource(String href, String base) throws TransformerException {
 		String absoluteOrRelativeRef;
-		String globalClasspathRef=null;
-		String protocol=null;
+		String globalClasspathRef = null;
+		String protocol = null;
 
 		if (href.startsWith("/") || href.contains(":")) {
 			// href is absolute, search on the full classpath
-			absoluteOrRelativeRef=href;
+			absoluteOrRelativeRef = href;
 			if (href.contains(":")) {
-				protocol=href.substring(0,href.indexOf(":"));
+				protocol = href.substring(0, href.indexOf(":"));
 			}
 			if (StringUtils.isNotEmpty(protocol)) { //if href contains a protocol, verify that it's allowed to look it up
-				if(allowedProtocols.isEmpty()) {
-					throw new TransformerException("Cannot lookup resource ["+href+"] with protocol ["+protocol+"], no allowedProtocols");
-				} else if(!allowedProtocols.contains(protocol)) {
-					throw new TransformerException("Cannot lookup resource ["+href+"] not allowed with protocol ["+protocol+"] allowedProtocols "+allowedProtocols.toString());
+				if (allowedProtocols.isEmpty()) {
+					throw new TransformerException("Cannot lookup resource [" + href + "] with protocol [" + protocol + "], no allowedProtocols");
+				} else if (!allowedProtocols.contains(protocol)) {
+					throw new TransformerException("Cannot lookup resource [" + href + "] not allowed with protocol [" + protocol + "] allowedProtocols " + allowedProtocols.toString());
 				}
 			}
 		} else {
@@ -72,28 +72,29 @@ public class ClassLoaderURIResolver implements URIResolver {
 				absoluteOrRelativeRef = base.substring(0, base.lastIndexOf("/") + 1) + href;
 				globalClasspathRef = href; // if ref1 fails, try href on the global classpath
 				if (base.contains(":")) {
-					protocol=base.substring(0,base.indexOf(":"));
+					protocol = base.substring(0, base.indexOf(":"));
 				}
 			} else {
 				// cannot use base to prefix href
-				absoluteOrRelativeRef=href;
+				absoluteOrRelativeRef = href;
 			}
 		}
 
-		String ref=absoluteOrRelativeRef;
+		String ref = absoluteOrRelativeRef;
 		Resource resource = Resource.getResource(scopeProvider, ref, protocol);
-		if (resource==null && globalClasspathRef!=null) {
-			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+globalClasspathRef+"] protocol ["+protocol+"]");
-			ref=globalClasspathRef;
+		if (resource == null && globalClasspathRef != null) {
+			if (log.isDebugEnabled())
+				log.debug("Could not resolve href [" + href + "] base [" + base + "] as [" + ref + "], now trying ref2 [" + globalClasspathRef + "] protocol [" + protocol + "]");
+			ref = globalClasspathRef;
 			resource = Resource.getResource(scopeProvider, ref, null);
 		}
 
-		if (resource==null) {
-			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(globalClasspathRef==null?"":" nor as ref ["+absoluteOrRelativeRef+"]")+" protocol ["+protocol+"] in scope ["+scopeProvider+"]";
+		if (resource == null) {
+			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref [" + ref + "]" + (globalClasspathRef == null ? "" : " nor as ref [" + absoluteOrRelativeRef + "]") + " protocol [" + protocol + "] in scope [" + scopeProvider + "]";
 			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
 			throw new TransformerException(message);
 		}
-		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to resource ["+resource+"]");
+		if (log.isDebugEnabled()) log.debug("resolved href [" + href + "] base [" + base + "] to resource [" + resource + "]");
 		return resource;
 	}
 
@@ -103,7 +104,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 
 		try {
 			return resource.asSource();
-		} catch (SAXException|IOException e) {
+		} catch (SAXException | IOException e) {
 			throw new TransformerException(e);
 		}
 	}

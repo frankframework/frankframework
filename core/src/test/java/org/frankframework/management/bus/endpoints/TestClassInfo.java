@@ -7,13 +7,15 @@ import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestScopeProvider;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-@WithMockUser(roles = { "IbisTester" })
+@WithMockUser(roles = {"IbisTester"})
 public class TestClassInfo extends BusTestBase {
 
 	@Test

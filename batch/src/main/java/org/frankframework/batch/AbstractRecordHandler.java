@@ -18,12 +18,10 @@ package org.frankframework.batch;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IWithParameters;
@@ -34,13 +32,14 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Abstract class that contains functionality for parsing the field values from a
  * record (line). Fields in the record are either separated with a separator or have
  * a fixed position in the line.
  *
- * @author  John Dekker
+ * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
@@ -50,7 +49,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	private @Getter String name;
 	private @Getter String inputSeparator;
-	private @Getter boolean trim=false;
+	private @Getter boolean trim = false;
 
 	private final List<InputField> inputFields = new ArrayList<>();
 	private final List<Integer> recordIdentifyingFields = new ArrayList<>();
@@ -59,11 +58,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList!=null) {
+		if (paramList != null) {
 			paramList.configure();
 		}
 		if (!inputFields.isEmpty() && StringUtils.isNotEmpty(getInputSeparator())) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" inputFields and inputSeparator cannot be specified both");
+			throw new ConfigurationException(ClassUtils.nameOf(this) + " inputFields and inputSeparator cannot be specified both");
 		}
 	}
 
@@ -71,6 +70,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	public void open() throws SenderException {
 		//nothing to do
 	}
+
 	@Override
 	public void close() throws SenderException {
 		//nothing to do
@@ -97,11 +97,9 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	public List<String> parse(PipeLineSession session, String record) {
 		if (!inputFields.isEmpty()) {
 			return parseUsingInputFields(record);
-		}
-		else if (inputSeparator != null) {
+		} else if (inputSeparator != null) {
 			return parseUsingSeparator(record);
-		}
-		else {
+		} else {
 			List<String> result = new ArrayList<>();
 			result.add(record);
 			return result;
@@ -145,10 +143,9 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			endNdx = record.indexOf(inputSeparator, startNdx);
 			String item;
 			if (endNdx == -1) {
-				item=record.substring(startNdx);
-			}
-			else {
-				item=record.substring(startNdx, endNdx);
+				item = record.substring(startNdx);
+			} else {
+				item = record.substring(startNdx, endNdx);
 			}
 			if (isTrim()) {
 				result.add(item.trim());
@@ -156,7 +153,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 				result.add(item);
 			}
 		}
-		while(endNdx != -1);
+		while (endNdx != -1);
 
 		return result;
 	}
@@ -183,8 +180,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
 			return false;
 		}
-		if (! equalRecordHandlers) {
-			if (log.isTraceEnabled()) log.trace("isNewRecordType(): equalRecordTypes ["+equalRecordHandlers+"], so returning true");
+		if (!equalRecordHandlers) {
+			if (log.isTraceEnabled()) log.trace("isNewRecordType(): equalRecordTypes [" + equalRecordHandlers + "], so returning true");
 			return true;
 		}
 
@@ -242,8 +239,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	@Override
 	public void addParameter(Parameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
+		if (paramList == null) {
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}
@@ -273,6 +270,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	/**
 	 * If set <code>true</code>, trailing spaces are removed from each field
+	 *
 	 * @ff.default false
 	 */
 	public void setTrim(boolean b) {

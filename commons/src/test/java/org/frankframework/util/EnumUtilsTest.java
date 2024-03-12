@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.frankframework.doc.DocumentedEnum;
-import org.frankframework.doc.EnumLabel;
 import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.frankframework.doc.DocumentedEnum;
+import org.frankframework.doc.EnumLabel;
 
 public class EnumUtilsTest {
 
@@ -25,7 +25,7 @@ public class EnumUtilsTest {
 		private String name;
 
 		private TestEnumWithField(String name) {
-			this.name=name;
+			this.name = name;
 		}
 	}
 
@@ -38,6 +38,7 @@ public class EnumUtilsTest {
 
 		private @Getter boolean implicit;
 		private @Getter String protocol;
+
 		private DocumentedTestEnum(String protocol, boolean implicit) {
 			this.protocol = protocol;
 			this.implicit = implicit;
@@ -49,7 +50,7 @@ public class EnumUtilsTest {
 		IllegalArgumentException exception = assertThrows(
 				IllegalArgumentException.class, () -> {
 					EnumUtils.parse(TestEnumWithField.class, null);
-			}
+				}
 		);
 		assertEquals("cannot set field [testEnumWithField] to unparsable value [null]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", exception.getMessage());
 	}
@@ -108,8 +109,9 @@ public class EnumUtilsTest {
 		assertEquals("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]", e.getMessage());
 	}
 
-	public static enum TestDocumentedEnum implements DocumentedEnum { @EnumLabel("een") ONE, @EnumLabel("twee") TWO; }
-	public static enum TestNotDocumentedEnum { ONE, TWO; }
+	public static enum TestDocumentedEnum implements DocumentedEnum {@EnumLabel("een") ONE, @EnumLabel("twee") TWO;}
+
+	public static enum TestNotDocumentedEnum {ONE, TWO;}
 
 	@Test
 	public void testParseBoth() {
@@ -120,14 +122,14 @@ public class EnumUtilsTest {
 		IllegalArgumentException exception1 = assertThrows(
 				IllegalArgumentException.class, () -> {
 					EnumUtils.parse(TestNotDocumentedEnum.class, "", true);
-			}
+				}
 		);
 		assertEquals("cannot set field [testNotDocumentedEnum] to unparsable value []. Must be one of [ONE, TWO]", exception1.getMessage());
 
 		IllegalArgumentException exception2 = assertThrows(
 				IllegalArgumentException.class, () -> {
 					EnumUtils.parse(TestNotDocumentedEnum.class, "zero", true); //unknown not-documented enum
-			}
+				}
 		);
 		assertEquals("cannot set field [testNotDocumentedEnum] to unparsable value [zero]. Must be one of [ONE, TWO]", exception2.getMessage());
 		assertTrue(exception2.getSuppressed().length == 0);
@@ -135,7 +137,7 @@ public class EnumUtilsTest {
 		IllegalArgumentException exception3 = assertThrows(
 				IllegalArgumentException.class, () -> {
 					EnumUtils.parse(TestDocumentedEnum.class, "zero", true); //unknown documented enum
-			}
+				}
 		);
 		assertEquals("cannot set field [testDocumentedEnum] to unparsable value [zero]. Must be one of [een, twee]", exception3.getMessage());
 		assertTrue(exception3.getSuppressed().length == 1);
@@ -144,6 +146,7 @@ public class EnumUtilsTest {
 	public static enum EnumWithInteger {
 		ONE(1), TWO(2);
 		private int i = 0;
+
 		private EnumWithInteger(int i) {
 			this.i = i;
 		}

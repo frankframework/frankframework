@@ -6,13 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 
-import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
 
 /**
  * FilePipe Tester.
@@ -72,7 +73,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 		pipe.setActions("create");
 		pipe.configure();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, var, session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, var, session));
 		assertThat(e.getMessage(), Matchers.endsWith("Error while executing file action(s): (UnsupportedEncodingException) /"));
 	}
 

@@ -21,17 +21,20 @@ import org.frankframework.core.ISenderWithParameters;
  * Common interface to be implemented by SapSender implementations.
  *
  * @author Gerrit van Brakel
- * @since  7.3
+ * @since 7.3
  */
-public interface ISapSender extends ISenderWithParameters,ISapFunctionFacade {
+public interface ISapSender extends ISenderWithParameters, ISapFunctionFacade {
 
 	public void setSynchronous(boolean b);
 
 	public void setFunctionName(String string);
+
 	public void setFunctionNameParam(String string);
+
 	public void setLuwHandleSessionKey(String string);
 
 	public void setSapSystemNameParam(String string);
+
 	public String getRequestFieldName();
 
 }

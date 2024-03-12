@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.frankframework.util.StringUtil;
+
 import org.mockito.Mockito;
 
 public abstract class PreparedStatementMock extends Mockito implements PreparedStatement {
@@ -29,8 +30,8 @@ public abstract class PreparedStatementMock extends Mockito implements PreparedS
 
 		//Prepare parameterMap. We can assume its a proper query!
 		int fieldTo = query.indexOf(")");
-		String fields = query.substring(query.indexOf("(")+1, fieldTo);
-		String values = query.substring(query.indexOf("(", fieldTo)+1, query.lastIndexOf(")"));
+		String fields = query.substring(query.indexOf("(") + 1, fieldTo);
+		String values = query.substring(query.indexOf("(", fieldTo) + 1, query.lastIndexOf(")"));
 		Iterator<String> fieldIter = StringUtil.split(fields).iterator();
 		Iterator<String> valueIter = StringUtil.split(values).iterator();
 
@@ -39,7 +40,7 @@ public abstract class PreparedStatementMock extends Mockito implements PreparedS
 			String fieldName = fieldIter.next();
 			String fieldIndex = valueIter.next();
 			Object value;
-			if("?".equals(fieldIndex)) {
+			if ("?".equals(fieldIndex)) {
 				value = parameterMap.get(index);
 				index++;
 			} else {

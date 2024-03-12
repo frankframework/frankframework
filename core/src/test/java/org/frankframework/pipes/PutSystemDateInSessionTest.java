@@ -13,10 +13,11 @@ import java.util.Date;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.util.DateFormatUtils;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession>{
+public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession> {
 
 	@Override
 	public PutSystemDateInSession createPipe() {
@@ -47,7 +48,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		pipe.setSessionKey("first");
 		session.put("stub4testtool.fixeddate", "22331");
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "dummy", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "dummy", session));
 		assertThat(e.getMessage(), Matchers.containsString("cannot parse fixed date"));
 	}
 
@@ -79,7 +80,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		Instant first = Instant.from(formatter.parse(result));
 		Instant second = Instant.from(formatter.parse(secondResult));
 
-		long timeDifference = second.toEpochMilli()-first.toEpochMilli();
+		long timeDifference = second.toEpochMilli() - first.toEpochMilli();
 		assertEquals(0, timeDifference);
 	}
 
@@ -104,7 +105,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		Instant first = Instant.from(formatter.parse(result));
 		Instant second = Instant.from(formatter.parse(secondResult));
 
-		long timeDifference = second.toEpochMilli()-first.toEpochMilli();
+		long timeDifference = second.toEpochMilli() - first.toEpochMilli();
 		assertEquals(PutSystemDateInSession.FIXEDDATETIME, result);
 		assertEquals(0, timeDifference);
 	}
@@ -157,7 +158,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		Instant first = Instant.from(format.parse(result));
 		Instant second = Instant.from(format.parse(secondResult));
 
-		long timeDifference = second.toEpochMilli()-first.toEpochMilli();
+		long timeDifference = second.toEpochMilli() - first.toEpochMilli();
 
 		assertEquals(1000L, timeDifference);
 	}

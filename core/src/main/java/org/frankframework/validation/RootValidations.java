@@ -43,7 +43,7 @@ public class RootValidations implements Iterable<RootValidation> {
 	}
 
 	public void check(IConfigurationAware source, Set<IXSD> xsds) {
-		for (RootValidation path: rootValidations) {
+		for (RootValidation path : rootValidations) {
 			path.check(source, xsds);
 		}
 	}
@@ -51,6 +51,7 @@ public class RootValidations implements Iterable<RootValidation> {
 	public void add(RootValidation rootValidation) {
 		this.rootValidations.add(rootValidation);
 	}
+
 	public void add(String rootElement) {
 		add(new RootValidation(rootElement));
 	}

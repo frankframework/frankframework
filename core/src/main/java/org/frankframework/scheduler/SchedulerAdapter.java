@@ -44,14 +44,16 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.XmlBuilder;
+
 /**
  * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
  * It transforms the information from the scheduler to XML.
- * @author  Johan Verrips
+ *
+ * @author Johan Verrips
  * @since 4.0
-  */
+ */
 public class SchedulerAdapter {
-	protected Logger log=LogUtil.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private final DecimalFormat tf = new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
 	private final DecimalFormat pf = new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
@@ -98,7 +100,7 @@ public class SchedulerAdapter {
 					jb.addSubElement(jn);
 
 					IJob jobDef = null;
-					if(ibisManager != null) {
+					if (ibisManager != null) {
 						for (Configuration configuration : ibisManager.getConfigurations()) {
 							jobDef = configuration.getScheduledJob(jobName);
 							if (jobDef != null) {
@@ -108,7 +110,7 @@ public class SchedulerAdapter {
 					}
 					XmlBuilder ms = getJobMessages(jobDef);
 					jn.addSubElement(ms);
-					XmlBuilder jrs= getJobRunStatistics(jobDef);
+					XmlBuilder jrs = getJobRunStatistics(jobDef);
 					jn.addSubElement(jrs);
 				}
 				el.addSubElement(jb);
@@ -134,13 +136,14 @@ public class SchedulerAdapter {
 
 	public XmlBuilder getJobMessages(IJob jobdef) {
 		XmlBuilder jobMessages = new XmlBuilder("jobMessages");
-		if (jobdef!=null) {
+		if (jobdef != null) {
 			MessageKeeper jobMessageKeeper = jobdef.getMessageKeeper();
-			if (jobMessageKeeper!=null) {
-				for (int t=0; t<jobMessageKeeper.size(); t++) {
-					XmlBuilder jobMessage=new XmlBuilder("jobMessage");
-					jobMessage.setValue(jobMessageKeeper.getMessage(t).getMessageText(),true);
-					jobMessage.addAttribute("date", DateFormatUtils.format(jobMessageKeeper.getMessage(t).getMessageDate(), DateFormatUtils.FULL_GENERIC_FORMATTER));
+			if (jobMessageKeeper != null) {
+				for (int t = 0; t < jobMessageKeeper.size(); t++) {
+					XmlBuilder jobMessage = new XmlBuilder("jobMessage");
+					jobMessage.setValue(jobMessageKeeper.getMessage(t).getMessageText(), true);
+					jobMessage.addAttribute("date", DateFormatUtils.format(jobMessageKeeper.getMessage(t)
+							.getMessageDate(), DateFormatUtils.FULL_GENERIC_FORMATTER));
 					jobMessage.addAttribute("level", jobMessageKeeper.getMessage(t).getMessageLevel());
 					jobMessages.addSubElement(jobMessage);
 				}
@@ -155,7 +158,8 @@ public class SchedulerAdapter {
 			StatisticsKeeper statsKeeper = jobdef.getStatisticsKeeper();
 			if (statsKeeper != null) {
 				XmlBuilder jobRunDuration = statsKeeper.toXml("jobRunDuration",
-						false, tf, pf);
+						false, tf, pf
+				);
 				jobRunStatistics.addSubElement(jobRunDuration);
 			}
 		}
@@ -168,7 +172,7 @@ public class SchedulerAdapter {
 		try {
 			List<String> names = theScheduler.getCalendarNames();
 
-			for(int i = 0; i < names.size(); i++) {
+			for (int i = 0; i < names.size(); i++) {
 				XmlBuilder el = new XmlBuilder("calendar");
 
 				el.setValue(names.get(i));
@@ -221,15 +225,15 @@ public class SchedulerAdapter {
 
 		for (int i = 0; i < keys.length; i++) {
 			String name = keys[i];
-			String value="";
+			String value = "";
 			Object obj = jd.get(keys[i]);
-			if (obj!=null) {
+			if (obj != null) {
 				value = obj.toString();
 			}
 			XmlBuilder ds = new XmlBuilder("property");
 
 			ds.addAttribute("key", name);
-			if (obj!=null){
+			if (obj != null) {
 				ds.addAttribute("className", obj.getClass().getName());
 			} else {
 				ds.addAttribute("className", "null");
@@ -249,7 +253,7 @@ public class SchedulerAdapter {
 		xbRoot.addAttribute("name", name);
 		xbRoot.addAttribute("fullName", jobDetail.getKey().getGroup() + "." + name);
 		String description = "-";
-		if(StringUtils.isNotEmpty(jobDetail.getDescription()))
+		if (StringUtils.isNotEmpty(jobDetail.getDescription()))
 			description = jobDetail.getDescription();
 
 		xbRoot.addAttribute("description", description);
@@ -278,10 +282,10 @@ public class SchedulerAdapter {
 		xbRoot.addAttribute("startTime", convertDate(trigger.getStartTime()));
 
 		xbRoot.addAttribute("misfireInstruction", Integer.toString(trigger.getMisfireInstruction()));
-		if(trigger instanceof CronTrigger) {
+		if (trigger instanceof CronTrigger) {
 			xbRoot.addAttribute("triggerType", "cron");
 			xbRoot.addAttribute("cronExpression", ((CronTrigger) trigger).getCronExpression());
-		} else if(trigger instanceof SimpleTrigger) {
+		} else if (trigger instanceof SimpleTrigger) {
 			xbRoot.addAttribute("triggerType", "simple");
 			xbRoot.addAttribute("repeatInterval", ((SimpleTrigger) trigger).getRepeatInterval());
 		} else {

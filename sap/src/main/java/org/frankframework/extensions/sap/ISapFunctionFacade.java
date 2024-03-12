@@ -21,16 +21,22 @@ import org.frankframework.core.IConfigurable;
 /**
  * Common interface to be implemented by SapListeners
  *
- * @author  Gerrit van Brakel
- * @since   7.3
+ * @author Gerrit van Brakel
+ * @since 7.3
  */
 public interface ISapFunctionFacade extends IConfigurable, HasPhysicalDestination {
 
 	public void setCorrelationIdFieldIndex(int i);
+
 	public void setCorrelationIdFieldName(String string);
+
 	public void setRequestFieldIndex(int i);
+
 	public void setRequestFieldName(String string);
+
 	public void setReplyFieldIndex(int i);
+
 	public void setReplyFieldName(String string);
+
 	public void setSapSystemName(String string);
 }

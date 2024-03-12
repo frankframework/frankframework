@@ -77,9 +77,9 @@ import org.frankframework.util.RunState;
 public class AdapterStatus extends BusEndpointBase {
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
 
-	private static final String RECEIVERS="receivers";
-	private static final String PIPES="pipes";
-	private static final String MESSAGES="messages";
+	private static final String RECEIVERS = "receivers";
+	private static final String PIPES = "pipes";
+	private static final String MESSAGES = "messages";
 
 	public enum Expanded {
 		NONE, ALL, RECEIVERS, MESSAGES, PIPES
@@ -92,8 +92,8 @@ public class AdapterStatus extends BusEndpointBase {
 		boolean showPendingMsgCount = BusMessageUtils.getBooleanHeader(message, "showPendingMsgCount", false);
 
 		TreeMap<String, Object> adapterList = new TreeMap<>();
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			for(Adapter adapter: config.getRegisteredAdapters()) {
+		for (Configuration config : getIbisManager().getConfigurations()) {
+			for (Adapter adapter : config.getRegisteredAdapters()) {
 				Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
 				adapterList.put((String) adapterInfo.get("name"), adapterInfo);
 			}
@@ -118,24 +118,24 @@ public class AdapterStatus extends BusEndpointBase {
 	private Map<String, Object> getAdapterInformation(Adapter adapter, Expanded expandedFilter, boolean showPendingMsgCount) {
 		Map<String, Object> adapterInfo = mapAdapter(adapter);
 		switch (expandedFilter) {
-		case ALL:
-			adapterInfo.put(RECEIVERS, mapAdapterReceivers(adapter, showPendingMsgCount));
-			adapterInfo.put(PIPES, mapAdapterPipes(adapter));
-			adapterInfo.put(MESSAGES, mapAdapterMessages(adapter));
-			break;
-		case RECEIVERS:
-			adapterInfo.put(RECEIVERS, mapAdapterReceivers(adapter, showPendingMsgCount));
-			break;
-		case PIPES:
-			adapterInfo.put(PIPES, mapAdapterPipes(adapter));
-			break;
-		case MESSAGES:
-			adapterInfo.put(MESSAGES, mapAdapterMessages(adapter));
-		break;
+			case ALL:
+				adapterInfo.put(RECEIVERS, mapAdapterReceivers(adapter, showPendingMsgCount));
+				adapterInfo.put(PIPES, mapAdapterPipes(adapter));
+				adapterInfo.put(MESSAGES, mapAdapterMessages(adapter));
+				break;
+			case RECEIVERS:
+				adapterInfo.put(RECEIVERS, mapAdapterReceivers(adapter, showPendingMsgCount));
+				break;
+			case PIPES:
+				adapterInfo.put(PIPES, mapAdapterPipes(adapter));
+				break;
+			case MESSAGES:
+				adapterInfo.put(MESSAGES, mapAdapterMessages(adapter));
+				break;
 
-		case NONE:
-		default:
-			//Don't add additional info
+			case NONE:
+			default:
+				//Don't add additional info
 		}
 		return adapterInfo;
 	}
@@ -172,7 +172,7 @@ public class AdapterStatus extends BusEndpointBase {
 			if (log.isInfoEnabled()) {
 				Enumeration<String> aliases = keystore.aliases();
 				while (aliases.hasMoreElements()) {
-					String alias =  aliases.nextElement();
+					String alias = aliases.nextElement();
 					ArrayList<Object> infoElem = new ArrayList<>();
 					infoElem.add(prefix + " '" + alias + "':");
 					Certificate trustedcert = keystore.getCertificate(alias);
@@ -194,13 +194,13 @@ public class AdapterStatus extends BusEndpointBase {
 	}
 
 	private ArrayList<Object> mapAdapterPipes(Adapter adapter) {
-		if(!adapter.configurationSucceeded())
+		if (!adapter.configurationSucceeded())
 			return null;
 		PipeLine pipeline = adapter.getPipeLine();
 		int totalPipes = pipeline.getPipes().size();
 		ArrayList<Object> pipes = new ArrayList<>(totalPipes);
 
-		for (int i=0; i<totalPipes; i++) {
+		for (int i = 0; i < totalPipes; i++) {
 			Map<String, Object> pipesInfo = new HashMap<>();
 			IPipe pipe = pipeline.getPipe(i);
 			Map<String, PipeForward> pipeForwards = pipe.getForwards();
@@ -217,38 +217,38 @@ public class AdapterStatus extends BusEndpointBase {
 			if (pipe instanceof HasKeystore) {
 				HasKeystore s = (HasKeystore) pipe;
 				Map<String, Object> certInfo = addCertificateInfo(s);
-				if(certInfo != null)
+				if (certInfo != null)
 					pipesInfo.put("certificate", certInfo);
 			}
 			if (pipe instanceof MessageSendingPipe) {
-				MessageSendingPipe msp=(MessageSendingPipe)pipe;
+				MessageSendingPipe msp = (MessageSendingPipe) pipe;
 				ISender sender = msp.getSender();
 				pipesInfo.put("sender", ClassUtils.nameOf(sender));
 				if (sender instanceof HasKeystore) {
 					HasKeystore s = (HasKeystore) sender;
 					Map<String, Object> certInfo = addCertificateInfo(s);
-					if(certInfo != null)
+					if (certInfo != null)
 						pipesInfo.put("certificate", certInfo);
 				}
 				if (sender instanceof HasPhysicalDestination) {
-					pipesInfo.put("destination",((HasPhysicalDestination)sender).getPhysicalDestinationName());
+					pipesInfo.put("destination", ((HasPhysicalDestination) sender).getPhysicalDestinationName());
 				}
 				if (sender instanceof JdbcSenderBase) {
 					pipesInfo.put("isJdbcSender", true);
 				}
 				IListener<?> listener = msp.getListener();
-				if (listener!=null) {
+				if (listener != null) {
 					pipesInfo.put("listenerName", listener.getName());
 					pipesInfo.put("listenerClass", ClassUtils.nameOf(listener));
 					if (listener instanceof HasPhysicalDestination) {
-						String pd = ((HasPhysicalDestination)listener).getPhysicalDestinationName();
+						String pd = ((HasPhysicalDestination) listener).getPhysicalDestinationName();
 						pipesInfo.put("listenerDestination", pd);
 					}
 				}
 				ITransactionalStorage<?> messageLog = msp.getMessageLog();
-				if (messageLog!=null) {
+				if (messageLog != null) {
 					mapPipeMessageLog(messageLog, pipesInfo, adapter.getRunState() == RunState.STARTED);
-				} else if(sender instanceof ITransactionalStorage) { // in case no message log specified
+				} else if (sender instanceof ITransactionalStorage) { // in case no message log specified
 					ITransactionalStorage<?> store = (ITransactionalStorage<?>) sender;
 					mapPipeMessageLog(store, pipesInfo, adapter.getRunState() == RunState.STARTED);
 					pipesInfo.put("isSenderTransactionalStorage", true);
@@ -264,13 +264,13 @@ public class AdapterStatus extends BusEndpointBase {
 		String messageLogCount;
 		try {
 			if (showCountMessageLog && isStarted) {
-				messageLogCount=""+store.getMessageCount();
+				messageLogCount = "" + store.getMessageCount();
 			} else {
-				messageLogCount="?";
+				messageLogCount = "?";
 			}
 		} catch (Exception e) {
-			log.warn("Cannot determine number of messages in messageLog ["+store.getName()+"]", e);
-			messageLogCount="error";
+			log.warn("Cannot determine number of messages in messageLog [" + store.getName() + "]", e);
+			messageLogCount = "error";
 		}
 		data.put("messageLogCount", messageLogCount);
 
@@ -283,11 +283,11 @@ public class AdapterStatus extends BusEndpointBase {
 	}
 
 	private Object getMessageCount(RunState runState, IMessageBrowser<?> ts) {
-		if(runState == RunState.STARTED) {
+		if (runState == RunState.STARTED) {
 			try {
 				return ts.getMessageCount();
 			} catch (Exception e) {
-				log.warn("Cannot determine number of messages in MessageBrowser ["+ClassUtils.nameOf(ts)+"]", e);
+				log.warn("Cannot determine number of messages in MessageBrowser [" + ClassUtils.nameOf(ts) + "]", e);
 				return "error";
 			}
 		} else {
@@ -298,7 +298,7 @@ public class AdapterStatus extends BusEndpointBase {
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
 		ArrayList<Object> receivers = new ArrayList<>();
 
-		for (Receiver<?> receiver: adapter.getReceivers()) {
+		for (Receiver<?> receiver : adapter.getReceivers()) {
 			Map<String, Object> receiverInfo = new HashMap<>();
 
 			RunState receiverRunState = receiver.getRunState();
@@ -316,7 +316,7 @@ public class AdapterStatus extends BusEndpointBase {
 			Map<ProcessState, Object> tsInfo = new LinkedHashMap<>();
 			for (ProcessState state : knownStates) {
 				IMessageBrowser<?> ts = receiver.getMessageBrowser(state);
-				if(ts != null) {
+				if (ts != null) {
 					ProcessStateDTO psDto = new ProcessStateDTO(state);
 					psDto.setMessageCount(getMessageCount(receiverRunState, ts));
 					tsInfo.put(state, psDto);
@@ -324,18 +324,18 @@ public class AdapterStatus extends BusEndpointBase {
 			}
 			receiverInfo.put("transactionalStores", tsInfo);
 
-			ISender sender=null;
-			IListener<?> listener=receiver.getListener();
-			if(listener != null) {
+			ISender sender = null;
+			IListener<?> listener = receiver.getListener();
+			if (listener != null) {
 				Map<String, Object> listenerInfo = new HashMap<>();
 				listenerInfo.put("name", listener.getName());
 				listenerInfo.put("class", ClassUtils.nameOf(listener));
 				if (listener instanceof HasPhysicalDestination) {
-					String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
+					String pd = ((HasPhysicalDestination) receiver.getListener()).getPhysicalDestinationName();
 					listenerInfo.put("destination", pd);
 				}
 				if (listener instanceof HasSender) {
-					sender = ((HasSender)listener).getSender();
+					sender = ((HasSender) listener).getSender();
 				}
 
 				boolean isRestListener = (listener instanceof RestListener);
@@ -365,14 +365,14 @@ public class AdapterStatus extends BusEndpointBase {
 			}
 
 			ISender rsender = receiver.getSender();
-			if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
-				sender=rsender;
+			if (rsender != null) { // this sender has preference, but avoid overwriting listeners sender with null
+				sender = rsender;
 			}
 			if (sender != null) {
 				receiverInfo.put("senderName", sender.getName());
 				receiverInfo.put("senderClass", ClassUtils.nameOf(sender));
 				if (sender instanceof HasPhysicalDestination) {
-					String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
+					String pd = ((HasPhysicalDestination) sender).getPhysicalDestinationName();
 					receiverInfo.put("senderDestination", pd);
 				}
 			}
@@ -392,7 +392,7 @@ public class AdapterStatus extends BusEndpointBase {
 	private ArrayList<Object> mapAdapterMessages(Adapter adapter) {
 		int totalMessages = adapter.getMessageKeeper().size();
 		ArrayList<Object> messages = new ArrayList<>(totalMessages);
-		for (int t=0; t<totalMessages; t++) {
+		for (int t = 0; t < totalMessages; t++) {
 			Map<String, Object> message = new HashMap<>();
 			MessageKeeperMessage msg = adapter.getMessageKeeper().getMessage(t);
 
@@ -413,16 +413,16 @@ public class AdapterStatus extends BusEndpointBase {
 		String adapterName = adapter.getName();
 		adapterInfo.put("name", adapterName);
 		adapterInfo.put("description", adapter.getDescription());
-		adapterInfo.put("configuration", config.getName() );
+		adapterInfo.put("configuration", config.getName());
 		RunState adapterRunState = adapter.getRunState();
-		adapterInfo.put("started", adapterRunState==RunState.STARTED);
+		adapterInfo.put("started", adapterRunState == RunState.STARTED);
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");
 		adapterInfo.put("state", state);
 
 		adapterInfo.put("configured", adapter.configurationSucceeded());
 		adapterInfo.put("upSince", adapter.getStatsUpSinceDate().getTime());
 		Date lastMessage = adapter.getLastMessageDateDate();
-		if(lastMessage != null) {
+		if (lastMessage != null) {
 			adapterInfo.put("lastMessage", lastMessage.getTime());
 			adapterInfo.put("messagesInProcess", adapter.getNumOfMessagesInProcess());
 			adapterInfo.put("messagesProcessed", adapter.getNumOfMessagesProcessed());
@@ -432,39 +432,39 @@ public class AdapterStatus extends BusEndpointBase {
 		Iterator<Receiver<?>> it = adapter.getReceivers().iterator();
 		int errorStoreMessageCount = 0;
 		int messageLogMessageCount = 0;
-		while(it.hasNext()) {
+		while (it.hasNext()) {
 			Receiver<?> rcv = it.next();
-			if(rcv.isNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached()) {
+			if (rcv.isNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached()) {
 				adapterInfo.put("receiverReachedMaxExceptions", "true");
 			}
 
-			if(rcv.getRunState() == RunState.STARTED) {
+			if (rcv.getRunState() == RunState.STARTED) {
 				IMessageBrowser<?> esmb = rcv.getMessageBrowser(ProcessState.ERROR);
-				if(esmb != null) {
+				if (esmb != null) {
 					try {
 						errorStoreMessageCount += esmb.getMessageCount();
 					} catch (ListenerException e) {
 						// Only log the stacktrace when loglevel == INFO. Otherwise it will pollute the log too much.
-						if(log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
+						if (log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
 						else log.warn("Cannot determine number of messages in errorstore of [{}]: {}", rcv::getName, e::getMessage);
 					}
 				}
 				IMessageBrowser<?> mlmb = rcv.getMessageBrowser(ProcessState.DONE);
-				if(mlmb != null) {
+				if (mlmb != null) {
 					try {
 						messageLogMessageCount += mlmb.getMessageCount();
 					} catch (ListenerException e) {
 						// Only log the stacktrace when loglevel == INFO. Otherwise it will pollute the log too much.
-						if(log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
+						if (log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
 						else log.warn("Cannot determine number of messages in errorstore of [{}]: {}", rcv::getName, e::getMessage);
 					}
 				}
 			}
 		}
-		if(errorStoreMessageCount != 0) {
+		if (errorStoreMessageCount != 0) {
 			adapterInfo.put("errorStoreMessageCount", errorStoreMessageCount);
 		}
-		if(messageLogMessageCount != 0) {
+		if (messageLogMessageCount != 0) {
 			adapterInfo.put("messageLogMessageCount", messageLogMessageCount);
 		}
 

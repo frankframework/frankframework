@@ -38,17 +38,15 @@ import org.frankframework.xml.XmlWriter;
  * function returns the node and subnodes as an indented xml string.
  * <p/>
  *
- * @deprecated Please replace with {@link SaxDocumentBuilder} or {@link IDocumentBuilder} (from {@link DocumentBuilderFactory})
- *
  * @author Johan Verrips
  * @author Peter Leeuwenburgh
- *
+ * @deprecated Please replace with {@link SaxDocumentBuilder} or {@link IDocumentBuilder} (from {@link DocumentBuilderFactory})
  **/
 @Deprecated
 public class XmlBuilder {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private final String CDATA_END="]]>";
+	private final String CDATA_END = "]]>";
 
 	private String root;
 	private AttributesImpl attributes = new AttributesImpl();
@@ -86,11 +84,11 @@ public class XmlBuilder {
 	}
 
 	public void addSubElement(XmlBuilder newElement) {
-		if (subElements==null) {
-			if (text!=null) {
-				throw new IllegalStateException("XmlBuilder cannot have mixed content, text already set to ["+text+"] when trying to add element");
+		if (subElements == null) {
+			if (text != null) {
+				throw new IllegalStateException("XmlBuilder cannot have mixed content, text already set to [" + text + "] when trying to add element");
 			}
-			if (cdata!=null) {
+			if (cdata != null) {
 				throw new IllegalStateException("XmlBuilder cannot have mixed content, cdata already set when trying to add element");
 			}
 			subElements = new LinkedList<>();
@@ -99,20 +97,20 @@ public class XmlBuilder {
 	}
 
 	public void setCdataValue(String value) {
-		text=null;
-		cdata=new LinkedList<>();
-		if (value!=null) {
+		text = null;
+		cdata = new LinkedList<>();
+		if (value != null) {
 			int cdata_end_pos;
-			while ((cdata_end_pos=value.indexOf(CDATA_END))>=0) {
-				cdata.add(value.substring(0, cdata_end_pos+1));
-				value = value.substring(cdata_end_pos+1);
+			while ((cdata_end_pos = value.indexOf(CDATA_END)) >= 0) {
+				cdata.add(value.substring(0, cdata_end_pos + 1));
+				value = value.substring(cdata_end_pos + 1);
 			}
 			cdata.add(value);
 		}
 	}
 
 	public void setValue(String value) {
-		cdata=null;
+		cdata = null;
 		if (value != null) {
 			text = value;
 		}
@@ -150,26 +148,26 @@ public class XmlBuilder {
 		try {
 			handler.startElement("", root, root, attributes);
 			try {
-				if (subElements!=null) {
-					for(XmlBuilder subElement:subElements) {
+				if (subElements != null) {
+					for (XmlBuilder subElement : subElements) {
 						subElement.toXML(handler, false);
 					}
 				}
-				if (text!=null) {
+				if (text != null) {
 					if (parseText) {
 						XmlUtils.parseNodeSet(text, handler);
 					} else {
 						handler.characters(text.toCharArray(), 0, text.length());
 					}
 				}
-				if (cdata!=null) {
-					for(String part:cdata) {
+				if (cdata != null) {
+					for (String part : cdata) {
 						if (handler instanceof LexicalHandler) {
-							((LexicalHandler)handler).startCDATA();
+							((LexicalHandler) handler).startCDATA();
 						}
 						handler.characters(part.toCharArray(), 0, part.length());
 						if (handler instanceof LexicalHandler) {
-							((LexicalHandler)handler).endCDATA();
+							((LexicalHandler) handler).endCDATA();
 						}
 					}
 				}

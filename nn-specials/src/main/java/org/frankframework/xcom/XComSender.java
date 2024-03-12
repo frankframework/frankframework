@@ -20,10 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
-
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -98,10 +96,10 @@ public class XComSender extends SenderWithParametersBase {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (! StringUtils.isEmpty(port)) {
+		if (!StringUtils.isEmpty(port)) {
 			try {
 				Integer.parseInt(port);
-			} catch(NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				throw new ConfigurationException("Attribute [port] is not a number", e);
 			}
 		}
@@ -112,7 +110,7 @@ public class XComSender extends SenderWithParametersBase {
 			throw new ConfigurationException("Attribute [workingDirName] is not set");
 		}
 		workingDir = new File(workingDirName);
-		if (! workingDir.isDirectory()) {
+		if (!workingDir.isDirectory()) {
 			throw new ConfigurationException("Working directory [workingDirName=" + workingDirName + "] is not a directory");
 		}
 	}
@@ -128,7 +126,7 @@ public class XComSender extends SenderWithParametersBase {
 		try {
 			messageString = message.asString();
 		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(),e);
+			throw new SenderException(getLogPrefix(), e);
 		}
 		for (String filename : getFileList(messageString)) {
 			log.debug("Start sending " + filename);
@@ -181,7 +179,7 @@ public class XComSender extends SenderWithParametersBase {
 		try {
 			StringBuilder sb = new StringBuilder();
 
-			sb.append(xcomtcp). append(" -c1");
+			sb.append(xcomtcp).append(" -c1");
 
 			if (StringUtils.isNotEmpty(configFile)) {
 				sb.append(" -f ").append(configFile);
@@ -195,7 +193,7 @@ public class XComSender extends SenderWithParametersBase {
 				sb.append(" LOCAL_FILE=").append(localFile.getAbsolutePath());
 
 				sb.append(" REMOTE_FILE=");
-				if (! StringUtils.isEmpty(remoteDirectory))
+				if (!StringUtils.isEmpty(remoteDirectory))
 					sb.append(remoteDirectory);
 				if (StringUtils.isEmpty(remoteFilePattern))
 					sb.append(localFile.getName());
@@ -207,7 +205,7 @@ public class XComSender extends SenderWithParametersBase {
 
 
 			// optional parameters
-			if (fileOption!=null)
+			if (fileOption != null)
 				sb.append(" FILE_OPTION=").append(fileOption.name());
 			if (queue != null)
 				sb.append(" QUEUE=").append(queue ? "YES" : "NO");
@@ -215,24 +213,23 @@ public class XComSender extends SenderWithParametersBase {
 				sb.append(" TRACE=").append(tracelevel.intValue());
 			if (truncation != null)
 				sb.append(" TRUNCATION=").append(truncation ? "YES" : "NO");
-			if (! StringUtils.isEmpty(port))
+			if (!StringUtils.isEmpty(port))
 				sb.append(" PORT=").append(port);
-			if (! StringUtils.isEmpty(logfile))
+			if (!StringUtils.isEmpty(logfile))
 				sb.append(" XLOGFILE=").append(logfile);
-			if (compress!=null)
+			if (compress != null)
 				sb.append(" COMPRESS=").append(compress.name());
-			if (codeflag!=null)
+			if (codeflag != null)
 				sb.append(" CODE_FLAG=").append(codeflag.name());
-			if (carriageflag!=null)
+			if (carriageflag != null)
 				sb.append(" CARRIAGE_FLAG=").append(carriageflag.name());
-			if (! StringUtils.isEmpty(cf.getUsername()))
+			if (!StringUtils.isEmpty(cf.getUsername()))
 				sb.append(" USERID=").append(cf.getUsername());
-			if (inclPasswd && ! StringUtils.isEmpty(cf.getPassword()))
+			if (inclPasswd && !StringUtils.isEmpty(cf.getPassword()))
 				sb.append(" PASSWORD=").append(cf.getPassword());
 
 			return sb.toString();
-		}
-		catch(ParameterException e) {
+		} catch (ParameterException e) {
 			throw new SenderException(e);
 		}
 	}

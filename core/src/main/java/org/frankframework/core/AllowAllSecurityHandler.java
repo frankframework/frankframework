@@ -22,8 +22,8 @@ import org.apache.commons.lang3.NotImplementedException;
 /**
  * Security handler that declares that each role is valid.
  *
- * @author  Gerrit van Brakel
- * @since   4.3
+ * @author Gerrit van Brakel
+ * @since 4.3
  */
 public class AllowAllSecurityHandler implements ISecurityHandler {
 	@Override

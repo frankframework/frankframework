@@ -30,13 +30,12 @@ import org.frankframework.util.StreamUtil;
  * For adequate privacy in production environments, the source file should not be readable by unauthorised users.
  *
  * @author Gerrit van Brakel
- *
  */
 public class PropertyFileCredentialFactory extends MapCredentialFactory {
 
-	public static final String PROPERTY_BASE="credentialFactory.map";
+	public static final String PROPERTY_BASE = "credentialFactory.map";
 
-	public static final String FILE_PROPERTY=PROPERTY_BASE+".properties";
+	public static final String FILE_PROPERTY = PROPERTY_BASE + ".properties";
 
 	private static final String DEFAULT_PROPERTIES_FILE = "credentials.properties";
 
@@ -48,12 +47,12 @@ public class PropertyFileCredentialFactory extends MapCredentialFactory {
 	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
 		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, DEFAULT_PROPERTIES_FILE, "Credentials");
-			Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
+			 Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
 
 			Properties properties = new Properties();
 			properties.load(reader);
-			Map<String,String> map = new LinkedHashMap<>();
-			properties.forEach((k,v) -> map.put((String)k, (String)v));
+			Map<String, String> map = new LinkedHashMap<>();
+			properties.forEach((k, v) -> map.put((String) k, (String) v));
 			return map;
 		}
 	}

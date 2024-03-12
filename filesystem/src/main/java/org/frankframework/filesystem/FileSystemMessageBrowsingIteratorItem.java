@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -45,8 +44,8 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	public String getOriginalId() throws ListenerException {
 		try {
 			if (StringUtils.isNotEmpty(messageIdPropertyKey)) {
-				Map<String,Object> properties = fileSystem.getAdditionalFileProperties(item.getRawMessage());
-				return (String)properties.get(messageIdPropertyKey);
+				Map<String, Object> properties = fileSystem.getAdditionalFileProperties(item.getRawMessage());
+				return (String) properties.get(messageIdPropertyKey);
 			}
 			return fileSystem.getName(item.getRawMessage());
 		} catch (FileSystemException e) {

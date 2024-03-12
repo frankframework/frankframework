@@ -40,7 +40,7 @@ public class WebServiceContextSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public Principal getPrincipal(){
+	public Principal getPrincipal() {
 		return webServiceContext.getUserPrincipal();
 	}
 }

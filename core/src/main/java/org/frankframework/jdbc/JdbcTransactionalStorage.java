@@ -41,6 +41,8 @@ import java.util.zip.ZipException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -65,9 +67,6 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.RenamingObjectInputStream;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Implements a message log (<code>JdbcMessageLog</code>) or error store (<code>JdbcErrorStorage</code>) that uses database
@@ -99,9 +98,9 @@ import lombok.Setter;
  * If transactions are used on Oracle, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
  * <pre>
-   The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
-	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
-   </pre>
+ * The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
+ * at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
+ * </pre>
  *
  * @author Gerrit van Brakel
  * @author Jaco de Groot
@@ -109,28 +108,27 @@ import lombok.Setter;
  */
 public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableMessageBrowser<S> implements ITransactionalStorage<S> {
 
-	private @Getter boolean checkTable; 		// default set from appConstant jdbc.storage.checkTable
-	private @Getter boolean checkIndices;		// default set from appConstant jdbc.storage.checkIndices
-	private @Getter boolean createTable=false;
+	private @Getter boolean checkTable;        // default set from appConstant jdbc.storage.checkTable
+	private @Getter boolean checkIndices;        // default set from appConstant jdbc.storage.checkIndices
+	private @Getter boolean createTable = false;
 
 	private String host;
-	private @Getter boolean blobsCompressed=true;
-	private @Getter boolean storeFullMessage=true;
+	private @Getter boolean blobsCompressed = true;
+	private @Getter boolean storeFullMessage = true;
 
 	private @Getter int retention = 30;
-	private @Getter String schemaOwner4Check=null;
-	private @Getter boolean onlyStoreWhenMessageIdUnique=false;
+	private @Getter String schemaOwner4Check = null;
+	private @Getter boolean onlyStoreWhenMessageIdUnique = false;
 
 
-	protected static final int MAXIDLEN=100;
-	protected static final int MAXCIDLEN=256;
-	protected static final int MAXLABELLEN=1000;
+	protected static final int MAXIDLEN = 100;
+	protected static final int MAXCIDLEN = 256;
+	protected static final int MAXLABELLEN = 1000;
 	// the following values are only used when the table is created.
-	private @Getter String keyFieldType="";
-	private @Getter String dateFieldType="";
-	private @Getter String messageFieldType="";
-	private @Getter String textFieldType="";
-
+	private @Getter String keyFieldType = "";
+	private @Getter String dateFieldType = "";
+	private @Getter String messageFieldType = "";
+	private @Getter String textFieldType = "";
 
 
 	protected String insertQuery;
@@ -138,13 +136,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	protected String selectDataQuery2;
 
 	// the following for Oracle
-	private @Getter String sequenceName="seq_ibisstore";
+	private @Getter String sequenceName = "seq_ibisstore";
 	protected String updateBlobQuery;
 
-	private static final String PROPERTY_CHECK_TABLE=CONTROL_PROPERTY_PREFIX+"checkTable";
-	private static final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";
+	private static final String PROPERTY_CHECK_TABLE = CONTROL_PROPERTY_PREFIX + "checkTable";
+	private static final String PROPERTY_CHECK_INDICES = CONTROL_PROPERTY_PREFIX + "checkIndices";
 
-	private static final boolean documentQueries=false;
+	private static final boolean documentQueries = false;
 
 	protected @Getter @Setter PlatformTransactionManager txManager;
 
@@ -173,7 +171,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	@Override
 	protected String getLogPrefix() {
-		return "JdbcTransactionalStorage ["+getName()+"] ";
+		return "JdbcTransactionalStorage [" + getName() + "] ";
 	}
 
 	@Override
@@ -197,25 +195,25 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			return;
 		}
 		checkedTables.add(storageRefKey);
-		IDbmsSupport dbms=getDbmsSupport();
-		String schemaOwner=getSchemaOwner4Check();
-		log.debug("checking for presence of table ["+getTableName()+"] in schema/catalog ["+schemaOwner+"]");
+		IDbmsSupport dbms = getDbmsSupport();
+		String schemaOwner = getSchemaOwner4Check();
+		log.debug("checking for presence of table [" + getTableName() + "] in schema/catalog [" + schemaOwner + "]");
 		if (dbms.isTablePresent(connection, getTableName())) {
-			checkTableColumnPresent(connection,dbms,getKeyField());
-			checkTableColumnPresent(connection,dbms,getTypeField());
-			checkTableColumnPresent(connection,dbms,getSlotIdField());
-			checkTableColumnPresent(connection,dbms,getHostField());
-			checkTableColumnPresent(connection,dbms,getIdField());
-			checkTableColumnPresent(connection,dbms,getCorrelationIdField());
-			checkTableColumnPresent(connection,dbms,getDateField());
-			checkTableColumnPresent(connection,dbms,getCommentField());
+			checkTableColumnPresent(connection, dbms, getKeyField());
+			checkTableColumnPresent(connection, dbms, getTypeField());
+			checkTableColumnPresent(connection, dbms, getSlotIdField());
+			checkTableColumnPresent(connection, dbms, getHostField());
+			checkTableColumnPresent(connection, dbms, getIdField());
+			checkTableColumnPresent(connection, dbms, getCorrelationIdField());
+			checkTableColumnPresent(connection, dbms, getDateField());
+			checkTableColumnPresent(connection, dbms, getCommentField());
 			if (isStoreFullMessage()) {
-				checkTableColumnPresent(connection,dbms,getMessageField());
+				checkTableColumnPresent(connection, dbms, getMessageField());
 			}
-			checkTableColumnPresent(connection,dbms,getExpiryDateField());
-			checkTableColumnPresent(connection,dbms,getLabelField());
+			checkTableColumnPresent(connection, dbms, getExpiryDateField());
+			checkTableColumnPresent(connection, dbms, getLabelField());
 		} else {
-			ConfigurationWarnings.add(this, log, "table ["+getTableName()+"] not present");
+			ConfigurationWarnings.add(this, log, "table [" + getTableName() + "] not present");
 		}
 	}
 
@@ -229,7 +227,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 		checkIndexOnColumnPresent(connection, getKeyField());
 
-		List<String> columnListIndex01= new ArrayList<>();
+		List<String> columnListIndex01 = new ArrayList<>();
 		if (StringUtils.isNotEmpty(getTypeField())) {
 			columnListIndex01.add(getTypeField());
 		}
@@ -245,7 +243,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			checkIndexOnColumnPresent(connection, getExpiryDateField());
 		}
 
-		List<String> columnListIndex03= new ArrayList<>();
+		List<String> columnListIndex03 = new ArrayList<>();
 		if (StringUtils.isNotEmpty(getSlotIdField())) {
 			columnListIndex03.add(getSlotIdField());
 		}
@@ -257,18 +255,18 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	private void checkIndexOnColumnPresent(Connection connection, String column) throws JdbcException {
 		if (!getDbmsSupport().hasIndexOnColumn(connection, getSchemaOwner4Check(), getTableName(), column)) {
-			ConfigurationWarnings.add(this, log, "table ["+getTableName()+"] has no index on column ["+column+"]");
+			ConfigurationWarnings.add(this, log, "table [" + getTableName() + "] has no index on column [" + column + "]");
 		}
 	}
 
 	private void checkIndexOnColumnsPresent(Connection connection, List<String> columns) throws JdbcException {
-		if (columns!=null && !columns.isEmpty()) {
+		if (columns != null && !columns.isEmpty()) {
 			if (!getDbmsSupport().hasIndexOnColumns(connection, getSchemaOwner4Check(), getTableName(), columns)) {
-				String msg="table ["+getTableName()+"] has no index on columns ["+columns.get(0);
-				for (int i=1;i<columns.size();i++) {
-					msg+=","+columns.get(i);
+				String msg = "table [" + getTableName() + "] has no index on columns [" + columns.get(0);
+				for (int i = 1; i < columns.size(); i++) {
+					msg += "," + columns.get(i);
 				}
-				msg+="]";
+				msg += "]";
 				ConfigurationWarnings.add(this, log, msg);
 			}
 		}
@@ -282,7 +280,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 		checkedSequences.add(storageRefKey);
 		if (!getDbmsSupport().isSequencePresent(connection, getSchemaOwner4Check(), getTableName(), getSequenceName())) {
-			ConfigurationWarnings.add(this, log, "sequence ["+getSequenceName()+"] not present");
+			ConfigurationWarnings.add(this, log, "sequence [" + getSequenceName() + "] not present");
 		}
 	}
 
@@ -317,12 +315,12 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
 				}
 			} catch (JdbcException e) {
-				ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]"+e.getMessage(), e);
+				ConfigurationWarnings.add(this, log, "could not check database regarding table [" + getTableName() + "]" + e.getMessage(), e);
 			} catch (SQLException e) {
 				log.warn("could check database", e);
 			}
 		} else {
-			log.info(getLogPrefix()+"checking of table and indices is not enabled");
+			log.info(getLogPrefix() + "checking of table and indices is not enabled");
 		}
 	}
 
@@ -338,7 +336,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			throw new ConfigurationException("Attribute [sequenceName] is not set");
 		}
 		if (StringUtils.isNotEmpty(getHostField())) {
-			host=Misc.getHostname();
+			host = Misc.getHostname();
 		}
 		super.configure();
 		checkDatabase();
@@ -352,7 +350,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		} catch (JdbcException e) {
 			throw new SenderException(e);
 		} catch (SQLException e) {
-			throw new SenderException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
+			throw new SenderException(getLogPrefix() + "exception creating table [" + getTableName() + "]", e);
 		}
 	}
 
@@ -378,65 +376,65 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
 		super.createQueryTexts(dbmsSupport);
 		setDataTypes(dbmsSupport);
-		boolean keyFieldsNeedsInsert=dbmsSupport.autoIncrementKeyMustBeInserted();
-		boolean blobFieldsNeedsEmptyBlobInsert=dbmsSupport.mustInsertEmptyBlobBeforeData();
-		insertQuery = "INSERT INTO "+getPrefix()+getTableName()+" ("+
-						(keyFieldsNeedsInsert?getKeyField()+",":"")+
-						(StringUtils.isNotEmpty(getTypeField())?getTypeField()+",":"")+
-						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
-						(StringUtils.isNotEmpty(getHostField())?getHostField()+",":"")+
-						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+",":"")+
-						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+
-						(isStoreFullMessage()?","+getMessageField():"")+
-						(isOnlyStoreWhenMessageIdUnique()?") SELECT ":") VALUES (")+
-						(keyFieldsNeedsInsert?dbmsSupport.autoIncrementInsertValue(getPrefix()+getSequenceName())+",":"")+
-						(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
-						(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
-						(StringUtils.isNotEmpty(getHostField())?"?,":"")+
-						(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
-						"?,?,?,?,?"+
-						(isStoreFullMessage()?","+(blobFieldsNeedsEmptyBlobInsert?dbmsSupport.emptyBlobValue():"?"):"")+
-						(isOnlyStoreWhenMessageIdUnique()?" "+dbmsSupport.getFromForTablelessSelect()+" WHERE NOT EXISTS (SELECT * FROM IBISSTORE WHERE "+getIdField()+" = ?"+(StringUtils.isNotEmpty(getSlotId())?" AND "+getSlotIdField()+" = ?":"")+")":")");
-		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix()+getSequenceName());
-		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
+		boolean keyFieldsNeedsInsert = dbmsSupport.autoIncrementKeyMustBeInserted();
+		boolean blobFieldsNeedsEmptyBlobInsert = dbmsSupport.mustInsertEmptyBlobBeforeData();
+		insertQuery = "INSERT INTO " + getPrefix() + getTableName() + " (" +
+				(keyFieldsNeedsInsert ? getKeyField() + "," : "") +
+				(StringUtils.isNotEmpty(getTypeField()) ? getTypeField() + "," : "") +
+				(StringUtils.isNotEmpty(getSlotId()) ? getSlotIdField() + "," : "") +
+				(StringUtils.isNotEmpty(getHostField()) ? getHostField() + "," : "") +
+				(StringUtils.isNotEmpty(getLabelField()) ? getLabelField() + "," : "") +
+				getIdField() + "," + getCorrelationIdField() + "," + getDateField() + "," + getCommentField() + "," + getExpiryDateField() +
+				(isStoreFullMessage() ? "," + getMessageField() : "") +
+				(isOnlyStoreWhenMessageIdUnique() ? ") SELECT " : ") VALUES (") +
+				(keyFieldsNeedsInsert ? dbmsSupport.autoIncrementInsertValue(getPrefix() + getSequenceName()) + "," : "") +
+				(StringUtils.isNotEmpty(getTypeField()) ? "?," : "") +
+				(StringUtils.isNotEmpty(getSlotId()) ? "?," : "") +
+				(StringUtils.isNotEmpty(getHostField()) ? "?," : "") +
+				(StringUtils.isNotEmpty(getLabelField()) ? "?," : "") +
+				"?,?,?,?,?" +
+				(isStoreFullMessage() ? "," + (blobFieldsNeedsEmptyBlobInsert ? dbmsSupport.emptyBlobValue() : "?") : "") +
+				(isOnlyStoreWhenMessageIdUnique() ? " " + dbmsSupport.getFromForTablelessSelect() + " WHERE NOT EXISTS (SELECT * FROM IBISSTORE WHERE " + getIdField() + " = ?" + (StringUtils.isNotEmpty(getSlotId()) ? " AND " + getSlotIdField() + " = ?" : "") + ")" : ")");
+		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix() + getSequenceName());
+		selectKeyQueryIsDbmsSupported = StringUtils.isNotEmpty(selectKeyQuery);
 		if (!selectKeyQueryIsDbmsSupported) {
-			selectKeyQuery = "SELECT max("+getKeyField()+")"+getFromClause(false)+
-							getWhereClause(getIdField()+"=?"+
-										" AND "+getCorrelationIdField()+"=?"+
-										" AND "+getDateField()+"=?",false);
+			selectKeyQuery = "SELECT max(" + getKeyField() + ")" + getFromClause(false) +
+					getWhereClause(getIdField() + "=?" +
+							" AND " + getCorrelationIdField() + "=?" +
+							" AND " + getDateField() + "=?", false);
 		}
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
-			updateBlobQuery = dbmsSupport.getUpdateBlobQuery(getPrefix()+getTableName(), getMessageField(), getKeyField());
+			updateBlobQuery = dbmsSupport.getUpdateBlobQuery(getPrefix() + getTableName(), getMessageField(), getKeyField());
 		}
 		selectDataQuery2 = "SELECT " + getMessageField() + " FROM " + getPrefix() + getTableName() + " WHERE " + getIdField() + "=?";
 		if (documentQueries && log.isDebugEnabled()) {
 			log.debug(
-					documentQuery("insertQuery",insertQuery,"Voeg een regel toe aan de tabel")+
-					documentQuery("deleteQuery",deleteQuery,"Verwijder een regel uit de tabel, via de primary key")+
-					documentQuery("selectKeyQuery",selectKeyQuery,"Haal de huidige waarde op van de sequence voor messageKey")+
-					documentQuery("selectContextQuery",selectContextQuery,"Haal de niet blob velden van een regel op, via de primary key")+
-					documentQuery("selectListQuery",getSelectListQuery(dbmsSupport, null, null, null),"Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op")+
-					documentQuery("selectDataQuery",selectDataQuery,"Haal de blob van een regel op, via de primary key")+
-					documentQuery("checkMessageIdQuery",checkMessageIdQuery,"bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
-					documentQuery("checkCorrelationIdQuery",checkCorrelationIdQuery,"bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
-					documentQuery("getMessageCountQuery",getMessageCountQuery,"tel het aantal regels in een gedeelte van de tabel. Kan via index.")+
-					documentQuery("updateBlobQuery",updateBlobQuery,"Geef de blob een waarde, via de primary key")+
-					documentQuery("selectDataQuery2",selectDataQuery2,"Haal de blob van een regel op, via een messageId")
+					documentQuery("insertQuery", insertQuery, "Voeg een regel toe aan de tabel") +
+							documentQuery("deleteQuery", deleteQuery, "Verwijder een regel uit de tabel, via de primary key") +
+							documentQuery("selectKeyQuery", selectKeyQuery, "Haal de huidige waarde op van de sequence voor messageKey") +
+							documentQuery("selectContextQuery", selectContextQuery, "Haal de niet blob velden van een regel op, via de primary key") +
+							documentQuery("selectListQuery", getSelectListQuery(dbmsSupport, null, null, null), "Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op") +
+							documentQuery("selectDataQuery", selectDataQuery, "Haal de blob van een regel op, via de primary key") +
+							documentQuery("checkMessageIdQuery", checkMessageIdQuery, "bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.") +
+							documentQuery("checkCorrelationIdQuery", checkCorrelationIdQuery, "bekijk of een correlationId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.") +
+							documentQuery("getMessageCountQuery", getMessageCountQuery, "tel het aantal regels in een gedeelte van de tabel. Kan via index.") +
+							documentQuery("updateBlobQuery", updateBlobQuery, "Geef de blob een waarde, via de primary key") +
+							documentQuery("selectDataQuery2", selectDataQuery2, "Haal de blob van een regel op, via een messageId")
 //					+"\n"
 //					+"\n- slotId en type zou via ? kunnen"
 //					+"\n- selectListQuery zou in sommige gevallen extra filters in de where clause kunnen krijgen"
 //					+"\n- selectListQuery zou FIRST_ROWS(500) hint kunnen krijgen"
 //					+"\n- we zouden de index hint via een custom property aan en uit kunnen zetten"
-					);
+			);
 		}
 	}
 
 	private String documentQuery(String name, String query, String purpose) {
-		return "\n"+name+(purpose!=null?"\n"+purpose:"")+"\n"+query+"\n";
+		return "\n" + name + (purpose != null ? "\n" + purpose : "") + "\n" + query + "\n";
 	}
 
 	/**
-	 *	Checks if table exists, and creates when necessary.
+	 * Checks if table exists, and creates when necessary.
 	 */
 	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException, SenderException {
 		try (Connection conn = getConnection()) {
@@ -444,22 +442,22 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 			if (isCheckTable()) {
 				try {
-					tableMustBeCreated = !getDbmsSupport().isTablePresent(conn, getPrefix()+getTableName());
+					tableMustBeCreated = !getDbmsSupport().isTablePresent(conn, getPrefix() + getTableName());
 					if (!isCreateTable() && tableMustBeCreated) {
-						throw new SenderException("table ["+getPrefix()+getTableName()+"] does not exist");
+						throw new SenderException("table [" + getPrefix() + getTableName() + "] does not exist");
 					}
-					log.info("table [{}{}] does {}exist", this::getPrefix, this::getTableName, logValue(tableMustBeCreated?"NOT ":""));
+					log.info("table [{}{}] does {}exist", this::getPrefix, this::getTableName, logValue(tableMustBeCreated ? "NOT " : ""));
 				} catch (JdbcException e) {
-					log.warn(getLogPrefix()+"exception determining existence of table ["+getPrefix()+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
-					tableMustBeCreated=true;
+					log.warn(getLogPrefix() + "exception determining existence of table [" + getPrefix() + getTableName() + "] for transactional storage, trying to create anyway." + e.getMessage());
+					tableMustBeCreated = true;
 				}
 			} else {
-				log.info("did not check for existence of table ["+getPrefix()+getTableName()+"]");
+				log.info("did not check for existence of table [" + getPrefix() + getTableName() + "]");
 				tableMustBeCreated = false;
 			}
 
 			if (isCreateTable() && tableMustBeCreated) {
-				log.info(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] for transactional storage");
+				log.info(getLogPrefix() + "creating table [" + getPrefix() + getTableName() + "] for transactional storage");
 				try (Statement stmt = conn.createStatement()) {
 					createStorage(conn, stmt, dbmsSupport);
 				}
@@ -469,40 +467,40 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	/**
-	 *	Acutaly creates storage. Can be overridden in descender classes
+	 * Acutaly creates storage. Can be overridden in descender classes
 	 */
 	protected void createStorage(Connection conn, Statement stmt, IDbmsSupport dbmsSupport) throws JdbcException {
-		String query=null;
+		String query = null;
 		try {
-			query="CREATE TABLE "+getPrefix()+getTableName()+" ("+
-						getKeyField()+" "+getKeyFieldType()+" CONSTRAINT " +getPrefix()+getTableName()+ "_pk PRIMARY KEY, "+
-						(StringUtils.isNotEmpty(getTypeField())?getTypeField()+" CHAR(1), ":"")+
-						(StringUtils.isNotEmpty(getSlotId())? getSlotIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), ":"")+
-						(StringUtils.isNotEmpty(getHostField())?getHostField()+" "+getTextFieldType()+"("+MAXIDLEN+"), ":"")+
-						getIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), "+
-						getCorrelationIdField()+" "+getTextFieldType()+"("+MAXCIDLEN+"), "+
-						getDateField()+" "+getDateFieldType()+", "+
-						getCommentField()+" "+getTextFieldType()+"("+MAXCOMMENTLEN+"), "+
-						getMessageField()+" "+getMessageFieldType()+", "+
-						getExpiryDateField()+" "+getDateFieldType()+
-						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+" "+getTextFieldType()+"("+MAXLABELLEN+"), ":"")+
+			query = "CREATE TABLE " + getPrefix() + getTableName() + " (" +
+					getKeyField() + " " + getKeyFieldType() + " CONSTRAINT " + getPrefix() + getTableName() + "_pk PRIMARY KEY, " +
+					(StringUtils.isNotEmpty(getTypeField()) ? getTypeField() + " CHAR(1), " : "") +
+					(StringUtils.isNotEmpty(getSlotId()) ? getSlotIdField() + " " + getTextFieldType() + "(" + MAXIDLEN + "), " : "") +
+					(StringUtils.isNotEmpty(getHostField()) ? getHostField() + " " + getTextFieldType() + "(" + MAXIDLEN + "), " : "") +
+					getIdField() + " " + getTextFieldType() + "(" + MAXIDLEN + "), " +
+					getCorrelationIdField() + " " + getTextFieldType() + "(" + MAXCIDLEN + "), " +
+					getDateField() + " " + getDateFieldType() + ", " +
+					getCommentField() + " " + getTextFieldType() + "(" + MAXCOMMENTLEN + "), " +
+					getMessageField() + " " + getMessageFieldType() + ", " +
+					getExpiryDateField() + " " + getDateFieldType() +
+					(StringUtils.isNotEmpty(getLabelField()) ? getLabelField() + " " + getTextFieldType() + "(" + MAXLABELLEN + "), " : "") +
 					")";
 
 			log.debug("{}creating table [{}{}] using query [{}]", this::getLogPrefix, this::getPrefix, this::getTableName, logValue(query));
 			stmt.execute(query);
 			if (StringUtils.isNotEmpty(getIndexName())) {
-				query = "CREATE INDEX "+getPrefix()+getIndexName()+" ON "+getPrefix()+getTableName()+"("+(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+getDateField()+","+getExpiryDateField()+")";
+				query = "CREATE INDEX " + getPrefix() + getIndexName() + " ON " + getPrefix() + getTableName() + "(" + (StringUtils.isNotEmpty(getSlotId()) ? getSlotIdField() + "," : "") + getDateField() + "," + getExpiryDateField() + ")";
 				log.debug("{}creating index [{}{}] using query [{}]", this::getLogPrefix, this::getPrefix, this::getIndexName, logValue(query));
 				stmt.execute(query);
 			}
 			if (dbmsSupport.autoIncrementUsesSequenceObject()) {
-				query="CREATE SEQUENCE "+getPrefix()+getSequenceName()+" START WITH 1 INCREMENT BY 1";
+				query = "CREATE SEQUENCE " + getPrefix() + getSequenceName() + " START WITH 1 INCREMENT BY 1";
 				log.debug("{}creating sequence for table [{}{}] using query [{}]", this::getLogPrefix, this::getPrefix, this::getTableName, logValue(query));
 				stmt.execute(query);
 			}
 			conn.commit();
 		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+" executing query ["+query+"]", e);
+			throw new JdbcException(getLogPrefix() + " executing query [" + query + "]", e);
 		}
 	}
 
@@ -514,7 +512,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		log.debug("preparing key retrieval statement [{}]", selectKeyQuery);
 		try (PreparedStatement stmt = conn.prepareStatement(selectKeyQuery)) {
 			if (!selectKeyQueryIsDbmsSupported) {
-				int paramPos=applyStandardParameters(stmt, true, false);
+				int paramPos = applyStandardParameters(stmt, true, false);
 				JdbcUtil.setParameter(stmt, paramPos++, messageId, getDbmsSupport().isParameterTypeMatchRequired());
 				JdbcUtil.setParameter(stmt, paramPos++, correlationId, getDbmsSupport().isParameterTypeMatchRequired());
 				stmt.setTimestamp(paramPos++, receivedDateTime);
@@ -522,7 +520,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
-					throw new SenderException("could not retrieve key for stored message ["+ messageId+"]");
+					throw new SenderException("could not retrieve key for stored message [" + messageId + "]");
 				}
 				return "<id>" + rs.getString(1) + "</id>";
 			}
@@ -629,7 +627,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			if (log.isDebugEnabled()) {
 				log.debug("preparing update statement [{}]", updateBlobQuery);
 			}
-			try (PreparedStatement stmt = conn.prepareStatement(updateBlobQuery);){
+			try (PreparedStatement stmt = conn.prepareStatement(updateBlobQuery);) {
 				stmt.clearParameters();
 				stmt.setString(1, newKey);
 
@@ -655,13 +653,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				}
 				return resultString;
 			} else {
-				throw new SenderException("update count for update statement not greater than 0 ["+updateCount+"]");
+				throw new SenderException("update count for update statement not greater than 0 [" + updateCount + "]");
 			}
 		}
 	}
 
 	private boolean isMessageDifferent(Connection conn, String messageId, S message) {
-		int paramPosition=0;
+		int paramPosition = 0;
 
 		try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery2)) {
 			stmt.clearParameters();
@@ -682,16 +680,16 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-	private String createResultString(boolean isMessageDifferent){
+	private String createResultString(boolean isMessageDifferent) {
 		String resultStringStart = "<results>";
 		String resultStringEnd = "</results>";
 		String messageIdExistsString = "<result>WARN_MESSAGEID_ALREADY_EXISTS</result>";
-		String resultString = resultStringStart+messageIdExistsString;
-		if(isMessageDifferent){
+		String resultString = resultStringStart + messageIdExistsString;
+		if (isMessageDifferent) {
 			String messageIsDifferentString = "<result>ERROR_MESSAGE_IS_DIFFERENT</result>";
-			resultString = resultString+messageIsDifferentString;
+			resultString = resultString + messageIsDifferentString;
 		}
-		resultString = resultString+resultStringEnd;
+		resultString = resultString + resultStringEnd;
 		return resultString;
 	}
 
@@ -724,13 +722,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	/**
 	 * Stores a message in the database and retrieves the value of the primary key for the record just inserted.
 	 *
-	 * @param conn the database connection
-	 * @param messageId the ID of the message
+	 * @param conn          the database connection
+	 * @param messageId     the ID of the message
 	 * @param correlationId the correlation ID of the message
-	 * @param receivedDate the date when the message was received
-	 * @param comments additional comments for the message (optional)
-	 * @param label the label for the message (optional)
-	 * @param message the message object to be stored
+	 * @param receivedDate  the date when the message was received
+	 * @param comments      additional comments for the message (optional)
+	 * @param label         the label for the message (optional)
+	 * @param message       the message object to be stored
 	 * @return the value of the primary key for the inserted record
 	 * @throws SenderException if there is an error storing the message
 	 */
@@ -781,17 +779,17 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		try {
 			if (isBlobsCompressed()) {
 				try {
-					return retrieveObject(storageKey, rs,columnIndex,true);
+					return retrieveObject(storageKey, rs, columnIndex, true);
 				} catch (ZipException e1) {
-					log.warn(getLogPrefix()+"could not extract compressed blob, trying non-compressed: ("+ClassUtils.nameOf(e1)+") "+e1.getMessage());
-					return retrieveObject(storageKey, rs,columnIndex,false);
+					log.warn(getLogPrefix() + "could not extract compressed blob, trying non-compressed: (" + ClassUtils.nameOf(e1) + ") " + e1.getMessage());
+					return retrieveObject(storageKey, rs, columnIndex, false);
 				}
 			}
 			try {
-				return retrieveObject(storageKey, rs,columnIndex,false);
+				return retrieveObject(storageKey, rs, columnIndex, false);
 			} catch (Exception e1) {
-				log.warn(getLogPrefix()+"could not extract non-compressed blob, trying compressed: ("+ClassUtils.nameOf(e1)+") "+e1.getMessage());
-				return retrieveObject(storageKey, rs,columnIndex,true);
+				log.warn(getLogPrefix() + "could not extract non-compressed blob, trying compressed: (" + ClassUtils.nameOf(e1) + ") " + e1.getMessage());
+				return retrieveObject(storageKey, rs, columnIndex, true);
 			}
 		} catch (Exception e2) {
 			throw new JdbcException("could not extract message", e2);
@@ -817,9 +815,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	protected String getStorageRefKey() {
-		return getDatasourceName()+"|"+getTableName();
+		return getDatasourceName() + "|" + getTableName();
 	}
-
 
 
 	@Override
@@ -831,7 +828,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	public void setType(String type) {
 		super.setType(type);
 	}
-
 
 
 	@Override
@@ -864,6 +860,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	/**
 	 * The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle
+	 *
 	 * @ff.default seq_ibisstore
 	 */
 	public void setSequenceName(String string) {
@@ -878,6 +875,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	/**
 	 * If set to <code>true</code>, checks are performed if the table exists and is properly created
+	 *
 	 * @ff.default false
 	 */
 	public void setCheckTable(boolean b) {
@@ -886,6 +884,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	/**
 	 * If set to <code>true</code>, the table is created if it does not exist
+	 *
 	 * @ff.default false
 	 */
 	@Deprecated
@@ -915,11 +914,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 
-
-
-
 	/**
 	 * If set to <code>true</code>, the messages are stored compressed
+	 *
 	 * @ff.default true
 	 */
 	public void setBlobsCompressed(boolean b) {
@@ -928,6 +925,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	/**
 	 * The time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. when set to -1, the record will live on forever
+	 *
 	 * @ff.default 30
 	 */
 	public void setRetention(int retention) {
@@ -936,6 +934,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	/**
 	 * Schema owner to be used to check the database
+	 *
 	 * @ff.default &lt;current_schema&gt; (only for oracle)
 	 */
 	public void setSchemaOwner4Check(String string) {
@@ -943,9 +942,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 
-
 	/**
 	 * If set to <code>true</code>, the full message is stored with the log. Can be set to <code>false</code> to reduce table size, by avoiding to store the full message
+	 *
 	 * @ff.default true
 	 */
 	public void setStoreFullMessage(boolean storeFullMessage) {
@@ -954,6 +953,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	/**
 	 * If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.
+	 *
 	 * @ff.default false
 	 */
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {

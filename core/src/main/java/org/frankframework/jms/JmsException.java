@@ -20,19 +20,22 @@ import org.frankframework.core.IbisException;
 /**
  * JMS related exception.
  *
- * @author  Gerrit van Brakel
- * @since   4.4
+ * @author Gerrit van Brakel
+ * @since 4.4
  */
 public class JmsException extends IbisException {
 	public JmsException() {
 		super();
 	}
+
 	public JmsException(String msg) {
 		super(msg);
 	}
+
 	public JmsException(String msg, Throwable t) {
 		super(msg, t);
 	}
+
 	public JmsException(Throwable t) {
 		super(t);
 	}

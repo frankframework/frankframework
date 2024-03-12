@@ -63,9 +63,9 @@ public class TestDirectWrapperPipePipeLine {
 		CorePipeProcessor cpp = configuration.createBean(CorePipeProcessor.class);
 		PipeLineSession ps = configuration.createBean(PipeLineSession.class);
 
-		PipeRunResult pipeRunResult=cpp.processPipe(pipeline, pipe, new Message("<dummy/>"), ps);
+		PipeRunResult pipeRunResult = cpp.processPipe(pipeline, pipe, new Message("<dummy/>"), ps);
 
-		PipeForward pipeForward=pipeRunResult.getPipeForward();
+		PipeForward pipeForward = pipeRunResult.getPipeForward();
 
 		IForwardTarget target = pipeline.resolveForward(pipe, pipeForward);
 

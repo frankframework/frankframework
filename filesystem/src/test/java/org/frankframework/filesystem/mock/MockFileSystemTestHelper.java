@@ -7,16 +7,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
-import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
+import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 
 public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelperFullControl {
 
 	private MockFileSystem<F> fileSystem;
 
 	protected MockFileSystemTestHelper(MockFileSystem<F> fileSystem) {
-		this.fileSystem=fileSystem;
+		this.fileSystem = fileSystem;
 	}
 
 	public MockFileSystemTestHelper() {
@@ -37,40 +38,40 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 
 	@Override
 	public boolean _fileExists(String folderName, String filename) throws Exception {
-		if (folderName==null) {
+		if (folderName == null) {
 			return fileSystem.getFiles().containsKey(filename);
 		}
 		MockFolder folder = fileSystem.getFolders().get(folderName);
-		return folder!=null && folder.getFiles().containsKey(filename);
+		return folder != null && folder.getFiles().containsKey(filename);
 	}
 
 	@Override
 	public boolean _folderExists(String folderName) throws Exception {
 		MockFile mf = fileSystem.getFolders().get(folderName);
-		return (mf!=null && mf instanceof MockFolder);
+		return (mf != null && mf instanceof MockFolder);
 	}
 
 	@Override
 	public void _deleteFile(String folderName, String filename) throws Exception {
-		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
-		if (folder==null) {
+		MockFolder folder = folderName == null ? fileSystem : fileSystem.getFolders().get(folderName);
+		if (folder == null) {
 			return;
 		}
 		folder.getFiles().remove(filename);
 	}
 
 	protected F createNewFile(MockFolder folder, String filename) {
-		return (F)new MockFile(filename,folder);
+		return (F) new MockFile(filename, folder);
 	}
 
 	@Override
 	public OutputStream _createFile(String folderName, String filename) throws Exception {
-		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
-		if (folder==null) {
-			folder=new MockFolder(folderName,fileSystem);
-			fileSystem.getFolders().put(folderName,folder);
+		MockFolder folder = folderName == null ? fileSystem : fileSystem.getFolders().get(folderName);
+		if (folder == null) {
+			folder = new MockFolder(folderName, fileSystem);
+			fileSystem.getFolders().put(folderName, folder);
 		}
-		final MockFile mf = createNewFile(folder,filename);
+		final MockFile mf = createNewFile(folder, filename);
 
 		//log.debug("created file ["+filename+"] in folder ["+folderName+"]");
 
@@ -89,27 +90,27 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 
 	@Override
 	public InputStream _readFile(String folderName, String filename) throws Exception {
-		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
-		if (folder==null) {
+		MockFolder folder = folderName == null ? fileSystem : fileSystem.getFolders().get(folderName);
+		if (folder == null) {
 			return null;
 		}
 		MockFile mf = folder.getFiles().get(filename);
-		if (mf==null || mf.getContents()==null) {
+		if (mf == null || mf.getContents() == null) {
 			return null;
 		}
-		return new ByteArrayInputStream( mf.getContents());
+		return new ByteArrayInputStream(mf.getContents());
 	}
 
 
 	@Override
 	public void setFileDate(String folderName, String filename, Date modifiedDate) throws Exception {
-		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
-		if (folder==null) {
-			throw new IllegalStateException("folder ["+folderName+"] for file ["+filename+"] does not exist");
+		MockFolder folder = folderName == null ? fileSystem : fileSystem.getFolders().get(folderName);
+		if (folder == null) {
+			throw new IllegalStateException("folder [" + folderName + "] for file [" + filename + "] does not exist");
 		}
 		MockFile mf = folder.getFiles().get(filename);
-		if (mf==null || mf.getContents()==null) {
-			throw new IllegalStateException("file ["+filename+"] in folder ["+folderName+"] does not exist");
+		if (mf == null || mf.getContents() == null) {
+			throw new IllegalStateException("file [" + filename + "] in folder [" + folderName + "] does not exist");
 		}
 		mf.setLastModified(modifiedDate);
 	}
@@ -117,8 +118,8 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 
 	@Override
 	public void _createFolder(String filename) throws Exception {
-		MockFolder mf = new MockFolder(filename,fileSystem);
-		fileSystem.getFolders().put(filename,mf);
+		MockFolder mf = new MockFolder(filename, fileSystem);
+		fileSystem.getFolders().put(filename, mf);
 	}
 
 	@Override

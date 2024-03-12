@@ -21,11 +21,11 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.Message;
-
-import org.frankframework.util.ClassUtils;
 import org.frankframework.ibistesttool.IbisDebugger;
 import org.frankframework.ibistesttool.tibet2.Storage;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
+
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
 import nl.nn.testtool.echo2.reports.ReportsComponent;
@@ -42,11 +42,11 @@ public class TibetView extends View {
 	@Override
 	public void initBean(BeanParent beanParent) {
 		super.initBean(beanParent);
-		Storage storage = (Storage)getDebugStorage();
+		Storage storage = (Storage) getDebugStorage();
 		try {
 			storage.configure();
 		} catch (ConfigurationException e) {
-			System.out.println("Could not configure storage: ("+ClassUtils.nameOf(e)+")"+ e.getMessage());
+			System.out.println("Could not configure storage: (" + ClassUtils.nameOf(e) + ")" + e.getMessage());
 		}
 		storage.setSecurityContext(getEcho2Application());
 	}
@@ -59,16 +59,16 @@ public class TibetView extends View {
 	public String isOpenReportAllowedViaAdapter(Object storageId) {
 		Echo2Application app = getEcho2Application();
 		Configuration config = ibisDebugger.getIbisManager().getConfiguration(AUTHORISATION_CHECK_ADAPTER_CONFIG);
-		if(config == null) {
+		if (config == null) {
 			return "Not allowed. Could not find config " + AUTHORISATION_CHECK_ADAPTER_CONFIG;
 		}
 		IAdapter adapter = config.getRegisteredAdapter(AUTHORISATION_CHECK_ADAPTER_NAME);
-		if(adapter == null) {
+		if (adapter == null) {
 			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER_NAME;
 		}
 
 		PipeLineSession pipeLineSession = new PipeLineSession();
-		if(app.getUserPrincipal() != null) {
+		if (app.getUserPrincipal() != null) {
 			pipeLineSession.put("principal", app.getUserPrincipal().getName());
 		}
 		pipeLineSession.put("StorageId", storageId);

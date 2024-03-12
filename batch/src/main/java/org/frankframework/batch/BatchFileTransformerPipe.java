@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import lombok.Getter;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
@@ -35,12 +35,12 @@ import org.frankframework.util.FileUtils;
  * You can use the &lt;child&gt; tag to register RecordHandlers, RecordHandlerManagers, ResultHandlers
  * and RecordHandlingFlow elements. This is deprecated, however. Since 4.7 one should use &lt;manager&gt;,
  * &lt;recordHandler&gt;, &lt;resultHandler&gt; and &lt;flow&gt;
- *
+ * <p>
  * For files containing only a single type of lines, a simpler configuration without managers and flows
  * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
  * Each line will be handled by this recordHandler and resultHandler.
  *
- * @author  John Dekker
+ * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
@@ -57,7 +57,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		try {
 			filename = input.asString();
 		} catch (IOException e) {
-			log.error("Could not read message ["+input+"] as String", e);
+			log.error("Could not read message [" + input + "] as String", e);
 		}
 		File file = new File(filename);
 		return file.getName();
@@ -70,9 +70,9 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 			File file = new File(filename);
 			return new FileInputStream(file);
 		} catch (FileNotFoundException e) {
-			throw new PipeRunException(this,"cannot find file ["+streamId+"]",e);
+			throw new PipeRunException(this, "cannot find file [" + streamId + "]", e);
 		} catch (IOException e) {
-			throw new PipeRunException(this, "could not read message ["+input+"] as String", e);
+			throw new PipeRunException(this, "could not read message [" + input + "] as String", e);
 		}
 	}
 
@@ -85,22 +85,22 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	 */
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		if (input==null) {
-			throw new PipeRunException(this,"got null input instead of String containing filename");
+		if (input == null) {
+			throw new PipeRunException(this, "got null input instead of String containing filename");
 		}
 
 		String filename;
 		try {
 			filename = input.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, "could not read message ["+input+"] as String", e);
+			throw new PipeRunException(this, "could not read message [" + input + "] as String", e);
 		}
 		File file = new File(filename);
 
 		try {
-			PipeRunResult result = super.doPipe(input,session);
+			PipeRunResult result = super.doPipe(input, session);
 			try {
-				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(),isOverwrite(), getNumberOfBackups());
+				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(), isOverwrite(), getNumberOfBackups());
 			} catch (Exception e) {
 				log.error("Could not move file", e);
 			}
@@ -109,7 +109,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 			try {
 				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterError(), isDelete(), isOverwrite(), getNumberOfBackups());
 			} catch (Exception e2) {
-				log.error("Could not move file after exception ["+e2+"]");
+				log.error("Could not move file after exception [" + e2 + "]");
 			}
 			throw e;
 		}
@@ -127,6 +127,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
 	/**
 	 * Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.
+	 *
 	 * @ff.default 5
 	 */
 	public void setNumberOfBackups(int i) {
@@ -135,6 +136,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
 	/**
 	 * If set <code>true</code>, the destination file will be deleted if it already exists
+	 *
 	 * @ff.default false
 	 */
 	public void setOverwrite(boolean b) {
@@ -143,6 +145,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
 	/**
 	 * If set <code>true</code>, the file processed will deleted after being processed, and not stored
+	 *
 	 * @ff.default false
 	 */
 	public void setDelete(boolean b) {

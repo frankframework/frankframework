@@ -12,9 +12,11 @@ import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.SpringUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.messaging.Message;
 
 public class TestHealth extends BusTestBase {
@@ -50,7 +52,7 @@ public class TestHealth extends BusTestBase {
 	@AfterEach
 	@Override
 	public void tearDown() {
-		if(adapter != null) {
+		if (adapter != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}
 		super.tearDown();

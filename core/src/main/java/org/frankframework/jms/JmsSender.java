@@ -30,11 +30,9 @@ import javax.jms.Session;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ParameterException;
@@ -52,14 +50,14 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlException;
+import org.xml.sax.SAXException;
 
 /**
  * This class sends messages with JMS.
  *
+ * @author Gerrit van Brakel
  * @ff.parameters All parameters present are set as message-properties.
  * @ff.parameter SoapAction Automatically filled from attribute <code>soapAction</code>
- *
- * @author Gerrit van Brakel
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters {
@@ -97,13 +95,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
+		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList == null || paramList.findParameter("SoapAction") == null)) {
 			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setValue(getSoapAction());
 			addParameter(p);
 		}
-		if (paramList!=null) {
+		if (paramList != null) {
 			paramList.configure();
 		}
 		super.configure();
@@ -111,7 +109,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
 			//configWarnings.add(log, msg);
-			soapWrapper=SoapWrapper.getInstance();
+			soapWrapper = SoapWrapper.getInstance();
 		}
 
 		if (responseHeaders != null) {
@@ -126,16 +124,15 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	public void open() throws SenderException {
 		try {
 			super.open();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 	}
 
 	@Override
 	public void addParameter(Parameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
+		if (paramList == null) {
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}
@@ -155,12 +152,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		MessageProducer messageProducer = null;
 
 		checkTransactionManagerValidity();
-		ParameterValueList pvl=null;
+		ParameterValueList pvl = null;
 		if (paramList != null) {
 			try {
-				pvl=paramList.getValues(message, pipeLineSession);
+				pvl = paramList.getValues(message, pipeLineSession);
 			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
+				throw new SenderException(getLogPrefix() + "cannot extract parameters", e);
 			}
 		}
 
@@ -258,7 +255,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			}
 		}
 		log.debug("[{}] start waiting for reply on [{}] requestMsgId [{}] replyCorrelationId [{}] for [{}] ms",
-				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
+				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout
+		);
 		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
 		try {
 			javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
@@ -306,13 +304,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	 * Sets the JMS message properties as described in the msgProperties arraylist
 	 */
 	private void setProperties(javax.jms.Message msg, ParameterValueList pvl) throws JMSException {
-		for(ParameterValue property : pvl) {
+		for (ParameterValue property : pvl) {
 			ParameterType type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();
 
 			if ((!isSoap() || !name.equals(getSoapHeaderParam()) && (StringUtils.isEmpty(getDestinationParam()) || !name.equals(getDestinationParam())))) {
 				log.debug("{} setting [{}] property from param [{}] to value [{}]", this::getLogPrefix, () -> type, () -> name, property::getValue);
-				switch(type) {
+				switch (type) {
 					case BOOLEAN:
 						msg.setBooleanProperty(name, property.asBooleanValue(false));
 						break;
@@ -349,14 +347,16 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	/**
 	 * If <code>true</code>, the sender operates in RR mode: A reply is expected, either on the queue specified in <code>replyToName</code>, or on a dynamically generated temporary queue
+	 *
 	 * @ff.default false
 	 */
 	public void setSynchronous(boolean synchronous) {
-		this.synchronous=synchronous;
+		this.synchronous = synchronous;
 	}
 
 	/**
 	 * Name of the queue the reply is expected on. This value is sent in the JMSReplyTo-header with the message.
+	 *
 	 * @ff.default a dynamically generated temporary destination
 	 */
 	public void setReplyToName(String replyTo) {
@@ -365,14 +365,16 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	/**
 	 * (Only used when <code>synchronous</code>=<code>true</code> and <code>replyToName</code> is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.
+	 *
 	 * @ff.default MESSAGEID
 	 */
 	public void setLinkMethod(LinkMethod method) {
-		linkMethod=method;
+		linkMethod = method;
 	}
 
 	/**
 	 * (Only for <code>synchronous</code>=<code>true</code>). Maximum time in ms to wait for a reply. 0 means no timeout.
+	 *
 	 * @ff.default 5000
 	 */
 	public void setReplyTimeout(int i) {
@@ -381,6 +383,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	/**
 	 * Value of the JMSType field
+	 *
 	 * @ff.default not set by application
 	 */
 	public void setMessageType(String string) {
@@ -389,6 +392,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	/**
 	 * Controls mode that messages are sent with
+	 *
 	 * @ff.default not set by application
 	 */
 	public void setDeliveryMode(DeliveryMode deliveryMode) {
@@ -398,6 +402,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	/**
 	 * Sets the priority that is used to deliver the message. Ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by JMS to 4
+	 *
 	 * @ff.default -1
 	 */
 	public void setPriority(int i) {
@@ -406,6 +411,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	/**
 	 * If <code>true</code>, messages sent are put in a SOAP envelope
+	 *
 	 * @ff.default false
 	 */
 	public void setSoap(boolean b) {
@@ -429,6 +435,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	/**
 	 * Name of parameter containing SOAP header
+	 *
 	 * @ff.default soapHeader
 	 */
 	public void setSoapHeaderParam(String string) {
@@ -437,6 +444,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	/**
 	 * session key to store SOAP header of reply
+	 *
 	 * @ff.default replySoapHeader
 	 */
 	public void setReplySoapHeaderSessionKey(String string) {

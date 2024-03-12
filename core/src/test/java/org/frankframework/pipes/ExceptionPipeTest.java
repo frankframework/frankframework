@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.stream.Message;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +34,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 	public void throwsExceptionWithoutMessage() {
 		pipe.setThrowException(true);
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "", session));
 		assertThat(e.getMessage(), Matchers.endsWith("ExceptionPipe under test"));
 	}
 
@@ -41,7 +42,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 	public void throwsExceptionWithMessage() {
 		pipe.setThrowException(true);
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "exception thrown with a custom message", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "exception thrown with a custom message", session));
 		assertThat(e.getMessage(), Matchers.endsWith("exception thrown with a custom message"));
 	}
 }

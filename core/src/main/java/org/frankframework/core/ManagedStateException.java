@@ -26,12 +26,15 @@ public class ManagedStateException extends IbisException {
 	public ManagedStateException() {
 		super();
 	}
+
 	public ManagedStateException(String msg) {
 		super(msg);
 	}
+
 	public ManagedStateException(String errMsg, Throwable t) {
 		super(errMsg, t);
 	}
+
 	public ManagedStateException(Throwable t) {
 		super(t);
 	}

@@ -44,7 +44,7 @@ public class ExecuteQueryJob extends JobDef {
 		qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
 		qs.setQuery(getQuery());
 		qs.setName("executeQueryJob");
-		if(StringUtils.isNotEmpty(getJmsRealm())) {
+		if (StringUtils.isNotEmpty(getJmsRealm())) {
 			qs.setJmsRealm(getJmsRealm());
 		} else {
 			qs.setDatasourceName(getDatasourceName());
@@ -61,11 +61,9 @@ public class ExecuteQueryJob extends JobDef {
 			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
 				log.info("result [{}]", result);
 			}
-		}
-		catch (SenderException | IOException e) {
+		} catch (SenderException | IOException e) {
 			throw new JobExecutionException("unable to execute query [" + getQuery() + "]", e);
-		}
-		finally {
+		} finally {
 			qs.close();
 		}
 	}
@@ -79,6 +77,7 @@ public class ExecuteQueryJob extends JobDef {
 
 	/**
 	 * JNDI name of datasource to be used
+	 *
 	 * @ff.default {@value JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
@@ -87,6 +86,7 @@ public class ExecuteQueryJob extends JobDef {
 
 	/**
 	 * The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout
+	 *
 	 * @ff.default 0
 	 */
 	public void setQueryTimeout(int i) {

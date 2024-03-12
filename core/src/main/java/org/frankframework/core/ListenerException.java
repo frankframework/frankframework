@@ -25,12 +25,15 @@ public class ListenerException extends IbisException {
 	public ListenerException() {
 		super();
 	}
+
 	public ListenerException(String errMsg) {
 		super(errMsg);
 	}
+
 	public ListenerException(String errMsg, Throwable t) {
 		super(errMsg, t);
 	}
+
 	public ListenerException(Throwable t) {
 		super(t);
 	}

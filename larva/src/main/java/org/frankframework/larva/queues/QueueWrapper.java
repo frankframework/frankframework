@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IListener;
@@ -56,8 +57,6 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
-import lombok.extern.log4j.Log4j2;
-
 @Log4j2
 public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	private static final String CONVERT_MESSAGE_TO_EXCEPTION_KEY = "convertExceptionToMessage";
@@ -72,7 +71,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		queueKey = StringUtil.lcFirst(configurable.getClass().getSimpleName());
 		put(queueKey, configurable);
 
-		if(configurable instanceof IPushingListener) {
+		if (configurable instanceof IPushingListener) {
 			ListenerMessageHandler<?> handler = new ListenerMessageHandler<>();
 			((IPushingListener) configurable).setHandler(handler);
 			put(MESSAGE_HANDLER_KEY, handler);
@@ -84,7 +83,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	public synchronized PipeLineSession getSession() {
-		if(!containsKey(PIPELINESESSION_KEY)) {
+		if (!containsKey(PIPELINESESSION_KEY)) {
 			PipeLineSession session = new PipeLineSession();
 			put(PIPELINESESSION_KEY, session);
 			return session;
@@ -113,8 +112,8 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	public QueueWrapper invokeSetters(int defaultTimeout, Properties properties) {
-		if(containsKey(MESSAGE_HANDLER_KEY)) {
-			if(defaultTimeout > 0) {
+		if (containsKey(MESSAGE_HANDLER_KEY)) {
+			if (defaultTimeout > 0) {
 				getMessageHandler().setTimeout(defaultTimeout);
 			}
 
@@ -130,12 +129,12 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	}
 
 	private void mapParameters(Properties properties) {
-		if(get() instanceof IWithParameters) {
+		if (get() instanceof IWithParameters) {
 			Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, true, getSession());
 			Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 			while (parameterNameIterator.hasNext()) {
 				String parameterName = parameterNameIterator.next();
-				Parameter parameter = (Parameter)paramPropertiesMap.get(parameterName);
+				Parameter parameter = (Parameter) paramPropertiesMap.get(parameterName);
 				((IWithParameters) get()).addParameter(parameter);
 			}
 		}
@@ -164,8 +163,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
-				}
-				else {
+				} else {
 					value = properties.getProperty(_param + i + ".value");
 					if (value == null) {
 						String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
@@ -208,7 +206,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 						Map<String, String> map = new LinkedHashMap<>();
 						for (String part : parts) {
 							String[] splitted = part.split("\\s*(=\\s*)+", 2);
-							if (splitted.length==2) {
+							if (splitted.length == 2) {
 								map.put(splitted[0], splitted[1]);
 							} else {
 								map.put(splitted[0], "");
@@ -220,7 +218,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 					}
 				}
 				if (createParameterObjects) {
-					String  pattern = properties.getProperty(_param + i + ".pattern");
+					String pattern = properties.getProperty(_param + i + ".pattern");
 					if (value == null && pattern == null) {
 						throw new IllegalStateException("Property '" + _param + i + " doesn't have a value or pattern");
 					} else {
@@ -231,7 +229,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 								parameter.setSessionKey(name);
 								session.put(name, value);
 							} else {
-								parameter.setValue((String)value);
+								parameter.setValue((String) value);
 								parameter.setPattern(pattern);
 							}
 							parameter.configure();
@@ -269,7 +267,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(!(get() instanceof WebServiceListener)) {//requires a configuration as parent
+		if (!(get() instanceof WebServiceListener)) {//requires a configuration as parent
 			get().configure();
 		}
 	}
@@ -277,33 +275,30 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	@Override
 	public void open() throws ConfigurationException {
 		try {
-			if(get() instanceof ISender) {
+			if (get() instanceof ISender) {
 				((ISender) get()).open();
-			}
-			else if(get() instanceof IListener<?>) {
+			} else if (get() instanceof IListener<?>) {
 				((IListener<?>) get()).open();
 			}
 		} catch (SenderException | ListenerException e) {
-			throw new ConfigurationException("error opening ["+get()+"]", e);
+			throw new ConfigurationException("error opening [" + get() + "]", e);
 		}
 	}
 
 	public void close() throws Exception {
-		if(get() instanceof AutoCloseable) {
+		if (get() instanceof AutoCloseable) {
 			((AutoCloseable) get()).close();
-		}
-		else if(get() instanceof ISender) {
+		} else if (get() instanceof ISender) {
 			((ISender) get()).close();
-		}
-		else if(get() instanceof IListener<?>) {
+		} else if (get() instanceof IListener<?>) {
 			((IListener<?>) get()).close();
 		}
 	}
 
 	@Override
 	public int executeWrite(String stepDisplayName, String fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
-		if(get() instanceof FileSender) {
-			FileSender fileSender = (FileSender)get();
+		if (get() instanceof FileSender) {
+			FileSender fileSender = (FileSender) get();
 			fileSender.sendMessage(fileContent);
 			return LarvaTool.RESULT_OK;
 		}
@@ -317,14 +312,14 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			}
 			return LarvaTool.RESULT_OK;
 		}
-		if(get() instanceof XsltProviderListener) {
-			XsltProviderListener xsltProviderListener = (XsltProviderListener)get();
+		if (get() instanceof XsltProviderListener) {
+			XsltProviderListener xsltProviderListener = (XsltProviderListener) get();
 			xsltProviderListener.processRequest(fileContent, parameters);
 			return LarvaTool.RESULT_OK;
 		}
-		if(get() instanceof ISender) {
-			ISender sender = (ISender)get();
-			Boolean convertExceptionToMessage = (Boolean)get(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
+		if (get() instanceof ISender) {
+			ISender sender = (ISender) get();
+			Boolean convertExceptionToMessage = (Boolean) get(CONVERT_MESSAGE_TO_EXCEPTION_KEY);
 			PipeLineSession session = getSession();
 			SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage, correlationId);
 			senderThread.start();
@@ -332,13 +327,13 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			setSenderThread(senderThread); // 'put' and 'set' do something similar
 			return LarvaTool.RESULT_OK;
 		}
-		if(get() instanceof IListener<?>) {
+		if (get() instanceof IListener<?>) {
 			ListenerMessageHandler listenerMessageHandler = getMessageHandler();
 			if (listenerMessageHandler == null) {
 				throw new NoSuchElementException("No ListenerMessageHandler found");
 			}
 			PipeLineSession context = new PipeLineSession();
-			ListenerMessage requestListenerMessage = (ListenerMessage)get("listenerMessage");
+			ListenerMessage requestListenerMessage = (ListenerMessage) get("listenerMessage");
 			if (requestListenerMessage != null) {
 				context = requestListenerMessage.getContext();
 			}
@@ -346,26 +341,26 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			listenerMessageHandler.putResponseMessage(listenerMessage);
 			return LarvaTool.RESULT_OK;
 		}
-		throw new SenderException("Could not perform executeWrite() for queue ["+get()+"]");
+		throw new SenderException("Could not perform executeWrite() for queue [" + get() + "]");
 	}
 
 
 	@Override
 	public String executeRead(String step, String stepDisplayName, Properties properties, String fileName, String fileContent) throws SenderException, IOException, TimeoutException, ListenerException {
-		if(get() instanceof FileSender) {
-			FileSender fileSender = (FileSender)get();
+		if (get() instanceof FileSender) {
+			FileSender fileSender = (FileSender) get();
 			return fileSender.getMessage();
 		}
-		if(get() instanceof FileListener) {
-			FileListener fileListener = (FileListener)get();
+		if (get() instanceof FileListener) {
+			FileListener fileListener = (FileListener) get();
 			return fileListener.getMessage();
 		}
-		if(get() instanceof XsltProviderListener) {
-			XsltProviderListener xsltProviderListener = (XsltProviderListener)get();
+		if (get() instanceof XsltProviderListener) {
+			XsltProviderListener xsltProviderListener = (XsltProviderListener) get();
 			return xsltProviderListener.getResult();
 		}
-		if(get() instanceof ISender) {
-			SenderThread senderThread = (SenderThread)remove(SENDER_THREAD_KEY);
+		if (get() instanceof ISender) {
+			SenderThread senderThread = (SenderThread) remove(SENDER_THREAD_KEY);
 			removeSenderThread();
 			if (senderThread == null) {
 				throw new SenderException("No SenderThread found, no corresponding write request?");
@@ -384,6 +379,6 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			}
 			return senderThread.getResponse();
 		}
-		throw new SenderException("Could not perform executeRead() for queue ["+get()+"]");
+		throw new SenderException("Could not perform executeRead() for queue [" + get() + "]");
 	}
 }

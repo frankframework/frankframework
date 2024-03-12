@@ -23,6 +23,7 @@ import org.frankframework.pipes.FixedResultPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -210,7 +211,7 @@ public class InputOutputPipeProcessorTest {
 		assertFalse(pipe.skipPipe(input, session));
 
 		// Act / Assert
-		assertThrows(PipeRunException.class, ()-> processor.processPipe(pipeLine, pipe, input, session));
+		assertThrows(PipeRunException.class, () -> processor.processPipe(pipeLine, pipe, input, session));
 	}
 
 	@Test

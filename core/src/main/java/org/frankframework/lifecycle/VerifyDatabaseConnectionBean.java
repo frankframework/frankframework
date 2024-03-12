@@ -48,24 +48,24 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(requiresDatabase) {
+		if (requiresDatabase) {
 			PlatformTransactionManager transactionManager = getTransactionManager();
 
 			//Try to create a new transaction to check if there is a connection to the database
 			TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
 			try (Connection connection = getDefaultDataSource().getConnection()) {
-				if(!connection.isValid(5)) {
+				if (!connection.isValid(5)) {
 					throw new CannotGetJdbcConnectionException("Database was unable to validate the connection within 5 seconds");
 				}
 
 				int isolationLevel = connection.getTransactionIsolation();
-				if(isolationLevel == Connection.TRANSACTION_NONE) {
+				if (isolationLevel == Connection.TRANSACTION_NONE) {
 					log.info("expected a transacted connection got isolation level [{}]", isolationLevel);
 				}
 			}
 
-			if(status != null) { //If there is a transaction close it!
+			if (status != null) { //If there is a transaction close it!
 				transactionManager.commit(status);
 			}
 		}

@@ -23,7 +23,7 @@ public class WaitUtils {
 		await()
 				.atMost(60, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
-				.until(()-> !states.contains(object.getRunState()));
+				.until(() -> !states.contains(object.getRunState()));
 	}
 
 	public static void waitForState(IManagable object, RunState... state) {

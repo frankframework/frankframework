@@ -16,12 +16,13 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 class StringUtilTest {
 	private static final Logger LOG = LogManager.getLogger(StringUtil.class);
@@ -204,8 +205,8 @@ class StringUtilTest {
 		// Act
 		List<String> result = StringUtil.split(input, delimiters);
 
-		LOG.debug("input: [{}]", ()->escapeUnprintable(input));
-		LOG.debug("result [{}]", ()->String.join("|", result));
+		LOG.debug("input: [{}]", () -> escapeUnprintable(input));
+		LOG.debug("result [{}]", () -> String.join("|", result));
 
 		// Assert
 		assertIterableEquals(expected, result);
@@ -231,7 +232,7 @@ class StringUtilTest {
 			case '\f':
 				return "\\f";
 			default:
-				return Character.toString((char)chr);
+				return Character.toString((char) chr);
 		}
 	}
 }

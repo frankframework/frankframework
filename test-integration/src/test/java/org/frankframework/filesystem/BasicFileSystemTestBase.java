@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 
 	/**
 	 * Returns the file system
+	 *
 	 * @return fileSystem
 	 * @throws ConfigurationException
 	 */
@@ -82,13 +84,13 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		Set<F> files = new HashSet<>();
 		Set<String> filenames = new HashSet<>();
 		int count = 0;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+		try (DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			Iterator<F> it = ds.iterator();
 			// Count files
 			while (it.hasNext()) {
-				F f=it.next();
-				String name=fileSystem.getName(f);
-				log.debug("found item ["+name+"]");
+				F f = it.next();
+				String name = fileSystem.getName(f);
+				log.debug("found item [" + name + "]");
 				files.add(f);
 				filenames.add(name);
 				count++;
@@ -98,57 +100,57 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 			assertEquals(numFilesExpected, files.size(), "Size of set of files");
 			assertEquals(numFilesExpected, filenames.size(), "Size of set of filenames");
 
-			for (String filename:filenames) {
-				F f=fileSystem.toFile(folder, filename);
-				assertNotNull(f, "file must be found by filename ["+filename+"]");
-				assertTrue(fileSystem.exists(f), "file must exist when referred to by filename ["+filename+"]");
+			for (String filename : filenames) {
+				F f = fileSystem.toFile(folder, filename);
+				assertNotNull(f, "file must be found by filename [" + filename + "]");
+				assertTrue(fileSystem.exists(f), "file must exist when referred to by filename [" + filename + "]");
 			}
 
 			// read each the files
-			for(F f: files) {
-				Message in=fileSystem.readFile(f, null);
-				log.debug("reading file ["+fileSystem.getName(f)+"]");
-				String contentsString= in.asString();
-				log.debug("contents ["+contentsString+"]");
-				long len=fileSystem.getFileSize(f);
-				log.debug("length of contents ["+contentsString.length()+"], reported length ["+len+"]");
-				String canonicalname=fileSystem.getCanonicalName(f);
-				log.debug("canonicalname ["+canonicalname+"]");
-				Date modificationTime=fileSystem.getModificationTime(f);
-				log.debug("modificationTime ["+(modificationTime==null?null:DateUtils.format(modificationTime))+"]");
+			for (F f : files) {
+				Message in = fileSystem.readFile(f, null);
+				log.debug("reading file [" + fileSystem.getName(f) + "]");
+				String contentsString = in.asString();
+				log.debug("contents [" + contentsString + "]");
+				long len = fileSystem.getFileSize(f);
+				log.debug("length of contents [" + contentsString.length() + "], reported length [" + len + "]");
+				String canonicalname = fileSystem.getCanonicalName(f);
+				log.debug("canonicalname [" + canonicalname + "]");
+				Date modificationTime = fileSystem.getModificationTime(f);
+				log.debug("modificationTime [" + (modificationTime == null ? null : DateUtils.format(modificationTime)) + "]");
 
-				Map<String,Object> properties=fileSystem.getAdditionalFileProperties(f);
-				for (Entry<String,Object>entry:properties.entrySet()) {
-					String key=entry.getKey();
-					Object value=entry.getValue();
-					if (value==null) {
-						log.debug("property ["+key+"] value is null");
-					} else if (value instanceof String){
-						log.debug("property ["+key+"] value ["+value+"]");
+				Map<String, Object> properties = fileSystem.getAdditionalFileProperties(f);
+				for (Entry<String, Object> entry : properties.entrySet()) {
+					String key = entry.getKey();
+					Object value = entry.getValue();
+					if (value == null) {
+						log.debug("property [" + key + "] value is null");
+					} else if (value instanceof String) {
+						log.debug("property [" + key + "] value [" + value + "]");
 					} else if (value instanceof List) {
-						List list=(List)value;
+						List list = (List) value;
 						if (list.isEmpty()) {
-							log.debug("property ["+key+"] value is empty list");
+							log.debug("property [" + key + "] value is empty list");
 						} else {
-							Object valueList=list.get(0);
-							for (int i=1;i<list.size();i++) {
-								valueList+=", "+list.get(i);
+							Object valueList = list.get(0);
+							for (int i = 1; i < list.size(); i++) {
+								valueList += ", " + list.get(i);
 							}
-							log.debug("property ["+key+"] value list ["+valueList+"]");
+							log.debug("property [" + key + "] value list [" + valueList + "]");
 						}
 					} else if (value instanceof Map) {
-						Map<Object,Object> map=(Map)value;
+						Map<Object, Object> map = (Map) value;
 						if (map.isEmpty()) {
-							log.debug("property ["+key+"] value is empty Map");
+							log.debug("property [" + key + "] value is empty Map");
 						} else {
-							for (Entry subentry:map.entrySet()) {
-								log.debug("property ["+key+"."+subentry.getKey()+"] value ["+subentry.getValue()+"]");
+							for (Entry subentry : map.entrySet()) {
+								log.debug("property [" + key + "." + subentry.getKey() + "] value [" + subentry.getValue() + "]");
 							}
 						}
 					} else if (value instanceof Date) {
-						log.debug("property ["+key+"] date value ["+value+"]");
+						log.debug("property [" + key + "] date value [" + value + "]");
 					} else {
-						log.debug("property ["+key+"] type ["+value.getClass().getName()+"] value ["+ToStringBuilder.reflectionToString(value)+"]");
+						log.debug("property [" + key + "] type [" + value.getClass().getName() + "] value [" + ToStringBuilder.reflectionToString(value) + "]");
 					}
 				}
 			}
@@ -157,7 +159,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	}
 
 	public void fileSystemTestRandomFileShouldNotExist(String randomFileName) {
-		F f=fileSystem.toFile(randomFileName);
+		F f = fileSystem.toFile(randomFileName);
 		assertFalse(fileSystem.exists(f), "RandomFileShouldNotExist");
 	}
 

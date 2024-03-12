@@ -14,7 +14,9 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.frankframework.util.TransformerPool.OutputType;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -27,8 +29,8 @@ public class XsltStreamingTest {
 		private String prevLabel;
 
 		public void mark(String label) {
-			if (prevLabel==null || !prevLabel.equals(label)) {
-				prevLabel=label;
+			if (prevLabel == null || !prevLabel.equals(label)) {
+				prevLabel = label;
 				count++;
 			}
 		}
@@ -39,17 +41,18 @@ public class XsltStreamingTest {
 		private final SwitchCounter sc;
 
 		SaxLogger(String prefix, SwitchCounter sc) {
-			this.prefix=prefix;
-			this.sc=sc;
+			this.prefix = prefix;
+			this.sc = sc;
 		}
+
 		private void print(String string) {
-			System.out.println(prefix+" "+string);
+			System.out.println(prefix + " " + string);
 			sc.mark(prefix);
 		}
 
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
-			print(new String(ch,start,length));
+			print(new String(ch, start, length));
 			super.characters(ch, start, length);
 		}
 
@@ -67,13 +70,13 @@ public class XsltStreamingTest {
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-			print("startElement "+localName);
+			print("startElement " + localName);
 			super.startElement(uri, localName, qName, attributes);
 		}
 
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			print("endElement "+localName);
+			print("endElement " + localName);
 			super.endElement(uri, localName, qName);
 		}
 	}
@@ -84,45 +87,45 @@ public class XsltStreamingTest {
 
 		public LoggingInputStream(InputStream arg0, SwitchCounter sc) {
 			super(arg0);
-			this.sc=sc;
+			this.sc = sc;
 		}
 
 		private void print(String string) {
-			System.out.println("in-> "+string);
+			System.out.println("in-> " + string);
 			sc.mark("in");
 		}
 
 		@Override
 		public int read() throws IOException {
-			int c=super.read();
-			print("in-> ["+((char)c)+"]");
+			int c = super.read();
+			print("in-> [" + ((char) c) + "]");
 			return c;
 		}
 
 		@Override
 		public int read(byte[] buf, int off, int len) throws IOException {
-			if (len>blocksize) {
-				len=blocksize;
+			if (len > blocksize) {
+				len = blocksize;
 			}
-			int l=super.read(buf, off, len);
-			if (l<0) {
+			int l = super.read(buf, off, len);
+			if (l < 0) {
 				print("{EOF}");
 			} else {
-				print(new String(buf,off,l));
+				print(new String(buf, off, l));
 			}
 			return l;
 		}
 
 		@Override
 		public int read(byte[] buf) throws IOException {
-			if (buf.length>blocksize) {
-				return read(buf,0,blocksize);
+			if (buf.length > blocksize) {
+				return read(buf, 0, blocksize);
 			}
-			int l=super.read(buf);
-			if (l<0) {
+			int l = super.read(buf);
+			if (l < 0) {
 				print("{EOF}");
 			} else {
-				print(new String(buf,0,l));
+				print(new String(buf, 0, l));
 			}
 			return l;
 		}
@@ -140,23 +143,23 @@ public class XsltStreamingTest {
 		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
 		SwitchCounter sc = new SwitchCounter();
 
-		String xpath="/root/a";
-		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,OutputType.XML, false, null, false, false, null, 1));
+		String xpath = "/root/a";
+		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath, OutputType.XML, false, null, false, false, null, 1));
 
 		SAXResult result = new SAXResult();
 		SaxLogger resultfilter = new SaxLogger("out>", sc);
 		result.setHandler(resultfilter);
 
-		String input="<root>";
-		for (int i=0;i<5;i++) {
-			input+="<a>"+i+"</a>"+"<b>opvulling</b>";
+		String input = "<root>";
+		for (int i = 0; i < 5; i++) {
+			input += "<a>" + i + "</a>" + "<b>opvulling</b>";
 		}
-		input+="</root>";
+		input += "</root>";
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes());
 		Source source = new StreamSource(new LoggingInputStream(bais, sc));
 
 		tp.transform(source, result);
-		assertTrue(sc.count>2, "switch count ["+sc.count+"] should be larger than 2");
+		assertTrue(sc.count > 2, "switch count [" + sc.count + "] should be larger than 2");
 	}
 }

@@ -37,10 +37,10 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 			try {
 				objectId = locker.acquire();
 			} catch (Exception e) {
-				throw new PipeRunException(null, "error while setting lock ["+locker+"]", e);
+				throw new PipeRunException(null, "error while setting lock [" + locker + "]", e);
 			}
 			if (objectId == null) {
-				log.info("could not obtain lock ["+locker+"]");
+				log.info("could not obtain lock [" + locker + "]");
 				pipeLineResult = new PipeLineResult();
 				pipeLineResult.setState(ExitState.SUCCESS);
 			} else {
@@ -51,7 +51,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 						locker.release(objectId);
 					} catch (Exception e) {
 						//throw new PipeRunException(null, "error while removing lock", e);
-						String msg = "error while removing lock ["+locker+"]: " + e.getMessage();
+						String msg = "error while removing lock [" + locker + "]: " + e.getMessage();
 						log.warn(msg);
 					}
 				}

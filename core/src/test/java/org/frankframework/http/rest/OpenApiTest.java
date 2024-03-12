@@ -7,23 +7,25 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.mock.web.MockHttpServletRequest;
 
 public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void simpleEndpointGetTest() throws Exception {
-		String uri="/users";
+		String uri = "/users";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "get", null)
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri, "get", null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 		String result = callOpenApi(uri);
@@ -34,15 +36,15 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void simpleEndpointPostTest() throws Exception {
-		String uri="/simpleEndpointPostTest";
+		String uri = "/simpleEndpointPostTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "post", null)
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.build(true);
+				.setListener(uri, "post", null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 		String result = callOpenApi(uri);
@@ -53,15 +55,15 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void testChoiceWithComplexType() throws Exception {
-		String uri="/transaction";
+		String uri = "/transaction";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "post", null)
-			.setInputValidator("transaction.xsd", "transaction", null, null)
-			.addExit(200)
-			.build(true);
+				.setListener(uri, "post", null)
+				.setInputValidator("transaction.xsd", "transaction", null, null)
+				.addExit(200)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 		String result = callOpenApi(uri);
@@ -72,15 +74,15 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void testChoiceWithSimpleType() throws Exception {
-		String uri="/options";
+		String uri = "/options";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "post", null)
-			.setInputValidator("Options.xsd", "Options", null, null)
-			.addExit(200)
-			.build(true);
+				.setListener(uri, "post", null)
+				.setInputValidator("Options.xsd", "Options", null, null)
+				.addExit(200)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 		String result = callOpenApi(uri);
@@ -91,15 +93,15 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void testMultipleChoices() throws Exception {
-		String uri="/multipleChoices";
+		String uri = "/multipleChoices";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "post", null)
-			.setInputValidator("multipleChoices.xsd", "EmbeddedChoice", null, null)
-			.addExit(200)
-			.build(true);
+				.setListener(uri, "post", null)
+				.setInputValidator("multipleChoices.xsd", "EmbeddedChoice", null, null)
+				.addExit(200)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 		String result = callOpenApi(uri);
@@ -110,16 +112,16 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void simpleEndpointPostWithEmptyExitTest() throws Exception {
-		String uri="/simpleEndpointPostWithEmptyExitTest";
+		String uri = "/simpleEndpointPostWithEmptyExitTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "post", null)
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.addExit(500, null, true)
-			.build(true);
+				.setListener(uri, "post", null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(500, null, true)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 		String result = callOpenApi(uri);
@@ -130,15 +132,15 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void simpleEndpointWithOperationIdTest() throws Exception {
-		String uri="/simpleEndpointWithOperationIdTest";
+		String uri = "/simpleEndpointWithOperationIdTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
-			.setListener(uri, "get", "operationId")
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
-			.addExit(200)
-			.build(true);
+				.setListener(uri, "get", "operationId")
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
+				.addExit(200)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 		String result = callOpenApi(uri);
@@ -149,22 +151,22 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void simpleEndpointQueryParamTest() throws Exception {
-		String uri="/simpleEndpointQueryParamTest";
+		String uri = "/simpleEndpointQueryParamTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
-			.setListener(uri, "get", null)
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit(200)
-			.build(true);
+				.setListener(uri, "get", null)
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+				.addExit(200)
+				.build(true);
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
-			.setListener(uri, "post", null)
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit(200)
-			.build(true);
+				.setListener(uri, "post", null)
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+				.addExit(200)
+				.build(true);
 
 		assertEquals(2, dispatcher.findExactMatchingConfigForUri(uri).getMethods().size(), "more then 2 registered pattern found!");
 		String result = callOpenApi(uri);
@@ -175,76 +177,76 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void pathParamQueryParamTest() throws Exception {
-		String uri="/pathParamQueryParamTest";
+		String uri = "/pathParamQueryParamTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
-			.setListener(uri+"/{pattern}", "get", null)
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit(200)
-			.addExit(500)
-			.addExit(403)
-			.build(true);
+				.setListener(uri + "/{pattern}", "get", null)
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+				.addExit(200)
+				.addExit(500)
+				.addExit(403)
+				.build(true);
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
-			.setListener(uri+"/{pattern}/sub/{path}", "post", null)
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit(200)
-			.addExit(500)
-			.addExit(403)
-			.build(true);
+				.setListener(uri + "/{pattern}/sub/{path}", "post", null)
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+				.addExit(200)
+				.addExit(500)
+				.addExit(403)
+				.build(true);
 
 		assertEquals(2, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 2 registered pattern found!");
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
 
-		String result = callOpenApi(uri+"/{pattern}");
+		String result = callOpenApi(uri + "/{pattern}");
 		MatchUtils.assertJsonEquals(expected, result);
 
-		String encodedResult = callOpenApi(uri+"/%7Bpattern%7D");
+		String encodedResult = callOpenApi(uri + "/%7Bpattern%7D");
 		MatchUtils.assertJsonEquals("Test should pass in escaped form!", expected, encodedResult);
 	}
 
 	@Test
 	void exitElementNamesTest() throws Exception {
-		String uri="/envelope";
+		String uri = "/envelope";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
 		String responseRoot = "EnvelopeResponse,EnvelopeError403,EnvelopeError500";
 		new AdapterBuilder("myAdapterName", "each exit have specific element name")
-			.setListener(uri, "get", null)
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
-			.addExit(200,"EnvelopeResponse", false)
-			.addExit(500,"EnvelopeError500", false)
-			.addExit(403,"EnvelopeError403", false)
-			.build(true);
+				.setListener(uri, "get", null)
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
+				.addExit(200, "EnvelopeResponse", false)
+				.addExit(500, "EnvelopeError500", false)
+				.addExit(403, "EnvelopeError403", false)
+				.build(true);
 
 		new AdapterBuilder("myAdapterName", "200 code will retrieve the ref from first of response root")
-			.setListener(uri+"/test", "get", null)
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
-			.addExit(200,null,false)
-			.addExit(500,"EnvelopeError500", false)
-			.addExit(403,"EnvelopeError403", false)
-			.build(true);
+				.setListener(uri + "/test", "get", null)
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
+				.addExit(200, null, false)
+				.addExit(500, "EnvelopeError500", false)
+				.addExit(403, "EnvelopeError403", false)
+				.build(true);
 
 		new AdapterBuilder("myAdapterName", "no element name responseRoot will be used as source for refs")
-			.setListener(uri+"/elementNames", "get", null)
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
-			.addExit(200)
-			.addExit(500)
-			.addExit(403)
-			.build(true);
+				.setListener(uri + "/elementNames", "get", null)
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
+				.addExit(200)
+				.addExit(500)
+				.addExit(403)
+				.build(true);
 
 		new AdapterBuilder("myAdapterName", "403 empty exit")
-			.setListener(uri+"/{pattern}/sub/{path}", "post", null)
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
-			.addExit(200)
-			.addExit(500)
-			.addExit(403, null, true)
-			.build(true);
+				.setListener(uri + "/{pattern}/sub/{path}", "post", null)
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
+				.addExit(200)
+				.addExit(500)
+				.addExit(403, null, true)
+				.build(true);
 
 		assertEquals(4, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 4 registered pattern found!");
 		String result = callOpenApi(uri);
@@ -255,31 +257,31 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void petStore() throws Exception {
-		String uriBase="/pets";
+		String uriBase = "/pets";
 		//Make sure all adapters have been registered on the dispatcher
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uriBase).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("listPets", "List all pets")
-			.setListener(uriBase, "get", null)
-			.setInputValidator("petstore.xsd", null, "Pets", null)
-			.addExit(200)
-			.addExit(500, "Error", false)
-			.build(true);
+				.setListener(uriBase, "get", null)
+				.setInputValidator("petstore.xsd", null, "Pets", null)
+				.addExit(200)
+				.addExit(500, "Error", false)
+				.build(true);
 
 		new AdapterBuilder("createPets", "Create a pet")
-			.setListener(uriBase, "post", null)
-			.setInputValidator("petstore.xsd", "Pet", "Pet", null)
-			.addExit(201, null, true)
-			.addExit(500, "Error", false)
-			.build(true);
+				.setListener(uriBase, "post", null)
+				.setInputValidator("petstore.xsd", "Pet", "Pet", null)
+				.addExit(201, null, true)
+				.addExit(500, "Error", false)
+				.build(true);
 
 		new AdapterBuilder("showPetById", "Info for a specific pet")
-			.setListener(uriBase+"/{petId}", "get", null)
-			.setInputValidator("petstore.xsd", null, "Pet", null)
-			.addExit(200)
-			.addExit(500, "Error", false)
-			.build(true);
+				.setListener(uriBase + "/{petId}", "get", null)
+				.setInputValidator("petstore.xsd", null, "Pet", null)
+				.addExit(200)
+				.addExit(500, "Error", false)
+				.build(true);
 
 		//getPets.start(getPets, postPet, getPet); //Async start
 
@@ -287,8 +289,8 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		assertNotNull(dispatcher.findExactMatchingConfigForUri(uriBase), "unable to find DispatchConfig for uri [pets]");
 		assertEquals(2, dispatcher.findExactMatchingConfigForUri(uriBase).getMethods().size(), "not all listener uri [pets] are registered on the dispatcher");
-		assertNotNull(dispatcher.findExactMatchingConfigForUri(uriBase+"/a"), "unable to find DispatchConfig for uri [pets/a]");
-		assertEquals(1, dispatcher.findExactMatchingConfigForUri(uriBase+"/a").getMethods().size(), "listener uri [pets/a] not registered on dispatcher");
+		assertNotNull(dispatcher.findExactMatchingConfigForUri(uriBase + "/a"), "unable to find DispatchConfig for uri [pets/a]");
+		assertEquals(1, dispatcher.findExactMatchingConfigForUri(uriBase + "/a").getMethods().size(), "listener uri [pets/a] not registered on dispatcher");
 
 		String result = callOpenApi(uriBase);
 
@@ -298,26 +300,26 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void rootSchemaTest() throws Exception {
-		String uri="/";
+		String uri = "/";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri+"users", "get", null)
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri + "users", "get", null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri+"test", "get", null)
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri + "test", "get", null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		assertEquals(2, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 2 registered pattern found!");
-		String result = callOpenApi(uri+"users");
+		String result = callOpenApi(uri + "users");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simpleRoot.json");
 		MatchUtils.assertJsonEquals(expected, result);
@@ -325,33 +327,33 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void testSchemaGenerationWhenWildcardMatchersArePresent() throws Exception {
-		String uri="/";
+		String uri = "/";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri+"**", "get", null)
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri + "**", "get", null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri+"users", "get", null)
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri + "users", "get", null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri+"test", "get", null)
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri + "test", "get", null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		assertEquals(2, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 2 registered pattern found!");
-		String result = callOpenApi(uri+"users");
+		String result = callOpenApi(uri + "users");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simpleRoot.json");
 		MatchUtils.assertJsonEquals(expected, result);
@@ -359,25 +361,25 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void twoEndpointsOneWithoutValidatorTest() throws Exception {
-		String uri="/path";
+		String uri = "/path";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri+"/validator", "get", null)
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri + "/validator", "get", null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri+"/noValidator", "get", null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri + "/noValidator", "get", null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		assertEquals(2, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 2 registered pattern found!");
-		String result = callOpenApi(uri+"/validator");
+		String result = callOpenApi(uri + "/validator");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/noValidatorForOneEndpoint.json");
 		MatchUtils.assertJsonEquals(expected, result);
@@ -385,20 +387,20 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void parametersFromHeader() throws Exception {
-		String uri="/headerparams";
+		String uri = "/headerparams";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "get", null, null)
-			.setHeaderParams("envelopeId, envelopeType")
-			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri, "get", null, null)
+				.setHeaderParams("envelopeId, envelopeType")
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
-		MockHttpServletRequest request = createRequest("GET", uri+"/openapi.json");
+		MockHttpServletRequest request = createRequest("GET", uri + "/openapi.json");
 		request.addHeader("envelopeId", "dummy");
 		request.addHeader("envelopeType", "dummyType");
 
@@ -466,20 +468,20 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void validatorParamFromHeaderNotQuery() throws Exception {
-		String uri="/validatorParamFromHeaderNotQuery";
+		String uri = "/validatorParamFromHeaderNotQuery";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
-			.setListener(uri, "get", null, null)
-			.setHeaderParams("parameter")
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit(200)
-			.build(true);
+				.setListener(uri, "get", null, null)
+				.setHeaderParams("parameter")
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
+				.addExit(200)
+				.build(true);
 
 		assertEquals(1, dispatcher.findExactMatchingConfigForUri(uri).getMethods().size(), "more then 2 registered pattern found!");
-		MockHttpServletRequest request = createRequest("GET", uri+"/openapi.json");
+		MockHttpServletRequest request = createRequest("GET", uri + "/openapi.json");
 		request.addHeader("parameter", "dummy");
 
 		String result = service(request);
@@ -490,20 +492,20 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void messageIdHeaderTest() throws Exception {
-		String uri="/messageIdHeaderTest";
+		String uri = "/messageIdHeaderTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
-			.setListener(uri, "get", null, null)
-			.setMessageIdHeader("x-message-id")
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
-			.addExit(200)
-			.build(true);
+				.setListener(uri, "get", null, null)
+				.setMessageIdHeader("x-message-id")
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
+				.addExit(200)
+				.build(true);
 
 
 		assertEquals(1, dispatcher.findExactMatchingConfigForUri(uri).getMethods().size(), "more then 2 registered pattern found!");
-		MockHttpServletRequest request = createRequest("GET", uri+"/openapi.json");
+		MockHttpServletRequest request = createRequest("GET", uri + "/openapi.json");
 		request.addHeader("x-message-id", "dummy");
 
 		String result = service(request);
@@ -514,22 +516,22 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void testHeaderParamIsnotAddedAsQueryParam() throws Exception {
-		String uri="/headerparams";
+		String uri = "/headerparams";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 		Parameter p = ParameterBuilder.create("envelopeId", "envelopeType").withSessionKey("headers");
 		p.setXpathExpression("/headers/header[@name='envelopeId']");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "get", null, null)
-			.setHeaderParams("envelopeId, envelopeType")
-			.setInputValidator("simple.xsd", null, "user", p)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri, "get", null, null)
+				.setHeaderParams("envelopeId, envelopeType")
+				.setInputValidator("simple.xsd", null, "user", p)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
-		MockHttpServletRequest request = createRequest("GET", uri+"/openapi.json");
+		MockHttpServletRequest request = createRequest("GET", uri + "/openapi.json");
 		request.addHeader("envelopeId", "dummy");
 		request.addHeader("envelopeType", "dummyType");
 
@@ -541,16 +543,16 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void testOutputValidator() throws Exception {
-		String uri="/outputValidator";
+		String uri = "/outputValidator";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "get", null, null)
-			.setOutputValidator("simple.xsd", "user")
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri, "get", null, null)
+				.setOutputValidator("simple.xsd", "user")
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 
@@ -561,17 +563,17 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void testInputOutputValidator() throws Exception {
-		String uri="/outputValidator";
+		String uri = "/outputValidator";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "post", null, null)
-			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse, EnvelopeError500", null)
-			.setOutputValidator("simple.xsd", "user")
-			.addExit(200)
-			.addExit(500, "EnvelopeError500", false)
-			.build(true);
+				.setListener(uri, "post", null, null)
+				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse, EnvelopeError500", null)
+				.setOutputValidator("simple.xsd", "user")
+				.addExit(200)
+				.addExit(500, "EnvelopeError500", false)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 
@@ -582,15 +584,15 @@ public class OpenApiTest extends OpenApiTestBase {
 
 	@Test
 	void testWithoutValidator() throws Exception {
-		String uri="/noValidator";
+		String uri = "/noValidator";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
-			.setListener(uri, "get", null, null)
-			.addExit(200)
-			.addExit(500)
-			.build(true);
+				.setListener(uri, "get", null, null)
+				.addExit(200)
+				.addExit(500)
+				.build(true);
 
 		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
 

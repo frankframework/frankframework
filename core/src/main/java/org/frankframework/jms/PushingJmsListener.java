@@ -20,10 +20,9 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.Message;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IKnowsDeliveryCount;
@@ -45,7 +44,7 @@ import org.frankframework.util.CredentialFactory;
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
  * The JMS messages have to come in from an external source: an MDB or a Spring
  * message container.
- *
+ * <p>
  * This version of the <code>JmsListener</code> supports distributed transactions using the XA-protocol.
  * No special action is required to have the listener join the transaction.
  *
@@ -82,8 +81,8 @@ import org.frankframework.util.CredentialFactory;
  * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}<br/><br/>
  * </p>
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<Message>, IThreadCountControllable, IKnowsDeliveryCount<Message> {
 
@@ -99,29 +98,30 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (jmsConnector==null) {
-			throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
+		if (jmsConnector == null) {
+			throw new ConfigurationException(getLogPrefix() + " has no jmsConnector. It should be configured via springContext.xml");
 		}
 		Destination destination;
 		try {
 			destination = getDestination();
 		} catch (Exception e) {
-			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
+			throw new ConfigurationException(getLogPrefix() + "could not get Destination", e);
 		}
 		if (getPollGuardInterval() == Long.MIN_VALUE) {
 			setPollGuardInterval(getTimeout() * 10);
 		}
 		if (getPollGuardInterval() <= getTimeout()) {
-			ConfigurationWarnings.add(this, log, "The pollGuardInterval ["+getPollGuardInterval()+"] should be larger than the receive timeout ["+ getTimeout()+"]");
+			ConfigurationWarnings.add(this, log, "The pollGuardInterval [" + getPollGuardInterval() + "] should be larger than the receive timeout [" + getTimeout() + "]");
 		}
-		CredentialFactory credentialFactory=null;
+		CredentialFactory credentialFactory = null;
 		if (StringUtils.isNotEmpty(getAuthAlias())) {
-			credentialFactory=new CredentialFactory(getAuthAlias());
+			credentialFactory = new CredentialFactory(getAuthAlias());
 		}
 		try {
 			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,
 					destination, getExceptionListener(), getCacheMode(), getAcknowledgeMode().getAcknowledgeMode(),
-					isJmsTransacted(), getMessageSelector(), getTimeout(), getPollGuardInterval());
+					isJmsTransacted(), getMessageSelector(), getTimeout(), getPollGuardInterval()
+			);
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);
 		}
@@ -160,7 +160,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public boolean isThreadCountReadable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			IThreadCountControllable tcc = (IThreadCountControllable) jmsConnector;
 
 			return tcc.isThreadCountReadable();
 		}
@@ -170,7 +170,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public boolean isThreadCountControllable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			IThreadCountControllable tcc = (IThreadCountControllable) jmsConnector;
 
 			return tcc.isThreadCountControllable();
 		}
@@ -180,7 +180,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public int getCurrentThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			IThreadCountControllable tcc = (IThreadCountControllable) jmsConnector;
 
 			return tcc.getCurrentThreadCount();
 		}
@@ -190,7 +190,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public int getMaxThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			IThreadCountControllable tcc = (IThreadCountControllable) jmsConnector;
 
 			return tcc.getMaxThreadCount();
 		}
@@ -200,7 +200,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public void increaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			IThreadCountControllable tcc = (IThreadCountControllable) jmsConnector;
 
 			tcc.increaseThreadCount();
 		}
@@ -209,7 +209,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public void decreaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			IThreadCountControllable tcc = (IThreadCountControllable) jmsConnector;
 
 			tcc.decreaseThreadCount();
 		}
@@ -218,19 +218,19 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public int getDeliveryCount(RawMessageWrapper<Message> rawMessage) {
 		try {
-			Message message=rawMessage.getRawMessage();
+			Message message = rawMessage.getRawMessage();
 			// Note: Tibco doesn't set the JMSXDeliveryCount for messages
 			// delivered for the first time (when JMSRedelivered is set to
 			// false). Hence when set is has a value of 2 or higher. When not
 			// set a NumberFormatException is thrown.
 			int value = message.getIntProperty("JMSXDeliveryCount");
-			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
+			if (log.isDebugEnabled()) log.debug("determined delivery count [" + value + "]");
 			return value;
 		} catch (NumberFormatException nfe) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"NumberFormatException in determination of DeliveryCount");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "NumberFormatException in determination of DeliveryCount");
 			return -1;
 		} catch (Exception e) {
-			log.error(getLogPrefix()+"exception in determination of DeliveryCount", e);
+			log.error(getLogPrefix() + "exception in determination of DeliveryCount", e);
 			return -1;
 		}
 	}
@@ -254,7 +254,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	 * while messages are being processed the check on last successful poll will be skipped. Set to -1 to disable.
 	 *
 	 * @ff.default ten times the specified timeout
-	 * */
+	 */
 	public void setPollGuardInterval(long pollGuardInterval) {
 		this.pollGuardInterval = pollGuardInterval;
 	}

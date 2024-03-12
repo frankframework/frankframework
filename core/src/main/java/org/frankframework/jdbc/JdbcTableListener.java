@@ -21,9 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IMessageBrowser;
@@ -36,18 +35,18 @@ import org.frankframework.receivers.RawMessageWrapper;
 /**
  * Database Listener that operates on a table having at least a key and a status field.
  *
- * @since   4.7
+ * @since 4.7
  */
 public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMessageBrowsers<M> {
 
 	private @Getter String tableName;
-	private @Getter String tableAlias="t";
+	private @Getter String tableAlias = "t";
 	private @Getter String statusField;
 	private @Getter String orderField;
 	private @Getter String timestampField;
 	private @Getter String commentField;
 	private @Getter String selectCondition;
-	private @Getter int maxCommentLength=ITransactionalStorage.MAXCOMMENTLEN;
+	private @Getter int maxCommentLength = ITransactionalStorage.MAXCOMMENTLEN;
 
 	private final Map<ProcessState, String> statusValues = new HashMap<>();
 
@@ -63,7 +62,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 			throw new ConfigurationException("must specify statusField");
 		}
 		if (StringUtils.isEmpty(getMessageField())) {
-			log.info(getLogPrefix()+"has no messageField specified. Will use keyField as messageField, too");
+			log.info(getLogPrefix() + "has no messageField specified. Will use keyField as messageField, too");
 		}
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.ERROR))) {
 			throw new ConfigurationException("must specify statusValueError");
@@ -72,15 +71,15 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 			throw new ConfigurationException("must specify statusValueProcessed");
 		}
 		setSelectQuery("SELECT " + getKeyField() +
-								(StringUtils.isNotEmpty(getMessageIdField()) ? "," + getMessageIdField() : "") + (StringUtils.isNotEmpty(getCorrelationIdField()) ? "," + getCorrelationIdField() : "") +
-								(StringUtils.isNotEmpty(getMessageField()) ? "," + getMessageField() : "") +
-						" FROM " + getTableName() + (StringUtils.isNotBlank(tableAlias) ? " " + tableAlias.trim() : "") +
-						" WHERE " + getStatusField() +
-						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE)) ?
+				(StringUtils.isNotEmpty(getMessageIdField()) ? "," + getMessageIdField() : "") + (StringUtils.isNotEmpty(getCorrelationIdField()) ? "," + getCorrelationIdField() : "") +
+				(StringUtils.isNotEmpty(getMessageField()) ? "," + getMessageField() : "") +
+				" FROM " + getTableName() + (StringUtils.isNotBlank(tableAlias) ? " " + tableAlias.trim() : "") +
+				" WHERE " + getStatusField() +
+				(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE)) ?
 						"='" + getStatusValue(ProcessState.AVAILABLE) + "'" :
-						" NOT IN ('"+getStatusValue(ProcessState.ERROR) + "','" + getStatusValue(ProcessState.DONE) + (StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD)) ? "','" + getStatusValue(ProcessState.HOLD) : "") + "')") +
-						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND (" + getSelectCondition() + ")" : "") +
-						(StringUtils.isNotEmpty(getOrderField()) ? " ORDER BY " + getOrderField() : ""));
+						" NOT IN ('" + getStatusValue(ProcessState.ERROR) + "','" + getStatusValue(ProcessState.DONE) + (StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD)) ? "','" + getStatusValue(ProcessState.HOLD) : "") + "')") +
+				(StringUtils.isNotEmpty(getSelectCondition()) ? " AND (" + getSelectCondition() + ")" : "") +
+				(StringUtils.isNotEmpty(getOrderField()) ? " ORDER BY " + getOrderField() : ""));
 		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, "dummy query to register status value in JdbcListener")); // must have set updateStatusQueries before calling super.configure()
 		super.configure();
 		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, createUpdateStatusQuery(value, null))); // set proper updateStatusQueries using createUpdateStatusQuery() after configure has been called();
@@ -92,7 +91,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	protected String createUpdateStatusQuery(String fieldValue, String additionalSetClause) {
 		return "UPDATE " + getTableName() +
 				" SET " + getStatusField() + "='" + fieldValue + "'" +
-				(StringUtils.isNotEmpty(getTimestampField()) ? "," + getTimestampField() + "=" + getDbmsSupport().getSysDate():"") +
+				(StringUtils.isNotEmpty(getTimestampField()) ? "," + getTimestampField() + "=" + getDbmsSupport().getSysDate() : "") +
 				(StringUtils.isNotEmpty(getCommentField()) ? "," + getCommentField() + "=?" : "") +
 				(StringUtils.isNotEmpty(additionalSetClause) ? "," + additionalSetClause : "") +
 				" WHERE " + getStatusField() + "!='" + fieldValue + "' AND " + getKeyField() + "=?";
@@ -133,27 +132,27 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 
 	public IMessageBrowser.StorageType getStorageType(ProcessState state) {
 		switch (state) {
-		case AVAILABLE:
-		case INPROCESS:
-		case DONE:
-			return IMessageBrowser.StorageType.MESSAGELOG_RECEIVER;
-		case ERROR:
-		case HOLD:
-			return IMessageBrowser.StorageType.ERRORSTORAGE;
-		default:
-			throw new IllegalStateException("Unknown state ["+state+"]");
+			case AVAILABLE:
+			case INPROCESS:
+			case DONE:
+				return IMessageBrowser.StorageType.MESSAGELOG_RECEIVER;
+			case ERROR:
+			case HOLD:
+				return IMessageBrowser.StorageType.ERRORSTORAGE;
+			default:
+				throw new IllegalStateException("Unknown state [" + state + "]");
 		}
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return super.getPhysicalDestinationName()+" "+getTableName();
+		return super.getPhysicalDestinationName() + " " + getTableName();
 	}
-
 
 
 	/**
 	 * Name of the table to be used
+	 *
 	 * @ff.mandatory
 	 */
 	public void setTableName(String string) {
@@ -162,6 +161,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 
 	/**
 	 * Alias of the table, that can be used in selectCondition
+	 *
 	 * @ff.default t
 	 */
 	public void setTableAlias(String string) {
@@ -170,6 +170,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 
 	/**
 	 * Field containing the status of the message. For optimal performance, and index should exist that starts with this field, contains all fields that are used with a fixed value in the select condition, and end with the orderField.
+	 *
 	 * @ff.mandatory
 	 */
 	public void setStatusField(String fieldname) {
@@ -199,6 +200,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 
 	/**
 	 * (optional) Maximum length of strings to be stored in commentField, or -1 for unlimited
+	 *
 	 * @ff.default 1000
 	 */
 	public void setMaxCommentLength(int maxCommentLength) {
@@ -209,11 +211,12 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	 * (optional) Value of statusField indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.
 	 */
 	public void setStatusValueAvailable(String string) {
-		statusValues.put(ProcessState.AVAILABLE,string);
+		statusValues.put(ProcessState.AVAILABLE, string);
 	}
 
 	/**
 	 * Value of statusField indicating the processing of the row resulted in an error
+	 *
 	 * @ff.mandatory
 	 */
 	public void setStatusValueError(String string) {
@@ -222,6 +225,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 
 	/**
 	 * Value of status field indicating row is processed OK
+	 *
 	 * @ff.mandatory
 	 */
 	public void setStatusValueProcessed(String string) {

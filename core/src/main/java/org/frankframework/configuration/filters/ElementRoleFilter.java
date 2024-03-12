@@ -44,7 +44,7 @@ public class ElementRoleFilter extends FullXmlFilter {
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		String elementName = atts.getValue(ELEMENTROLE_ATTRIBUTE);
 		if (StringUtils.isEmpty(elementName)) {
-			elementName = Character.toLowerCase(localName.charAt(0))+localName.substring(1);
+			elementName = Character.toLowerCase(localName.charAt(0)) + localName.substring(1);
 		}
 		elementNames.push(elementName);
 		super.startElement(uri, elementName, makeQName(uri, elementName), new AttributesWrapper(atts, ELEMENTROLE_ATTRIBUTE));
@@ -57,7 +57,7 @@ public class ElementRoleFilter extends FullXmlFilter {
 	}
 
 	protected String makeQName(String uri, String elementName) {
-		return (StringUtils.isNotEmpty(uri)? uri+":" :  "" )+elementName;
+		return (StringUtils.isNotEmpty(uri) ? uri + ":" : "") + elementName;
 	}
 
 }

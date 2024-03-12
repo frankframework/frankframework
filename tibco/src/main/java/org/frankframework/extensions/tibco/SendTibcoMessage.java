@@ -29,12 +29,11 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
@@ -42,17 +41,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.Resource;
-
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jms.BytesMessageInputStream;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.TimeoutGuardPipe;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
-
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
@@ -60,6 +56,7 @@ import org.frankframework.util.TransformerPool;
 /**
  * Sends a message to a Tibco queue.
  *
+ * @author Peter Leeuwenburgh
  * @ff.parameter url When a parameter with name url is present, it is used instead of the url specified by the attribute
  * @ff.parameter authAlias When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute
  * @ff.parameter username When a parameter with name userName is present, it is used instead of the userName specified by the attribute
@@ -68,8 +65,6 @@ import org.frankframework.util.TransformerPool;
  * @ff.parameter messageProtocol When a parameter with name messageProtocol is present, it is used instead of the messageProtocol specified by the attribute
  * @ff.parameter replyTimeout When a parameter with name replyTimeout is present, it is used instead of the replyTimeout specified by the attribute
  * @ff.parameter When a parameter with name soapAction is present, it is used instead of the soapAction specified by the attribute
- *
- * @author Peter Leeuwenburgh
  */
 public class SendTibcoMessage extends TimeoutGuardPipe {
 
@@ -118,10 +113,10 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		try {
 			input.preserve();
 		} catch (IOException e) {
-			throw new PipeRunException(this,"cannot preserve input",e);
+			throw new PipeRunException(this, "cannot preserve input", e);
 		}
 		ParameterValueList pvl = null;
-		if (getParameterList()!=null) {
+		if (getParameterList() != null) {
 			try {
 				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
@@ -165,12 +160,12 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 		if (StringUtils.isEmpty(soapAction_work) && !StringUtils.isEmpty(queueName_work)) {
 			String[] q = queueName_work.split("\\.");
-			if (q.length>0) {
-				if (q[0].equalsIgnoreCase("P2P") && q.length>=4) {
+			if (q.length > 0) {
+				if (q[0].equalsIgnoreCase("P2P") && q.length >= 4) {
 					soapAction_work = q[3];
-				} else if (q[0].equalsIgnoreCase("ESB") && q.length==8) {
+				} else if (q[0].equalsIgnoreCase("ESB") && q.length == 8) {
 					soapAction_work = q[5] + "_" + q[6];
-				} else if (q[0].equalsIgnoreCase("ESB") && q.length>8) {
+				} else if (q[0].equalsIgnoreCase("ESB") && q.length > 8) {
 					soapAction_work = q[6] + "_" + q[7];
 				}
 			}
@@ -243,21 +238,21 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			}
 			msgProducer.send(msg);
 			if (log.isDebugEnabled()) {
-				log.debug("sent message ["+ msg.getText() + "] " + "to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
+				log.debug("sent message [" + msg.getText() + "] " + "to [" + msgProducer.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "replyTo [" + msg.getJMSReplyTo() + "]");
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info("sent message to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
+					log.info("sent message to [" + msgProducer.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "replyTo [" + msg.getJMSReplyTo() + "]");
 				}
 			}
 			if (protocol == MessageProtocol.REQUEST_REPLY) {
 				String replyCorrelationId = msg.getJMSMessageID();
-				MessageConsumer msgConsumer = jSession.createConsumer(replyQueue, "JMSCorrelationID='" + replyCorrelationId+ "'");
-				log.debug("start waiting for reply on [" + replyQueue+ "] selector [" + replyCorrelationId + "] for ["+ replyTimeout_work + "] ms");
+				MessageConsumer msgConsumer = jSession.createConsumer(replyQueue, "JMSCorrelationID='" + replyCorrelationId + "'");
+				log.debug("start waiting for reply on [" + replyQueue + "] selector [" + replyCorrelationId + "] for [" + replyTimeout_work + "] ms");
 
 				connection.start();
 				javax.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
 				if (rawReplyMsg == null) {
-					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeout_work + "] ms");
+					throw new PipeRunException(this, "did not receive reply on [" + replyQueue + "] replyCorrelationId [" + replyCorrelationId + "] within [" + replyTimeout_work + "] ms");
 				}
 				if (rawReplyMsg instanceof TextMessage) {
 					TextMessage replyMsg = (TextMessage) rawReplyMsg;
@@ -273,7 +268,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			} else {
 				result = msg.getJMSMessageID();
 			}
-		} catch (IOException|JMSException e) {
+		} catch (IOException | JMSException e) {
 			throw new PipeRunException(this, "exception on sending message to Tibco queue", e);
 		} finally {
 			if (connection != null) {
@@ -345,7 +340,9 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return replyTimeout;
 	}
 
-	/** Maximum time in milliseconds to wait for a reply. 0 means no timeout. (Only for messageProtocol=RR)
+	/**
+	 * Maximum time in milliseconds to wait for a reply. 0 means no timeout. (Only for messageProtocol=RR)
+	 *
 	 * @ff.default 5000
 	 */
 	public void setReplyTimeout(int i) {

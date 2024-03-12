@@ -18,9 +18,8 @@ package org.frankframework.pipes;
 import java.io.Reader;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PeekableDataIterator;
 import org.frankframework.core.PipeLineSession;
@@ -31,16 +30,16 @@ import org.frankframework.util.ReaderLineIterator;
 /**
  * Sends a message to a Sender for each line of its input, that must be an InputStream.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	private @Getter String endOfLineString;
 	private @Getter String startOfLineString;
 
-	protected Reader getReader(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
-		if (input==null) {
+	protected Reader getReader(Message input, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
+		if (input == null) {
 			throw new SenderException("cannot obtain reader from null input");
 		}
 		try {
@@ -51,20 +50,20 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 	}
 
 	@Override
-	protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
-		return new PeekableDataIterator<>(new ReaderLineIterator(getReader(input,session, threadContext)));
+	protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
+		return new PeekableDataIterator<>(new ReaderLineIterator(getReader(input, session, threadContext)));
 	}
 
 	@Override
 	protected String getItem(IDataIterator<String> it) throws SenderException {
 		StringBuilder item = new StringBuilder(it.next());
 		if (StringUtils.isNotEmpty(getEndOfLineString()) || StringUtils.isNotEmpty(getStartOfLineString())) {
-			String peeked = ((PeekableDataIterator<String>)it).peek();
-			while (peeked!=null &&
+			String peeked = ((PeekableDataIterator<String>) it).peek();
+			while (peeked != null &&
 					(StringUtils.isEmpty(getStartOfLineString()) || !peeked.startsWith(getStartOfLineString())) &&
-					(StringUtils.isEmpty(getEndOfLineString())   || !item.toString().endsWith(getEndOfLineString()))) {
+					(StringUtils.isEmpty(getEndOfLineString()) || !item.toString().endsWith(getEndOfLineString()))) {
 				item.append(System.getProperty("line.separator")).append(it.next());
-				peeked = ((PeekableDataIterator<String>)it).peek();
+				peeked = ((PeekableDataIterator<String>) it).peek();
 			}
 		}
 		return item.toString();
@@ -74,6 +73,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 	public void setEndOfLineString(String string) {
 		endOfLineString = string;
 	}
+
 	/** Marks the start of a new record. If set, a new record is started when this line is read. */
 	public void setStartOfLineString(String string) {
 		startOfLineString = string;
@@ -81,6 +81,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	/**
 	 * If set to <code>false</code>, the inputstream is not closed after it has been used
+	 *
 	 * @ff.default true
 	 */
 	public void setCloseInputstreamOnExit(boolean b) {

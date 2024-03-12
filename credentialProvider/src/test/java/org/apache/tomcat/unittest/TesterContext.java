@@ -789,7 +789,6 @@ public class TesterContext implements Context {
 	}
 
 
-
 	@Override
 	public void addServletMappingDecoded(String pattern, String name, boolean jspWildcard) {
 		// NO-OP
@@ -1222,7 +1221,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setContainerSciFilter(String containerSciFilter) {
-		/* NO-OP */ }
+		/* NO-OP */
+	}
 
 	@Override
 	public String getContainerSciFilter() {
@@ -1236,7 +1236,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setThreadBindingListener(ThreadBindingListener threadBindingListener) {
-		/* NO-OP */ }
+		/* NO-OP */
+	}
 
 	@Override
 	public ClassLoader bind(boolean usePrivilegedAction, ClassLoader originalClassLoader) {
@@ -1255,7 +1256,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setCookieProcessor(CookieProcessor cookieProcessor) {
-		/* NO-OP */ }
+		/* NO-OP */
+	}
 
 	@Override
 	public CookieProcessor getCookieProcessor() {
@@ -1294,7 +1296,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setUseRelativeRedirects(boolean useRelativeRedirects) {
-		/* NO-OP */ }
+		/* NO-OP */
+	}
 
 	@Override
 	public boolean getUseRelativeRedirects() {
@@ -1303,7 +1306,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setDispatchersUseEncodedPaths(boolean dispatchersUseEncodedPaths) {
-		/* NO-OP */ }
+		/* NO-OP */
+	}
 
 	@Override
 	public boolean getDispatchersUseEncodedPaths() {
@@ -1312,7 +1316,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setRequestCharacterEncoding(String encoding) {
-		/* NO-OP */ }
+		/* NO-OP */
+	}
 
 	@Override
 	public String getRequestCharacterEncoding() {
@@ -1321,7 +1326,8 @@ public class TesterContext implements Context {
 
 	@Override
 	public void setResponseCharacterEncoding(String encoding) {
-		/* NO-OP */ }
+		/* NO-OP */
+	}
 
 	@Override
 	public String getResponseCharacterEncoding() {
@@ -1340,15 +1346,18 @@ public class TesterContext implements Context {
 
 	@Override
 	public void incrementInProgressAsyncCount() {
-		/* NO-OP */ }
+		/* NO-OP */
+	}
 
 	@Override
 	public void decrementInProgressAsyncCount() {
-		/* NO-OP */ }
+		/* NO-OP */
+	}
 
 	@Override
 	public void setCreateUploadTargets(boolean createUploadTargets) {
-		/* NO-OP */}
+		/* NO-OP */
+	}
 
 	@Override
 	public boolean getCreateUploadTargets() {
@@ -1359,6 +1368,7 @@ public class TesterContext implements Context {
 	public boolean isParallelAnnotationScanning() {
 		return false;
 	}
+
 	@Override
 	public boolean getParallelAnnotationScanning() {
 		return isParallelAnnotationScanning();

@@ -78,10 +78,10 @@ public class BrowseJdbcTable extends BusEndpointBase {
 		int maxRow = Math.max(BusMessageUtils.getIntHeader(message, "maxRow", 100), 1);
 
 		if (!readAllowed(tableName)) {
-			throw new BusException("Access to table ["+tableName+"] not allowed");
+			throw new BusException("Access to table [" + tableName + "] not allowed");
 		}
 
-		if(maxRow < minRow)
+		if (maxRow < minRow)
 			throw new BusException("Rownum max must be greater than or equal to Rownum min");
 		if (maxRow - minRow >= 100) {
 			throw new BusException("Difference between Rownum max and Rownum min must be less than hundred");
@@ -110,17 +110,19 @@ public class BrowseJdbcTable extends BusEndpointBase {
 
 			StringBuilder fielddefinition = new StringBuilder("<fielddefinition>");
 			String firstColumnName = numberOfRowsOnly ? countColumnName : rnumColumnName;
-			String field = "<field name=\""+firstColumnName+"\" type=\"INTEGER\" />";
+			String field = "<field name=\"" + firstColumnName + "\" type=\"INTEGER\" />";
 			fielddefinition.append(field);
 			fieldDef.put(firstColumnName, "INTEGER");
 			IDbmsSupport dbmsSupport = qs.getDbmsSupport();
-			if(!numberOfRowsOnly || StringUtils.isNotEmpty(order)) {
-				try (Connection conn =qs.getConnection()) {
+			if (!numberOfRowsOnly || StringUtils.isNotEmpty(order)) {
+				try (Connection conn = qs.getConnection()) {
 					try (ResultSet rs = numberOfRowsOnly ? dbmsSupport.getTableColumns(conn, null, table, order) : dbmsSupport.getTableColumns(conn, table)) {
-						while(rs != null && rs.next()) {
-							field = "<field name=\"" + rs.getString(COLUMN_NAME).toUpperCase() + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
+						while (rs != null && rs.next()) {
+							field = "<field name=\"" + rs.getString(COLUMN_NAME)
+									.toUpperCase() + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
 							fielddefinition.append(field);
-							fieldDef.put(rs.getString(COLUMN_NAME).toUpperCase(), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
+							fieldDef.put(rs.getString(COLUMN_NAME)
+									.toUpperCase(), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "(" + rs.getInt(COLUMN_SIZE) + ")");
 						}
 					}
 				}
@@ -137,20 +139,20 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				result = message.asString();
 			}
 		} catch (Exception t) {
-			throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
+			throw new BusException("an error occurred on executing jdbc query [" + query + "]", t);
 		} finally {
 			qs.close();
 		}
 
 		List<Map<String, String>> resultMap = null;
-		if(XmlUtils.isWellFormed(result)) {
+		if (XmlUtils.isWellFormed(result)) {
 			try {
 				resultMap = new QueryOutputToListOfMaps().parseString(result);
 			} catch (IOException | SAXException e) {
 				throw new BusException("query result could not be parsed", e);
 			}
 		}
-		if(resultMap == null) {
+		if (resultMap == null) {
 			throw new BusException("invalid query result [null]");
 		}
 
@@ -164,7 +166,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 	}
 
 	private String browseJdbcTableExecuteREQ(Dbms dbms, String table, String where, String order, boolean numberOfRowsOnly, int minRow, int maxRow, String fieldDefinition) {
-		return	"<browseJdbcTableExecuteREQ>"
+		return "<browseJdbcTableExecuteREQ>"
 				+ "<dbmsName>"
 				+ dbms.getKey()
 				+ "</dbmsName>"
@@ -178,13 +180,13 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				+ table
 				+ "</tableName>"
 				+ "<where>"
-				+ (where==null? "": XmlEncodingUtils.encodeChars(where))
+				+ (where == null ? "" : XmlEncodingUtils.encodeChars(where))
 				+ "</where>"
 				+ "<numberOfRowsOnly>"
 				+ numberOfRowsOnly
 				+ "</numberOfRowsOnly>"
 				+ "<order>"
-				+ (order==null?"":order)
+				+ (order == null ? "" : order)
 				+ "</order>"
 				+ "<rownumMin>"
 				+ minRow
@@ -198,11 +200,11 @@ public class BrowseJdbcTable extends BusEndpointBase {
 	}
 
 	private boolean readAllowed(String tableName) {
-		if(tableName == null) return false;
+		if (tableName == null) return false;
 
 		String table = tableName.toLowerCase();
 		List<String> rulesList = Arrays.asList(JDBC_PERMISSION_RULES.split("\\|"));
-		for (String rule: rulesList) {
+		for (String rule : rulesList) {
 			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
 			if (parts.size() != 3) {
 				log.debug("invalid rule [{}] contains {} part(s): {}", rule, parts.size(), parts);

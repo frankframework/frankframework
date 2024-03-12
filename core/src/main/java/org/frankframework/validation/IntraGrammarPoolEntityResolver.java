@@ -30,7 +30,7 @@ import org.frankframework.util.LogUtil;
 
 /**
  * EntityResolver for XercesXmlValidator to resolve imported schema documents to other schemas used to populate the grammar pool.
- *
+ * <p>
  * References are resolved by namespace.
  *
  * @author Gerrit van Brakel
@@ -48,7 +48,8 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //Cla
 
 	@Override
 	public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier) throws XNIException, IOException {
-		if (log.isDebugEnabled()) log.debug("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] baseSystemId ["+resourceIdentifier.getBaseSystemId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"]");
+		if (log.isDebugEnabled())
+			log.debug("resolveEntity publicId [" + resourceIdentifier.getPublicId() + "] baseSystemId [" + resourceIdentifier.getBaseSystemId() + "] expandedSystemId [" + resourceIdentifier.getExpandedSystemId() + "] literalSystemId [" + resourceIdentifier.getLiteralSystemId() + "] namespace [" + resourceIdentifier.getNamespace() + "]");
 		if (resourceIdentifier.getExpandedSystemId() == null
 				&& resourceIdentifier.getLiteralSystemId() == null
 				&& resourceIdentifier.getNamespace() == null
@@ -65,18 +66,18 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //Cla
 
 		String targetNamespace = resourceIdentifier.getNamespace();
 		if (targetNamespace != null) {
-			for(Schema schema:schemas) {
-				if (log.isTraceEnabled()) log.trace("matching namespace ["+targetNamespace+"] to schema ["+schema.getSystemId()+"]");
+			for (Schema schema : schemas) {
+				if (log.isTraceEnabled()) log.trace("matching namespace [" + targetNamespace + "] to schema [" + schema.getSystemId() + "]");
 				if (targetNamespace.equals(schema.getSystemId())) {
 					return new XMLInputSource(null, targetNamespace, null, schema.getReader(), null);
 				}
 			}
-			log.warn("namespace ["+targetNamespace+"] not found in list of schemas");
+			log.warn("namespace [" + targetNamespace + "] not found in list of schemas");
 		}
 
-		if(resourceIdentifier.getExpandedSystemId() != null) {
+		if (resourceIdentifier.getExpandedSystemId() != null) {
 			Resource resource = Resource.getResource(scopeProvider, resourceIdentifier.getExpandedSystemId());
-			if(resource != null) {
+			if (resource != null) {
 				return resource.asXMLInputSource();
 			}
 		}
@@ -85,8 +86,8 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //Cla
 		// Do not rely on the fallback resource resolver, this will bypass configuration classloaders.
 		// See https://github.com/frankframework/frankframework/issues/3973
 		throw new XNIException("Cannot find resource [" + resourceIdentifier.getExpandedSystemId() +
-			"] from systemId [" + resourceIdentifier.getLiteralSystemId() +
-			"] with base [" + resourceIdentifier.getBaseSystemId() + "]");
+				"] from systemId [" + resourceIdentifier.getLiteralSystemId() +
+				"] with base [" + resourceIdentifier.getBaseSystemId() + "]");
 	}
 
 }

@@ -22,13 +22,13 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Extension to Basics, allowing for large numbers, like message sizes.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public class BigBasics extends Basics {
 
-	private static final long HALF_MAX_LONG=Long.MAX_VALUE>>1;
+	private static final long HALF_MAX_LONG = Long.MAX_VALUE >> 1;
 
-	protected int shift=0;
+	protected int shift = 0;
 
 	public BigBasics() {
 		super();
@@ -54,7 +54,7 @@ public class BigBasics extends Basics {
 	@Override
 	public void reset() {
 		super.reset();
-		shift=0;
+		shift = 0;
 	}
 
 	@Override
@@ -65,18 +65,18 @@ public class BigBasics extends Basics {
 	@Override
 	protected void addSums(long value) {
 		//checkSizes();
-		if (value>0) {
+		if (value > 0) {
 			long shiftedValue = value >> shift;
 			long newSum;
-			while ((newSum = sum+shiftedValue)<0) {
+			while ((newSum = sum + shiftedValue) < 0) {
 				shiftRight();
 				shiftedValue >>= 1;
 			}
-			sum=newSum;
+			sum = newSum;
 			if (value <= Integer.MAX_VALUE) {
-				long squaredShifted=(value * value) >> (2 * shift);
+				long squaredShifted = (value * value) >> (2 * shift);
 				long newSumOfSquares;
-				while ((newSumOfSquares = sumOfSquares+squaredShifted)<0) {
+				while ((newSumOfSquares = sumOfSquares + squaredShifted) < 0) {
 					shiftRight();
 					squaredShifted >>= 2;
 				}
@@ -86,9 +86,9 @@ public class BigBasics extends Basics {
 					shiftedValue >>= 1;
 					shiftRight();
 				}
-				long squaredShifted=shiftedValue * shiftedValue;
+				long squaredShifted = shiftedValue * shiftedValue;
 				long newSumOfSquares;
-				while ((newSumOfSquares = sumOfSquares+squaredShifted)<0) {
+				while ((newSumOfSquares = sumOfSquares + squaredShifted) < 0) {
 					shiftRight();
 					squaredShifted >>= 2;
 				}
@@ -99,7 +99,7 @@ public class BigBasics extends Basics {
 
 	@Override
 	public void addRecord(Basics record) {
-		count+=record.getCount();
+		count += record.getCount();
 		if (record.getMin() < min) {
 			min = record.getMin();
 		}
@@ -108,13 +108,13 @@ public class BigBasics extends Basics {
 		}
 		checkSizes();
 		if (record instanceof BigBasics) {
-			BigBasics bigRecord=(BigBasics)record;
+			BigBasics bigRecord = (BigBasics) record;
 			bigRecord.checkSizes();
-			while (shift<bigRecord.getShift()) {
+			while (shift < bigRecord.getShift()) {
 				shiftRight();
 			}
-			int shiftDif=shift-bigRecord.getShift();
-			if (shiftDif>0) {
+			int shiftDif = shift - bigRecord.getShift();
+			if (shiftDif > 0) {
 				sum += record.getSum() >> shiftDif;
 				sumOfSquares += record.getSumOfSquares() >> (2 * shiftDif);
 			} else {
@@ -129,25 +129,25 @@ public class BigBasics extends Basics {
 
 	private double calculateVariance(long count, long sum, long sumOfSquares, int shift) {
 		double result;
-		if (count>1) {
-			if (sum>Integer.MAX_VALUE) {
-				double dsum=sum;
-				result=(sumOfSquares-((dsum*dsum)/count))/(count-1);
+		if (count > 1) {
+			if (sum > Integer.MAX_VALUE) {
+				double dsum = sum;
+				result = (sumOfSquares - ((dsum * dsum) / count)) / (count - 1);
 			} else {
-				result=(sumOfSquares-((sum*sum)/count))/(count-1);
+				result = (sumOfSquares - ((sum * sum) / count)) / (count - 1);
 			}
-			if (shift>0) {
-				result=result*(1L<<(2*shift));
+			if (shift > 0) {
+				result = result * (1L << (2 * shift));
 			}
 		} else {
-			result=Double.NaN;
+			result = Double.NaN;
 		}
 		return result;
 	}
 
 	@Override
 	public Object getItemValue(int index) {
-		if (index==5) {
+		if (index == 5) {
 			if (getCount() == 0) return null;
 			return new Double(getSum());
 		}
@@ -165,19 +165,19 @@ public class BigBasics extends Basics {
 
 	@Override
 	public double getAverage() {
-		if (shift==0 || count == 0) {
+		if (shift == 0 || count == 0) {
 			return super.getAverage();
 		}
-		return (1L<<shift)*(sum / (double)count);
+		return (1L << shift) * (sum / (double) count);
 	}
 
 	@Override
 	public double getIntervalAverage(Basics mark) {
-		long intervalCount=getIntervalCount(mark);
-		if (intervalCount==0) {
+		long intervalCount = getIntervalCount(mark);
+		if (intervalCount == 0) {
 			return 0;
 		}
-		return (1L<<shift)*(getIntervalSum(mark)/(double)(intervalCount));
+		return (1L << shift) * (getIntervalSum(mark) / (double) (intervalCount));
 	}
 
 	/*
@@ -185,18 +185,18 @@ public class BigBasics extends Basics {
 	 */
 	@Override
 	public long getIntervalSum(Basics mark) {
-		long markSum=mark.getSum();
+		long markSum = mark.getSum();
 		if (mark instanceof BigBasics) {
-			BigBasics bbmark = (BigBasics)mark;
-			int markShift=bbmark.getShift();
-			if (markShift>getShift()) {
-				throw new RuntimeException("Cannot have mark shift ["+markShift+"] further than base ["+getShift()+"]");
+			BigBasics bbmark = (BigBasics) mark;
+			int markShift = bbmark.getShift();
+			if (markShift > getShift()) {
+				throw new RuntimeException("Cannot have mark shift [" + markShift + "] further than base [" + getShift() + "]");
 			}
-			markSum>>=getShift()-markShift;
+			markSum >>= getShift() - markShift;
 		} else {
-			markSum>>=getShift();
+			markSum >>= getShift();
 		}
-		return getSum()-markSum;
+		return getSum() - markSum;
 	}
 
 	/*
@@ -204,23 +204,23 @@ public class BigBasics extends Basics {
 	 */
 	@Override
 	public long getIntervalSumOfSquares(Basics mark) {
-		long markSumOfSquares=mark.getSumOfSquares();
+		long markSumOfSquares = mark.getSumOfSquares();
 		if (mark instanceof BigBasics) {
-			BigBasics bbmark = (BigBasics)mark;
-			int markShift=bbmark.getShift();
-			if (markShift>getShift()) {
-				throw new RuntimeException("Cannot have mark shift ["+markShift+"] further than base ["+getShift()+"]");
+			BigBasics bbmark = (BigBasics) mark;
+			int markShift = bbmark.getShift();
+			if (markShift > getShift()) {
+				throw new RuntimeException("Cannot have mark shift [" + markShift + "] further than base [" + getShift() + "]");
 			}
-			markSumOfSquares>>=2*(getShift()-markShift);
+			markSumOfSquares >>= 2 * (getShift() - markShift);
 		} else {
-			markSumOfSquares>>=2*getShift();
+			markSumOfSquares >>= 2 * getShift();
 		}
-		return getSumOfSquares()-markSumOfSquares;
+		return getSumOfSquares() - markSumOfSquares;
 	}
 
 	@Override
 	public double getIntervalVariance(Basics mark) {
-		return calculateVariance(count-mark.getCount(), getIntervalSum(mark), getIntervalSumOfSquares(mark), shift);
+		return calculateVariance(count - mark.getCount(), getIntervalSum(mark), getIntervalSumOfSquares(mark), shift);
 	}
 
 

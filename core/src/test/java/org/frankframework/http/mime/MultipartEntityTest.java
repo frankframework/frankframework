@@ -16,6 +16,7 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -52,7 +53,8 @@ public class MultipartEntityTest {
 		assertTrue(entity.isRepeatable());
 		assertFalse(entity.isChunked());
 		assertTrue(entity.isStreaming());
-		assertEquals("multipart/related; boundary=test-boundary; type=\"application/xop+xml\"; start=\"<part1>\"; start-info=\"text/xml\"", entity.getContentType().getValue());
+		assertEquals("multipart/related; boundary=test-boundary; type=\"application/xop+xml\"; start=\"<part1>\"; start-info=\"text/xml\"", entity.getContentType()
+				.getValue());
 		assertEquals(277, entity.getContentLength());
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/mtom.txt"), toString(entity));
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/mtom.txt"), toString(entity)); //Test repeatability
@@ -70,7 +72,7 @@ public class MultipartEntityTest {
 		assertTrue(entity.isRepeatable());
 		assertFalse(entity.isChunked());
 		assertTrue(entity.isStreaming());
-		assertEquals(FORMDATA_BOUNDARY+"; charset=UTF-8", entity.getContentType().getValue());
+		assertEquals(FORMDATA_BOUNDARY + "; charset=UTF-8", entity.getContentType().getValue());
 		assertEquals(327, entity.getContentLength());
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); //Charset should not change the parts
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); //Test repeatability
@@ -115,7 +117,7 @@ public class MultipartEntityTest {
 		MultipartEntity entity = builder.build();
 		String contentType = entity.getContentType().getValue();
 		String boundary = contentType.split("boundary=")[1];
-		assertTrue(boundary.length() >= 30, "boundary was ["+boundary+"]");
+		assertTrue(boundary.length() >= 30, "boundary was [" + boundary + "]");
 	}
 
 	@Test
@@ -154,7 +156,8 @@ public class MultipartEntityTest {
 		builder.setBoundary("test-boundary");
 
 		Message repeatable = Message.asMessage(new Message("dummy-content-here").asByteArray());
-		Message nonRepeatable = Message.asMessage(new FilterInputStream(repeatable.asInputStream()) {});
+		Message nonRepeatable = Message.asMessage(new FilterInputStream(repeatable.asInputStream()) {
+		});
 
 		builder.addPart("part1", repeatable);
 		builder.addPart("part2", nonRepeatable);

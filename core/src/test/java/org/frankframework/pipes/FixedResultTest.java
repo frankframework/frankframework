@@ -10,6 +10,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -28,8 +29,8 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		return new FixedResultPipe();
 	}
 
-	public Parameter setUp(String name){
-		session.put(name,"value");
+	public Parameter setUp(String name) {
+		session.put(name, "value");
 		return ParameterBuilder.create().withName(name).withValue("abs").withSessionKey("*");
 	}
 
@@ -60,13 +61,13 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void testEmptyFileName(){
+	public void testEmptyFileName() {
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertThat(e.getMessage(), Matchers.endsWith("has neither filename nor filenameSessionKey nor returnString specified"));
 	}
 
 	@Test
-	public void xsltSuccess() throws Exception{
+	public void xsltSuccess() throws Exception {
 		Parameter param = setUp("param1");
 		pipe.addParameter(param);
 		pipe.setSubstituteVars(true);
@@ -80,7 +81,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void xsltFailForTransformation() throws Exception{
+	public void xsltFailForTransformation() throws Exception {
 		Parameter param = setUp("param1");
 		pipe.addParameter(param);
 		pipe.setStyleSheetName("/Xslt/importNotFound/name2.xsl");
@@ -89,12 +90,12 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		pipe.setReturnString("${param1}andandandparam2");
 		pipe.configure();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "whatisthis", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "whatisthis", session));
 		assertThat(e.getMessage(), Matchers.containsString("error transforming message"));
 	}
 
 	@Test
-	public void testXsltWithReturnedStringReplaced() throws Exception{
+	public void testXsltWithReturnedStringReplaced() throws Exception {
 		Parameter param = ParameterBuilder.create().withName("param").withValue("<result><field>empty</field></result>");
 		pipe.addParameter(param);
 		pipe.setSubstituteVars(true);
@@ -110,7 +111,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsFromFile() throws Exception{
+	public void substitudeVarsFromFile() throws Exception {
 		Parameter param = ParameterBuilder.create().withName("myprop");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -124,7 +125,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsFromFileConfigureTimeLookup() throws Exception{
+	public void substitudeVarsFromFileConfigureTimeLookup() throws Exception {
 		Parameter param = ParameterBuilder.create().withName("myprop");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -138,13 +139,13 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void testFileNotFound() throws Exception{
+	public void testFileNotFound() throws Exception {
 		pipe.setFilename("nofile");
 		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
 
 	@Test
-	public void substitudeVarsWithFileSessionKey() throws Exception{
+	public void substitudeVarsWithFileSessionKey() throws Exception {
 		Parameter param = ParameterBuilder.create().withName("myprop");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -163,7 +164,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void replaceFixedParamsTest() throws Exception{
+	public void replaceFixedParamsTest() throws Exception {
 		Parameter param = ParameterBuilder.create().withName("myprop");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -177,7 +178,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsInCombinationOfReplacePair() throws Exception{
+	public void substitudeVarsInCombinationOfReplacePair() throws Exception {
 		Parameter param = ParameterBuilder.create().withName("param");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
@@ -193,7 +194,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substitudeVarsInCombinationOfReplacePairWithReplaceFixedParams() throws Exception{
+	public void substitudeVarsInCombinationOfReplacePairWithReplaceFixedParams() throws Exception {
 		Parameter param = ParameterBuilder.create().withName("param");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);

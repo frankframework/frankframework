@@ -25,7 +25,7 @@ import org.frankframework.core.PipeLineSession;
  * Resulthandler that writes the transformed record to a String, that is passed to the next Pipe literally.
  *
  * @author Gerrit van Brakel
- * @since   4.7
+ * @since 4.7
  * @deprecated Warning: non-maintained functionality.
  */
 public class Result2StringWriter extends ResultWriter {
@@ -37,10 +37,10 @@ public class Result2StringWriter extends ResultWriter {
 
 	@Override
 	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
-		super.finalizeResult(session,streamId, error);
-		StringWriter writer = (StringWriter)getWriter(session,streamId,false);
-		String result=null;
-		if (writer!=null) {
+		super.finalizeResult(session, streamId, error);
+		StringWriter writer = (StringWriter) getWriter(session, streamId, false);
+		String result = null;
+		if (writer != null) {
 			result = (writer).getBuffer().toString();
 		}
 		return result;

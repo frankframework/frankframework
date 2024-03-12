@@ -19,13 +19,13 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
+
 /**
  * ErrorMessageFormatter for JUICE, introduced with the Y01-project.
  *
- * @deprecated Please note that the information returned by this ErrorMessageFormatter is not very
- * informative. Consider using one of {@link ErrorMessageFormatter} or {@link XslErrorMessageFormatter}
- *
  * @author Johan Verrips IOS
+ * @deprecated Please note that the information returned by this ErrorMessageFormatter is not very
+ * 		informative. Consider using one of {@link ErrorMessageFormatter} or {@link XslErrorMessageFormatter}
  */
 public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 	private final String applicationName = AppConstants.getInstance().getProperty("application.name");
@@ -33,11 +33,11 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 
 	@Override
 	public Message format(String message, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
-		String result= "<ServiceResponse>\n" +
+		String result = "<ServiceResponse>\n" +
 				"   <ResponseEnvelope>\n" +
 				"       <serviceType>ING_RES1006</serviceType>\n" +
-				"       <messageId>" +messageId+   "</messageId>\n" +
-				"       <from>"+applicationName+ " "+applicationVersion+ "</from>\n" +
+				"       <messageId>" + messageId + "</messageId>\n" +
+				"       <from>" + applicationName + " " + applicationVersion + "</from>\n" +
 				"       <to>JUICE</to>\n" +
 				"       <timeStamp>" + DateFormatUtils.getTimeStamp() + "</timeStamp>\n" +
 				"       <ResponseStatus>\n" +
@@ -46,7 +46,7 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 				"           <statusText>" + message + "</statusText>\n" +
 				"       </ResponseStatus>\n" +
 				"   </ResponseEnvelope>\n" +
-				"   <Body>\n" +location.getName()+
+				"   <Body>\n" + location.getName() +
 				"   </Body>\n" +
 				"</ServiceResponse>\n";
 

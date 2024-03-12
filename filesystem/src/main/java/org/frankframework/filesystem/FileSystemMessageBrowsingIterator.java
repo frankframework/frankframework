@@ -40,7 +40,7 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 
 	@Override
 	public boolean hasNext() throws ListenerException {
-		return iterator !=null && iterator.hasNext();
+		return iterator != null && iterator.hasNext();
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 	@Override
 	public void close() throws ListenerException {
 		try {
-			if (directoryStream!=null) {
+			if (directoryStream != null) {
 				directoryStream.close();
 			}
 		} catch (IOException e) {

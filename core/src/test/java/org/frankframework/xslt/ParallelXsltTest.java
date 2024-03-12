@@ -17,6 +17,7 @@ import org.frankframework.senders.XsltSender;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.TransformerPool.OutputType;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -25,13 +26,13 @@ import org.junit.jupiter.params.provider.Arguments;
 
 public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
-	public int NUM_SENDERS=10;
+	public int NUM_SENDERS = 10;
 	private List<XsltSender> xsltSenders;
-	boolean expectExtraParamWarning=false;
+	boolean expectExtraParamWarning = false;
 
 	@BeforeEach
 	public void clear() {
-		expectExtraParamWarning=false;
+		expectExtraParamWarning = false;
 	}
 
 	public static Stream<Arguments> data() {
@@ -43,7 +44,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	protected SenderSeries createSenderContainer() {
-		SenderSeries senders=new ParallelSenders();
+		SenderSeries senders = new ParallelSenders();
 		autowireByType(senders);
 		return senders;
 	}
@@ -51,23 +52,23 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	@Override
 	public SenderPipe createPipe() {
 		SenderPipe pipe = new SenderPipe();
-		SenderSeries psenders=createSenderContainer();
-		xsltSenders=new ArrayList<>();
-		for(int i=0;i<NUM_SENDERS;i++) {
+		SenderSeries psenders = createSenderContainer();
+		xsltSenders = new ArrayList<>();
+		for (int i = 0; i < NUM_SENDERS; i++) {
 			XsltSender sender = new XsltSender();
 			//sender.setSessionKey("out"+i);
 			sender.setOmitXmlDeclaration(true);
 
-			sender.addParameter(new Parameter("header", "header"+i));
+			sender.addParameter(new Parameter("header", "header" + i));
 
-			session.put("sessionKey"+i,"sessionKeyValue"+i);
-			sender.addParameter(ParameterBuilder.create().withName("sessionKey").withSessionKey("sessionKey"+i));
+			session.put("sessionKey" + i, "sessionKeyValue" + i);
+			sender.addParameter(ParameterBuilder.create().withName("sessionKey").withSessionKey("sessionKey" + i));
 
 			autowireByType(sender);
 			psenders.registerSender(sender);
 			xsltSenders.add(sender);
 		}
-		session.put("sessionKeyGlobal","sessionKeyGlobalValue");
+		session.put("sessionKeyGlobal", "sessionKeyGlobalValue");
 		psenders.addParameter(ParameterBuilder.create().withName("sessionKeyGlobal").withSessionKey("sessionKeyGlobal"));
 		pipe.setSender(psenders);
 		return pipe;
@@ -82,20 +83,20 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	private String stripPrefix(String string, String prefix) {
 		if (string.startsWith(prefix)) {
-			string=string.substring(prefix.length());
+			string = string.substring(prefix.length());
 		}
 		return string;
 	}
 
 	@Override
 	protected void assertResultsAreCorrect(String expected, String actual, PipeLineSession session) {
-		String xmlPrefix="<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-		boolean stripAllWhitespace=true; // to cope with differences between unix and windows line endings
+		String xmlPrefix = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		boolean stripAllWhitespace = true; // to cope with differences between unix and windows line endings
 
-		expected=stripPrefix(expected, xmlPrefix);
-		expected=stripPrefix(expected, xmlPrefix.replaceAll("\\s",""));
+		expected = stripPrefix(expected, xmlPrefix);
+		expected = stripPrefix(expected, xmlPrefix.replaceAll("\\s", ""));
 
-		StringBuilder combinedExpected= new StringBuilder("<results>");
+		StringBuilder combinedExpected = new StringBuilder("<results>");
 
 		for (int i = 0; i < NUM_SENDERS; i++) {
 			combinedExpected
@@ -111,7 +112,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		/* Parallel sender uses toXml method which escapes the new line char. In the comparison we need unescaped char.*/
 		actual = actual.replace("&#xA;", "&#10;").replace("WindowsPath", "IGNORE").replace("UnixPath", "IGNORE");
 		if (stripAllWhitespace) {
-			super.assertResultsAreCorrect(combinedExpected.toString().replaceAll("\\s",""), actual.replaceAll("\\s",""), session);
+			super.assertResultsAreCorrect(combinedExpected.toString().replaceAll("\\s", ""), actual.replaceAll("\\s", ""), session);
 		} else {
 			super.assertResultsAreCorrect(combinedExpected.toString(), actual, session);
 		}
@@ -119,8 +120,8 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	@Override
 	protected void checkTestAppender(int expectedSize, String expectedString) {
-		super.checkTestAppender(expectedSize+(expectExtraParamWarning?1:0),expectedString);
-		if (expectExtraParamWarning) assertThat(testAppender.toString(),containsString("are not available for use by nested Senders"));
+		super.checkTestAppender(expectedSize + (expectExtraParamWarning ? 1 : 0), expectedString);
+		if (expectExtraParamWarning) assertThat(testAppender.toString(), containsString("are not available for use by nested Senders"));
 	}
 
 	@Override
@@ -187,7 +188,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	@Test
 	@Override
 	public void duplicateImportErrorAlertsXslt1() throws Exception {
-		expectExtraParamWarning=true;
+		expectExtraParamWarning = true;
 		super.duplicateImportErrorAlertsXslt1();
 	}
 
@@ -195,55 +196,55 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	@Override
 	public void duplicateImportErrorAlertsXslt2() throws Exception {
 		assumeFalse(TestAssertions.isTestRunningOnGitHub()); // test fails on GitHub, with two extra alerts in logging. So be it.
-		expectExtraParamWarning=true;
+		expectExtraParamWarning = true;
 		super.duplicateImportErrorAlertsXslt2();
 	}
 
 	@Override
 	protected void setStyleSheetName(String styleSheetName) {
-		for (XsltSender sender:xsltSenders) {
+		for (XsltSender sender : xsltSenders) {
 			sender.setStyleSheetName(styleSheetName);
 		}
 	}
 
 	@Override
 	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
-		for (XsltSender sender:xsltSenders) {
+		for (XsltSender sender : xsltSenders) {
 			sender.setStyleSheetNameSessionKey(styleSheetNameSessionKey);
 		}
 	}
 
 	@Override
 	protected void setXpathExpression(String xpathExpression) {
-		for (XsltSender sender:xsltSenders) {
+		for (XsltSender sender : xsltSenders) {
 			sender.setXpathExpression(xpathExpression);
 		}
 	}
 
 	@Override
 	protected void setOmitXmlDeclaration(boolean omitXmlDeclaration) {
-		for (XsltSender sender:xsltSenders) {
+		for (XsltSender sender : xsltSenders) {
 			sender.setOmitXmlDeclaration(omitXmlDeclaration);
 		}
 	}
 
 	@Override
 	protected void setIndent(boolean indent) {
-		for (XsltSender sender:xsltSenders) {
+		for (XsltSender sender : xsltSenders) {
 			sender.setIndentXml(indent);
 		}
 	}
 
 	@Override
 	protected void setSkipEmptyTags(boolean skipEmptyTags) {
-		for (XsltSender sender:xsltSenders) {
+		for (XsltSender sender : xsltSenders) {
 			sender.setSkipEmptyTags(skipEmptyTags);
 		}
 	}
 
 	@Override
 	protected void setOutputType(OutputType outputType) {
-		for (XsltSender sender:xsltSenders) {
+		for (XsltSender sender : xsltSenders) {
 			sender.setOutputType(outputType);
 		}
 	}
@@ -251,7 +252,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	@Override
 	protected void setRemoveNamespaces(boolean removeNamespaces) {
-		for (XsltSender sender:xsltSenders) {
+		for (XsltSender sender : xsltSenders) {
 			sender.setRemoveNamespaces(removeNamespaces);
 		}
 	}
@@ -265,7 +266,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
 	@Override
 	protected void setHandleLexicalEvents(boolean handleLexicalEvents) {
-		for (XsltSender sender:xsltSenders) {
+		for (XsltSender sender : xsltSenders) {
 			sender.setHandleLexicalEvents(handleLexicalEvents);
 		}
 	}

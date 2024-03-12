@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -40,13 +41,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import lombok.Getter;
-
 /**
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
  *
+ * @author Peter Leeuwenburgh
  * @deprecated Please replace with ForEachChildElementPipe.
- * @author  Peter Leeuwenburgh
  */
 @Deprecated
 @ConfigurationWarning("Please replace with ForEachChildElementPipe. ElementName and elementChain can be replaced with containerElement and/or targetElement. It is not a 1 to 1 replacement, different values may be required!")
@@ -169,7 +168,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 		private String elementsToString() {
 			String chain = null;
-			for (Iterator<String> it = elements.iterator(); it.hasNext();) {
+			for (Iterator<String> it = elements.iterator(); it.hasNext(); ) {
 				String element = it.next();
 				if (chain == null) {
 					chain = element;
@@ -191,7 +190,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	}
 
 	@Override
-	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException {
+	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String, Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException {
 		InputStream xmlInput;
 		try {
 			xmlInput = new FileInputStream(input.asString());
@@ -216,7 +215,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			try {
 				handler.endDocument();
 			} catch (SAXException e1) {
-				throw new SenderException("could not endDocument after stop was requested",e1);
+				throw new SenderException("could not endDocument after stop was requested", e1);
 			}
 		}
 		return handler.stopReason;

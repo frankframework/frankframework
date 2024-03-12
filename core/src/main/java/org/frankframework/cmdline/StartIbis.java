@@ -19,10 +19,10 @@ import org.frankframework.configuration.IbisContext;
 
 /**
  * Starts up a configuration in a plain JVM.
- *
+ * <p>
  * Works only for pulling listeners.
  *
- * @author  Johan Verrips
+ * @author Johan Verrips
  */
 public class StartIbis {
 

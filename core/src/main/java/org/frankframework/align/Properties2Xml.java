@@ -26,26 +26,25 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSModel;
-import org.xml.sax.SAXException;
-
 import org.frankframework.align.Properties2Xml.PropertyNode;
+import org.xml.sax.SAXException;
 
 /**
  * XML Schema guided JSON to XML converter;
  *
  * @author Gerrit van Brakel
  */
-public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<String,String>> {
+public class Properties2Xml extends Map2Xml<String, String, PropertyNode, Map<String, String>> {
 
 	private final String attributeSeparator = ".";
-//	private String indexSeparator=".";
+	//	private String indexSeparator=".";
 	private final String valueSeparator = ",";
 
-	private Map<String,String> data;
+	private Map<String, String> data;
 
 	protected static class PropertyNode {
 		String value;
-		Map<String,String> attributes;
+		Map<String, String> attributes;
 	}
 
 	public Properties2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, String rootElement) {
@@ -55,18 +54,18 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 
 	@Override
 	public void startParse(Map<String, String> root) throws SAXException {
-		data=root;
+		data = root;
 		super.startParse(root);
 	}
 
 
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, PropertyNode node, String childName) {
-		if (data.containsKey(childName) || node !=null && node.attributes!=null && node.attributes.containsKey(childName)) {
+		if (data.containsKey(childName) || node != null && node.attributes != null && node.attributes.containsKey(childName)) {
 			return true;
 		}
-		for (String key:data.keySet()) {
-			if (key.startsWith(childName+attributeSeparator)) {
+		for (String key : data.keySet()) {
+			if (key.startsWith(childName + attributeSeparator)) {
 				return true;
 			}
 		}
@@ -75,28 +74,28 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 
 	@Override
 	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, PropertyNode node) throws SAXException {
-		return node!=null ? node.attributes: null;
+		return node != null ? node.attributes : null;
 	}
 
 	@Override
 	public Iterable<PropertyNode> getChildrenByName(PropertyNode node, XSElementDeclaration childElementDeclaration) {
 		String name = childElementDeclaration.getName();
-		List<PropertyNode> result=new LinkedList<>();
+		List<PropertyNode> result = new LinkedList<>();
 		if (data.containsKey(name)) {
-			String[] values=data.get(name).split(valueSeparator);
-			for (String value:values) {
+			String[] values = data.get(name).split(valueSeparator);
+			for (String value : values) {
 				PropertyNode childNode = new PropertyNode();
 				childNode.value = value;
 				result.add(childNode);
 			}
 		}
-		String prefix = name+attributeSeparator;
-		for (String key:data.keySet()) {
+		String prefix = name + attributeSeparator;
+		for (String key : data.keySet()) {
 			if (key.startsWith(prefix)) {
 				String attributeName = key.substring(prefix.length());
 				String[] attributeValues = data.get(key).split(valueSeparator);
-				for (int i=0; i< attributeValues.length; i++) {
-					if (i>=result.size()) {
+				for (int i = 0; i < attributeValues.length; i++) {
+					if (i >= result.size()) {
 						result.add(new PropertyNode());
 					}
 					PropertyNode childNode = result.get(i);
@@ -107,12 +106,12 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 				}
 			}
 		}
-		if (log.isDebugEnabled() && result.size()>0) {
-			String elems="";
-			for (PropertyNode elem:result) {
-				elems+=", ["+elem.value+"]";
+		if (log.isDebugEnabled() && result.size() > 0) {
+			String elems = "";
+			for (PropertyNode elem : result) {
+				elems += ", [" + elem.value + "]";
 			}
-			log.debug("getChildrenByName returning: "+elems.substring(1));
+			log.debug("getChildrenByName returning: " + elems.substring(1));
 		}
 //		for (int i=1;data.containsKey(name+indexSeparator+i);i++) {
 //			result.add(data.get(name+indexSeparator+i));
@@ -127,15 +126,15 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 
 	@Override
 	public PropertyNode getRootNode(Map<String, String> container) {
-		if(getRootElement() == null) {
+		if (getRootElement() == null) {
 			return super.getRootNode(container);
 		}
 
 		Map<String, String> rootAttributes = new HashMap<>();
-		int offset = getRootElement().length()+1;
-		for(Map.Entry<String, String> entry : container.entrySet()) {
+		int offset = getRootElement().length() + 1;
+		for (Map.Entry<String, String> entry : container.entrySet()) {
 			String key = entry.getKey();
-			if(key.startsWith(getRootElement()+attributeSeparator)) {
+			if (key.startsWith(getRootElement() + attributeSeparator)) {
 				rootAttributes.put(key.substring(offset), entry.getValue());
 			}
 		}
@@ -144,13 +143,13 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 		return rootNode;
 	}
 
-	public static String translate(Map<String,String> data, URL schemaURL, String rootElement, String targetNamespace) throws SAXException {
+	public static String translate(Map<String, String> data, URL schemaURL, String rootElement, String targetNamespace) throws SAXException {
 		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
 		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 
 		// create the validator, setup the chain
-		Properties2Xml p2x = new Properties2Xml(validatorHandler,schemaInformation,rootElement);
-		if (targetNamespace!=null) {
+		Properties2Xml p2x = new Properties2Xml(validatorHandler, schemaInformation, rootElement);
+		if (targetNamespace != null) {
 			p2x.setTargetNamespace(targetNamespace);
 		}
 

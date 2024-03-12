@@ -32,13 +32,13 @@ import org.frankframework.util.StringUtil;
  */
 public class CredentialResolver implements AdditionalStringResolver {
 
-	public static final String CREDENTIAL_PREFIX="credential:";
-	public static final String USERNAME_PREFIX="username:"; // username and password prefixes must be of same length
-	public static final String PASSWORD_PREFIX="password:";
+	public static final String CREDENTIAL_PREFIX = "credential:";
+	public static final String USERNAME_PREFIX = "username:"; // username and password prefixes must be of same length
+	public static final String PASSWORD_PREFIX = "password:";
 
-	public static final String CREDENTIAL_EXPANSION_ALLOWING_PROPERTY="authAliases.expansion.allowed"; // refers to a comma separated list of aliases for which credential expansion is allowed
+	public static final String CREDENTIAL_EXPANSION_ALLOWING_PROPERTY = "authAliases.expansion.allowed"; // refers to a comma separated list of aliases for which credential expansion is allowed
 
-	private static Set<String> authAliasesAllowedToExpand=null;
+	private static Set<String> authAliasesAllowedToExpand = null;
 
 	@Override
 	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
@@ -57,19 +57,19 @@ public class CredentialResolver implements AdditionalStringResolver {
 		}
 		String replacement;
 		if (username || mayExpandAuthAlias(key, props1)) {
-			String defaultValue = delimStart + key+ delimStop;
-			ICredentials credentials = CredentialFactory.getCredentials(key, ()-> defaultValue, ()-> defaultValue);
+			String defaultValue = delimStart + key + delimStop;
+			ICredentials credentials = CredentialFactory.getCredentials(key, () -> defaultValue, () -> defaultValue);
 			replacement = username ? credentials.getUsername() : credentials.getPassword();
 		} else {
-			replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
+			replacement = "!!not allowed to expand credential of authAlias [" + key + "]!!";
 		}
 		return Optional.of(mustHideCredential ? StringUtil.hide(replacement) : replacement);
 	}
 
 	private static boolean mayExpandAuthAlias(String aliasName, Map<?, ?> props1) {
-		if (authAliasesAllowedToExpand==null) {
-			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY,"").trim();
-			if(StringResolver.needsResolution(property)) {
+		if (authAliasesAllowedToExpand == null) {
+			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY, "").trim();
+			if (StringResolver.needsResolution(property)) {
 				property = StringResolver.substVars(property, props1);
 			}
 			authAliasesAllowedToExpand = new HashSet<>(Arrays.asList(property.split(",")));

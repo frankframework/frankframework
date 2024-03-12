@@ -33,7 +33,7 @@ public class ElementPropertyResolver extends FullXmlFilter {
 
 	public ElementPropertyResolver(ContentHandler handler, Properties properties) {
 		super(handler);
-		if(properties == null) {
+		if (properties == null) {
 			throw new IllegalArgumentException("no properties defined");
 		}
 		this.properties = properties;
@@ -46,7 +46,7 @@ public class ElementPropertyResolver extends FullXmlFilter {
 		} else {
 			String characters = new String(ch, start, length);
 
-			if(characters.contains(StringResolver.DELIM_START)) {
+			if (characters.contains(StringResolver.DELIM_START)) {
 				collectingBuffer = true;
 				pendingSubstBuff.append(characters);
 			} else {
@@ -62,7 +62,7 @@ public class ElementPropertyResolver extends FullXmlFilter {
 			} catch (IllegalArgumentException | IOException e) {
 				throw new SaxException("Could not substitute", e);
 			}
-			collectingBuffer=false;
+			collectingBuffer = false;
 			pendingSubstBuff.setLength(0);
 		}
 	}

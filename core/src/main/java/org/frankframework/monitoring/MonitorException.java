@@ -18,20 +18,23 @@ package org.frankframework.monitoring;
 import org.frankframework.core.IbisException;
 
 /**
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public class MonitorException extends IbisException {
 
 	public MonitorException() {
 		super();
 	}
+
 	public MonitorException(String message) {
 		super(message);
 	}
+
 	public MonitorException(String message, Throwable cause) {
 		super(message, cause);
 	}
+
 	public MonitorException(Throwable cause) {
 		super(cause);
 	}

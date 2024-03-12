@@ -27,10 +27,12 @@ import org.frankframework.lifecycle.servlets.IAuthenticator;
 import org.frankframework.lifecycle.servlets.SecuritySettings;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.util.UUIDUtil;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mock.env.MockEnvironment;
@@ -50,10 +52,12 @@ public class ServletManagerTest {
 	public static void prepare() throws Exception {
 		ServletContext context = new MockServletContext() {
 			private Map<String, Dynamic> dynamic = new HashMap<>();
+
 			@Override
 			public Dynamic addServlet(String servletName, javax.servlet.Servlet servlet) {
-				return dynamic.compute(servletName, (k,v) -> new DynamicServletRegistration(servletName, servlet));
+				return dynamic.compute(servletName, (k, v) -> new DynamicServletRegistration(servletName, servlet));
 			}
+
 			@Override
 			public ServletRegistration getServletRegistration(String servletName) {
 				return dynamic.get(servletName);
@@ -66,7 +70,8 @@ public class ServletManagerTest {
 		doReturn(environment).when(applicationContext).getEnvironment();
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
-		doReturn(new DummyAuthenticator()).when(beanFactory).createBean(isA(IAuthenticator.class.getClass()), eq(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME), eq(false));
+		doReturn(new DummyAuthenticator()).when(beanFactory)
+				.createBean(isA(IAuthenticator.class.getClass()), eq(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME), eq(false));
 		manager.setApplicationContext(applicationContext);
 
 		manager.afterPropertiesSet();
@@ -122,7 +127,7 @@ public class ServletManagerTest {
 	@Test
 	public void testUrlMappingOverride() {
 		String name = UUIDUtil.createNumericUUID();
-		properties.setProperty("servlet."+name+".urlMapping", " test2 ");
+		properties.setProperty("servlet." + name + ".urlMapping", " test2 ");
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		servlet.setUrlMapping("not-used");
@@ -135,7 +140,7 @@ public class ServletManagerTest {
 	@Test
 	public void testUrlMultipleMappings() {
 		DummyServletImpl servlet = new DummyServletImpl();
-		servlet.setUrlMapping(new String[] {"mapping1", "/mapping2"});
+		servlet.setUrlMapping(new String[]{"mapping1", "/mapping2"});
 
 		DynamicServletRegistration sdr = createAndRegister(servlet);
 
@@ -145,10 +150,10 @@ public class ServletManagerTest {
 	@Test
 	public void testUrlMultipleMappingsOverride() {
 		String name = UUIDUtil.createNumericUUID();
-		properties.setProperty("servlet."+name+".urlMapping", "  test2 , /test3"); //contains spaces ;)
+		properties.setProperty("servlet." + name + ".urlMapping", "  test2 , /test3"); //contains spaces ;)
 
 		DummyServletImpl servlet = new DummyServletImpl();
-		servlet.setUrlMapping(new String[] {"mapping1", "mapping2"});
+		servlet.setUrlMapping(new String[]{"mapping1", "mapping2"});
 
 		DynamicServletRegistration sdr = createAndRegister(name, servlet);
 
@@ -169,7 +174,7 @@ public class ServletManagerTest {
 	@Test
 	public void testTransportGuaranteeOverride() {
 		String name = UUIDUtil.createNumericUUID();
-		properties.setProperty("servlet."+name+".transportGuarantee", "none");
+		properties.setProperty("servlet." + name + ".transportGuarantee", "none");
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		servlet.setUrlMapping("/test5");
@@ -192,7 +197,7 @@ public class ServletManagerTest {
 		servlet.setUrlMapping(name);
 		DynamicServletRegistration sdr = createAndRegister(name, servlet);
 
-		assertEquals("[/"+name+"]", sdr.getMappings().toString());
+		assertEquals("[/" + name + "]", sdr.getMappings().toString());
 		assertEquals(TransportGuarantee.NONE, sdr.getServletSecurity().getTransportGuarantee());
 	}
 
@@ -234,7 +239,6 @@ public class ServletManagerTest {
 	}
 
 
-
 	private DynamicServletRegistration createAndRegister(DummyServletImpl servlet) {
 		return createAndRegister(UUIDUtil.createNumericUUID(), servlet);
 	}
@@ -253,11 +257,13 @@ public class ServletManagerTest {
 
 	private static class DummyServletImpl extends HttpServlet implements DynamicRegistration.Servlet {
 		private @Getter @Setter String name;
-		private @Getter String[] urlMappings = new String[] {"dummy-path"};
+		private @Getter String[] urlMappings = new String[]{"dummy-path"};
 		private @Getter @Setter String[] accessGrantingRoles;
+
 		public void setUrlMapping(String urlMapping) {
-			setUrlMapping(new String[] {urlMapping} );
+			setUrlMapping(new String[]{urlMapping});
 		}
+
 		public void setUrlMapping(String[] urlMapping) {
 			this.urlMappings = urlMapping;
 		}

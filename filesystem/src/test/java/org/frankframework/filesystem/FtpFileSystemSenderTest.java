@@ -1,11 +1,12 @@
 package org.frankframework.filesystem;
 
+import org.junit.jupiter.api.BeforeEach;
+
 import org.frankframework.filesystem.ftp.FTPFileRef;
 import org.frankframework.senders.FtpFileSystemSender;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
-import org.junit.jupiter.api.BeforeEach;
 
 /**
  * This test class is created to test both FtpFileSystem and FtpFileSystemSender classes.
@@ -25,7 +26,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemS
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		if("localhost".equals(host)) {
+		if ("localhost".equals(host)) {
 			return new LocalFileSystemTestHelper(fs.getTestDirectory());
 		}
 		return new FtpFileSystemTestHelper(username, password, host, remoteDirectory, port);
@@ -34,7 +35,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemS
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
-		if("localhost".equals(host)) {
+		if ("localhost".equals(host)) {
 			fs.startServer(FileSystemType.FTP);
 			port = fs.getPort();
 		}

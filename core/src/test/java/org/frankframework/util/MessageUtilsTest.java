@@ -14,10 +14,12 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.MimeType;
 
@@ -88,7 +90,7 @@ public class MessageUtilsTest {
 	@ParameterizedTest
 	@CsvSource({"utf8-with-bom,32", "utf8-without-bom,28", "iso-8859-1,1095"})
 	public void testCalculateSize(String resource, long size) throws Exception {
-		Message message = MessageTestUtils.getMessage("/Util/MessageUtils/"+resource+".txt");
+		Message message = MessageTestUtils.getMessage("/Util/MessageUtils/" + resource + ".txt");
 
 		// Act
 		Long calculatedSize = MessageUtils.computeSize(message);
@@ -104,8 +106,8 @@ public class MessageUtilsTest {
 		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]");
-		assertTrue(mimeType.toString().contains("charset=ISO-8859-1"), "Content-Type header ["+mimeType.toString()+"] does not contain correct [charset]");
+		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header [" + mimeType.toString() + "] does not contain [text/plain]");
+		assertTrue(mimeType.toString().contains("charset=ISO-8859-1"), "Content-Type header [" + mimeType.toString() + "] does not contain correct [charset]");
 	}
 
 	@Test
@@ -113,8 +115,8 @@ public class MessageUtilsTest {
 		URL url = ClassLoaderUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("application/pdf"), "Content-Type header ["+mimeType.toString()+"] does not contain [application/pdf]");
-		assertNull(mimeType.getParameter("charset"), "Content-Type header ["+mimeType.toString()+"] may not contain a charset");
+		assertTrue(mimeType.toString().contains("application/pdf"), "Content-Type header [" + mimeType.toString() + "] does not contain [application/pdf]");
+		assertNull(mimeType.getParameter("charset"), "Content-Type header [" + mimeType.toString() + "] may not contain a charset");
 	}
 
 	@Test
@@ -123,8 +125,8 @@ public class MessageUtilsTest {
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("application/pdf"), "Content-Type header ["+mimeType.toString()+"] does not contain [application/pdf]");
-		assertNull(mimeType.getParameter("charset"), "Content-Type header ["+mimeType.toString()+"] may not contain a charset");
+		assertTrue(mimeType.toString().contains("application/pdf"), "Content-Type header [" + mimeType.toString() + "] does not contain [application/pdf]");
+		assertNull(mimeType.getParameter("charset"), "Content-Type header [" + mimeType.toString() + "] may not contain a charset");
 	}
 
 	@Test
@@ -134,8 +136,8 @@ public class MessageUtilsTest {
 		message.getContext().put(MessageContext.METADATA_CHARSET, "auto");
 
 		MimeType mimeType = MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]");
-		assertTrue(mimeType.toString().contains("charset=ISO-8859-1"), "Content-Type header ["+mimeType.toString()+"] does not contain correct [charset]");
+		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header [" + mimeType.toString() + "] does not contain [text/plain]");
+		assertTrue(mimeType.toString().contains("charset=ISO-8859-1"), "Content-Type header [" + mimeType.toString() + "] does not contain correct [charset]");
 	}
 
 	@Test
@@ -145,8 +147,8 @@ public class MessageUtilsTest {
 		message.getContext().put(MessageContext.METADATA_CHARSET, "utf-8"); //Is wrong, but it's been set, to must be used...
 
 		MimeType mimeType = MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]");
-		assertTrue(mimeType.toString().contains("charset=UTF-8"), "Content-Type header ["+mimeType.toString()+"] does not contain correct [charset]");
+		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header [" + mimeType.toString() + "] does not contain [text/plain]");
+		assertTrue(mimeType.toString().contains("charset=UTF-8"), "Content-Type header [" + mimeType.toString() + "] does not contain correct [charset]");
 	}
 
 	@Test
@@ -156,7 +158,7 @@ public class MessageUtilsTest {
 		Message message = new UrlMessage(url);
 		try (MessageDataSource ds = new MessageDataSource(message)) {
 			assertEquals("file.xml", ds.getName(), "filename should be the same");
-			assertEquals("application/xml", ds.getContentType(),"content-type should be the same"); //determined from file extension
+			assertEquals("application/xml", ds.getContentType(), "content-type should be the same"); //determined from file extension
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 		}
@@ -195,6 +197,7 @@ public class MessageUtilsTest {
 		assertNotNull(mimeType);
 		assertEquals("application/octet-stream", mimeType.toString()); //mime-type cannot be determined
 	}
+
 	@Test
 	public void testJsonMessageWithName() {
 		Message json = new Message("{\"GUID\": \"ABC\"}", new MessageContext().withName("foo.json"));

@@ -15,12 +15,10 @@
 */
 package org.frankframework.batch;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -31,13 +29,13 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.util.LogUtil;
+import org.springframework.context.ApplicationContext;
 
 
 /**
  * Abstract class for resulthandlers (handler that handles the transformed record).
  *
- *
- * @author  John Dekker
+ * @author John Dekker
  */
 public abstract class AbstractResultHandler implements IResultHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
@@ -48,23 +46,25 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	private @Getter String prefix;
 	private @Getter String suffix;
 	private boolean defaultResultHandler;
-	private @Getter boolean blockByRecordType=true;
+	private @Getter boolean blockByRecordType = true;
 	private @Getter AbstractPipe pipe;
 
 	protected ParameterList paramList = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList!=null) {
+		if (paramList != null) {
 			paramList.configure();
 		}
 		if (StringUtils.isNotEmpty(getPrefix()) || StringUtils.isNotEmpty(getSuffix())) {
 			ConfigurationWarnings.add(this, log, "the use of attributes prefix and suffix has been replaced by 'blocks'. Please replace with 'onBlockOpen' and 'onBlockClose', respectively", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getPipe().getAdapter());
 		}
 	}
+
 	@Override
 	public void open() throws SenderException {
 	}
+
 	@Override
 	public void close() throws SenderException {
 	}
@@ -72,14 +72,15 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	@Override
 	public void openDocument(PipeLineSession session, String streamId) throws Exception {
 	}
+
 	@Override
 	public void closeDocument(PipeLineSession session, String streamId) {
 	}
 
 	@Override
 	public void addParameter(Parameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
+		if (paramList == null) {
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}
@@ -104,6 +105,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	public void setPrefix(String string) {
 		prefix = string;
 	}
+
 	@Override
 	public boolean hasPrefix() {
 		return StringUtils.isNotEmpty(getPrefix());
@@ -117,12 +119,14 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 
 	/**
 	 * if set <code>true</code>, this resulthandler is the default for all {@link RecordHandlingFlow flow}s that do not have a handler specified
+	 *
 	 * @ff.default false
 	 */
 	@Override
 	public void setDefault(boolean isDefault) {
 		this.defaultResultHandler = isDefault;
 	}
+
 	@Override
 	public boolean isDefault() {
 		return defaultResultHandler;
@@ -130,6 +134,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 
 	/**
 	 * When set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType RecordHandler.newRecordType} is handled as a block.
+	 *
 	 * @ff.default true
 	 */
 	public void setBlockByRecordType(boolean b) {

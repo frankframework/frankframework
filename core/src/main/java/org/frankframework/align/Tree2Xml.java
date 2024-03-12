@@ -30,21 +30,22 @@ import org.xml.sax.SAXException;
 /**
  * Base class for XML Schema guided Tree to XML conversion;
  *
- * @author Gerrit van Brakel
- *
  * @param <C> Container of the root of the tree
  * @param <N> The tree node type
+ * @author Gerrit van Brakel
  */
-public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
+public abstract class Tree2Xml<C, N> extends ToXml<C, N> {
 
 	SubstitutionProvider<?> sp;
 
 	public Tree2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
-		super(validatorHandler,schemaInformation);
+		super(validatorHandler, schemaInformation);
 	}
 
 	public abstract Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, N node) throws SAXException; // returns null when no children present, otherwise a _copy_ of the Set (it will be modified)
+
 	public abstract Iterable<N> getNodeChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException;
+
 	public abstract String getNodeText(XSElementDeclaration elementDeclaration, N node);
 
 	@Override
@@ -52,11 +53,11 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		// should check for complex or simple type.
 		// for complex, any path of a substitution is valid
 		// for simple, only when a valid substitution value is found, a hit should be present.
-		if (sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
+		if (sp != null && sp.hasSubstitutionsFor(getContext(), childName)) {
 			return true;
 		}
-		Set<String> allChildNames=getAllNodeChildNames(elementDeclaration, node);
-		return allChildNames!=null && allChildNames.contains(childName);
+		Set<String> allChildNames = getAllNodeChildNames(elementDeclaration, node);
+		return allChildNames != null && allChildNames.contains(childName);
 	}
 
 
@@ -67,20 +68,21 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	protected N getSubstitutedChild(N node, String childName) {
 		return node;
 	}
+
 	protected String getOverride(XSElementDeclaration elementDeclaration, N node) {
 		Object text = sp.getOverride(getContext());
 		if (text instanceof String) {
-			return (String)text;
+			return (String) text;
 		}
 		return text.toString();
 	}
 
 	@Override
 	public final Iterable<N> getChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException {
-		String childName=childElementDeclaration.getName();
+		String childName = childElementDeclaration.getName();
 		Iterable<N> children = getNodeChildrenByName(node, childElementDeclaration);
-		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
-			List<N> result=new LinkedList<>();
+		if (children == null && sp != null && sp.hasSubstitutionsFor(getContext(), childName)) {
+			List<N> result = new LinkedList<>();
 			result.add(getSubstitutedChild(node, childName));
 			return result;
 		}
@@ -89,30 +91,30 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 
 	@Override
 	public final String getText(XSElementDeclaration elementDeclaration, N node) {
-		String nodeName=elementDeclaration.getName();
+		String nodeName = elementDeclaration.getName();
 		Object text;
-		if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] currently parsed element ["+getContext().getLocalName()+"]");
-		if (sp!=null && sp.hasOverride(getContext())) {
+		if (log.isTraceEnabled()) log.trace("node [" + nodeName + "] currently parsed element [" + getContext().getLocalName() + "]");
+		if (sp != null && sp.hasOverride(getContext())) {
 			String result = getOverride(elementDeclaration, node);
-			if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] override found ["+result+"]");
+			if (log.isTraceEnabled()) log.trace("node [" + nodeName + "] override found [" + result + "]");
 			return result;
 		}
-		String result=getNodeText(elementDeclaration, node);
-		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {
-			if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] default found ["+text+"]");
+		String result = getNodeText(elementDeclaration, node);
+		if (sp != null && StringUtils.isEmpty(result) && (text = sp.getDefault(getContext())) != null) {
+			if (log.isTraceEnabled()) log.trace("node [" + nodeName + "] default found [" + text + "]");
 			if (text instanceof String) {
-				result = (String)text;
+				result = (String) text;
 			}
 			result = text.toString();
 		}
-		if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] returning value ["+result+"]");
+		if (log.isTraceEnabled()) log.trace("node [" + nodeName + "] returning value [" + result + "]");
 		return result;
 	}
 
 	@Override
 	protected Set<String> getUnprocessedChildElementNames(XSElementDeclaration elementDeclaration, N node, Set<String> processedChildren) throws SAXException {
-		Set<String> unProcessedChildren = getAllNodeChildNames(elementDeclaration,node);
-		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
+		Set<String> unProcessedChildren = getAllNodeChildNames(elementDeclaration, node);
+		if (unProcessedChildren != null && !unProcessedChildren.isEmpty()) {
 			unProcessedChildren.removeAll(processedChildren);
 		}
 		return unProcessedChildren;
@@ -121,12 +123,13 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	public SubstitutionProvider<?> getSubstitutionProvider() {
 		return sp;
 	}
+
 	public void setSubstitutionProvider(SubstitutionProvider<?> substitutions) {
 		this.sp = substitutions;
 	}
 
 	public void setOverrideValues(Map<String, Object> overrideValues) {
-		OverridesMap<Object> overrides=new OverridesMap<>();
+		OverridesMap<Object> overrides = new OverridesMap<>();
 		overrides.registerSubstitutes(overrideValues);
 		setSubstitutionProvider(overrides);
 	}

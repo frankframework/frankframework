@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
  * Classes that implement the annotation are automatically picked up by Spring,
  * and in combination with the ServletRegisteringPostProcessor the servlets are
  * automatically registered with the ServletManager.
- *
+ * <p>
  * The servlet name will be deduced if not specified.
  *
  * @author Niels Meijer

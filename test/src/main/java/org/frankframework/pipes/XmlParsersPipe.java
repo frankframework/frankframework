@@ -20,7 +20,6 @@ import java.util.Map;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;

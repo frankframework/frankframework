@@ -25,10 +25,12 @@ public class OfflineResourceLoader implements com.aspose.words.IResourceLoadingC
 	public int resourceLoading(IResourceLoadingArgs resourceLoadingArgs) {
 		return canLoadResource(resourceLoadingArgs.getOriginalUri());
 	}
+
 	@Override
 	public int resourceLoading(ResourceLoadingArgs resourceLoadingArgs) {
 		return canLoadResource(resourceLoadingArgs.getOriginalUri());
 	}
+
 	private int canLoadResource(String resourceUri) {
 		return ResourceLoadingAction.SKIP;
 	}

@@ -42,17 +42,18 @@ public class Semaphore {
 	}
 
 	public Semaphore(int i) {
-		if(i < 0)
+		if (i < 0)
 			throw new IllegalArgumentException(i + " < 0");
 		counter = i;
 	}
 
 	/**
 	 * Decrements internal counter, blocking if the counter is already zero or less.
-	 * @exception InterruptedException passed from this.wait().
+	 *
+	 * @throws InterruptedException passed from this.wait().
 	 */
 	public synchronized void acquire() throws InterruptedException {
-		while(counter <= 0) {
+		while (counter <= 0) {
 			this.wait();
 		}
 		counter--;
@@ -87,7 +88,7 @@ public class Semaphore {
 	 */
 	public synchronized void release() {
 		counter++;
-		if(counter == 1) {
+		if (counter == 1) {
 			this.notify();
 		}
 	}

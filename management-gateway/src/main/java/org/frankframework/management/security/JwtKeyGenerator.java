@@ -23,17 +23,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.util.Environment;
-import org.frankframework.util.UUIDUtil;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -48,6 +37,16 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.util.Environment;
+import org.frankframework.util.UUIDUtil;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 public class JwtKeyGenerator implements InitializingBean {
 	public static final Curve JWT_DEFAULT_CURVE = Curve.P_384;
@@ -88,7 +87,7 @@ public class JwtKeyGenerator implements InitializingBean {
 	 */
 	public @Nonnull String create() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication == null) {
+		if (authentication == null) {
 			throw new AuthenticationServiceException("no Authentication object found in SecurityContext"); //This should technically not be possible but...
 		}
 

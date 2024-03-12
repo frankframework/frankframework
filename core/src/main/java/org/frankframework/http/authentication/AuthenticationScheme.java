@@ -40,7 +40,7 @@ public enum AuthenticationScheme {
 		try {
 			return schemeClass.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
-			log.warn("Cannot Instantiate object from class "+schemeClass.getName(), e);
+			log.warn("Cannot Instantiate object from class " + schemeClass.getName(), e);
 			return null;
 		}
 	}

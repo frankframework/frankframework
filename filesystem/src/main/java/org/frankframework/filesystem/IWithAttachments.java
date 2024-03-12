@@ -21,14 +21,18 @@ import java.util.Map;
 
 import org.frankframework.stream.Message;
 
-public interface IWithAttachments<F,A> extends IBasicFileSystem<F> {
+public interface IWithAttachments<F, A> extends IBasicFileSystem<F> {
 
 	public Iterator<A> listAttachments(F f) throws FileSystemException;
 
 	public String getAttachmentName(A a) throws FileSystemException;
+
 	public Message readAttachment(A a) throws FileSystemException, IOException;
+
 	public long getAttachmentSize(A a) throws FileSystemException;
+
 	public String getAttachmentContentType(A a) throws FileSystemException;
+
 	public String getAttachmentFileName(A a) throws FileSystemException;
 
 	public F getFileFromAttachment(A a) throws FileSystemException;

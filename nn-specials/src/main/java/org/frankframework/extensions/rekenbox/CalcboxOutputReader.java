@@ -32,21 +32,20 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- *  This is the reader of the Calcbox output. This class
- *   uses the XMLReader interface, so it reads the
- *   Calcbox output in the same way it reads XML
- *
- *  Change History
- *  Author                  Date         Version    Details
- *  Colin Wilmans           18-04-2002   1.0        First version
- *  Tim N. van der Leeuw    30-07-2002   1.1        Better handling of
- *                                                  labels with sequence
- *                                                  numbers.
- *                                                  Split-method taken out
- *                                                  and put in Util-object.
- *  Boris O Maltha			23-01-2003	 1.2		Added logging
- *
-*/
+ * This is the reader of the Calcbox output. This class
+ * uses the XMLReader interface, so it reads the
+ * Calcbox output in the same way it reads XML
+ * <p>
+ * Change History
+ * Author                  Date         Version    Details
+ * Colin Wilmans           18-04-2002   1.0        First version
+ * Tim N. van der Leeuw    30-07-2002   1.1        Better handling of
+ * labels with sequence
+ * numbers.
+ * Split-method taken out
+ * and put in Util-object.
+ * Boris O Maltha			23-01-2003	 1.2		Added logging
+ */
 public class CalcboxOutputReader implements XMLReader {
 	ContentHandler handler;
 
@@ -63,7 +62,7 @@ public class CalcboxOutputReader implements XMLReader {
 	public void parse(InputSource input) throws IOException, SAXException {
 		try {
 			// If we have no handler we can stop
-			if(handler == null) {
+			if (handler == null) {
 				throw new SAXException("No content handler");
 			}
 
@@ -79,11 +78,11 @@ public class CalcboxOutputReader implements XMLReader {
 
 			// Read the file and output it's contents.
 			String line = "";
-			while(null != (line = br.readLine())) {
+			while (null != (line = br.readLine())) {
 
 				// get everything before :
 				int colon = line.indexOf(":");
-				if(colon == -1) {
+				if (colon == -1) {
 					continue;
 				}
 				String calcboxtag = line.substring(0, colon).trim();
@@ -95,7 +94,7 @@ public class CalcboxOutputReader implements XMLReader {
 			handler.ignorableWhitespace("\n".toCharArray(), 0, 1);
 
 			// Place last end tags...
-			for(int i = tagMemory.length; i > 0; i--) {
+			for (int i = tagMemory.length; i > 0; i--) {
 				String strippedTag = striptrailingnumbers(tagMemory[i - 1]);
 				handler.endElement(nsu, strippedTag, strippedTag);
 			}
@@ -113,7 +112,7 @@ public class CalcboxOutputReader implements XMLReader {
 
 		// Tags with '#SAMENGESTELD' are not interesting for us,
 		// because next tag gives this information (redundant protocol error:)
-		if(line.indexOf("#SAMENGESTELD") != -1)
+		if (line.indexOf("#SAMENGESTELD") != -1)
 			return;
 
 		// place tag in arraylist
@@ -121,15 +120,15 @@ public class CalcboxOutputReader implements XMLReader {
 
 		//Figure out wich elements changed...
 		int tagChangeLevel = tagMemory.length + 1;
-		for(int i = tagMemory.length; i > 0; i--) {
+		for (int i = tagMemory.length; i > 0; i--) {
 			// If new tag has more tag parts or a tag part has changed
-			if(i > arrayTagString.length || !tagMemory[i - 1].equals(arrayTagString[i - 1])) {
+			if (i > arrayTagString.length || !tagMemory[i - 1].equals(arrayTagString[i - 1])) {
 				tagChangeLevel = i;
 			}
 		}
 
 		//And place end elements for these tags
-		for(int i = tagMemory.length; i >= tagChangeLevel; i--) {
+		for (int i = tagMemory.length; i >= tagChangeLevel; i--) {
 			String strippedTag = striptrailingnumbers(tagMemory[i - 1]);
 			handler.endElement(nsu, strippedTag, strippedTag);
 		}
@@ -139,7 +138,7 @@ public class CalcboxOutputReader implements XMLReader {
 		handler.ignorableWhitespace(indent.toCharArray(), 0, indent.length());
 
 		// Place start elements
-		for(int i = tagChangeLevel; i <= arrayTagString.length; i++) {
+		for (int i = tagChangeLevel; i <= arrayTagString.length; i++) {
 			String label = arrayTagString[i - 1];
 			int splitPos = trailingNumberSplitPos(label);
 			String tag = label.substring(0, splitPos);
@@ -147,7 +146,7 @@ public class CalcboxOutputReader implements XMLReader {
 
 			AttributesImpl atts = new AttributesImpl();
 
-			if(number.length() > 0) {
+			if (number.length() > 0) {
 				atts.addAttribute(nsu, "volgnummer", "volgnummer", "", number);
 			}
 			handler.startElement(nsu, tag, tag, atts);
@@ -179,6 +178,7 @@ public class CalcboxOutputReader implements XMLReader {
 	// =============================================
 	// IMPLEMENT THESE FOR A ROBUST APP
 	// =============================================
+
 	/** Allow an application to register an error event handler. */
 	@Override
 	public void setErrorHandler(ErrorHandler handler) {
@@ -193,6 +193,7 @@ public class CalcboxOutputReader implements XMLReader {
 	// =============================================
 	// IGNORE THESE
 	// =============================================
+
 	/** Parse an XML document from a system identifier (URI). */
 	@Override
 	public void parse(String systemId) throws IOException, SAXException {
@@ -248,27 +249,23 @@ public class CalcboxOutputReader implements XMLReader {
 
 		boolean containstrailingnumbers = false;
 		int j = 0;
-		for(j = str.length(); j > 0; j--) {
-			if(Character.isDigit(str.charAt(j - 1))) {
+		for (j = str.length(); j > 0; j--) {
+			if (Character.isDigit(str.charAt(j - 1))) {
 				containstrailingnumbers = true;
-			} else
-			{
+			} else {
 				break;
 			}
 		}
-		if(containstrailingnumbers)
-		{
-			return str.substring(0,j);
-		}
-		else
-		{
+		if (containstrailingnumbers) {
+			return str.substring(0, j);
+		} else {
 			return str;
 		}
 	}
 
 	private static int trailingNumberSplitPos(String str) {
-		for(int j = str.length(); j > 0; --j) {
-			if(!Character.isDigit(str.charAt(j - 1))) {
+		for (int j = str.length(); j > 0; --j) {
+			if (!Character.isDigit(str.charAt(j - 1))) {
 				return j;
 			}
 		}
@@ -278,11 +275,11 @@ public class CalcboxOutputReader implements XMLReader {
 	private String[] split(String name, String separators) {
 		StringTokenizer st = new StringTokenizer(name, separators);
 		List list = new ArrayList();
-		while(st.hasMoreTokens()) {
+		while (st.hasMoreTokens()) {
 			list.add(st.nextToken());
 		}
 		String[] array = new String[list.size()];
-		for(int i = 0; i < array.length; i++) {
+		for (int i = 0; i < array.length; i++) {
 			array[i] = (String) list.get(i);
 		}
 		return array;

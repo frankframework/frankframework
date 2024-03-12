@@ -29,8 +29,8 @@ import org.frankframework.management.bus.BusTopic;
 /**
  * Shows directory of logfiles
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")

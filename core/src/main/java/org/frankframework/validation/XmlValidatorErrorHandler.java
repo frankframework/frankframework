@@ -77,8 +77,8 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		}
 		message = xpath + ": " + message;
 
-		if (reasonType==ReasonType.WARNING) {
-			warningsOccurred=true;
+		if (reasonType == ReasonType.WARNING) {
+			warningsOccurred = true;
 		} else {
 			errorOccurred = true;
 		}
@@ -93,11 +93,11 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 	protected void addReason(Throwable t, ReasonType reasonType) {
 		String location = null;
 		if (t instanceof SAXParseException) {
-			SAXParseException spe = (SAXParseException)t;
+			SAXParseException spe = (SAXParseException) t;
 			int lineNumber = spe.getLineNumber();
 			int columnNumber = spe.getColumnNumber();
-			if (lineNumber>=0 || columnNumber>=0) {
-				location = "at ("+lineNumber+ ","+columnNumber+")";
+			if (lineNumber >= 0 || columnNumber >= 0) {
+				location = "at (" + lineNumber + "," + columnNumber + ")";
 			}
 		}
 		String message;
@@ -132,4 +132,3 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		return xmlReasons.toXML();
 	}
 }
-

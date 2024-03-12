@@ -18,12 +18,11 @@ package org.frankframework.pipes;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.FileMessage;
@@ -32,7 +31,7 @@ import org.frankframework.stream.Message;
 /**
  * Sends a message to a Sender for each line of the file that the input message refers to.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 @Deprecated
 @ConfigurationWarning("Please use StreamLineIteratorPipe")
@@ -52,8 +51,8 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 	 */
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		if (input==null) {
-			throw new PipeRunException(this,"got null input instead of String containing filename");
+		if (input == null) {
+			throw new PipeRunException(this, "got null input instead of String containing filename");
 		}
 
 		String filename;
@@ -66,13 +65,13 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 
 		try {
 			PipeRunResult result = super.doPipe(new FileMessage(file, getCharset()), session);
-			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
+			if (!StringUtils.isEmpty(getMove2dirAfterTransform())) {
 				File move2 = new File(getMove2dirAfterTransform(), file.getName());
 				file.renameTo(move2);
 			}
 			return result;
 		} catch (PipeRunException e) {
-			if (! StringUtils.isEmpty(getMove2dirAfterError())) {
+			if (!StringUtils.isEmpty(getMove2dirAfterError())) {
 				File move2 = new File(getMove2dirAfterError(), file.getName());
 				file.renameTo(move2);
 			}

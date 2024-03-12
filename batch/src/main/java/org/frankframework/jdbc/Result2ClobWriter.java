@@ -19,17 +19,15 @@ import java.io.Writer;
 import java.sql.ResultSet;
 
 import org.frankframework.batch.IResultHandler;
-
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.IDbmsSupport;
 
 
 /**
  * {@link IResultHandler ResultHandler} that writes the transformed record to a CLOB.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public class Result2ClobWriter extends Result2LobWriterBase {
 
@@ -54,7 +52,7 @@ public class Result2ClobWriter extends Result2LobWriterBase {
 	@Override
 	protected Writer getWriter(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
 		try {
-			return dbmsSupport.getClobWriter(rs,querySender.getClobColumn(), lobHandle);
+			return dbmsSupport.getClobWriter(rs, querySender.getClobColumn(), lobHandle);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
@@ -62,6 +60,7 @@ public class Result2ClobWriter extends Result2LobWriterBase {
 
 	/**
 	 * Column that contains the CLOB to be updated
+	 *
 	 * @ff.default 1
 	 */
 	public void setClobColumn(int column) {

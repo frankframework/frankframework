@@ -24,9 +24,10 @@ public abstract class TreeContentContainer<E extends ElementContainer> implement
 
 	private final Stack<E> elementStack = new Stack<>();
 	private final E root = createElementContainer(null, false, false, null);
-	private E elementContainer=root;
+	private E elementContainer = root;
 
 	protected abstract E createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
+
 	protected abstract void addContent(E parent, E child);
 
 	@Override
@@ -40,13 +41,14 @@ public abstract class TreeContentContainer<E extends ElementContainer> implement
 	@Override
 	public void startElement(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
 		elementStack.push(elementContainer);
-		elementContainer=createElementContainer(localName, xmlArrayContainer, repeatedElement, typeDefinition);
+		elementContainer = createElementContainer(localName, xmlArrayContainer, repeatedElement, typeDefinition);
 	}
+
 	@Override
 	public void endElement(String localName) {
-		E result=elementContainer;
-		elementContainer=elementStack.pop();
-		addContent(elementContainer,result);
+		E result = elementContainer;
+		elementContainer = elementStack.pop();
+		addContent(elementContainer, result);
 	}
 
 	@Override
@@ -63,9 +65,11 @@ public abstract class TreeContentContainer<E extends ElementContainer> implement
 	public void characters(char[] ch, int start, int length) {
 		elementContainer.characters(ch, start, length);
 	}
+
 	public E getRoot() {
 		return root;
 	}
+
 	public E getCurrentElement() {
 		return elementContainer;
 	}

@@ -34,18 +34,18 @@ public class TestBlobs {
 	boolean testBigBlobs = false;
 
 	public static void getBigString(int numBlocks, int blockSize, Consumer<String> consumer) {
-		String tenChars="0123456789";
+		String tenChars = "0123456789";
 		StringBuilder block = new StringBuilder(blockSize);
-		for (int i=0; i<(blockSize+9)/10; i++) {
+		for (int i = 0; i < (blockSize + 9) / 10; i++) {
 			block.append(tenChars);
 		}
-		for (int i=0; i<numBlocks; i++) {
+		for (int i = 0; i < numBlocks; i++) {
 			consumer.accept(block.toString());
 		}
 	}
 
 	public static String getBigString(int numBlocks, int blockSize) {
-		StringBuilder result = new StringBuilder(numBlocks*blockSize);
+		StringBuilder result = new StringBuilder(numBlocks * blockSize);
 		getBigString(numBlocks, blockSize, s -> result.append(s));
 		return result.toString();
 	}
@@ -53,9 +53,9 @@ public class TestBlobs {
 	public static int readStream(InputStream inputStream) throws IOException {
 		byte[] buffer = new byte[1000];
 		int result = 0;
-		int bytesRead=0;
-		while (bytesRead>=0) {
-			result +=bytesRead;
+		int bytesRead = 0;
+		while (bytesRead >= 0) {
+			result += bytesRead;
 			bytesRead = inputStream.read(buffer);
 		}
 		return result;
@@ -124,13 +124,13 @@ public class TestBlobs {
 	}
 
 	public void testWriteAndReadBlobUsingDbmsSupport(int numOfBlocks, int blockSize, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		String block = getBigString(1,blockSize);
+		String block = getBigString(1, blockSize);
 		String query = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (20,?)";
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 		try (Connection conn = databaseTestEnvironment.getConnection(); PreparedStatement stmt = conn.prepareStatement(translatedQuery)) {
 			Object blobInsertHandle = databaseTestEnvironment.getDbmsSupport().getBlobHandle(stmt, 1);
 			try (OutputStream blobStream = databaseTestEnvironment.getDbmsSupport().getBlobOutputStream(stmt, 1, blobInsertHandle)) {
-				for (int i=0; i<numOfBlocks; i++) {
+				for (int i = 0; i < numOfBlocks; i++) {
 					blobStream.write(block.getBytes(StandardCharsets.UTF_8));
 				}
 			}
@@ -143,21 +143,21 @@ public class TestBlobs {
 				resultSet.next();
 				try (InputStream blobStream = databaseTestEnvironment.getDbmsSupport().getBlobInputStream(resultSet, 1)) {
 					int length = readStream(blobStream);
-					assertEquals(blockSize*numOfBlocks, length);
+					assertEquals(blockSize * numOfBlocks, length);
 				}
 			}
 		}
 	}
 
 	public void testWriteAndReadClobUsingDbmsSupport(int numOfBlocks, int blockSize, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		String block = getBigString(1,blockSize);
+		String block = getBigString(1, blockSize);
 		String insertQuery = "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (20,?)";
 		String selectQuery = "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=20";
 		IDbmsSupport dbmsSupport = databaseTestEnvironment.getDbmsSupport();
 		try (Connection conn = databaseTestEnvironment.getConnection(); PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
 			Object clobInsertHandle = dbmsSupport.getClobHandle(stmt, 1);
 			try (Writer clobWriter = dbmsSupport.getClobWriter(stmt, 1, clobInsertHandle)) {
-				for (int i=0; i<numOfBlocks; i++) {
+				for (int i = 0; i < numOfBlocks; i++) {
 					clobWriter.append(block);
 				}
 			}
@@ -170,7 +170,7 @@ public class TestBlobs {
 				resultSet.next();
 				try (Reader clobReader = dbmsSupport.getClobReader(resultSet, 1)) {
 					int length = readStream(new ReaderInputStream(clobReader));
-					assertEquals(blockSize*numOfBlocks, length);
+					assertEquals(blockSize * numOfBlocks, length);
 				}
 			}
 		}
@@ -192,7 +192,8 @@ public class TestBlobs {
 	@TxManagerTest
 	public void testWriteAndReadBlobUsingDbmsSupport100MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB") || databaseTestEnvironment.getDataSourceName().equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
+		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB") || databaseTestEnvironment.getDataSourceName()
+				.equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
 		testWriteAndReadBlobUsingDbmsSupport(10000, 10000, databaseTestEnvironment);
 	}
 
@@ -211,7 +212,8 @@ public class TestBlobs {
 	@TxManagerTest
 	public void testWriteAndReadClobUsingDbmsSupport100MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB") || databaseTestEnvironment.getDataSourceName().equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
+		assumeFalse(databaseTestEnvironment.getDataSourceName().equals("MariaDB") || databaseTestEnvironment.getDataSourceName()
+				.equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
 		testWriteAndReadClobUsingDbmsSupport(10000, 10000, databaseTestEnvironment);
 	}
 

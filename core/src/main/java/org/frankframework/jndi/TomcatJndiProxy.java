@@ -28,31 +28,30 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.LogUtil;
 
 /**
  * Tomcat Resource Factory that looks up objects in a delegate JNDI.
- *
+ * <p>
  * Configure resource in Tomcat context.xml like:
  * <pre>
  * 	&lt;Resource
-		name="jms/qcf_tibco_esb_ff"
-		factory="org.frankframework.jndi.TomcatJndiProxy"
-
-		delegate_name="SLXHP_Queue_ConnectionFactory"
-		delegate_jndiProperties="TibcoJndi.properties"
-		delegate_providerURL="tibjmsnaming://DEVESBLARGEDC1:37243,tibjmsnaming://DEVESBLARGEDC2:37243"
-
-		userName="IBIS_AWS_POC_USER"
-		userPassword="xxxxxxx"
-		SSLVendor="j2se"
-		SSLEnableVerifyHost="false"
-		SSLEnableVerifyHostName="false"
-		SSLTrace="false"
-		SSLDebugTrace="false"
-	/&gt;
-   </pre>
+ * name="jms/qcf_tibco_esb_ff"
+ * factory="org.frankframework.jndi.TomcatJndiProxy"
+ *
+ * delegate_name="SLXHP_Queue_ConnectionFactory"
+ * delegate_jndiProperties="TibcoJndi.properties"
+ * delegate_providerURL="tibjmsnaming://DEVESBLARGEDC1:37243,tibjmsnaming://DEVESBLARGEDC2:37243"
+ *
+ * userName="IBIS_AWS_POC_USER"
+ * userPassword="xxxxxxx"
+ * SSLVendor="j2se"
+ * SSLEnableVerifyHost="false"
+ * SSLEnableVerifyHostName="false"
+ * SSLTrace="false"
+ * SSLDebugTrace="false"
+ * /&gt;
+ * </pre>
  * All attributes starting with the prefix 'delegate_' are used to configure the TomcatJndiProxy by
  * calling setters with corresponding names (without the prefix).
  * <br/>
@@ -72,21 +71,19 @@ import org.frankframework.util.LogUtil;
  * Setting 'java.naming.factory.initial' here causes the TomcatJndiProxy to query the Tibco JNDI at (delegate_)providerURL.
  * <br/>
  *
- * @see "https://tomcat.apache.org/tomcat-8.0-doc/jndi-resources-howto.html#Adding_Custom_Resource_Factories"
- *
- * @author Gerrit van Brakel
- *
  * @param <C> the type of class that is looked up
+ * @author Gerrit van Brakel
+ * @see "https://tomcat.apache.org/tomcat-8.0-doc/jndi-resources-howto.html#Adding_Custom_Resource_Factories"
  */
-public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory{
+public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory {
 	protected Logger log = LogUtil.getLogger(this);
 
-	public static final String DELEGATE_PREFIX="delegate_";
+	public static final String DELEGATE_PREFIX = "delegate_";
 
 	@Override
 	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
 		try {
-			Reference ref = (Reference)obj; // For Tomcat, obj will always be an object of type Reference
+			Reference ref = (Reference) obj; // For Tomcat, obj will always be an object of type Reference
 
 			String objectName = name.toString();
 			String targetClassName = ref.getClassName();
@@ -94,7 +91,7 @@ public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory{
 			log.debug("constructing object [{}] of type [{}]", objectName, targetClassName);
 
 			// fetch and set delegate properties
-			for (Enumeration<RefAddr> refAddrEnum=ref.getAll(); refAddrEnum.hasMoreElements();) {
+			for (Enumeration<RefAddr> refAddrEnum = ref.getAll(); refAddrEnum.hasMoreElements(); ) {
 				RefAddr refAddr = refAddrEnum.nextElement();
 				if (refAddr.getType().startsWith(DELEGATE_PREFIX)) {
 					String propertyName = refAddr.getType().substring(DELEGATE_PREFIX.length());
@@ -108,7 +105,7 @@ public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory{
 			Context context = getContext();
 			Object result = context.lookup(targetObjectName);
 
-			for (Enumeration<RefAddr> refAddrEnum=ref.getAll(); refAddrEnum.hasMoreElements();) {
+			for (Enumeration<RefAddr> refAddrEnum = ref.getAll(); refAddrEnum.hasMoreElements(); ) {
 				RefAddr refAddr = refAddrEnum.nextElement();
 				String propertyName = refAddr.getType();
 				if (!propertyName.startsWith(DELEGATE_PREFIX) && !propertyName.equals("factory")) {

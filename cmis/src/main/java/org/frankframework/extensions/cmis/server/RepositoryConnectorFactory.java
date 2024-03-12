@@ -26,7 +26,6 @@ import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.server.support.wrapper.CallContextAwareCmisService;
 import org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
@@ -38,7 +37,7 @@ import org.frankframework.util.LogUtil;
  */
 public class RepositoryConnectorFactory extends AbstractServiceFactory {
 	public static final String CMIS_BRIDGE_PROPERTY_PREFIX = "cmisbridge.";
-	public static final boolean CMIS_BRIDGE_ENABLED = AppConstants.getInstance().getBoolean(CMIS_BRIDGE_PROPERTY_PREFIX+"active", true);
+	public static final boolean CMIS_BRIDGE_ENABLED = AppConstants.getInstance().getBoolean(CMIS_BRIDGE_PROPERTY_PREFIX + "active", true);
 
 	private static final Logger LOG = LogUtil.getLogger(RepositoryConnectorFactory.class);
 	private static final ThreadLocal<CallContextAwareCmisService> CMIS_SERVICE = new ThreadLocal<>(); //1 service per appl-server HTTP connection pool thread.
@@ -63,10 +62,10 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 
 	@Override
 	public CmisService getService(CallContext context) {
-		if(!CMIS_BRIDGE_ENABLED) {
+		if (!CMIS_BRIDGE_ENABLED) {
 			throw new CmisRuntimeException("CMIS bridge not enabled");
 		}
-		if(!CmisEventDispatcher.getInstance().hasEventListeners()) {
+		if (!CmisEventDispatcher.getInstance().hasEventListeners()) {
 			throw new CmisRuntimeException("no CMIS bridge events registered");
 		}
 
@@ -89,7 +88,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 		BridgedCmisService service = null;
 		try {
 			service = new BridgedCmisService(context);
-			LOG.info("created repository service ["+service+"]");
+			LOG.info("created repository service [" + service + "]");
 		} catch (Exception e) {
 			throw new CmisRuntimeException("could not create service instance: " + e, e);
 		}

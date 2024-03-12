@@ -13,6 +13,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ class SendMessageJobTest {
 	private final IbisLocalSender localSenderMock = mock(IbisLocalSender.class);
 
 	@BeforeEach
-	void setup(){
+	void setup() {
 		jobDef.setMessage("messageMock");
 	}
 

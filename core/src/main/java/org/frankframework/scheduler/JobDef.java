@@ -36,7 +36,7 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * Definition / configuration of scheduler jobs.
- *
+ * <p>
  * Specified in the Configuration.xml by a &lt;job&gt; inside a &lt;scheduler&gt;. The scheduler element must
  * be a direct child of configuration, not of adapter.
  * <br/>
@@ -57,7 +57,7 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  * <p>
  * A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
  * white space. The 6 mandatory and 1 optional fields are as follows:<br/>
- *</p>
+ * </p>
  * <table cellspacing="8">
  *   <tr>
  *     <th align="left">Field Name</th>
@@ -284,7 +284,6 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  *   </li>
  * </ul>
  * </p>
- *
  */
 public abstract class JobDef extends TransactionAttributes implements IConfigurationAware, IJob {
 
@@ -314,13 +313,13 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			throw new ConfigurationException("a name must be specified");
 		}
 
-		if(StringUtils.isEmpty(getJobGroup())) { //If not explicitly set, configure this JobDef under the config it's specified in
+		if (StringUtils.isEmpty(getJobGroup())) { //If not explicitly set, configure this JobDef under the config it's specified in
 			setJobGroup(applicationContext.getId());
 		}
 
 		SchedulerHelper.validateJob(getJobDetail(), getCronExpression());
 
-		if (getLocker()!=null) {
+		if (getLocker() != null) {
 			getLocker().configure();
 		}
 
@@ -358,27 +357,27 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		if (!incrementCountThreads()) {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error(getLogPrefix()+msg);
+			log.error(getLogPrefix() + msg);
 			return;
 		}
 		try {
-			if(beforeExecuteJob()) {
+			if (beforeExecuteJob()) {
 				if (getLocker() != null) {
 					String objectId = null;
 					try {
 						objectId = getLocker().acquire(getMessageKeeper());
 					} catch (Exception e) {
 						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
-						log.error(getLogPrefix()+e.getMessage());
+						log.error(getLogPrefix() + e.getMessage());
 					}
-					if (objectId!=null) {
-						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
+					if (objectId != null) {
+						TimeoutGuard tg = new TimeoutGuard("Job " + getName());
 						try {
 							tg.activateGuard(getTransactionTimeout());
 							runJob();
 						} finally {
 							if (tg.cancel()) {
-								log.error(getLogPrefix()+"thread has been interrupted");
+								log.error(getLogPrefix() + "thread has been interrupted");
 							}
 						}
 						try {
@@ -386,10 +385,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 						} catch (Exception e) {
 							String msg = "error while removing lock: " + e.getMessage();
 							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
-							log.warn(getLogPrefix()+msg);
+							log.warn(getLogPrefix() + msg);
 						}
 					} else {
-						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
+						getMessageKeeper().add("unable to acquire lock [" + getName() + "] did not run");
 					}
 				} else {
 					runJob();
@@ -410,15 +409,15 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		try {
 			execute();
 		} catch (Exception e) {
-			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
+			String msg = "error while executing job [" + this + "] (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error(getLogPrefix()+msg, e);
+			log.error(getLogPrefix() + msg, e);
 		}
 
 		long endTime = System.currentTimeMillis();
 		long duration = endTime - startTime;
 		statsKeeper.addValue(duration);
-		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
+		getMessageKeeper().add("finished running the job in [" + (duration) + "] ms");
 	}
 
 	protected IbisManager getIbisManager() {
@@ -426,16 +425,16 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	}
 
 	protected String getLogPrefix() {
-		return "Job ["+getName()+"] ";
+		return "Job [" + getName() + "] ";
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(this.getClass().getSimpleName());
-		if(name != null) builder.append(" name ["+name+"]");
-		if(jobGroup != null) builder.append(" jobGroup ["+jobGroup+"]");
-		if(cronExpression != null) builder.append(" cronExpression ["+cronExpression+"]");
-		if(interval > -1) builder.append(" interval ["+interval+"]");
+		if (name != null) builder.append(" name [" + name + "]");
+		if (jobGroup != null) builder.append(" jobGroup [" + jobGroup + "]");
+		if (cronExpression != null) builder.append(" cronExpression [" + cronExpression + "]");
+		if (interval > -1) builder.append(" interval [" + interval + "]");
 		return builder.toString();
 	}
 
@@ -469,10 +468,12 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	@Override
 	public void setLocker(Locker locker) {
 		this.locker = locker;
-		locker.setName("Locker of job ["+getName()+"]");
+		locker.setName("Locker of job [" + getName() + "]");
 	}
 
-	/** Number of threads that may execute concurrently
+	/**
+	 * Number of threads that may execute concurrently
+	 *
 	 * @ff.default 1
 	 */
 	public void setNumThreads(int newNumThreads) {
@@ -486,7 +487,9 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		return messageKeeper;
 	}
 
-	/** Number of messages displayed in ibisconsole
+	/**
+	 * Number of messages displayed in ibisconsole
+	 *
 	 * @ff.default 10
 	 */
 	public void setMessageKeeperSize(int size) {

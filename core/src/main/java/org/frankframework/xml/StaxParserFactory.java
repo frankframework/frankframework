@@ -23,7 +23,6 @@ import com.ctc.wstx.stax.WstxInputFactory;
  * This is introduced to solve a problem in ExchangeMailListener, where illegal characters are seen inside Exchange-documents.
  *
  * @author Gerrit van Brakel
- *
  */
 public class StaxParserFactory extends WstxInputFactory {
 
@@ -39,4 +38,3 @@ public class StaxParserFactory extends WstxInputFactory {
 	}
 
 }
-

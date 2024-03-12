@@ -24,15 +24,15 @@ import org.frankframework.util.JdbcUtil;
 /**
  * Pipe that iterates over the lines in a BLOB.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 public class BlobLineIteratingPipe extends LobLineIteratingPipeBase {
 
 	@Override
 	protected Reader getReader(ResultSet rs) throws SenderException {
 		try {
-			return JdbcUtil.getBlobReader(querySender.getDbmsSupport(), rs,1,querySender.getBlobCharset(),querySender.isBlobsCompressed());
+			return JdbcUtil.getBlobReader(querySender.getDbmsSupport(), rs, 1, querySender.getBlobCharset(), querySender.isBlobsCompressed());
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

@@ -18,7 +18,13 @@ package org.frankframework.management.gateway;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.security.JwtKeyGenerator;
+import org.frankframework.util.SpringUtils;
+import org.frankframework.util.StreamUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
@@ -36,13 +42,6 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.security.JwtKeyGenerator;
-import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StreamUtil;
-
 public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 
 	@Autowired
@@ -57,7 +56,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	 */
 	@Override
 	protected void doInit() {
-		if(jwtGenerator == null) {
+		if (jwtGenerator == null) {
 			throw new IllegalStateException("JwtKeyGenerator not set");
 		}
 
@@ -105,7 +104,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 
 		@Override
 		public HttpMethod getValue(EvaluationContext context, Object rootObject) throws EvaluationException {
-			if(rootObject instanceof Message<?> && "NONE".equals(((Message<?>) rootObject).getPayload())) {
+			if (rootObject instanceof Message<?> && "NONE".equals(((Message<?>) rootObject).getPayload())) {
 				return HttpMethod.GET;
 			}
 			return super.getValue(context, rootObject);
@@ -128,13 +127,13 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	public Message handleRequestMessage(Message<?> requestMessage) {
 		Object response = super.handleRequestMessage(requestMessage);
 
-		if(response instanceof Message) {
+		if (response instanceof Message) {
 			return (Message) response;
 		}
-		if(response instanceof MessageBuilder) {
+		if (response instanceof MessageBuilder) {
 			return ((MessageBuilder) response).build();
 		}
-		throw new BusException("unknown response type ["+((response != null) ? response.getClass().getCanonicalName() : "null")+"]");
+		throw new BusException("unknown response type [" + ((response != null) ? response.getClass().getCanonicalName() : "null") + "]");
 	}
 
 	@Override
@@ -148,7 +147,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	 */
 	@Override
 	protected Object evaluateTypeFromExpression(Message<?> requestMessage, Expression expression, String property) {
-		if("expectedResponseType".equals(property)) {
+		if ("expectedResponseType".equals(property)) {
 			return byte[].class;
 		}
 

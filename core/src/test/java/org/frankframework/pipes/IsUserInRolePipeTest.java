@@ -5,6 +5,7 @@ import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	private final String ROLE = "MyRole";
 	private final String ROLE2 = "MyRole1";
 	private final String ROLE3 = "MyRole2";
-	private final String ROLES = ROLE+","+ROLE2+","+ROLE3;
+	private final String ROLES = ROLE + "," + ROLE2 + "," + ROLE3;
 
 	private final String NOT_IN_ROLE_FORWARD_NAME = "notInRole";
 	private final String NOT_IN_ROLE_FORWARD_PATH = "doSomething";
@@ -37,7 +38,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	}
 
 	@BeforeEach
-	void beforeEach(){
+	void beforeEach() {
 		securityHandler = mock(ISecurityHandler.class);
 		session.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
 	}
@@ -50,7 +51,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	@Test
 	void requiresNotInRoleForwardSetButNotFound() {
 		pipe.setNotInRoleForwardName(NOT_IN_ROLE_FORWARD_NAME);
-		assertThrows(ConfigurationException.class, () -> pipe.configure(), "notInRoleForwardName ["+NOT_IN_ROLE_FORWARD_NAME+"] not found");
+		assertThrows(ConfigurationException.class, () -> pipe.configure(), "notInRoleForwardName [" + NOT_IN_ROLE_FORWARD_NAME + "] not found");
 	}
 
 	@Test

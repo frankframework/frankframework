@@ -14,6 +14,7 @@ import java.util.zip.ZipInputStream;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,7 +52,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 
 	@AfterEach
 	public void teardown() throws IOException {
-		if(zis != null) {
+		if (zis != null) {
 			zis.close();
 		}
 	}
@@ -63,7 +64,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	public void testNullSessionKey() throws Exception {
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "das", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "das", session));
 		assertThat(e.getMessage(), Matchers.endsWith("got null value from session under key [file]"));
 	}
 
@@ -72,7 +73,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 		pipe.setSessionKey("fdsf123");
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "das", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "das", session));
 		assertThat(e.getMessage(), Matchers.containsString("got null value from session under key [fdsf123]"));
 	}
 
@@ -103,7 +104,7 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 		session.put("fileName", "1.txt");
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "dsfdf", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "dsfdf", session));
 		assertThat(e.getMessage(), Matchers.containsString("file extension [txt] should be 'zip'"));
 	}
 

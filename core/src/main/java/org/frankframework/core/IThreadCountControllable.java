@@ -27,12 +27,15 @@ package org.frankframework.core;
 public interface IThreadCountControllable {
 
 	boolean isThreadCountReadable();
+
 	boolean isThreadCountControllable();
 
 	int getCurrentThreadCount();
+
 	int getMaxThreadCount();
 
 	void increaseThreadCount();
+
 	void decreaseThreadCount();
 
 }

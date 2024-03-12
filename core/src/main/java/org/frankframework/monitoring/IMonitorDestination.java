@@ -24,8 +24,8 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Interface to monitoring service.
  *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 @FrankDocGroup(name = "Monitoring")
 public interface IMonitorDestination extends INamedObject {

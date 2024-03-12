@@ -19,8 +19,8 @@ package org.frankframework.core;
  * Interface that allows a Pipe to register an exit handler.
  * This handler will be called <i>always</i> after PipeLine-processing has finished
  *
- * @author  Gerrit van Brakel
- * @since   4.6.0
+ * @author Gerrit van Brakel
+ * @since 4.6.0
  */
 public interface IPipeLineExitHandler extends INamedObject {
 

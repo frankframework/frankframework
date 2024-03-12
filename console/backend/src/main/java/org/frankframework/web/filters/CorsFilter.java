@@ -29,11 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.StringUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsUtils;
-
-import org.frankframework.util.StringUtil;
 
 public class CorsFilter implements Filter {
 	private final Logger secLog = LogManager.getLogger("SEC");
@@ -58,7 +57,7 @@ public class CorsFilter implements Filter {
 	public void init(FilterConfig filterConfig) throws ServletException {
 		List<String> allowedOrigins = StringUtil.split(allowedCorsOrigins);
 		for (String domain : allowedOrigins) {
-			if("*".equals(domain) || !domain.contains("*")) {
+			if ("*".equals(domain) || !domain.contains("*")) {
 				config.addAllowedOrigin(domain);
 			} else {
 				config.addAllowedOriginPattern(domain);
@@ -75,7 +74,7 @@ public class CorsFilter implements Filter {
 		/**
 		 * Handle Cross-Origin Resource Sharing
 		 */
-		if(enforceCORS && CorsUtils.isCorsRequest(request)) {
+		if (enforceCORS && CorsUtils.isCorsRequest(request)) {
 			String originHeader = request.getHeader("Origin");
 			String origin = config.checkOrigin(originHeader);
 			if (origin != null) {
@@ -92,7 +91,7 @@ public class CorsFilter implements Filter {
 				response.setHeader("Access-Control-Max-Age", "3600");
 			} else {
 				//If origin has been set, but has not been whitelisted, report the request in security log.
-				secLog.info("host["+request.getRemoteHost()+"] tried to access uri["+request.getPathInfo()+"] with origin["+originHeader+"] but was blocked due to CORS restrictions");
+				secLog.info("host[" + request.getRemoteHost() + "] tried to access uri[" + request.getPathInfo() + "] with origin[" + originHeader + "] but was blocked due to CORS restrictions");
 				log.warn("blocked request with origin [{}]", originHeader);
 				response.setStatus(400);
 				return; //actually block the request
@@ -104,7 +103,7 @@ public class CorsFilter implements Filter {
 		 * Pass request down the chain, except for OPTIONS
 		 */
 		// Return standard response if OPTIONS request w/o Origin header
-		if(CorsUtils.isPreFlightRequest(request)) {
+		if (CorsUtils.isPreFlightRequest(request)) {
 			response.setHeader("Allow", allowedCorsMethods);
 			response.setStatus(200);
 		} else {

@@ -63,7 +63,7 @@ public class DotFlowGenerator implements IFlowGenerator {
 
 	protected String generateDot(String xml) throws FlowGenerationException {
 		try {
-			if(xml.startsWith("<adapter")) {
+			if (xml.startsWith("<adapter")) {
 				return transformerPoolAdapter.transform(xml, null);
 			} else {
 				return transformerPoolConfig.transform(xml, null);
@@ -85,11 +85,11 @@ public class DotFlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void destroy() {
-		if(transformerPoolAdapter != null) {
+		if (transformerPoolAdapter != null) {
 			transformerPoolAdapter.close();
 		}
 
-		if(transformerPoolConfig != null) {
+		if (transformerPoolConfig != null) {
 			transformerPoolConfig.close();
 		}
 	}

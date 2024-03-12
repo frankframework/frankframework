@@ -47,7 +47,7 @@ public class IbisJobDetail extends JobDetailImpl {
 		Locker otherLocker = otherJobDef.getLocker();
 
 		//If one is NULL but the other isn't, (locker has been removed or added, it's not equal!
-		if((thisLocker == null && otherLocker != null) || (thisLocker != null && otherLocker == null)) {
+		if ((thisLocker == null && otherLocker != null) || (thisLocker != null && otherLocker == null)) {
 			return false;
 		}
 
@@ -57,7 +57,7 @@ public class IbisJobDetail extends JobDetailImpl {
 		}
 
 		//If at this point the message is equal in both jobs, the jobs are equal!
-		if(thisJobDef instanceof SendMessageJob && otherJobDef instanceof SendMessageJob) {
+		if (thisJobDef instanceof SendMessageJob && otherJobDef instanceof SendMessageJob) {
 			String msg1 = ((SendMessageJob) thisJobDef).getMessage();
 			String msg2 = ((SendMessageJob) otherJobDef).getMessage();
 			return StringUtils.equals(msg1, msg2);

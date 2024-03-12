@@ -15,8 +15,10 @@ import org.frankframework.lifecycle.MessageEventListener;
 import org.frankframework.testutil.TestClassLoader;
 import org.frankframework.testutil.mock.MockIbisManager;
 import org.frankframework.util.MessageKeeperMessage;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.support.AbstractApplicationContext;
 
@@ -63,7 +65,7 @@ public class IbisContextTest {
 
 	@Test
 	public void startupShutdownNoConfigurations() {
-		try(IbisContext context = new IbisTestContext("")) {
+		try (IbisContext context = new IbisTestContext("")) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());
@@ -72,7 +74,7 @@ public class IbisContextTest {
 
 	@Test
 	public void startupDummyConfiguration() {
-		try(IbisContext context = new IbisTestContext("Dummy", DummyClassLoader.class)) {
+		try (IbisContext context = new IbisTestContext("Dummy", DummyClassLoader.class)) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());
@@ -83,14 +85,14 @@ public class IbisContextTest {
 	public void unknownClassLoader() {
 		String configurationName = "ConfigWithUnknownClassLoader";
 
-		try(IbisContext context = new IbisTestContext(configurationName, IConfigurationClassLoader.class)) {
+		try (IbisContext context = new IbisTestContext(configurationName, IConfigurationClassLoader.class)) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());
 
 			assertEquals(1, context.getIbisManager().getConfigurations().size());
 			Configuration config = context.getIbisManager().getConfiguration(configurationName);
-			assertNotNull(config, "test configuration ["+configurationName+"] not found");
+			assertNotNull(config, "test configuration [" + configurationName + "] not found");
 			assertEquals(configurationName, config.getName());
 
 			ConfigurationException ex = config.getConfigurationException();
@@ -106,14 +108,14 @@ public class IbisContextTest {
 	public void nullClassLoader() {
 		String configurationName = "ConfigWithNullClassLoader";
 
-		try(IbisTestContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
+		try (IbisTestContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());
 
 			assertEquals(0, context.getIbisManager().getConfigurations().size());
 			MessageEventListener events = context.getApplicationContext().getBean("MessageEventListener", MessageEventListener.class);
-			MessageKeeperMessage message = events.getMessageKeeper().getMessage(events.getMessageKeeper().size()-2);
+			MessageKeeperMessage message = events.getMessageKeeper().getMessage(events.getMessageKeeper().size() - 2);
 			assertNotNull(message, "unable to find MessageKeeperMessage");
 			assertThat(message.getMessageText(), Matchers.endsWith("error configuring ClassLoader for configuration [ConfigWithNullClassLoader]: (ClassLoaderException) test-exception"));
 		}
@@ -123,14 +125,17 @@ public class IbisContextTest {
 	public void configurationThatCannotInitialize() {
 		String configurationName = "ConfigWithTestClassLoader";
 
-		try(IbisContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
+		try (IbisContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());
 
 			assertEquals(1, context.getIbisManager().getConfigurations().size());
 			Configuration config = context.getIbisManager().getConfiguration(configurationName);
-			assertNotNull(config, "test configuration ["+configurationName+"] not found. Found ["+context.getIbisManager().getConfigurations().get(0).getId()+"] instead");
+			assertNotNull(config, "test configuration [" + configurationName + "] not found. Found [" + context.getIbisManager()
+					.getConfigurations()
+					.get(0)
+					.getId() + "] instead");
 			assertEquals(configurationName, config.getName());
 
 			ConfigurationException ex = config.getConfigurationException();

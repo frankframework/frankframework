@@ -31,26 +31,23 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.frankframework.util.RequestUtils;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.springframework.messaging.Message;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.ResponseMessageBase;
-
+import org.frankframework.util.RequestUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
+import org.springframework.messaging.Message;
 
 /**
  * Test a PipeLine.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")
@@ -72,7 +69,7 @@ public class TestPipeline extends FrankApiBase {
 
 		// resolve session keys
 		String sessionKeys = RequestUtils.resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "");
-		if(StringUtils.isNotEmpty(sessionKeys)) { //format: [{"index":1,"key":"test","value":"123"}]
+		if (StringUtils.isNotEmpty(sessionKeys)) { //format: [{"index":1,"key":"test","value":"123"}]
 			builder.addHeader("sessionKeys", sessionKeys);
 		}
 
@@ -80,7 +77,7 @@ public class TestPipeline extends FrankApiBase {
 
 		String message;
 		Attachment filePart = inputDataMap.getAttachment("file");
-		if(filePart != null) {
+		if (filePart != null) {
 			String fileName = filePart.getContentDisposition().getParameter("filename");
 			InputStream file = filePart.getObject(InputStream.class);
 
@@ -91,12 +88,11 @@ public class TestPipeline extends FrankApiBase {
 				} catch (Exception e) {
 					throw new ApiException("An exception occurred while processing zip file", e);
 				}
-			}
-			else {
+			} else {
 				try {
 					message = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
-					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+					throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 				} catch (IOException e) {
 					throw new ApiException("error reading file", e);
 				}
@@ -105,7 +101,7 @@ public class TestPipeline extends FrankApiBase {
 			message = RequestUtils.resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
-		if(StringUtils.isEmpty(message)) {
+		if (StringUtils.isEmpty(message)) {
 			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 
@@ -117,29 +113,30 @@ public class TestPipeline extends FrankApiBase {
 
 	private String getPayload(Message<?> response) {
 		Object payload = response.getPayload();
-		if(payload instanceof String) {
+		if (payload instanceof String) {
 			return (String) payload;
-		} else if(payload instanceof byte[]) {
+		} else if (payload instanceof byte[]) {
 			return new String((byte[]) payload);
-		} else if(payload instanceof InputStream) {
+		} else if (payload instanceof InputStream) {
 			try {
 				// Convert line endings to \n to show them in the browser as real line feeds
-				return StreamUtil.streamToString((InputStream) payload,  "\n", false);
+				return StreamUtil.streamToString((InputStream) payload, "\n", false);
 			} catch (IOException e) {
 				throw new ApiException("unable to read response payload", e);
 			}
 		}
-		throw new ApiException("unexpected response payload type ["+payload.getClass().getCanonicalName()+"]");
+		throw new ApiException("unexpected response payload type [" + payload.getClass().getCanonicalName() + "]");
 	}
 
 	private Response testPipelineResponse(String payload) {
 		return testPipelineResponse(payload, "SUCCESS", null);
 	}
+
 	private Response testPipelineResponse(String payload, String state, String message) {
 		Map<String, Object> result = new HashMap<>();
 		result.put("state", state);
 		result.put("result", payload);
-		if(message != null) {
+		if (message != null) {
 			result.put("message", message);
 		}
 		return Response.status(200).entity(result).build();
@@ -150,19 +147,19 @@ public class TestPipeline extends FrankApiBase {
 		StringBuilder result = new StringBuilder();
 
 		ZipInputStream archive = new ZipInputStream(file);
-		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
+		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
 			String name = entry.getName();
-			int size = (int)entry.getSize();
-			if (size>0) {
-				byte[] b=new byte[size];
-				int rb=0;
+			int size = (int) entry.getSize();
+			if (size > 0) {
+				byte[] b = new byte[size];
+				int rb = 0;
 				int chunk;
 				while ((size - rb) > 0) {
-					chunk=archive.read(b,rb,size - rb);
-					if (chunk==-1) {
+					chunk = archive.read(b, rb, size - rb);
+					if (chunk == -1) {
 						break;
 					}
-					rb+=chunk;
+					rb += chunk;
 				}
 				String currentMessage = XmlEncodingUtils.readXml(b, null);
 

@@ -42,6 +42,7 @@ import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -749,10 +750,10 @@ public class StoredProcedureQuerySenderTest {
 		countParam.setMode(Parameter.ParameterMode.OUTPUT);
 		sender.addParameter(countParam);
 		Parameter cursorParam = new Parameter();
-    	cursorParam.setName("cursor1");
-    	cursorParam.setType(Parameter.ParameterType.LIST);
-    	cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
-    	sender.addParameter(cursorParam);
+		cursorParam.setName("cursor1");
+		cursorParam.setType(Parameter.ParameterType.LIST);
+		cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
+		sender.addParameter(cursorParam);
 
 		sender.configure();
 		sender.open();
@@ -788,10 +789,10 @@ public class StoredProcedureQuerySenderTest {
 		countParam.setMode(Parameter.ParameterMode.OUTPUT);
 		sender.addParameter(countParam);
 		Parameter cursorParam = new Parameter();
-    	cursorParam.setName("cursor1");
-    	cursorParam.setType(Parameter.ParameterType.LIST);
-    	cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
-    	sender.addParameter(cursorParam);
+		cursorParam.setName("cursor1");
+		cursorParam.setType(Parameter.ParameterType.LIST);
+		cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
+		sender.addParameter(cursorParam);
 
 		sender.configure();
 		sender.open();

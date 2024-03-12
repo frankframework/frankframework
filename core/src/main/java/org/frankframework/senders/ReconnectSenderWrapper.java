@@ -30,7 +30,7 @@ import lombok.Setter;
 /**
  * Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
  * This prevents (long) open connections inside Senders and possible connection failures.
- * 
+ *
  * <b>Example:</b>
  * <pre><code>
  *   &lt;SenderPipe&gt;
@@ -41,7 +41,7 @@ import lombok.Setter;
  * </code></pre>
  * </p>
  *
- * @author  Niels Meijer
+ * @author Niels Meijer
  */
 public class ReconnectSenderWrapper extends SenderWrapperBase {
 
@@ -82,7 +82,7 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		if (sender instanceof HasStatistics) {
-			((HasStatistics) sender).iterateOverStatistics(hski,data,action);
+			((HasStatistics) sender).iterateOverStatistics(hski, data, action);
 		}
 	}
 

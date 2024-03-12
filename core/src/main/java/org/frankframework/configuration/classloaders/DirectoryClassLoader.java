@@ -44,8 +44,8 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 			setDirectory(configurationsDirectory);
 		}
 
-		if(getBasePath() != null) { //Append BasePath, because legacy
-			log.debug("appending basepath ["+getBasePath()+"] to directory ["+directory+"]");
+		if (getBasePath() != null) { //Append BasePath, because legacy
+			log.debug("appending basepath [" + getBasePath() + "] to directory [" + directory + "]");
 			directory = new File(directory, getBasePath()); //Append BasePath, because legacy
 		}
 
@@ -56,12 +56,13 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 
 	/**
 	 * Set the directory from which the configuration files should be loaded
+	 *
 	 * @throws ClassLoaderException if the directory can't be found
 	 */
 	public void setDirectory(String directory) throws ClassLoaderException {
 		File dir = new File(directory);
-		if(!dir.isDirectory())
-			throw new ClassLoaderException("directory ["+directory+"] not found");
+		if (!dir.isDirectory())
+			throw new ClassLoaderException("directory [" + directory + "] not found");
 
 		this.directory = dir;
 	}
@@ -87,7 +88,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(super.toString());
-		if(getDirectory() != null) builder.append(" directory ["+getDirectory()+"]");
+		if (getDirectory() != null) builder.append(" directory [" + getDirectory() + "]");
 		return builder.toString();
 	}
 }

@@ -26,13 +26,12 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.RuntimeOperationsException;
 
+import org.frankframework.configuration.AdapterLifecycleWrapperBase;
+import org.frankframework.core.Adapter;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jmx.export.MBeanExporter;
-
-import org.frankframework.configuration.AdapterLifecycleWrapperBase;
-import org.frankframework.core.Adapter;
 
 /**
  * NOTE: Using the PlatformMBeanServer on WebSphere changes ObjectNames on registration.
@@ -44,7 +43,7 @@ public class JmxAdapterWrapper extends AdapterLifecycleWrapperBase implements In
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(mBeanManager == null) {
+		if (mBeanManager == null) {
 			throw new BeanCreationException("unable to load JmxMBeanManager");
 		}
 	}
@@ -52,25 +51,25 @@ public class JmxAdapterWrapper extends AdapterLifecycleWrapperBase implements In
 	@Override
 	public void addAdapter(Adapter adapter) {
 		log.debug("registering adapter [" + adapter.getName() + "] to the JMX server");
-		synchronized(registeredAdapters) {
+		synchronized (registeredAdapters) {
 			ObjectName name = mBeanManager.registerManagedResource(adapter);
 			registeredAdapters.put(adapter, name);
-			log.info("adapter [" + adapter.getName() + "] objectName ["+name+"] registered to the JMX server");
+			log.info("adapter [" + adapter.getName() + "] objectName [" + name + "] registered to the JMX server");
 		}
 	}
 
 
 	@Override
 	public void removeAdapter(Adapter adapter) {
-		synchronized(registeredAdapters) {
+		synchronized (registeredAdapters) {
 			ObjectName name = registeredAdapters.remove(adapter);
-			if(name == null) {
+			if (name == null) {
 				return; //return quietly apparently we never registered this adapter on the JMX agent?
 			}
 
-			if(!mBeanManager.getServer().isRegistered(name)) {
-				log.debug("unable to locate the registered MBean ["+name+"] on the JMX server, try to query and manually unregister it");
-				for(ObjectName mbean : queryMBean(name)) {
+			if (!mBeanManager.getServer().isRegistered(name)) {
+				log.debug("unable to locate the registered MBean [" + name + "] on the JMX server, try to query and manually unregister it");
+				for (ObjectName mbean : queryMBean(name)) {
 					manuallyRemoveMBean(mbean);
 				}
 			}
@@ -80,16 +79,16 @@ public class JmxAdapterWrapper extends AdapterLifecycleWrapperBase implements In
 	}
 
 	private void manuallyRemoveMBean(ObjectName objectName) {
-		if(mBeanManager.getServer().isRegistered(objectName)) {
+		if (mBeanManager.getServer().isRegistered(objectName)) {
 			try {
 				mBeanManager.getServer().unregisterMBean(objectName);
 			} catch (MBeanRegistrationException e) {
-				log.warn("unable to unregister mbean ["+objectName+"]", e);
+				log.warn("unable to unregister mbean [" + objectName + "]", e);
 			} catch (InstanceNotFoundException e) { //We just checked to see if the bean exists.
-				log.debug("mbean ["+objectName+"] not found", e);
+				log.debug("mbean [" + objectName + "] not found", e);
 			}
-		} else if(log.isInfoEnabled()) {
-			log.info("cannot find mbean ["+objectName+"] unable to unregister");
+		} else if (log.isInfoEnabled()) {
+			log.info("cannot find mbean [" + objectName + "] unable to unregister");
 		}
 	}
 
@@ -98,17 +97,17 @@ public class JmxAdapterWrapper extends AdapterLifecycleWrapperBase implements In
 		try {
 			ObjectName queryObject = new ObjectName(jmxQuery);
 			Set<ObjectName> result = mBeanManager.getServer().queryNames(queryObject, null);
-			if(result.isEmpty()) {
-				log.warn("mbean query ["+jmxQuery+"] returned 0 results");
+			if (result.isEmpty()) {
+				log.warn("mbean query [" + jmxQuery + "] returned 0 results");
 			}
-			if(result.size() > 1) {
+			if (result.size() > 1) {
 				log.warn("mbean query returned multiple results " + result);
 			}
 			return result;
 		} catch (MalformedObjectNameException e) {
-			log.warn("error parsing JMX query ["+jmxQuery+"]", e);
-		} catch(RuntimeOperationsException e) {
-			log.error("error querying mBeanServer, query ["+jmxQuery+"]", e);
+			log.warn("error parsing JMX query [" + jmxQuery + "]", e);
+		} catch (RuntimeOperationsException e) {
+			log.error("error querying mBeanServer, query [" + jmxQuery + "]", e);
 		}
 
 		return Collections.emptySet();

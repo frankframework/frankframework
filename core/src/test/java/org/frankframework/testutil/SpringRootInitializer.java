@@ -13,7 +13,6 @@ import org.springframework.context.ConfigurableApplicationContext;
  * <pre>
  * @WithMockUser(...)
  * </pre>
- *
  */
 public class SpringRootInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 

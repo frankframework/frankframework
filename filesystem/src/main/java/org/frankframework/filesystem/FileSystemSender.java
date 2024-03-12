@@ -27,7 +27,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
-
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
@@ -37,21 +36,19 @@ import org.frankframework.util.SpringUtils;
 /**
  * Base class for Senders that use a {@link IBasicFileSystem FileSystem}.
  *
- * @see FileSystemActor
- *
+ * @author Gerrit van Brakel
  * @ff.parameter action overrides attribute <code>action</code>.
  * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
  * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
  * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
  * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
- *
- * @author Gerrit van Brakel
+ * @see FileSystemActor
  */
 @ElementType(ElementTypes.ENDPOINT)
 public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private FS fileSystem;
-	private FileSystemActor<F,FS> actor = new FileSystemActor<>();
+	private FileSystemActor<F, FS> actor = new FileSystemActor<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -62,18 +59,18 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		try {
 			actor.configure(fileSystem, getParameterList(), this);
 		} catch (ConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix(),e);
+			throw new ConfigurationException(getLogPrefix(), e);
 		}
 	}
 
 	@Override
 	public void open() throws SenderException {
 		try {
-			FS fileSystem=getFileSystem();
+			FS fileSystem = getFileSystem();
 			fileSystem.open();
 			actor.open();
 		} catch (FileSystemException e) {
-			throw new SenderException("Cannot open fileSystem",e);
+			throw new SenderException("Cannot open fileSystem", e);
 		}
 	}
 
@@ -82,7 +79,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {
-			throw new SenderException("Cannot close fileSystem",e);
+			throw new SenderException("Cannot close fileSystem", e);
 		}
 	}
 
@@ -91,7 +88,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		ParameterValueList pvl = null;
 
 		try {
-			if (paramList !=null) {
+			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
@@ -118,8 +115,9 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	}
 
 	public void setFileSystem(FS fileSystem) {
-		this.fileSystem=fileSystem;
+		this.fileSystem = fileSystem;
 	}
+
 	public FS getFileSystem() {
 		return fileSystem;
 	}
@@ -132,6 +130,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	public void setAction(FileSystemActor.FileSystemAction action) {
 		actor.setAction(action);
 	}
+
 	public FileSystemActor.FileSystemAction getAction() {
 		return actor.getAction();
 	}

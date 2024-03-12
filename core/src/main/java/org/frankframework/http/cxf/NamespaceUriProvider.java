@@ -37,7 +37,7 @@ import org.frankframework.stream.Message;
  * @author Niels Meijer
  */
 
-@ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
+@ServiceMode(value = javax.xml.ws.Service.Mode.MESSAGE)
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class NamespaceUriProvider extends SOAPProviderBase {
 
@@ -58,27 +58,26 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 	@Override
 	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
 		String serviceName = findNamespaceUri();
-		log.debug("found namespace["+serviceName+"]");
+		log.debug("found namespace[" + serviceName + "]");
 		return sd.dispatchRequest(serviceName, message, pipelineSession);
 	}
 
 	public String findNamespaceUri() throws ListenerException {
-		log.debug("trying to find serviceName from soapMessage["+soapMessage+"]");
+		log.debug("trying to find serviceName from soapMessage[" + soapMessage + "]");
 
 		try {
 			SOAPBody body = soapMessage.getSOAPBody();
-			if(body.hasChildNodes()) {
+			if (body.hasChildNodes()) {
 				Iterator<?> it = body.getChildElements();
 				while (it.hasNext()) {
 					Node node = (Node) it.next();
 
 					//Found first namespaceURI
-					if(StringUtils.isNotEmpty(node.getNamespaceURI()))
+					if (StringUtils.isNotEmpty(node.getNamespaceURI()))
 						return node.getNamespaceURI();
 				}
 			}
-		}
-		catch (SOAPException e) {
+		} catch (SOAPException e) {
 			throw new ListenerException(e);
 		}
 

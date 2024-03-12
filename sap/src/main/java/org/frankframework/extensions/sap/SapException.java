@@ -21,9 +21,9 @@ import org.frankframework.core.IbisException;
  * Exception thrown by classes in the sap-package (implementation) to notify
  * various problems.
  *
- * @author  Gerrit van Brakel
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class SapException extends IbisException {
 

@@ -19,7 +19,6 @@ import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
-
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.http.PushingListenerAdapter;
@@ -34,7 +33,7 @@ public class CmisEventListener extends PushingListenerAdapter implements HasPhys
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if(cmisEvent == null)
+		if (cmisEvent == null)
 			throw new ConfigurationException("no event has been defined to listen on");
 	}
 
@@ -60,8 +59,8 @@ public class CmisEventListener extends PushingListenerAdapter implements HasPhys
 
 	@Override
 	public String getName() {
-		if(super.getName() == null)
-			return cmisEvent.name()+"-EventListener";
+		if (super.getName() == null)
+			return cmisEvent.name() + "-EventListener";
 		else
 			return super.getName();
 	}
@@ -69,6 +68,7 @@ public class CmisEventListener extends PushingListenerAdapter implements HasPhys
 	public void setEventListener(String event) {
 		this.cmisEvent = EnumUtils.parse(CmisEvent.class, event);
 	}
+
 	public CmisEvent getEvent() {
 		return cmisEvent;
 	}

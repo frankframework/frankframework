@@ -20,36 +20,53 @@ import org.frankframework.core.IScopeProvider;
 public interface HasTruststore extends IScopeProvider {
 
 	String getTruststore();
+
 	KeystoreType getTruststoreType();
+
 	String getTruststoreAuthAlias();
+
 	String getTruststorePassword();
+
 	String getTrustManagerAlgorithm();
 
 	boolean isVerifyHostname();
+
 	boolean isAllowSelfSignedCertificates();
+
 	boolean isIgnoreCertificateExpiredException();
 
 	/** Resource url to truststore. If none specified, the JVMs default truststore will be used. */
 	void setTruststore(String truststore);
-	/** Type of truststore
+
+	/**
+	 * Type of truststore
+	 *
 	 * @ff.default jks
 	 */
 	void setTruststoreType(KeystoreType truststoreType);
+
 	/** Authentication alias used to obtain truststore password */
 	void setTruststoreAuthAlias(String truststoreAuthAlias);
+
 	/** Default password to access truststore */
 	void setTruststorePassword(String truststorePassword);
-	/** Trust manager algorithm. Can be left empty to use the servers default algorithm  */
+
+	/** Trust manager algorithm. Can be left empty to use the servers default algorithm */
 	void setTrustManagerAlgorithm(String trustManagerAlgorithm);
 
 	/** If <code>true</code>, the hostname in the certificate will be checked against the actual hostname of the peer */
 	void setVerifyHostname(boolean verifyHostname);
-	/** If <code>true</code>, self signed certificates are accepted
+
+	/**
+	 * If <code>true</code>, self signed certificates are accepted
+	 *
 	 * @ff.default false
 	 */
 	void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates);
+
 	/**
 	 * If <code>true</code>, CertificateExpiredExceptions are ignored
+	 *
 	 * @ff.default false
 	 */
 	void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException);

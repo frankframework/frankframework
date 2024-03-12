@@ -39,15 +39,13 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.springframework.messaging.Message;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.ResponseMessageBase;
-
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.RequestUtils;
+import org.springframework.messaging.Message;
 
 @Path("/")
 public class TransactionalStorage extends FrankApiBase {
@@ -56,7 +54,7 @@ public class TransactionalStorage extends FrankApiBase {
 		RECEIVERS, PIPES;
 
 		public static StorageSource fromString(String value) {
-			if(StringUtils.isNotBlank(value)) {
+			if (StringUtils.isNotBlank(value)) {
 				try {
 					return StorageSource.valueOf(value.toUpperCase());
 				} catch (IllegalArgumentException e) {
@@ -72,20 +70,20 @@ public class TransactionalStorage extends FrankApiBase {
 	@Path("/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseMessage(
-				@PathParam("configuration") String configuration,
-				@PathParam("adapterName") String adapterName,
-				@PathParam("storageSource") StorageSource storageSource,
-				@PathParam("storageSourceName") String storageSourceName,
-				@PathParam("processState") String processState,
-				@PathParam("messageId") String messageId
-			) {
+			@PathParam("configuration") String configuration,
+			@PathParam("adapterName") String adapterName,
+			@PathParam("storageSource") StorageSource storageSource,
+			@PathParam("storageSourceName") String storageSourceName,
+			@PathParam("processState") String processState,
+			@PathParam("messageId") String messageId
+	) {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		if(storageSource == StorageSource.PIPES) {
+		if (storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
 			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
@@ -107,7 +105,7 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathParam("storageSourceName") String storageSourceName,
 			@PathParam("processState") String processState,
 			@PathParam("messageId") String messageId
-		) {
+	) {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
@@ -115,7 +113,7 @@ public class TransactionalStorage extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		if(storageSource == StorageSource.PIPES) {
+		if (storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
 			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
@@ -137,12 +135,12 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathParam("storageSourceName") String storageSourceName,
 			@PathParam("processState") String processState,
 			MultipartBody input
-		) {
+	) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		if(storageSource == StorageSource.PIPES) {
+		if (storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
 			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
@@ -164,14 +162,14 @@ public class TransactionalStorage extends FrankApiBase {
 						String mimeType = BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY);
 
 						String filenameExtension = ".txt";
-						if(MediaType.APPLICATION_JSON.equals(mimeType)) {
+						if (MediaType.APPLICATION_JSON.equals(mimeType)) {
 							filenameExtension = ".json";
-						} else if(MediaType.APPLICATION_XML.equals(mimeType)) {
+						} else if (MediaType.APPLICATION_XML.equals(mimeType)) {
 							filenameExtension = ".xml";
 						}
 
 						String payload = (String) message.getPayload();
-						ZipEntry entry = new ZipEntry("msg-"+messageId+filenameExtension);
+						ZipEntry entry = new ZipEntry("msg-" + messageId + filenameExtension);
 						zos.putNextEntry(entry);
 						zos.write(payload.getBytes());
 						zos.closeEntry();
@@ -193,32 +191,32 @@ public class TransactionalStorage extends FrankApiBase {
 	@Path("/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseMessages(
-				@PathParam("configuration") String configuration,
-				@PathParam("adapterName") String adapterName,
-				@PathParam("storageSource") StorageSource storageSource,
-				@PathParam("storageSourceName") String storageSourceName,
-				@PathParam("processState") String processState,
+			@PathParam("configuration") String configuration,
+			@PathParam("adapterName") String adapterName,
+			@PathParam("storageSource") StorageSource storageSource,
+			@PathParam("storageSourceName") String storageSourceName,
+			@PathParam("processState") String processState,
 
-				@QueryParam("type") String type,
-				@QueryParam("host") String host,
-				@QueryParam("id") String id,
-				@QueryParam("messageId") String messageId,
-				@QueryParam("correlationId") String correlationId,
-				@QueryParam("comment") String comment,
-				@QueryParam("message") String message,
-				@QueryParam("label") String label,
-				@QueryParam("startDate") String startDateStr,
-				@QueryParam("endDate") String endDateStr,
-				@QueryParam("sort") String sort,
-				@QueryParam("skip") int skipMessages,
-				@QueryParam("max") int maxMessages
-			) {
+			@QueryParam("type") String type,
+			@QueryParam("host") String host,
+			@QueryParam("id") String id,
+			@QueryParam("messageId") String messageId,
+			@QueryParam("correlationId") String correlationId,
+			@QueryParam("comment") String comment,
+			@QueryParam("message") String message,
+			@QueryParam("label") String label,
+			@QueryParam("startDate") String startDateStr,
+			@QueryParam("endDate") String endDateStr,
+			@QueryParam("sort") String sort,
+			@QueryParam("skip") int skipMessages,
+			@QueryParam("max") int maxMessages
+	) {
 
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		if(storageSource == StorageSource.PIPES) {
+		if (storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
 			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
@@ -242,8 +240,6 @@ public class TransactionalStorage extends FrankApiBase {
 	}
 
 
-
-
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}")
@@ -254,7 +250,7 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathParam("adapterName") String adapter,
 			@PathParam("receiverName") String receiver,
 			@PathParam("messageId") String messageId
-		) {
+	) {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
@@ -283,20 +279,18 @@ public class TransactionalStorage extends FrankApiBase {
 		String[] messageIds = getMessageIds(input);
 
 		List<String> errorMessages = new ArrayList<>();
-		for(int i=0; i < messageIds.length; i++) {
+		for (int i = 0; i < messageIds.length; i++) {
 			try {
 				builder.addHeader("messageId", messageIds[i]);
 				callAsyncGateway(builder);
-			}
-			catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+			} catch (ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
-			}
-			catch(Exception e) {
+			} catch (Exception e) {
 				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.isEmpty()) {
+		if (errorMessages.isEmpty()) {
 			return Response.status(Response.Status.OK).build();
 		}
 
@@ -327,18 +321,18 @@ public class TransactionalStorage extends FrankApiBase {
 		String[] messageIds = getMessageIds(input);
 
 		List<String> errorMessages = new ArrayList<>();
-		for(int i=0; i < messageIds.length; i++) {
+		for (int i = 0; i < messageIds.length; i++) {
 			try {
 				builder.addHeader("messageId", messageIds[i]);
 				callAsyncGateway(builder);
-			} catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+			} catch (ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
-			} catch(Exception e) {
+			} catch (Exception e) {
 				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.isEmpty()) {
+		if (errorMessages.isEmpty()) {
 			return Response.status(Response.Status.OK).build();
 		}
 
@@ -388,18 +382,18 @@ public class TransactionalStorage extends FrankApiBase {
 		String[] messageIds = getMessageIds(input);
 
 		List<String> errorMessages = new ArrayList<>();
-		for(int i=0; i < messageIds.length; i++) {
+		for (int i = 0; i < messageIds.length; i++) {
 			try {
 				builder.addHeader("messageId", messageIds[i]);
 				callAsyncGateway(builder);
-			} catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+			} catch (ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
-			} catch(Exception e) {
+			} catch (Exception e) {
 				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.isEmpty()) {
+		if (errorMessages.isEmpty()) {
 			return Response.status(Response.Status.OK).build();
 		}
 

@@ -21,11 +21,10 @@ import org.frankframework.receivers.Receiver;
  * Interface extending IPushingListener for listeners which connect to a
  * ListenerPort or other type of named endpoint, from which they receive
  * their messages.
- *
+ * <p>
  * Current implementation is the PushingJmsListener.
  *
  * @author Tim van der Leeuw
- *
  */
 public interface IPortConnectedListener<M> extends IPushingListener<M> {
 
@@ -34,6 +33,7 @@ public interface IPortConnectedListener<M> extends IPushingListener<M> {
 	IMessageHandler<M> getHandler();
 
 	void setReceiver(Receiver<M> receiver);
+
 	Receiver<M> getReceiver();
 
 	IListenerConnector<M> getListenerPortConnector();

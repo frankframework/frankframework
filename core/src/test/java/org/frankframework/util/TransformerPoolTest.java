@@ -11,6 +11,7 @@ import javax.xml.transform.Source;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.Resource;
+
 import org.junit.jupiter.api.Test;
 
 public class TransformerPoolTest {
@@ -46,7 +47,7 @@ public class TransformerPoolTest {
 		Resource resource = Resource.getResource(stylesheetURL);
 		TransformerPool transformerPool = TransformerPool.getInstance(resource);
 		String result = transformerPool.transform(xml, null);
-		result=result.replaceAll("[\n\r]", "");
+		result = result.replaceAll("[\n\r]", "");
 		assertEquals("<authEntries>   <entry alias=\"false\"/></authEntries>", result);
 	}
 
@@ -54,7 +55,7 @@ public class TransformerPoolTest {
 	public void testGetConfigMapWithStylesheet() throws Exception {
 		Resource resource = Resource.getResource(stylesheetURL);
 		TransformerPool transformerPool = TransformerPool.getInstance(resource);
-		Map<String,String> configMap = transformerPool.getConfigMap();
+		Map<String, String> configMap = transformerPool.getConfigMap();
 
 		assertEquals("{version=2.0, output-method=xml, output-indent=yes, output-omit-xml-declaration=yes, disable-output-escaping=no}", configMap.toString());
 		assertFalse(transformerPool.getDisableOutputEscaping());
@@ -65,7 +66,7 @@ public class TransformerPoolTest {
 	public void testGetConfigMapWithTransform() throws Exception {
 		Resource resource = Resource.getResource(transformURL);
 		TransformerPool transformerPool = TransformerPool.getInstance(resource);
-		Map<String,String> configMap = transformerPool.getConfigMap();
+		Map<String, String> configMap = transformerPool.getConfigMap();
 
 		assertEquals("{version=2.0, disable-output-escaping=no}", configMap.toString());
 		assertFalse(transformerPool.getDisableOutputEscaping());

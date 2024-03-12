@@ -41,12 +41,12 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 
 	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Guard guard, StatisticsKeeper sk) {
 		super();
-		this.sender=sender;
-		request=message;
-		this.session=session;
-		this.guard=guard;
-		this.semaphore=semaphore;
-		this.sk=sk;
+		this.sender = sender;
+		request = message;
+		this.session = session;
+		this.guard = guard;
+		this.semaphore = semaphore;
+		this.sk = sk;
 	}
 
 	@Override
@@ -54,19 +54,20 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 		try {
 			long t1 = System.currentTimeMillis();
 			try {
-				reply = sender.sendMessage(request,session);
-				reply.getResult().preserve(); // consume the message immediately, to release any resources (like connections) associated with the sender execution
+				reply = sender.sendMessage(request, session);
+				reply.getResult()
+						.preserve(); // consume the message immediately, to release any resources (like connections) associated with the sender execution
 			} catch (Throwable tr) {
 				throwable = tr;
-				log.warn("SenderExecutor caught exception",tr);
+				log.warn("SenderExecutor caught exception", tr);
 			}
 			long t2 = System.currentTimeMillis();
-			sk.addValue(t2-t1);
+			sk.addValue(t2 - t1);
 		} finally {
-			if (semaphore!=null) {
+			if (semaphore != null) {
 				semaphore.release();
 			}
-			if(guard != null) {
+			if (guard != null) {
 				guard.releaseResource();
 			}
 		}

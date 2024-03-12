@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 /**
  * Cleans up a directory.
  *
- *
  * @author Peter Leeuwenburgh
  */
 public class DirectoryCleaner {
@@ -114,6 +113,7 @@ public class DirectoryCleaner {
 
 	/**
 	 * time (with suffix 'd', 'h', 'm' or 's' in milliseconds) that must have passed at least before a file will be deleted
+	 *
 	 * @ff.default 30d
 	 */
 	public void setRetention(String retention) {
@@ -126,6 +126,7 @@ public class DirectoryCleaner {
 
 	/**
 	 * when <code>true</code>, files in subdirectories will be deleted, too
+	 *
 	 * @ff.default false
 	 */
 	public void setSubdirectories(boolean b) {
@@ -138,6 +139,7 @@ public class DirectoryCleaner {
 
 	/**
 	 * when <code>true</code>, empty subdirectories will be deleted, too
+	 *
 	 * @ff.default false
 	 */
 	public void setDeleteEmptySubdirectories(boolean b) {
@@ -150,6 +152,7 @@ public class DirectoryCleaner {
 
 	/**
 	 * when set <code>true</code>, send warnings to logging and console about not existing directories
+	 *
 	 * @ff.default true
 	 */
 	public void setNotExistWarn(boolean b) {

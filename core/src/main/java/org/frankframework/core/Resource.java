@@ -34,13 +34,12 @@ import org.frankframework.util.XmlUtils;
  * Reference to a resource, for instance on the classpath. Can be accessed multiple times.
  *
  * @author Gerrit van Brakel
- *
  */
 public abstract class Resource implements IScopeProvider {
 	protected IScopeProvider scopeProvider;
 
 	protected Resource(IScopeProvider scopeProvider) {
-		if(scopeProvider == null) {
+		if (scopeProvider == null) {
 			throw new IllegalStateException("a scopeProvider must be present");
 		}
 
@@ -56,20 +55,20 @@ public abstract class Resource implements IScopeProvider {
 	}
 
 	public static Resource getResource(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
-		if(scopeProvider == null) {
+		if (scopeProvider == null) {
 			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
 		}
-		String ref= resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME) ? resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length()) : resource;
+		String ref = resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME) ? resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length()) : resource;
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
-		if (url==null) {
+		if (url == null) {
 			return null;
 		}
 
 		String systemId;
-		if (ref.indexOf(':')<0) {
-			systemId= IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+ref;
+		if (ref.indexOf(':') < 0) {
+			systemId = IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME + ref;
 		} else {
-			systemId=url.toExternalForm();
+			systemId = url.toExternalForm();
 		}
 
 		return new URLResource(scopeProvider, url, systemId);
@@ -117,6 +116,6 @@ public abstract class Resource implements IScopeProvider {
 
 	@Override
 	public String toString() {
-		return "ResourceHolder systemId ["+getSystemId()+"] scope ["+scopeProvider+"]";
+		return "ResourceHolder systemId [" + getSystemId() + "] scope [" + scopeProvider + "]";
 	}
 }

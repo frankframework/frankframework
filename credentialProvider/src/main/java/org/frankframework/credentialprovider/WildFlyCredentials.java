@@ -41,25 +41,25 @@ public class WildFlyCredentials extends Credentials {
 				retrieveAndSet("/username", this::setUsername);
 				retrieveAndSet("", this::setPassword);
 			} else {
-				throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
+				throw new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]: alias not found");
 			}
 		} catch (NoSuchElementException e) {
 			throw e;
 		} catch (Exception e) {
-			NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]");
+			NoSuchElementException nsee = new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]");
 			nsee.initCause(e);
 			throw nsee;
 		}
 	}
 
 	private boolean aliasExists(String suffix) throws CredentialStoreException {
-		String key=getAlias()+suffix;
+		String key = getAlias() + suffix;
 		return (cs.exists(key, PasswordCredential.class));
 	}
 
 
 	private void retrieveAndSet(String suffix, Consumer<String> setter) throws CredentialStoreException, IllegalStateException {
-		String key=getAlias()+suffix;
+		String key = getAlias() + suffix;
 		if (cs.exists(key, PasswordCredential.class)) {
 			Password credential = cs.retrieve(key, PasswordCredential.class).getPassword();
 			if (credential instanceof ClearPassword) {

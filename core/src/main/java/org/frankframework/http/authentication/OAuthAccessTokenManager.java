@@ -99,7 +99,7 @@ public class OAuthAccessTokenManager {
 		HttpRequestBase apacheHttpRequest = convertToApacheHttpRequest(request.toHTTPRequest());
 
 		CloseableHttpClient apacheHttpClient = httpSession.getHttpClient();
-		TimeoutGuard tg = new TimeoutGuard(1+httpSession.getTimeout()/1000, "token retrieval") {
+		TimeoutGuard tg = new TimeoutGuard(1 + httpSession.getTimeout() / 1000, "token retrieval") {
 
 			@Override
 			protected void abort() {
@@ -116,7 +116,7 @@ public class OAuthAccessTokenManager {
 			throw new HttpAuthenticationException(e);
 		} finally {
 			if (tg.cancel()) {
-				throw new HttpAuthenticationException("timeout of ["+httpSession.getTimeout()+"] ms exceeded");
+				throw new HttpAuthenticationException("timeout of [" + httpSession.getTimeout() + "] ms exceeded");
 			}
 		}
 	}
@@ -143,7 +143,7 @@ public class OAuthAccessTokenManager {
 	private void parseResponse(HTTPResponse httpResponse) throws HttpAuthenticationException {
 		try {
 			TokenResponse response = TokenResponse.parse(httpResponse);
-			if (! response.indicatesSuccess()) {
+			if (!response.indicatesSuccess()) {
 				// We got an error response...
 				TokenErrorResponse errorResponse = response.toErrorResponse();
 				throw new HttpAuthenticationException(errorResponse.toJSONObject().toString());
@@ -155,15 +155,15 @@ public class OAuthAccessTokenManager {
 			accessToken = successResponse.getTokens().getAccessToken();
 			// accessToken will be refreshed when it is half way expiration
 			long accessTokenLifetime = accessToken.getLifetime();
-			if (expiryMs<0 && accessTokenLifetime==0) {
+			if (expiryMs < 0 && accessTokenLifetime == 0) {
 				log.debug("no accessToken lifetime found in accessTokenResponse, and no expiry specified. Token will not be refreshed preemptively");
 				accessTokenRefreshTime = -1;
 			} else {
-				accessTokenRefreshTime = System.currentTimeMillis() + (expiryMs<0 ? 500 * accessTokenLifetime : expiryMs);
-				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
+				accessTokenRefreshTime = System.currentTimeMillis() + (expiryMs < 0 ? 500 * accessTokenLifetime : expiryMs);
+				log.debug("set accessTokenRefreshTime [{}]", () -> DateFormatUtils.format(accessTokenRefreshTime));
 			}
 		} catch (ParseException e) {
-			throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);
+			throw new HttpAuthenticationException("Could not parse TokenResponse: " + httpResponse.getContent(), e);
 		}
 	}
 
@@ -172,7 +172,7 @@ public class OAuthAccessTokenManager {
 		HttpRequestBase apacheHttpRequest;
 		String query = httpRequest.getQuery();
 		if (!authenticatedTokenRequest) {
-			List<NameValuePair> clientInfo= new LinkedList<>();
+			List<NameValuePair> clientInfo = new LinkedList<>();
 			clientInfo.add(new BasicNameValuePair("client_id", clientCredentialFactory.getUsername()));
 			clientInfo.add(new BasicNameValuePair("client_secret", clientCredentialFactory.getPassword()));
 			query = StringUtil.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
@@ -186,7 +186,7 @@ public class OAuthAccessTokenManager {
 				apacheHttpRequest = new HttpPost(httpRequest.getURL().toExternalForm());
 				apacheHttpRequest.addHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 				try {
-					((HttpPost)apacheHttpRequest).setEntity(new StringEntity(query));
+					((HttpPost) apacheHttpRequest).setEntity(new StringEntity(query));
 				} catch (UnsupportedEncodingException e) {
 					throw new HttpAuthenticationException("Could not create TokenRequest", e);
 				}
@@ -195,7 +195,7 @@ public class OAuthAccessTokenManager {
 			default:
 				throw new IllegalStateException("Illegal Method, must be GET or POST");
 		}
-		httpRequest.getHeaderMap().forEach((k,l) -> l.forEach(v -> apacheHttpRequest.addHeader(k, v)));
+		httpRequest.getHeaderMap().forEach((k, l) -> l.forEach(v -> apacheHttpRequest.addHeader(k, v)));
 		return apacheHttpRequest;
 	}
 
@@ -204,29 +204,29 @@ public class OAuthAccessTokenManager {
 
 		String responseBody = null;
 		HttpEntity entity = apacheHttpResponse.getEntity();
-		if(entity != null) {
+		if (entity != null) {
 			responseBody = StreamUtil.streamToString(entity.getContent(), null, null);
 			EntityUtils.consume(entity);
 		}
 
-		if (statusLine.getStatusCode()!=200) {
-			throw new HttpAuthenticationException("Could not retrieve token: ("+statusLine.getStatusCode()+") "+statusLine.getReasonPhrase()+": "+responseBody);
+		if (statusLine.getStatusCode() != 200) {
+			throw new HttpAuthenticationException("Could not retrieve token: (" + statusLine.getStatusCode() + ") " + statusLine.getReasonPhrase() + ": " + responseBody);
 		}
 
 		HTTPResponse httpResponse = new HTTPResponse(statusLine.getStatusCode());
 		httpResponse.setStatusMessage(statusLine.getReasonPhrase());
-		for(Header header:apacheHttpResponse.getAllHeaders()) {
+		for (Header header : apacheHttpResponse.getAllHeaders()) {
 			httpResponse.setHeader(header.getName(), header.getValue());
 		}
 
-		if(responseBody != null) {
+		if (responseBody != null) {
 			httpResponse.setContent(responseBody);
 		}
 		return httpResponse;
 	}
 
 	public String getAccessToken(Credentials credentials, boolean forceRefresh) throws HttpAuthenticationException {
-		if (forceRefresh || accessToken==null || accessTokenRefreshTime>0 && System.currentTimeMillis() > accessTokenRefreshTime) {
+		if (forceRefresh || accessToken == null || accessTokenRefreshTime > 0 && System.currentTimeMillis() > accessTokenRefreshTime) {
 			log.debug("refresh accessToken");
 			retrieveAccessToken(credentials);
 		} else {

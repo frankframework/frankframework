@@ -20,10 +20,8 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -31,6 +29,7 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
+import org.xml.sax.SAXException;
 
 /**
  * Implementation of a {@link FileSystemListener} that enables a {@link Receiver} to look in a folder
@@ -59,10 +58,10 @@ import org.frankframework.xml.XmlWriter;
  *
  * @author Peter Leeuwenburgh, Gerrit van Brakel
  */
-public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends FileSystemListener<M,S> {
+public abstract class MailListener<M, A, S extends IMailFileSystem<M, A>> extends FileSystemListener<M, S> {
 
-	public static final String EMAIL_MESSAGE_TYPE="email";
-	public static final String MIME_MESSAGE_TYPE="mime";
+	public static final String EMAIL_MESSAGE_TYPE = "email";
+	public static final String MIME_MESSAGE_TYPE = "mime";
 
 	private @Getter String storeEmailAsStreamInSessionKey;
 	private @Getter boolean simple = false;
@@ -79,14 +78,14 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 			try {
 				return getFileSystem().getMimeContent(rawMessage.getRawMessage());
 			} catch (FileSystemException e) {
-				throw new ListenerException("cannot get MimeContents",e);
+				throw new ListenerException("cannot get MimeContents", e);
 			}
 		}
 		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
 			return super.extractMessage(rawMessage, context);
 		}
 		XmlWriter writer = new XmlWriter();
-		try (SaxElementBuilder emailXml = new SaxElementBuilder("email",writer)) {
+		try (SaxElementBuilder emailXml = new SaxElementBuilder("email", writer)) {
 			if (isSimple()) {
 				MailFileSystemUtils.addEmailInfoSimple(getFileSystem(), rawMessage.getRawMessage(), emailXml);
 			} else {
@@ -104,6 +103,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 
 	/**
 	 * when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)
+	 *
 	 * @ff.default false
 	 */
 	@Deprecated

@@ -66,7 +66,7 @@ public class JsonPipe extends FixedForwardPipe {
 		if (dir == null) {
 			throw new ConfigurationException("direction must be set");
 		}
-		if(addXmlRootElement == null) {
+		if (addXmlRootElement == null) {
 			addXmlRootElement = dir == Direction.JSON2XML;
 		}
 		if (dir == Direction.XML2JSON) {
@@ -78,61 +78,64 @@ public class JsonPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		if (Message.isEmpty(message)) {
-			throw new PipeRunException(this, "got "+(Message.isNull(message)?"null":"empty")+" input");
+			throw new PipeRunException(this, "got " + (Message.isNull(message) ? "null" : "empty") + " input");
 		}
 
 		try {
-			String stringResult=null;
+			String stringResult = null;
 
 			switch (getDirection()) {
-			case JSON2XML:
-				try(JsonReader jr = Json.createReader(message.asReader())) {
-					JsonValue jValue=null;
-					try {
-						jValue = jr.read();
-					} catch (JsonException e) {
-						log.debug("cannot parse as JsonStructure", e);
-						stringResult="<root>"+message.asString()+"</root>";
-						break;
-					}
-					String root="root";
-					StringWriter writer = new StringWriter();
-					if (jValue instanceof JsonObject) { //{"d":{"convert":{"__metadata":{"type":"ZCD_API_FCC_SRV.convertcurrencys"},"amount":"0.000000000","currency":"EUR"}}}
-						if (!addXmlRootElement) {
-							JsonObject jObj = (JsonObject)jValue;
-							if (jObj.size()>1) {
-								throw new PipeRunException(this, "Cannot extract root element name from object with ["+jObj.size()+"] names");
+				case JSON2XML:
+					try (JsonReader jr = Json.createReader(message.asReader())) {
+						JsonValue jValue = null;
+						try {
+							jValue = jr.read();
+						} catch (JsonException e) {
+							log.debug("cannot parse as JsonStructure", e);
+							stringResult = "<root>" + message.asString() + "</root>";
+							break;
+						}
+						String root = "root";
+						StringWriter writer = new StringWriter();
+						if (jValue instanceof JsonObject) { //{"d":{"convert":{"__metadata":{"type":"ZCD_API_FCC_SRV.convertcurrencys"},"amount":"0.000000000","currency":"EUR"}}}
+							if (!addXmlRootElement) {
+								JsonObject jObj = (JsonObject) jValue;
+								if (jObj.size() > 1) {
+									throw new PipeRunException(this, "Cannot extract root element name from object with [" + jObj.size() + "] names");
+								}
+								Entry<String, JsonValue> firstElem = jObj.entrySet()
+										.stream()
+										.findFirst()
+										.orElseThrow(() -> new PipeRunException(this, "Cannot extract root element name from empty object"));
+								root = firstElem.getKey();
+								jValue = firstElem.getValue();
 							}
-							Entry<String,JsonValue> firstElem=jObj.entrySet().stream().findFirst().orElseThrow(()->new PipeRunException(this, "Cannot extract root element name from empty object"));
-							root = firstElem.getKey();
-							jValue = firstElem.getValue();
-						}
-						try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer, isPrettyPrint())) {
-							DocumentUtils.jsonValue2Document(jValue, documentBuilder);
-						}
-					} else {
-						if (addXmlRootElement) {
 							try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer, isPrettyPrint())) {
 								DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 							}
 						} else {
-							for (JsonValue item:(JsonArray)jValue) {
-								try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("item", writer, isPrettyPrint())) {
-									DocumentUtils.jsonValue2Document(item, documentBuilder);
+							if (addXmlRootElement) {
+								try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer, isPrettyPrint())) {
+									DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+								}
+							} else {
+								for (JsonValue item : (JsonArray) jValue) {
+									try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("item", writer, isPrettyPrint())) {
+										DocumentUtils.jsonValue2Document(item, documentBuilder);
+									}
 								}
 							}
 						}
+						stringResult = writer.toString();
 					}
-					stringResult = writer.toString();
-				}
-				break;
-			case XML2JSON:
-				Map<String, Object> parameterValues = new HashMap<>(1);
-				parameterValues.put("includeRootElement", addXmlRootElement);
-				stringResult = tpXml2Json.transform(message, parameterValues);
-				break;
-			default:
-				throw new IllegalStateException("unknown direction ["+getDirection()+"]");
+					break;
+				case XML2JSON:
+					Map<String, Object> parameterValues = new HashMap<>(1);
+					parameterValues.put("includeRootElement", addXmlRootElement);
+					stringResult = tpXml2Json.transform(message, parameterValues);
+					break;
+				default:
+					throw new IllegalStateException("unknown direction [" + getDirection() + "]");
 			}
 
 			return new PipeRunResult(getSuccessForward(), stringResult);
@@ -143,6 +146,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 	/**
 	 * Direction of the transformation.
+	 *
 	 * @ff.default JSON2XML
 	 */
 	public void setDirection(Direction value) {
@@ -151,7 +155,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 	@Deprecated
 	public void setVersion(String version) {
-		if("1".equals(version)) {
+		if ("1".equals(version)) {
 			setAddXmlRootElement(true);
 		}
 	}
@@ -159,6 +163,7 @@ public class JsonPipe extends FixedForwardPipe {
 	/**
 	 * When direction is JSON2XML, it wraps a root element around the converted message.
 	 * When direction is XML2JSON, it includes the name of the root element as a key in the converted message.
+	 *
 	 * @ff.default TRUE when JSON2XML and FALSE when XML2JSON
 	 */
 	public void setAddXmlRootElement(boolean addXmlRootElement) {

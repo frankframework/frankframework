@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet;
-
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.IbisInitializer;
 

@@ -62,7 +62,8 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			}
 
 			if (pipe.getDurationThreshold() >= 0 && pipeDuration > pipe.getDurationThreshold()) {
-				durationLog.info("Pipe [" + pipe.getName() + "] of [" + pipeLine.getOwner().getName() + "] duration [" + pipeDuration + "] ms exceeds max [" + pipe.getDurationThreshold() + "], message [" + message + "]");
+				durationLog.info("Pipe [" + pipe.getName() + "] of [" + pipeLine.getOwner()
+						.getName() + "] duration [" + pipeDuration + "] ms exceeds max [" + pipe.getDurationThreshold() + "], message [" + message + "]");
 				pipe.throwEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
 			}
 		}
@@ -74,7 +75,13 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 		}
 		String ownerName = pipeLine.getOwner() == null ? "<null>" : pipeLine.getOwner().getName();
 		StringBuilder sb = new StringBuilder();
-		sb.append("Pipeline of adapter [").append(ownerName).append("] messageId [").append(pipeLineSession.getMessageId()).append("] is about to call pipe [").append(pipe.getName()).append("]");
+		sb.append("Pipeline of adapter [")
+				.append(ownerName)
+				.append("] messageId [")
+				.append(pipeLineSession.getMessageId())
+				.append("] is about to call pipe [")
+				.append(pipe.getName())
+				.append("]");
 
 		boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
 		if (pipe instanceof AbstractPipe) {

@@ -22,6 +22,7 @@ public interface ICredentialFactory {
 
 	/**
 	 * initialize() of an implementation can throw an exception when the credentialFactory cannot be properly configured and used.
+	 *
 	 * @throws Exception
 	 */
 	default void initialize() throws Exception {
@@ -34,6 +35,7 @@ public interface ICredentialFactory {
 
 	/**
 	 * return a list of all configured aliases, or null if such a list cannot be provided.
+	 *
 	 * @throws Exception
 	 */
 	Collection<String> getConfiguredAliases() throws Exception;

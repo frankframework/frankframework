@@ -23,7 +23,8 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
 
 public class CloudWatchRegistryConfigurator extends MetricsRegistryConfiguratorBase<CloudWatchConfig> {
 
-	private class Config extends MeterRegistryConfigBase implements CloudWatchConfig {}
+	private class Config extends MeterRegistryConfigBase implements CloudWatchConfig {
+	}
 
 	@Override
 	protected CloudWatchConfig createConfig() {

@@ -24,16 +24,16 @@ import org.frankframework.util.CredentialFactory;
 /**
  * Interface specifying method to configure a JMS receiver of some sort.
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public interface IListenerConnector<M> {
 
 	String THREAD_CONTEXT_SESSION_KEY = PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX + "JmsSession";
 
 	void configureEndpointConnection(IPortConnectedListener<M> listener, ConnectionFactory connectionFactory,
-			CredentialFactory credentialFactory, Destination destination, IbisExceptionListener exceptionListener, CacheMode cacheMode,
-			int acknowledgeMode, boolean sessionTransacted, String selector, long receiveTimeout, long pollGuardInterval)
+									 CredentialFactory credentialFactory, Destination destination, IbisExceptionListener exceptionListener, CacheMode cacheMode,
+									 int acknowledgeMode, boolean sessionTransacted, String selector, long receiveTimeout, long pollGuardInterval)
 			throws ConfigurationException;
 
 	/**

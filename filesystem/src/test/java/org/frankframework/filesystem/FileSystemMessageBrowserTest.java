@@ -7,14 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.core.IMessageBrowsingIterator;
-import org.frankframework.core.IMessageBrowsingIteratorItem;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.receivers.RawMessageWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+
+import org.frankframework.core.IMessageBrowsingIterator;
+import org.frankframework.core.IMessageBrowsingIteratorItem;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.receivers.RawMessageWrapper;
 
 @TestMethodOrder(MethodName.class)
 public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -37,7 +38,7 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 	}
 
 	protected String getMessageId(F file) throws FileSystemException {
-		return messageIdProperty!=null ? (String)fileSystem.getAdditionalFileProperties(file).get(messageIdProperty) : fileSystem.getName(file);
+		return messageIdProperty != null ? (String) fileSystem.getAdditionalFileProperties(file).get(messageIdProperty) : fileSystem.getName(file);
 	}
 
 	@Test
@@ -51,7 +52,7 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 
 		browser = new FileSystemMessageBrowser(fileSystem, folder, messageIdProperty);
 
-		assertEquals(3,browser.getMessageCount());
+		assertEquals(3, browser.getMessageCount());
 	}
 
 	@Test
@@ -102,10 +103,10 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 
 		browser = new FileSystemMessageBrowser(fileSystem, folder, messageIdProperty);
 
-		Map<String,String> items = new HashMap<>();
+		Map<String, String> items = new HashMap<>();
 
 		try (IMessageBrowsingIterator iterator = browser.getIterator()) {
-			while(iterator.hasNext()) {
+			while (iterator.hasNext()) {
 				IMessageBrowsingIteratorItem item = iterator.next();
 				String storageKey = item.getId();
 				RawMessageWrapper<F> rawMessageWrapper = browser.browseMessage(storageKey);
@@ -116,7 +117,7 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 			}
 		}
 
-		assertEquals(3,items.size());
+		assertEquals(3, items.size());
 		assertEquals(name1, items.get(mid1));
 		assertEquals(name2, items.get(mid2));
 		assertEquals(name3, items.get(mid3));

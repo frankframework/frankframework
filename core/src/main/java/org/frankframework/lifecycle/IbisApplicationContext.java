@@ -136,10 +136,10 @@ public class IbisApplicationContext implements Closeable {
 
 	private List<String> splitIntoConfigFiles(ClassLoader classLoader, String fileList) {
 		return Arrays
-			.stream(fileList.split(","))
-			.filter(filename -> isSpringConfigFileOnClasspath(classLoader, filename))
-			.map(this::addClasspathPrefix)
-			.collect(Collectors.toList());
+				.stream(fileList.split(","))
+				.filter(filename -> isSpringConfigFileOnClasspath(classLoader, filename))
+				.map(this::addClasspathPrefix)
+				.collect(Collectors.toList());
 	}
 
 	private boolean isSpringConfigFileOnClasspath(ClassLoader classLoader, String filename) {
@@ -236,7 +236,7 @@ public class IbisApplicationContext implements Closeable {
 	 * TODO: retrieve this (automatically/) through Spring
 	 */
 	private void lookupApplicationModules() {
-		if(!iafModules.isEmpty()) {
+		if (!iafModules.isEmpty()) {
 			return;
 		}
 

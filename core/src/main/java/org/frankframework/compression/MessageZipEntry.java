@@ -40,19 +40,19 @@ public class MessageZipEntry extends ZipEntry {
 	public MessageZipEntry(Message message, String filename) {
 		super(filename);
 
-		if (message!=null) {
+		if (message != null) {
 			this.message = message;
 
 			setSize(message.size());
 		} else {
 			this.message = Message.nullMessage();
-			log.warn("contents of zip entry ["+filename+"] is null");
+			log.warn("contents of zip entry [" + filename + "] is null");
 		}
 	}
 
 	@Override
 	public void setSize(long size) {
-		if(size > 0) {
+		if (size > 0) {
 			super.setSize(size);
 		}
 	}
@@ -64,7 +64,7 @@ public class MessageZipEntry extends ZipEntry {
 
 	public void computeCrc() {
 		Long crc32 = MessageUtils.generateCRC32(message);
-		if(crc32 != null) {
+		if (crc32 != null) {
 			setCrc(crc32);
 		}
 	}

@@ -34,7 +34,7 @@ public class SoapProviderServlet extends CXFServlet implements DynamicRegistrati
 
 	@Override
 	public void setBus(Bus bus) {
-		if(bus != null) {
+		if (bus != null) {
 			String busInfo = String.format("Successfully created %s with SpringBus [%s]", getName(), bus.getId());
 			log.info(busInfo);
 			getServletContext().log(busInfo);

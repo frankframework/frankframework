@@ -23,6 +23,7 @@ import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -49,10 +50,10 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		this.implementation = implementation;
 	}
 
-	protected void init() throws ConfigurationException  {
-		jsonPipe=new JsonPipe();
+	protected void init() throws ConfigurationException {
+		jsonPipe = new JsonPipe();
 		jsonPipe.setName("xml2json");
-		jsonPipe.registerForward(new PipeForward("success",null));
+		jsonPipe.registerForward(new PipeForward("success", null));
 		jsonPipe.setDirection(Direction.XML2JSON);
 		jsonPipe.configure();
 		try {
@@ -65,8 +66,8 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		validator.setThrowException(true);
 		validator.setFullSchemaChecking(true);
 
-		instance=new Json2XmlValidator();
-		instance.registerForward(new PipeForward("success",null));
+		instance = new Json2XmlValidator();
+		instance.registerForward(new PipeForward("success", null));
 		instance.setSoapNamespace(null);
 		instance.setFailOnWildcards(false);
 	}
@@ -107,7 +108,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		}
 		log.debug("testXml [" + inputFile + ".xml] to json [" + xml2json + "]");
 		String testJson = inputFile != null ? TestFileUtils.getTestFile(inputFile + ".json") : null;
-		log.debug("testJson ["+testJson+"]");
+		log.debug("testJson [" + testJson + "]");
 
 		try {
 			PipeRunResult prr = instance.doPipe(new Message(testJson), session);
@@ -210,7 +211,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
 		json2xml.setDeepSearch(true);
-		json2xml.setSchema(BASE_DIR_VALIDATION+"/IncludeWithoutNamespace/main.xsd");
+		json2xml.setSchema(BASE_DIR_VALIDATION + "/IncludeWithoutNamespace/main.xsd");
 		json2xml.setRoot("GetDocument_Error");
 		json2xml.setOutputFormat(DocumentFormat.JSON);
 
@@ -222,13 +223,13 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 		json2xml.setThrowException(true);
 
-		json2xml.registerForward(new PipeForward("success",null));
+		json2xml.registerForward(new PipeForward("success", null));
 		json2xml.configure();
 		json2xml.start();
 		PipeLineSession pipeLineSession = new PipeLineSession();
 
-		PipeRunResult prr = json2xml.doPipe(new Message("{}"),pipeLineSession);
-		String expected = TestFileUtils.getTestFile(BASE_DIR_VALIDATION+"/IncludeWithoutNamespace/out.json");
+		PipeRunResult prr = json2xml.doPipe(new Message("{}"), pipeLineSession);
+		String expected = TestFileUtils.getTestFile(BASE_DIR_VALIDATION + "/IncludeWithoutNamespace/out.json");
 		assertEquals(expected, prr.getResult().asString());
 		assertEquals(0, config.getConfigurationWarnings().size(), "no config warning thrown by XercesValidationErrorHandler");
 	}
@@ -241,7 +242,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		TestConfiguration config = new TestConfiguration();
 
 		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
-		json2xml.setSchema(BASE_DIR_VALIDATION+"/IncludeNonExistingResource/main.xsd");
+		json2xml.setSchema(BASE_DIR_VALIDATION + "/IncludeNonExistingResource/main.xsd");
 		json2xml.setRoot("GetDocument_Request");
 		json2xml.setResponseRoot("GetDocument_Error");
 		json2xml.setOutputFormat(DocumentFormat.JSON);
@@ -259,7 +260,8 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		json2xml.registerForward(new PipeForward("success", null));
 
 		try {
-			Thread.currentThread().setContextClassLoader(new ClassLoader(null) {}); //No parent classloader, getResource and getResources will not fall back
+			Thread.currentThread().setContextClassLoader(new ClassLoader(null) {
+			}); //No parent classloader, getResource and getResources will not fall back
 
 			// Should pass because the ScopeProvider is set during class initialization
 			ConfigurationException thrown = assertThrows(ConfigurationException.class, json2xml::configure);

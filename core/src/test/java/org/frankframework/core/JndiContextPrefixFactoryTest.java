@@ -3,11 +3,12 @@ package org.frankframework.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.frankframework.util.AppConstants;
+
 import org.junit.jupiter.api.Test;
 
 public class JndiContextPrefixFactoryTest {
 	private enum ApplicationServer {
-		TOMCAT,JBOSS;
+		TOMCAT, JBOSS;
 	}
 
 	@Test

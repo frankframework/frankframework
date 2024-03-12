@@ -15,14 +15,14 @@ import org.junit.jupiter.api.Test;
 
 public class PropertyFileCredentialFactoryTest {
 
-	public String PROPERTIES_FILE="/credentials-unencrypted.txt";
+	public String PROPERTIES_FILE = "/credentials-unencrypted.txt";
 
 	private PropertyFileCredentialFactory credentialFactory;
 
 	@BeforeEach
 	public void setup() throws IOException {
 		String propertiesUrl = this.getClass().getResource(PROPERTIES_FILE).toExternalForm();
-		String propertiesFile =  Paths.get(propertiesUrl.substring(propertiesUrl.indexOf(":/")+2)).toString();
+		String propertiesFile = Paths.get(propertiesUrl.substring(propertiesUrl.indexOf(":/") + 2)).toString();
 		assumeTrue(Files.exists(Paths.get(propertiesFile)));
 
 		System.setProperty("credentialFactory.map.properties", propertiesFile);
@@ -39,7 +39,7 @@ public class PropertyFileCredentialFactoryTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
@@ -54,7 +54,7 @@ public class PropertyFileCredentialFactoryTest {
 		String expectedUsername = "\\username from alias";
 		String expectedPassword = "passw\\urd from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->defaultUsername, ()->defaultPassword);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> defaultUsername, () -> defaultPassword);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -69,7 +69,7 @@ public class PropertyFileCredentialFactoryTest {
 		String expectedUsername = defaultUsername;
 		String expectedPassword = defaultPassword;
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->defaultUsername, ()->defaultPassword);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> defaultUsername, () -> defaultPassword);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -84,7 +84,7 @@ public class PropertyFileCredentialFactoryTest {
 		String expectedUsername = username;
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -99,7 +99,7 @@ public class PropertyFileCredentialFactoryTest {
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());

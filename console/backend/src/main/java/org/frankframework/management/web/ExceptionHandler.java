@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Custom errorHandler for the FF!API to catch all unhandled exceptions.
  *
- * @author	Niels Meijer
+ * @author Niels Meijer
  */
 
 @Provider

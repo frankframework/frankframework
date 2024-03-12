@@ -24,6 +24,7 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.soap.SoapWrapperPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
+
 import org.junit.jupiter.api.Test;
 
 public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase<P> {

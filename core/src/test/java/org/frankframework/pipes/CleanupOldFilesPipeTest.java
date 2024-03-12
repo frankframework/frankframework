@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+
 import org.junit.jupiter.api.Test;
 
 public class CleanupOldFilesPipeTest extends PipeTestBase<CleanupOldFilesPipe> {

@@ -92,59 +92,59 @@ public class IbisstoreSummary extends BusEndpointBase {
 			throw new BusException("An error occurred on creating or closing the connection", e);
 		}
 
-		String resultObject = "{ \"result\":"+result+"}";
+		String resultObject = "{ \"result\":" + result + "}";
 		return new StringResponseMessage(resultObject, MediaType.APPLICATION_JSON);
 	}
 
 	private Map<String, SlotIdRecord> getSlotmap() {
 		Map<String, SlotIdRecord> slotmap = new HashMap<>();
 
-		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
-			for (Receiver receiver: adapter.getReceivers()) {
-				ITransactionalStorage errorStorage=receiver.getErrorStorage();
-				if (errorStorage!=null) {
-					String slotId=errorStorage.getSlotId();
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
+			for (Receiver receiver : adapter.getReceivers()) {
+				ITransactionalStorage errorStorage = receiver.getErrorStorage();
+				if (errorStorage != null) {
+					String slotId = errorStorage.getSlotId();
 					if (StringUtils.isNotEmpty(slotId)) {
-						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+						SlotIdRecord sir = new SlotIdRecord(adapter.getName(), receiver.getName(), null);
 						String type = errorStorage.getType();
-						slotmap.put(type+"/"+slotId,sir);
+						slotmap.put(type + "/" + slotId, sir);
 					}
 				}
-				ITransactionalStorage messageLog=receiver.getMessageLog();
-				if (messageLog!=null) {
-					String slotId=messageLog.getSlotId();
+				ITransactionalStorage messageLog = receiver.getMessageLog();
+				if (messageLog != null) {
+					String slotId = messageLog.getSlotId();
 					if (StringUtils.isNotEmpty(slotId)) {
-						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+						SlotIdRecord sir = new SlotIdRecord(adapter.getName(), receiver.getName(), null);
 						String type = messageLog.getType();
-						slotmap.put(type+"/"+slotId,sir);
+						slotmap.put(type + "/" + slotId, sir);
 					}
 				}
 			}
-			PipeLine pipeline=adapter.getPipeLine();
-			if (pipeline!=null) {
-				for (int i=0; i<pipeline.getPipeLineSize(); i++) {
-					IPipe pipe=pipeline.getPipe(i);
+			PipeLine pipeline = adapter.getPipeLine();
+			if (pipeline != null) {
+				for (int i = 0; i < pipeline.getPipeLineSize(); i++) {
+					IPipe pipe = pipeline.getPipe(i);
 					if (pipe instanceof MessageSendingPipe) {
-						MessageSendingPipe msp=(MessageSendingPipe)pipe;
+						MessageSendingPipe msp = (MessageSendingPipe) pipe;
 						ITransactionalStorage messageLog = msp.getMessageLog();
-						if (messageLog!=null) {
-							String slotId=messageLog.getSlotId();
+						if (messageLog != null) {
+							String slotId = messageLog.getSlotId();
 							if (StringUtils.isNotEmpty(slotId)) {
-								SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+								SlotIdRecord sir = new SlotIdRecord(adapter.getName(), null, msp.getName());
 								String type = messageLog.getType();
-								slotmap.put(type+"/"+slotId,sir);
-								slotmap.put(slotId,sir);
+								slotmap.put(type + "/" + slotId, sir);
+								slotmap.put(slotId, sir);
 							}
 						} else {
 							ISender sender = msp.getSender();
-							if(sender instanceof ITransactionalStorage) {
+							if (sender instanceof ITransactionalStorage) {
 								ITransactionalStorage transactionalStorage = (ITransactionalStorage) sender;
-								String slotId=transactionalStorage.getSlotId();
+								String slotId = transactionalStorage.getSlotId();
 								if (StringUtils.isNotEmpty(slotId)) {
-									SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+									SlotIdRecord sir = new SlotIdRecord(adapter.getName(), null, msp.getName());
 									String type = transactionalStorage.getType();
-									slotmap.put(type+"/"+slotId,sir);
-									slotmap.put(slotId,sir);
+									slotmap.put(type + "/" + slotId, sir);
+									slotmap.put(slotId, sir);
 								}
 							}
 						}
@@ -171,105 +171,105 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	@Override
 	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws SQLException {
 		JsonArrayBuilder types = Json.createArrayBuilder();
-		String previousType=null;
-		JsonObjectBuilder typeBuilder=null;
-		JsonArrayBuilder slotsBuilder=null;
-		String previousSlot=null;
-		JsonObjectBuilder slotBuilder=null;
-		JsonArrayBuilder datesBuilder=null;
-		int typeslotcount=0;
-		int typedatecount=0;
-		int typemsgcount=0;
-		int slotdatecount=0;
-		int slotmsgcount=0;
+		String previousType = null;
+		JsonObjectBuilder typeBuilder = null;
+		JsonArrayBuilder slotsBuilder = null;
+		String previousSlot = null;
+		JsonObjectBuilder slotBuilder = null;
+		JsonArrayBuilder datesBuilder = null;
+		int typeslotcount = 0;
+		int typedatecount = 0;
+		int typemsgcount = 0;
+		int slotdatecount = 0;
+		int slotmsgcount = 0;
 		while (resultset.next()) {
 			String type = resultset.getString("type");
 			String slotid = resultset.getString("slotid");
-			String date =  resultset.getString("msgdate");
-			int count =    resultset.getInt("msgcount");
+			String date = resultset.getString("msgdate");
+			int count = resultset.getInt("msgcount");
 
-			if (type==null) {
-				type="";
+			if (type == null) {
+				type = "";
 			}
-			if (slotid==null) {
-				slotid="";
+			if (slotid == null) {
+				slotid = "";
 			}
 
 			if (!type.equals(previousType)) {
-				if (typeBuilder!=null) {
-					slotBuilder.add("datecount",slotdatecount);
-					slotBuilder.add("msgcount",slotmsgcount);
+				if (typeBuilder != null) {
+					slotBuilder.add("datecount", slotdatecount);
+					slotBuilder.add("msgcount", slotmsgcount);
 					slotBuilder.add("dates", datesBuilder.build());
 					slotsBuilder.add(slotBuilder.build());
-					slotdatecount=0;
-					slotmsgcount=0;
-					typeBuilder.add("slotcount",typeslotcount);
-					typeBuilder.add("datecount",typedatecount);
-					typeBuilder.add("msgcount",typemsgcount);
+					slotdatecount = 0;
+					slotmsgcount = 0;
+					typeBuilder.add("slotcount", typeslotcount);
+					typeBuilder.add("datecount", typedatecount);
+					typeBuilder.add("msgcount", typemsgcount);
 					typeBuilder.add("slots", slotsBuilder.build());
 					types.add(typeBuilder.build());
-					typeslotcount=0;
-					typedatecount=0;
-					typemsgcount=0;
-					previousSlot=null;
-					slotBuilder=null;
+					typeslotcount = 0;
+					typedatecount = 0;
+					typemsgcount = 0;
+					previousSlot = null;
+					slotBuilder = null;
 				}
 				typeBuilder = Json.createObjectBuilder();
 				typeBuilder.add("type", type);
 				if (type.equalsIgnoreCase("E")) {
-					typeBuilder.add("name","errorlog");
+					typeBuilder.add("name", "errorlog");
 				} else {
-					typeBuilder.add("name","messagelog");
+					typeBuilder.add("name", "messagelog");
 				}
 				slotsBuilder = Json.createArrayBuilder();
-				previousType=type;
+				previousType = type;
 			}
 			if (!slotid.equals(previousSlot)) {
-				if (slotBuilder!=null) {
-					slotBuilder.add("datecount",slotdatecount);
-					slotBuilder.add("msgcount",slotmsgcount);
+				if (slotBuilder != null) {
+					slotBuilder.add("datecount", slotdatecount);
+					slotBuilder.add("msgcount", slotmsgcount);
 					slotBuilder.add("dates", datesBuilder.build());
 					slotsBuilder.add(slotBuilder.build());
-					slotdatecount=0;
-					slotmsgcount=0;
+					slotdatecount = 0;
+					slotmsgcount = 0;
 				}
-				slotBuilder=Json.createObjectBuilder();
+				slotBuilder = Json.createObjectBuilder();
 				datesBuilder = Json.createArrayBuilder();
-				slotBuilder.add("id",slotid);
+				slotBuilder.add("id", slotid);
 				if (StringUtils.isNotEmpty(slotid)) {
-					SlotIdRecord sir=slotmap.get(type+"/"+slotid);
-					if (sir!=null) {
-						slotBuilder.add("adapter",sir.adapterName);
-						if (StringUtils.isNotEmpty(sir.receiverName) ) {
-							slotBuilder.add("receiver",sir.receiverName);
+					SlotIdRecord sir = slotmap.get(type + "/" + slotid);
+					if (sir != null) {
+						slotBuilder.add("adapter", sir.adapterName);
+						if (StringUtils.isNotEmpty(sir.receiverName)) {
+							slotBuilder.add("receiver", sir.receiverName);
 						}
-						if (StringUtils.isNotEmpty(sir.pipeName) ) {
-							slotBuilder.add("pipe",sir.pipeName);
+						if (StringUtils.isNotEmpty(sir.pipeName)) {
+							slotBuilder.add("pipe", sir.pipeName);
 						}
 					}
 				}
-				previousSlot=slotid;
+				previousSlot = slotid;
 				typeslotcount++;
 			}
-			typemsgcount+=count;
+			typemsgcount += count;
 			typedatecount++;
-			slotmsgcount+=count;
+			slotmsgcount += count;
 			slotdatecount++;
 
-			datesBuilder.add(Json.createObjectBuilder().add("id",date).add("count",count).build());
+			datesBuilder.add(Json.createObjectBuilder().add("id", date).add("count", count).build());
 		}
 
-		if (slotBuilder!=null) {
-			slotBuilder.add("datecount",slotdatecount);
-			slotBuilder.add("msgcount",slotmsgcount);
+		if (slotBuilder != null) {
+			slotBuilder.add("datecount", slotdatecount);
+			slotBuilder.add("msgcount", slotmsgcount);
 			slotBuilder.add("dates", datesBuilder.build());
 			slotsBuilder.add(slotBuilder.build());
 		}
 
-		if (typeBuilder!=null) {
-			typeBuilder.add("slotcount",typeslotcount);
-			typeBuilder.add("datecount",typedatecount);
-			typeBuilder.add("msgcount",typemsgcount);
+		if (typeBuilder != null) {
+			typeBuilder.add("slotcount", typeslotcount);
+			typeBuilder.add("datecount", typedatecount);
+			typeBuilder.add("msgcount", typemsgcount);
 			typeBuilder.add("slots", slotsBuilder.build());
 			types.add(typeBuilder.build());
 		}
@@ -286,9 +286,8 @@ class SlotIdRecord {
 
 	SlotIdRecord(String adapterName, String receiverName, String pipeName) {
 		super();
-		this.adapterName=adapterName;
-		this.receiverName=receiverName;
-		this.pipeName=pipeName;
+		this.adapterName = adapterName;
+		this.receiverName = receiverName;
+		this.pipeName = pipeName;
 	}
 }
-

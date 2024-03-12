@@ -30,10 +30,10 @@ import org.frankframework.stream.Message;
 @Category("Basic")
 public class DelayPipe extends FixedForwardPipe {
 
-	private long delayTime=5000;
+	private long delayTime = 5000;
 
 	@Override
-	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			log.info("starts waiting for " + getDelayTime() + " ms.");
 			Thread.sleep(getDelayTime());
@@ -41,17 +41,19 @@ public class DelayPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "delay interrupted", e);
 		}
 		log.info("ends waiting for " + getDelayTime() + " ms.");
-		return new PipeRunResult(getSuccessForward(),message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 
 	/**
 	 * The time <i>in milliseconds</i> the thread will be put to sleep
+	 *
 	 * @ff.default 5000
 	 */
 	public void setDelayTime(long l) {
 		delayTime = l;
 	}
+
 	public long getDelayTime() {
 		return delayTime;
 	}

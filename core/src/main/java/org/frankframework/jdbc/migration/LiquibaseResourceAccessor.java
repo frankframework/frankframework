@@ -58,18 +58,18 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 			return asResourceList(path, null, resource::openStream);
 		}
 		URL url = ClassLoaderUtils.getResourceURL(resource, path);
-		if (url==null) {
+		if (url == null) {
 			return Collections.emptyList();
 		}
 		try {
 			return asResourceList(path, url.toURI(), url::openStream);
 		} catch (URISyntaxException e) {
-			LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
+			LogUtil.getLogger(this).warn("unable to convert resource url [" + url + "]", e);
 		}
 		return Collections.emptyList();
 	}
 
-	protected List<liquibase.resource.Resource> asResourceList(String path, URI uri, ThrowingSupplier<InputStream,IOException> inputStreamSupplier) {
+	protected List<liquibase.resource.Resource> asResourceList(String path, URI uri, ThrowingSupplier<InputStream, IOException> inputStreamSupplier) {
 		List<liquibase.resource.Resource> result = new LinkedList<>();
 		result.add(new AbstractResource(path, uri) {
 

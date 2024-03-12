@@ -33,10 +33,9 @@ import org.apache.logging.log4j.Logger;
  * by the <code>propertiesFileName</code> field</p>
  * <p>If a property exits with the name <code>ADDITIONAL.PROPERTIES.FILE</code>
  * that file is loaded also</p>
-
+ *
  * @author Niels Meijer
  * @version 2.1
- *
  */
 public final class AppConstants extends PropertyLoader {
 	private static final Logger LOG = LogManager.getLogger(AppConstants.class);
@@ -45,7 +44,7 @@ public final class AppConstants extends PropertyLoader {
 	private static final String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
 	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
-	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX";
+	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX";
 
 	private static final Properties additionalProperties = new Properties();
 
@@ -60,6 +59,7 @@ public final class AppConstants extends PropertyLoader {
 
 	/**
 	 * Return the AppConstants root instance
+	 *
 	 * @return AppConstants instance
 	 */
 	public static AppConstants getInstance() {
@@ -77,7 +77,7 @@ public final class AppConstants extends PropertyLoader {
 	 * @return AppConstants instance
 	 */
 	public static synchronized AppConstants getInstance(final ClassLoader classLoader) {
-		if(classLoader == null) {
+		if (classLoader == null) {
 			throw new IllegalStateException("calling AppConstants.getInstance without ClassLoader");
 		}
 
@@ -89,7 +89,7 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	public static synchronized void removeInstance(final ClassLoader cl) {
-		if(cl == null) {
+		if (cl == null) {
 			throw new IllegalStateException("calling AppConstants.removeInstance without ClassLoader");
 		}
 		AppConstants instance = appConstantsMap.get(cl);
@@ -106,7 +106,7 @@ public final class AppConstants extends PropertyLoader {
 	@Deprecated
 	public StringTokenizer getTokenizedProperty(String key, @Nonnull String defaults) {
 		String list = getResolvedProperty(key);
-		if (list==null)
+		if (list == null)
 			list = defaults;
 		return new StringTokenizer(list, ",");
 	}
@@ -125,9 +125,9 @@ public final class AppConstants extends PropertyLoader {
 		final String propertyPrefix = keyBase + (!keyBase.endsWith(".") ? "." : "");
 
 		AppConstants constants = getInstance();
-		if(useSystemProperties)
+		if (useSystemProperties)
 			constants.putAll(System.getProperties());
-		if(useEnvironmentVariables) {
+		if (useEnvironmentVariables) {
 			try {
 				constants.putAll(Environment.getEnvironmentVariables());
 			} catch (IOException e) {
@@ -136,9 +136,9 @@ public final class AppConstants extends PropertyLoader {
 		}
 
 		Properties filteredProperties = new Properties();
-		for(Object objKey: constants.keySet()) {
+		for (Object objKey : constants.keySet()) {
 			String key = (String) objKey;
-			if(key.startsWith(propertyPrefix)) {
+			if (key.startsWith(propertyPrefix)) {
 				filteredProperties.put(key, constants.getResolvedProperty(key));
 			}
 		}
@@ -155,8 +155,9 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	public Object setProperty(String key, boolean value) {
-		return setProperty(key, ""+value, false);
+		return setProperty(key, "" + value, false);
 	}
+
 	/**
 	 * Add property to global (all) AppConstants
 	 */
@@ -168,7 +169,7 @@ public final class AppConstants extends PropertyLoader {
 	 * Add property to local (local=true) or global (local=false) AppConstants
 	 */
 	private synchronized Object setProperty(String key, String value, boolean local) {
-		if(local) {
+		if (local) {
 			//noinspection deprecation
 			return super.put(key, value);
 		} else {
@@ -205,7 +206,7 @@ public final class AppConstants extends PropertyLoader {
 				// Add properties after load(is) to prevent load(is)
 				// from overriding them
 				String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
-				if (StringUtils.isNotEmpty(loadFileSuffix)){
+				if (StringUtils.isNotEmpty(loadFileSuffix)) {
 					load(classLoader, loadFile, loadFileSuffix, false);
 				} else {
 					load(classLoader, loadFile, false);
@@ -219,7 +220,7 @@ public final class AppConstants extends PropertyLoader {
 						+ "_"
 						+ suffix
 						+ (StringUtils.isEmpty(extension) ? "" : "."
-								+ extension);
+						+ extension);
 				load(classLoader, suffixedFilename, false);
 			}
 		}

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.custommonkey.xmlunit.XMLUnit;
 import org.frankframework.testutil.MatchUtils;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -82,10 +83,14 @@ public class XmlBuilderTest {
 	public void test2() {
 		XmlBuilder schema = new XmlBuilder("schema");
 		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
-		schema.addAttribute("targetNamespace",
-				"http://schemas.frankframework.org/Adapter.xsd");
-		schema.addAttribute("xmlns:tns",
-				"http://schemas.frankframework.org/Adapter.xsd");
+		schema.addAttribute(
+				"targetNamespace",
+				"http://schemas.frankframework.org/Adapter.xsd"
+		);
+		schema.addAttribute(
+				"xmlns:tns",
+				"http://schemas.frankframework.org/Adapter.xsd"
+		);
 		schema.addAttribute("elementFormDefault", "qualified");
 		XmlBuilder complexType = new XmlBuilder("complexType");
 		complexType.addAttribute("name", "IOS-AdapteringType");
@@ -115,10 +120,14 @@ public class XmlBuilderTest {
 	public void test3() {
 		XmlBuilder schema = new XmlBuilder("schema");
 		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
-		schema.addAttribute("targetNamespace",
-				"http://schemas.frankframework.org/Adapter.xsd");
-		schema.addAttribute("xmlns:tns",
-				"http://schemas.frankframework.org/Adapter.xsd");
+		schema.addAttribute(
+				"targetNamespace",
+				"http://schemas.frankframework.org/Adapter.xsd"
+		);
+		schema.addAttribute(
+				"xmlns:tns",
+				"http://schemas.frankframework.org/Adapter.xsd"
+		);
 		schema.addAttribute("elementFormDefault", "qualified");
 		XmlBuilder complexType = new XmlBuilder("complexType");
 		schema.addSubElement(complexType);
@@ -156,8 +165,8 @@ public class XmlBuilderTest {
 
 	@Test
 	public void testAddEmbeddedCdata2() {
-		String CDATA_START="<![CDATA[";
-		String CDATA_END="]]>";
+		String CDATA_START = "<![CDATA[";
+		String CDATA_END = "]]>";
 		String CDATA_END_REPLACEMENT = CDATA_END.substring(0, 1) + CDATA_END + CDATA_START + CDATA_END.substring(1);
 
 		String value = "<xml>&amp; " + CDATA_START + "cdatastring < > & <tag/> " + CDATA_END + "rest</xml>";

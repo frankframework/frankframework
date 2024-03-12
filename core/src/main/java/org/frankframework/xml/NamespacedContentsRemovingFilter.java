@@ -24,11 +24,10 @@ import org.xml.sax.SAXException;
  * Filter that removes all Elements and attributes that are in a namespace, retaining only non-namespaced content.
  *
  * @author Gerrit van Brakel
- *
  */
 public class NamespacedContentsRemovingFilter extends FullXmlFilter {
 
-	private int removingDepth=0;
+	private int removingDepth = 0;
 
 	public NamespacedContentsRemovingFilter(ContentHandler handler) {
 		super(handler);
@@ -36,7 +35,7 @@ public class NamespacedContentsRemovingFilter extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (removingDepth>0 || StringUtils.isNotEmpty(uri)) {
+		if (removingDepth > 0 || StringUtils.isNotEmpty(uri)) {
 			removingDepth++;
 		} else {
 			super.startElement("", localName, localName, new NamespacedContentsRemovingAttributesWrapper(atts));
@@ -45,7 +44,7 @@ public class NamespacedContentsRemovingFilter extends FullXmlFilter {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (removingDepth>0) {
+		if (removingDepth > 0) {
 			removingDepth--;
 		} else {
 			super.endElement("", localName, localName);
@@ -64,20 +63,21 @@ public class NamespacedContentsRemovingFilter extends FullXmlFilter {
 
 	@Override
 	public void startCDATA() throws SAXException {
-		if (removingDepth==0) {
+		if (removingDepth == 0) {
 			super.startCDATA();
 		}
 	}
+
 	@Override
 	public void endCDATA() throws SAXException {
-		if (removingDepth==0) {
+		if (removingDepth == 0) {
 			super.endCDATA();
 		}
 	}
 
 	@Override
 	public void characters(char[] ch, int offset, int length) throws SAXException {
-		if (removingDepth==0) {
+		if (removingDepth == 0) {
 			super.characters(ch, offset, length);
 		}
 	}

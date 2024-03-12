@@ -38,38 +38,37 @@ import org.frankframework.util.XmlBuilder;
 /**
  * Pipe that reads a CRL from an input stream and transforms it to an XML.
  * The steam is closed after reading.
- *
+ * <p>
  * Example configuration:
  * <pre><code>
-	&lt;pipe
-		name="Read issuer"
-		className="org.frankframework.pipes.FilePipe"
-		actions="read"
-		fileName="dir/issuer.cer"
-		preserveInput="true"
-		outputType="stream"
-		storeResultInSessionKey="issuer"
-		&gt;
-		&lt;forward name="success" path="Read CRL" /&gt;
-	&lt;/pipe&gt;
-	&lt;pipe
-		name="Read CRL"
-		className="org.frankframework.pipes.FilePipe"
-		actions="read"
-		fileName="dir/CRL.crl"
-		outputType="stream"
-		&gt;
-		&lt;forward name="success" path="Transform CRL" /&gt;
-	&lt;/pipe&gt;
-	&lt;pipe
-		name="Transform CRL"
-		className="org.frankframework.pipes.CrlPipe"
-		issuerSessionKey="issuer"
-		&gt;
-		&lt;forward name="success" path="EXIT" /&gt;
-	&lt;/pipe&gt;
+ * &lt;pipe
+ * name="Read issuer"
+ * className="org.frankframework.pipes.FilePipe"
+ * actions="read"
+ * fileName="dir/issuer.cer"
+ * preserveInput="true"
+ * outputType="stream"
+ * storeResultInSessionKey="issuer"
+ * &gt;
+ * &lt;forward name="success" path="Read CRL" /&gt;
+ * &lt;/pipe&gt;
+ * &lt;pipe
+ * name="Read CRL"
+ * className="org.frankframework.pipes.FilePipe"
+ * actions="read"
+ * fileName="dir/CRL.crl"
+ * outputType="stream"
+ * &gt;
+ * &lt;forward name="success" path="Transform CRL" /&gt;
+ * &lt;/pipe&gt;
+ * &lt;pipe
+ * name="Transform CRL"
+ * className="org.frankframework.pipes.CrlPipe"
+ * issuerSessionKey="issuer"
+ * &gt;
+ * &lt;forward name="success" path="EXIT" /&gt;
+ * &lt;/pipe&gt;
  * </code></pre>
- *
  *
  * @author Miel Hoppenbrouwers
  * @author Jaco de Groot
@@ -84,14 +83,14 @@ public class CrlPipe extends FixedForwardPipe {
 		X509CRL crl;
 		try (InputStream inputStream = message.asInputStream()) {
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			crl = (X509CRL)cf.generateCRL(inputStream);
+			crl = (X509CRL) cf.generateCRL(inputStream);
 		} catch (CertificateException | IOException | CRLException e) {
 			throw new PipeRunException(this, "Could not read CRL", e);
 		}
 		String result = null;
 		if (isCRLOK(crl, Message.asMessage(session.get(getIssuerSessionKey())))) {
 			XmlBuilder root = new XmlBuilder("SerialNumbers");
-			Iterator <? extends X509CRLEntry> it = crl.getRevokedCertificates().iterator();
+			Iterator<? extends X509CRLEntry> it = crl.getRevokedCertificates().iterator();
 			while (it.hasNext()) {
 				X509CRLEntry e = (X509CRLEntry) it.next();
 				XmlBuilder serialNumber = new XmlBuilder("SerialNumber");
@@ -106,7 +105,7 @@ public class CrlPipe extends FixedForwardPipe {
 	private boolean isCRLOK(X509CRL x509crl, Message issuer) throws PipeRunException {
 		try {
 			CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-			X509Certificate issuerCertificate = (X509Certificate)certificateFactory.generateCertificate(issuer.asInputStream());
+			X509Certificate issuerCertificate = (X509Certificate) certificateFactory.generateCertificate(issuer.asInputStream());
 			if (x509crl.getIssuerX500Principal().equals(issuerCertificate.getSubjectX500Principal())) {
 				return true;
 			}

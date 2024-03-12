@@ -29,6 +29,7 @@ import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
+
 import org.junit.jupiter.api.BeforeEach;
 
 @WithLiquibase(tableName = "IBISLOCK") //Lock table must exist
@@ -58,7 +59,7 @@ public class CleanupDatabaseJobTest {
 		storage.setType("A");
 		storage.setSlotId("dummySlotId");
 		storage.setTableName(txStorageTableName);
-		storage.setSequenceName("SEQ_"+txStorageTableName);
+		storage.setSequenceName("SEQ_" + txStorageTableName);
 		storage.setDatasourceName(database.getDataSourceName());
 
 		if (getConfiguration().getScheduledJob("MockJob") == null) {
@@ -134,30 +135,30 @@ public class CleanupDatabaseJobTest {
 		Date date = new Date();
 		Date expiryDate = new Date(date.getTime() - 3600 * 1000 * 24);
 		StringBuilder sb = new StringBuilder("");
-		for(int i = 1; i <= numRows; i++) {
-			if(dbmsSupport.getDbms() == Dbms.ORACLE) {
-				sb.append("SELECT "+i+", 'A', 'test', 'localhost', 'messageId', 'correlationId', "+dbmsSupport.getDatetimeLiteral(date)+", 'comments', "+dbmsSupport.getDatetimeLiteral(expiryDate)+", 'label' FROM DUAL");
+		for (int i = 1; i <= numRows; i++) {
+			if (dbmsSupport.getDbms() == Dbms.ORACLE) {
+				sb.append("SELECT " + i + ", 'A', 'test', 'localhost', 'messageId', 'correlationId', " + dbmsSupport.getDatetimeLiteral(date) + ", 'comments', " + dbmsSupport.getDatetimeLiteral(expiryDate) + ", 'label' FROM DUAL");
 			} else {
 				sb.append("(");
-				if(dbmsSupport.autoIncrementKeyMustBeInserted()) {
-					sb.append(i+",");
+				if (dbmsSupport.autoIncrementKeyMustBeInserted()) {
+					sb.append(i + ",");
 				}
-				sb.append("'A', 'test', 'localhost', 'messageId', 'correlationId', "+dbmsSupport.getDatetimeLiteral(date)+", 'comments', "+dbmsSupport.getDatetimeLiteral(expiryDate)+", 'label')");
+				sb.append("'A', 'test', 'localhost', 'messageId', 'correlationId', " + dbmsSupport.getDatetimeLiteral(date) + ", 'comments', " + dbmsSupport.getDatetimeLiteral(expiryDate) + ", 'label')");
 			}
-			if(i != numRows) {
-				if(dbmsSupport.getDbms() == Dbms.ORACLE) {
+			if (i != numRows) {
+				if (dbmsSupport.getDbms() == Dbms.ORACLE) {
 					sb.append(" UNION ALL \n");
 				} else {
 					sb.append(",");
 				}
 			}
 		}
-		if(dbmsSupport.getDbms() == Dbms.ORACLE) {
+		if (dbmsSupport.getDbms() == Dbms.ORACLE) {
 			sb.append(") SELECT * FROM valuesTable");
 		}
 
-		String query ="INSERT INTO "+txStorageTableName+" (" +
-				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
+		String query = "INSERT INTO " + txStorageTableName + " (" +
+				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField() + "," : "")
 				+ storage.getTypeField() + ","
 				+ storage.getSlotIdField() + ","
 				+ storage.getHostField() + ","
@@ -165,11 +166,11 @@ public class CleanupDatabaseJobTest {
 				+ storage.getCorrelationIdField() + ","
 				+ storage.getDateField() + ","
 				+ storage.getCommentField() + ","
-				+ storage.getExpiryDateField()  +","
+				+ storage.getExpiryDateField() + ","
 				+ storage.getLabelField() + ")" + (dbmsSupport.getDbms() == Dbms.ORACLE ? " WITH valuesTable AS (" : " VALUES ")
 				+ sb.toString();
 
-		try(Connection connection = database.getConnection()) {
+		try (Connection connection = database.getConnection()) {
 			JdbcTestUtil.executeStatement(connection, query);
 		}
 
@@ -178,8 +179,8 @@ public class CleanupDatabaseJobTest {
 	}
 
 	private int getCount(DatabaseTestEnvironment database) throws SQLException, JdbcException {
-		try(Connection connection = database.getConnection()) {
-			return JdbcTestUtil.executeIntQuery(connection, "SELECT count(*) from "+txStorageTableName);
+		try (Connection connection = database.getConnection()) {
+			return JdbcTestUtil.executeIntQuery(connection, "SELECT count(*) from " + txStorageTableName);
 		}
 	}
 
@@ -199,4 +200,3 @@ public class CleanupDatabaseJobTest {
 		assertEquals(0, getCount(database));
 	}
 }
-

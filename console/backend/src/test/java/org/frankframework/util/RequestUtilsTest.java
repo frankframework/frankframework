@@ -15,11 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.frankframework.management.web.ApiException;
-import org.junit.jupiter.api.Test;
 
 public class RequestUtilsTest {
 
@@ -27,7 +28,7 @@ public class RequestUtilsTest {
 		private InputStream stream;
 
 		public FileAttachment(String id, InputStream stream, String filename) {
-			super(id, (InputStream) null, new ContentDisposition("attachment;filename="+filename));
+			super(id, (InputStream) null, new ContentDisposition("attachment;filename=" + filename));
 			this.stream = stream;
 		}
 
@@ -50,7 +51,7 @@ public class RequestUtilsTest {
 		}
 
 		public StringAttachment(String name, String value, Charset charset) {
-			super(name, "text/plain;charset="+charset.name(), new ByteArrayInputStream(value.getBytes(charset)));
+			super(name, "text/plain;charset=" + charset.name(), new ByteArrayInputStream(value.getBytes(charset)));
 		}
 
 		@Override

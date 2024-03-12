@@ -21,22 +21,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.springframework.http.MediaType;
-
 import com.aspose.slides.InvalidPasswordException;
 import com.aspose.slides.LoadOptions;
 import com.aspose.slides.Presentation;
 import com.aspose.slides.SaveFormat;
 
 import lombok.extern.log4j.Log4j2;
+import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
+import org.springframework.http.MediaType;
 
 /**
  * Converts the files which are required and supported by the aspose slides
  * library.
- *
  */
 @Log4j2
 public class SlidesConvertor extends AbstractConvertor {
@@ -62,7 +60,7 @@ public class SlidesConvertor extends AbstractConvertor {
 		}
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			LoadOptions loadOptions = getLoadOptions(mediaType);
-			if(!configuration.isLoadExternalResources()){
+			if (!configuration.isLoadExternalResources()) {
 				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 			}
 			Presentation presentation = new Presentation(inputStream, loadOptions);

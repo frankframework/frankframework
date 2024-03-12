@@ -69,8 +69,8 @@ import org.frankframework.util.StringUtil;
 /**
  * Functions to manipulate the configuration.
  *
- * @author  Peter Leeuwenburgh
- * @author  Jaco de Groot
+ * @author Peter Leeuwenburgh
+ * @author Jaco de Groot
  */
 public class ConfigurationUtils {
 	private static final Logger log = LogUtil.getLogger(ConfigurationUtils.class);
@@ -155,7 +155,8 @@ public class ConfigurationUtils {
 		if (StringUtils.isEmpty(version)) {
 			version = null; //Make sure this is null when empty!
 		}
-		if(log.isInfoEnabled()) log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
+		if (log.isInfoEnabled())
+			log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
 
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
@@ -163,15 +164,15 @@ public class ConfigurationUtils {
 		qs.configure();
 		try {
 			qs.open();
-			try(Connection conn = qs.getConnection()) {
-				if(version == null) {//Return active config
-					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+			try (Connection conn = qs.getConnection()) {
+				if (version == null) {//Return active config
+					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG=" + (qs.getDbmsSupport()
+							.getBooleanValue(true));
 					try (PreparedStatement stmt = conn.prepareStatement(query)) {
 						stmt.setString(1, name);
 						return extractConfigurationFromResultSet(stmt, name, version);
 					}
-				}
-				else {
+				} else {
 					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 					try (PreparedStatement stmt = conn.prepareStatement(query)) {
 						stmt.setString(1, name);
@@ -188,9 +189,9 @@ public class ConfigurationUtils {
 	}
 
 	private static Map<String, Object> extractConfigurationFromResultSet(PreparedStatement stmt, String name, String version) throws SQLException {
-		try(ResultSet rs = stmt.executeQuery()) {
+		try (ResultSet rs = stmt.executeQuery()) {
 			if (!rs.next()) {
-				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
+				log.error("no configuration found in database with name [" + name + "] " + (version != null ? "version [" + version + "]" : "activeconfig [TRUE]"));
 				return null;
 			}
 
@@ -213,8 +214,8 @@ public class ConfigurationUtils {
 	 */
 	public static String addConfigToDatabase(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		BuildInfoValidator configDetails = new BuildInfoValidator(file);
-		if(addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
-			return configDetails.getName() +": "+ configDetails.getVersion();
+		if (addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
+			return configDetails.getName() + ": " + configDetails.getVersion();
 		}
 		return null;
 	}
@@ -230,7 +231,7 @@ public class ConfigurationUtils {
 						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
 						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
-						log.error("an error occurred while trying to store new configuration using datasource ["+datasource+"]", e);
+						log.error("an error occurred while trying to store new configuration using datasource [" + datasource + "]", e);
 						result.put(entryName, e.getMessage());
 					}
 				}
@@ -254,14 +255,14 @@ public class ConfigurationUtils {
 
 		PlatformTransactionManager txManager = applicationContext.getBean("txManager", PlatformTransactionManager.class);
 		TransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-		IbisTransaction itx = new IbisTransaction(txManager , txDef, "add config ["+name+"] to database");
+		IbisTransaction itx = new IbisTransaction(txManager, txDef, "add config [" + name + "] to database");
 		try {
 			qs.open();
 			conn = qs.getConnection();
 			int updated = 0;
 
 			if (activateConfig) {
-				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(false))+" WHERE NAME=?");
+				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG=" + (qs.getDbmsSupport().getBooleanValue(false)) + " WHERE NAME=?");
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
 					stmt.setString(1, name);
 					updated = stmt.executeUpdate();
@@ -278,7 +279,7 @@ public class ConfigurationUtils {
 
 			String activeBool = qs.getDbmsSupport().getBooleanValue(activateConfig);
 			String reloadBool = qs.getDbmsSupport().getBooleanValue(automaticReload);
-			String query = ("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, "+activeBool+", "+reloadBool+")");
+			String query = ("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, " + activeBool + ", " + reloadBool + ")");
 			try (PreparedStatement stmt = conn.prepareStatement(query)) {
 				stmt.setString(1, name);
 				stmt.setString(2, version);
@@ -390,7 +391,7 @@ public class ConfigurationUtils {
 			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
-		FixedQuerySender qs =  SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
@@ -405,7 +406,8 @@ public class ConfigurationUtils {
 					selectStmt.setString(2, version);
 					try (ResultSet rs = selectStmt.executeQuery()) {
 						if (rs.next()) {
-							String query = "UPDATE IBISCONFIG SET AUTORELOAD=" + qs.getDbmsSupport().getBooleanValue(booleanValue) + " WHERE NAME=? AND VERSION=?";
+							String query = "UPDATE IBISCONFIG SET AUTORELOAD=" + qs.getDbmsSupport()
+									.getBooleanValue(booleanValue) + " WHERE NAME=? AND VERSION=?";
 
 							try (PreparedStatement stmt = conn.prepareStatement(query)) {
 								stmt.setString(1, name);
@@ -423,7 +425,6 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 *
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
@@ -444,11 +445,11 @@ public class ConfigurationUtils {
 			String configDir = AppConstants.getInstance().getProperty("configurations.directory");
 			log.info("scanning directory [{}] for configurations", configDir);
 			try {
-				for(String name : retrieveDirectoryConfigNames(configDir)) {
+				for (String name : retrieveDirectoryConfigNames(configDir)) {
 					if (allConfigNameItems.get(name) == null) {
 						allConfigNameItems.put(name, DirectoryClassLoader.class);
 					} else {
-						log.warn("config ["+name+"] already exists in "+allConfigNameItems+", cannot add same config twice");
+						log.warn("config [" + name + "] already exists in " + allConfigNameItems + ", cannot add same config twice");
 					}
 				}
 			} catch (IOException e) {
@@ -463,16 +464,15 @@ public class ConfigurationUtils {
 					if (allConfigNameItems.get(dbConfigName) == null) {
 						allConfigNameItems.put(dbConfigName, DatabaseClassLoader.class);
 					} else {
-						log.warn("config ["+dbConfigName+"] already exists in "+allConfigNameItems+", cannot add same config twice");
+						log.warn("config [" + dbConfigName + "] already exists in " + allConfigNameItems + ", cannot add same config twice");
 					}
 				}
-			}
-			catch (ConfigurationException e) {
+			} catch (ConfigurationException e) {
 				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "error retrieving database configurations", MessageKeeperLevel.WARN, e));
 			}
 		}
 
-		log.info("found configurations to load ["+allConfigNameItems+"]");
+		log.info("found configurations to load [" + allConfigNameItems + "]");
 
 		return sort(allConfigNameItems);
 	}
@@ -483,7 +483,7 @@ public class ConfigurationUtils {
 
 		Map<String, T> sortedConfigurations = new LinkedHashMap<>();
 
-		sortedConfigurationNames.forEach(name -> sortedConfigurations.put(name, allConfigNameItems.get(name)) );
+		sortedConfigurationNames.forEach(name -> sortedConfigurations.put(name, allConfigNameItems.get(name)));
 
 		return sortedConfigurations;
 	}
@@ -494,7 +494,7 @@ public class ConfigurationUtils {
 		@Override
 		public int compare(String configName1, String configName2) {
 			String parent = constants.getString("configurations." + configName2 + ".parentConfig", null);
-			if(configName1.equals(parent)) {
+			if (configName1.equals(parent)) {
 				return -1;
 			}
 			return configName1.equals(configName2) ? 0 : 1;
@@ -505,14 +505,14 @@ public class ConfigurationUtils {
 	@Nonnull
 	private static List<String> retrieveDirectoryConfigNames(String configDir) throws IOException {
 		List<String> configurationNames = new ArrayList<>();
-		if(StringUtils.isEmpty(configDir))
+		if (StringUtils.isEmpty(configDir))
 			throw new IOException("property [configurations.directory] not set");
 
 		Path directory = Paths.get(configDir);
-		if(!Files.exists(directory))
-			throw new IOException("failed to open configurations.directory ["+configDir+"]");
-		if(!Files.isDirectory(directory))
-			throw new IOException("configurations.directory ["+configDir+"] is not a valid directory");
+		if (!Files.exists(directory))
+			throw new IOException("failed to open configurations.directory [" + configDir + "]");
+		if (!Files.isDirectory(directory))
+			throw new IOException("configurations.directory [" + configDir + "] is not a valid directory");
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, Files::isDirectory)) {
 			for (Path path : stream) {
@@ -533,12 +533,12 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			try (Connection conn = qs.getConnection()) {
-				if(!qs.getDbmsSupport().isTablePresent(conn, "IBISCONFIG")) {
+				if (!qs.getDbmsSupport().isTablePresent(conn, "IBISCONFIG")) {
 					log.warn("unable to load configurations from database, table [IBISCONFIG] is not present");
 					return Collections.emptyList();
 				}
 
-				String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+				String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG=" + (qs.getDbmsSupport().getBooleanValue(true));
 				try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
 					List<String> configurationNames = new ArrayList<>();
 					while (rs.next()) {

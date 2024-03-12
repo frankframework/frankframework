@@ -15,8 +15,6 @@
  */
 package org.frankframework.jms;
 
-import org.w3c.dom.Element;
-
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -29,6 +27,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
 
 /**
  * Sender for browsing and removing queue messages (with input and output in a XML message).
@@ -58,20 +57,20 @@ import org.frankframework.util.XmlUtils;
  * <code>
  * <pre>
  *   &lt;result&gt;
- *	    &lt;items count="2"&gt;
- *	       &lt;item&gt;
- *	          &lt;timestamp&gt;Thu Nov 20 13:36:31 CET 2014&lt;/timestamp&gt;
- *	          &lt;messageId&gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&lt;/messageId&gt;
- *	          &lt;correlationId&gt;...&lt;/correlationId&gt;
- *	          &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
- *	       &lt;/item&gt;
- *	       &lt;item&gt;
- *	          &lt;timestamp&gt;Thu Dec 12 11:59:22 CET 2014&lt;/timestamp&gt;
- *	          &lt;messageId&gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&lt;/messageId&gt;
- *	          &lt;correlationId&gt;...&lt;/correlationId&gt;
- *	          &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
- *	       &lt;/item&gt;
- *	    &lt;/items&gt;
+ * 	    &lt;items count="2"&gt;
+ * 	       &lt;item&gt;
+ * 	          &lt;timestamp&gt;Thu Nov 20 13:36:31 CET 2014&lt;/timestamp&gt;
+ * 	          &lt;messageId&gt;ID:LPAB00000003980-61959-1416486781822-3:5:33:1:1&lt;/messageId&gt;
+ * 	          &lt;correlationId&gt;...&lt;/correlationId&gt;
+ * 	          &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
+ * 	       &lt;/item&gt;
+ * 	       &lt;item&gt;
+ * 	          &lt;timestamp&gt;Thu Dec 12 11:59:22 CET 2014&lt;/timestamp&gt;
+ * 	          &lt;messageId&gt;ID:LPAB00000003980-58359-1721486799722-3:4:19:1:1&lt;/messageId&gt;
+ * 	          &lt;correlationId&gt;...&lt;/correlationId&gt;
+ * 	          &lt;message&gt;&lt;![CDATA[...]]&gt;&lt;/message&gt;
+ * 	       &lt;/item&gt;
+ * 	    &lt;/items&gt;
  *   &lt;/result&gt;
  * </pre>
  * </code>
@@ -82,13 +81,13 @@ import org.frankframework.util.XmlUtils;
  * <code>
  * <pre>
  *   &lt;result&gt;
- *	    &lt;itemsRemoved&gt;2&lt;/itemsRemoved&gt;
+ * 	    &lt;itemsRemoved&gt;2&lt;/itemsRemoved&gt;
  *   &lt;/result&gt;
  * </pre>
  * </code>
  * </p>
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
@@ -111,7 +110,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			jmsRealm = XmlUtils.getChildTagAsString(queueBrowserElement, "jmsRealm");
 			queueConnectionFactoryName = XmlUtils.getChildTagAsString(queueBrowserElement, "queueConnectionFactoryName");
 			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationName");
-			destinationType = EnumUtils.parse(DestinationType.class,XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType"));
+			destinationType = EnumUtils.parse(DestinationType.class, XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType"));
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}

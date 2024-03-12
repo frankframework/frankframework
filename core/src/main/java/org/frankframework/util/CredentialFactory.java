@@ -23,25 +23,25 @@ import org.frankframework.credentialprovider.ICredentials;
 /**
  * Provides user-id and password from the WebSphere authentication-alias repository.
  * A default username and password can be set, too.
- *
+ * <p>
  * Note:
  * In WSAD the aliases are named just as you type them.
  * In WebSphere 5 and 6, and in RAD7/RSA7 aliases are prefixed with the name of the server.
  * It is therefore sensible to use a environment setting to find the name of the alias.
  *
- * @author  Gerrit van Brakel
- * @since   4.4.2
+ * @author Gerrit van Brakel
+ * @since 4.4.2
  */
-public class CredentialFactory  {
+public class CredentialFactory {
 
 	private final ICredentials credentials;
 
 	public CredentialFactory(String alias) {
-		this(alias, null, (Supplier<String>)null);
+		this(alias, null, (Supplier<String>) null);
 	}
 
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {
-		this(alias, ()->defaultUsername, ()->defaultPassword);
+		this(alias, () -> defaultUsername, () -> defaultPassword);
 	}
 
 	public CredentialFactory(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {

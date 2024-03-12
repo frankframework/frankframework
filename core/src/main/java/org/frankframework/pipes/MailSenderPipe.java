@@ -21,15 +21,15 @@ import org.frankframework.senders.MailSender;
  * Pipe that sends a mail-message using a {@link MailSender} as its sender.
  * <br/>
  * Sample email.xml:<br/><code><pre>
- *	&lt;email&gt;
- *	    &lt;recipients&gt;
- *	        &lt;recipient&gt;***@natned&lt;/recipient&gt;
- *	        &lt;recipient&gt;***@nn.nl&lt;/recipient&gt;
- *	    &lt;/recipients&gt;
- *	    &lt;from&gt;***@nn.nl&lt;/from&gt;
- *	    &lt;subject&gt;this is the subject&lt;/subject&gt;
- *	    &lt;message&gt;dit is de message&lt;/message&gt;
- *	&lt;/email&gt;
+ * 	&lt;email&gt;
+ * 	    &lt;recipients&gt;
+ * 	        &lt;recipient&gt;***@natned&lt;/recipient&gt;
+ * 	        &lt;recipient&gt;***@nn.nl&lt;/recipient&gt;
+ * 	    &lt;/recipients&gt;
+ * 	    &lt;from&gt;***@nn.nl&lt;/from&gt;
+ * 	    &lt;subject&gt;this is the subject&lt;/subject&gt;
+ * 	    &lt;message&gt;dit is de message&lt;/message&gt;
+ * 	&lt;/email&gt;
  * </pre></code> <br/>
  * Notice: it must be valid XML. Therefore, especially the message element
  * must be plain text or be wrapped as CDATA.<br/><br/>

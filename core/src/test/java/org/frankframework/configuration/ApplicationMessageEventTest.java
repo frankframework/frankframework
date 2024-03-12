@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.MessageKeeper;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 

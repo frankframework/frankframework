@@ -13,9 +13,9 @@ public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester 
 
 	private Connection connection;
 
-	public ConcurrentJdbcActionTester(ThrowingSupplier<Connection,SQLException> connectionSupplier) {
+	public ConcurrentJdbcActionTester(ThrowingSupplier<Connection, SQLException> connectionSupplier) {
 		super();
-		this.connectionSupplier=connectionSupplier;
+		this.connectionSupplier = connectionSupplier;
 	}
 
 	@Override

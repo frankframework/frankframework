@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Enumeration;
 
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -19,10 +20,10 @@ import jakarta.mail.internet.MimeMessage;
 
 class MailSender2Test extends SenderTestBase<MailSender> {
 
-	private final String toAddress="testUser@localhost";
-	private final String testUser="testUser";
-	private final String testPassword="testPassword";
-	private final String domainWhitelist="localhost,frankframework.org";
+	private final String toAddress = "testUser@localhost";
+	private final String testUser = "testUser";
+	private final String testPassword = "testPassword";
+	private final String domainWhitelist = "localhost,frankframework.org";
 	private static final ServerSetup serverSetup = ServerSetupTest.SMTP;
 
 	@RegisterExtension
@@ -65,7 +66,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 				+ "<subject>" + subject + "</subject>"
 				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
 				+ "<message>" + body + "</message>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -109,7 +110,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 				+ "<subject>" + subject + "</subject>"
 				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
 				+ "<message>" + body + "</message>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -141,7 +142,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<message>" + body + "</message>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -179,7 +180,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 				+ "<subject>" + subject + "</subject>"
 				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
 				+ "<message>" + body + "</message>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();
@@ -201,7 +202,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 				+ "<subject>" + subject + "</subject>"
 				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
 				+ "<message>" + body + "</message>"
-			+ "</email>";
+				+ "</email>";
 
 		sender.configure();
 		sender.open();

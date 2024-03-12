@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -210,21 +211,21 @@ public class AppConstantsTest {
 			Vector<URL> urls = new Vector<>();
 			String nameToUse = name;
 
-			URL file = getParent().getResource("AppConstants/"+nameToUse);
-			log.debug("trying to find file ["+name+"] URL["+file+"]");
-			if(file == null) {
-				throw new IllegalStateException("could not locate resource [AppConstants/"+nameToUse+"]");
+			URL file = getParent().getResource("AppConstants/" + nameToUse);
+			log.debug("trying to find file [" + name + "] URL[" + file + "]");
+			if (file == null) {
+				throw new IllegalStateException("could not locate resource [AppConstants/" + nameToUse + "]");
 			}
 			urls.add(file);
 
-			if("DeploymentSpecifics.properties".equals(name)) {
-				if(simulateReload) {
+			if ("DeploymentSpecifics.properties".equals(name)) {
+				if (simulateReload) {
 					nameToUse = "OtherSpecifics.properties";
 				}
 
-				URL parent = getParent().getResource("AppConstants/ParentClassLoader/"+nameToUse);
-				if(parent == null) {
-					throw new IllegalStateException("could not locate resource [AppConstants/ParentClassLoader/"+nameToUse+"]");
+				URL parent = getParent().getResource("AppConstants/ParentClassLoader/" + nameToUse);
+				if (parent == null) {
+					throw new IllegalStateException("could not locate resource [AppConstants/ParentClassLoader/" + nameToUse + "]");
 				}
 				urls.add(parent);
 			}

@@ -51,8 +51,8 @@ import org.frankframework.util.StringUtil;
 /**
  * Container that provides threads to execute pulling listeners.
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public class PullingListenerContainer<M> implements IThreadCountControllable {
 	protected Logger log = LogUtil.getLogger(this);
@@ -116,7 +116,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	public int getCurrentThreadCount() {
 		log.trace("Get current thread-count, synchronized (lock) on threadsRunning[{}]", threadsRunning);
 		try {
-			return (int)threadsRunning.getValue();
+			return (int) threadsRunning.getValue();
 		} finally {
 			log.trace("Get current thread-count, lock on threadsRunning[{}] released", threadsRunning);
 		}
@@ -137,7 +137,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	@Override
 	public void decreaseThreadCount() {
-		if (maxThreadCount>1) {
+		if (maxThreadCount > 1) {
 			maxThreadCount--;
 			log.trace("PullingListenerContainer - decreaseThreadCount - tighten processToken - synchronize (lock) on processToken[{}]", pollToken);
 			processToken.tighten();
@@ -161,7 +161,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		@Override
 		public void run() {
 			ThreadContext.push(getName());
-			log.debug("taskExecutor [{}]", ()->ToStringBuilder.reflectionToString(taskExecutor));
+			log.debug("taskExecutor [{}]", () -> ToStringBuilder.reflectionToString(taskExecutor));
 			receiver.setRunState(RunState.STARTED);
 			log.debug("started ControllerTask");
 			try {
@@ -174,9 +174,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						pollToken.acquire();
 						log.trace("PullingListenerContainer - ControllerTask - acquired pollToken - lock on pollToken[{}] released", pollToken);
 					}
-					if (isIdle() && receiver.getPollInterval()>0) {
-						if (log.isDebugEnabled() && receiver.getPollInterval()>600) log.debug("is idle, sleeping for [{}] seconds", receiver.getPollInterval());
-						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunState.STARTED); i++) {
+					if (isIdle() && receiver.getPollInterval() > 0) {
+						if (log.isDebugEnabled() && receiver.getPollInterval() > 600)
+							log.debug("is idle, sleeping for [{}] seconds", receiver.getPollInterval());
+						for (int i = 0; i < receiver.getPollInterval() && receiver.isInRunState(RunState.STARTED); i++) {
 							Thread.sleep(1000);
 						}
 					}
@@ -187,7 +188,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				Thread.currentThread().interrupt();
 			} finally {
 				log.debug("closing down ControllerTask");
-				if(receiver.getRunState()!=RunState.STOPPING && receiver.getRunState()!=RunState.EXCEPTION_STOPPING && receiver.getRunState()!=RunState.STOPPED) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
+				if (receiver.getRunState() != RunState.STOPPING && receiver.getRunState() != RunState.EXCEPTION_STOPPING && receiver.getRunState() != RunState.STOPPED) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
 					receiver.stopRunning();
 				}
 				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners
@@ -200,7 +201,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	private class ListenTask implements SchedulingAwareRunnable, INamedObject {
 
 		private @Getter @Setter String name;
-		private IHasProcessState<M> inProcessStateManager=null;
+		private IHasProcessState<M> inProcessStateManager = null;
 
 		@Override
 		public boolean isLongLived() {
@@ -208,27 +209,27 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 
 		public ListenTask() {
-			setName("Receiver ["+receiver.getName()+"]");
+			setName("Receiver [" + receiver.getName() + "]");
 		}
 
 		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
 			final IPullingListener<M> listener = (IPullingListener<M>) receiver.getListener();
-			Map<String,Object> threadContext = null;
-			boolean pollTokenReleased=false;
+			Map<String, Object> threadContext = null;
+			boolean pollTokenReleased = false;
 			try {
 				log.trace("ListenTask-run - increase threadsRunning - synchronize (lock) on threadsRunning[{}]", threadsRunning);
 				threadsRunning.increase();
 				log.trace("ListenTask-run - increased threadsRunning - lock on threadsRunning[{}] released", threadsRunning);
 				if (receiver.isInRunState(RunState.STARTED)) {
-					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
-						inProcessStateManager = (IHasProcessState<M>)listener;
+					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>) listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
+						inProcessStateManager = (IHasProcessState<M>) listener;
 					}
 					threadContext = listener.openThread();
 					RawMessageWrapper<M> rawMessage = null;
 					TransactionStatus txStatus = null;
-					int deliveryCount=0;
+					int deliveryCount = 0;
 					boolean messageHandled = false;
 					String messageId = null;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
@@ -251,9 +252,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									rawMessage = listener.getRawMessage(threadContext);
 								}
 								resetRetryInterval();
-								setIdle(rawMessage==null);
+								setIdle(rawMessage == null);
 							} catch (Exception e) {
-								if (txStatus!=null) {
+								if (txStatus != null) {
 									log.debug("Rollback; exception", e);
 									txManager.rollback(txStatus);
 								}
@@ -265,17 +266,17 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								}
 							}
 							if (rawMessage == null) {
-								if (txStatus!=null) {
+								if (txStatus != null) {
 									log.trace("Rollback; raw message == null"); //Why do we do a rollback here? There is no message to process?
 									txManager.rollback(txStatus);
 								}
 								return;
 							}
 
-							if (inProcessStateManager!=null) {
+							if (inProcessStateManager != null) {
 								log.debug("Set message-state to IN_PROCESSING");
-								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS, "start processing"))==null) {
-									if (txStatus!=null) {
+								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS, "start processing")) == null) {
+									if (txStatus != null) {
 										log.debug("Rollback; raw message from inProcessStateManager == null");
 										txManager.rollback(txStatus);
 									}
@@ -284,7 +285,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								// If inProcess-state is used, we'll commit the transaction that set the message state to the inProcess.
 								// This releases the lock on the record being processed.
 								// This is necessary for dbmses like MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back
-								if (txStatus!=null) {
+								if (txStatus != null) {
 									txManager.commit(txStatus);
 									if (receiver.isTransacted()) {
 										txStatus = txManager.getTransaction(txNew);
@@ -299,12 +300,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							synchronized (tasksStarted) {
 								tasksStarted.increase();
 								log.debug("{} started ListenTask [{}]", receiver::getLogPrefix, tasksStarted::getValue);
-								Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
+								Thread.currentThread().setName(receiver.getName() + "-listener[" + tasksStarted.getValue() + "]");
 							}
 							log.trace("{} PullingListenerContainer - ListenTask - run - increased tasksStarted lock on tasksStarted[{}] released", receiver::getLogPrefix, tasksStarted::toString);
 						} finally {
 							// release pollToken after message has been moved to inProcess, so it is not seen as 'available' by the next thread
-							pollTokenReleased=true;
+							pollTokenReleased = true;
 							if (pollToken != null) {
 								log.trace("PullingListenerContainer - ListenTask - release pollToken - synchronize (lock) on pollToken[{}]", pollToken);
 								pollToken.release();
@@ -314,10 +315,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 						try {
 							messageId = rawMessage.getId();
-							if (receiver.getMaxRetries()>=0) {
+							if (receiver.getMaxRetries() >= 0) {
 								deliveryCount = receiver.getDeliveryCount(rawMessage);
 							}
-							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
+							if (receiver.getMaxRetries() < 0 || deliveryCount <= receiver.getMaxRetries() + 1 || receiver.isSupportProgrammaticRetry()) {
 								try (PipeLineSession session = new PipeLineSession()) {
 									session.putAll(threadContext);
 									receiver.processRawMessage(listener, rawMessage, session, true);
@@ -346,7 +347,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (txStatus != null && !txStatus.isCompleted()) {
 									messageHandled = false;
 									log.debug("Rollback because exception occurred and message handling transaction was not completed yet.");
-									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
+									rollBack(txStatus, rawMessage, "Exception caught (" + e.getClass().getTypeName() + "): " + e.getMessage());
 									txStatus = null;
 								}
 							} catch (Exception e2) {
@@ -370,12 +371,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 					if (!messageHandled && inProcessStateManager != null) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
-						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
+						boolean noMoreRetries = receiver.getMaxRetries() >= 0 && deliveryCount > receiver.getMaxRetries();
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
 						log.debug("noMoreRetries [{}] deliveryCount [{}] targetState [{}]", noMoreRetries, deliveryCount, targetState);
 						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(messageId));
-						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
-						if (txStatus!=null) {
+						((IHasProcessState<M>) listener).changeProcessState(rawMessage, targetState, errorMessage != null ? errorMessage : "processing not successful");
+						if (txStatus != null) {
 							txManager.commit(txStatus);
 							txStatus = null;
 						}
@@ -409,14 +410,14 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		private void rollBack(TransactionStatus txStatus, RawMessageWrapper<M> rawMessage, String reason) throws ListenerException {
 			if (log.isDebugEnabled()) {
 				String stackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
-					.map(StackTraceElement::toString)
-					.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
+						.map(StackTraceElement::toString)
+						.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
 				log.debug("Rolling back TX, reason: {}, stack:{}", reason, stackTrace);
 			}
 			try {
 				txManager.rollback(txStatus);
 			} finally {
-				if (inProcessStateManager!=null) {
+				if (inProcessStateManager != null) {
 					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
 					try {
 						log.debug("Changing message state back to AVAILABLE in rollback, reason: {}", reason);
@@ -457,7 +458,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 		log.trace("Reset retry interval increased - lock on receiver {} released", receiver::getLogPrefix);
 		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
-		if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+		if (currentInterval * 2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
 			receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
 		}
 		while (receiver.isInRunState(RunState.STARTED) && currentInterval-- > 0) {
@@ -471,17 +472,17 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	}
 
 
-
 	public void setIdle(boolean b) {
-		log.trace("{} Set PullingListenerContainer idle={} - synchronize (lock) on PullingListenerContainer[{}]", receiver::getLogPrefix, ()->b, this::toString);
+		log.trace("{} Set PullingListenerContainer idle={} - synchronize (lock) on PullingListenerContainer[{}]", receiver::getLogPrefix, () -> b, this::toString);
 		try {
 			synchronized (this) {
 				idle = b;
 			}
 		} finally {
-			log.trace("{} Set PullingListenerContainer idle={} - lock on PullingListenerContainer[{}] released", receiver::getLogPrefix, ()->b, this::toString);
+			log.trace("{} Set PullingListenerContainer idle={} - lock on PullingListenerContainer[{}] released", receiver::getLogPrefix, () -> b, this::toString);
 		}
 	}
+
 	public boolean isIdle() {
 		log.trace("{} Check if PullingListenerContainer is idle - synchronize (lock) on PullingListenerContainer[{}]", receiver::getLogPrefix, this::toString);
 		try {

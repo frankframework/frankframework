@@ -22,16 +22,16 @@ import org.frankframework.receivers.RawMessageWrapper;
 /**
  * Additional behaviour for pulling listeners that are able to listen to a specific
  * message, specified by a correlation ID.
- * @param <M> the raw message type
  *
- * @author  Gerrit van Brakel
- * @since   4.0
+ * @param <M> the raw message type
+ * @author Gerrit van Brakel
+ * @since 4.0
  */
-public interface ICorrelatedPullingListener<M> extends IPullingListener<M>{
+public interface ICorrelatedPullingListener<M> extends IPullingListener<M> {
 
 	/**
 	 * Retrieves messages from queue or other channel,  but retrieves only
 	 * messages with the specified correlationId.
 	 */
-	RawMessageWrapper<M> getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException;
+	RawMessageWrapper<M> getRawMessage(String correlationId, Map<String, Object> threadContext) throws ListenerException, TimeoutException;
 }

@@ -35,14 +35,14 @@ import lombok.Getter;
 /**
  * Base class for building JDBC-senders.
  *
- * @author  Gerrit van Brakel
- * @since 	4.2.h
+ * @author Gerrit van Brakel
+ * @since 4.2.h
  */
 public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnabledSender<H> {
 
 	@Getter private int timeout = 0;
 
-	protected Connection connection=null;
+	protected Connection connection = null;
 	protected ParameterList paramList = null;
 
 	public JdbcSenderBase() {
@@ -51,8 +51,8 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 
 	@Override
 	public void addParameter(Parameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
+		if (paramList == null) {
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}
@@ -65,7 +65,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (paramList!=null) {
+		if (paramList != null) {
 			paramList.configure();
 		}
 	}
@@ -125,6 +125,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 
 	/**
 	 * The number of seconds the JDBC driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
+	 *
 	 * @ff.default 0
 	 */
 	public void setTimeout(int i) {

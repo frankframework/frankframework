@@ -20,8 +20,8 @@ import org.frankframework.core.SenderException;
 /**
  * Interface to be implemented by objects like Pipes or Senders that maintain additional statistics themselves.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 public interface HasStatistics {
 
@@ -32,5 +32,5 @@ public interface HasStatistics {
 		MARK_FULL
 	}
 
-	public <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException ;
+	public <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException;
 }

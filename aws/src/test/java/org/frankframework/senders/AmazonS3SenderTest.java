@@ -21,7 +21,6 @@ import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.StreamUtil;
 
@@ -30,7 +29,6 @@ import org.frankframework.util.StreamUtil;
  * AmazonS3Sender tests.
  *
  * @author alisihab
- *
  */
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
@@ -88,7 +86,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		String filename = FILE1;
 		String inputFolder = "read";
 
-		if(_folderExists(inputFolder)) {
+		if (_folderExists(inputFolder)) {
 			_deleteFolder(inputFolder);
 		}
 		_createFolder(inputFolder);
@@ -97,20 +95,20 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 		waitForActionToFinish();
 
-		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder +"/"+ filename));
+		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder + "/" + filename));
 		fileSystemSender.setAction(FileSystemAction.READ);
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
 		// Act
-		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
+		assertTrue(_fileExists(inputFolder, filename), "File [" + filename + "] expected to be present");
 
 		Message message = new Message("not-used");
 		Message result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
 		// Assert
-		assertTrue(_fileExists(inputFolder, FILE1), "File ["+FILE1+"] should still be there after READ action");
+		assertTrue(_fileExists(inputFolder, FILE1), "File [" + FILE1 + "] should still be there after READ action");
 		assertEquals("some content", StreamUtil.streamToString(result.asInputStream()));
 		IOException e = assertThrows(IOException.class, result::preserve); // read binary stream twice
 		assertEquals("Attempted read on closed stream.", e.getMessage());

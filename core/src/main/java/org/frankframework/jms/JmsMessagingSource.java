@@ -28,30 +28,30 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * {@link MessagingSource} for JMS connections.
  *
- * @author 	Gerrit van Brakel
- * @since   4.4
+ * @author Gerrit van Brakel
+ * @since 4.4
  */
 public class JmsMessagingSource extends MessagingSource {
 	private final String jndiContextPrefix;
 	private final Map<String, String> proxiedDestinationNames;
 
 	public JmsMessagingSource(String connectionFactoryName, String jndiContextPrefix, Context context,
-			ConnectionFactory connectionFactory, Map<String,MessagingSource> messagingSourceMap,
-			String authAlias, boolean createDestination, Map<String, String> proxiedDestinationNames) {
+							  ConnectionFactory connectionFactory, Map<String, MessagingSource> messagingSourceMap,
+							  String authAlias, boolean createDestination, Map<String, String> proxiedDestinationNames) {
 		super(connectionFactoryName, context, connectionFactory, messagingSourceMap, authAlias, createDestination);
 		this.jndiContextPrefix = jndiContextPrefix;
 		this.proxiedDestinationNames = proxiedDestinationNames;
 	}
 
 	public Destination lookupDestination(String destinationName) throws JmsException, NamingException {
-		Destination dest=null;
+		Destination dest = null;
 		if (createDestination()) {
 			try {
 				dest = lookupDestinationInJndi(destinationName);
 			} catch (Exception e) {
-				log.warn("could not lookup destination in jndi, will try to create it ("+e.getClass()+"): "+ e.getMessage());
+				log.warn("could not lookup destination in jndi, will try to create it (" + e.getClass() + "): " + e.getMessage());
 			}
-			if (dest==null) {
+			if (dest == null) {
 				log.debug(getLogPrefix() + "looking up destination by creating it [" + destinationName + "]");
 				if (proxiedDestinationNames != null) {
 					String proxiedDestinationName = proxiedDestinationNames.get(destinationName);
@@ -74,7 +74,7 @@ public class JmsMessagingSource extends MessagingSource {
 		if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
 			log.debug(getLogPrefix() + "using JNDI context prefix [" + getJndiContextPrefix() + "]");
 		}
-		return (Destination)getContext().lookup(prefixedDestinationName);
+		return (Destination) getContext().lookup(prefixedDestinationName);
 	}
 
 	public Destination createDestination(String destinationName) throws JmsException {
@@ -84,7 +84,7 @@ public class JmsMessagingSource extends MessagingSource {
 			session = createSession(false, Session.AUTO_ACKNOWLEDGE);
 			dest = session.createQueue(destinationName);
 		} catch (Exception e) {
-			throw new JmsException("cannot create destination ["+destinationName+"]", e);
+			throw new JmsException("cannot create destination [" + destinationName + "]", e);
 		} finally {
 			releaseSession(session);
 		}

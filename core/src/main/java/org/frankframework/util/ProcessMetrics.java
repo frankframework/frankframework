@@ -25,10 +25,10 @@ import java.util.Map;
  */
 public class ProcessMetrics {
 
-	private static final long K_LIMIT=10*1024;
-	private static final long M_LIMIT=K_LIMIT*1024;
-	private static final long G_LIMIT=M_LIMIT*1024;
-	private static final long T_LIMIT=G_LIMIT*1024;
+	private static final long K_LIMIT = 10 * 1024;
+	private static final long M_LIMIT = K_LIMIT * 1024;
+	private static final long G_LIMIT = M_LIMIT * 1024;
+	private static final long T_LIMIT = G_LIMIT * 1024;
 
 	public static String normalizedNotation(long value) {
 		String valueString;
@@ -37,15 +37,15 @@ public class ProcessMetrics {
 			valueString = Long.toString(value);
 		} else {
 			if (value < M_LIMIT) {
-				valueString = Long.toString(value/1024)+"K";
+				valueString = Long.toString(value / 1024) + "K";
 			} else {
 				if (value < G_LIMIT) {
-					valueString = Long.toString(value/(1024*1024))+"M";
+					valueString = Long.toString(value / (1024 * 1024)) + "M";
 				} else {
 					if (value < T_LIMIT) {
-						valueString = Long.toString(value/(1024*1024*1024))+"G";
+						valueString = Long.toString(value / (1024 * 1024 * 1024)) + "G";
 					} else {
-						valueString = Long.toString(value/(1024*1024*1024*1024))+"T";
+						valueString = Long.toString(value / (1024 * 1024 * 1024 * 1024)) + "T";
 					}
 				}
 			}
@@ -54,19 +54,19 @@ public class ProcessMetrics {
 	}
 
 	public static void addNumberProperty(XmlBuilder list, String name, long value) {
-		addProperty(list,name,normalizedNotation(value));
+		addProperty(list, name, normalizedNotation(value));
 	}
 
 	public static void addProperty(XmlBuilder list, String name, String value) {
-		XmlBuilder p=new XmlBuilder("property");
+		XmlBuilder p = new XmlBuilder("property");
 		p.addAttribute("name", name);
 		p.setValue(value);
 		list.addSubElement(p);
 	}
 
 	public static String toXml() {
-		XmlBuilder xmlh=new XmlBuilder("processMetrics");
-		XmlBuilder props=new XmlBuilder("properties");
+		XmlBuilder xmlh = new XmlBuilder("processMetrics");
+		XmlBuilder props = new XmlBuilder("properties");
 		xmlh.addSubElement(props);
 
 		long freeMem = Runtime.getRuntime().freeMemory();
@@ -75,7 +75,7 @@ public class ProcessMetrics {
 
 		addNumberProperty(props, "freeMemory", freeMem);
 		addNumberProperty(props, "totalMemory", totalMem);
-		addNumberProperty(props, "heapSize", totalMem-freeMem);
+		addNumberProperty(props, "heapSize", totalMem - freeMem);
 		addNumberProperty(props, "maxMemory", maxMemory);
 		addProperty(props, "currentTime", DateFormatUtils.now());
 		return xmlh.toXML();
@@ -90,7 +90,7 @@ public class ProcessMetrics {
 
 		memoryStatistics.put("freeMemory", normalizedNotation(freeMem));
 		memoryStatistics.put("totalMemory", normalizedNotation(totalMem));
-		memoryStatistics.put("heapSize", normalizedNotation(totalMem-freeMem));
+		memoryStatistics.put("heapSize", normalizedNotation(totalMem - freeMem));
 		memoryStatistics.put("maxMemory", normalizedNotation(maxMemory));
 		return memoryStatistics;
 	}

@@ -64,7 +64,7 @@ public abstract class TestJMSMessage extends Mockito implements BytesMessage, An
 		int from = byteOffset;
 
 		int newLength = to - from;
-		if(newLength < 0)
+		if (newLength < 0)
 			throw new IllegalArgumentException(from + " > " + to);
 		int ceil = messageContent.length - from;
 		int len = (ceil < newLength) ? ceil : newLength;

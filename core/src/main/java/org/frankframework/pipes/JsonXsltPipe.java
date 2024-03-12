@@ -24,9 +24,8 @@ import org.frankframework.senders.XsltSender;
  * JSON input is transformed into XML map, array, string, integer and boolean elements, in the namespace http://www.w3.org/2013/XSL/json.
  * The XSLT stylesheet or XPathExpression operates on these element.
  *
- * @see  <a href="https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/">https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/</a>
- *
  * @author Gerrit van Brakel
+ * @see <a href="https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/">https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/</a>
  */
 
 public class JsonXsltPipe extends XsltPipe {
@@ -38,7 +37,7 @@ public class JsonXsltPipe extends XsltPipe {
 
 	@ReferTo(JsonXsltSender.class)
 	public void setJsonResult(boolean jsonResult) {
-		((JsonXsltSender)getSender()).setJsonResult(jsonResult);
+		((JsonXsltSender) getSender()).setJsonResult(jsonResult);
 	}
 
 	@Override

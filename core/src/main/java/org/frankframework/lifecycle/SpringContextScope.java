@@ -27,6 +27,7 @@ public enum SpringContextScope {
 	CONFIGURATION("SpringConfigurationContext.xml"); //Configurations
 
 	private final @Getter String contextFile;
+
 	private SpringContextScope(String contextFile) {
 		this.contextFile = ResourceUtils.CLASSPATH_URL_PREFIX + "/" + contextFile;
 	}

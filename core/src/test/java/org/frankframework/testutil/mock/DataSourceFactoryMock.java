@@ -15,6 +15,7 @@ import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.datasource.OpenPoolingDataSource;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jndi.JndiDataSourceFactory;
+
 import org.mockito.Mockito;
 
 public class DataSourceFactoryMock implements IDataSourceFactory {

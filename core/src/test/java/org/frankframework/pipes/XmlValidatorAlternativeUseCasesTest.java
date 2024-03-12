@@ -10,6 +10,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.ValidatorTestBase;
+
 import org.junit.jupiter.api.Test;
 
 public class XmlValidatorAlternativeUseCasesTest extends PipeTestBase<XmlValidator> {
@@ -22,7 +23,7 @@ public class XmlValidatorAlternativeUseCasesTest extends PipeTestBase<XmlValidat
 	@Test
 	void testBasic() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		String schemaLocation = ValidatorTestBase.SCHEMA_LOCATION_BASIC_A_OK;
-		String input = TestFileUtils.getTestFile(ValidatorTestBase.INPUT_FILE_BASIC_A_OK+".xml");
+		String input = TestFileUtils.getTestFile(ValidatorTestBase.INPUT_FILE_BASIC_A_OK + ".xml");
 
 		pipe.setSchemaLocation(schemaLocation);
 		pipe.setThrowException(true);
@@ -37,7 +38,7 @@ public class XmlValidatorAlternativeUseCasesTest extends PipeTestBase<XmlValidat
 	@Test
 	void testWitSessionKey() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		String schemaLocation = ValidatorTestBase.SCHEMA_LOCATION_BASIC_A_OK;
-		String input = TestFileUtils.getTestFile(ValidatorTestBase.INPUT_FILE_BASIC_A_OK+".xml");
+		String input = TestFileUtils.getTestFile(ValidatorTestBase.INPUT_FILE_BASIC_A_OK + ".xml");
 		String schemaSessionKey = "schemaLocationSessionKey";
 		String schema = schemaLocation.split(" ")[1];
 

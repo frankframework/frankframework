@@ -16,6 +16,8 @@ import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -49,7 +51,6 @@ import org.frankframework.filesystem.smb.Samba2FileSystemTest;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.springframework.extensions.config.ConfigElement;
 
 /**
@@ -62,9 +63,9 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 	private Logger log = LogUtil.getLogger(this);
 
 	// Default memory pool settings
-	private static final int[] DefaultMemoryPoolBufSizes = { 256, 4096, 16384, 65536 };
-	private static final int[] DefaultMemoryPoolInitAlloc = { 20, 20, 5, 5 };
-	private static final int[] DefaultMemoryPoolMaxAlloc = { 100, 50, 50, 50 };
+	private static final int[] DefaultMemoryPoolBufSizes = {256, 4096, 16384, 65536};
+	private static final int[] DefaultMemoryPoolInitAlloc = {20, 20, 5, 5};
+	private static final int[] DefaultMemoryPoolMaxAlloc = {100, 50, 50, 50};
 
 	// Default thread pool size
 	private static final int DefaultThreadPoolInit = 25;
@@ -113,16 +114,16 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 		File file = new File(directory);
 		if (!file.isAbsolute()) {
 			String absPath = new File("").getAbsolutePath();
-			if(absPath != null) {
+			if (absPath != null) {
 				file = new File(absPath, directory);
 			}
 		}
-		if(!file.exists()) {
+		if (!file.exists()) {
 			file.mkdirs();
 		}
 		String fileDir = file.getPath();
-		if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-			throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"]");
+		if (StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
+			throw new IllegalStateException("unknown or invalid path [" + ((StringUtils.isEmpty(fileDir)) ? "NULL" : fileDir) + "]");
 		}
 		return file.toPath();
 	}
@@ -149,7 +150,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 		gcs.setTimeZoneOffset(0);
 		CoreServerConfigSection coreConfig = new CoreServerConfigSection(serverConfig);
 		coreConfig.setMemoryPool(DefaultMemoryPoolBufSizes, DefaultMemoryPoolInitAlloc, DefaultMemoryPoolMaxAlloc);
-		coreConfig.setThreadPool( DefaultThreadPoolInit, DefaultThreadPoolMax);
+		coreConfig.setThreadPool(DefaultThreadPoolInit, DefaultThreadPoolMax);
 	}
 
 	private int findUnusedPort() throws IOException {
@@ -160,7 +161,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 
 	private String getLicense() throws IOException {
 		URL license = Samba2FileSystemTest.class.getResource("/jfileserver.lic");
-		if(license != null && ClassUtils.isClassPresent("org.filesys.smb.server.EnterpriseSMBServer")) {
+		if (license != null && ClassUtils.isClassPresent("org.filesys.smb.server.EnterpriseSMBServer")) {
 			return StreamUtil.streamToString(license.openStream());
 		}
 
@@ -177,7 +178,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 		cifsConfig.setWin32NetBIOS(false);
 
 		DialectSelector dialects = new DialectSelector();
-		if(isSmb2) {
+		if (isSmb2) {
 			dialects.AddDialect(Dialect.SMB2_202);
 			dialects.AddDialect(Dialect.SMB2_210);
 			dialects.AddDialect(Dialect.SMB3_311);
@@ -193,7 +194,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 
 		EnterpriseSMBAuthenticator auth = new EnterpriseSMBAuthenticator();
 		auth.setAccessMode(AuthMode.SHARE);
-		if(DEBUG) auth.setDebug(true);
+		if (DEBUG) auth.setDebug(true);
 		cifsConfig.setAuthenticator(auth);
 		auth.initialize(serverConfig, configParams);
 
@@ -212,7 +213,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 	}
 
 	private SMBServer createSMB2Server() throws Exception {
-		if(license == null) {
+		if (license == null) {
 			throw new IllegalStateException("No license key present!");
 		}
 
@@ -243,25 +244,25 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 	}
 
 	public synchronized void startServer(FileSystemType fsType) throws Exception {
-		if(server != null) {
+		if (server != null) {
 			log.warn("skipping start server, already running");
 			return;
 		}
 
 		switch (fsType) {
-		case FTP:
-			server = createFTPServer();
-			break;
-		case SMB1:
-			server = createSMB1Server();
-			break;
-		case SMB2:
-			assumeTrue(license != null); //Only run test when a license is present!
-			server = createSMB2Server();
-			break;
+			case FTP:
+				server = createFTPServer();
+				break;
+			case SMB1:
+				server = createSMB1Server();
+				break;
+			case SMB2:
+				assumeTrue(license != null); //Only run test when a license is present!
+				server = createSMB2Server();
+				break;
 
-		default:
-			break;
+			default:
+				break;
 		}
 		server.startServer();
 
@@ -270,25 +271,25 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 
 	@Override
 	public void close() throws Exception {
-		if(server != null) {
+		if (server != null) {
 			server.shutdownServer(true);
 			server = null;
 		}
-		if(Files.exists(testDirectory)) {
+		if (Files.exists(testDirectory)) {
 			FileUtils.cleanDirectory(testDirectory.toFile());
 			Files.delete(testDirectory);
 		}
 	}
 
 	public Path getTestDirectory() {
-		if(Files.exists(testDirectory)) {
+		if (Files.exists(testDirectory)) {
 			return testDirectory;
 		}
-		throw new IllegalStateException("Test Directory ["+testDirectory+"] does not exist");
+		throw new IllegalStateException("Test Directory [" + testDirectory + "] does not exist");
 	}
 
 	public int getPort() {
-		if(server == null) {
+		if (server == null) {
 			throw new IllegalStateException("Server must be started first!");
 		}
 		return port;

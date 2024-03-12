@@ -15,9 +15,8 @@
 */
 package org.frankframework.stream.document;
 
-import org.xml.sax.SAXException;
-
 import org.frankframework.stream.JsonEventHandler;
+import org.xml.sax.SAXException;
 
 public class JsonObjectBuilder extends ObjectBuilder {
 
@@ -25,7 +24,7 @@ public class JsonObjectBuilder extends ObjectBuilder {
 
 	public JsonObjectBuilder(JsonEventHandler handler) throws SAXException {
 		super();
-		this.handler=handler;
+		this.handler = handler;
 		handler.startObject();
 	}
 

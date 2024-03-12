@@ -106,12 +106,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	private void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action, String rootName, String rootType) throws SenderException {
-		Object root = hski.start(now,mainMark,detailMark);
+		Object root = hski.start(now, mainMark, detailMark);
 		try {
-			Object groupData= hski.openGroup(root, rootName, rootType);
+			Object groupData = hski.openGroup(root, rootName, rootType);
 			for (Adapter adapter : adapterManager.getAdapterList()) {
 				if (adapter.isConfigurationSucceeded()) {
-					adapter.iterateOverStatistics(hski,groupData,action);
+					adapter.iterateOverStatistics(hski, groupData, action);
 				}
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
@@ -146,13 +146,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void afterPropertiesSet() {
-		if(!(getClassLoader() instanceof IConfigurationClassLoader)) {
+		if (!(getClassLoader() instanceof IConfigurationClassLoader)) {
 			throw new IllegalStateException("No IConfigurationClassLoader set");
 		}
-		if(ibisManager == null) {
+		if (ibisManager == null) {
 			throw new IllegalStateException("No IbisManager set");
 		}
-		if(StringUtils.isEmpty(getVersion())) {
+		if (StringUtils.isEmpty(getVersion())) {
 			log.info("unable to determine [configuration.version] for configuration [{}]", this::getName);
 		} else {
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", this::getName, this::getVersion);
@@ -160,7 +160,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		super.afterPropertiesSet(); //Triggers a context refresh
 
-		if(enabledAutowiredPostProcessing) {
+		if (enabledAutowiredPostProcessing) {
 			//Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
 			AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
 			postProcessor.setAutowiredAnnotationType(Autowired.class);
@@ -190,7 +190,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
 	@Override
 	public String[] getBeanNamesForType(Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
-		if(type.isAssignableFrom(ApplicationListener.class)) {
+		if (type.isAssignableFrom(ApplicationListener.class)) {
 			List<String> blacklist = Arrays.asList(super.getBeanNamesForType(LazyLoadingEventListener.class, includeNonSingletons, allowEagerInit));
 			List<String> beanNames = Arrays.asList(super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit));
 			log.info("removing LazyLoadingEventListeners {} from Spring auto-magic event-based initialization", blacklist);
@@ -207,7 +207,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void start() {
-		if(!isConfigured()) {
+		if (!isConfigured()) {
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
 
@@ -221,8 +221,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() throws ConfigurationException {
 		log.info("configuring configuration [{}]", this::getId);
-		if(getName().contains("/")) {
-			throw new ConfigurationException("It is not allowed to have '/' in configuration name ["+getName()+"]");
+		if (getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in configuration name [" + getName() + "]");
 		}
 		state = RunState.STARTING;
 		long start = System.currentTimeMillis();
@@ -237,12 +237,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 			//Trigger a configure on all Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-			if(lifecycle instanceof ConfigurableLifecycle) {
+			if (lifecycle instanceof ConfigurableLifecycle) {
 				((ConfigurableLifecycle) lifecycle).configure();
 			}
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;
-			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
+			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage()));
 			throw e;
 		}
 		initMetrics();
@@ -252,8 +252,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if (isAutoStart()) {
 			start();
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
-		}
-		else {
+		} else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
 		}
 		secLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
@@ -270,7 +269,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		try {
 			flowDiagramManager.generate(this);
 		} catch (Exception e) { //Don't throw an exception when generating the flow fails
-			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
+			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration [" + getName() + "]", e);
 		}
 	}
 
@@ -278,9 +277,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	protected void runMigrator() {
 		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
 		DatabaseMigratorBase databaseMigrator = getBean("jdbcMigrator", DatabaseMigratorBase.class);
-		if(databaseMigrator.isEnabled()) {
+		if (databaseMigrator.isEnabled()) {
 			try {
-				if(databaseMigrator.validate()) {
+				if (databaseMigrator.validate()) {
 					databaseMigrator.update();
 				}
 			} catch (Exception e) {
@@ -303,7 +302,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	// capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
 	@Override
 	public void publishEvent(ApplicationEvent event) {
-		if(event instanceof ContextClosedEvent) {
+		if (event instanceof ContextClosedEvent) {
 			applicationLog.info("Configuration [{}] [{}] closed", this::getName, this::getVersion);
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
 		}
@@ -351,14 +350,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public boolean isAutoStart() {
-		if(autoStart == null && getClassLoader() != null) {
+		if (autoStart == null && getClassLoader() != null) {
 			autoStart = AppConstants.getInstance(getClassLoader()).getBoolean("configurations.autoStart", true);
 		}
 		return autoStart;
 	}
 
 	public boolean isStubbed() {
-		if(getClassLoader() instanceof IConfigurationClassLoader) {
+		if (getClassLoader() instanceof IConfigurationClassLoader) {
 			return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
 		}
 
@@ -367,11 +366,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	/**
 	 * Get a registered adapter by its name through {@link AdapterManager#getAdapter(String)}
+	 *
 	 * @param name the adapter to retrieve
 	 * @return IAdapter
 	 */
 	public Adapter getRegisteredAdapter(String name) {
-		if(adapterManager == null || !isActive()) {
+		if (adapterManager == null || !isActive()) {
 			return null;
 		}
 
@@ -379,7 +379,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public List<Adapter> getRegisteredAdapters() {
-		if(adapterManager == null || !isActive()) {
+		if (adapterManager == null || !isActive()) {
 			return Collections.emptyList();
 		}
 		return adapterManager.getAdapterList();
@@ -419,6 +419,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	// explicitly in this position, to have the right location in the XSD
+
 	/**
 	 * Container for jobs scheduled for periodic execution.
 	 */
@@ -433,6 +434,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * parameters of the job. (basically, it checks whether the adapter and the
 	 * receiver are registered.
 	 * <p>See the <a href="https://www.quartz-scheduler.org/">Quartz scheduler</a> documentation</p>
+	 *
 	 * @param jobdef a JobDef object
 	 * @see JobDef for a description of Cron triggers
 	 * @since 4.0
@@ -447,14 +449,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * Once the ConfigurationContext has a name it should not be changed anymore, hence
 	 * {@link AbstractRefreshableConfigApplicationContext#setBeanName(String) super.setBeanName(String)} only sets the name once.
 	 * If not created by Spring, the setIdCalled flag in AbstractRefreshableConfigApplicationContext wont be set, allowing the name to be updated.
-	 *
+	 * <p>
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
 	 */
 	@Override
 	public void setName(String name) {
-		if(StringUtils.isNotEmpty(name)) {
-			if(state == RunState.STARTING && !getName().equals(name)) {
-				publishEvent(new ConfigurationMessageEvent(this, "name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
+		if (StringUtils.isNotEmpty(name)) {
+			if (state == RunState.STARTING && !getName().equals(name)) {
+				publishEvent(new ConfigurationMessageEvent(this, "name [" + getName() + "] does not match XML name attribute [" + name + "]", MessageKeeperLevel.WARN));
 			}
 			setBeanName(name);
 		}
@@ -468,9 +470,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	/** The version of the Configuration, typically provided by the BuildInfo.properties file. */
 	@Protected
 	public void setVersion(String version) {
-		if(StringUtils.isNotEmpty(version)) {
-			if(state == RunState.STARTING && this.version != null && !this.version.equals(version)) {
-				publishEvent(new ConfigurationMessageEvent(this, "version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
+		if (StringUtils.isNotEmpty(version)) {
+			if (state == RunState.STARTING && this.version != null && !this.version.equals(version)) {
+				publishEvent(new ConfigurationMessageEvent(this, "version [" + this.version + "] does not match XML version attribute [" + version + "]", MessageKeeperLevel.WARN));
 			}
 
 			this.version = version;
@@ -482,9 +484,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * Because of this, it may not always represent the correct or accurate type.
 	 */
 	public String getClassLoaderType() {
-		if(!(getClassLoader() instanceof IConfigurationClassLoader)) { //Configuration has not been loaded yet
-			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
-			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
+		if (!(getClassLoader() instanceof IConfigurationClassLoader)) { //Configuration has not been loaded yet
+			String type = AppConstants.getInstance().getProperty("configurations." + getName() + ".classLoaderType");
+			if (StringUtils.isNotEmpty(type)) { //We may not return an empty String
 				return type;
 			}
 			return null;
@@ -561,6 +563,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void setMonitoring(MonitorManager monitorManager) {
 		// Monitors self register in MonitorManager;
 	}
+
 	// above comment is used in FrankDoc
 	// Dummy setter to allow Monitors being added to Configurations via Frank!Config XSD
 	@Deprecated

@@ -7,13 +7,13 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import org.frankframework.testutil.PropertyUtil;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.amazonaws.regions.Regions;
 
+import org.apache.logging.log4j.Logger;
+import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.util.LogUtil;
 
 public class AmazonSqsFactoryTest {

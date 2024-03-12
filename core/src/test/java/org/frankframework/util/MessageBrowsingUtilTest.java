@@ -27,7 +27,9 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 

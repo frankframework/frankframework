@@ -16,6 +16,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -165,7 +166,7 @@ public class HttpMessageEntityTest {
 				Arguments.of(MessageType.CHARACTER_ISO88591, false),
 				Arguments.of(MessageType.BINARY, true),
 				Arguments.of(MessageType.BINARY, false)
-			);
+		);
 	}
 
 	// see MessageContentBody
@@ -173,11 +174,11 @@ public class HttpMessageEntityTest {
 	@MethodSource
 	public void testWriteToCharacterData(MessageType type, boolean preserved) throws Exception {
 		Message message = MessageTestUtils.getNonRepeatableMessage(type);
-		if(preserved) message.preserve();
+		if (preserved) message.preserve();
 
 		HttpMessageEntity entity = new HttpMessageEntity(message);
 
-		if(type == MessageType.BINARY) {
+		if (type == MessageType.BINARY) {
 			assertNull(message.getCharset());
 			assertNull(entity.getContentEncoding());
 		} else {
@@ -190,12 +191,12 @@ public class HttpMessageEntityTest {
 		entity.writeTo(boas);
 
 		// Assert
-		if(preserved || type == MessageType.BINARY) {
+		if (preserved || type == MessageType.BINARY) {
 			assertEquals(entity.getContentLength(), boas.toByteArray().length);
 		} else {
 			assertEquals(-1, entity.getContentLength());
 		}
-		String boasString = type == MessageType.BINARY ? boas.toString(): boas.toString(message.getCharset());
+		String boasString = type == MessageType.BINARY ? boas.toString() : boas.toString(message.getCharset());
 		assertEquals(type.getMessage().asString(StreamUtil.AUTO_DETECT_CHARSET), boasString);
 	}
 

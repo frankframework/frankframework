@@ -41,21 +41,21 @@ public class ServletConfigurationTest {
 	public void testEmptyUrls(String endpointSet) {
 		ServletConfiguration config = new ServletConfiguration();
 		config.afterPropertiesSet();
-		assertThrows(IllegalStateException.class, ()->config.setUrlMapping(endpointSet));
+		assertThrows(IllegalStateException.class, () -> config.setUrlMapping(endpointSet));
 	}
 
 	@Test
 	public void testFaultyExclude() {
 		ServletConfiguration config = new ServletConfiguration();
 		config.afterPropertiesSet();
-		assertThrows(IllegalStateException.class, ()->config.setUrlMapping("/one/*,!one/healthcheck"));
+		assertThrows(IllegalStateException.class, () -> config.setUrlMapping("/one/*,!one/healthcheck"));
 	}
 
 	@Test
 	public void testFaultyExcludeWildcard() {
 		ServletConfiguration config = new ServletConfiguration();
 		config.afterPropertiesSet();
-		assertThrows(IllegalStateException.class, ()->config.setUrlMapping("/one/*,!/one/healthcheck/*"));
+		assertThrows(IllegalStateException.class, () -> config.setUrlMapping("/one/*,!/one/healthcheck/*"));
 	}
 
 	@Test

@@ -51,7 +51,7 @@ public class MessageContentBody implements ContentBody {
 		this.filename = filename;
 
 		MimeType type = (contentType != null) ? contentType : MessageUtils.getMimeType(message);
-		if(type == null) {
+		if (type == null) {
 			type = message.isBinary() ? MediaType.APPLICATION_OCTET_STREAM : MediaType.TEXT_PLAIN;
 		}
 		this.mimeType = type;
@@ -74,17 +74,17 @@ public class MessageContentBody implements ContentBody {
 		try (InputStream inStream = message.asInputStream(getCharset())) {
 			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
 			int readLen;
-			if(length < 0) {
+			if (length < 0) {
 				// consume until EOF
-				while((readLen = inStream.read(buffer)) != -1) {
+				while ((readLen = inStream.read(buffer)) != -1) {
 					out.write(buffer, 0, readLen);
 				}
 			} else {
 				// consume no more than length
 				long remaining = length;
-				while(remaining > 0) {
+				while (remaining > 0) {
 					readLen = inStream.read(buffer, 0, (int) Math.min(OUTPUT_BUFFER_SIZE, remaining));
-					if(readLen == -1) {
+					if (readLen == -1) {
 						break;
 					}
 					out.write(buffer, 0, readLen);
@@ -125,12 +125,12 @@ public class MessageContentBody implements ContentBody {
 
 	@Override
 	public String getCharset() {
-		if(message.isBinary()) {
+		if (message.isBinary()) {
 			return null;
 		}
 
 		Charset charset = (mimeType.getCharset() != null) ? mimeType.getCharset() : StreamUtil.DEFAULT_CHARSET;
-		if(charset != null) {
+		if (charset != null) {
 			return charset.name();
 		}
 		return null;

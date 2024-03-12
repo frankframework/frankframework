@@ -9,16 +9,16 @@ import java.util.logging.Logger;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
-public class XaDatasourceObserver implements XADataSource{
+public class XaDatasourceObserver implements XADataSource {
 
 	private XADataSource target;
-	private Function<XAConnection,XAConnection> connectionObservationProvider;
+	private Function<XAConnection, XAConnection> connectionObservationProvider;
 
 	public XaDatasourceObserver(XADataSource target) {
 		this(target, c -> new XaConnectionObserver(c));
 	}
 
-	public XaDatasourceObserver(XADataSource target, Function<XAConnection,XAConnection> connectionObservationProvider) {
+	public XaDatasourceObserver(XADataSource target, Function<XAConnection, XAConnection> connectionObservationProvider) {
 		this.target = target;
 		this.connectionObservationProvider = connectionObservationProvider;
 	}

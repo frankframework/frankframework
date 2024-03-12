@@ -59,13 +59,13 @@ public class FrankDigesterRules implements RulesModule, ApplicationContextAware 
 
 	@Override
 	public void configure(RulesBinder rulesBinder) {
-		if(applicationContext == null) {
-			throw new IllegalStateException("ApplicationContext not set, unable to initialize ["+ClassUtils.nameOf(this)+"]");
+		if (applicationContext == null) {
+			throw new IllegalStateException("ApplicationContext not set, unable to initialize [" + ClassUtils.nameOf(this) + "]");
 		}
-		if(digester == null) {
-			throw new IllegalStateException("Digester not set, unable to initialize ["+ClassUtils.nameOf(this)+"]");
+		if (digester == null) {
+			throw new IllegalStateException("Digester not set, unable to initialize [" + ClassUtils.nameOf(this) + "]");
 		}
-		if(digesterRules == null) {
+		if (digesterRules == null) {
 			digesterRules = Resource.getResource(DIGESTER_RULES_FILE);
 		}
 

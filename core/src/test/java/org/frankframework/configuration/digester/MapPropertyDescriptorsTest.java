@@ -17,7 +17,9 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.util.LogUtil;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -28,7 +30,7 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.Assert;
 
 public class MapPropertyDescriptorsTest {
-	private final  Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private Iterable<String> getClassesThatImplementIConfigurable() {
 		return getClassesThatImplement(IConfigurable.class);
@@ -51,7 +53,7 @@ public class MapPropertyDescriptorsTest {
 		scanner.setBeanNameGenerator(beanNameGenerator);
 
 		int numberOfBeans = scanner.scan("org.frankframework", "nl.nn.ibistesttool");
-		log.debug("Found "+numberOfBeans+" beans registered!");
+		log.debug("Found " + numberOfBeans + " beans registered!");
 
 		String[] bdn = scanner.getRegistry().getBeanDefinitionNames();
 		assertEquals(numberOfBeans, bdn.length); // ensure we got all beans
@@ -65,10 +67,10 @@ public class MapPropertyDescriptorsTest {
 			if (beanName.endsWith(".UnloadableClass")) continue;
 			BeanInfo beanInfo = Introspector.getBeanInfo(Class.forName(beanName));
 			// get methods
-			MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
+			MethodDescriptor[] methodDescriptors = beanInfo.getMethodDescriptors();
 			for (MethodDescriptor methodDescriptor : methodDescriptors) {
 				String methodName = methodDescriptor.getName();
-				if(methodName.startsWith("set")) {
+				if (methodName.startsWith("set")) {
 					String propertyName = methodName.substring(3);
 					String getterName = "get" + propertyName;
 					String getterStartsWithIs = "is" + propertyName;
@@ -78,13 +80,13 @@ public class MapPropertyDescriptorsTest {
 					boolean getterMatches = Arrays.stream(methodDescriptors)
 							.anyMatch(name -> name.getName().equals(getterName) || name.getName().equals(getterStartsWithIs));
 
-					if(getterMatches) {
+					if (getterMatches) {
 						PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
 						PropertyDescriptor pd = Arrays.stream(pds)
-							.filter(name -> name.getWriteMethod() != null && methodName.equals(name.getWriteMethod().getName()))
-							.findAny()
-							.orElse(null);
-							assertNotNull(pd, "Make sure that the attribute ["+propertyName+"] has proper getter and setters in class ["+beanName+"].");
+								.filter(name -> name.getWriteMethod() != null && methodName.equals(name.getWriteMethod().getName()))
+								.findAny()
+								.orElse(null);
+						assertNotNull(pd, "Make sure that the attribute [" + propertyName + "] has proper getter and setters in class [" + beanName + "].");
 					}
 				}
 			}

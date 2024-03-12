@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.frankframework.testutil.SpringRootInitializer;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -14,23 +16,23 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 public class TestBusAuthorisation extends BusTestBase {
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	@WithMockUser(authorities = {"ROLE_IbisTester"})
 	public void callTestEndpointAuthorisedIsAdmin() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
-		boolean isAdmin = Boolean.parseBoolean((String)callSyncGateway(request).getPayload());
+		boolean isAdmin = Boolean.parseBoolean((String) callSyncGateway(request).getPayload());
 		assertTrue(isAdmin);
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisAdmin" })
+	@WithMockUser(authorities = {"ROLE_IbisAdmin"})
 	public void callTestEndpointAuthorisedNotAdmin() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
-		boolean isAdmin = Boolean.parseBoolean((String)callSyncGateway(request).getPayload());
+		boolean isAdmin = Boolean.parseBoolean((String) callSyncGateway(request).getPayload());
 		assertFalse(isAdmin);
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisObserver" })
+	@WithMockUser(authorities = {"ROLE_IbisObserver"})
 	public void callTestEndpointUnAuthorised() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
 		try {

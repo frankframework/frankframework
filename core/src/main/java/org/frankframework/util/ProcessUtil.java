@@ -31,8 +31,8 @@ import org.frankframework.core.TimeoutException;
 /**
  * Process execution utilities.
  *
- * @author  Gerrit van Brakel
- * @since   4.8
+ * @author Gerrit van Brakel
+ * @since 4.8
  */
 public class ProcessUtil {
 	private static final Logger log = LogUtil.getLogger(ProcessUtil.class);
@@ -53,7 +53,7 @@ public class ProcessUtil {
 	}
 
 	protected static String getCommandLine(List<String> command) {
-		if (command==null || command.isEmpty()) {
+		if (command == null || command.isEmpty()) {
 			return "";
 		}
 		StringBuilder result = new StringBuilder((String) command.get(0));
@@ -69,7 +69,7 @@ public class ProcessUtil {
 
 	public static String executeCommand(String command) throws SenderException {
 		try {
-			return executeCommand(splitUpCommandString(command),0);
+			return executeCommand(splitUpCommandString(command), 0);
 		} catch (TimeoutException e) {
 			throw new SenderException(e);
 		}
@@ -97,38 +97,38 @@ public class ProcessUtil {
 			}
 
 		};
-		tg.activateGuard(timeout) ;
+		tg.activateGuard(timeout);
 		try {
 			// Wait until the process is completely finished, or timeout is expired
 			process.waitFor();
-		} catch(InterruptedException e) {
+		} catch (InterruptedException e) {
 			if (tg.threadKilled()) {
-				throw new TimeoutException("command ["+getCommandLine(command)+"] timed out",e);
+				throw new TimeoutException("command [" + getCommandLine(command) + "] timed out", e);
 			} else {
-				throw new SenderException("command ["+getCommandLine(command)+"] interrupted while waiting for process",e);
+				throw new SenderException("command [" + getCommandLine(command) + "] interrupted while waiting for process", e);
 			}
 		} finally {
 			tg.cancel();
 		}
 		// Read the output of the process
 		try {
-			output=readStream(process.getInputStream());
+			output = readStream(process.getInputStream());
 		} catch (IOException e) {
-			throw new SenderException("Could not read output of command ["+getCommandLine(command)+"]",e);
+			throw new SenderException("Could not read output of command [" + getCommandLine(command) + "]", e);
 		}
 		// Read the errors of the process
 		try {
-			errors=readStream(process.getErrorStream());
+			errors = readStream(process.getErrorStream());
 		} catch (IOException e) {
-			throw new SenderException("Could not read errors of command ["+getCommandLine(command)+"]",e);
+			throw new SenderException("Could not read errors of command [" + getCommandLine(command) + "]", e);
 		}
 		// Throw an exception if the command returns an error exit value
 		int exitValue = process.exitValue();
 		if (exitValue != 0) {
-			throw new SenderException("Nonzero exit value [" + exitValue + "] for command  ["+getCommandLine(command)+"], process output was [" + output + "], error output was [" + errors + "]");
+			throw new SenderException("Nonzero exit value [" + exitValue + "] for command  [" + getCommandLine(command) + "], process output was [" + output + "], error output was [" + errors + "]");
 		}
 		if (StringUtils.isNotEmpty(errors)) {
-			log.warn("command ["+getCommandLine(command)+"] had error output [" + errors + "]");
+			log.warn("command [" + getCommandLine(command) + "] had error output [" + errors + "]");
 		}
 		return output;
 	}

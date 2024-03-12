@@ -7,13 +7,15 @@ import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestConfiguration;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-@WithMockUser(roles = { "IbisTester" })
+@WithMockUser(roles = {"IbisTester"})
 public class TestConfigManagement extends BusTestBase {
 	private static final String LOADED_RESULT = "<loaded authAlias=\"test\" />";
 	private static final String ORIGINAL_RESULT = "<original authAlias=\"test\" />";

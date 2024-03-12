@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.pipes.EtagHandlerPipe.EtagAction;
+
 import org.junit.jupiter.api.Test;
 
 public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
@@ -59,7 +60,7 @@ public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
 	}
 
 	@Test
-	public void testFailedToLocateCache()  {
+	public void testFailedToLocateCache() {
 		assertThrows(PipeRunException.class, () -> doPipe(pipe, "dummyString", session));
 	}
 

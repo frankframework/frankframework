@@ -17,6 +17,7 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.EnumUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,7 +61,8 @@ class JmsSenderTest {
 	@Test
 	void testJmsSenderCopiesDefaultMessageClass() {
 		// Assure that for the test, the default message class is not "AUTO"
-		JMSFacade.MessageClass defaultMessageClass = EnumUtils.parse(JMSFacade.MessageClass.class, AppConstants.getInstance().getProperty("jms.messageClass.default"));
+		JMSFacade.MessageClass defaultMessageClass = EnumUtils.parse(JMSFacade.MessageClass.class, AppConstants.getInstance()
+				.getProperty("jms.messageClass.default"));
 
 		assertNotNull(defaultMessageClass);
 		assertNotEquals(JMSFacade.MessageClass.AUTO, defaultMessageClass);

@@ -32,7 +32,7 @@ public class StringBuilderContentHandler extends DefaultHandler implements Lexic
 
 	@Override
 	public void characters(char[] ch, int offset, int length) throws SAXException {
-		builder.append("characters [").append(ch,offset,length).append("]\n");
+		builder.append("characters [").append(ch, offset, length).append("]\n");
 	}
 
 
@@ -50,6 +50,7 @@ public class StringBuilderContentHandler extends DefaultHandler implements Lexic
 	public void startCDATA() throws SAXException {
 		builder.append("startCDATA\n");
 	}
+
 	@Override
 	public void endCDATA() throws SAXException {
 		builder.append("endCDATA\n");
@@ -57,7 +58,7 @@ public class StringBuilderContentHandler extends DefaultHandler implements Lexic
 
 	@Override
 	public void comment(char[] ch, int offset, int length) throws SAXException {
-		builder.append("comment [").append(ch,offset,length).append("]\n");
+		builder.append("comment [").append(ch, offset, length).append("]\n");
 	}
 
 	@Override

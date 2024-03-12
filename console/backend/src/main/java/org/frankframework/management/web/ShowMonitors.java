@@ -38,8 +38,8 @@ import org.frankframework.management.bus.BusTopic;
 /**
  * Shows all monitors.
  *
- * @since 7.0-B1
  * @author Niels Meijer
+ * @since 7.0-B1
  */
 
 @Path("/configurations/{configuration}/monitors")
@@ -49,7 +49,7 @@ public class ShowMonitors extends FrankApiBase {
 
 	@GET
 	@Path("/")
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("view all available monitors")
 	public Response getMonitors(@PathParam("configuration") String configurationName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
@@ -60,7 +60,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@POST
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -80,7 +80,7 @@ public class ShowMonitors extends FrankApiBase {
 
 
 	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}")
 	@Relation("monitoring")
 	@Description("get a specific monitor")
@@ -93,7 +93,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@PUT
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -105,7 +105,7 @@ public class ShowMonitors extends FrankApiBase {
 		builder.addHeader(MONITOR_HEADER, monitorName);
 
 		Object state = json.remove("action");
-		if(state != null) {
+		if (state != null) {
 			builder.addHeader("state", String.valueOf(state));
 		}
 		builder.setJsonPayload(json);
@@ -114,7 +114,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@DELETE
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Relation("monitoring")
@@ -128,7 +128,7 @@ public class ShowMonitors extends FrankApiBase {
 
 
 	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}/triggers")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Relation("monitoring")
@@ -141,7 +141,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@POST
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}/triggers")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -158,7 +158,7 @@ public class ShowMonitors extends FrankApiBase {
 
 
 	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Relation("monitoring")
@@ -172,7 +172,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@PUT
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -189,7 +189,7 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@DELETE
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Relation("monitoring")

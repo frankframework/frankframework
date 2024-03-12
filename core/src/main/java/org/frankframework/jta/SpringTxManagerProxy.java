@@ -33,24 +33,24 @@ import org.frankframework.util.LogUtil;
 /**
  * proxy class for transaction manager.
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
-public class SpringTxManagerProxy implements IThreadConnectableTransactionManager<Object,Object>, InitializingBean {
+public class SpringTxManagerProxy implements IThreadConnectableTransactionManager<Object, Object>, InitializingBean {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 
-	private IThreadConnectableTransactionManager<Object,Object> threadConnectableProxy;
+	private IThreadConnectableTransactionManager<Object, Object> threadConnectableProxy;
 	private @Getter @Setter PlatformTransactionManager realTxManager;
 
 	private final boolean trace = false;
 
 	/**
 	 * @param txOption e.q. TransactionDefinition.PROPAGATION_REQUIRES_NEW
-	 * @param timeout Set the timeout to apply in seconds. Default timeout is {@value org.springframework.transaction.TransactionDefinition#TIMEOUT_DEFAULT}.
+	 * @param timeout  Set the timeout to apply in seconds. Default timeout is {@value org.springframework.transaction.TransactionDefinition#TIMEOUT_DEFAULT}.
 	 * @return IbisTransaction
 	 */
 	public static TransactionDefinition getTransactionDefinition(int txOption, int timeout) {
-		DefaultTransactionDefinition result=new DefaultTransactionDefinition(txOption);
+		DefaultTransactionDefinition result = new DefaultTransactionDefinition(txOption);
 		if (timeout > 0) {
 			result.setTimeout(timeout);
 		}
@@ -82,16 +82,16 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 		getRealTxManager().rollback(txStatus);
 	}
 
-	public IThreadConnectableTransactionManager<Object,Object> getThreadConnectableProxy() {
-		if (threadConnectableProxy==null) {
+	public IThreadConnectableTransactionManager<Object, Object> getThreadConnectableProxy() {
+		if (threadConnectableProxy == null) {
 			PlatformTransactionManager realTxManager = getRealTxManager();
 			if (realTxManager instanceof IThreadConnectableTransactionManager) {
 				//noinspection rawtypes
-				threadConnectableProxy = (IThreadConnectableTransactionManager)realTxManager;
+				threadConnectableProxy = (IThreadConnectableTransactionManager) realTxManager;
 			} else if (realTxManager instanceof JtaTransactionManager) {
-				threadConnectableProxy = new ThreadConnectableJtaTransactionManager((JtaTransactionManager)realTxManager);
+				threadConnectableProxy = new ThreadConnectableJtaTransactionManager((JtaTransactionManager) realTxManager);
 			} else {
-				throw new IllegalStateException("Don't know how to make ["+realTxManager.getClass().getTypeName()+"] thread connectable");
+				throw new IllegalStateException("Don't know how to make [" + realTxManager.getClass().getTypeName() + "] thread connectable");
 			}
 		}
 		return threadConnectableProxy;
@@ -114,7 +114,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(realTxManager == null) {
+		if (realTxManager == null) {
 			throw new IllegalStateException("RealTxManager not set");
 		}
 	}

@@ -29,7 +29,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 @Timeout(value = 30, unit = TimeUnit.SECONDS) // No test should take longer then 30s...
 @Documented
-@Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD })
+@Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @TestInstance(Lifecycle.PER_CLASS)
 public @interface DatabaseTest {

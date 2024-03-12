@@ -31,8 +31,8 @@ import org.frankframework.receivers.ServiceDispatcher;
  * an {@link ApiListener} or a {@link WebServiceListener}
  * instead.
  *
- * @author  Gerrit van Brakel
- * @since   4.4.x (still experimental)
+ * @author Gerrit van Brakel
+ * @since 4.4.x (still experimental)
  */
 @Deprecated
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
@@ -43,10 +43,10 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 	@Override
 	public void open() throws ListenerException {
 		if (StringUtils.isEmpty(getServiceName())) {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
+			log.debug("registering listener [" + getName() + "] with ServiceDispatcher");
 			ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
 		} else {
-			log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceName ["+getServiceName()+"]");
+			log.debug("registering listener [" + getName() + "] with ServiceDispatcher by serviceName [" + getServiceName() + "]");
 			ServiceDispatcher.getInstance().registerServiceClient(getServiceName(), this);
 		}
 
@@ -58,17 +58,17 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 		super.close();
 
 		if (StringUtils.isEmpty(getServiceName())) {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher");
+			log.debug("unregistering listener [" + getName() + "] from ServiceDispatcher");
 			ServiceDispatcher.getInstance().unregisterServiceClient(getName());
 		} else {
-			log.debug("unregistering listener ["+getName()+"] from ServiceDispatcher by serviceName ["+getServiceName()+"]");
+			log.debug("unregistering listener [" + getName() + "] from ServiceDispatcher by serviceName [" + getServiceName() + "]");
 			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceName());
 		}
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "serviceName: "+getServiceName();
+		return "serviceName: " + getServiceName();
 	}
 
 	/** name of the service that is provided by the adapter of this listener */

@@ -20,10 +20,9 @@ import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
@@ -74,8 +73,8 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, browseMessage(storageKey), messageIdPropertyKey);
 	}
 
-	protected boolean contains(String value, ThrowingFunction<IMessageBrowsingIteratorItem,String,ListenerException> field) throws ListenerException {
-		try (IMessageBrowsingIterator it=getIterator()){
+	protected boolean contains(String value, ThrowingFunction<IMessageBrowsingIteratorItem, String, ListenerException> field) throws ListenerException {
+		try (IMessageBrowsingIterator it = getIterator()) {
 			while (it.hasNext()) {
 				IMessageBrowsingIteratorItem item = it.next();
 				if (value.equals(field.apply(item))) {
@@ -121,12 +120,12 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	@Override
 	public int getMessageCount() throws ListenerException {
 		int count = 0;
-		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
-			if (ds==null) {
+		try (DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+			if (ds == null) {
 				return -1;
 			}
 			Iterator<F> it = ds.iterator();
-			if (it==null) {
+			if (it == null) {
 				return 0;
 			}
 			while (it.hasNext()) {

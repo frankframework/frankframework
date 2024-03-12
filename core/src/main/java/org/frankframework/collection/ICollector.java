@@ -27,16 +27,18 @@ import org.frankframework.stream.Message;
  * The {@link Collection collection} handles the collection of parts,
  * ensures they are closed if required and 'builds' the collection.
  *
- * @author Niels Meijer
- *
  * @param <P> Part to be added to the {@link Collection collection}.
+ * @author Niels Meijer
  */
 public interface ICollector<P> extends AutoCloseable {
 
 	/** Add a single item to the collection */
 	P createPart(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException;
 
-	/** 'builds' the collection and returns a persistent Message
-	 * @throws IOException */
+	/**
+	 * 'builds' the collection and returns a persistent Message
+	 *
+	 * @throws IOException
+	 */
 	Message build(List<P> parts) throws IOException;
 }

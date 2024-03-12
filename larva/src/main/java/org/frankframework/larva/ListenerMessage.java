@@ -15,9 +15,8 @@
 */
 package org.frankframework.larva;
 
-import org.frankframework.core.PipeLineSession;
-
 import lombok.Getter;
+import org.frankframework.core.PipeLineSession;
 
 /**
  * @author Jaco de Groot
@@ -33,7 +32,7 @@ public class ListenerMessage {
 	}
 
 	public String getCorrelationId() {
-		return (String)context.get(PipeLineSession.CORRELATION_ID_KEY);
+		return (String) context.get(PipeLineSession.CORRELATION_ID_KEY);
 	}
 
 }

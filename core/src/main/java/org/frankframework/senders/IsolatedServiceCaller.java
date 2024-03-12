@@ -33,8 +33,8 @@ import org.frankframework.util.ClassUtils;
 /**
  * Helper class for {@link IbisLocalSender} that wraps around {@link ServiceClient} implementation to make calls to a local Ibis adapter in a separate thread.
  *
- * @author  Gerrit van Brakel
- * @since   4.3
+ * @author Gerrit van Brakel
+ * @since 4.3
  */
 public class IsolatedServiceCaller {
 	protected Logger log = LogUtil.getLogger(this);
@@ -53,23 +53,23 @@ public class IsolatedServiceCaller {
 	}
 
 	public void callServiceAsynchronous(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws IOException {
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, null, threadLifeCycleEventListener);
+		IsolatedServiceExecutor ise = new IsolatedServiceExecutor(service, message, session, null, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 	}
 
 	public SenderResult callServiceIsolated(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws ListenerException, IOException {
 		Guard guard = new Guard();
 		guard.addResource();
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, guard, threadLifeCycleEventListener);
+		IsolatedServiceExecutor ise = new IsolatedServiceExecutor(service, message, session, guard, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 		try {
 			guard.waitForAllResources();
 		} catch (InterruptedException e) {
-			throw new ListenerException(ClassUtils.nameOf(this)+" was interrupted",e);
+			throw new ListenerException(ClassUtils.nameOf(this) + " was interrupted", e);
 		}
 		if (ise.getThrowable() != null) {
 			if (ise.getThrowable() instanceof ListenerException) {
-				throw (ListenerException)ise.getThrowable();
+				throw (ListenerException) ise.getThrowable();
 			}
 			throw new ListenerException(ise.getThrowable());
 		}

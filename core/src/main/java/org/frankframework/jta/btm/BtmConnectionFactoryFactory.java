@@ -29,10 +29,10 @@ import org.frankframework.util.AppConstants;
 
 public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory implements DisposableBean {
 
-	private @Getter @Setter int minPoolSize=0;
-	private @Getter @Setter int maxPoolSize=20;
-	private @Getter @Setter int maxIdleTime=60;
-	private @Getter @Setter int maxLifeTime=0;
+	private @Getter @Setter int minPoolSize = 0;
+	private @Getter @Setter int maxPoolSize = 20;
+	private @Getter @Setter int maxIdleTime = 60;
+	private @Getter @Setter int maxLifeTime = 0;
 
 	public BtmConnectionFactoryFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
@@ -52,7 +52,7 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 			result.setMaxIdleTime(getMaxIdleTime());
 			result.setMaxLifeTime(getMaxLifeTime());
 			result.setAllowLocalTransactions(true);
-			result.setXaConnectionFactory((XAConnectionFactory)connectionFactory);
+			result.setXaConnectionFactory((XAConnectionFactory) connectionFactory);
 			result.init();
 			return result;
 		}
@@ -62,6 +62,6 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 
 	@Override
 	public void destroy() throws Exception {
-		objects.values().stream().filter(PoolingConnectionFactory.class::isInstance).forEach(cf -> ((PoolingConnectionFactory)cf).close());
+		objects.values().stream().filter(PoolingConnectionFactory.class::isInstance).forEach(cf -> ((PoolingConnectionFactory) cf).close());
 	}
 }

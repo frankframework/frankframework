@@ -21,13 +21,13 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 
+import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.BoundedReader;
 import org.frankframework.stream.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
 
@@ -38,8 +38,8 @@ public class MessageEncoder extends MessageEncoderImpl {
 	@Override
 	public ToStringResult toString(Object message, String charset) {
 		if (message instanceof Message) {
-			Message m = ((Message)message);
-			if (charset==null) {
+			Message m = ((Message) message);
+			if (charset == null) {
 				charset = m.getCharset();
 			}
 			if (m.requiresStream()) {
@@ -56,7 +56,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 						}
 					}
 					StringWriter writer = new StringWriter();
-					try (Reader reader = m.asReader()){
+					try (Reader reader = m.asReader()) {
 						IOUtils.copy(new BoundedReader(reader, maxMessageLength), writer);
 					} catch (IOException e) {
 						return super.toString(e, null);
@@ -86,7 +86,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 		if (messageToStub instanceof Message) {
 			// In case a stream is stubbed the replaced stream needs to be closed as next pipe will read and close the
 			// stub which would leave the replaced stream unclosed
-			((Message)messageToStub).close();
+			((Message) messageToStub).close();
 		}
 		return (T) Message.asMessage(super.toObject(originalCheckpoint, messageToStub));
 	}

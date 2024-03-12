@@ -11,6 +11,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.Test;
 
 public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
@@ -60,7 +61,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 			doPipe(input);
 
 			fail("an exception should occur!");
-		} catch(PipeRunException e) {
+		} catch (PipeRunException e) {
 			assertTrue(e.getCause() instanceof TimeoutException);
 		}
 	}

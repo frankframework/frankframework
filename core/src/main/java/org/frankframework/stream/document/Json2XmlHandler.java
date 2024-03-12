@@ -17,11 +17,10 @@ package org.frankframework.stream.document;
 
 import java.util.Stack;
 
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
 import org.frankframework.stream.JsonEventHandler;
 import org.frankframework.xml.SaxException;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 public class Json2XmlHandler implements JsonEventHandler {
 
@@ -52,28 +51,28 @@ public class Json2XmlHandler implements JsonEventHandler {
 	@Override
 	public void endDocument() throws SAXException {
 		if (!stack.isEmpty()) {
-			((XmlDocumentBuilder)stack.pop()).close();
+			((XmlDocumentBuilder) stack.pop()).close();
 		}
 	}
 
 	private void checkPendingFieldOrElement() throws SAXException {
-		Object top=stack.peek();
+		Object top = stack.peek();
 		if (top instanceof INodeBuilder) {
-			((INodeBuilder)stack.pop()).close();
+			((INodeBuilder) stack.pop()).close();
 		}
 	}
 
 	private Object checkField() throws SAXException {
 		Object top = stack.peek();
 		if (top instanceof String) {
-			String key = (String)stack.pop();
-			ObjectBuilder objectBuilder = (ObjectBuilder)stack.peek();
-			top=objectBuilder.addField(key);
+			String key = (String) stack.pop();
+			ObjectBuilder objectBuilder = (ObjectBuilder) stack.peek();
+			top = objectBuilder.addField(key);
 			stack.push(top);
 			return top;
 		}
 		if (top instanceof ArrayBuilder) {
-			top=((ArrayBuilder)top).addElement();
+			top = ((ArrayBuilder) top).addElement();
 			stack.push(top);
 			return top;
 		}
@@ -84,14 +83,14 @@ public class Json2XmlHandler implements JsonEventHandler {
 	public void startObject() throws SAXException {
 		Object top = checkField();
 		if (top instanceof IDocumentBuilder) {
-			stack.push(((IDocumentBuilder)top).asObjectBuilder());
+			stack.push(((IDocumentBuilder) top).asObjectBuilder());
 			return;
 		}
 		if (top instanceof INodeBuilder) {
-			stack.push(((INodeBuilder)top).startObject());
+			stack.push(((INodeBuilder) top).startObject());
 			return;
 		}
-		throw new SaxException("Do not expect startObject() with stack top ["+top+"]");
+		throw new SaxException("Do not expect startObject() with stack top [" + top + "]");
 	}
 
 	@Override
@@ -101,12 +100,12 @@ public class Json2XmlHandler implements JsonEventHandler {
 			stack.push(key);
 			return;
 		}
-		throw new SaxException("Do not expect startObjectEntry() with stack top ["+top+"]");
+		throw new SaxException("Do not expect startObjectEntry() with stack top [" + top + "]");
 	}
 
 	@Override
 	public void endObject() throws SAXException {
-		((ObjectBuilder)stack.pop()).close();
+		((ObjectBuilder) stack.pop()).close();
 		checkPendingFieldOrElement();
 	}
 
@@ -114,41 +113,41 @@ public class Json2XmlHandler implements JsonEventHandler {
 	public void startArray() throws SAXException {
 		Object top = stack.peek();
 		if (top instanceof IDocumentBuilder) {
-			stack.push(((IDocumentBuilder)top).asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME));
+			stack.push(((IDocumentBuilder) top).asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME));
 			return;
 		}
 		if (top instanceof ArrayBuilder) {
-			stack.push(((ArrayBuilder)top).addArrayElement(DEFAULT_ARRAY_ELEMENT_NAME));
+			stack.push(((ArrayBuilder) top).addArrayElement(DEFAULT_ARRAY_ELEMENT_NAME));
 			return;
 		}
 		if (top instanceof String) {
-			String key = (String)stack.pop();
-			ObjectBuilder objectBuilder = (ObjectBuilder)stack.peek();
-			top=objectBuilder.addRepeatedField(key);
+			String key = (String) stack.pop();
+			ObjectBuilder objectBuilder = (ObjectBuilder) stack.peek();
+			top = objectBuilder.addRepeatedField(key);
 			stack.push(top);
 			return;
 		}
-		throw new SaxException("Do not expect startObject() with stack top ["+top+"]");
+		throw new SaxException("Do not expect startObject() with stack top [" + top + "]");
 	}
 
 	@Override
 	public void endArray() throws SAXException {
-		((ArrayBuilder)stack.pop()).close();
+		((ArrayBuilder) stack.pop()).close();
 		checkPendingFieldOrElement();
 	}
 
 	@Override
 	public void primitive(Object value) throws SAXException {
-		INodeBuilder top = (INodeBuilder)checkField();
+		INodeBuilder top = (INodeBuilder) checkField();
 		try (INodeBuilder node = top) {
 			if (value instanceof String) {
-				top.setValue((String)value);
+				top.setValue((String) value);
 			} else if (value instanceof Boolean) {
-				top.setValue((Boolean)value);
+				top.setValue((Boolean) value);
 			} else if (value instanceof Number) {
-				top.setValue((Number)value);
-			} else if (value==null) {
-				top.setValue((String)null);
+				top.setValue((Number) value);
+			} else if (value == null) {
+				top.setValue((String) null);
 			} else {
 				top.setValue(value.toString());
 			}
@@ -158,7 +157,7 @@ public class Json2XmlHandler implements JsonEventHandler {
 
 	@Override
 	public void number(String value) throws SAXException {
-		INodeBuilder top = (INodeBuilder)checkField();
+		INodeBuilder top = (INodeBuilder) checkField();
 		try (INodeBuilder node = top) {
 			top.setNumberValue(value);
 		}

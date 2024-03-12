@@ -81,9 +81,8 @@ import lombok.Setter;
  *
  * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
  * @ff.forward "&lt;statusCode of the HTTP response&gt;" default
- *
- * @author	Niels Meijer
- * @since	7.0
+ * @author Niels Meijer
+ * @since 7.0
  */
 //TODO: Fix javadoc!
 
@@ -102,39 +101,40 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	private @Getter String urlParam = "url";
 
 	public enum HttpMethod {
-		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
+		GET, POST, PUT, PATCH, DELETE, HEAD, REPORT;
 	}
+
 	private @Getter HttpMethod httpMethod = HttpMethod.GET;
 
 	private @Getter String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private @Getter ContentType fullContentType = null;
 	private @Getter String contentType = null;
 
-	private @Getter String headersParams="";
-	private @Getter boolean xhtml=false;
-	private @Getter String styleSheetName=null;
+	private @Getter String headersParams = "";
+	private @Getter boolean xhtml = false;
+	private @Getter String styleSheetName = null;
 	private @Getter String resultStatusCodeSessionKey;
 	private @Getter String parametersToSkipWhenEmpty;
 
 	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
 	private final boolean APPEND_CORRELATIONID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.correlationid", true);
 
-	private TransformerPool transformerPool=null;
+	private TransformerPool transformerPool = null;
 
 	protected Parameter urlParameter;
 
 	protected URI staticUri;
 
-	protected Set<String> requestOrBodyParamsSet=new HashSet<>();
-	protected Set<String> headerParamsSet=new LinkedHashSet<>();
-	protected Set<String> parametersToSkipWhenEmptySet=new HashSet<>();
+	protected Set<String> requestOrBodyParamsSet = new HashSet<>();
+	protected Set<String> headerParamsSet = new LinkedHashSet<>();
+	protected Set<String> parametersToSkipWhenEmptySet = new HashSet<>();
 
 	protected ParameterList paramList = null;
 
 	@Override
 	public void addParameter(Parameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
+		if (paramList == null) {
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}
@@ -149,18 +149,18 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(StringUtils.isBlank(sharedResourceRef)) {
+		if (StringUtils.isBlank(sharedResourceRef)) {
 			log.info("configuring local HttpSession");
 			super.configure();
 		}
 
-		if (paramList!=null) {
+		if (paramList != null) {
 			paramList.configure();
 
 			if (StringUtils.isNotEmpty(getHeadersParams())) {
 				headerParamsSet.addAll(StringUtil.split(getHeadersParams()));
 			}
-			for (Parameter p: paramList) {
+			for (Parameter p : paramList) {
 				String paramName = p.getName();
 				if (!headerParamsSet.contains(paramName)) {
 					requestOrBodyParamsSet.add(paramName);
@@ -183,9 +183,9 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			}
 		}
 
-		if(StringUtils.isNotEmpty(getContentType())) {
+		if (StringUtils.isNotEmpty(getContentType())) {
 			fullContentType = ContentType.parse(getContentType());
-			if(fullContentType.getCharset() == null) {
+			if (fullContentType.getCharset() == null) {
 				fullContentType = fullContentType.withCharset(getCharSet());
 			}
 		}
@@ -193,23 +193,23 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		try {
 			if (urlParameter == null) {
 				if (StringUtils.isEmpty(getUrl())) {
-					throw new ConfigurationException(getLogPrefix()+"url must be specified, either as attribute, or as parameter");
+					throw new ConfigurationException(getLogPrefix() + "url must be specified, either as attribute, or as parameter");
 				}
 				staticUri = getURI(getUrl());
 			}
 		} catch (URISyntaxException e) {
-			throw new ConfigurationException("cannot interpret url ["+getUrl()+"]", e);
+			throw new ConfigurationException("cannot interpret url [" + getUrl() + "]", e);
 		}
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
 				Resource stylesheet = Resource.getResource(this, getStyleSheetName());
 				if (stylesheet == null) {
-					throw new ConfigurationException("cannot find stylesheet ["+getStyleSheetName()+"]");
+					throw new ConfigurationException("cannot find stylesheet [" + getStyleSheetName() + "]");
 				}
 				transformerPool = TransformerPool.getInstance(stylesheet);
 			} catch (IOException e) {
-				throw new ConfigurationException("cannot retrieve ["+ getStyleSheetName() + "]", e);
+				throw new ConfigurationException("cannot retrieve [" + getStyleSheetName() + "]", e);
 			} catch (TransformerConfigurationException te) {
 				throw new ConfigurationException("got error creating transformer from file [" + getStyleSheetName() + "]", te);
 			}
@@ -221,14 +221,14 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		try {
 			start();
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"unable to create HttpClient", e);
+			throw new SenderException(getLogPrefix() + "unable to create HttpClient", e);
 		}
 
-		if (transformerPool!=null) {
+		if (transformerPool != null) {
 			try {
 				transformerPool.open();
 			} catch (Exception e) {
-				throw new SenderException(getLogPrefix()+"cannot start TransformerPool", e);
+				throw new SenderException(getLogPrefix() + "cannot start TransformerPool", e);
 			}
 		}
 	}
@@ -240,7 +240,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	@Override
 	public void start() {
-		if(StringUtils.isNotBlank(sharedResourceRef)) {
+		if (StringUtils.isNotBlank(sharedResourceRef)) {
 			setHttpClient(getSharedResource(sharedResourceRef));
 		} else {
 			buildHttpClient();
@@ -249,11 +249,11 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	@Override
 	public void close() {
-		if(StringUtils.isBlank(sharedResourceRef)) {
+		if (StringUtils.isBlank(sharedResourceRef)) {
 			super.stop();
 		}
 
-		if (transformerPool!=null) {
+		if (transformerPool != null) {
 			transformerPool.close();
 		}
 	}
@@ -261,7 +261,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	protected boolean appendParameters(boolean parametersAppended, StringBuilder path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			log.debug("appending [{}] parameters", parameters::size);
-			for(ParameterValue pv : parameters) {
+			for (ParameterValue pv : parameters) {
 				if (requestOrBodyParamsSet.contains(pv.getName())) {
 					String value = pv.asStringValue("");
 					if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(pv.getName())) {
@@ -273,11 +273,12 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 								parametersAppended = true;
 							}
 
-							String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(value, getCharSet());
+							String parameterToAppend = pv.getDefinition().getName() + "=" + URLEncoder.encode(value, getCharSet());
 							log.debug("appending parameter [{}]", parameterToAppend);
 							path.append(parameterToAppend);
 						} catch (UnsupportedEncodingException e) {
-							throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
+							throw new SenderException(getLogPrefix() + "[" + getCharSet() + "] encoding error. Failed to add parameter [" + pv.getDefinition()
+									.getName() + "]", e);
 						}
 					}
 				}
@@ -299,10 +300,11 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	/**
 	 * Custom implementation to create a {@link HttpRequestBase HttpRequest} object.
-	 * @param uri endpoint to send the message to
-	 * @param message to be sent
+	 *
+	 * @param uri        endpoint to send the message to
+	 * @param message    to be sent
 	 * @param parameters ParameterValueList that contains all the senders parameters
-	 * @param session PipeLineSession to retrieve or store data from, or NULL when not set
+	 * @param session    PipeLineSession to retrieve or store data from, or NULL when not set
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
@@ -312,8 +314,9 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	 * Custom implementation to extract the response and format it to a String result. <br/>
 	 * It is important that the {@link HttpResponseHandler#getResponse() response}
 	 * will be read or will be {@link HttpResponseHandler#close() closed}.
+	 *
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
-	 * @param session {@link PipeLineSession} which may be null
+	 * @param session         {@link PipeLineSession} which may be null
 	 * @return a string that will be passed to the pipeline
 	 */
 	protected abstract Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException;
@@ -323,10 +326,10 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
 			ok = true;
 		} else {
-			if (statusCode==200 || statusCode==201 || statusCode==202 || statusCode==204 || statusCode==206) {
+			if (statusCode == 200 || statusCode == 201 || statusCode == 202 || statusCode == 204 || statusCode == 206) {
 				ok = true;
 			} else {
-				if (isIgnoreRedirects() && (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT)) {
+				if (isIgnoreRedirects() && (statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT)) {
 					ok = true;
 				}
 			}
@@ -338,11 +341,11 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		try {
-			if (paramList !=null) {
-				pvl=paramList.getValues(message, session);
+			if (paramList != null) {
+				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
+			throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
 		URI targetUri;
@@ -357,11 +360,11 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<>();
-			if (!headerParamsSet.isEmpty() && pvl!=null) {
-				log.debug("appending header parameters "+headersParams);
-				for (String paramName:headerParamsSet) {
+			if (!headerParamsSet.isEmpty() && pvl != null) {
+				log.debug("appending header parameters " + headersParams);
+				for (String paramName : headerParamsSet) {
 					ParameterValue paramValue = pvl.get(paramName);
-					if(paramValue != null) {
+					if (paramValue != null) {
 						String value = paramValue.asStringValue(null);
 						if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(paramName)) {
 							headersParamsMap.put(paramName, value);
@@ -371,11 +374,11 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			}
 
 			httpRequestBase = getMethod(targetUri, message, pvl, session);
-			if(httpRequestBase == null)
-				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
+			if (httpRequestBase == null)
+				throw new MethodNotSupportedException("could not find implementation for method [" + getHttpMethod() + "]");
 
 			//Set all headers
-			if(session != null) {
+			if (session != null) {
 				if (APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
 					httpRequestBase.setHeader(MESSAGE_ID_HEADER, session.getMessageId());
 				}
@@ -383,7 +386,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 					httpRequestBase.setHeader(CORRELATION_ID_HEADER, session.getCorrelationId());
 				}
 			}
-			for (String param: headersParamsMap.keySet()) {
+			for (String param : headersParamsMap.keySet()) {
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
 			}
 
@@ -400,7 +403,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		boolean success;
 		String reasonPhrase;
 
-		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
+		TimeoutGuard tg = new TimeoutGuard(1 + getTimeout() / 1000, getName()) {
 
 			@Override
 			protected void abort() {
@@ -417,7 +420,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			StatusLine statusline = httpResponse.getStatusLine();
 			statusCode = statusline.getStatusCode();
 			success = validateResponseCode(statusCode);
-			reasonPhrase =  statusline.getReasonPhrase();
+			reasonPhrase = statusline.getReasonPhrase();
 
 			if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
 				session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
@@ -451,18 +454,18 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			// This will cause the connection to become stale.
 
 			if (tg.cancel()) {
-				throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
+				throw new TimeoutException(getLogPrefix() + "timeout of [" + getTimeout() + "] ms exceeded");
 			}
 		}
 
-		if (statusCode == -1){
+		if (statusCode == -1) {
 			throw new SenderException("Failed to recover from exception");
 		}
 
 		if (isXhtml() && !Message.isEmpty(result)) {
 			// TODO: Streaming XHTML conversion for better performance with large result message?
 			String xhtml;
-			try(Message m = result) {
+			try (Message m = result) {
 				xhtml = XmlUtils.toXhtml(m);
 			} catch (IOException e) {
 				throw new SenderException("error reading http response as String", e);
@@ -491,7 +494,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	@Override
 	public String getPhysicalDestinationName() {
-		if (urlParameter!=null) {
+		if (urlParameter != null) {
 			return "dynamic url";
 		}
 		return getUrl();
@@ -504,6 +507,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	/**
 	 * Parameter that is used to obtain URL; overrides url-attribute.
+	 *
 	 * @ff.default url
 	 */
 	public void setUrlParam(String urlParam) {
@@ -512,6 +516,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	/**
 	 * The HTTP Method used to execute the request
+	 *
 	 * @ff.default <code>GET</code>
 	 */
 	public void setMethodType(HttpMethod method) {
@@ -520,6 +525,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	/**
 	 * Content-Type (superset of mimetype + charset) of the request, for <code>POST</code>, <code>PUT</code> and <code>PATCH</code> methods
+	 *
 	 * @ff.default text/html, when postType=<code>RAW</code>
 	 */
 	public void setContentType(String string) {
@@ -528,6 +534,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	/**
 	 * Charset of the request. Typically only used on <code>PUT</code> and <code>POST</code> requests.
+	 *
 	 * @ff.default UTF-8
 	 */
 	public void setCharSet(String string) {
@@ -539,16 +546,19 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	public void setCertificate(String string) {
 		setKeystore(string);
 	}
+
 	@Deprecated
 	@ConfigurationWarning("has been replaced with keystoreType")
 	public void setCertificateType(KeystoreType value) {
 		setKeystoreType(value);
 	}
+
 	@Deprecated
 	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
 	public void setCertificateAuthAlias(String string) {
 		setKeystoreAuthAlias(string);
 	}
+
 	@Deprecated
 	@ConfigurationWarning("Please use attribute keystorePassword instead")
 	public void setCertificatePassword(String string) {
@@ -567,6 +577,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	/**
 	 * If <code>true</code>, the HTML response is transformed to XHTML
+	 *
 	 * @ff.default false
 	 */
 	public void setXhtml(boolean xHtml) {
@@ -574,11 +585,12 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	}
 
 	/** (Only used when xHtml=<code>true</code>) stylesheet to apply to the HTML response */
-	public void setStyleSheetName(String stylesheetName){
-		this.styleSheetName=stylesheetName;
+	public void setStyleSheetName(String stylesheetName) {
+		this.styleSheetName = stylesheetName;
 	}
 
-	/** If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
+	/**
+	 * If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
 	 * Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the configuration does not implement
 	 * the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.
 	 */

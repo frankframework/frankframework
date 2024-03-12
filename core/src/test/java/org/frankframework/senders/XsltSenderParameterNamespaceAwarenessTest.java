@@ -6,30 +6,31 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("unused")
 public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<XsltSender> {
 
-	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_5= "/Xslt/3205/result-ok-with-namespaces.xml";
-	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_6= "/Xslt/3205/result-param-contents-not-found-with-namespaces.xml";
-	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_7= "/Xslt/3205/result-param-contents-not-found-no-namespaces.xml";
-	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_8= "/Xslt/3205/result-param-contents-not-found-no-namespaces.xml";
+	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_5 = "/Xslt/3205/result-ok-with-namespaces.xml";
+	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_6 = "/Xslt/3205/result-param-contents-not-found-with-namespaces.xml";
+	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_7 = "/Xslt/3205/result-param-contents-not-found-no-namespaces.xml";
+	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_8 = "/Xslt/3205/result-param-contents-not-found-no-namespaces.xml";
 
-	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_5= "/Xslt/3205/result-ok-with-namespaces.xml";
-	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_6= "/Xslt/3205/result-param-contents-not-found-with-namespaces.xml";
-	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_7= "/Xslt/3205/result-param-contents-not-found-with-namespaces.xml";
-	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_8= "/Xslt/3205/result-param-contents-not-found-with-namespaces.xml";
+	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_5 = "/Xslt/3205/result-ok-with-namespaces.xml";
+	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_6 = "/Xslt/3205/result-param-contents-not-found-with-namespaces.xml";
+	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_7 = "/Xslt/3205/result-param-contents-not-found-with-namespaces.xml";
+	private String EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_8 = "/Xslt/3205/result-param-contents-not-found-with-namespaces.xml";
 
-	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_UNAWARE_7_5= "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
-	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_UNAWARE_7_6= "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
-	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_UNAWARE_7_7= "/Xslt/3205/result-ok-with-all-namespaces-removed.xml";
-	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_UNAWARE_7_8= "/Xslt/3205/result-ok-with-all-namespaces-removed.xml";
+	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_UNAWARE_7_5 = "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
+	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_UNAWARE_7_6 = "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
+	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_UNAWARE_7_7 = "/Xslt/3205/result-ok-with-all-namespaces-removed.xml";
+	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_UNAWARE_7_8 = "/Xslt/3205/result-ok-with-all-namespaces-removed.xml";
 
-	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_AWARE_7_5= "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
-	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_AWARE_7_6= "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
-	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_AWARE_7_7= "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
-	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_AWARE_7_8= "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
+	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_AWARE_7_5 = "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
+	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_AWARE_7_6 = "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
+	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_AWARE_7_7 = "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
+	private String EXPECTED_RESULT_PARAMETER_REMOVE_NAMESPACES_SENDER_NAMESPACE_AWARE_7_8 = "/Xslt/3205/result-ok-with-param-namespaces-removed.xml";
 
 	private String expectedResultParameterPlainSenderNamespaceUnaware = EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_UNAWARE_7_8;
 	private String expectedResultParameterPlainSenderNamespaceAware = EXPECTED_RESULT_PARAMETER_PLAIN_SENDER_NAMESPACE_AWARE_7_8;

@@ -24,7 +24,8 @@ import org.frankframework.core.INamedObject;
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
  * <br/>
- * @author  Johan Verrips IOS
+ *
+ * @author Johan Verrips IOS
  * @see MessageKeeperMessage
  */
 public class MessageKeeper extends SizeLimitedVector<MessageKeeperMessage> {
@@ -45,18 +46,22 @@ public class MessageKeeper extends SizeLimitedVector<MessageKeeperMessage> {
 	public synchronized void add(String message) {
 		add(message, MessageKeeperLevel.INFO);
 	}
+
 	public synchronized void add(String message, MessageKeeperLevel level) {
 		super.add(new MessageKeeperMessage(message, level));
 	}
+
 	public synchronized void add(String message, Date date) {
 		add(message, date, MessageKeeperLevel.INFO);
 	}
+
 	public synchronized void add(String message, Date date, MessageKeeperLevel level) {
 		super.add(new MessageKeeperMessage(message, date, level));
 	}
 
 	/**
 	 * Get a message by number
+	 *
 	 * @see MessageKeeperMessage
 	 */
 	public MessageKeeperMessage getMessage(int i) {
@@ -68,8 +73,8 @@ public class MessageKeeper extends SizeLimitedVector<MessageKeeperMessage> {
 	 */
 	public void add(String message, Throwable t) {
 		String msgToLog = message;
-		if(t.getMessage() != null) {
-			msgToLog += ": "+t.getMessage();
+		if (t.getMessage() != null) {
+			msgToLog += ": " + t.getMessage();
 		}
 		add(msgToLog, MessageKeeperLevel.ERROR);
 		log.warn(msgToLog, t);

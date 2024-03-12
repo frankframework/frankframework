@@ -26,18 +26,18 @@ import org.frankframework.core.SenderException;
 /**
  * {@link IReaderFactory} that provides a reader that reads Delphi records containing Strings.
  *
- * @author  Gerrit van Brakel
- * @since   4.10
+ * @author Gerrit van Brakel
+ * @since 4.10
  * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
 @ConfigurationWarning("Warning: non-maintained functionality.")
 public class DelphiStringRecordReaderFactory implements IReaderFactory {
 
-	private int stringLength=50;
-	private int stringsPerRecord=0; // 0 means read till end of file
-	private String separator="|";
-	private String separatorReplacement="_";
+	private int stringLength = 50;
+	private int stringsPerRecord = 0; // 0 means read till end of file
+	private String separator = "|";
+	private String separatorReplacement = "_";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -45,49 +45,57 @@ public class DelphiStringRecordReaderFactory implements IReaderFactory {
 
 	@Override
 	public Reader getReader(InputStream in, String charset, String streamId, PipeLineSession session) throws SenderException {
-		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement());
+		return new DelphiStringRecordReader(in, charset, getStringLength(), getStringsPerRecord(), getSeparator(), getSeparatorReplacement());
 	}
 
 	/**
 	 * separator placed between each string read
+	 *
 	 * @ff.default |
 	 */
 	public void setSeparator(String string) {
 		separator = string;
 	}
+
 	public String getSeparator() {
 		return separator;
 	}
 
 	/**
 	 * the maximum length of each string. each string is preceded by a one byte length indication.
+	 *
 	 * @ff.default 50
 	 */
 	public void setStringLength(int i) {
 		stringLength = i;
 	}
+
 	public int getStringLength() {
 		return stringLength;
 	}
 
 	/**
 	 * the number of strings read for each record. 0 means file consists of one logical record
+	 *
 	 * @ff.default 0
 	 */
 	public void setStringsPerRecord(int i) {
 		stringsPerRecord = i;
 	}
+
 	public int getStringsPerRecord() {
 		return stringsPerRecord;
 	}
 
 	/**
 	 * replacement character, used when separator is found in string read
+	 *
 	 * @ff.default _
 	 */
 	public void setSeparatorReplacement(String string) {
 		separatorReplacement = string;
 	}
+
 	public String getSeparatorReplacement() {
 		return separatorReplacement;
 	}

@@ -27,9 +27,9 @@ public class FileMessage extends Message {
 
 	public FileMessage(File file, String charset) {
 		super(new SerializableFileReference(charset, file.toPath()), new MessageContext(charset).withModificationTime(file.lastModified())
-				.withSize(file.length())
-				.withName(file.getName())
-				.withLocation(file.getAbsolutePath())
-			, file.getClass());
+						.withSize(file.length())
+						.withName(file.getName())
+						.withLocation(file.getAbsolutePath())
+				, file.getClass());
 	}
 }

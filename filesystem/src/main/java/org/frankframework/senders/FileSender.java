@@ -44,7 +44,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 		if (!outputType.equalsIgnoreCase("string") && !outputType.equalsIgnoreCase("base64")) {
 			throw new ConfigurationException(getLogPrefix(null) + "sender doesn't support outputType [" + outputType + "], use file pipe instead");
 		}
-		if (paramList!=null) {
+		if (paramList != null) {
 			paramList.configure();
 		}
 	}
@@ -53,7 +53,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			return new SenderResult(Message.asMessage(handle(message, session, getParameterList())));
-		} catch(Exception e) {
+		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 	}
@@ -83,8 +83,8 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 
 	@Override
 	public void addParameter(Parameter p) {
-		if (paramList==null) {
-			paramList=new ParameterList();
+		if (paramList == null) {
+			paramList = new ParameterList();
 		}
 		paramList.add(p);
 	}

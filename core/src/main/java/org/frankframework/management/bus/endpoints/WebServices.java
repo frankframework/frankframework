@@ -91,7 +91,7 @@ public class WebServices extends BusEndpointBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<?> getService(Message<?> message) {
 		ServiceType type = BusMessageUtils.getEnumHeader(message, "type", ServiceType.class);
-		if(type == ServiceType.OPENAPI) {
+		if (type == ServiceType.OPENAPI) {
 			return getOpenApiSpec(message);
 		} else {
 			return getWSDL(message);
@@ -103,9 +103,9 @@ public class WebServices extends BusEndpointBase {
 
 		JsonObject jsonSchema = null;
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
-		if(uri != null) {
+		if (uri != null) {
 			ApiDispatchConfig apiConfig = dispatcher.findExactMatchingConfigForUri(uri);
-			if(apiConfig == null) {
+			if (apiConfig == null) {
 				throw new BusException("unable to find Dispatch configuration for uri");
 			}
 			jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, null);
@@ -138,7 +138,7 @@ public class WebServices extends BusEndpointBase {
 		try {
 			wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
-			wsdl.setUseIncludes(useIncludes||zip);
+			wsdl.setUseIncludes(useIncludes || zip);
 			wsdl.init();
 		} catch (Exception e) {
 			throw new BusException("unable to create WSDL generator", e);
@@ -151,7 +151,7 @@ public class WebServices extends BusEndpointBase {
 				wsdl.zip(boas, servletName);
 
 				BinaryResponseMessage response = new BinaryResponseMessage(boas.toByteArray(), MediaType.APPLICATION_OCTET_STREAM);
-				response.setFilename(adapterName+".zip");
+				response.setFilename(adapterName + ".zip");
 				return response;
 
 			} else {
@@ -166,11 +166,11 @@ public class WebServices extends BusEndpointBase {
 
 	private String getServiceEndpoint(IAdapter adapter) {
 		String endpoint = "external address of ibis";
-		for(Receiver<?> receiver : adapter.getReceivers()) {
+		for (Receiver<?> receiver : adapter.getReceivers()) {
 			IListener<?> listener = receiver.getListener();
-			if(listener instanceof WebServiceListener) {
+			if (listener instanceof WebServiceListener) {
 				String address = ((WebServiceListener) listener).getAddress();
-				if(StringUtils.isNotEmpty(address)) {
+				if (StringUtils.isNotEmpty(address)) {
 					endpoint = address;
 				} else {
 					endpoint = "rpcrouter";
@@ -191,10 +191,10 @@ public class WebServices extends BusEndpointBase {
 			for (HttpMethod method : methods) {
 				ApiListener listener = config.getApiListener(method);
 				Receiver<?> receiver = listener.getReceiver();
-				IAdapter adapter = receiver == null? null : receiver.getAdapter();
+				IAdapter adapter = receiver == null ? null : receiver.getAdapter();
 				ListenerDAO dao = new ListenerDAO(listener);
-				if (adapter!=null) dao.setAdapter(adapter);
-				if (receiver!=null) dao.setReceiver(receiver);
+				if (adapter != null) dao.setAdapter(adapter);
+				if (receiver != null) dao.setReceiver(receiver);
 
 				apiListeners.add(dao);
 			}
@@ -210,7 +210,7 @@ public class WebServices extends BusEndpointBase {
 				wsdlMap.put("configuration", config.getName());
 				wsdlMap.put("adapter", adapter.getName());
 				try {
-					if(WsdlGeneratorUtils.canProvideWSDL(adapter)) { // check eligibility
+					if (WsdlGeneratorUtils.canProvideWSDL(adapter)) { // check eligibility
 						WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
 						wsdlMap.put("name", wsdl.getName());
 						wsdls.add(wsdlMap);
@@ -230,7 +230,7 @@ public class WebServices extends BusEndpointBase {
 
 		for (Configuration config : getIbisManager().getConfigurations()) {
 			for (Adapter adapter : config.getRegisteredAdapters()) {
-				for (Receiver<?> receiver: adapter.getReceivers()) {
+				for (Receiver<?> receiver : adapter.getReceivers()) {
 					IListener<?> listener = receiver.getListener();
 					if (listener instanceof RestListener) {
 						ListenerDAO dao = new ListenerDAO((RestListener) listener);

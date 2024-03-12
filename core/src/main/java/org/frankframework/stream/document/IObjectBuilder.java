@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 public interface IObjectBuilder extends AutoCloseable {
 
 	INodeBuilder addField(String fieldName) throws SAXException;
+
 	ArrayBuilder addRepeatedField(String fieldName) throws SAXException;
 
 	@Override

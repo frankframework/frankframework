@@ -30,6 +30,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,9 +65,11 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 	public Message sendMessage(String message) throws SenderException, TimeoutException {
 		return sendMessage(new Message(message), session);
 	}
+
 	public Message sendMessage(Message message) throws SenderException, TimeoutException {
 		return sendMessage(message, session);
 	}
+
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return sender.sendMessageOrThrow(message, session);
 	}
@@ -76,17 +79,17 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 	 */
 	protected Message getResource(String resource) {
 		String base = sender.getClass().getSimpleName();
-		if(StringUtils.isEmpty(base)) {
+		if (StringUtils.isEmpty(base)) {
 			Class<?> superClass = sender.getClass().getSuperclass();
-			if(superClass != null) {
+			if (superClass != null) {
 				base = superClass.getSimpleName();
 			}
 		}
-		assertTrue(StringUtils.isNotEmpty(base), "unable to determine ["+sender+"] name");
+		assertTrue(StringUtils.isNotEmpty(base), "unable to determine [" + sender + "] name");
 		String relativeUrl = FilenameUtils.normalize("/Senders/" + base + "/" + resource, true);
 
 		URL url = PipeTestBase.class.getResource(relativeUrl);
-		assertNotNull(url, "unable to find resource ["+resource+"] in path ["+relativeUrl+"]");
+		assertNotNull(url, "unable to find resource [" + resource + "] in path [" + relativeUrl + "]");
 		return new UrlMessage(url);
 	}
 

@@ -43,38 +43,39 @@ import lombok.SneakyThrows;
 /**
  * Basic implementation of <code>PipeLineSession</code>.
  *
- * @author  Johan Verrips IOS
- * @since   version 3.2.2
+ * @author Johan Verrips IOS
+ * @since version 3.2.2
  */
-public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
+public class PipeLineSession extends HashMap<String, Object> implements AutoCloseable {
 	private static final Logger LOG = LogManager.getLogger(PipeLineSession.class);
 
 	public static final String SYSTEM_MANAGED_RESOURCE_PREFIX = "__";
 
 	public static final String ORIGINAL_MESSAGE_KEY = "originalMessage";
-	public static final String MESSAGE_ID_KEY       = "mid";        // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
-	public static final String CORRELATION_ID_KEY   = "cid";       // conversationId, e.g. JmsCorrelationID.
-	public static final String STORAGE_ID_KEY       = "key";
-	public static final String MANUAL_RETRY_KEY     = SYSTEM_MANAGED_RESOURCE_PREFIX + "isManualRetry";
+	public static final String MESSAGE_ID_KEY = "mid";        // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
+	public static final String CORRELATION_ID_KEY = "cid";       // conversationId, e.g. JmsCorrelationID.
+	public static final String STORAGE_ID_KEY = "key";
+	public static final String MANUAL_RETRY_KEY = SYSTEM_MANAGED_RESOURCE_PREFIX + "isManualRetry";
 
 	public static final String TS_RECEIVED_KEY = "tsReceived";
 	public static final String TS_SENT_KEY = "tsSent";
-	public static final String SECURITY_HANDLER_KEY ="securityHandler";
+	public static final String SECURITY_HANDLER_KEY = "securityHandler";
 
-	public static final String HTTP_METHOD_KEY 	   = "HttpMethod";
-	public static final String HTTP_REQUEST_KEY    = "servletRequest";
-	public static final String HTTP_RESPONSE_KEY   = "servletResponse";
+	public static final String HTTP_METHOD_KEY = "HttpMethod";
+	public static final String HTTP_REQUEST_KEY = "servletRequest";
+	public static final String HTTP_RESPONSE_KEY = "servletResponse";
 	public static final String SERVLET_CONTEXT_KEY = "servletContext";
 
-	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
-	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
-	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
+	public static final String API_PRINCIPAL_KEY = "apiPrincipal";
+	public static final String EXIT_STATE_CONTEXT_KEY = "exitState";
+	public static final String EXIT_CODE_CONTEXT_KEY = "exitCode";
 
 	private ISecurityHandler securityHandler = null;
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
 	private final @Getter Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
+
 	public PipeLineSession() {
 		super();
 	}
@@ -102,15 +103,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Any keys present in both parent and child session will be unregistered from closing
 	 * on the closing of the child session.
 	 * <p>
-	 *     The keys which will be copied are specified in parameter {@code keysToCopy}.
-	 *     Keys names are separated by , or ; symbols.
-	 *     If that parameter is {@code null} then all keys will be copied, if it is an
-	 *     empty string then no keys will be copied.
+	 * The keys which will be copied are specified in parameter {@code keysToCopy}.
+	 * Keys names are separated by , or ; symbols.
+	 * If that parameter is {@code null} then all keys will be copied, if it is an
+	 * empty string then no keys will be copied.
 	 * </p>
+	 *
 	 * @param keysToCopy Keys to be copied, separated by {@value ,} or {@value ;}.
 	 *                   If {@code null} then all keys will be copied.
 	 *                   If an empty string then no keys will be copied.
-	 * @param to Parent {@link PipeLineSession} or {@link Map}.
+	 * @param to         Parent {@link PipeLineSession} or {@link Map}.
 	 */
 	public void mergeToParentSession(String keysToCopy, Map<String, Object> to) {
 		if (to == null) {
@@ -120,7 +122,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		copyIfExists(EXIT_CODE_CONTEXT_KEY, to);
 		copyIfExists(EXIT_STATE_CONTEXT_KEY, to);
 		if (StringUtils.isNotEmpty(keysToCopy) && !"*".equals(keysToCopy)) {
-			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
+			StringTokenizer st = new StringTokenizer(keysToCopy, ",;");
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
 				to.put(key, get(key));
@@ -156,7 +158,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private static boolean shouldCloseSessionResource(final String key, final Object value) {
 		return value instanceof AutoCloseable &&
-			!key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
+				!key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
 	}
 
 	@Override
@@ -186,18 +188,19 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Retrieves the value associated with the specified key and returns it as a {@link Message} object.
 	 * If the key does not exist or the value is null, it returns a null message.
 	 * <p>
-	 *     <b>NB:</b> If the underlying value was a stream, reading the message will read the underlying
-	 *     stream. The value can be preserved in the message, but the underlying stream can not be
-	 *     preserved and reading the same session key again will effectively return an empty value.
+	 * <b>NB:</b> If the underlying value was a stream, reading the message will read the underlying
+	 * stream. The value can be preserved in the message, but the underlying stream can not be
+	 * preserved and reading the same session key again will effectively return an empty value.
 	 * </p>
+	 *
 	 * @param key The key for which to retrieve the value.
 	 * @return The value associated with the key encapsulated in a {@link Message} object.
-	 *         If the key does not exist or the value is null, a null message is returned.
+	 * 		If the key does not exist or the value is null, a null message is returned.
 	 */
 	@Nonnull
 	public Message getMessage(String key) {
 		Object obj = get(key);
-		if(obj != null) {
+		if (obj != null) {
 			return Message.asMessage(obj);
 		}
 		return Message.nullMessage();
@@ -209,9 +212,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	public static Instant getTsReceived(Map<String, Object> context) {
 		Object tsReceived = context.get(PipeLineSession.TS_RECEIVED_KEY);
-		if(tsReceived instanceof Instant) {
+		if (tsReceived instanceof Instant) {
 			return (Instant) tsReceived;
-		} else if(tsReceived instanceof String) {
+		} else if (tsReceived instanceof String) {
 			return DateFormatUtils.parseToInstant((String) tsReceived, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		}
 		return null;
@@ -223,9 +226,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	public static Instant getTsSent(Map<String, Object> context) {
 		Object tsSent = context.get(PipeLineSession.TS_SENT_KEY);
-		if(tsSent instanceof Instant) {
+		if (tsSent instanceof Instant) {
 			return (Instant) tsSent;
-		} else if(tsSent instanceof String) {
+		} else if (tsSent instanceof String) {
 			return DateFormatUtils.parseToInstant((String) tsSent, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		}
 		return null;
@@ -277,10 +280,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	/**
 	 * Get value of a PipeLineSession key as String.
 	 * <p>
-	 *     <b>NB:</b> If the value was a stream, the stream is read and closed.
-	 *     If the value was another kind of {@link AutoCloseable}, then a side effect of this method
-	 *     may also be the value was closed.
+	 * <b>NB:</b> If the value was a stream, the stream is read and closed.
+	 * If the value was another kind of {@link AutoCloseable}, then a side effect of this method
+	 * may also be the value was closed.
 	 * </p>
+	 *
 	 * @param key Session key to get.
 	 * @return Value of the session key as String, or NULL of either the key was not present or had a NULL value.
 	 */
@@ -309,7 +313,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>String</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 *
+	 * @param key          the referenced key
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return String
 	 */
@@ -323,7 +328,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>boolean</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 *
+	 * @param key          the referenced key
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return boolean
 	 */
@@ -331,7 +337,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Boolean) {
+		if (ob instanceof Boolean) {
 			return (Boolean) ob;
 		}
 		return "true".equalsIgnoreCase(this.getString(key));
@@ -339,6 +345,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>Boolean</code> value from the PipeLineSession
+	 *
 	 * @param key the referenced key
 	 * @return Boolean
 	 */
@@ -347,7 +354,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return null;
 
-		if(ob instanceof Boolean) {
+		if (ob instanceof Boolean) {
 			return (Boolean) ob;
 		}
 		return "true".equalsIgnoreCase(this.getString(key));
@@ -355,7 +362,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves an <code>int</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 *
+	 * @param key          the referenced key
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return int
 	 */
@@ -363,7 +371,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Number) {
+		if (ob instanceof Number) {
 			return ((Number) ob).intValue();
 		}
 		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
@@ -371,6 +379,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves an <code>Integer</code> value from the PipeLineSession
+	 *
 	 * @param key the referenced key
 	 * @return Integer
 	 */
@@ -379,10 +388,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return null;
 
-		if(ob instanceof Integer) {
+		if (ob instanceof Integer) {
 			return (Integer) ob;
 		}
-		if(ob instanceof Number) {
+		if (ob instanceof Number) {
 			return ((Number) ob).intValue();
 		}
 		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
@@ -390,7 +399,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>long</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 *
+	 * @param key          the referenced key
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return long
 	 */
@@ -398,7 +408,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Number) {
+		if (ob instanceof Number) {
 			return ((Number) ob).longValue();
 		}
 		return Long.parseLong(Objects.requireNonNull(this.getString(key)));
@@ -406,7 +416,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>double</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 *
+	 * @param key          the referenced key
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return double
 	 */
@@ -414,14 +425,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Number) {
+		if (ob instanceof Number) {
 			return ((Number) ob).doubleValue();
 		}
 		return Double.parseDouble(Objects.requireNonNull(this.getString(key)));
 	}
 
 	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
-		closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
+		closeables.put(resource, ClassUtils.nameOf(resource) + " of " + requester);
 	}
 
 	public boolean isScheduledForCloseOnExit(AutoCloseable message) {

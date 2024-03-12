@@ -32,9 +32,11 @@ import org.frankframework.testutil.VirtualReader;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.SAXException;
 
 public class JdbcUtilTest {
@@ -50,7 +52,8 @@ public class JdbcUtilTest {
 		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
 			connection.createStatement().execute("DROP TABLE TEMP");
 		}
-		connection.createStatement().execute("CREATE TABLE TEMP(TKEY INT PRIMARY KEY, TVARCHAR VARCHAR(100), TVARCHAR2 VARCHAR(100), TINT INT, TDATETIME DATETIME, TBLOB BLOB, TCLOB CLOB)");
+		connection.createStatement()
+				.execute("CREATE TABLE TEMP(TKEY INT PRIMARY KEY, TVARCHAR VARCHAR(100), TVARCHAR2 VARCHAR(100), TINT INT, TDATETIME DATETIME, TBLOB BLOB, TCLOB CLOB)");
 	}
 
 	@AfterEach
@@ -202,7 +205,7 @@ public class JdbcUtilTest {
 	public void testWarningsToString() {
 		String expected = getExpectedWarningXml();
 		String actual = JdbcUtil.warningsToString(getWarnings());
-		MatchUtils.assertXmlEquals(expected,actual);
+		MatchUtils.assertXmlEquals(expected, actual);
 	}
 
 	@Test
@@ -212,14 +215,14 @@ public class JdbcUtilTest {
 		PrettyPrintFilter ppf = new PrettyPrintFilter(writer);
 		try (SaxElementBuilder seb = new SaxElementBuilder(ppf)) {
 			JdbcUtil.warningsToXml(getWarnings(), seb);
-			MatchUtils.assertXmlEquals(expected,writer.toString());
+			MatchUtils.assertXmlEquals(expected, writer.toString());
 		}
 	}
 
 	private String getExpectedWarningXml() {
-		return "<warnings>\n"+
-				"<warning errorCode=\"111\" sqlState=\"SQLState 1\" cause=\"java.lang.NullPointerException\" message=\"warningReason1: tja\" />\n"+
-				"<warning errorCode=\"222\" sqlState=\"SQLState 2\" cause=\"java.lang.NullPointerException\" message=\"warningReason2: och\" />\n"+
+		return "<warnings>\n" +
+				"<warning errorCode=\"111\" sqlState=\"SQLState 1\" cause=\"java.lang.NullPointerException\" message=\"warningReason1: tja\" />\n" +
+				"<warning errorCode=\"222\" sqlState=\"SQLState 2\" cause=\"java.lang.NullPointerException\" message=\"warningReason2: och\" />\n" +
 				"</warnings>";
 	}
 

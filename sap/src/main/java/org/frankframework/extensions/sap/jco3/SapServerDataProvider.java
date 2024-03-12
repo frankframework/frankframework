@@ -19,14 +19,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
-
 import com.sap.conn.jco.ext.DataProviderException;
 import com.sap.conn.jco.ext.Environment;
 import com.sap.conn.jco.ext.ServerDataEventListener;
 import com.sap.conn.jco.ext.ServerDataProvider;
 
 import lombok.Getter;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.util.LogUtil;
 
@@ -35,7 +34,7 @@ public class SapServerDataProvider implements ServerDataProvider {
 
 	private @Getter ServerDataEventListener serverDataEventListener;
 
-	private static SapServerDataProvider self=null;
+	private static SapServerDataProvider self = null;
 
 	private final Map<String, SapListenerImpl> listeners = new LinkedHashMap<>();
 
@@ -43,8 +42,8 @@ public class SapServerDataProvider implements ServerDataProvider {
 	}
 
 	public static SapServerDataProvider getInstance() {
-		if (self==null) {
-			self=new SapServerDataProvider();
+		if (self == null) {
+			self = new SapServerDataProvider();
 			log.debug("register ServerDataProvider");
 			Environment.registerServerDataProvider(self);
 		}
@@ -58,17 +57,17 @@ public class SapServerDataProvider implements ServerDataProvider {
 
 	@Override
 	public Properties getServerProperties(String servername) throws DataProviderException {
-		log.info("providing server properties for ["+servername+"]");
+		log.info("providing server properties for [" + servername + "]");
 		Properties serverProperties = new Properties();
 		SapListenerImpl listener = listeners.get(servername);
-		if (listener==null) {
-			throw new DataProviderException(DataProviderException.Reason.INVALID_CONFIGURATION, "listener ["+servername+"] not registered", null);
+		if (listener == null) {
+			throw new DataProviderException(DataProviderException.Reason.INVALID_CONFIGURATION, "listener [" + servername + "] not registered", null);
 		}
 		SapSystemImpl sapSystem;
 		try {
 			sapSystem = listener.getSapSystem();
 		} catch (SapException e) {
-			throw new DataProviderException(DataProviderException.Reason.INVALID_CONFIGURATION, "cannot find SapSystem for listener ["+servername+"] ", e);
+			throw new DataProviderException(DataProviderException.Reason.INVALID_CONFIGURATION, "cannot find SapSystem for listener [" + servername + "] ", e);
 		}
 		serverProperties.setProperty(ServerDataProvider.JCO_GWHOST, sapSystem.getGwhost());
 		serverProperties.setProperty(ServerDataProvider.JCO_GWSERV, sapSystem.getGwserv());
@@ -77,11 +76,11 @@ public class SapServerDataProvider implements ServerDataProvider {
 		serverProperties.setProperty(ServerDataProvider.JCO_CONNECTION_COUNT, listener.getConnectionCount());
 		serverProperties.setProperty(ServerDataProvider.JCO_APPLICATION, listener.getName());
 
-		if(sapSystem.isSncEnabled()) {
+		if (sapSystem.isSncEnabled()) {
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MODE, "1");
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
-			serverProperties.setProperty(ServerDataProvider.JCO_SNC_QOP, sapSystem.getSncQop()+"");
+			serverProperties.setProperty(ServerDataProvider.JCO_SNC_QOP, sapSystem.getSncQop() + "");
 		}
 
 		return serverProperties;
@@ -89,7 +88,7 @@ public class SapServerDataProvider implements ServerDataProvider {
 
 	@Override
 	public void setServerDataEventListener(ServerDataEventListener serverDataEventListener) {
-		log.debug("setting new serverDataEventListener ["+serverDataEventListener.toString()+"]");
+		log.debug("setting new serverDataEventListener [" + serverDataEventListener.toString() + "]");
 		this.serverDataEventListener = serverDataEventListener;
 	}
 

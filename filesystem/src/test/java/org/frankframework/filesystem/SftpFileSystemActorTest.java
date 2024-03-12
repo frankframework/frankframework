@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.random.RandomGenerator;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
@@ -14,14 +17,11 @@ import org.apache.sshd.server.auth.hostbased.StaticHostBasedAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.frankframework.filesystem.ftp.SftpFileRef;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 /**
  * This test class is created to test both SFtpFileSystem and SFtpFileSystemSender classes.
  *
  * @author Niels Meijer
- *
  */
 class SftpFileSystemActorTest extends FileSystemActorTest<SftpFileRef, SftpFileSystem> {
 
@@ -36,7 +36,7 @@ class SftpFileSystemActorTest extends FileSystemActorTest<SftpFileRef, SftpFileS
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
-		if("localhost".equals(host)) {
+		if ("localhost".equals(host)) {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
 			sshd = createSshServer(username, password);
@@ -79,8 +79,8 @@ class SftpFileSystemActorTest extends FileSystemActorTest<SftpFileRef, SftpFileS
 	@Override
 	@AfterEach
 	public void tearDown() throws Exception {
-		if(sshd != null) {
-			if(sshd.isStarted()) sshd.stop();
+		if (sshd != null) {
+			if (sshd.isStarted()) sshd.stop();
 			sshd.close(true);
 			sshd = null;
 		}

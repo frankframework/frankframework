@@ -13,6 +13,7 @@ import java.util.SortedSet;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,19 +27,23 @@ public class ServiceDispatcherTest {
 		// Add in non-alphabetical order for testing getListenerNames()
 
 		// TEST-CLIENT-2 will always return a NULL message
-		serviceDispatcher.registerServiceClient("TEST-CLIENT-2",
-			((message, session) -> null));
+		serviceDispatcher.registerServiceClient(
+				"TEST-CLIENT-2",
+				((message, session) -> null)
+		);
 
 		// TEST-CLIENT-1 will echo the message
-		serviceDispatcher.registerServiceClient("TEST-CLIENT-1",
-			((message, session) -> message));
+		serviceDispatcher.registerServiceClient(
+				"TEST-CLIENT-1",
+				((message, session) -> message)
+		);
 	}
 
 	@AfterEach
 	public void tearDown() {
 		serviceDispatcher
-			.getRegisteredListenerNames()
-			.forEach(serviceDispatcher::unregisterServiceClient);
+				.getRegisteredListenerNames()
+				.forEach(serviceDispatcher::unregisterServiceClient);
 	}
 
 	@Test
@@ -113,7 +118,7 @@ public class ServiceDispatcherTest {
 
 		// Act
 		// This should not throw exception
-		assertThrows(ListenerException.class, ()->serviceDispatcher.registerServiceClient("TEST-CLIENT-1", ((message, session) -> null)));
+		assertThrows(ListenerException.class, () -> serviceDispatcher.registerServiceClient("TEST-CLIENT-1", ((message, session) -> null)));
 
 		// Assert
 		assertTrue(serviceDispatcher.isRegisteredServiceListener("TEST-CLIENT-1"), "Expected to have service-name [TEST-CLIENT-1] after registration");

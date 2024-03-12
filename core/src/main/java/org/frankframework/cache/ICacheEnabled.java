@@ -21,12 +21,13 @@ package org.frankframework.cache;
  * They must call cache.configure() once in their own configure() method
  * They must call cache.open() and cache.close() from their own open() resp. close().
  *
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
-public interface ICacheEnabled<K,V> {
+public interface ICacheEnabled<K, V> {
 
 	/** optional {@link EhCache cache} definition */
-	void setCache(ICache<K,V> cache);
-	ICache<K,V> getCache();
+	void setCache(ICache<K, V> cache);
+
+	ICache<K, V> getCache();
 }

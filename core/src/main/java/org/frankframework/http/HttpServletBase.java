@@ -23,7 +23,6 @@ import org.frankframework.lifecycle.DynamicRegistration;
  * Base class for @IbisInitializer capable servlets
  *
  * @author Niels Meijer
- *
  */
 public abstract class HttpServletBase extends HttpServlet implements DynamicRegistration.Servlet {
 

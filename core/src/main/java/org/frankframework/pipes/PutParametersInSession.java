@@ -28,9 +28,8 @@ import org.frankframework.stream.Message;
 /**
  * Stores parameter values in the PipeLineSession.
  *
+ * @author Peter Leeuwenburgh
  * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name
- *
- * @author  Peter Leeuwenburgh
  */
 @Deprecated
 @ConfigurationWarning("Please replace with PutInSessionPipe")
@@ -43,8 +42,8 @@ public class PutParametersInSession extends FixedForwardPipe {
 			try {
 				ParameterValueList pvl = parameterList.getValues(message, session);
 				if (pvl != null) {
-					for(ParameterValue pv : pvl) {
-						String name  = pv.getName();
+					for (ParameterValue pv : pvl) {
+						String name = pv.getName();
 						Object value = pv.getValue();
 						session.put(name, value);
 						log.debug("stored [{}] in pipeLineSession under key [{}]", value, name);

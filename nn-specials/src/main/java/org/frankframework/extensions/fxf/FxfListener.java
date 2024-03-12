@@ -19,9 +19,8 @@ import java.io.File;
 
 import javax.jms.Message;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.ListenerException;
@@ -61,7 +60,7 @@ public class FxfListener extends EsbJmsListener {
 		if (StringUtils.isEmpty(getJmsRealmName())) {
 			setJmsRealm("qcf_tibco_p2p_ff");
 		}
-		if (getMessageProtocol()==null) {
+		if (getMessageProtocol() == null) {
 			setMessageProtocol(MessageProtocol.FF);
 		}
 		if (StringUtils.isEmpty(getDestinationName())) {
@@ -137,6 +136,7 @@ public class FxfListener extends EsbJmsListener {
 
 	/**
 	 * name of the session key to store the name of the received file in
+	 *
 	 * @ff.default fxfFile
 	 */
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
@@ -145,6 +145,7 @@ public class FxfListener extends EsbJmsListener {
 
 	/**
 	 * If set to <code>true</code>, the received file is moved after being processed
+	 *
 	 * @ff.default true
 	 */
 	public void setMoveProcessedFile(boolean b) {
@@ -153,6 +154,7 @@ public class FxfListener extends EsbJmsListener {
 
 	/**
 	 * (only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed
+	 *
 	 * @ff.default processed
 	 */
 	public void setProcessedSiblingDirectory(String processedSiblingDirectory) {
@@ -161,6 +163,7 @@ public class FxfListener extends EsbJmsListener {
 
 	/**
 	 * (only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist
+	 *
 	 * @ff.default false
 	 */
 	public void setCreateProcessedDirectory(boolean b) {

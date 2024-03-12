@@ -7,7 +7,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.SenderException;
-
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.stream.Message;
 
@@ -30,9 +29,9 @@ public class CmisDeleteAction extends CmisSenderTestBase {
 		sender.configure();
 
 		SenderException exception = assertThrows(
-			SenderException.class, () -> {
-				sendMessage(NOT_ALLOWED_SELECTOR);
-			}
+				SenderException.class, () -> {
+					sendMessage(NOT_ALLOWED_SELECTOR);
+				}
 		);
 		assertThat(exception.getMessage(), Matchers.endsWith("Document cannot be deleted"));
 	}

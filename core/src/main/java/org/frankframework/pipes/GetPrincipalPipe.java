@@ -18,7 +18,6 @@ package org.frankframework.pipes;
 import java.security.Principal;
 
 import lombok.Getter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -32,9 +31,8 @@ import org.frankframework.stream.Message;
 /**
  * Returns the name of the user executing the request.
  *
- *
- * @author  Gerrit van Brakel
- * @since   4.7
+ * @author Gerrit van Brakel
+ * @since 4.7
  */
 @ElementType(ElementTypes.SESSION)
 public class GetPrincipalPipe extends FixedForwardPipe {
@@ -46,37 +44,37 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 		super.configure();
 		if (StringUtils.isNotEmpty(getNotFoundForwardName())) {
 			notFoundForward = findForward(getNotFoundForwardName());
-			if (notFoundForward==null) {
-				throw new ConfigurationException("notInRoleForwardName ["+getNotFoundForwardName()+"] not found");
+			if (notFoundForward == null) {
+				throw new ConfigurationException("notInRoleForwardName [" + getNotFoundForwardName() + "] not found");
 			}
 		}
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException{
-		Principal principal=session.getSecurityHandler().getPrincipal();
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		Principal principal = session.getSecurityHandler().getPrincipal();
 		String principalName = "";
-		if (principal==null) {
+		if (principal == null) {
 			log.warn("no principal found");
-			if (notFoundForward!=null) {
+			if (notFoundForward != null) {
 				return new PipeRunResult(notFoundForward, principalName);
 			}
 		} else {
 			try {
 				principalName = principal.getName();
 			} catch (Throwable e) {
-				throw new PipeRunException(this,"got exception getting name from principal",e);
+				throw new PipeRunException(this, "got exception getting name from principal", e);
 			}
 		}
 
-		if(StringUtils.isEmpty(principalName)){
+		if (StringUtils.isEmpty(principalName)) {
 			log.warn("empty principal found");
-			if (notFoundForward!=null) {
+			if (notFoundForward != null) {
 				return new PipeRunResult(notFoundForward, principalName);
 			}
 		}
 
-		return new PipeRunResult(getSuccessForward(),principalName);
+		return new PipeRunResult(getSuccessForward(), principalName);
 	}
 
 	/**

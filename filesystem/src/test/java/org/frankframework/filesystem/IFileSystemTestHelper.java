@@ -6,9 +6,10 @@ import java.io.OutputStream;
 public interface IFileSystemTestHelper {
 
 	public void setUp() throws Exception;
+
 	public void tearDown() throws Exception;
 
-		/**
+	/**
 	 * Checks if a file with the specified name exists.
 	 */
 	public boolean _fileExists(String folder, String filename) throws Exception;

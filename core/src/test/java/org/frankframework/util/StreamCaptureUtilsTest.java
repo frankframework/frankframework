@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.Arrays;
 
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.Test;
 
 class StreamCaptureUtilsTest {
@@ -23,11 +24,11 @@ class StreamCaptureUtilsTest {
 			out.flush();
 			assertEquals("D, E, ", boas.toString());
 
-			for (int i = 0; i < bytes.length/4; i++) {
-				if(i%2==0) {
+			for (int i = 0; i < bytes.length / 4; i++) {
+				if (i % 2 == 0) {
 					out.mark(3);
 				}
-				out.write(bytes, i*4, 4);
+				out.write(bytes, i * 4, 4);
 			}
 		}
 

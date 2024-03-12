@@ -19,11 +19,10 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import lombok.extern.log4j.Log4j2;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
-import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -39,7 +38,7 @@ import org.frankframework.util.RunState;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
- *
+ * <p>
  * Links to <a href="https://www.eclipse.org/paho/files/javadoc" target="_blank">https://www.eclipse.org/paho/files/javadoc</a> are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
  *
  * @author Jaco de Groot
@@ -133,7 +132,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	public void messageArrived(String topic, MqttMessage message) {
 		try (PipeLineSession session = new PipeLineSession()) {
 			messageHandler.processRawMessage(this, wrapRawMessage(message, session), session, false);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			log.error("Could not process raw message", e);
 		}
 	}

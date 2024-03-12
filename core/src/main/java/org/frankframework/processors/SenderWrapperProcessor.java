@@ -25,8 +25,8 @@ import org.frankframework.stream.Message;
 /**
  * Interface for handlers in SenderWrapper processor chain.
  *
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
 public interface SenderWrapperProcessor {
 

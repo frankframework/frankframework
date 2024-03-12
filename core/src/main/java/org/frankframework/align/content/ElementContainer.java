@@ -20,6 +20,8 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 public interface ElementContainer {
 
 	public void setNull();
+
 	public void setAttribute(String Name, String value, XSSimpleTypeDefinition attTypeDefinition);
+
 	public void characters(char[] ch, int start, int length);
 }

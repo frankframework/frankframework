@@ -24,7 +24,7 @@ import org.frankframework.util.EnumUtils;
 
 public class StatsDRegistryConfigurator extends MetricsRegistryConfiguratorBase<StatsdConfig> {
 
-	private final String FLAVOR_PROPERTY="flavor";
+	private final String FLAVOR_PROPERTY = "flavor";
 
 	private class Config extends MeterRegistryConfigBase implements StatsdConfig {
 		@Override

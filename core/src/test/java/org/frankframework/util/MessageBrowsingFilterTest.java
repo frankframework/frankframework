@@ -20,6 +20,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
+
 import org.junit.jupiter.api.BeforeEach;
 
 @WithLiquibase(tableName = MessageBrowsingFilterTest.tableName)
@@ -36,7 +37,7 @@ public class MessageBrowsingFilterTest {
 		storage = env.createBean(JdbcTransactionalStorage.class);
 		storage.setSlotId("MessageBrowsingFilter");
 		storage.setTableName(tableName);
-		storage.setSequenceName("SEQ_"+tableName);
+		storage.setSequenceName("SEQ_" + tableName);
 		listener = new JavaListener();
 	}
 
@@ -48,9 +49,9 @@ public class MessageBrowsingFilterTest {
 		storage.storeMessage("1", "corrId", new Date(), "comments", "label", messageRoot);
 		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", "out filter");
 
-		int count = 0 ;
-		try(IMessageBrowsingIterator iterator = storage.getIterator()){
-			while(iterator.hasNext()) {
+		int count = 0;
+		try (IMessageBrowsingIterator iterator = storage.getIterator()) {
+			while (iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
 					count += filter.matchAny(item) ? 1 : 0;
 				}
@@ -63,8 +64,8 @@ public class MessageBrowsingFilterTest {
 	private void fillTable(DatabaseTestEnvironment env) throws Exception {
 		IDbmsSupport dbmsSupport = env.getDbmsSupport();
 
-		StringBuilder sb = new StringBuilder("INSERT INTO "+tableName+" (" +
-				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
+		StringBuilder sb = new StringBuilder("INSERT INTO " + tableName + " (" +
+				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField() + "," : "")
 				+ storage.getTypeField() + ","
 				+ storage.getSlotIdField() + ","
 				+ storage.getHostField() + ","
@@ -72,30 +73,30 @@ public class MessageBrowsingFilterTest {
 				+ storage.getCorrelationIdField() + ","
 				+ storage.getDateField() + ","
 				+ storage.getCommentField() + ","
-				+ storage.getExpiryDateField()  +","
+				+ storage.getExpiryDateField() + ","
 				+ storage.getLabelField() + ")");
 		Date date = new Date();
 
-		if(dbmsSupport.getDbms() == Dbms.ORACLE) {
+		if (dbmsSupport.getDbms() == Dbms.ORACLE) {
 			sb.append(" WITH valuesTable AS ("
-					+ "SELECT 1,'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 2,'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 3,'M','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 4,'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 5,'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 6,'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL) SELECT * FROM valuesTable");
+					+ "SELECT 1,'E','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860")) + ",'comments'," + dbmsSupport.getDatetimeLiteral(date) + ",'label' FROM DUAL UNION ALL "
+					+ "SELECT 2,'L','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860")) + ",'comments'," + dbmsSupport.getDatetimeLiteral(date) + ",'label' FROM DUAL UNION ALL "
+					+ "SELECT 3,'M','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860")) + ",'comments'," + dbmsSupport.getDatetimeLiteral(date) + ",'label' FROM DUAL UNION ALL "
+					+ "SELECT 4,'E','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860")) + ",'comments'," + dbmsSupport.getDatetimeLiteral(date) + ",'label' FROM DUAL UNION ALL "
+					+ "SELECT 5,'L','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860")) + ",'comments'," + dbmsSupport.getDatetimeLiteral(date) + ",'label' FROM DUAL UNION ALL "
+					+ "SELECT 6,'E','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860")) + ",'comments'," + dbmsSupport.getDatetimeLiteral(date) + ",'label' FROM DUAL) SELECT * FROM valuesTable");
 		} else {
 			sb.append(" VALUES"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "1," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "2," : "")+"'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "3," : "")+"'M','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "4," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "5," : "")+"'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "6," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label')");
+					+ "(" + (dbmsSupport.autoIncrementKeyMustBeInserted() ? "1," : "") + "'E','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860")) + ",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "(" + (dbmsSupport.autoIncrementKeyMustBeInserted() ? "2," : "") + "'L','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860")) + ",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "(" + (dbmsSupport.autoIncrementKeyMustBeInserted() ? "3," : "") + "'M','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860")) + ",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "(" + (dbmsSupport.autoIncrementKeyMustBeInserted() ? "4," : "") + "'E','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860")) + ",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "(" + (dbmsSupport.autoIncrementKeyMustBeInserted() ? "5," : "") + "'L','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860")) + ",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "(" + (dbmsSupport.autoIncrementKeyMustBeInserted() ? "6," : "") + "'E','MessageBrowsingFilter','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860")) + ",'comments','2021-07-13 11:04:19.860','label')");
 		}
 
-		try(Connection connection = env.getConnection()) {
-			try(PreparedStatement stmt = connection.prepareStatement(sb.toString())) {
+		try (Connection connection = env.getConnection()) {
+			try (PreparedStatement stmt = connection.prepareStatement(sb.toString())) {
 				stmt.execute();
 			}
 		}
@@ -108,9 +109,9 @@ public class MessageBrowsingFilterTest {
 
 		fillTable(env);
 
-		int count = 0 ;
-		try(IMessageBrowsingIterator iterator = storage.getIterator()){
-			while(iterator.hasNext()) {
+		int count = 0;
+		try (IMessageBrowsingIterator iterator = storage.getIterator()) {
+			while (iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
 					count += filter.matchAny(item) ? 1 : 0;
 				}
@@ -129,14 +130,14 @@ public class MessageBrowsingFilterTest {
 		fillTable(env);
 
 		int count = 0;
-		try(IMessageBrowsingIterator iterator = storage.getIterator()){
-			while(iterator.hasNext()) {
+		try (IMessageBrowsingIterator iterator = storage.getIterator()) {
+			while (iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
 					count += filter.matchAny(item) ? 1 : 0;
 				}
 			}
 		}
-		assertEquals(3,count);
+		assertEquals(3, count);
 	}
 
 	@TxManagerTest
@@ -164,9 +165,9 @@ public class MessageBrowsingFilterTest {
 		storage.storeMessage("1", "corrId", new Date(), "comments", "label", messageInFilter);
 		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", messageOutOfFilter);
 
-		int count = 0 ;
-		try(IMessageBrowsingIterator iterator = storage.getIterator()){
-			while(iterator.hasNext()) {
+		int count = 0;
+		try (IMessageBrowsingIterator iterator = storage.getIterator()) {
+			while (iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
 					count += filter.matchAny(item) ? 1 : 0;
 				}

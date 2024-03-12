@@ -83,7 +83,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 		int numberOfBeans = scanner.scan(packageName);
 		log.info("found [{}] BusAware beans", numberOfBeans);
-		if(numberOfBeans < 1) {
+		if (numberOfBeans < 1) {
 			throw new IllegalStateException("did not find any BusAware beans");
 		}
 
@@ -96,7 +96,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		SubscribableChannel inputChannel = findChannel(beanClass); //Validate the channel exists before continuing
 
 		BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
-		MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
+		MethodDescriptor[] methodDescriptors = beanInfo.getMethodDescriptors();
 		TopicSelector classTopicSelector = AnnotationUtils.findAnnotation(beanClass, TopicSelector.class);
 		Object bean = SpringUtils.createBean(applicationContext, beanClass);
 
@@ -104,11 +104,11 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 			Method method = methodDescriptor.getMethod();
 
 			TopicSelector methodTopicSelector = AnnotationUtils.findAnnotation(method, TopicSelector.class);
-			if(methodTopicSelector != null) {
+			if (methodTopicSelector != null) {
 				registerServiceActivator(bean, method, inputChannel, methodTopicSelector.value());
-			} else if(classTopicSelector != null) {
+			} else if (classTopicSelector != null) {
 				ActionSelector action = AnnotationUtils.findAnnotation(method, ActionSelector.class);
-				if(action != null) {
+				if (action != null) {
 					registerServiceActivator(bean, method, inputChannel, classTopicSelector.value());
 				}
 			}
@@ -116,16 +116,16 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	}
 
 	private void registerServiceActivator(Object bean, Method method, SubscribableChannel channel, BusTopic topic) {
-		String componentName = bean.getClass().getSimpleName()+"."+method.getName();
+		String componentName = bean.getClass().getSimpleName() + "." + method.getName();
 		ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(bean, method);
 //		serviceActivator.setRequiresReply(method.getReturnType() != void.class); //forces methods to return something, but this might not be required
 		serviceActivator.setComponentName(componentName);
-		serviceActivator.setManagedName("@"+componentName);
+		serviceActivator.setManagedName("@" + componentName);
 		initializeBean(serviceActivator);
 
 		MessageSelectorChain selectors = new MessageSelectorChain();
 		ActionSelector action = AnnotationUtils.findAnnotation(method, ActionSelector.class);
-		if(action != null) {
+		if (action != null) {
 			selectors.add(headerSelector(action.value(), BusAction.ACTION_HEADER_NAME));
 		}
 		selectors.add(headerSelector(topic, BusTopic.TOPIC_HEADER_NAME));
@@ -143,8 +143,8 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		chain.setHandlers(handlers);
 		chain.setComponentName(componentName);
 		initializeBean(chain);
-		if(channel.subscribe(chain)) {
-			log.info("registered new ServiceActivator [{}] on topic [{}] with action [{}] requires-reply [{}]", componentName, topic, (action != null?action.value():"*"), method.getReturnType() != void.class);
+		if (channel.subscribe(chain)) {
+			log.info("registered new ServiceActivator [{}] on topic [{}] with action [{}] requires-reply [{}]", componentName, topic, (action != null ? action.value() : "*"), method.getReturnType() != void.class);
 		} else {
 			log.error("unable to register ServiceActivator [{}]", componentName);
 		}
@@ -170,7 +170,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 	private SubscribableChannel findChannel(Class<?> beanClass) {
 		BusAware busAware = AnnotationUtils.findAnnotation(beanClass, BusAware.class);
-		if(busAware == null) {
+		if (busAware == null) {
 			throw new IllegalStateException("found a bean that does not implement BusAware");
 		}
 		String busName = busAware.value();

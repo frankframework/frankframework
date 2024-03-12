@@ -14,7 +14,7 @@ public class TestClassLoader extends ClassLoaderBase {
 
 	@Override
 	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
-		if("ConfigWithNullClassLoader".equals(configurationName)) {
+		if ("ConfigWithNullClassLoader".equals(configurationName)) {
 			setReportLevel("INFO");
 			throw new ClassLoaderException("test-exception");
 		}
@@ -24,7 +24,7 @@ public class TestClassLoader extends ClassLoaderBase {
 
 	@Override
 	public URL getLocalResource(String name) {
-		if("SpringConfigurationContext.xml".equals(name)) {
+		if ("SpringConfigurationContext.xml".equals(name)) {
 			throw new IllegalStateException("unable to instantiate this Spring context!");
 		}
 		return null;

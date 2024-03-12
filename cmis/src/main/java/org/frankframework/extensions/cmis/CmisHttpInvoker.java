@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.chemistry.opencmis.client.bindings.impl.ClientVersion;
 import org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHelper;
 import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
@@ -41,8 +42,6 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StreamUtil;
 
-import lombok.extern.log4j.Log4j2;
-
 @Log4j2
 public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
@@ -50,7 +49,8 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 	//To stub during testing
 	protected CmisHttpSender createSender() {
-		CmisHttpSender cmisHttpSender = new CmisHttpSender() {};
+		CmisHttpSender cmisHttpSender = new CmisHttpSender() {
+		};
 		log.debug("CmisHttpInvoker [{}] created new CmisHttpSender [{}]", this, cmisHttpSender);
 		return cmisHttpSender;
 	}
@@ -67,61 +67,61 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 	}
 
 	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
-		if(sender == null) {
+		if (sender == null) {
 			log.debug("creating new CmisHttpInvoker");
 			sender = createSender();
 
 			sender.setUrlParam("url");
 
 			//Auth
-			if(session.get(SessionParameter.USER) != null)
+			if (session.get(SessionParameter.USER) != null)
 				sender.setUsername((String) session.get(SessionParameter.USER));
-			if(session.get(SessionParameter.PASSWORD) != null)
+			if (session.get(SessionParameter.PASSWORD) != null)
 				sender.setPassword((String) session.get(SessionParameter.PASSWORD));
 
 			//Proxy
-			if(session.get("proxyHost") != null) {
+			if (session.get("proxyHost") != null) {
 				sender.setProxyHost((String) session.get("proxyHost"));
-				if(session.get("proxyPort") != null)
+				if (session.get("proxyPort") != null)
 					sender.setProxyPort(Integer.parseInt((String) session.get("proxyPort")));
-				if(session.get("proxyUsername") != null)
+				if (session.get("proxyUsername") != null)
 					sender.setProxyUsername((String) session.get("proxyUsername"));
-				if(session.get("proxyPassword") != null)
+				if (session.get("proxyPassword") != null)
 					sender.setProxyPassword((String) session.get("proxyPassword"));
 			}
 
 			//SSL
-			if(session.get("keystoreUrl") != null)
+			if (session.get("keystoreUrl") != null)
 				sender.setKeystore((String) session.get("keystoreUrl"));
-			if(session.get("keystorePassword") != null)
+			if (session.get("keystorePassword") != null)
 				sender.setKeystorePassword((String) session.get("keystorePassword"));
-			if(session.get("keystoreAlias") != null)
+			if (session.get("keystoreAlias") != null)
 				sender.setKeystoreAlias((String) session.get("keystoreAlias"));
-			if(session.get("keystoreAliasPassword") != null)
+			if (session.get("keystoreAliasPassword") != null)
 				sender.setKeystoreAliasPassword((String) session.get("keystoreAliasPassword"));
-			if(session.get("keystoreType") != null)
-				sender.setKeystoreType(EnumUtils.parse(KeystoreType.class, (String)session.get("keystoreType")));
-			if(session.get("keyManagerAlgorithm") != null)
+			if (session.get("keystoreType") != null)
+				sender.setKeystoreType(EnumUtils.parse(KeystoreType.class, (String) session.get("keystoreType")));
+			if (session.get("keyManagerAlgorithm") != null)
 				sender.setKeyManagerAlgorithm((String) session.get("keyManagerAlgorithm"));
-			if(session.get("truststoreUrl") != null)
+			if (session.get("truststoreUrl") != null)
 				sender.setTruststore((String) session.get("truststoreUrl"));
-			if(session.get("truststorePassword") != null)
+			if (session.get("truststorePassword") != null)
 				sender.setTruststorePassword((String) session.get("truststorePassword"));
-			if(session.get("truststoreType") != null)
-				sender.setTruststoreType(EnumUtils.parse(KeystoreType.class, (String)session.get("truststoreType")));
-			if(session.get("trustManagerAlgorithm") != null)
+			if (session.get("truststoreType") != null)
+				sender.setTruststoreType(EnumUtils.parse(KeystoreType.class, (String) session.get("truststoreType")));
+			if (session.get("trustManagerAlgorithm") != null)
 				sender.setTrustManagerAlgorithm((String) session.get("trustManagerAlgorithm"));
 
 			//SSL+
-			if(session.get("isAllowSelfSignedCertificates") != null) {
+			if (session.get("isAllowSelfSignedCertificates") != null) {
 				boolean isAllowSelfSignedCertificates = Boolean.parseBoolean((String) session.get("isAllowSelfSignedCertificates"));
 				sender.setAllowSelfSignedCertificates(isAllowSelfSignedCertificates);
 			}
-			if(session.get("isVerifyHostname") != null) {
+			if (session.get("isVerifyHostname") != null) {
 				boolean isVerifyHostname = Boolean.parseBoolean((String) session.get("isVerifyHostname"));
 				sender.setVerifyHostname(isVerifyHostname);
 			}
-			if(session.get("isIgnoreCertificateExpiredException") != null) {
+			if (session.get("isIgnoreCertificateExpiredException") != null) {
 				boolean isIgnoreCertificateExpiredException = Boolean.parseBoolean((String) session.get("isIgnoreCertificateExpiredException"));
 				sender.setIgnoreCertificateExpiredException(isIgnoreCertificateExpiredException);
 			}
@@ -145,7 +145,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 			}
 
 			int maxConnections = session.get("maxConnections", 0);
-			if(maxConnections > 0) {
+			if (maxConnections > 0) {
 				sender.setMaxConnections(maxConnections);
 			}
 
@@ -172,7 +172,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 	@Override
 	public Response invokePUT(UrlBuilder url, String contentType, Map<String, String> headers, Output writer,
-			BindingSession session) {
+							  BindingSession session) {
 		return invoke(url, HttpMethod.PUT, contentType, headers, writer, session, null, null);
 	}
 
@@ -182,11 +182,11 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 	}
 
 	private Response invoke(UrlBuilder url, HttpMethod method, String contentType, Map<String, String> headers,
-			Output writer, BindingSession session, BigInteger offset, BigInteger length) {
+							Output writer, BindingSession session, BigInteger offset, BigInteger length) {
 
-		log.debug("Session "+session.getSessionId()+": "+method+" "+url);
+		log.debug("Session " + session.getSessionId() + ": " + method + " " + url);
 
-		if(url.toString().equals(CmisSessionBuilder.OVERRIDE_WSDL_URL)) {
+		if (url.toString().equals(CmisSessionBuilder.OVERRIDE_WSDL_URL)) {
 			try {
 				Map<String, List<String>> headerFields = new HashMap<>();
 				String wsdl = (String) session.get(CmisSessionBuilder.OVERRIDE_WSDL_KEY);
@@ -202,11 +202,11 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 		try {
 			sender = getInstance(session);
-			if(sender == null)
+			if (sender == null)
 				throw new CmisConnectionException("Failed to create IbisHttpSender");
 
 			// init headers if not exist
-			if(headers == null)
+			if (headers == null)
 				headers = new HashMap<>();
 
 			if (contentType != null)
@@ -252,8 +252,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 							String key = header.getKey();
 							if (key.equalsIgnoreCase("user-agent")) {
 								headers.put("User-Agent", header.getValue().get(0));
-							}
-							else {
+							} else {
 								for (String value : header.getValue()) {
 									if (value != null) {
 										headers.put(key, value);

@@ -40,8 +40,7 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 		try { //Make sure there's a database present
 			ApplicationContext ac = getIbisContext().getIbisManager().getApplicationContext();
 			loadedConfiguration = ConfigurationUtils.getActiveConfigFromDatabase(ac, getConfigurationName(), datasourceName);
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive
 			throw new ClassLoaderException(getErrorMessage(), t);
 		}
@@ -82,8 +81,8 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(super.toString());
-		if(datasourceName != null) builder.append(" datasourceName ["+datasourceName+"]");
-		if(configuration != null && getFileName() != null) builder.append(" fileName ["+getFileName()+"]");
+		if (datasourceName != null) builder.append(" datasourceName [" + datasourceName + "]");
+		if (configuration != null && getFileName() != null) builder.append(" fileName [" + getFileName() + "]");
 		return builder.toString();
 	}
 }

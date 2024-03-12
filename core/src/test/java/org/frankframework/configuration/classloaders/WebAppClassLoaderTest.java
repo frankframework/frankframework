@@ -38,7 +38,7 @@ public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebA
 
 	private String getAbsoluteFilePath(String name) { //For testing purposes the JAR_FILE archive isn't used, we're just using the path
 		URL file = this.getClass().getResource(JAR_FILE);
-		assertNotNull(file, "jar url ["+JAR_FILE+"] not found");
+		assertNotNull(file, "jar url [" + JAR_FILE + "] not found");
 		return "jar:file:" + file.getFile() + "!/" + name;
 	}
 

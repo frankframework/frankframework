@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Test;
 
 public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
@@ -25,23 +26,23 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 
 	@Test
 	public void testReturnString() throws Exception {
-		String text="Dit is het resultaat";
+		String text = "Dit is het resultaat";
 		sender.setReturnString(text);
 		sender.configure();
 		sender.open();
 		Message input = new Message("dummy message");
 		String result = sender.sendMessageOrThrow(input, session).asString();
-		assertEquals(text,result);
+		assertEquals(text, result);
 	}
 
 	@Test
 	public void testNullInput() throws Exception {
-		String text="Dit is het resultaat";
+		String text = "Dit is het resultaat";
 		sender.setReturnString(text);
 		sender.configure();
 		sender.open();
 		String result = sender.sendMessageOrThrow(null, session).asString();
-		assertEquals(text,result);
+		assertEquals(text, result);
 	}
 
 	@Test
@@ -54,7 +55,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		String result = sender.sendMessageOrThrow(new Message("dummy message"), session).asString();
 
 		String expected = TestFileUtils.getTestFile(filename);
-		assertEquals(expected,result);
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -68,7 +69,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		String result = sender.sendMessageOrThrow(new Message("dummy message"), session).asString();
 
 		String expected = TestFileUtils.getTestFile("/FixedResult/result.xml");
-		assertEquals(expected,result);
+		assertEquals(expected, result);
 	}
 
 }

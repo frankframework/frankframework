@@ -49,14 +49,14 @@ public class PrometheusMeterServlet extends HttpServletBase {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 
-		if(ACTIVE) {
+		if (ACTIVE) {
 			Assert.notNull(registry, "metrics registry not found");
 
 			if (registry instanceof CompositeMeterRegistry) {
-				CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)registry;
-				for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
+				CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry) registry;
+				for (MeterRegistry meterRegistry : compositeMeterRegistry.getRegistries()) {
 					if (meterRegistry instanceof PrometheusMeterRegistry) {
-						prometheusRegistry = (PrometheusMeterRegistry)meterRegistry;
+						prometheusRegistry = (PrometheusMeterRegistry) meterRegistry;
 					}
 				}
 			}
@@ -68,7 +68,7 @@ public class PrometheusMeterServlet extends HttpServletBase {
 		resp.setContentType(TextFormat.CONTENT_TYPE_004); // see https://github.com/prometheus/prometheus/issues/6499
 
 		try {
-			if (prometheusRegistry==null) {
+			if (prometheusRegistry == null) {
 				resp.sendError(501, "Prometheus registry not found");
 			} else {
 				try (Writer writer = resp.getWriter()) {

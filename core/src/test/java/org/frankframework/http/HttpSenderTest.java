@@ -38,6 +38,7 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +71,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		SenderException e = assertThrows(SenderException.class, ()->sender.sendMessageOrThrow(null, null));
+		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(null, null));
 		assertThat(e.getMessage(), Matchers.endsWith("must use an absolute url starting with http(s)://"));
 	}
 

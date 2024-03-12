@@ -56,6 +56,7 @@ public class ManageScheduler extends BusEndpointBase {
 	public enum ScheduleAction {
 		START, STOP, PAUSE;
 	}
+
 	public enum JobAction {
 		PAUSE, RESUME, TRIGGER;
 	}
@@ -70,7 +71,7 @@ public class ManageScheduler extends BusEndpointBase {
 
 	private JobKey getJobKey(String jobName, String groupName) {
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
-		if(jobKey == null) {
+		if (jobKey == null) {
 			throw new BusException("JobKey not found, unable to remove schedule");
 		}
 		return jobKey;
@@ -83,9 +84,9 @@ public class ManageScheduler extends BusEndpointBase {
 		String jobName = BusMessageUtils.getHeader(message, "job");
 		String groupName = BusMessageUtils.getHeader(message, "group");
 
-		if(StringUtils.isNotEmpty(jobName) || StringUtils.isNotEmpty(groupName)) {
+		if (StringUtils.isNotEmpty(jobName) || StringUtils.isNotEmpty(groupName)) {
 			JobAction action = BusMessageUtils.getEnumHeader(message, "operation", JobAction.class);
-			if(action == null) {
+			if (action == null) {
 				throw new BusException("no action specified");
 			}
 			JobKey jobKey = getJobKey(jobName, groupName);
@@ -93,7 +94,7 @@ public class ManageScheduler extends BusEndpointBase {
 		}
 
 		ScheduleAction action = BusMessageUtils.getEnumHeader(message, "operation", ScheduleAction.class);
-		if(action == null) {
+		if (action == null) {
 			throw new BusException("no action specified");
 		}
 
@@ -104,32 +105,32 @@ public class ManageScheduler extends BusEndpointBase {
 		Scheduler scheduler = getScheduler();
 		try {
 			switch (action) {
-			case START:
-				if(scheduler.isInStandbyMode() || scheduler.isShutdown()) {
-					scheduler.start();
-					log2SecurityLog("starting scheduler", issuedBy);
-					break;
-				}
-				throw new BusException("scheduler already started");
-			case PAUSE:
-				if(scheduler.isStarted()) {
-					scheduler.standby();
-					log2SecurityLog("pausing scheduler", issuedBy);
-					break;
-				}
-				throw new BusException("can only pause a started scheduler");
-			case STOP:
-				if(scheduler.isStarted() || scheduler.isInStandbyMode()) {
-					scheduler.shutdown();
-					log2SecurityLog("stopping scheduler", issuedBy);
-					break;
-				}
-				throw new BusException("scheduler already stopped");
-			default:
-				throw new BusException("action not implemented");
+				case START:
+					if (scheduler.isInStandbyMode() || scheduler.isShutdown()) {
+						scheduler.start();
+						log2SecurityLog("starting scheduler", issuedBy);
+						break;
+					}
+					throw new BusException("scheduler already started");
+				case PAUSE:
+					if (scheduler.isStarted()) {
+						scheduler.standby();
+						log2SecurityLog("pausing scheduler", issuedBy);
+						break;
+					}
+					throw new BusException("can only pause a started scheduler");
+				case STOP:
+					if (scheduler.isStarted() || scheduler.isInStandbyMode()) {
+						scheduler.shutdown();
+						log2SecurityLog("stopping scheduler", issuedBy);
+						break;
+					}
+					throw new BusException("scheduler already stopped");
+				default:
+					throw new BusException("action not implemented");
 			}
 		} catch (SchedulerException e) {
-			throw new BusException("unable to run action ["+action+"]", e);
+			throw new BusException("unable to run action [" + action + "]", e);
 		}
 
 		return EmptyResponseMessage.accepted();
@@ -139,36 +140,36 @@ public class ManageScheduler extends BusEndpointBase {
 		Scheduler scheduler = getScheduler();
 		try {
 			switch (action) {
-			case PAUSE:
-				log2SecurityLog("pausing job ["+jobKey+"]", issuedBy);
-				scheduler.pauseJob(jobKey);
-				break;
-			case RESUME:
-				log2SecurityLog("resuming job ["+jobKey+"]", issuedBy);
-				SchedulerHelper sh = getSchedulerHelper();
-				JobDetail jobDetail = getJobDetail(scheduler, jobKey);
-				// TODO this part can be more generic in case multiple triggers can be configurable
-				List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
-				if(triggers != null) {
-					for (Trigger trigger : triggers) {
-						if(trigger instanceof CronTrigger) {
-							sh.scheduleJob(jobDetail, ((CronTrigger) trigger).getCronExpression(), -1, true);
-						} else if(trigger instanceof SimpleTrigger) {
-							sh.scheduleJob(jobDetail, null, ((SimpleTrigger) trigger).getRepeatInterval(), true);
+				case PAUSE:
+					log2SecurityLog("pausing job [" + jobKey + "]", issuedBy);
+					scheduler.pauseJob(jobKey);
+					break;
+				case RESUME:
+					log2SecurityLog("resuming job [" + jobKey + "]", issuedBy);
+					SchedulerHelper sh = getSchedulerHelper();
+					JobDetail jobDetail = getJobDetail(scheduler, jobKey);
+					// TODO this part can be more generic in case multiple triggers can be configurable
+					List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
+					if (triggers != null) {
+						for (Trigger trigger : triggers) {
+							if (trigger instanceof CronTrigger) {
+								sh.scheduleJob(jobDetail, ((CronTrigger) trigger).getCronExpression(), -1, true);
+							} else if (trigger instanceof SimpleTrigger) {
+								sh.scheduleJob(jobDetail, null, ((SimpleTrigger) trigger).getRepeatInterval(), true);
+							}
 						}
 					}
-				}
-				scheduler.resumeJob(jobKey);
-				break;
-			case TRIGGER:
-				log2SecurityLog("trigger job ["+jobKey+"]", issuedBy);
-				scheduler.triggerJob(jobKey);
-				break;
-			default:
-				throw new BusException("action not implemented");
+					scheduler.resumeJob(jobKey);
+					break;
+				case TRIGGER:
+					log2SecurityLog("trigger job [" + jobKey + "]", issuedBy);
+					scheduler.triggerJob(jobKey);
+					break;
+				default:
+					throw new BusException("action not implemented");
 			}
 		} catch (SchedulerException e) {
-			throw new BusException("unable to run action ["+action+"]", e);
+			throw new BusException("unable to run action [" + action + "]", e);
 		}
 
 		return EmptyResponseMessage.accepted();
@@ -177,8 +178,8 @@ public class ManageScheduler extends BusEndpointBase {
 	private IbisJobDetail getJobDetail(Scheduler scheduler, JobKey jobKey) {
 		try {
 			IbisJobDetail jobDetail = (IbisJobDetail) scheduler.getJobDetail(jobKey);
-			if(jobDetail == null) {
-				throw new BusException("Job ["+jobKey+"] not found");
+			if (jobDetail == null) {
+				throw new BusException("Job [" + jobKey + "] not found");
 			}
 			return jobDetail;
 		} catch (SchedulerException e) {
@@ -197,10 +198,10 @@ public class ManageScheduler extends BusEndpointBase {
 		Scheduler scheduler = getScheduler();
 		IbisJobDetail jobDetail = getJobDetail(scheduler, jobKey);
 
-		log2SecurityLog("deleting job ["+jobKey+"]", issuedBy);
+		log2SecurityLog("deleting job [" + jobKey + "]", issuedBy);
 
 		try {
-			if(jobDetail.getJobType() == JobType.DATABASE) {
+			if (jobDetail.getJobType() == JobType.DATABASE) {
 				boolean success = false;
 				// remove from database
 				FixedQuerySender qs = createBean(FixedQuerySender.class);
@@ -225,7 +226,7 @@ public class ManageScheduler extends BusEndpointBase {
 				} finally {
 					qs.close();
 				}
-				if(!success) {
+				if (!success) {
 					throw new BusException("failed to remove job from database");
 				}
 			}

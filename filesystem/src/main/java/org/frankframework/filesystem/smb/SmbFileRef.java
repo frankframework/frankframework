@@ -18,13 +18,12 @@ package org.frankframework.filesystem.smb;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class SmbFileRef {
 	private @Getter String filename;
@@ -39,7 +38,7 @@ public class SmbFileRef {
 	}
 
 	/**
-	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
+	 * @param name   A canonical name might be provided, strip the path when present and only use the actual file name.
 	 * @param folder The directory the file. This always has presedence over the canonical path provided by the name.
 	 */
 	public SmbFileRef(@Nonnull String name, String folder) {
@@ -55,7 +54,7 @@ public class SmbFileRef {
 	}
 
 	private void setFolder(String folder) {
-		if(StringUtils.isNotEmpty(folder)) {
+		if (StringUtils.isNotEmpty(folder)) {
 			this.folder = FilenameUtils.normalize(folder, false);
 		}
 	}

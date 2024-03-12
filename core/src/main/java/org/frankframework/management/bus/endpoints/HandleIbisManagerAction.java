@@ -40,7 +40,7 @@ public class HandleIbisManagerAction extends BusEndpointBase {
 		String userPrincipalName = BusMessageUtils.getUserPrincipalName();
 		boolean isAdmin = BusMessageUtils.hasAnyRole("IbisAdmin", "IbisTester"); //limits the use of a FULL_RELOAD
 
-		if(action == null) {
+		if (action == null) {
 			throw new BusException("no (valid) action specified");
 		}
 		getIbisManager().handleAction(action, configurationName, adapterName, receiverName, userPrincipalName, isAdmin);

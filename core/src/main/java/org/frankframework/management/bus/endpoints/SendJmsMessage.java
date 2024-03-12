@@ -44,11 +44,11 @@ public class SendJmsMessage extends BusEndpointBase {
 	@RolesAllowed("IbisTester")
 	public Message<?> putMessageOnQueue(Message<?> message) {
 		String connectionFactory = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY);
-		if(StringUtils.isEmpty(connectionFactory)) {
+		if (StringUtils.isEmpty(connectionFactory)) {
 			throw new BusException("a connectionFactory must be provided");
 		}
 		String destination = BusMessageUtils.getHeader(message, "destination");
-		if(StringUtils.isEmpty(destination)) {
+		if (StringUtils.isEmpty(destination)) {
 			throw new BusException("a destination must be provided");
 		}
 		boolean lookupDestination = BusMessageUtils.getBooleanHeader(message, "lookupDestination", false);
@@ -58,12 +58,12 @@ public class SendJmsMessage extends BusEndpointBase {
 		String replyTo = BusMessageUtils.getHeader(message, "replyTo", null);
 		String messageProperty = BusMessageUtils.getHeader(message, "messageProperty", null);
 		DestinationType type = BusMessageUtils.getEnumHeader(message, "type", DestinationType.class);
-		if(type == null) {
+		if (type == null) {
 			throw new BusException("a DestinationType must be provided");
 		}
 
 		JmsSender qms = createJmsSender(connectionFactory, destination, persistent, type, replyTo, expectsReply, lookupDestination, messageClass);
-		if(StringUtils.isNotEmpty(messageProperty)) {
+		if (StringUtils.isNotEmpty(messageProperty)) {
 			qms.addParameter(getMessagePropertyParameter(messageProperty));
 		}
 		return processMessage(qms, message.getPayload(), expectsReply);
@@ -77,7 +77,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		try {
 			p.configure();
 		} catch (ConfigurationException e) {
-			throw new BusException("Failed to configure message property ["+p.getName()+"]", e);
+			throw new BusException("Failed to configure message property [" + p.getName() + "]", e);
 		}
 		return p;
 	}
@@ -85,7 +85,7 @@ public class SendJmsMessage extends BusEndpointBase {
 	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, DestinationType type, String replyTo, boolean synchronous, boolean lookupDestination, JMSFacade.MessageClass messageClass) {
 		JmsSender qms = createBean(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
-		if(type == DestinationType.QUEUE) {
+		if (type == DestinationType.QUEUE) {
 			qms.setQueueConnectionFactoryName(connectionFactory);
 		} else {
 			qms.setTopicConnectionFactoryName(connectionFactory);
@@ -106,11 +106,11 @@ public class SendJmsMessage extends BusEndpointBase {
 		try {
 			qms.open();
 			org.frankframework.stream.Message responseMessage = qms.sendMessageOrThrow(org.frankframework.stream.Message.asMessage(requestMessage), null);
-			if(!expectsReply) {
+			if (!expectsReply) {
 				return null;
 			}
 
-			if(responseMessage.isBinary()) {
+			if (responseMessage.isBinary()) {
 				return new BinaryResponseMessage(responseMessage.asInputStream());
 			}
 			return new StringResponseMessage(responseMessage.asString());

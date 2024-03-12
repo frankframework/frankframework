@@ -28,23 +28,21 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 
 /**
  * Custom errors for the API.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 public class ApiException extends WebApplicationException implements Serializable {
@@ -82,8 +80,8 @@ public class ApiException extends WebApplicationException implements Serializabl
 	private ApiException(String msg, Throwable t, Status status) {
 		super(msg, t);
 
-		this.status = (status!=null) ? status: Status.INTERNAL_SERVER_ERROR;
-		if(msg == null && t == null) {
+		this.status = (status != null) ? status : Status.INTERNAL_SERVER_ERROR;
+		if (msg == null && t == null) {
 			this.expandedMessage = null;
 		} else {
 			this.expandedMessage = IbisException.expandMessage(super.getMessage(), this, e -> e instanceof IbisException || e instanceof ApiException);
@@ -99,7 +97,7 @@ public class ApiException extends WebApplicationException implements Serializabl
 
 	@Override
 	public Response getResponse() {
-		if(response == null) {
+		if (response == null) {
 			response = formatExceptionResponse(expandedMessage, status);
 		}
 		return response;
@@ -108,7 +106,7 @@ public class ApiException extends WebApplicationException implements Serializabl
 	protected static Response formatExceptionResponse(String message, Status status) {
 		ResponseBuilder builder = Response.status(status).type(MediaType.TEXT_PLAIN);
 
-		if(message != null) {
+		if (message != null) {
 			JsonObjectBuilder json = Json.createObjectBuilder();
 			json.add("status", status.getReasonPhrase());
 			//Replace non ASCII characters, tabs, spaces and newlines.

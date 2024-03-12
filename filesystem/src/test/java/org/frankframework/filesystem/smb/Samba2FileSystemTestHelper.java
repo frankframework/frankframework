@@ -17,21 +17,6 @@ package org.frankframework.filesystem.smb;
 
 import static com.hierynomus.msfscc.FileAttributes.FILE_ATTRIBUTE_DIRECTORY;
 
-/**
- * This test class is created to test both Samba2FileSystem and Samba2FileSystemSender classes.
- *
- * Instructions to create a share on a windows system:
- * - First create a directory you want to share (location doesn't matter)
- * - Right click to that directory -> properties -> Sharing Tab -> Advanced Sharing Options -> Check Share this Folder option ->
- * Click Permissions -> Set users to be shared if necessary -> Set permissions(Full Control, read, write) -> Click Apply.
- * To verify share:
- * - open file explorer -> write \\localhost on address bar. You will see the share.
- *
- * @author alisihab
- *
- */
-
-
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -42,11 +27,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.filesystem.IFileSystemTestHelper;
-import org.frankframework.util.LogUtil;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -68,10 +48,13 @@ import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
+import org.apache.logging.log4j.Logger;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.util.LogUtil;
+
 /**
- *
  * @author alisihab
- *
  */
 public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
@@ -118,31 +101,31 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 				.build();
 		client = new SMBClient(config);
 		connection = client.connect(host, port);
-		if(connection.isConnected()) {
-			log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
+		if (connection.isConnected()) {
+			log.debug("successfully created connection to [" + connection.getRemoteHostname() + "]");
 		}
 		session = connection.authenticate(auth);
-		if(session == null) {
-			throw new FileSystemException("Cannot create session for user ["+userName+"] on domain ["+domain+"]");
+		if (session == null) {
+			throw new FileSystemException("Cannot create session for user [" + userName + "] on domain [" + domain + "]");
 		}
 		diskShare = (DiskShare) session.connectShare(shareName);
-		if(diskShare == null) {
-			throw new FileSystemException("Cannot connect to the share ["+ shareName +"]");
+		if (diskShare == null) {
+			throw new FileSystemException("Cannot connect to the share [" + shareName + "]");
 		}
 	}
 
 	private void close() throws FileSystemException {
 		try {
-			if(diskShare != null) {
+			if (diskShare != null) {
 				diskShare.close();
 			}
-			if(session != null) {
+			if (session != null) {
 				session.close();
 			}
-			if(connection != null) {
+			if (connection != null) {
 				connection.close();
 			}
-			if(client != null) {
+			if (client != null) {
 				client.close();
 			}
 			diskShare = null;
@@ -184,16 +167,18 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 		String path = (folder != null) ? folder + "/" + filename : filename;
 		final File file = diskShare.openFile(path, accessMask, null, SMB2ShareAccess.ALL,
-				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
+				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions
+		);
 		OutputStream out = file.getOutputStream();
 		FilterOutputStream fos = new FilterOutputStream(out) {
 
 			boolean isOpen = true;
+
 			@Override
 			public void close() throws IOException {
-				if(isOpen) {
+				if (isOpen) {
 					super.close();
-					isOpen=false;
+					isOpen = false;
 				}
 				file.close();
 			}
@@ -208,11 +193,12 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		InputStream is = file.getInputStream();
 		FilterInputStream fis = new FilterInputStream(is) {
 			boolean isOpen = true;
+
 			@Override
 			public void close() throws IOException {
-				if(isOpen) {
+				if (isOpen) {
 					super.close();
-					isOpen=false;
+					isOpen = false;
 				}
 				file.close();
 			}
@@ -223,11 +209,11 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	private boolean isFolder(String f) throws FileSystemException {
 		try {
 			return diskShare.getFileInformation(f).getStandardInformation().isDirectory();
-		}catch(SMBApiException e) {
-			if(NtStatus.valueOf(e.getStatusCode()) == NtStatus.STATUS_OBJECT_NAME_NOT_FOUND) {
+		} catch (SMBApiException e) {
+			if (NtStatus.valueOf(e.getStatusCode()) == NtStatus.STATUS_OBJECT_NAME_NOT_FOUND) {
 				return false;
 			}
-			if(NtStatus.valueOf(e.getStatusCode()) == NtStatus.STATUS_DELETE_PENDING) {
+			if (NtStatus.valueOf(e.getStatusCode()) == NtStatus.STATUS_DELETE_PENDING) {
 				return false;
 			}
 
@@ -263,11 +249,11 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		}
 
 		List<FileIdBothDirectoryInformation> list = diskShare.list("/");
-		for(FileIdBothDirectoryInformation fi : list) {
-			if(fi.getFileName().equals(".") || fi.getFileName().equals("..")) {
+		for (FileIdBothDirectoryInformation fi : list) {
+			if (fi.getFileName().equals(".") || fi.getFileName().equals("..")) {
 				continue;
 			}
-			if(!EnumWithValue.EnumUtils.isSet(fi.getFileAttributes(), FILE_ATTRIBUTE_DIRECTORY)) {
+			if (!EnumWithValue.EnumUtils.isSet(fi.getFileAttributes(), FILE_ATTRIBUTE_DIRECTORY)) {
 				diskShare.rm(fi.getFileName());
 			} else {
 				_deleteFolder(fi.getFileName());

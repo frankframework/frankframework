@@ -24,6 +24,7 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 import org.frankframework.testutil.mock.PreparedStatementMock;
 import org.frankframework.util.AppConstants;
+
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -190,7 +192,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
 		Map<String, String> result = ConfigurationUtils.processMultiConfigZipFile(applicationContext, "fakeDataSource", false, false, zip.openStream(), "user");
 		assertNotEquals(0, result.size(), "file uploaded to mock database");
-		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no [BuildInfo.properties] present in configuration}",result.toString());
+		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no [BuildInfo.properties] present in configuration}", result.toString());
 
 		Map<String, Object> parameters = stmt.getNamedParameters(); //Test the 2nd file, because the 3rd result fails
 		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");

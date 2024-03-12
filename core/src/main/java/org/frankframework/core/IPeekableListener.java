@@ -29,8 +29,10 @@ public interface IPeekableListener<M> extends IPullingListener<M> {
 
 	/**
 	 * when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true. This avoids rolling back a lot of XA transactions, that appears to be problematic on MS SQL Server
+	 *
 	 * @ff.default true
 	 */
 	void setPeekUntransacted(boolean b);
+
 	boolean isPeekUntransacted();
 }

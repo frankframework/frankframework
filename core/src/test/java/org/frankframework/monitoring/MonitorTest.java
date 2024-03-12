@@ -8,6 +8,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ public class MonitorTest {
 		SenderMonitorAdapter destination = configuration.createBean(SenderMonitorAdapter.class);
 		destination.setName("myTestDestination");
 
-		MessageCapturingEchoSender sender = new  MessageCapturingEchoSender();
+		MessageCapturingEchoSender sender = new MessageCapturingEchoSender();
 		destination.setSender(sender);
 		manager.registerDestination(destination);
 		monitor.setDestinations(destination.getName());
@@ -73,7 +74,7 @@ public class MonitorTest {
 	}
 
 	private String ignoreHostname(String result) {
-		String firstPart = result.substring(result.indexOf("hostname=")+10);
+		String firstPart = result.substring(result.indexOf("hostname=") + 10);
 		String hostname = firstPart.substring(0, firstPart.indexOf("\" "));
 		return result.replaceAll(hostname, "XXX");
 	}

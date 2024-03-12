@@ -23,7 +23,7 @@ public class CisConfiguration {
 	private @Getter String charset;
 	private @Getter boolean loadExternalResources;
 
-	public CisConfiguration(boolean loadExternalResources, String pdfOutputLocation, String charset, String fontsDirectory){
+	public CisConfiguration(boolean loadExternalResources, String pdfOutputLocation, String charset, String fontsDirectory) {
 		this.fontsDirectory = fontsDirectory;
 		this.pdfOutputLocation = pdfOutputLocation;
 		this.charset = charset;

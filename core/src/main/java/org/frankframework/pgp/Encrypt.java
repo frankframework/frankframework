@@ -38,7 +38,7 @@ public class Encrypt extends PGPAction {
 
 	@Override
 	public void run(InputStream inputStream, OutputStream outputStream) throws Exception {
-		BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To algorithmSuite =  BouncyGPG
+		BuildEncryptionOutputStreamAPI.WithAlgorithmSuite.To algorithmSuite = BouncyGPG
 				.encryptToStream()
 				.withConfig(keyringConfig)
 				.withStrongAlgorithms();

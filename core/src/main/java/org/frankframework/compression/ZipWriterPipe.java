@@ -40,12 +40,11 @@ import org.frankframework.util.FileUtils;
  * Action <code>CLOSE</code> will generate the ZIP archive which is returned as the pipe ouput.
  * </p>
  *
- * @ff.parameter filename only for action=<code>WRITE</code>: the filename of the zip-entry
- * @ff.parameter contents only for action=<code>WRITE</code>: contents of the zip-entry, If not specified, the input is used.
- *
  * @author Gerrit van Brakel
  * @author Niels Meijer
- * @since  7.9
+ * @ff.parameter filename only for action=<code>WRITE</code>: the filename of the zip-entry
+ * @ff.parameter contents only for action=<code>WRITE</code>: contents of the zip-entry, If not specified, the input is used.
+ * @since 7.9
  */
 public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry> {
 
@@ -66,7 +65,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 	@Override
 	protected ZipWriter createCollector(Message input, PipeLineSession session) throws CollectionException {
 		String filename = ParameterValueList.getValue(getParameterValueList(input, session), ZipWriter.PARAMETER_FILENAME, "");
-		if(backwardsCompatibility && input.isRequestOfType(String.class) && StringUtils.isEmpty(filename)) {
+		if (backwardsCompatibility && input.isRequestOfType(String.class) && StringUtils.isEmpty(filename)) {
 			try {
 				filename = input.asString();
 			} catch (IOException e) {
@@ -78,9 +77,9 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		if(backwardsCompatibility) {
+		if (backwardsCompatibility) {
 			try {
-				if(Action.STREAM == getAction()) {
+				if (Action.STREAM == getAction()) {
 					return handleStreamAction(input, session);
 				}
 
@@ -89,7 +88,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 
 				return new PipeRunResult(getSuccessForward(), input);
 			} catch (IOException e) {
-				throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);
+				throw new PipeRunException(this, "unable to preserve message for action [" + getAction() + "]", e);
 			}
 		}
 
@@ -100,7 +99,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 		try {
 			ParameterValueList pvl = getParameterValueList(input, session);
 			String filename = ParameterValueList.getValue(pvl, ZipWriter.PARAMETER_FILENAME, "");
-			if(StringUtils.isEmpty(filename)) {
+			if (StringUtils.isEmpty(filename)) {
 				throw new PipeRunException(this, "filename may not be empty");
 			}
 
@@ -116,12 +115,13 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 			//We must return a file location, not the reference or file it self
 			return new PipeRunResult(getSuccessForward(), new Message(file.getAbsolutePath()));
 		} catch (CollectionException e) {
-			throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);
+			throw new PipeRunException(this, "unable to preserve message for action [" + getAction() + "]", e);
 		}
 	}
 
 	/**
 	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested. Deprecated, use collectionName instead.
+	 *
 	 * @ff.default zipwriterhandle
 	 */
 	@Deprecated
@@ -132,6 +132,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 
 	/**
 	 * Only for action='write': If set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)
+	 *
 	 * @ff.default false
 	 */
 	public void setCompleteFileHeader(boolean b) {

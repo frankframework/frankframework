@@ -16,6 +16,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.parameters.Parameter;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -105,7 +106,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		pipe.setAuthAlias("alias1");
 
 		// Act && Assert: the warning message shows a non-padded secret
-		ConfigurationException ex =  assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));
 	}
 

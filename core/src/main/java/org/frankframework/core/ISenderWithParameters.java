@@ -20,13 +20,13 @@ import org.frankframework.parameters.Parameter;
 /**
  * The <code>ISenderWithParameters</code> allows Senders to declare that they accept and may use {@link Parameter parameters}
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public interface ISenderWithParameters extends ISender, IWithParameters {
 
 	@Override
 	default boolean consumesSessionVariable(String sessionKey) {
-		return getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+		return getParameterList() != null && getParameterList().consumesSessionVariable(sessionKey);
 	}
 
 }

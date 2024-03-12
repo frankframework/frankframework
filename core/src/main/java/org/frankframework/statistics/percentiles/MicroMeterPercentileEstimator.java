@@ -41,7 +41,7 @@ public class MicroMeterPercentileEstimator implements PercentileEstimator {
 
 	@Override
 	public int getPercentage(int index) {
-		return (int)Math.round(percentiles[index]*100);
+		return (int) Math.round(percentiles[index] * 100);
 	}
 
 	@Override

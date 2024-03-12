@@ -98,6 +98,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setKeystore(String keystore) {
 		getFileSystem().setKeystore(keystore);
 	}
+
 	@Override
 	default String getKeystore() {
 		return getFileSystem().getKeystore();
@@ -108,6 +109,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setKeystoreType(KeystoreType keystoreType) {
 		getFileSystem().setKeystoreType(keystoreType);
 	}
+
 	@Override
 	default KeystoreType getKeystoreType() {
 		return getFileSystem().getKeystoreType();
@@ -118,6 +120,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		getFileSystem().setKeystoreAuthAlias(keystoreAuthAlias);
 	}
+
 	@Override
 	default String getKeystoreAuthAlias() {
 		return getFileSystem().getKeystoreAuthAlias();
@@ -128,6 +131,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setKeystorePassword(String keystorePassword) {
 		getFileSystem().setKeystorePassword(keystorePassword);
 	}
+
 	@Override
 	default String getKeystorePassword() {
 		return getFileSystem().getKeystorePassword();
@@ -138,6 +142,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setKeystoreAlias(String keystoreAlias) {
 		getFileSystem().setKeystoreAlias(keystoreAlias);
 	}
+
 	@Override
 	default String getKeystoreAlias() {
 		return getFileSystem().getKeystoreAlias();
@@ -148,6 +153,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		getFileSystem().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
+
 	@Override
 	default String getKeystoreAliasAuthAlias() {
 		return getFileSystem().getKeystoreAliasAuthAlias();
@@ -158,6 +164,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		getFileSystem().setKeystoreAliasPassword(keystoreAliasPassword);
 	}
+
 	@Override
 	default String getKeystoreAliasPassword() {
 		return getFileSystem().getKeystoreAliasPassword();
@@ -168,6 +175,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		getFileSystem().setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
+
 	@Override
 	default String getKeyManagerAlgorithm() {
 		return getFileSystem().getKeyManagerAlgorithm();
@@ -178,6 +186,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setTruststore(String truststore) {
 		getFileSystem().setTruststore(truststore);
 	}
+
 	@Override
 	default String getTruststore() {
 		return getFileSystem().getTruststore();
@@ -188,6 +197,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setTruststoreType(KeystoreType truststoreType) {
 		getFileSystem().setTruststoreType(truststoreType);
 	}
+
 	@Override
 	default KeystoreType getTruststoreType() {
 		return getFileSystem().getTruststoreType();
@@ -199,6 +209,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		getFileSystem().setTruststoreAuthAlias(truststoreAuthAlias);
 	}
+
 	@Override
 	default String getTruststoreAuthAlias() {
 		return getFileSystem().getTruststoreAuthAlias();
@@ -209,6 +220,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setTruststorePassword(String truststorePassword) {
 		getFileSystem().setTruststorePassword(truststorePassword);
 	}
+
 	@Override
 	default String getTruststorePassword() {
 		return getFileSystem().getTruststorePassword();
@@ -219,6 +231,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		getFileSystem().setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
+
 	@Override
 	default String getTrustManagerAlgorithm() {
 		return getFileSystem().getTrustManagerAlgorithm();
@@ -229,6 +242,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setVerifyHostname(boolean verifyHostname) {
 		getFileSystem().setVerifyHostname(verifyHostname);
 	}
+
 	@Override
 	default boolean isVerifyHostname() {
 		return getFileSystem().isVerifyHostname();
@@ -239,6 +253,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		getFileSystem().setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
+
 	@Override
 	default boolean isAllowSelfSignedCertificates() {
 		return getFileSystem().isAllowSelfSignedCertificates();
@@ -249,6 +264,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		getFileSystem().setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
+
 	@Override
 	default boolean isIgnoreCertificateExpiredException() {
 		return getFileSystem().isIgnoreCertificateExpiredException();

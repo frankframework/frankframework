@@ -16,7 +16,6 @@
 package org.frankframework.dbms;
 
 import lombok.Getter;
-
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -64,7 +63,7 @@ public enum Dbms {
 					log.debug("Returning built-in DBMS [{}] found for product [{}]", dbms, product);
 					return result;
 				} catch (IllegalAccessException | InstantiationException e) {
-					log.warn("Could not instantiate DbmsSupport for DBMS [{}] found for product [{}]",dbms, product, e);
+					log.warn("Could not instantiate DbmsSupport for DBMS [{}] found for product [{}]", dbms, product, e);
 				}
 			}
 		}

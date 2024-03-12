@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -40,14 +41,14 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {
 		pipe.setNotFoundForwardName(null);
 		pipe.configure();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "", session));
 		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named []"));
 	}
 
 	@Test
 	public void testConfigureWithNullForwardName() throws Exception {
 		pipe.configure();
-		assertThrows(NullPointerException.class, ()->doPipe(pipe, null, session));
+		assertThrows(NullPointerException.class, () -> doPipe(pipe, null, session));
 	}
 
 	@Test
@@ -69,7 +70,7 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {
 		pipe.setToLowercase(false);
 		String input = "https:\\www.delft.nl/corona-besmettingsgeval-gevonden-in-delft/a\\SUCCESS";
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, input, session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
 		assertThat(e.getMessage(), Matchers.endsWith("cannot find forward or pipe named [SUCCESS]"));
 	}
 
@@ -78,7 +79,8 @@ public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {
 		pipe.setNotFoundForwardName("success");
 		pipe.configure();
 		PipeRunResult res = doPipe(pipe,
-				"https:\\www.delft.nl\\/corona-besmettingsgeval-gevonden-in-delft/asdSUCCasdESS", session);
+				"https:\\www.delft.nl\\/corona-besmettingsgeval-gevonden-in-delft/asdSUCCasdESS", session
+		);
 		assertEquals("success", res.getPipeForward().getName());
 	}
 

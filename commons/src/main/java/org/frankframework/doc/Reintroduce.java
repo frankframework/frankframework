@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * inheriting setter does not update the attribute or config child in another way. For example
  * if the overriding method has a JavaDoc comment to update the description, then the element
  * child is repeated already without the need to add this annotation.
- *
+ * <p>
  * JavaDoc tag <code>@ff.reintroduce</code> has the same effect as this annotation.
  */
 @Documented

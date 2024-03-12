@@ -39,7 +39,9 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.Test;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -54,7 +56,7 @@ public class ParameterTest {
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
@@ -68,7 +70,7 @@ public class ParameterTest {
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("fakePassword", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
@@ -83,7 +85,7 @@ public class ParameterTest {
 		PipeLineSession session = new PipeLineSession();
 		session.put("sessionKey", "fakeSessionVariable");
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("fakeSessionVariable", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
@@ -97,7 +99,7 @@ public class ParameterTest {
 
 		PipeLineSession session = new PipeLineSession();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Parameter siblingParameter = new Parameter();
 		siblingParameter.setName("siblingParameter");
 		siblingParameter.setValue("fakeParameterValue");
@@ -119,7 +121,7 @@ public class ParameterTest {
 		PipeLineSession session = new PipeLineSession();
 		session.put("sessionKey", "fakeSessionVariable");
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Parameter siblingParameter = new Parameter();
 		siblingParameter.setName("siblingParameter");
 		siblingParameter.setValue("fakeParameterValue");
@@ -139,7 +141,7 @@ public class ParameterTest {
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
@@ -154,7 +156,7 @@ public class ParameterTest {
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("fakeDefault", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
@@ -168,7 +170,7 @@ public class ParameterTest {
 
 		PipeLineSession session = new PipeLineSession();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		ParameterException e = assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, null, session, false));
 		assertEquals("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved", e.getMessage());
@@ -184,7 +186,7 @@ public class ParameterTest {
 
 		PipeLineSession session = new PipeLineSession();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
@@ -198,7 +200,7 @@ public class ParameterTest {
 
 		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "fakeContextValue"));
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("fakeContextValue", p.getValue(alreadyResolvedParameters, input, session, false));
 	}
@@ -216,10 +218,11 @@ public class ParameterTest {
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("fakeSessionKey", sessionValue);
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("fakeContextValue2", p.getValue(alreadyResolvedParameters, input, session, false));
 	}
+
 	@Test
 	public void testContextKeyWithXPath() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
@@ -230,10 +233,11 @@ public class ParameterTest {
 
 		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>"));
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("2", p.getValue(alreadyResolvedParameters, input, session, false));
 	}
+
 	@Test
 	public void testContextKeyWithSessionKeyAndXPath() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
@@ -248,7 +252,7 @@ public class ParameterTest {
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("fakeSessionKey", sessionValue);
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("3", p.getValue(alreadyResolvedParameters, input, session, false));
 	}
@@ -260,7 +264,7 @@ public class ParameterTest {
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		Message message = new Message("fakeMessage");
 
@@ -275,7 +279,7 @@ public class ParameterTest {
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		Message message = new Message("fakeMessage");
 
@@ -291,7 +295,7 @@ public class ParameterTest {
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		Message message = new Message("fakeMessage");
 
@@ -307,7 +311,7 @@ public class ParameterTest {
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		Message message = new Message("fakeMessage");
 
@@ -317,7 +321,7 @@ public class ParameterTest {
 	@Test
 	public void testParameterValueMessageString() throws ConfigurationException, ParameterException {
 		String sessionKey = "mySessionKey";
-		String sessionMessage = "message goes here "+UUID.randomUUID();
+		String sessionMessage = "message goes here " + UUID.randomUUID();
 
 		Parameter p = new Parameter();
 		p.setName("readMyMessage");
@@ -327,7 +331,7 @@ public class ParameterTest {
 		PipeLineSession session = new PipeLineSession();
 		session.put(sessionKey, new Message(sessionMessage));
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		assertEquals(sessionMessage, p.getValue(alreadyResolvedParameters, message, session, false));
@@ -336,7 +340,7 @@ public class ParameterTest {
 	@Test
 	public void testParameterValueMessage() throws Exception {
 		String sessionKey = "mySessionKey";
-		String sessionMessage = "message goes here "+UUID.randomUUID();
+		String sessionMessage = "message goes here " + UUID.randomUUID();
 		ByteArrayInputStream is = new ByteArrayInputStream(sessionMessage.getBytes());
 
 		Parameter p = new Parameter();
@@ -347,7 +351,7 @@ public class ParameterTest {
 		PipeLineSession session = new PipeLineSession();
 		session.put(sessionKey, new Message(is));
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
@@ -368,9 +372,9 @@ public class ParameterTest {
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
-		session.put(sessionKey, Arrays.asList(new String[] {"fiets", "bel", "appel"}));
+		session.put(sessionKey, Arrays.asList(new String[]{"fiets", "bel", "appel"}));
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
@@ -388,7 +392,7 @@ public class ParameterTest {
 		p.setXpathExpression("/dummy");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -402,7 +406,7 @@ public class ParameterTest {
 		p.setXpathExpression("/dummy");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("<dummy>a</dummy>");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -417,7 +421,7 @@ public class ParameterTest {
 		p.setXpathExpression("/notfound");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("<dummy>a</dummy>");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -441,10 +445,10 @@ public class ParameterTest {
 		p.setXpathExpression("/dummy");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("{\"dummy\": \"a\"}");
 
-		assertThrows(ParameterException.class, ()-> p.getValue(alreadyResolvedParameters, message, null, false));
+		assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, message, null, false));
 	}
 
 	@Test
@@ -455,7 +459,7 @@ public class ParameterTest {
 		p.setXpathExpression("/dummy");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = Message.nullMessage();
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -470,7 +474,7 @@ public class ParameterTest {
 		p.setXpathExpression("/dummy");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		Object result = p.getValue(alreadyResolvedParameters, null, null, false);
 		assertEquals("fakeDefault", Message.asMessage(result).asString());
@@ -485,7 +489,7 @@ public class ParameterTest {
 		p.setDefaultValue("fakeDefault");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		PipeLineSession session = new PipeLineSession();
@@ -503,7 +507,7 @@ public class ParameterTest {
 		p.setDefaultValue("fakeDefault");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		PipeLineSession session = new PipeLineSession();
@@ -521,7 +525,7 @@ public class ParameterTest {
 		p.setType(ParameterType.BOOLEAN);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -546,7 +550,7 @@ public class ParameterTest {
 		PipeLineSession session = new PipeLineSession();
 		session.put("sessionKey", map);
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
@@ -564,7 +568,7 @@ public class ParameterTest {
 		p.setType(ParameterType.NUMBER);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, message, null, false));
@@ -574,6 +578,7 @@ public class ParameterTest {
 	public void testParameterInteger() throws Exception {
 		testParameterTypeHelper(ParameterType.INTEGER, Integer.class);
 	}
+
 	@Test
 	public void testParameterNumber() throws Exception {
 		testParameterTypeHelper(ParameterType.NUMBER, Number.class);
@@ -586,11 +591,11 @@ public class ParameterTest {
 		p.setType(type);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("sessionkey", 8);
@@ -601,31 +606,31 @@ public class ParameterTest {
 		p.configure();
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", "8");
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", Message.asMessage(8));
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", "8".getBytes());
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", Message.asMessage("8".getBytes()));
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 	}
 
@@ -638,11 +643,11 @@ public class ParameterTest {
 		p.setType(ParameterType.NUMBER);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(result instanceof String, "Expecting to be String but was:"+result.getClass());
+		assertTrue(result instanceof String, "Expecting to be String but was:" + result.getClass());
 		assertEquals("0000000008", (String) result);
 	}
 
@@ -656,7 +661,7 @@ public class ParameterTest {
 		p.setType(ParameterType.NUMBER);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -674,7 +679,7 @@ public class ParameterTest {
 		p.setType(ParameterType.NUMBER);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -692,7 +697,7 @@ public class ParameterTest {
 		p.setType(ParameterType.NUMBER);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -710,7 +715,7 @@ public class ParameterTest {
 		p.setType(ParameterType.NUMBER);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -726,7 +731,7 @@ public class ParameterTest {
 		p.setMaxLength(5);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -742,7 +747,7 @@ public class ParameterTest {
 		p.setMinLength(15);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
@@ -754,18 +759,22 @@ public class ParameterTest {
 	public void testParameterFromURLToDomdocTypeNoNameSpace() throws Exception {
 		testParameterFromURLToDomTypeHelper(ParameterType.DOMDOC, false, Document.class);
 	}
+
 	@Test
 	public void testParameterFromURLToDomdocTypeRemoveNameSpace() throws Exception {
 		testParameterFromURLToDomTypeHelper(ParameterType.DOMDOC, true, Document.class);
 	}
+
 	@Test
 	public void testParameterFromURLToNodeTypeNoNameSpace() throws Exception {
 		testParameterFromURLToDomTypeHelper(ParameterType.NODE, false, Node.class);
 	}
+
 	@Test
 	public void testParameterFromURLToNodeTypeRemoveNameSpace() throws Exception {
 		testParameterFromURLToDomTypeHelper(ParameterType.NODE, true, Node.class);
 	}
+
 	public <T> void testParameterFromURLToDomTypeHelper(ParameterType type, boolean removeNamespaces, Class<T> c) throws Exception {
 		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
 
@@ -779,11 +788,11 @@ public class ParameterTest {
 		inputMessage.setRemoveNamespaces(removeNamespaces);
 		inputMessage.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
+		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 	}
 
 	@Test
@@ -801,14 +810,14 @@ public class ParameterTest {
 		parameter.setXpathExpression("*");
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Document.class));
+		assertThat(result, instanceOf(Document.class));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document)result));
-		assertEquals(expectedResultContents,contents);
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
+		assertEquals(expectedResultContents, contents);
 	}
 
 	@Test
@@ -826,15 +835,15 @@ public class ParameterTest {
 		parameter.setXpathExpression("*");
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Node.class));
-		assertThat(result,not(instanceOf(Document.class)));
+		assertThat(result, instanceOf(Node.class));
+		assertThat(result, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node)result));
-		assertEquals(expectedResultContents,contents);
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
+		assertEquals(expectedResultContents, contents);
 	}
 
 	@Test
@@ -849,14 +858,14 @@ public class ParameterTest {
 		parameter.setType(ParameterType.DOMDOC);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Document.class));
+		assertThat(result, instanceOf(Document.class));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document)result));
-		assertEquals(expectedResultContents,contents);
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
+		assertEquals(expectedResultContents, contents);
 	}
 
 	@Test
@@ -871,15 +880,15 @@ public class ParameterTest {
 		parameter.setType(ParameterType.NODE);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Node.class));
-		assertThat(result,not(instanceOf(Document.class)));
+		assertThat(result, instanceOf(Node.class));
+		assertThat(result, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node)result));
-		assertEquals(expectedResultContents,contents);
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
+		assertEquals(expectedResultContents, contents);
 	}
 
 	@Test
@@ -896,14 +905,14 @@ public class ParameterTest {
 		parameter.setType(ParameterType.DOMDOC);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Document.class));
+		assertThat(result, instanceOf(Document.class));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document)result));
-		assertEquals(expectedResultContents,contents);
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
+		assertEquals(expectedResultContents, contents);
 	}
 
 	@Test
@@ -920,15 +929,15 @@ public class ParameterTest {
 		parameter.setType(ParameterType.NODE);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Node.class));
-		assertThat(result,not(instanceOf(Document.class)));
+		assertThat(result, instanceOf(Node.class));
+		assertThat(result, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node)result));
-		assertEquals(expectedResultContents,contents);
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
+		assertEquals(expectedResultContents, contents);
 	}
 
 	@Test
@@ -945,14 +954,14 @@ public class ParameterTest {
 		parameter.setType(ParameterType.DOMDOC);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Document.class));
+		assertThat(result, instanceOf(Document.class));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document)result));
-		assertEquals(expectedResultContents,contents);
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
+		assertEquals(expectedResultContents, contents);
 	}
 
 	@Test
@@ -969,17 +978,16 @@ public class ParameterTest {
 		parameter.setType(ParameterType.NODE);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Node.class));
-		assertThat(result,not(instanceOf(Document.class)));
+		assertThat(result, instanceOf(Node.class));
+		assertThat(result, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node)result));
-		assertEquals(expectedResultContents,contents);
+		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
+		assertEquals(expectedResultContents, contents);
 	}
-
 
 
 	@Test
@@ -995,13 +1003,13 @@ public class ParameterTest {
 		parameter.setType(ParameterType.DATE);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Date.class));
+		assertThat(result, instanceOf(Date.class));
 
-		assertEquals(date,result);
+		assertEquals(date, result);
 	}
 
 	protected void testFromStringToDateType(String input, String expected, ParameterType type) throws ConfigurationException, ParameterException {
@@ -1012,39 +1020,44 @@ public class ParameterTest {
 		parameter.setType(type);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, null, true);
-		assertThat(result,instanceOf(Date.class));
+		assertThat(result, instanceOf(Date.class));
 
-		assertEquals(expected, DateFormatUtils.format((Date)result));
+		assertEquals(expected, DateFormatUtils.format((Date) result));
 
 	}
+
 	@Test
 	public void testParameterFromStringToDate() throws Exception {
 		String input = "2022-01-23";
 		String expected = "2022-01-23 00:00:00.000";
 		testFromStringToDateType(input, expected, ParameterType.DATE);
 	}
+
 	@Test
 	public void testParameterFromStringToDateTime() throws Exception {
 		String input = "2022-01-23 11:14:17";
 		String expected = "2022-01-23 11:14:17.000";
 		testFromStringToDateType(input, expected, ParameterType.DATETIME);
 	}
+
 	@Test
 	public void testParameterFromStringToTimestamp() throws Exception {
 		String input = "2022-01-23 11:14:17.123";
 		String expected = "2022-01-23 11:14:17.123";
 		testFromStringToDateType(input, expected, ParameterType.TIMESTAMP);
 	}
+
 	@Test
 	public void testParameterFromStringToTime() throws Exception {
 		String input = "11:14:17";
 		String expected = "1970-01-01 11:14:17.000";
 		testFromStringToDateType(input, expected, ParameterType.TIME);
 	}
+
 	@Test
 	public void testParameterFromStringToXmlDateTime() throws Exception {
 		String input = "2022-01-23T11:14:17";
@@ -1065,13 +1078,13 @@ public class ParameterTest {
 		parameter.setType(ParameterType.XMLDATETIME);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result,instanceOf(Date.class));
+		assertThat(result, instanceOf(Date.class));
 
-		assertEquals(date,result);
+		assertEquals(date, result);
 	}
 
 
@@ -1122,7 +1135,7 @@ public class ParameterTest {
 			cpp.setPipeProcessor(pipeProcessor);
 			PipeLineSession session = configuration.createBean(PipeLineSession.class);
 			pipeline.setOwner(pipe);
-			PipeLineResult pipeRunResult=cpp.processPipeLine(pipeline, "messageId", new Message(testMessage), session, firstPipe);
+			PipeLineResult pipeRunResult = cpp.processPipeLine(pipeline, "messageId", new Message(testMessage), session, firstPipe);
 
 			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());
 			assertEquals(testMessage, pipeRunResult.getResult().asString());
@@ -1196,7 +1209,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		try {
-			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"true");
+			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 			assertTrue(result instanceof Date);
 			Date resultDate = (Date) result;
@@ -1223,7 +1236,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		try {
-			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"true");
+			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 			assertTrue(result instanceof Date);
 			Date resultDate = (Date) result;
@@ -1245,7 +1258,7 @@ public class ParameterTest {
 		p.configure();
 		PipeLineSession session = new PipeLineSession();
 		SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
-		session.put("fixedDate",sdf.parse("1995-01-23"));
+		session.put("fixedDate", sdf.parse("1995-01-23"));
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
@@ -1304,7 +1317,7 @@ public class ParameterTest {
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
-			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
+			assertEquals(expectedDate.substring(0, 10), ((String) result).substring(0, 10));
 
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
@@ -1329,7 +1342,7 @@ public class ParameterTest {
 
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
-			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
+			assertEquals(expectedDate.substring(0, 10), ((String) result).substring(0, 10));
 
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
@@ -1502,7 +1515,7 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+		String result = (String) p.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertEquals(null, result);
 	}
@@ -1523,7 +1536,7 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+		String result = (String) p.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertEquals("fakeDefaultValue", result);
 	}
@@ -1545,7 +1558,7 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+		String result = (String) p.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertEquals("fakeDefaultValueSessionKey", result);
 	}
@@ -1567,7 +1580,7 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+		String result = (String) p.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertEquals("fakePatternSessionKey", result);
 	}
@@ -1589,7 +1602,7 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+		String result = (String) p.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertEquals("<doc/>", result);
 	}
@@ -1611,7 +1624,7 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+		String result = (String) p.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertEquals("fakeMessage", result);
 	}
@@ -1632,7 +1645,7 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+		String result = (String) p.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertEquals("<doc/>", result);
 	}
@@ -1653,7 +1666,7 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+		String result = (String) p.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertEquals("<doc/>", result);
 	}
@@ -1665,7 +1678,7 @@ public class ParameterTest {
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
-		String result = (String)p.getValue(alreadyResolvedParameters, Message.nullMessage(), null, false);
+		String result = (String) p.getValue(alreadyResolvedParameters, Message.nullMessage(), null, false);
 
 		assertEquals(null, result);
 	}
@@ -1690,7 +1703,7 @@ public class ParameterTest {
 
 		Message input = new Message("<data>{\"pad\":{\"naar\":{\"wat\":{\"de\":{\"waarde\":{\"moet\":{\"zijn\":\"hallo\"}}}}}}}</data>");
 		PipeLineSession session = new PipeLineSession();
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("hallo", p.getValue(alreadyResolvedParameters, input, session, false));
 	}

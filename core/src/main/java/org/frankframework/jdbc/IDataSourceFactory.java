@@ -33,6 +33,7 @@ public interface IDataSourceFactory {
 	/**
 	 * Set the JNDI environment to use for JNDI lookups.
 	 * <p>Uses a Spring JndiTemplate with the given environment settings.
+	 *
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 */
 	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException;

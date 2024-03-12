@@ -27,12 +27,12 @@ import org.frankframework.management.IbisAction;
 
 /**
  * An IBIS Manager gives various methods for the control of an IBIS instance.
- *
+ * <p>
  * A specific implementation of the interface should be retrieved from the
  * Spring Beans Factory.
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public interface IbisManager extends ApplicationEventPublisherAware, ApplicationContextAware {
 	public static String ALL_CONFIGS_KEY = "*ALL*";

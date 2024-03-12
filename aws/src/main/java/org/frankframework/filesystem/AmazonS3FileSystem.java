@@ -29,19 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.input.NullInputStream;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.aws.AwsUtil;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Mandatory;
-import org.frankframework.stream.Message;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.FileUtils;
-import org.frankframework.util.StreamUtil;
-import org.frankframework.util.StringUtil;
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
@@ -64,6 +51,18 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.aws.AwsUtil;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.stream.Message;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.FileUtils;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
 
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
@@ -95,7 +94,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+		if ((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
 			throw new ConfigurationException("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)");
 		}
 
@@ -136,7 +135,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 				.withClientConfiguration(this.getClientConfig())
 				.enablePathStyleAccess();
 
-		if(StringUtils.isBlank(serviceEndpoint)) {
+		if (StringUtils.isBlank(serviceEndpoint)) {
 			s3ClientBuilder.withRegion(getClientRegion());
 		} else {
 			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, getClientRegion()));
@@ -147,7 +146,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public void close() throws FileSystemException {
-		if(s3Client != null) {
+		if (s3Client != null) {
 			s3Client.shutdown();
 		}
 		super.close();
@@ -161,12 +160,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	public S3Object toFile(String filename) {
 		S3Object object = new S3Object();
 		int separatorPos = filename.indexOf(BUCKET_OBJECT_SEPARATOR);
-		if (separatorPos<0) {
+		if (separatorPos < 0) {
 			object.setBucketName(bucketName);
 			object.setKey(filename);
 		} else {
-			object.setBucketName(filename.substring(0,separatorPos));
-			object.setKey(filename.substring(separatorPos+1));
+			object.setBucketName(filename.substring(0, separatorPos));
+			object.setKey(filename.substring(separatorPos + 1));
 		}
 		return object;
 	}
@@ -184,8 +183,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		try {
 			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
 			summaries = listing.getObjectSummaries();
-			int result = summaries.size() - (folder!=null ? 1 :0);
-			while (listing.isTruncated() && (getMaxNumberOfMessagesToList()<0 || getMaxNumberOfMessagesToList() > result)) {
+			int result = summaries.size() - (folder != null ? 1 : 0);
+			while (listing.isTruncated() && (getMaxNumberOfMessagesToList() < 0 || getMaxNumberOfMessagesToList() > result)) {
 				listing = s3Client.listNextBatchOfObjects(listing);
 				result += listing.getObjectSummaries().size();
 			}
@@ -210,32 +209,32 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			int iterations = 0;
 
 			do {
-				if(iterations > 20) {
+				if (iterations > 20) {
 					log.warn("unable to list all files in folder [{}]", folder);
 					break;
 				}
 
 				listing = s3Client.listObjectsV2(request);
 				summaries.addAll(listing.getObjectSummaries()); //Files
-				if(includeDirectories) {
+				if (includeDirectories) {
 					subFolders.addAll(listing.getCommonPrefixes()); //Folders
 				}
 
 				request.setContinuationToken(listing.getNextContinuationToken());
 				iterations++;
-			} while(listing.isTruncated());
+			} while (listing.isTruncated());
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException("Cannot process requested action", e);
 		}
 
 		List<S3Object> list = new ArrayList<>();
 		for (S3ObjectSummary summary : summaries) {
-			if(summary.getKey().endsWith("/")) { //Omit the 'search' folder
+			if (summary.getKey().endsWith("/")) { //Omit the 'search' folder
 				continue;
 			}
 			list.add(extractS3ObjectFromSummary(summary));
 		}
-		for(String folderName : subFolders) {
+		for (String folderName : subFolders) {
 			list.add(createS3FolderObject(bucketName, folderName));
 		}
 
@@ -273,11 +272,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	public void createFile(S3Object f, InputStream content) throws FileSystemException, IOException {
 		String folder = getParentFolder(f);
 		if (folder != null && !folderExists(folder)) { //AWS Supports the creation of folders, this check is purely here so all FileSystems have the same behavior
-			throw new FileSystemException("folder ["+folder+"] does not exist");
+			throw new FileSystemException("folder [" + folder + "] does not exist");
 		}
 
 		final File file = FileUtils.createTempFile(".s3-upload"); //The lesser evil to allow streaming uploads
-		try(FileOutputStream fos = new FileOutputStream(file)) {
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			StreamUtil.streamToStream(content, fos);
 		}
 
@@ -285,7 +284,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		metaData.setContentLength(file.length());
 
 		try (FileInputStream fis = new FileInputStream(file)) {
-			try(S3Object s3File = f) {
+			try (S3Object s3File = f) {
 				PutObjectRequest por = new PutObjectRequest(bucketName, s3File.getKey(), fis, metaData);
 				por.setStorageClass(getStorageClass());
 				s3Client.putObject(por);
@@ -314,7 +313,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Message readFile(S3Object file, String charset) throws FileSystemException {
 		try {
-			if(file.getObjectContent() == null) { // We have a reference but not an actual object representing the S3 bucket.
+			if (file.getObjectContent() == null) { // We have a reference but not an actual object representing the S3 bucket.
 				file = s3Client.getObject(bucketName, file.getKey()); // Fetch a new copy
 			}
 			return new Message(file.getObjectContent(), FileSystemUtils.getContext(this, file, charset));
@@ -328,7 +327,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	 * Updates the Metadata context but does not retrieve the actual file handle.
 	 */
 	private S3Object updateFileAttributes(S3Object f) {
-		if(f.getObjectMetadata().getRawMetadataValue(Headers.CONTENT_LENGTH) == null) {
+		if (f.getObjectMetadata().getRawMetadataValue(Headers.CONTENT_LENGTH) == null) {
 			ObjectMetadata omd = s3Client.getObjectMetadata(bucketName, f.getKey());
 			f.setObjectMetadata(omd);
 		}
@@ -362,17 +361,17 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			int iterations = 0;
 
 			do {
-				if(iterations > 20) {
+				if (iterations > 20) {
 					log.warn("unable to list all files in folder [{}]", folder);
 					break;
 				}
 				listing = s3Client.listObjectsV2(request);
-				if(listing.getKeyCount() > 0) { //If more then 1 result is returned, files also exist in this folder
+				if (listing.getKeyCount() > 0) { //If more then 1 result is returned, files also exist in this folder
 					return true;
 				}
 				request.setContinuationToken(listing.getNextContinuationToken());
 				iterations++;
-			} while(listing.isTruncated());
+			} while (listing.isTruncated());
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException("Cannot process requested action", e);
 		}
@@ -382,7 +381,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		String folderName = folder.endsWith("/") ? folder : folder + "/";
-		if(!folderExists(folder)) {
+		if (!folderExists(folder)) {
 			ObjectMetadata metadata = new ObjectMetadata();
 			metadata.setContentLength(0);
 			metadata.setContentType("binary/octet-stream");
@@ -398,7 +397,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (folderExists(folder)) {
-			if(!removeNonEmptyFolder && listFiles(folder, true).iterator().hasNext()) { //Check if there are files or folders
+			if (!removeNonEmptyFolder && listFiles(folder, true).iterator().hasNext()) { //Check if there are files or folders
 				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
 			}
 
@@ -422,10 +421,10 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public S3Object copyFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		if (!createFolder && !folderExists(destinationFolder)) {
-			throw new FileSystemException("folder ["+destinationFolder+"] does not exist");
+			throw new FileSystemException("folder [" + destinationFolder + "] does not exist");
 		}
-		String destinationFile = destinationFolder+"/"+getName(f);
-		CopyObjectRequest cor = new CopyObjectRequest(bucketName, f.getKey(), bucketName,destinationFile);
+		String destinationFile = destinationFolder + "/" + getName(f);
+		CopyObjectRequest cor = new CopyObjectRequest(bucketName, f.getKey(), bucketName, destinationFile);
 		cor.setStorageClass(getStorageClass());
 		s3Client.copyObject(cor);
 		return toFile(destinationFile);
@@ -434,7 +433,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	// move is actually implemented via copy and delete
 	public S3Object moveFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		return renameFile(f,toFile(destinationFolder,getName(f)));
+		return renameFile(f, toFile(destinationFolder, getName(f)));
 	}
 
 
@@ -448,7 +447,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public String getName(S3Object f) {
 		int lastSlashPos = f.getKey().lastIndexOf('/');
-		return f.getKey().substring(lastSlashPos+1);
+		return f.getKey().substring(lastSlashPos + 1);
 	}
 
 	@Override
@@ -488,13 +487,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "bucket ["+getBucketName()+"]";
+		return "bucket [" + getBucketName() + "]";
 	}
 
 	public static List<String> getAvailableRegions() {
 		List<String> availableRegions = new ArrayList<>(Regions.values().length);
-		for (Regions region : Regions.values())
-			availableRegions.add(region.getName());
+		for (Regions region : Regions.values()) {availableRegions.add(region.getName());}
 
 		return availableRegions;
 	}
@@ -510,13 +508,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		this.secretKey = secretKey;
 	}
 
-	/** Alias used to obtain AWS credentials  */
+	/** Alias used to obtain AWS credentials */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
 	/**
 	 * Setting this flag will result in disabling chunked encoding for all requests.
+	 *
 	 * @ff.default false
 	 */
 	public void setChunkedEncodingDisabled(boolean chunkedEncodingDisabled) {
@@ -525,6 +524,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	/**
 	 * Set whether the client should be configured with global bucket access enabled.
+	 *
 	 * @ff.default false
 	 */
 	public void setForceGlobalBucketAccessEnabled(boolean forceGlobalBucketAccessEnabled) {
@@ -540,6 +540,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	/**
 	 * Name of the region that the client will be created from
+	 *
 	 * @ff.default eu-west-1
 	 */
 	@Mandatory
@@ -565,6 +566,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	/**
 	 * Set the desired storage class for the S3 object when action is move,copy or write.
 	 * More info on storage classes can be found on the AWS S3 docs: https://aws.amazon.com/s3/storage-classes/
+	 *
 	 * @ff.default STANDARD
 	 */
 	public void setStorageClass(StorageClass storageClass) {

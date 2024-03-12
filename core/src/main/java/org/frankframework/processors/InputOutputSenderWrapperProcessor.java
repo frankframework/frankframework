@@ -27,39 +27,40 @@ import org.frankframework.senders.SenderWrapperBase;
 import org.frankframework.stream.Message;
 
 /**
- * @author  Gerrit van Brakel
- * @since   4.11
+ * @author Gerrit van Brakel
+ * @since 4.11
  */
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
 	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		Message senderInput=message;
+		Message senderInput = message;
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreInputInSessionKey())) {
 			try {
 				message.preserve();
 			} catch (IOException e) {
-				throw new SenderException("Could not preserve input",e);
+				throw new SenderException("Could not preserve input", e);
 			}
 			session.put(senderWrapperBase.getStoreInputInSessionKey(), message);
 		}
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
 			if (!session.containsKey(senderWrapperBase.getGetInputFromSessionKey())) {
-				throw new SenderException("getInputFromSessionKey ["+senderWrapperBase.getGetInputFromSessionKey()+"] is not present in session");
+				throw new SenderException("getInputFromSessionKey [" + senderWrapperBase.getGetInputFromSessionKey() + "] is not present in session");
 			}
-			senderInput=session.getMessage(senderWrapperBase.getGetInputFromSessionKey());
-			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
+			senderInput = session.getMessage(senderWrapperBase.getGetInputFromSessionKey());
+			if (log.isDebugEnabled())
+				log.debug(senderWrapperBase.getLogPrefix() + "set contents of session variable [" + senderWrapperBase.getGetInputFromSessionKey() + "] as input [" + senderInput + "]");
 		} else {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {
-				senderInput=new Message(senderWrapperBase.getGetInputFromFixedValue());
-				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set input to fixed value ["+senderInput+"]");
+				senderInput = new Message(senderWrapperBase.getGetInputFromFixedValue());
+				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix() + "set input to fixed value [" + senderInput + "]");
 			}
 		}
-		if (senderWrapperBase.isPreserveInput() && message==senderInput) { // test if it is the same object, not if the contents is the same
+		if (senderWrapperBase.isPreserveInput() && message == senderInput) { // test if it is the same object, not if the contents is the same
 			try {
 				message.preserve();
 			} catch (IOException e) {
-				throw new SenderException("Could not preserve input",e);
+				throw new SenderException("Could not preserve input", e);
 			}
 		}
 		SenderResult result = senderWrapperProcessor.sendMessage(senderWrapperBase, senderInput, session);
@@ -69,10 +70,11 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 					try {
 						message.preserve();
 					} catch (IOException e) {
-						throw new SenderException("Could not preserve result",e);
+						throw new SenderException("Could not preserve result", e);
 					}
 				}
-				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
+				if (log.isDebugEnabled())
+					log.debug(senderWrapperBase.getLogPrefix() + "storing results in session variable [" + senderWrapperBase.getStoreResultInSessionKey() + "]");
 				session.put(senderWrapperBase.getStoreResultInSessionKey(), result.getResult());
 			}
 			if (senderWrapperBase.isPreserveInput()) {

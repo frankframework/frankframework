@@ -31,18 +31,18 @@ public class RecoverAdaptersJob extends JobDef {
 
 	@Override
 	public void execute() {
-		int countAdapter=0;
-		int countAdapterStateStarted=0;
-		int countReceiver=0;
-		int countReceiverStateStarted=0;
+		int countAdapter = 0;
+		int countAdapterStateStarted = 0;
+		int countReceiver = 0;
+		int countReceiverStateStarted = 0;
 		IbisManager ibisManager = getIbisManager();
 		for (Configuration configuration : ibisManager.getConfigurations()) {
-			if(configuration.isActive()) {
-				for (Adapter adapter: configuration.getRegisteredAdapters()) {
+			if (configuration.isActive()) {
+				for (Adapter adapter : configuration.getRegisteredAdapters()) {
 					countAdapter++;
 					RunState adapterRunState = adapter.getRunState();
 					boolean startAdapter = false;
-					if (adapterRunState==RunState.ERROR) { //if not previously configured, there is no point in trying to do this again.
+					if (adapterRunState == RunState.ERROR) { //if not previously configured, there is no point in trying to do this again.
 						log.debug("trying to recover adapter [{}]", adapter::getName);
 
 						if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
@@ -62,21 +62,21 @@ public class RecoverAdaptersJob extends JobDef {
 					}
 
 					String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
-					if (adapterRunState==RunState.STARTED) {
+					if (adapterRunState == RunState.STARTED) {
 						countAdapterStateStarted++;
 						heartbeatLog.info(message);
-					} else if (adapterRunState==RunState.ERROR) {
+					} else if (adapterRunState == RunState.ERROR) {
 						heartbeatLog.error(message);
 					} else {
 						heartbeatLog.warn(message);
 					}
 
-					for (Receiver<?> receiver: adapter.getReceivers()) {
+					for (Receiver<?> receiver : adapter.getReceivers()) {
 						countReceiver++;
 
 						RunState receiverRunState = receiver.getRunState();
 						//Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
-						if (adapterRunState==RunState.STARTED && (receiverRunState==RunState.ERROR || receiverRunState==RunState.EXCEPTION_STARTING) && receiver.configurationSucceeded()) {
+						if (adapterRunState == RunState.STARTED && (receiverRunState == RunState.ERROR || receiverRunState == RunState.EXCEPTION_STARTING) && receiver.configurationSucceeded()) {
 							log.debug("trying to recover receiver [{}] of adapter [{}]", receiver::getName, adapter::getName);
 
 							receiver.startRunning();
@@ -86,10 +86,10 @@ public class RecoverAdaptersJob extends JobDef {
 
 						receiverRunState = receiver.getRunState();
 						message = "receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "] has state [" + receiverRunState + "]";
-						if (receiverRunState==RunState.STARTED) {
+						if (receiverRunState == RunState.STARTED) {
 							countReceiverStateStarted++;
 							heartbeatLog.info(message);
-						} else if (receiverRunState==RunState.ERROR) {
+						} else if (receiverRunState == RunState.ERROR) {
 							heartbeatLog.error(message);
 						} else {
 							heartbeatLog.warn(message);

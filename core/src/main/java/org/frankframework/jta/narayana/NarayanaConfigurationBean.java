@@ -68,9 +68,9 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 			try (InputStream is = NarayanaConfigurationBean.class.getClassLoader().getResourceAsStream(propertyFileName)) {
 				loadFromXML(tempProperties, is);
 			} catch (IOException e) {
-				log.error("unable to read XML file ["+propertyFileName+"]", e);
+				log.error("unable to read XML file [" + propertyFileName + "]", e);
 			}
-			tempProperties.forEach((k, v) -> outputProperties.put(k, ((String)v).trim()));
+			tempProperties.forEach((k, v) -> outputProperties.put(k, ((String) v).trim()));
 			return outputProperties;
 		}
 	}
@@ -84,7 +84,7 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 
 		// Set/Update the JdbcAccess value
 		final MetaObjectStoreEnvironmentBean jdbcStoreEnvironment = BeanPopulator.getDefaultInstance(MetaObjectStoreEnvironmentBean.class);
-		if(JDBCStore.class.getCanonicalName().equals(jdbcStoreEnvironment.getObjectStoreType())) {
+		if (JDBCStore.class.getCanonicalName().equals(jdbcStoreEnvironment.getObjectStoreType())) {
 			jdbcStoreEnvironment.setJdbcAccess(getObjectStoreJndiName());
 		}
 	}

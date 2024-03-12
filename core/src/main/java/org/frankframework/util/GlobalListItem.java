@@ -34,6 +34,7 @@ import org.frankframework.core.INamedObject;
  * New items are registerd using registerItem().
  * Typical use: SapSystem.getSystem(name).&lt;method to execute&gt;
  * <br/>
+ *
  * @author Gerrit van Brakel
  */
 public class GlobalListItem implements INamedObject {
@@ -57,14 +58,14 @@ public class GlobalListItem implements INamedObject {
 		GlobalListItem result = null;
 
 		result = items.get(itemName);
-		if (result==null) {
-			throw new NullPointerException("no list item found for name ["+itemName+"]");
+		if (result == null) {
+			throw new NullPointerException("no list item found for name [" + itemName + "]");
 		}
 		if (!StringUtils.isEmpty(result.getAliasFor())) {
 			String aliasName = result.getAliasFor();
-			result=getItem(aliasName);
-			if (result==null) {
-				throw new NullPointerException("no alias ["+aliasName+"] list item found for name ["+itemName+"] ");
+			result = getItem(aliasName);
+			if (result == null) {
+				throw new NullPointerException("no alias [" + aliasName + "] list item found for name [" + itemName + "] ");
 			}
 		}
 		return result;
@@ -86,7 +87,7 @@ public class GlobalListItem implements INamedObject {
 	public static List<String> getRegisteredNamesAsList() {
 		Iterator<String> it = getRegisteredNames();
 		List<String> result = new ArrayList<>();
-		while(it.hasNext()) {
+		while (it.hasNext()) {
 			result.add(it.next());
 		}
 		return result;
@@ -96,7 +97,7 @@ public class GlobalListItem implements INamedObject {
 	 * Register an item in the list
 	 */
 	public void registerItem(Object dummyParent) {
-		if(StringUtils.isEmpty(getAliasFor())) {
+		if (StringUtils.isEmpty(getAliasFor())) {
 			configure();
 		}
 		items.put(getName(), this);
@@ -115,6 +116,7 @@ public class GlobalListItem implements INamedObject {
 	public void setName(String string) {
 		name = string;
 	}
+
 	@Override
 	public String getName() {
 		return name;
@@ -126,6 +128,7 @@ public class GlobalListItem implements INamedObject {
 	public void setAliasFor(String string) {
 		aliasFor = string;
 	}
+
 	public String getAliasFor() {
 		return aliasFor;
 	}

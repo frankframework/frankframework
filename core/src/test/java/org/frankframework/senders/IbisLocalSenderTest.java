@@ -37,6 +37,7 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.testutil.VirtualInputStream;
 import org.frankframework.util.RunState;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -111,7 +112,7 @@ class IbisLocalSenderTest {
 		configuration.configure();
 		configuration.start();
 
-		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+		waitForState((Receiver<?>) listener.getHandler(), RunState.STARTED);
 		ibisLocalSender.open();
 
 		// Act
@@ -130,11 +131,11 @@ class IbisLocalSenderTest {
 		// Assert
 		String msgPrefix = callByServiceName ? "Call via Dispatcher: " : "Call via JavaListener: ";
 		assertAll(
-			() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
-			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult, msgPrefix + "Local reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
-			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
-			() -> assertNull(testPipe.recordedMessageId, msgPrefix + "Message ID should not be passed to nested session"),
-			() -> assertEquals("c-id", testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
+				() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
+				() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult, msgPrefix + "Local reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
+				() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
+				() -> assertNull(testPipe.recordedMessageId, msgPrefix + "Message ID should not be passed to nested session"),
+				() -> assertEquals("c-id", testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
 		);
 	}
 
@@ -161,7 +162,7 @@ class IbisLocalSenderTest {
 		configuration.configure();
 		configuration.start();
 
-		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+		waitForState((Receiver<?>) listener.getHandler(), RunState.STARTED);
 		ibisLocalSender.open();
 
 		// Act
@@ -181,10 +182,10 @@ class IbisLocalSenderTest {
 		// Assert
 		String msgPrefix = callByServiceName ? "Call via Dispatcher: " : "Call via JavaListener: ";
 		assertAll(
-			() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
-			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
-			() -> assertNull(testPipe.recordedMessageId, msgPrefix + "Message ID should not be passed to nested session"),
-			() -> assertEquals("c-id", testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
+				() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
+				() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
+				() -> assertNull(testPipe.recordedMessageId, msgPrefix + "Message ID should not be passed to nested session"),
+				() -> assertEquals("c-id", testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
 		);
 	}
 
@@ -204,15 +205,15 @@ class IbisLocalSenderTest {
 
 			// Assert
 			assertAll(
-				() -> assertEquals("parameter1-value", result.getResult().asString()),
-				() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
-				() -> assertEquals("parameter1-value", session.getString("my-parameter1")),
-				() -> assertTrue(session.containsKey("my-parameter2"), "After request the pipeline-session should contain key [my-parameter2]"),
-				() -> assertEquals("parameter2-value", session.getString("my-parameter2")),
-				() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
-				() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]"),
-				() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
-				() -> assertEquals("my-parameter1", message.asString())
+					() -> assertEquals("parameter1-value", result.getResult().asString()),
+					() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
+					() -> assertEquals("parameter1-value", session.getString("my-parameter1")),
+					() -> assertTrue(session.containsKey("my-parameter2"), "After request the pipeline-session should contain key [my-parameter2]"),
+					() -> assertEquals("parameter2-value", session.getString("my-parameter2")),
+					() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
+					() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]"),
+					() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
+					() -> assertEquals("my-parameter1", message.asString())
 			);
 		}
 	}
@@ -232,11 +233,11 @@ class IbisLocalSenderTest {
 
 			// Assert
 			assertAll(
-				() -> assertEquals("parameter1-value", result.getResult().asString()),
-				() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
-				() -> assertEquals("parameter1-value", session.get("my-parameter1")),
-				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
-				() -> assertTrue(session.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy' b/c all keys should be copied")
+					() -> assertEquals("parameter1-value", result.getResult().asString()),
+					() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
+					() -> assertEquals("parameter1-value", session.get("my-parameter1")),
+					() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
+					() -> assertTrue(session.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy' b/c all keys should be copied")
 			);
 		}
 	}
@@ -383,7 +384,7 @@ class IbisLocalSenderTest {
 
 	private static long countStreamSize(Message message) {
 		long counter = 0;
-		try(InputStream in = message.asInputStream()) {
+		try (InputStream in = message.asInputStream()) {
 			while (in.read() >= 0) {
 				++counter;
 				// Do a bit of sleep, to give other thread chance to

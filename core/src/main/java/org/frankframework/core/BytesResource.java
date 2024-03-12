@@ -28,7 +28,6 @@ import org.frankframework.util.StreamUtil;
  * Reference to an byte[]. Can be accessed multiple times.
  *
  * @author Niels Meijer
- *
  */
 public class BytesResource extends Resource {
 	private final String name;
@@ -36,7 +35,7 @@ public class BytesResource extends Resource {
 
 	public BytesResource(byte[] bytes, String name, IScopeProvider scopeProvider) {
 		super(scopeProvider);
-		if(StringUtils.isEmpty(name)) {
+		if (StringUtils.isEmpty(name)) {
 			throw new IllegalStateException("name may not be empty");
 		}
 
@@ -60,6 +59,6 @@ public class BytesResource extends Resource {
 
 	@Override
 	public String toString() {
-		return "BytesResource name ["+name+"]";
+		return "BytesResource name [" + name + "]";
 	}
 }

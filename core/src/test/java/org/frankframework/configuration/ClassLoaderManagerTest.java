@@ -19,12 +19,14 @@ import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
+
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -34,7 +36,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	private ClassLoaderManager manager;
 
 	private static final String BASE_DIR = "/ClassLoader";
-	private static final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
+	private static final String JAR_FILE = BASE_DIR + "/zip/classLoader-test.zip";
 
 	private static final String CONFIG_0_NAME = "config0";
 	private static final String CONFIG_1_NAME = "config1";
@@ -50,7 +52,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	private AppConstants appConstants;
 
 	public static List<Arguments> data() {
-		return Arrays.asList(new Arguments[] {
+		return Arrays.asList(new Arguments[]{
 				Arguments.of("", CONFIG_0_NAME),
 				Arguments.of("WebAppClassLoader", CONFIG_1_NAME),
 				Arguments.of("DirectoryClassLoader", CONFIG_2_NAME),
@@ -72,33 +74,34 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	public void configureClassloader(String type, String configurationName) {
-		if(type == null || type.equals("DummyClassLoader"))
+		if (type == null || type.equals("DummyClassLoader"))
 			skip = true;
-		else if(type.isEmpty()) //If empty string, it's a WebAppClassLoader
+		else if (type.isEmpty()) //If empty string, it's a WebAppClassLoader
 			type = "WebAppClassLoader";
 
 		this.type = type;
 		this.configurationName = configurationName;
 
-		if(type.endsWith("DirectoryClassLoader")) {
-			String directory = getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
-			setLocalProperty("configurations."+configurationName+".directory", directory);
-			setLocalProperty("configurations."+configurationName+".basePath", ".");
+		if (type.endsWith("DirectoryClassLoader")) {
+			String directory = getTestClassesLocation() + "ClassLoader/DirectoryClassLoaderRoot/";
+			setLocalProperty("configurations." + configurationName + ".directory", directory);
+			setLocalProperty("configurations." + configurationName + ".basePath", ".");
 		}
 
-		if(type.endsWith("JarFileClassLoader")) {
+		if (type.endsWith("JarFileClassLoader")) {
 			URL file = this.getClass().getResource(JAR_FILE);
-			setLocalProperty("configurations."+configurationName+".jar", file.getFile());
+			setLocalProperty("configurations." + configurationName + ".jar", file.getFile());
 		}
 	}
 
 	/**
 	 * In order to test the DirectoryClassloader we need the absolute path of where it can find it's configuration(s)
+	 *
 	 * @return the path to the mvn generated test-classes folder
 	 */
 	private String getTestClassesLocation() {
 		String file = "test1.xml";
-		String testPath = this.getClass().getResource("/"+file).getPath();
+		String testPath = this.getClass().getResource("/" + file).getPath();
 		testPath = testPath.substring(0, testPath.indexOf(file));
 		return testPath;
 	}
@@ -108,12 +111,12 @@ public class ClassLoaderManagerTest extends Mockito {
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
 		String configurationsNames = "";
-		for(Arguments a: data()) {
+		for (Arguments a : data()) {
 			Object[] o = a.get();
-			configurationsNames += o[1]+",";
-			if(o[0] != null) {
+			configurationsNames += o[1] + ",";
+			if (o[0] != null) {
 				String value = "" + (String) o[0];
-				setLocalProperty("configurations."+o[1]+".classLoaderType", value);
+				setLocalProperty("configurations." + o[1] + ".classLoaderType", value);
 			}
 		}
 		setLocalProperty("configurations.names", configurationsNames);
@@ -157,8 +160,8 @@ public class ClassLoaderManagerTest extends Mockito {
 
 	private ClassLoader getClassLoader(String testConfiguration) throws Exception {
 		ClassLoader config = manager.get(testConfiguration);
-		if(config instanceof ClassLoaderBase) {
-			((ClassLoaderBase)config).setBasePath(".");
+		if (config instanceof ClassLoaderBase) {
+			((ClassLoaderBase) config).setBasePath(".");
 		}
 		return config;
 	}
@@ -167,13 +170,13 @@ public class ClassLoaderManagerTest extends Mockito {
 	@MethodSource("data")
 	public void properClassLoaderType(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
+		assertNull(appConstants.get("configurations." + configurationName + ".parentConfig"));
 		ClassLoader config = getClassLoader();
 
 		//in case the FQDN has been used, strip it
 		String name = type;
-		if(type.indexOf(".") > 0)
-			name = type.substring(type.lastIndexOf(".")+1);
+		if (type.indexOf(".") > 0)
+			name = type.substring(type.lastIndexOf(".") + 1);
 		assertEquals(name, config.getClass().getSimpleName());
 	}
 
@@ -181,7 +184,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	@MethodSource("data")
 	public void retrieveTestFileNotInClassLoader(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
+		assertNull(appConstants.get("configurations." + configurationName + ".parentConfig"));
 		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("test1.xml");
 
@@ -192,9 +195,9 @@ public class ClassLoaderManagerTest extends Mockito {
 	@MethodSource("data")
 	public void retrieveTestFileInClassLoaderRoot(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		if(skip) return; //This ClassLoader can't actually retrieve files...
+		if (skip) return; //This ClassLoader can't actually retrieve files...
 
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
+		assertNull(appConstants.get("configurations." + configurationName + ".parentConfig"));
 		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("ClassLoaderTestFile.xml");
 
@@ -205,20 +208,20 @@ public class ClassLoaderManagerTest extends Mockito {
 	@MethodSource("data")
 	public void retrieveTestFileInSubFolder(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		if(skip) return; //This ClassLoader can't actually retrieve files...
+		if (skip) return; //This ClassLoader can't actually retrieve files...
 
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
+		assertNull(appConstants.get("configurations." + configurationName + ".parentConfig"));
 		ClassLoader config = getClassLoader();
-		URL resource = config.getResource(BASE_DIR.substring(1)+"/ClassLoaderTestFile.xml");
+		URL resource = config.getResource(BASE_DIR.substring(1) + "/ClassLoaderTestFile.xml");
 
-		MatchUtils.assertTestFileEquals(BASE_DIR+"/ClassLoaderTestFile.xml", resource);
+		MatchUtils.assertTestFileEquals(BASE_DIR + "/ClassLoaderTestFile.xml", resource);
 	}
 
 	@ParameterizedTest
 	@MethodSource("data")
 	public void retrieveNonExistingTestFile(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
+		assertNull(appConstants.get("configurations." + configurationName + ".parentConfig"));
 		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("dummy-test-file.xml");
 
@@ -229,15 +232,15 @@ public class ClassLoaderManagerTest extends Mockito {
 	@MethodSource("data")
 	public void testInheritanceMakeSureFileIsFoundInBothParentAndChild(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		if(skip) return; //This ClassLoader can't actually retrieve files...
+		if (skip) return; //This ClassLoader can't actually retrieve files...
 
 		String testConfiguration = "myNewClassLoader";
-		setLocalProperty("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
-		setLocalProperty("configurations."+testConfiguration+".basePath", ".");
-		setLocalProperty("configurations."+configurationName+".parentConfig", testConfiguration);
-		String directory = getTestClassesLocation()+"ClassLoader/";
-		setLocalProperty("configurations."+testConfiguration+".directory", directory);
-		setLocalProperty("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration);
+		setLocalProperty("configurations." + testConfiguration + ".classLoaderType", "DirectoryClassLoader");
+		setLocalProperty("configurations." + testConfiguration + ".basePath", ".");
+		setLocalProperty("configurations." + configurationName + ".parentConfig", testConfiguration);
+		String directory = getTestClassesLocation() + "ClassLoader/";
+		setLocalProperty("configurations." + testConfiguration + ".directory", directory);
+		setLocalProperty("configurations.names", appConstants.get("configurations.names") + "," + testConfiguration);
 
 		String testFile = "fileOnlyOnLocalClassPath.txt";
 		ClassLoader parentClassloader = getClassLoader(testConfiguration);
@@ -250,14 +253,14 @@ public class ClassLoaderManagerTest extends Mockito {
 		URL resource = config.getResource(testFile);
 
 		assertNotNull(resource);
-		appConstants.remove("configurations."+configurationName+".parentConfig");
+		appConstants.remove("configurations." + configurationName + ".parentConfig");
 	}
 
 	@ParameterizedTest
 	@MethodSource("data")
 	public void reloadString(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
+		assertNull(appConstants.get("configurations." + configurationName + ".parentConfig"));
 		ClassLoader config1 = manager.get(configurationName);
 
 		manager.reload(configurationName);
@@ -271,7 +274,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	@MethodSource("data")
 	public void reloadClassLoader(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
+		assertNull(appConstants.get("configurations." + configurationName + ".parentConfig"));
 		ClassLoader config1 = manager.get(configurationName);
 
 		manager.reload(config1);
@@ -281,7 +284,8 @@ public class ClassLoaderManagerTest extends Mockito {
 		assertEquals(config1.toString(), config2.toString());
 	}
 
-	/**This method makes sure the property is only set in the local AppConstants instance.
+	/**
+	 * This method makes sure the property is only set in the local AppConstants instance.
 	 * When you use the default put/setProperty it stores the property in the additionalProperties and
 	 * upon creation of a new AppConstants instance it will set all the previously set properties
 	 */

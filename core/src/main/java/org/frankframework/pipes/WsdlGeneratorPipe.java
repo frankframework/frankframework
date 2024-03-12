@@ -34,7 +34,6 @@ import org.frankframework.util.StreamUtil;
 /**
  * Generate WSDL of parent or specified adapter.
  *
-
  * @author Jaco de Groot
  */
 @ElementType(ElementTypes.SESSION)
@@ -85,6 +84,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	/**
 	 * either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe), adapter must be within the same Configuration
+	 *
 	 * @ff.default parent
 	 */
 	public void setFrom(String from) {

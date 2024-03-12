@@ -25,12 +25,15 @@ public class SaxAbortException extends SaxException {
 	public SaxAbortException() {
 		super();
 	}
+
 	public SaxAbortException(String message) {
 		super(message);
 	}
+
 	public SaxAbortException(String message, Exception cause) {
 		super(message, cause);
 	}
+
 	public SaxAbortException(Exception cause) {
 		super(cause);
 	}

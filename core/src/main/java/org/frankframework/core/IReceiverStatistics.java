@@ -16,6 +16,7 @@
 package org.frankframework.core;
 
 import org.frankframework.statistics.StatisticsKeeper;
+
 /**
  * Methods for Receivers to supply statistics to a maintenance clients. Receivers indicate
  * by implementing this interface that process- and idle statistics may be available for
@@ -23,16 +24,16 @@ import org.frankframework.statistics.StatisticsKeeper;
  *
  * @author Gerrit van Brakel
  */
-public interface IReceiverStatistics  {
+public interface IReceiverStatistics {
 	/**
 	 * @return an iterator of {@link StatisticsKeeper}s describing the durations of time that
-	 * the receiver has been waiting between messages.
+	 * 		the receiver has been waiting between messages.
 	 */
 	Iterable<StatisticsKeeper> getIdleStatistics();
 
 	/**
 	 * @return an iterator of {@link StatisticsKeeper}s describing the durations of time that
-	 * the receiver has been waiting for the adapter to process messages.
+	 * 		the receiver has been waiting for the adapter to process messages.
 	 */
 	Iterable<StatisticsKeeper> getProcessStatistics();
 }

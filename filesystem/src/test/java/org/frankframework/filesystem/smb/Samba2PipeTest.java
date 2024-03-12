@@ -1,5 +1,8 @@
 package org.frankframework.filesystem.smb;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.filesystem.FileSystemActor;
 import org.frankframework.filesystem.FileSystemPipeTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
@@ -10,8 +13,6 @@ import org.frankframework.pipes.Samba2Pipe;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class Samba2PipeTest extends FileSystemPipeTest<Samba2Pipe, SmbFileRef, Samba2FileSystem> {
 
@@ -30,7 +31,7 @@ public class Samba2PipeTest extends FileSystemPipeTest<Samba2Pipe, SmbFileRef, S
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		if("localhost".equals(host)) {
+		if ("localhost".equals(host)) {
 			return new LocalFileSystemTestHelper(fs.getTestDirectory());
 		}
 		return new Samba2FileSystemTestHelper(host, port, shareName, username, password, domain);
@@ -39,7 +40,7 @@ public class Samba2PipeTest extends FileSystemPipeTest<Samba2Pipe, SmbFileRef, S
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
-		if("localhost".equals(host)) {
+		if ("localhost".equals(host)) {
 			fs.startServer(FileSystemType.SMB2);
 			port = fs.getPort();
 		}
@@ -52,7 +53,7 @@ public class Samba2PipeTest extends FileSystemPipeTest<Samba2Pipe, SmbFileRef, S
 		pipe.setShare(shareName);
 		pipe.setUsername(username);
 		pipe.setPassword(password);
-		if("localhost".equals(host)) { // test stub only works with NTLM
+		if ("localhost".equals(host)) { // test stub only works with NTLM
 			pipe.setAuthType(Samba2AuthType.NTLM);
 		}
 		pipe.setHostname(host);

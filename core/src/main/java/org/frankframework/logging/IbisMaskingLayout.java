@@ -118,10 +118,10 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 
 	/**
 	 * When converting from a (Log4jLogEvent) to a mutable LogEvent ensure to not invoke any getters but assign the fields directly.
-	 *
+	 * <p>
 	 * Directly calling RewriteAppender.append(LogEvent) can do 44 million ops/sec, but when calling rewriteLogger.debug(msg) to invoke
 	 * a logger that calls this appender, all of a sudden throughput drops to 37 thousand ops/sec. That's 1000x slower.
-	 *
+	 * <p>
 	 * Rewriting the event ({@link MutableLogEvent#initFrom(LogEvent)}) includes invoking caller location information, {@link LogEvent#getSource()}
 	 * This is done by taking a snapshot of the stack and walking it, see {@link StackLocatorUtil#calcLocation(String)}).
 	 * Hence avoid this at all costs, fixed from version 2.6 (LOG4J2-1382) use a builder instance to update the @{link Message}.
@@ -131,7 +131,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * @see StackLocatorUtil#calcLocation(String)
 	 */
 	private LogEvent updateLogEventMessage(LogEvent event, Message message) {
-		if(event instanceof Log4jLogEvent) {
+		if (event instanceof Log4jLogEvent) {
 			Log4jLogEvent.Builder builder = ((Log4jLogEvent) event).asBuilder();
 			builder.setMessage(message);
 			return builder.build();
@@ -186,7 +186,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	}
 
 	public static void addToThreadLocalReplace(Collection<String> collection) {
-		if(collection == null) return;
+		if (collection == null) return;
 
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
@@ -199,7 +199,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * This used to be LogUtil.setThreadHideRegex(String hideRegex)
 	 */
 	public static void addToThreadLocalReplace(String regex) {
-		if(StringUtils.isEmpty(regex)) return;
+		if (StringUtils.isEmpty(regex)) return;
 
 		if (threadLocalReplace.get() == null)
 			createThreadLocalReplace();
@@ -211,11 +211,11 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * When the last item is removed the Set will be removed as well.
 	 */
 	public static void removeFromThreadLocalReplace(String regex) {
-		if(StringUtils.isEmpty(regex)) return;
+		if (StringUtils.isEmpty(regex)) return;
 
 		threadLocalReplace.get().remove(regex);
 
-		if(threadLocalReplace.get().isEmpty())
+		if (threadLocalReplace.get().isEmpty())
 			removeThreadLocalReplace();
 	}
 

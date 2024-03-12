@@ -13,7 +13,9 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.CanUseSharedResource;
 import org.frankframework.core.SharedResource;
 import org.frankframework.testutil.TestConfiguration;
+
 import org.junit.jupiter.api.Test;
+
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -62,8 +64,8 @@ public class SharedResourceFactoryTest {
 			attributes.put("className", SharedClass.class.getTypeName());
 			Object sharedResource = factory.createObject(attributes);
 
-			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
-			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
+			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX + TEST_RESOURCE_NAME));
+			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX + TEST_RESOURCE_NAME));
 			assertEquals(TEST_RESOURCE_VALUE, ((SharedClass) sharedResource).getSharedResource());
 			assertEquals(TEST_RESOURCE_VALUE, config.createBean(DummyClass.class).getSharedResource(TEST_RESOURCE_NAME));
 		}
@@ -80,14 +82,14 @@ public class SharedResourceFactoryTest {
 			attributes.put("className", SharedClass.class.getTypeName());
 			Object sharedResource = factory.createObject(attributes);
 
-			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
-			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME)); //SharedClass
+			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX + TEST_RESOURCE_NAME));
+			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX + TEST_RESOURCE_NAME)); //SharedClass
 
 			assertEquals(TEST_RESOURCE_VALUE, ((SharedClass) sharedResource).getSharedResource()); //String
 
 			DummyClass2 dummyClass2 = config.createBean(DummyClass2.class);
 			IllegalStateException e = assertThrows(IllegalStateException.class, () -> dummyClass2.getSharedResource(TEST_RESOURCE_NAME));
-			assertEquals("Shared Resource ["+TEST_RESOURCE_NAME+"] may not be used here", e.getMessage());
+			assertEquals("Shared Resource [" + TEST_RESOURCE_NAME + "] may not be used here", e.getMessage());
 		}
 	}
 

@@ -38,6 +38,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -55,7 +56,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		when(statusLine.getStatusCode()).thenReturn(statusCode);
 		when(httpResponse.getStatusLine()).thenReturn(statusLine);
 
-		if(contentType != null) {
+		if (contentType != null) {
 			Header contentTypeHeader = new BasicHeader("Content-Type", contentType);
 			when(httpEntity.getContentType()).thenReturn(contentTypeHeader);
 		}
@@ -91,9 +92,9 @@ public class WebServiceSenderResultTest extends Mockito {
 		}
 	}
 
-  private InputStream getFile(String file) throws IOException {
-    String baseDir = "/org/frankframework/http/";
-    URL url = this.getClass().getResource(baseDir +file);
+	private InputStream getFile(String file) throws IOException {
+		String baseDir = "/org/frankframework/http/";
+		URL url = this.getClass().getResource(baseDir + file);
 		if (url == null) {
 			throw new IOException("file not found");
 		}
@@ -181,7 +182,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
 			if (entry.getKey().startsWith("multipart")) {
-				System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");
+				System.out.println("found multipart key[" + entry.getKey() + "] type[" + (entry.getValue().getClass()) + "]");
 				multipartAttachmentCount++;
 			}
 		}

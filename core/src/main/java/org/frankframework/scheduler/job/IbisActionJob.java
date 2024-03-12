@@ -57,8 +57,8 @@ public class IbisActionJob extends JobDef {
 			throw new ConfigurationException("an adapterName must be specified");
 		}
 		Adapter adapter = adapterManager.getAdapter(getAdapterName());
-		if(adapter == null) { //Make sure the adapter is registered in this configuration
-			String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
+		if (adapter == null) { //Make sure the adapter is registered in this configuration
+			String msg = "Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 			throw new ConfigurationException(msg);
 		}
 
@@ -67,7 +67,7 @@ public class IbisActionJob extends JobDef {
 				throw new ConfigurationException("a receiverName must be specified");
 			}
 			if (adapter.getReceiverByName(getReceiverName()) == null) {
-				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
+				String msg = "Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver [" + getReceiverName() + "] not registered.";
 				throw new ConfigurationException(msg);
 			}
 		}
@@ -75,7 +75,7 @@ public class IbisActionJob extends JobDef {
 
 	@Override
 	public void execute() {
-		getIbisManager().handleAction(ibisAction, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
+		getIbisManager().handleAction(ibisAction, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job [" + getName() + "]", true);
 	}
 
 	@Mandatory
@@ -88,7 +88,9 @@ public class IbisActionJob extends JobDef {
 		this.configurationName = configurationName;
 	}
 
-	/** Adapter on which job operates
+	/**
+	 * Adapter on which job operates
+	 *
 	 * @ff.mandatory
 	 */
 	public void setAdapterName(String adapterName) {

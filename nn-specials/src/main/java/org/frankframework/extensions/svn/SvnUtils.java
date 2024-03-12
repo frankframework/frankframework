@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
@@ -29,6 +28,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
+
 /**
  * Some utilities for working with SVN.
  *
@@ -39,8 +39,10 @@ public class SvnUtils {
 
 	public static String getLogReport(String urlString) throws ConfigurationException, SenderException, TimeoutException, IOException, XmlException {
 		String head = getHeadHtml(urlString);
-		String etag = XmlUtils.evaluateXPathNodeSetFirstElement(head,
-				"headers/header[lower-case(@name)='etag']");
+		String etag = XmlUtils.evaluateXPathNodeSetFirstElement(
+				head,
+				"headers/header[lower-case(@name)='etag']"
+		);
 		if (etag != null) {
 			if (StringUtils.countMatches(etag, "\"") >= 2) {
 				String s = StringUtils.substringAfter(etag, "\"");

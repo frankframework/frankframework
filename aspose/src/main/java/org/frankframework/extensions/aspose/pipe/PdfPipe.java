@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.frankframework.configuration.ConfigurationException;
@@ -46,13 +47,10 @@ import org.frankframework.util.EnumUtils;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.XmlBuilder;
 
-import lombok.Getter;
-
 
 /**
  * Converts files to pdf type. This pipe has two actions convert and combine.
  * With combine action you can attach files into main pdf file.
- *
  */
 public class PdfPipe extends FixedForwardPipe {
 
@@ -82,10 +80,10 @@ public class PdfPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if(getAction() == null) {
-			throw new ConfigurationException("please specify an action for pdf pipe ["+getName()+"]. possible values: "+ EnumUtils.getEnumList(DocumentAction.class));
+		if (getAction() == null) {
+			throw new ConfigurationException("please specify an action for pdf pipe [" + getName() + "]. possible values: " + EnumUtils.getEnumList(DocumentAction.class));
 		}
-		if(StringUtils.isNotEmpty(getPdfOutputLocation())) {
+		if (StringUtils.isNotEmpty(getPdfOutputLocation())) {
 			File outputLocation = new File(getPdfOutputLocation());
 			if (!outputLocation.exists()) {
 				throw new ConfigurationException("pdf output location does not exist");
@@ -97,8 +95,8 @@ public class PdfPipe extends FixedForwardPipe {
 		} else {
 			try {
 				String ibisTempDir = FileUtils.getTempDirectory();
-				if(StringUtils.isNotEmpty(ibisTempDir)) {
-					setPdfOutputLocation(Files.createTempDirectory(Paths.get(ibisTempDir),"Pdf").toString());
+				if (StringUtils.isNotEmpty(ibisTempDir)) {
+					setPdfOutputLocation(Files.createTempDirectory(Paths.get(ibisTempDir), "Pdf").toString());
 				} else {
 					setPdfOutputLocation(Files.createTempDirectory("Pdf").toString());
 				}
@@ -111,7 +109,7 @@ public class PdfPipe extends FixedForwardPipe {
 			ConfigurationWarnings.add(this, log, "Aspose License is not configured. There will be evaluation watermarks on the converted documents. There are also some restrictions in the API use. License field should be set with a valid information to avoid this. ");
 		} else {
 			URL licenseUrl = ClassLoaderUtils.getResourceURL(getLicense());
-			if(licenseUrl == null) {
+			if (licenseUrl == null) {
 				throw new ConfigurationException("specified file for aspose license is not found");
 			}
 
@@ -140,7 +138,7 @@ public class PdfPipe extends FixedForwardPipe {
 			throw new IllegalArgumentException("message == null");
 		}
 		try {
-			switch(getAction()) {
+			switch (getAction()) {
 				case COMBINE:
 					// Get main document to attach attachments
 					Message mainPdf = session.getMessage(getMainDocumentSessionKey());
@@ -166,10 +164,10 @@ public class PdfPipe extends FixedForwardPipe {
 
 					return new PipeRunResult(getSuccessForward(), message);
 				default:
-					throw new PipeRunException(this, "action attribute must be one of the followings: "+EnumUtils.getEnumList(DocumentAction.class));
+					throw new PipeRunException(this, "action attribute must be one of the followings: " + EnumUtils.getEnumList(DocumentAction.class));
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, "cannot convert to stream",e);
+			throw new PipeRunException(this, "cannot convert to stream", e);
 		}
 	}
 
@@ -195,6 +193,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	/**
 	 * session key that contains the document that the attachments will be attached to. Only used when action is set to 'combine'
+	 *
 	 * @ff.default defaultMainDocumentSessionKey
 	 */
 	public void setMainDocumentSessionKey(String mainDocumentSessionKey) {
@@ -221,9 +220,9 @@ public class PdfPipe extends FixedForwardPipe {
 	 * separately.
 	 * </p>
 	 * <p>
-	 *     For example, if a file is converted that has 2 attachments and {@link #setSaveSeparate(boolean)}
-	 *     is set to {@code true} then there will be the following 3 session keys (assuming the default value
-	 *     is unchanged):
+	 * For example, if a file is converted that has 2 attachments and {@link #setSaveSeparate(boolean)}
+	 * is set to {@code true} then there will be the following 3 session keys (assuming the default value
+	 * is unchanged):
 	 *     <ol>
 	 *         <li>{@code pdfConversionResultFiles1}</li>
 	 *         <li>{@code pdfConversionResultFiles2}</li>
@@ -231,9 +230,9 @@ public class PdfPipe extends FixedForwardPipe {
 	 *     </ol>
 	 *     Each session key will contain a {@link FileMessage} referencing the contents of that PDF.
 	 * </p>
-	 * @ff.default pdfConversionResultFiles
 	 *
 	 * @param conversionResultFilesSessionKey The name of the session key under which PDF documents are stored.
+	 * @ff.default pdfConversionResultFiles
 	 */
 	public void setConversionResultFilesSessionKey(String conversionResultFilesSessionKey) {
 		this.conversionResultFilesSessionKey = conversionResultFilesSessionKey;
@@ -247,6 +246,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	/**
 	 * session key that contains the filename to be attached. Only used when the action is set to 'combine'
+	 *
 	 * @ff.default defaultFileNameToAttachSessionKey
 	 */
 	public void setFilenameToAttachSessionKey(String filenameToAttachSessionKey) {
@@ -255,6 +255,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	/**
 	 * fonts folder to load the fonts. If not set then a temporary folder will be created to extract fonts from fonts.zip everytime. Having fontsDirectory to be set will improve startup time
+	 *
 	 * @ff.default null
 	 */
 	public void setFontsDirectory(String fontsDirectory) {
@@ -267,6 +268,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	/**
 	 * charset to be used to decode the given input message in case the input is not binary but character stream
+	 *
 	 * @ff.default UTF-8
 	 */
 	public void setCharset(String charset) {
@@ -280,6 +282,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	/**
 	 * when sets to false, converts the file including the attachments attached to the main file. when it is true, saves each attachment separately
+	 *
 	 * @ff.default false
 	 */
 	public void setSaveSeparate(boolean saveSeparate) {
@@ -288,6 +291,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	/**
 	 * directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.
+	 *
 	 * @ff.default null
 	 */
 	public void setPdfOutputLocation(String pdfOutputLocation) {
@@ -296,6 +300,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	/**
 	 * when set to true, external resources, such as stylesheets and images found in HTML pages, will be loaded from the internet
+	 *
 	 * @ff.default false
 	 */
 	public void setLoadExternalResources(boolean loadExternalResources) {

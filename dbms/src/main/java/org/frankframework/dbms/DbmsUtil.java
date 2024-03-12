@@ -116,7 +116,7 @@ class DbmsUtil {
 	 * Each object in the array is mapped to its most appropriate JDBC type, however not all types are supported. Column types are not considered,
 	 * only the class of each parameter.
 	 * <p>
-	 *     Supported Java types and JDBC Type mapping:
+	 * Supported Java types and JDBC Type mapping:
 	 *     <table>
 	 *         <tr><th>{@link Integer}</th> <td>{@link Types#INTEGER}</td></tr>
 	 *         <tr><th>{@link Long}</th> <td>{@link Types#BIGINT}</td></tr>
@@ -129,8 +129,8 @@ class DbmsUtil {
 	 *     </table>
 	 * </p>
 	 *
-	 * @param stmt    the PreparedStatement to apply parameters to
-	 * @param params  the parameters to apply
+	 * @param stmt   the PreparedStatement to apply parameters to
+	 * @param params the parameters to apply
 	 * @throws SQLException if there is an error applying the parameters
 	 */
 	static void applyParameters(PreparedStatement stmt, Object... params) throws SQLException {

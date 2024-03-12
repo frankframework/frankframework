@@ -49,11 +49,9 @@ import org.frankframework.util.flow.FlowDiagramManager;
 /**
  * Main entry point for creating and starting Ibis instances from
  * the configuration file.
- *
+ * <p>
  * This class can not be created from the Spring context, because it
  * is the place where the Spring context is created.
- *
- *
  *
  * @author Tim van der Leeuw
  * @author Jaco de Groot
@@ -64,12 +62,12 @@ public class IbisContext extends IbisApplicationContext {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	static {
-		if(!Boolean.parseBoolean(APP_CONSTANTS.getProperty("jdbc.convertFieldnamesToUppercase")))
+		if (!Boolean.parseBoolean(APP_CONSTANTS.getProperty("jdbc.convertFieldnamesToUppercase")))
 			ApplicationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
 		String loadFileSuffix = APP_CONSTANTS.getProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
 		if (StringUtils.isNotEmpty(loadFileSuffix))
-			ApplicationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
+			ApplicationWarnings.add(LOG, "DEPRECATED: SUFFIX [_" + loadFileSuffix + "] files are deprecated, property files are now inherited from their parent!");
 
 		String autoDatabaseClassLoader = APP_CONSTANTS.getProperty("configurations.autoDatabaseClassLoader");
 		if (StringUtils.isNotEmpty(autoDatabaseClassLoader))
@@ -102,11 +100,10 @@ public class IbisContext extends IbisApplicationContext {
 	 * method to load configuration and related resources from a different
 	 * location from the standard classpath.
 	 *
-	 * @see ClassLoaderUtils#getResourceURL(IScopeProvider, String)
-	 * @see AppConstants#getInstance(ClassLoader)
-	 *
 	 * @param reconnect retry startup when failures occur
 	 * @throws BeanCreationException when Spring can't start up
+	 * @see ClassLoaderUtils#getResourceURL(IScopeProvider, String)
+	 * @see AppConstants#getInstance(ClassLoader)
 	 */
 	public synchronized void init(boolean reconnect) {
 		try {
@@ -132,18 +129,16 @@ public class IbisContext extends IbisApplicationContext {
 
 			long startupTime = (System.currentTimeMillis() - start);
 			log("startup in " + startupTime + " ms");
-			APPLICATION_LOG.info("Application [{}] startup in {} ms", this::getApplicationName, ()-> startupTime);
-		}
-		catch (Exception e) {
+			APPLICATION_LOG.info("Application [{}] startup in {} ms", this::getApplicationName, () -> startupTime);
+		} catch (Exception e) {
 			//Catch all exceptions, the IBIS failed to startup...
-			if(reconnect) {
+			if (reconnect) {
 				APPLICATION_LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
 
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
 				ibisContextReconnectThread.setName("IbisContext-ReconnectThread"); //Give the thread a somewhat descriptive name
 				ibisContextReconnectThread.start();
-			}
-			else {
+			} else {
 				APPLICATION_LOG.fatal("Failed to initialize IbisContext", e);
 				throw e;
 			}
@@ -160,20 +155,20 @@ public class IbisContext extends IbisApplicationContext {
 		LOG.debug("Shutting down application [{}]", this::getApplicationName);
 		long start = System.currentTimeMillis();
 
-		if(ibisManager != null) {
+		if (ibisManager != null) {
 			ibisManager.shutdown();
 		}
-		if(ibisContextReconnectThread != null) { //If the ibis failed to initialize, and is trying to shutdown
+		if (ibisContextReconnectThread != null) { //If the ibis failed to initialize, and is trying to shutdown
 			ibisContextReconnectThread.interrupt();
 		}
-		if(classLoaderManager != null) {
+		if (classLoaderManager != null) {
 			classLoaderManager.shutdown();
 		}
 
 		long shutdownTime = (System.currentTimeMillis() - start);
 		log("shutdown in " + shutdownTime + " ms"); //Should log this before the actual Context is destroyed
 		super.close();
-		APPLICATION_LOG.info("Application [{}] shutdown in {} ms", this::getApplicationName, ()-> shutdownTime);
+		APPLICATION_LOG.info("Application [{}] shutdown in {} ms", this::getApplicationName, () -> shutdownTime);
 	}
 
 	/**
@@ -240,13 +235,14 @@ public class IbisContext extends IbisApplicationContext {
 
 	/**
 	 * Load all registered configurations
+	 *
 	 * @see #load(String)
 	 */
 	private void load() {
-		if(AppConstants.getInstance().getBoolean(JdbcPropertySourceFactory.JDBC_PROPERTIES_KEY, false)) {
+		if (AppConstants.getInstance().getBoolean(JdbcPropertySourceFactory.JDBC_PROPERTIES_KEY, false)) {
 			JdbcPropertySourceFactory propertySourceFactory = getBean("jdbcPropertySourceFactory", JdbcPropertySourceFactory.class);
-			Properties properties = propertySourceFactory.createPropertySource(getApplicationName()+"-DatabaseProperties");
-			if(properties != null) {
+			Properties properties = propertySourceFactory.createPropertySource(getApplicationName() + "-DatabaseProperties");
+			if (properties != null) {
 				AppConstants.getInstance().putAll(properties);
 			}
 		}
@@ -264,7 +260,6 @@ public class IbisContext extends IbisApplicationContext {
 	 * Does not check if the configuration already exists. Does not unload old configurations!
 	 *
 	 * @param configurationName name of the configuration to load or null when you want to load all configurations
-	 *
 	 * @see ClassLoaderManager#get(String)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
@@ -279,7 +274,7 @@ public class IbisContext extends IbisApplicationContext {
 			String classLoaderType = (currentConfigNameItem.getValue() == null) ? null : currentConfigNameItem.getValue().getCanonicalName();
 
 			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
-				LOG.info("loading configuration ["+currentConfigurationName+"]");
+				LOG.info("loading configuration [" + currentConfigurationName + "]");
 				configFound = true;
 
 				ClassLoaderException classLoaderException = null;
@@ -289,32 +284,34 @@ public class IbisContext extends IbisApplicationContext {
 
 					//An error occurred but we don't want to throw any exceptions.
 					//Skip configuration digesting so it can be done at a later time.
-					if(classLoader == null)
+					if (classLoader == null)
 						continue;
 
 				} catch (ClassLoaderException e) {
 					classLoaderException = e;
-					if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] got exception creating/retrieving classloader type ["+classLoaderType+"] errorMessage ["+e.getMessage()+"]");
+					if (LOG.isDebugEnabled())
+						LOG.debug("configuration [" + currentConfigurationName + "] got exception creating/retrieving classloader type [" + classLoaderType + "] errorMessage [" + e.getMessage() + "]");
 				}
 
-				if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found classloader ["+ClassUtils.nameOf(classLoader)+"]");
+				if (LOG.isDebugEnabled())
+					LOG.debug("configuration [" + currentConfigurationName + "] found classloader [" + ClassUtils.nameOf(classLoader) + "]");
 				try {
 					loadingConfigs.add(currentConfigurationName);
 					createAndConfigureConfigurationWithClassLoader(classLoader, currentConfigurationName, classLoaderException);
 				} catch (Exception e) {
-					log("an exception occurred while loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
+					log("an exception occurred while loading configuration [" + currentConfigurationName + "]", MessageKeeperLevel.ERROR, e);
 				} finally {
 					loadingConfigs.remove(currentConfigurationName);
 				}
 
-				LOG.info("configuration ["+currentConfigurationName+"] loaded successfully");
+				LOG.info("configuration [" + currentConfigurationName + "] loaded successfully");
 			}
 		}
 
 		generateFlow();
 		//Check if the configuration we try to reload actually exists
 		if (!configFound && configurationName != null) {
-			log(configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperLevel.ERROR);
+			log(configurationName + " not found in [" + allConfigNamesItems.keySet().toString() + "]", MessageKeeperLevel.ERROR);
 		}
 	}
 
@@ -328,16 +325,17 @@ public class IbisContext extends IbisApplicationContext {
 	 * If no ClassLoader or ClassLoader is not IConfigurationClassLoader return an error.
 	 */
 	private Configuration createConfiguration(String name, ClassLoader classLoader) {
-		if(!(classLoader instanceof IConfigurationClassLoader)) {
+		if (!(classLoader instanceof IConfigurationClassLoader)) {
 			throw new IllegalStateException("no IConfigurationClassLoader set");
 		}
 
-		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory()
+				.autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		bean.setClassLoader(classLoader);
 		Configuration configuration = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
 
 		//Pre-digest validation to make sure no extra Spring magic happened.
-		if(!configuration.getName().equals(name)) {
+		if (!configuration.getName().equals(name)) {
 			throw new IllegalStateException("configuration name mismatch");
 		}
 		return configuration;
@@ -347,7 +345,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * either ClassLoader is populated or ConfigurationException, but never both!
 	 */
 	private void createAndConfigureConfigurationWithClassLoader(ClassLoader classLoader, String currentConfigurationName, ClassLoaderException classLoaderException) {
-		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
+		if (LOG.isDebugEnabled()) LOG.debug("creating new configuration [" + currentConfigurationName + "]");
 
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -363,7 +361,7 @@ public class IbisContext extends IbisApplicationContext {
 				configuration = new Configuration();
 				configuration.setName(currentConfigurationName);
 				ibisManager.addConfiguration(configuration); //Manually add the configuration else it will be GC'd
-				if(classLoaderException != null) {
+				if (classLoaderException != null) {
 					classLoaderException.addSuppressed(e);
 					throw new ConfigurationException("error instantiating ClassLoader", classLoaderException);
 				}
@@ -372,10 +370,10 @@ public class IbisContext extends IbisApplicationContext {
 
 			configuration.configure();
 
-			LOG.info("configured configuration ["+currentConfigurationName+"] successfully");
+			LOG.info("configured configuration [" + currentConfigurationName + "] successfully");
 		} catch (ConfigurationException e) {
 			configuration.setConfigurationException(e);
-			log("exception loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
+			log("exception loading configuration [" + currentConfigurationName + "]", MessageKeeperLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
 		}

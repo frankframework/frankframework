@@ -25,6 +25,7 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.BusAction;
@@ -64,9 +65,7 @@ import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.support.HttpRequestHandlerServlet;
 import org.springframework.web.filter.RequestContextFilter;
 
-import lombok.Setter;
-
-@Order(Ordered.LOWEST_PRECEDENCE-1)
+@Order(Ordered.LOWEST_PRECEDENCE - 1)
 public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, ServletContextAware, IntegrationPattern, InitializingBean, ApplicationContextAware, BeanFactoryAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
@@ -84,11 +83,11 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 
 	@Override
 	public void afterPropertiesSet() {
-		if(applicationContext == null) {
+		if (applicationContext == null) {
 			throw new IllegalStateException("no ApplicationContext set");
 		}
 
-		if(gateway == null) {
+		if (gateway == null) {
 			createGateway();
 			createGatewayEndpoint();
 		}
@@ -141,7 +140,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 		PublishSubscribeChannel channel = SpringUtils.createBean(applicationContext, PublishSubscribeChannel.class);
 		channel.setBeanName("ErrorMessageConvertingChannel");
 		ErrorMessageConverter errorConverter = SpringUtils.createBean(applicationContext, ErrorMessageConverter.class);
-		if(channel.subscribe(errorConverter)) {
+		if (channel.subscribe(errorConverter)) {
 			log.info("created ErrorMessageConverter [{}]", errorConverter);
 		} else {
 			log.info("unable to create ErrorMessageConverter, all errors wil be ingored");

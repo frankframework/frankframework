@@ -8,21 +8,23 @@ public class MockAttachment {
 	private final String name;
 	private final String filename;
 	private final String contentType;
-	private Map<String,Object> additionalProperties;
+	private Map<String, Object> additionalProperties;
 	private byte[] contents;
 
 	public MockAttachment(String name, String filename, String contentType) {
-		this.name=name;
-		this.contentType=contentType;
-		this.filename=filename;
+		this.name = name;
+		this.contentType = contentType;
+		this.filename = filename;
 	}
 
 	public String getName() {
 		return name;
 	}
+
 	public String getFilename() {
 		return filename;
 	}
+
 	public String getContentType() {
 		return contentType;
 	}
@@ -41,8 +43,8 @@ public class MockAttachment {
 	}
 
 	public void setAdditionalProperties(String key, Object value) {
-		if (additionalProperties==null) {
-			additionalProperties=new LinkedHashMap<>();
+		if (additionalProperties == null) {
+			additionalProperties = new LinkedHashMap<>();
 		}
 		additionalProperties.put(key, value);
 	}

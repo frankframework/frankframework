@@ -15,11 +15,10 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.sap.conn.jco.JCoException;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IPipeLineExitHandler;
 import org.frankframework.core.PipeLineResult;
@@ -42,16 +41,16 @@ import org.frankframework.stream.Message;
  * To explicityly commit or rollback a set of actions, a SapLUWManager-pipe can be used, with
  * the action-attribute set apropriately.
  *
- * @author  Gerrit van Brakel
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Gerrit van Brakel
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHandler {
 
-	public static final String ACTION_BEGIN="begin";
-	public static final String ACTION_COMMIT="commit";
-	public static final String ACTION_ROLLBACK="rollback";
-	public static final String ACTION_RELEASE="release";
+	public static final String ACTION_BEGIN = "begin";
+	public static final String ACTION_COMMIT = "commit";
+	public static final String ACTION_ROLLBACK = "rollback";
+	public static final String ACTION_RELEASE = "release";
 
 	private @Getter String luwHandleSessionKey;
 	private @Getter String action;
@@ -64,40 +63,40 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getAction())) {
-			throw new ConfigurationException("action should be specified, it must be one of: "+
-				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
+			throw new ConfigurationException("action should be specified, it must be one of: " +
+					ACTION_BEGIN + ", " + ACTION_COMMIT + ", " + ACTION_ROLLBACK + ", " + ACTION_RELEASE + ".");
 		}
 		if (!getAction().equalsIgnoreCase(ACTION_BEGIN) &&
-			!getAction().equalsIgnoreCase(ACTION_COMMIT) &&
-			!getAction().equalsIgnoreCase(ACTION_ROLLBACK) &&
-			!getAction().equalsIgnoreCase(ACTION_RELEASE)) {
-			throw new ConfigurationException("illegal action ["+getAction()+"] specified, it must be one of: "+
-				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
+				!getAction().equalsIgnoreCase(ACTION_COMMIT) &&
+				!getAction().equalsIgnoreCase(ACTION_ROLLBACK) &&
+				!getAction().equalsIgnoreCase(ACTION_RELEASE)) {
+			throw new ConfigurationException("illegal action [" + getAction() + "] specified, it must be one of: " +
+					ACTION_BEGIN + ", " + ACTION_COMMIT + ", " + ACTION_ROLLBACK + ", " + ACTION_RELEASE + ".");
 		}
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			getPipeLine().registerExitHandler(this);
 		}
 		if (StringUtils.isEmpty(getLuwHandleSessionKey())) {
-			throw new ConfigurationException("action should be specified, it must be one of: "+
-				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
+			throw new ConfigurationException("action should be specified, it must be one of: " +
+					ACTION_BEGIN + ", " + ACTION_COMMIT + ", " + ACTION_ROLLBACK + ", " + ACTION_RELEASE + ".");
 		}
-		sapSystem=SapSystemImpl.getSystem(getSapSystemName());
-		if (sapSystem==null) {
-			throw new ConfigurationException("cannot find SapSystem ["+getSapSystemName()+"]");
+		sapSystem = SapSystemImpl.getSystem(getSapSystemName());
+		if (sapSystem == null) {
+			throw new ConfigurationException("cannot find SapSystem [" + getSapSystemName() + "]");
 		}
 	}
 
 	@Override
 	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, PipeLineSession session) throws PipeRunException {
 		try {
-			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
+			SapLUWHandle.releaseHandle(session, getLuwHandleSessionKey());
 		} catch (JCoException e) {
 			throw new PipeRunException(this, "could not release handle", e);
 		}
 	}
 
 	@Override
-	public void start() throws PipeStartException  {
+	public void start() throws PipeStartException {
 		try {
 			sapSystem.openSystem();
 		} catch (SapException e) {
@@ -116,46 +115,40 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			try {
-				SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey(),true,getSapSystem(),false).begin();
+				SapLUWHandle.retrieveHandle(session, getLuwHandleSessionKey(), true, getSapSystem(), false).begin();
 			} catch (JCoException e) {
 				throw new PipeRunException(this, "begin: could not retrieve handle", e);
 			}
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_COMMIT)) {
-			SapLUWHandle handle=SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey());
-			if (handle==null) {
-				throw new PipeRunException(this, "commit: cannot find handle under sessionKey ["+getLuwHandleSessionKey()+"]");
+		} else if (getAction().equalsIgnoreCase(ACTION_COMMIT)) {
+			SapLUWHandle handle = SapLUWHandle.retrieveHandle(session, getLuwHandleSessionKey());
+			if (handle == null) {
+				throw new PipeRunException(this, "commit: cannot find handle under sessionKey [" + getLuwHandleSessionKey() + "]");
 			}
 			try {
 				handle.commit();
 			} catch (JCoException e) {
 				throw new PipeRunException(this, "commit: could not commit handle", e);
 			}
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_ROLLBACK)) {
-			SapLUWHandle handle=SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey());
-			if (handle==null) {
-				throw new PipeRunException(this, "rollback: cannot find handle under sessionKey ["+getLuwHandleSessionKey()+"]");
+		} else if (getAction().equalsIgnoreCase(ACTION_ROLLBACK)) {
+			SapLUWHandle handle = SapLUWHandle.retrieveHandle(session, getLuwHandleSessionKey());
+			if (handle == null) {
+				throw new PipeRunException(this, "rollback: cannot find handle under sessionKey [" + getLuwHandleSessionKey() + "]");
 			}
 			handle.rollback();
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
+		} else if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
 			try {
-				SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
+				SapLUWHandle.releaseHandle(session, getLuwHandleSessionKey());
 			} catch (JCoException e) {
 				throw new PipeRunException(this, "release: could not release handle", e);
 			}
 		}
-		return new PipeRunResult(getSuccessForward(),message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
-
 
 
 	public SapSystemImpl getSapSystem() {
 		return sapSystem;
 	}
-
-
 
 
 	/** Name of the SapSystem used by this object */

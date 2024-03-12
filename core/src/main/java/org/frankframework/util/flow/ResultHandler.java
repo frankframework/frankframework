@@ -36,7 +36,7 @@ public class ResultHandler {
 	public String waitFor() throws FlowGenerationException {
 		try {
 			final String v = value.poll(5, TimeUnit.SECONDS); //Shouldn't take longer then 50 ms, but just to be sure..
-			if(v == null) {
+			if (v == null) {
 				throw new FlowGenerationException("Timeout exceeded");
 			}
 			if (ok) {

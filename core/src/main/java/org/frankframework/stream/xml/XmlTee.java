@@ -15,16 +15,15 @@
 */
 package org.frankframework.stream.xml;
 
+import org.frankframework.xml.FullXmlFilter;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
-import org.frankframework.xml.FullXmlFilter;
-
 public class XmlTee extends FullXmlFilter {
 
-	private ContentHandler handler=null;
+	private ContentHandler handler = null;
 
 	public XmlTee() {
 		super();
@@ -38,91 +37,98 @@ public class XmlTee extends FullXmlFilter {
 	public void setSecondContentHandler(ContentHandler handler) {
 		this.handler = handler;
 	}
+
 	public ContentHandler getSecondContentHandler() {
 		return handler;
 	}
 
 	@Override
 	public void startDocument() throws SAXException {
-		if (handler!=null) handler.startDocument();
+		if (handler != null) handler.startDocument();
 		super.startDocument();
 	}
+
 	@Override
 	public void endDocument() throws SAXException {
-		if (handler!=null) handler.endDocument();
+		if (handler != null) handler.endDocument();
 		super.endDocument();
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (handler!=null) handler.startElement(uri, localName, qName, atts);
+		if (handler != null) handler.startElement(uri, localName, qName, atts);
 		super.startElement(uri, localName, qName, atts);
 	}
+
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (handler!=null) handler.endElement(uri, localName, qName);
+		if (handler != null) handler.endElement(uri, localName, qName);
 		super.endElement(uri, localName, qName);
 	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		if (handler!=null) handler.characters(ch, start, length);
+		if (handler != null) handler.characters(ch, start, length);
 		super.characters(ch, start, length);
 	}
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		if (handler!=null) handler.startPrefixMapping(prefix, uri);
+		if (handler != null) handler.startPrefixMapping(prefix, uri);
 		super.startPrefixMapping(prefix, uri);
 	}
+
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
-		if (handler!=null) handler.endPrefixMapping(prefix);
+		if (handler != null) handler.endPrefixMapping(prefix);
 		super.endPrefixMapping(prefix);
 	}
 
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).comment(ch, start, length);
+		if (handler != null && handler instanceof LexicalHandler) ((LexicalHandler) handler).comment(ch, start, length);
 		super.comment(ch, start, length);
 	}
 
 	@Override
 	public void startCDATA() throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).startCDATA();
+		if (handler != null && handler instanceof LexicalHandler) ((LexicalHandler) handler).startCDATA();
 		super.startCDATA();
 	}
+
 	@Override
 	public void endCDATA() throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).endCDATA();
+		if (handler != null && handler instanceof LexicalHandler) ((LexicalHandler) handler).endCDATA();
 		super.endCDATA();
 	}
 
 	@Override
 	public void startDTD(String name, String publicId, String systemId) throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).startDTD(name, publicId, systemId);
+		if (handler != null && handler instanceof LexicalHandler) ((LexicalHandler) handler).startDTD(name, publicId, systemId);
 		super.startDTD(name, publicId, systemId);
 	}
+
 	@Override
 	public void endDTD() throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).endDTD();
+		if (handler != null && handler instanceof LexicalHandler) ((LexicalHandler) handler).endDTD();
 		super.endDTD();
 	}
 
 	@Override
 	public void startEntity(String name) throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).startEntity(name);
+		if (handler != null && handler instanceof LexicalHandler) ((LexicalHandler) handler).startEntity(name);
 		super.startEntity(name);
 	}
+
 	@Override
 	public void endEntity(String name) throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).endEntity(name);
+		if (handler != null && handler instanceof LexicalHandler) ((LexicalHandler) handler).endEntity(name);
 		super.endEntity(name);
 	}
 
 	@Override
 	public void processingInstruction(String target, String data) throws SAXException {
-		if (handler!=null) handler.processingInstruction(target, data);
+		if (handler != null) handler.processingInstruction(target, data);
 		super.processingInstruction(target, data);
 	}
 

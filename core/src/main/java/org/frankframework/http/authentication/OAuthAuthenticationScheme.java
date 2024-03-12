@@ -30,13 +30,12 @@ import org.apache.http.util.CharArrayBuffer;
  * HttpClient AuthScheme that uses OAuthAccessTokenManager to obtain an access token (via Client Credentials flow).
  *
  * @author Gerrit van Brakel
- *
  */
 public class OAuthAuthenticationScheme extends BasicScheme {
 
 	public static final String SCHEME_NAME_AUTO = "OAUTH2";
 	public static final String SCHEME_NAME_FORCE_REFRESH = "OAUTH2-REFRESHED";
-	public static final String ACCESSTOKEN_MANAGER_KEY="AccessTokenManager";
+	public static final String ACCESSTOKEN_MANAGER_KEY = "AccessTokenManager";
 
 	private boolean forceRefresh;
 
@@ -59,8 +58,8 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 		Args.notNull(credentials, "Credentials");
 		Args.notNull(request, "HTTP request");
 
-		OAuthAccessTokenManager accessTokenManager = (OAuthAccessTokenManager)context.getAttribute(ACCESSTOKEN_MANAGER_KEY);
-		if (accessTokenManager==null) {
+		OAuthAccessTokenManager accessTokenManager = (OAuthAccessTokenManager) context.getAttribute(ACCESSTOKEN_MANAGER_KEY);
+		if (accessTokenManager == null) {
 			throw new AuthenticationException("no accessTokenManager found");
 		}
 
@@ -84,7 +83,7 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append(getSchemeName()+" [complete=").append(isComplete()).append("]");
+		builder.append(getSchemeName() + " [complete=").append(isComplete()).append("]");
 		return builder.toString();
 	}
 

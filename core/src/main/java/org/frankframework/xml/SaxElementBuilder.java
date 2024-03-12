@@ -31,7 +31,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	private String elementName;
 	private SaxElementBuilder parent;
 
-	private AttributesImpl attributes=null;
+	private AttributesImpl attributes = null;
 	private boolean promotedToObject = false;
 
 	public SaxElementBuilder() throws SAXException {
@@ -62,7 +62,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		this.handler = handler;
 		this.elementName = elementName;
 		this.parent = parent;
-		if (elementName!=null) {
+		if (elementName != null) {
 			attributes = new AttributesImpl();
 		}
 	}
@@ -72,8 +72,8 @@ public class SaxElementBuilder implements AutoCloseable {
 	}
 
 	public SaxElementBuilder addAttribute(String name, String value) throws SAXException {
-		if (attributes==null) {
-			throw new SaxException("start of element ["+elementName+"] already written");
+		if (attributes == null) {
+			throw new SaxException("start of element [" + elementName + "] already written");
 		}
 		String attruri = "";
 		String attrlocalName = name;
@@ -83,9 +83,9 @@ public class SaxElementBuilder implements AutoCloseable {
 		return this;
 	}
 
-	public SaxElementBuilder addAttributes(Map<String,String> attributes) throws SAXException {
-		if (attributes!=null) {
-			for(Entry<String,String> entry:attributes.entrySet()) {
+	public SaxElementBuilder addAttributes(Map<String, String> attributes) throws SAXException {
+		if (attributes != null) {
+			for (Entry<String, String> entry : attributes.entrySet()) {
 				addAttribute(entry.getKey(), entry.getValue());
 			}
 		}
@@ -93,12 +93,12 @@ public class SaxElementBuilder implements AutoCloseable {
 	}
 
 	private SaxElementBuilder writePendingStartElement() throws SAXException {
-		if (attributes!=null) {
+		if (attributes != null) {
 			String uri = "";
 			String localName = elementName;
 			String qName = localName;
 			handler.startElement(uri, localName, qName, attributes);
-			attributes=null;
+			attributes = null;
 		}
 		return this;
 	}
@@ -120,13 +120,14 @@ public class SaxElementBuilder implements AutoCloseable {
 		}
 		return this;
 	}
+
 	public void addValue(char[] chars, int offset, int len) throws SAXException {
 		writePendingStartElement();
 		handler.characters(chars, offset, len);
 	}
 
 	public SaxElementBuilder startElement(String elementName) throws SAXException {
-		if (elementName==null) {
+		if (elementName == null) {
 			promotedToObject = true;
 			return this;
 		}
@@ -138,7 +139,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		addElement(elementName, null, null);
 	}
 
-	public void addElement(String elementName, Map<String,String> attributes) throws SAXException {
+	public void addElement(String elementName, Map<String, String> attributes) throws SAXException {
 		addElement(elementName, attributes, null);
 	}
 
@@ -146,7 +147,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		addElement(elementName, null, value);
 	}
 
-	public void addElement(String elementName, Map<String,String> attributes, String value) throws SAXException {
+	public void addElement(String elementName, Map<String, String> attributes, String value) throws SAXException {
 		startElement(elementName).addAttributes(attributes).addValue(value).endElement();
 	}
 
@@ -157,7 +158,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	@Override
 	public void close() throws SAXException {
 		if (promotedToObject) {
-			promotedToObject=false;
+			promotedToObject = false;
 		} else {
 			if (elementName != null) {
 				endElement();

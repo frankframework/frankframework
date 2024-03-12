@@ -141,26 +141,26 @@ public class PropertyLoaderTest {
 		PropertyLoader properties = new PropertyLoader("ParserTestFiles/Types.yaml");
 
 		assertAll(
-			() -> assertEquals("value", properties.get("single")),
-			() -> assertEquals("this is a nice value", properties.get("sentence")),
-			() -> assertEquals("test1,test2,123", properties.get("list")),
+				() -> assertEquals("value", properties.get("single")),
+				() -> assertEquals("this is a nice value", properties.get("sentence")),
+				() -> assertEquals("test1,test2,123", properties.get("list")),
 
-			() -> assertEquals("1", properties.get("list.map.one")),
-			() -> assertEquals("2", properties.get("list.map.two")),
+				() -> assertEquals("1", properties.get("list.map.one")),
+				() -> assertEquals("2", properties.get("list.map.two")),
 
-			() -> assertEquals("1", properties.get("map.one")),
-			() -> assertEquals("2", properties.get("map.two")),
-			() -> assertEquals("3", properties.get("map.three")),
+				() -> assertEquals("1", properties.get("map.one")),
+				() -> assertEquals("2", properties.get("map.two")),
+				() -> assertEquals("3", properties.get("map.three")),
 
-			() -> assertEquals("100", properties.get("array.Sergi.value")),
-			() -> assertEquals("50", properties.get("array.Niels.value")),
+				() -> assertEquals("100", properties.get("array.Sergi.value")),
+				() -> assertEquals("50", properties.get("array.Niels.value")),
 
-			() -> assertEquals("1", properties.get("recursive.map.one")),
-			() -> assertEquals("2", properties.get("recursive.map.two")),
-			() -> assertEquals("3", properties.get("recursive.map.three")),
+				() -> assertEquals("1", properties.get("recursive.map.one")),
+				() -> assertEquals("2", properties.get("recursive.map.two")),
+				() -> assertEquals("3", properties.get("recursive.map.three")),
 
-			() -> assertEquals("drie", properties.get("map.with.property")),
-			() -> assertEquals("", properties.get("empty"))
+				() -> assertEquals("drie", properties.get("map.with.property")),
+				() -> assertEquals("", properties.get("empty"))
 		);
 	}
 
@@ -189,8 +189,8 @@ public class PropertyLoaderTest {
 		YamlParser parser = new YamlParser();
 		Properties yamlProperties = parser.load(new StringReader(p2y));
 
-		assertThat( yamlConstants.entrySet(), everyItem(isIn(yamlProperties.entrySet())));
-		assertThat( yamlProperties.entrySet(), everyItem(isIn(yamlConstants.entrySet())));
+		assertThat(yamlConstants.entrySet(), everyItem(isIn(yamlProperties.entrySet())));
+		assertThat(yamlProperties.entrySet(), everyItem(isIn(yamlConstants.entrySet())));
 	}
 
 	private StringReader property2Reader(PropertyLoader constants) {

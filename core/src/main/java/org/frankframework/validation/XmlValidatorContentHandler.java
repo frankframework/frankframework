@@ -50,11 +50,9 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private String currentInvalidNamespace = null;
 
 	/**
-	 *
-	 * @param validNamespaces validNamespacesgrammarsValidation
-	 * @param rootValidations
-	 *         contains path's (just a single element in case of the root of the
-	 *         entire xml) to root elements which should be checked upon
+	 * @param validNamespaces         validNamespacesgrammarsValidation
+	 * @param rootValidations         contains path's (just a single element in case of the root of the
+	 *                                entire xml) to root elements which should be checked upon
 	 * @param ignoreUnknownNamespaces
 	 */
 	public XmlValidatorContentHandler(Set<String> validNamespaces, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, Boolean ignoreUnknownNamespaces) {
@@ -62,8 +60,8 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		this.rootValidations = rootValidations;
 		this.invalidRootNamespaces = invalidRootNamespaces;
 
-		if (ignoreUnknownNamespaces==null) {
-			this.ignoreUnknownNamespaces=false; // to avoid NullPointerException when not initialized
+		if (ignoreUnknownNamespaces == null) {
+			this.ignoreUnknownNamespaces = false; // to avoid NullPointerException when not initialized
 		} else {
 			this.ignoreUnknownNamespaces = ignoreUnknownNamespaces;
 		}
@@ -82,7 +80,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		 * then they must match their last element too.
 		 */
 		if (rootValidations != null) {
-			for (RootValidation rootValidation: rootValidations) {
+			for (RootValidation rootValidation : rootValidations) {
 				List<String> path = rootValidation.getPath();
 				int i = elements.size();
 				if (rootValidation.getPathLength() == i + 1 && elements.equals(path.subList(0, i))) { // if all the current elements match this valid path up to the one but last
@@ -129,7 +127,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 			}
 		}
 		elements.add(lName);
-		if(!isInSoapFault()) {
+		if (!isInSoapFault()) {
 			checkNamespaceExistance(namespaceURI);
 		}
 	}
@@ -141,7 +139,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	@Override
 	public void endElement(String namespaceURI, String lName, String qName) throws SAXException {
-		int level = elements.size() -1;
+		int level = elements.size() - 1;
 		elements.remove(level);
 	}
 
@@ -149,7 +147,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	public void endDocument() throws SAXException {
 		// assert that all rootValidations are covered
 		if (rootValidations != null) {
-			for (RootValidation rootValidation: rootValidations) {
+			for (RootValidation rootValidation : rootValidations) {
 				List<String> path = rootValidation.getPath();
 				String validLastElements = rootValidation.getValidLastElements();
 				List<String> validLastElementsAsList = listOf(validLastElements);

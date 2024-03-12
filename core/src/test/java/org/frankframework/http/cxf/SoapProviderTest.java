@@ -44,8 +44,10 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 import org.w3c.dom.Element;
 
 public class SoapProviderTest {
@@ -60,9 +62,9 @@ public class SoapProviderTest {
 	private static final String PART_NAME = "part_file";
 	private static final String ATTACHMENT2_NAME = "document.pdf";
 	private static final String ATTACHMENT2_MIMETYPE = "application/pdf";
-	private static final String MULTIPART_XML = "<parts><part type=\"file\" name=\""+ATTACHMENT2_NAME+"\" "
+	private static final String MULTIPART_XML = "<parts><part type=\"file\" name=\"" + ATTACHMENT2_NAME + "\" "
 			+ "sessionKey=\"part_file\" size=\"72833\" "
-			+ "mimeType=\""+ATTACHMENT2_MIMETYPE+"\"/></parts>";
+			+ "mimeType=\"" + ATTACHMENT2_MIMETYPE + "\"/></parts>";
 
 	private static final String BASEDIR = "/Soap/";
 
@@ -98,7 +100,7 @@ public class SoapProviderTest {
 	}
 
 	protected Message getFile(String file) throws IOException {
-		URL url = this.getClass().getResource(BASEDIR+file);
+		URL url = this.getClass().getResource(BASEDIR + file);
 		if (url == null) {
 			throw new IOException("file not found");
 		}
@@ -115,7 +117,7 @@ public class SoapProviderTest {
 		Source streamSource = getFile(filename).asSource();
 		soapMessage.getSOAPPart().setContent(streamSource);
 
-		if(addAttachment) {
+		if (addAttachment) {
 			InputStream fis = new ByteArrayInputStream(ATTACHMENT_CONTENT.getBytes());
 			DataHandler dataHandler = new DataHandler(new InputStreamDataSource(ATTACHMENT_MIMETYPE, fis));
 
@@ -155,7 +157,7 @@ public class SoapProviderTest {
 
 		Iterator<?> attachmentParts = message.getAttachments();
 		while (attachmentParts.hasNext()) {
-			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
+			AttachmentPart soapAttachmentPart = (AttachmentPart) attachmentParts.next();
 			String attachment = StreamUtil.streamToString(soapAttachmentPart.getRawContent());
 			//ContentID should be equal to the filename
 			assertEquals(PART_NAME, soapAttachmentPart.getContentId());
@@ -168,7 +170,7 @@ public class SoapProviderTest {
 			String contentType = null;
 			while (headers.hasNext()) {
 				MimeHeader header = (MimeHeader) headers.next();
-				if("Content-Type".equalsIgnoreCase(header.getName()))
+				if ("Content-Type".equalsIgnoreCase(header.getName()))
 					contentType = header.getValue();
 			}
 			assertEquals(ATTACHMENT2_MIMETYPE, contentType);
@@ -178,6 +180,7 @@ public class SoapProviderTest {
 	/**
 	 * Receive SOAP message without attachment
 	 * Reply SOAP message without attachment
+	 *
 	 * @throws Throwable
 	 */
 	@Test
@@ -198,6 +201,7 @@ public class SoapProviderTest {
 
 	/**
 	 * Receive faulty message without attachment
+	 *
 	 * @throws Throwable
 	 */
 	@Test
@@ -210,6 +214,7 @@ public class SoapProviderTest {
 	/**
 	 * Receive SOAP message with MTOM attachment
 	 * Reply SOAP message without attachment
+	 *
 	 * @throws Throwable
 	 */
 	@Test
@@ -228,6 +233,7 @@ public class SoapProviderTest {
 	/**
 	 * Receive SOAP message without attachment
 	 * Reply SOAP message with (InputStream) attachment
+	 *
 	 * @throws Throwable
 	 */
 	@Test
@@ -253,6 +259,7 @@ public class SoapProviderTest {
 	/**
 	 * Receive SOAP message without attachment
 	 * Reply SOAP message with (String) attachment
+	 *
 	 * @throws Throwable
 	 */
 	@Test
@@ -348,7 +355,7 @@ public class SoapProviderTest {
 		//Test attachment
 		Iterator<?> attachmentParts = message.getAttachments();
 		while (attachmentParts.hasNext()) {
-			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
+			AttachmentPart soapAttachmentPart = (AttachmentPart) attachmentParts.next();
 			String attachment = StreamUtil.streamToString(soapAttachmentPart.getRawContent());
 			//ContentID should be equal to the filename
 			assertEquals(PART_NAME, soapAttachmentPart.getContentId());
@@ -361,7 +368,7 @@ public class SoapProviderTest {
 			String contentType = null;
 			while (headers.hasNext()) {
 				MimeHeader header = (MimeHeader) headers.next();
-				if("Content-Type".equalsIgnoreCase(header.getName()))
+				if ("Content-Type".equalsIgnoreCase(header.getName()))
 					contentType = header.getValue();
 			}
 			assertEquals(expectedContentType, contentType);
@@ -421,7 +428,7 @@ public class SoapProviderTest {
 		// Soap protocol 1.1
 		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
 		String value = "ActionInContentTypeHeader";
-		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action="+value);
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action=" + value);
 		SOAPProvider.invoke(request);
 		webServiceContext.getMessageContext().clear();
 		assertNull(SOAPProvider.getSession().get("SOAPAction"));
@@ -431,7 +438,7 @@ public class SoapProviderTest {
 	public void soapActionInSessionKeySOAP1_2ActionIsTheLastItem() throws Throwable {
 		SOAPMessage request = createMessage("soapmsg1_2.xml");
 		String value = "SOAP1_2ActionIsTheLastItem";
-		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action="+value);
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action=" + value);
 		SOAPProvider.invoke(request);
 		webServiceContext.getMessageContext().clear();
 		assertEquals(value, SOAPProvider.getSession().get("SOAPAction"));
@@ -441,7 +448,7 @@ public class SoapProviderTest {
 	public void soapActionInSessionKeySOAP1_2ActionIsInMiddle() throws Throwable {
 		SOAPMessage request = createMessage("soapmsg1_2.xml");
 		String value = "SOAP1_2ActionIsInMiddle";
-		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action="+value+";somethingelse");
+		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action=" + value + ";somethingelse");
 		SOAPProvider.invoke(request);
 		webServiceContext.getMessageContext().clear();
 		assertEquals(value, SOAPProvider.getSession().get("SOAPAction"));

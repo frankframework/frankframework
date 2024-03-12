@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Date;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.ParameterList;
@@ -12,15 +14,14 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.DateFormatUtils;
-import org.junit.jupiter.api.Test;
 
-public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<F>> extends FileSystemActorTest<F, FS> {
+public abstract class FileSystemActorExtraTest<F, FS extends IWritableFileSystem<F>> extends FileSystemActorTest<F, FS> {
 
 	@Override
 	protected abstract IFileSystemTestHelperFullControl getFileSystemTestHelper();
 
 	private void setFileDate(String folder, String filename, Date date) throws Exception {
-		((IFileSystemTestHelperFullControl)helper).setFileDate(folder, filename, date);
+		((IFileSystemTestHelperFullControl) helper).setFileDate(folder, filename, date);
 	}
 
 	@Test
@@ -33,7 +34,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 		Date firstDate;
 		long millisPerDay = 1000L * 60L * 60L * 24L;
 
-		if(_fileExists(filename)) {
+		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
 		createFile(null, filename, "thanos car ");
@@ -47,14 +48,14 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 
 		actor.setAction(FileSystemAction.APPEND);
 		actor.setRotateDays(numOfBackups);
-		actor.configure(fileSystem,params,owner);
+		actor.configure(fileSystem, params, owner);
 		actor.open();
 
 		Message message = new Message(filename);
-		for(int i=0; i<numOfWrites; i++) {
+		for (int i = 0; i < numOfWrites; i++) {
 			setFileDate(null, filename, new Date(firstDate.getTime() + (millisPerDay * i)));
 
-			session.put("appendActionwString", contents+i);
+			session.put("appendActionwString", contents + i);
 			ParameterValueList pvl = params.getValues(message, session);
 
 			Message result = actor.doAction(message, pvl, session);
@@ -65,11 +66,11 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 			result.close();
 		}
 
-		for (int i=1; i<=numOfWrites-1; i++) {
+		for (int i = 1; i <= numOfWrites - 1; i++) {
 			String formattedDate = DateFormatUtils.format(firstDate.getTime() + (millisPerDay * i), DateFormatUtils.ISO_DATE_FORMATTER);
 
-			String actualContentsi = readFile(null, filename+"."+formattedDate);
-			assertEquals((contents+(i-1)).trim(), actualContentsi.trim());
+			String actualContentsi = readFile(null, filename + "." + formattedDate);
+			assertEquals((contents + (i - 1)).trim(), actualContentsi.trim());
 		}
 	}
 }

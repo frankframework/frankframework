@@ -35,7 +35,7 @@ import org.frankframework.xml.SaxDocumentBuilder;
 @ElementType(ElementTypes.TRANSLATOR)
 public class TextSplitterPipe extends FixedForwardPipe {
 
-	private int maxBlockLength=160;
+	private int maxBlockLength = 160;
 	private boolean softSplit = false;
 
 	@Override
@@ -50,18 +50,19 @@ public class TextSplitterPipe extends FixedForwardPipe {
 			String inputString = message.asString();
 
 			if (softSplit) {
-				for (p = 0; p < inputString.length() - maxBlockLength;) {
+				for (p = 0; p < inputString.length() - maxBlockLength; ) {
 					// find last space in msg part
 					for (s = p + maxBlockLength >= inputString.length() ? inputString.length() - 1 : p + maxBlockLength; s >= p
-							&& !Character.isWhitespace(inputString.charAt(s)) && inputString.charAt(s) != '-'; s--);
+							&& !Character.isWhitespace(inputString.charAt(s)) && inputString.charAt(s) != '-'; s--)
+						;
 
 					// now skip spaces
-					for (; s >= p && Character.isWhitespace(inputString.charAt(s)); s--);
+					for (; s >= p && Character.isWhitespace(inputString.charAt(s)); s--) ;
 
 					// spaces found, soft break possible
 					if (s >= p) {
 						result[o++] = inputString.substring(p, s + 1);
-						for (p = s + 1; p < inputString.length() && Character.isWhitespace(inputString.charAt(p)); p++);
+						for (p = s + 1; p < inputString.length() && Character.isWhitespace(inputString.charAt(p)); p++) ;
 					}
 					// no space found, soft-break not possible
 					else {
@@ -95,6 +96,7 @@ public class TextSplitterPipe extends FixedForwardPipe {
 
 	/**
 	 * Set the maximum number of characters of a block
+	 *
 	 * @ff.default 160
 	 */
 	public void setMaxBlockLength(int maxBlockLength) {
@@ -103,6 +105,7 @@ public class TextSplitterPipe extends FixedForwardPipe {
 
 	/**
 	 * If true, try to break up the message at spaces, instead of in the middle of words
+	 *
 	 * @ff.default false
 	 */
 	public void setSoftSplit(boolean softSplit) {

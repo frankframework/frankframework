@@ -15,11 +15,11 @@
 */
 package org.frankframework.ibistesttool.web;
 
+import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.webcontainer.WebContainerServlet;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import nextapp.echo2.app.ApplicationInstance;
-import nextapp.echo2.webcontainer.WebContainerServlet;
 import nl.nn.testtool.echo2.Echo2Application;
 
 /**

@@ -5,12 +5,12 @@ import org.xml.sax.SAXException;
 
 public class CloseObservableXmlWriter extends XmlWriter {
 
-	private boolean closeCalled=false;
+	private boolean closeCalled = false;
 
 	@Override
 	public void endDocument() throws SAXException {
 		super.endDocument();
-		closeCalled=true;
+		closeCalled = true;
 	}
 
 	public boolean isCloseCalled() {

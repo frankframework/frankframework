@@ -24,13 +24,12 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.ClassUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import org.frankframework.util.ClassUtils;
 
 public class BusMessageUtils {
 	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
@@ -47,7 +46,7 @@ public class BusMessageUtils {
 	@SuppressWarnings("unchecked")
 	private static <T> @Nullable T getHeader(Message<?> message, String headerName, Class<T> type) {
 		MessageHeaders headers = message.getHeaders();
-		if(contains(headers, headerName)) {
+		if (contains(headers, headerName)) {
 			Object rawValue = headers.get(HEADER_PREFIX + headerName);
 			if (rawValue == null) {
 				return null;
@@ -56,7 +55,7 @@ public class BusMessageUtils {
 			if (type.isAssignableFrom(rawValue.getClass())) {
 				return (T) rawValue;
 			}
-			if(rawValue instanceof String) {
+			if (rawValue instanceof String) {
 				try {
 					return ClassUtils.convertToType(type, String.valueOf(rawValue));
 				} catch (IllegalArgumentException e) {// Unable to convert something, fall back to the default value
@@ -109,7 +108,7 @@ public class BusMessageUtils {
 	@Nullable
 	public static String getUserPrincipalName() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication != null) {
+		if (authentication != null) {
 			return authentication.getName();
 		}
 		return null;
@@ -118,15 +117,15 @@ public class BusMessageUtils {
 	@Nonnull
 	private static Collection<? extends GrantedAuthority> getAuthorities() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication != null) {
+		if (authentication != null) {
 			return authentication.getAuthorities();
 		}
 		return Collections.emptyList();
 	}
 
 	public static boolean hasAnyRole(String... roles) {
-		for(String role : roles) {
-			if(hasRole(role)) {
+		for (String role : roles) {
+			if (hasRole(role)) {
 				return true;
 			}
 		}
@@ -138,10 +137,10 @@ public class BusMessageUtils {
 	 */
 	public static boolean hasRole(String role) {
 		boolean granted = false;
-		for(GrantedAuthority grantedAuthority : getAuthorities()) {
+		for (GrantedAuthority grantedAuthority : getAuthorities()) {
 			String authorityName = grantedAuthority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
 			granted = authorityName.equals(role);
-			if(granted) {
+			if (granted) {
 				return true;
 			}
 		}

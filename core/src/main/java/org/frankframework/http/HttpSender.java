@@ -91,20 +91,20 @@ import lombok.Getter;
  *   param_name=param_value
  *   another_param_name=another_param_value
  * </pre>
- *
+ * <p>
  * Note:
  * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
  * </p>
  *
  * @author Niels Meijer
- * @since 7.0
  * @version 2.0
+ * @since 7.0
  */
 public class HttpSender extends HttpSenderBase {
 
-	private @Getter boolean paramsInUrl=true;
-	private @Getter String firstBodyPartName=null;
+	private @Getter boolean paramsInUrl = true;
+	private @Getter String firstBodyPartName = null;
 
 	private @Getter String multipartXmlSessionKey;
 	private @Getter String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
@@ -132,22 +132,22 @@ public class HttpSender extends HttpSenderBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		//For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
-		if(StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
+		if (StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
 			setContentType("text/html");
 		}
 
 		super.configure();
 
-		if (getTreatInputMessageAsParameters()==null && getHttpMethod()!=HttpMethod.GET) {
+		if (getTreatInputMessageAsParameters() == null && getHttpMethod() != HttpMethod.GET) {
 			setTreatInputMessageAsParameters(Boolean.TRUE);
 		}
 
 		if (getHttpMethod() != HttpMethod.POST) {
 			if (!isParamsInUrl()) {
-				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
+				throw new ConfigurationException(getLogPrefix() + "paramsInUrl can only be set to false for methodType POST");
 			}
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-				throw new ConfigurationException(getLogPrefix()+"firstBodyPartName can only be set for methodType POST");
+				throw new ConfigurationException(getLogPrefix() + "firstBodyPartName can only be set for methodType POST");
 			}
 		}
 	}
@@ -158,7 +158,7 @@ public class HttpSender extends HttpSenderBase {
 			try {
 				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix()+"unable to encode message",e);
+				throw new SenderException(getLogPrefix() + "unable to encode message", e);
 			}
 		}
 
@@ -166,14 +166,14 @@ public class HttpSender extends HttpSenderBase {
 		try {
 			uri = encodeQueryParameters(url);
 		} catch (UnsupportedEncodingException | URISyntaxException e) {
-			throw new SenderException("error encoding queryparameters in url ["+url.toString()+"]", e);
+			throw new SenderException("error encoding queryparameters in url [" + url.toString() + "]", e);
 		}
 
-		if(postType==PostType.URLENCODED || postType==PostType.FORMDATA || postType==PostType.MTOM) {
+		if (postType == PostType.URLENCODED || postType == PostType.FORMDATA || postType == PostType.MTOM) {
 			try {
 				return getMultipartPostMethodWithParamsInBody(uri, message, parameters, session);
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix()+"unable to read message", e);
+				throw new SenderException(getLogPrefix() + "unable to read message", e);
 			}
 		}
 		// RAW + BINARY
@@ -184,14 +184,14 @@ public class HttpSender extends HttpSenderBase {
 	private URI encodeQueryParameters(URI url) throws UnsupportedEncodingException, URISyntaxException {
 		URIBuilder uri = new URIBuilder(url);
 		ArrayList<NameValuePair> pairs = new ArrayList<>(uri.getQueryParams().size());
-		for(NameValuePair pair : uri.getQueryParams()) {
+		for (NameValuePair pair : uri.getQueryParams()) {
 			String paramValue = pair.getValue(); //May be NULL
-			if(StringUtils.isNotEmpty(paramValue)) {
+			if (StringUtils.isNotEmpty(paramValue)) {
 				paramValue = URLEncoder.encode(paramValue, getCharSet()); //Only encode if the value is not null
 			}
 			pairs.add(new BasicNameValuePair(pair.getName(), paramValue));
 		}
-		if(!pairs.isEmpty()) {
+		if (!pairs.isEmpty()) {
 			uri.clearParameters();
 			uri.addParameters(pairs);
 		}
@@ -211,74 +211,74 @@ public class HttpSender extends HttpSenderBase {
 			}
 
 			switch (getHttpMethod()) {
-			case GET:
-				if (parameters!=null) {
-					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
-				}
-
-				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
-
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+getMethod.getURI().getQuery()+"]");
-				if (null != getFullContentType()) { //Manually set Content-Type header
-					getMethod.setHeader("Content-Type", getFullContentType().toString());
-				}
-				return getMethod;
-
-			case POST:
-			case PUT:
-			case PATCH:
-				HttpEntity entity;
-				if(postType == PostType.RAW) {
-					String messageString = BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message) ? message.asString() : "";
-					if (parameters!=null) {
-						StringBuilder msg = new StringBuilder(messageString);
-						appendParameters(true,msg,parameters);
-						if (StringUtils.isEmpty(messageString) && msg.length()>1) {
-							messageString=msg.substring(1);
-						} else {
-							messageString=msg.toString();
-						}
+				case GET:
+					if (parameters != null) {
+						queryParametersAppended = appendParameters(queryParametersAppended, relativePath, parameters);
+						if (log.isDebugEnabled()) log.debug(getLogPrefix() + "path after appending of parameters [" + relativePath + "]");
 					}
-					entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
-				} else if(postType == PostType.BINARY) {
-					entity = new HttpMessageEntity(message, getFullContentType());
-				} else {
-					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
-				}
 
-				HttpEntityEnclosingRequestBase method;
-				if (getHttpMethod() == HttpMethod.POST) {
-					method = new HttpPost(relativePath.toString());
-				} else if (getHttpMethod() == HttpMethod.PATCH) {
-					method = new HttpPatch(relativePath.toString());
-				} else {
-					method = new HttpPut(relativePath.toString());
-				}
+					HttpGet getMethod = new HttpGet(relativePath + (parameters == null && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message) ? message.asString() : ""));
 
-				method.setEntity(entity);
-				return method;
+					if (log.isDebugEnabled()) log.debug(getLogPrefix() + "HttpSender constructed GET-method [" + getMethod.getURI().getQuery() + "]");
+					if (null != getFullContentType()) { //Manually set Content-Type header
+						getMethod.setHeader("Content-Type", getFullContentType().toString());
+					}
+					return getMethod;
 
-			case DELETE:
-				HttpDelete deleteMethod = new HttpDelete(relativePath.toString());
-				if (null != getFullContentType()) { //Manually set Content-Type header
-					deleteMethod.setHeader("Content-Type", getFullContentType().toString());
-				}
-				return deleteMethod;
+				case POST:
+				case PUT:
+				case PATCH:
+					HttpEntity entity;
+					if (postType == PostType.RAW) {
+						String messageString = BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message) ? message.asString() : "";
+						if (parameters != null) {
+							StringBuilder msg = new StringBuilder(messageString);
+							appendParameters(true, msg, parameters);
+							if (StringUtils.isEmpty(messageString) && msg.length() > 1) {
+								messageString = msg.substring(1);
+							} else {
+								messageString = msg.toString();
+							}
+						}
+						entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
+					} else if (postType == PostType.BINARY) {
+						entity = new HttpMessageEntity(message, getFullContentType());
+					} else {
+						throw new SenderException("PostType [" + postType.name() + "] not allowed!");
+					}
 
-			case HEAD:
-				return new HttpHead(relativePath.toString());
+					HttpEntityEnclosingRequestBase method;
+					if (getHttpMethod() == HttpMethod.POST) {
+						method = new HttpPost(relativePath.toString());
+					} else if (getHttpMethod() == HttpMethod.PATCH) {
+						method = new HttpPatch(relativePath.toString());
+					} else {
+						method = new HttpPut(relativePath.toString());
+					}
 
-			case REPORT:
-				Element element = XmlUtils.buildElement(message.asString(), true);
-				HttpReport reportMethod = new HttpReport(relativePath.toString(), element);
-				if (null != getFullContentType()) { //Manually set Content-Type header
-					reportMethod.setHeader("Content-Type", getFullContentType().toString());
-				}
-				return reportMethod;
+					method.setEntity(entity);
+					return method;
 
-			default:
-				return null;
+				case DELETE:
+					HttpDelete deleteMethod = new HttpDelete(relativePath.toString());
+					if (null != getFullContentType()) { //Manually set Content-Type header
+						deleteMethod.setHeader("Content-Type", getFullContentType().toString());
+					}
+					return deleteMethod;
+
+				case HEAD:
+					return new HttpHead(relativePath.toString());
+
+				case REPORT:
+					Element element = XmlUtils.buildElement(message.asString(), true);
+					HttpReport reportMethod = new HttpReport(relativePath.toString(), element);
+					if (null != getFullContentType()) { //Manually set Content-Type header
+						reportMethod.setHeader("Content-Type", getFullContentType().toString());
+					}
+					return reportMethod;
+
+				default:
+					return null;
 			}
 		} catch (Exception e) {
 			//Catch all exceptions and throw them as SenderException
@@ -292,31 +292,30 @@ public class HttpSender extends HttpSenderBase {
 	private HttpPost getMultipartPostMethodWithParamsInBody(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		HttpPost hmethod = new HttpPost(uri);
 
-		if (postType==PostType.URLENCODED && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
+		if (postType == PostType.URLENCODED && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
 			List<NameValuePair> requestFormElements = new ArrayList<>();
 
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
 				requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(), message.asString()));
-				log.debug(getLogPrefix()+"appended parameter ["+getFirstBodyPartName()+"] with value ["+message+"]");
+				log.debug(getLogPrefix() + "appended parameter [" + getFirstBodyPartName() + "] with value [" + message + "]");
 			}
-			if (parameters!=null) {
-				for(ParameterValue pv : parameters) {
+			if (parameters != null) {
+				for (ParameterValue pv : parameters) {
 					String name = pv.getDefinition().getName();
 					String value = pv.asStringValue("");
 
 					if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
-						requestFormElements.add(new BasicNameValuePair(name,value));
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+						requestFormElements.add(new BasicNameValuePair(name, value));
+						if (log.isDebugEnabled()) log.debug(getLogPrefix() + "appended parameter [" + name + "] with value [" + value + "]");
 					}
 				}
 			}
 			try {
 				hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
 			} catch (UnsupportedEncodingException e) {
-				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more POST parameters", e);
+				throw new SenderException(getLogPrefix() + "unsupported encoding for one or more POST parameters", e);
 			}
-		}
-		else { //formdata and mtom
+		} else { //formdata and mtom
 			HttpEntity requestEntity = createMultiPartEntity(message, parameters, session);
 			hmethod.setEntity(requestEntity);
 		}
@@ -340,15 +339,15 @@ public class HttpSender extends HttpSenderBase {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
-		if(postType == PostType.MTOM)
+		if (postType == PostType.MTOM)
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
 			entity.addPart(createStringBodypart(message));
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "appended stringpart [" + getFirstBodyPartName() + "] with value [" + message + "]");
 		}
-		if (parameters!=null) {
-			for(ParameterValue pv : parameters) {
+		if (parameters != null) {
+			for (ParameterValue pv : parameters) {
 				String name = pv.getDefinition().getName();
 				if (requestOrBodyParamsSet.contains(name)) {
 					Message msg = pv.asMessage();
@@ -359,7 +358,7 @@ public class HttpSender extends HttpSenderBase {
 						if (sessionKey != null) {
 							fileName = session.getString(sessionKey + "Name");
 						}
-						if(fileName != null) {
+						if (fileName != null) {
 							log.warn("setting filename using [{}Name] for bodypart [{}]. Consider using a MultipartXml with the attribute [name] instead.", sessionKey, fileName, name);
 						}
 
@@ -372,19 +371,19 @@ public class HttpSender extends HttpSenderBase {
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
 			String multipartXml = session.getString(getMultipartXmlSessionKey());
-			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
+			log.debug(getLogPrefix() + "building multipart message with MultipartXmlSessionKey [" + multipartXml + "]");
 			if (StringUtils.isEmpty(multipartXml)) {
-				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
+				log.warn(getLogPrefix() + "sessionKey [" + getMultipartXmlSessionKey() + "] is empty");
 			} else {
 				Element partsElement;
 				try {
 					partsElement = XmlUtils.buildElement(multipartXml);
 				} catch (DomBuilderException e) {
-					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
+					throw new SenderException(getLogPrefix() + "error building multipart xml", e);
 				}
 				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 				if (parts.isEmpty()) {
-					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
+					log.warn(getLogPrefix() + "no part(s) in multipart xml [" + multipartXml + "]");
 				} else {
 					for (final Node part : parts) {
 						Element partElement = (Element) part;
@@ -404,12 +403,12 @@ public class HttpSender extends HttpSenderBase {
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
 		Message partObject = session.getMessage(partSessionKey);
 		MimeType mimeType = null;
-		if(StringUtils.isNotEmpty(partMimeType)) {
+		if (StringUtils.isNotEmpty(partMimeType)) {
 			mimeType = MimeType.valueOf(partMimeType);
 		}
 
 		final String filenameToUse;
-		if(isFile || StringUtils.isNotBlank(filename)) {
+		if (isFile || StringUtils.isNotBlank(filename)) {
 			String filenamebackup = StringUtils.isBlank(part) ? partSessionKey : part;
 			filenameToUse = StringUtils.isNotBlank(filename) ? filename : filenamebackup;
 		} else {
@@ -427,11 +426,11 @@ public class HttpSender extends HttpSenderBase {
 		if (!validateResponseCode(statusCode)) {
 			Message responseBody = responseHandler.getResponseMessage();
 			String body = "";
-			if(responseBody != null) {
+			if (responseBody != null) {
 				responseBody.preserve();
 				try {
 					body = responseBody.asString();
-				} catch(IOException e) {
+				} catch (IOException e) {
 					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
 				}
 			}
@@ -490,7 +489,7 @@ public class HttpSender extends HttpSenderBase {
 					session.put("multipart" + i, new PartMessage(bodyPart));
 				}
 			}
-		} catch(MessagingException e) {
+		} catch (MessagingException e) {
 			throw new IOException("Could not read mime multipart response", e);
 		}
 		return result;
@@ -516,6 +515,7 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * If <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code>, the type of post request
+	 *
 	 * @ff.default RAW
 	 */
 	public void setPostType(PostType type) {
@@ -524,12 +524,13 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * If false and <code>methodType</code>=<code>POST</code>, request parameters are put in the request body instead of in the url
+	 *
 	 * @ff.default true
 	 */
 	@Deprecated
 	public void setParamsInUrl(boolean b) {
-		if(!b) {
-			if(postType != PostType.MTOM && postType != PostType.FORMDATA) { //Don't override if another type has explicitly been set
+		if (!b) {
+			if (postType != PostType.MTOM && postType != PostType.FORMDATA) { //Don't override if another type has explicitly been set
 				postType = PostType.URLENCODED;
 				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: please use postType='URLENCODED' instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 			} else {
@@ -564,6 +565,7 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * Specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.
+	 *
 	 * @ff.default false
 	 */
 	public void setEncodeMessages(boolean b) {
@@ -572,6 +574,7 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * If <code>true</code>, the input will be added to the URL for <code>methodType</code>=<code>GET</code>, or for <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code> if <code>postType</code>=<code>RAW</code>. This used to be the default behaviour in framework version 7.7 and earlier
+	 *
 	 * @ff.default for methodType=<code>GET</code>: <code>false</code>,<br/>for methodTypes <code>POST</code>, <code>PUT</code>, <code>PATCH</code>: <code>true</code>
 	 */
 	public void setTreatInputMessageAsParameters(Boolean b) {

@@ -49,7 +49,7 @@ public class CheckSemaphorePipeLineProcessor extends PipeLineProcessorBase {
 				StatisticsKeeper sk = pipeLine.getPipeWaitingStatistics(pipe);
 				sk.addValue(waitingDuration);
 				pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
-			} catch(InterruptedException e) {
+			} catch (InterruptedException e) {
 				throw new PipeRunException(pipe, "Interrupted acquiring PipeLine semaphore", e);
 			} finally {
 				s.release();
@@ -61,7 +61,7 @@ public class CheckSemaphorePipeLineProcessor extends PipeLineProcessorBase {
 	}
 
 	private Semaphore getSemaphore(PipeLine pipeLine) {
-		return pipeLineThreadCounts.computeIfAbsent(pipeLine, k -> k.getMaxThreads()>0 ? new Semaphore(k.getMaxThreads()) : null);
+		return pipeLineThreadCounts.computeIfAbsent(pipeLine, k -> k.getMaxThreads() > 0 ? new Semaphore(k.getMaxThreads()) : null);
 	}
 
 }

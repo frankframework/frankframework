@@ -11,8 +11,10 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.MatchUtils;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.http.MediaType;
 
 public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
@@ -29,9 +31,9 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		configureAndStartPipe();
 
 		String expectedOutput = "<address>"
-					+ "<line><![CDATA[this is an example]]></line>\n"
-					+ "<line><![CDATA[im in cdata]]></line>"
-					+ "</address>";
+				+ "<line><![CDATA[this is an example]]></line>\n"
+				+ "<line><![CDATA[im in cdata]]></line>"
+				+ "</address>";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
 		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
@@ -71,9 +73,9 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		configureAndStartPipe();
 
 		String expectedOutput = "<address>"
-					+ "<line>this is an example</line>\n"
-					+ "<line>im not in cdata</line>"
-					+ "</address>";
+				+ "<line>this is an example</line>\n"
+				+ "<line>im not in cdata</line>"
+				+ "</address>";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim not in cdata", session);
 		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
@@ -113,7 +115,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "<invalid>\n<xml>\n<input>\n</invalid>", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "<invalid>\n<xml>\n<input>\n</invalid>", session));
 		assertThat(e.getMessage(), containsString("The element type \"input\" must be terminated by the matching end-tag \"</input>\""));
 	}
 
@@ -123,7 +125,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "<invalid><xml><input></invalid>", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "<invalid><xml><input></invalid>", session));
 		assertThat(e.getMessage(), containsString("The element type \"input\" must be terminated by the matching end-tag \"</input>\""));
 	}
 

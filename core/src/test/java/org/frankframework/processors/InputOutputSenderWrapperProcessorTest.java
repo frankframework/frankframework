@@ -12,6 +12,7 @@ import org.frankframework.senders.SenderBase;
 import org.frankframework.senders.SenderSeries;
 import org.frankframework.senders.SenderWrapperBase;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,21 +54,23 @@ public class InputOutputSenderWrapperProcessorTest {
 			@Override
 			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
-					return new SenderResult("Sender 1: ["+message.asString()+"]");
+					return new SenderResult("Sender 1: [" + message.asString() + "]");
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
-			}});
+			}
+		});
 		senderSeries.registerSender(new SenderBase() {
 			@Override
 			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
-					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
+					secondSenderOutput = "Sender 2: [" + message.asString() + "]";
 					return new SenderResult(secondSenderOutput);
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
-			}});
+			}
+		});
 		return senderSeries;
 	}
 
@@ -193,4 +196,3 @@ public class InputOutputSenderWrapperProcessorTest {
 	}
 
 }
-

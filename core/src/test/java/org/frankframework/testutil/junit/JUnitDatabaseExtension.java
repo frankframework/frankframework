@@ -34,7 +34,7 @@ public class JUnitDatabaseExtension implements TestTemplateInvocationContextProv
 			throw new JUnitException("Missing DatabaseTest annotation");
 		}
 
-		if(findRepeatableAnnotations(testMethod, ArgumentsSource.class).isEmpty()) {
+		if (findRepeatableAnnotations(testMethod, ArgumentsSource.class).isEmpty()) {
 			throw new JUnitException("Missing Database/TX Execution Matrix");
 		}
 

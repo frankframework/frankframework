@@ -39,14 +39,14 @@ public abstract class ResponseMessageBase<T> implements Message<T> {
 	}
 
 	public void setStatus(int status) {
-		if(status < 200 || status > 599) {
-			throw new IllegalArgumentException("Status code ["+status+"] must be between 200 and 599");
+		if (status < 200 || status > 599) {
+			throw new IllegalArgumentException("Status code [" + status + "] must be between 200 and 599");
 		}
 		setHeader(STATUS_KEY, String.valueOf(status));
 	}
 
 	protected void setMimeType(MimeType mimeType) {
-		if(mimeType != null) {
+		if (mimeType != null) {
 			setHeader(MIMETYPE_KEY, mimeType.toString());
 		}
 	}
@@ -56,11 +56,11 @@ public abstract class ResponseMessageBase<T> implements Message<T> {
 	}
 
 	public void setFilename(String disposition, String filename) {
-		setHeader(CONTENT_DISPOSITION_KEY, disposition + "; filename=\""+filename+"\"");
+		setHeader(CONTENT_DISPOSITION_KEY, disposition + "; filename=\"" + filename + "\"");
 	}
 
 	public void setHeader(String key, String value) {
-		headers.put(BusMessageUtils.HEADER_PREFIX+key, value);
+		headers.put(BusMessageUtils.HEADER_PREFIX + key, value);
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public abstract class ResponseMessageBase<T> implements Message<T> {
 
 	@Override
 	public MessageHeaders getHeaders() {
-		if(messageHeaders == null) {
+		if (messageHeaders == null) {
 			messageHeaders = new MessageHeaders(headers);
 		}
 

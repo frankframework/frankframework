@@ -32,7 +32,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-public class DomTreeAligner extends Tree2Xml<Document,Node> {
+public class DomTreeAligner extends Tree2Xml<Document, Node> {
 
 	public DomTreeAligner(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
 		super(validatorHandler, schemaInformation);
@@ -61,16 +61,16 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
 	@Override
 	public String getNodeText(XSElementDeclaration elementDeclaration, Node node) {
-		Node childNode=node.getFirstChild();
-		return childNode==null?null:childNode.getNodeValue();
+		Node childNode = node.getFirstChild();
+		return childNode == null ? null : childNode.getNodeValue();
 	}
 
 	@Override
 	public boolean hasChild(XSElementDeclaration elementDeclaration, Node node, String childName) throws SAXException {
 		// TODO this does not take overrideValues and defaultValues into account...
-		if (log.isTraceEnabled()) log.trace("hasChild() node ["+node+"] childName ["+childName+"]");
-		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
-			if (cur.getNodeType()==Node.ELEMENT_NODE && childName.equals(getNodeName(cur))) {
+		if (log.isTraceEnabled()) log.trace("hasChild() node [" + node + "] childName [" + childName + "]");
+		for (Node cur = node.getFirstChild(); cur != null; cur = cur.getNextSibling()) {
+			if (cur.getNodeType() == Node.ELEMENT_NODE && childName.equals(getNodeName(cur))) {
 				return true;
 			}
 		}
@@ -79,12 +79,13 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
 	@Override
 	public Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, Node node) throws SAXException {
-		if (log.isTraceEnabled()) log.trace("getAllChildNames() node ["+node+"]");
+		if (log.isTraceEnabled()) log.trace("getAllChildNames() node [" + node + "]");
 		Set<String> children = new HashSet<>();
-		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
+		for (Node cur = node.getFirstChild(); cur != null; cur = cur.getNextSibling()) {
 			//if (log.isTraceEnabled()) log.trace("getAllChildNames() found node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"] ["+ToStringBuilder.reflectionToString(cur)+"]");
-			if (cur.getNodeType()==Node.ELEMENT_NODE) {
-				if (log.isTraceEnabled()) log.trace("getAllChildNames() node ["+node+"] added node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"]");
+			if (cur.getNodeType() == Node.ELEMENT_NODE) {
+				if (log.isTraceEnabled())
+					log.trace("getAllChildNames() node [" + node + "] added node [" + getNodeName(cur) + "] type [" + cur.getNodeType() + "]");
 				children.add(getNodeName(cur));
 			}
 		}
@@ -93,12 +94,12 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
 	@Override
 	public Iterable<Node> getNodeChildrenByName(Node node, XSElementDeclaration childElementDeclaration) throws SAXException {
-		String name=childElementDeclaration.getName();
-		if (log.isTraceEnabled()) log.trace("getChildrenByName() node ["+node+"] name ["+name+"]");
+		String name = childElementDeclaration.getName();
+		if (log.isTraceEnabled()) log.trace("getChildrenByName() node [" + node + "] name [" + name + "]");
 		List<Node> children = new LinkedList<>();
-		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
-			if (cur.getNodeType()==Node.ELEMENT_NODE && name.equals(getNodeName(cur))) {
-				if (log.isTraceEnabled()) log.trace("getChildrenByName() node ["+node+"] added node ["+getNodeName(cur)+"]");
+		for (Node cur = node.getFirstChild(); cur != null; cur = cur.getNextSibling()) {
+			if (cur.getNodeType() == Node.ELEMENT_NODE && name.equals(getNodeName(cur))) {
+				if (log.isTraceEnabled()) log.trace("getChildrenByName() node [" + node + "] added node [" + getNodeName(cur) + "]");
 				children.add(cur);
 			}
 		}
@@ -107,20 +108,21 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
 	@Override
 	public boolean isNil(XSElementDeclaration elementDeclaration, Node node) {
-		NamedNodeMap attrs= node.getAttributes();
-		if (attrs==null) {
+		NamedNodeMap attrs = node.getAttributes();
+		if (attrs == null) {
 			return false;
 		}
-		Node nilAttribute=attrs.getNamedItemNS(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE);
-		return nilAttribute!=null && "true".equals(nilAttribute.getTextContent());
+		Node nilAttribute = attrs.getNamedItemNS(XML_SCHEMA_INSTANCE_NAMESPACE, XML_SCHEMA_NIL_ATTRIBUTE);
+		return nilAttribute != null && "true".equals(nilAttribute.getTextContent());
 	}
+
 	@Override
 	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, Node node) {
-		Map<String, String> result=new HashMap<>();
-		NamedNodeMap attributes=node.getAttributes();
-		if (attributes!=null) {
-			for (int i=0;i<attributes.getLength();i++) {
-				Node item=attributes.item(i);
+		Map<String, String> result = new HashMap<>();
+		NamedNodeMap attributes = node.getAttributes();
+		if (attributes != null) {
+			for (int i = 0; i < attributes.getLength(); i++) {
+				Node item = attributes.item(i);
 				result.put(getNodeName(item), item.getNodeValue());
 			}
 		}
@@ -132,7 +134,7 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 
 		// create the validator, setup the chain
-		DomTreeAligner dta = new DomTreeAligner(validatorHandler,schemaInformation);
+		DomTreeAligner dta = new DomTreeAligner(validatorHandler, schemaInformation);
 		dta.setIgnoreUndeclaredElements(ignoreUndeclaredElements);
 
 		return dta.translate(xmlIn);

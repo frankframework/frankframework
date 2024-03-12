@@ -61,10 +61,9 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Jaco de Groot
  * @author Niels Meijer
- *
  */
 @WebServiceProvider
-@ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
+@ServiceMode(value = javax.xml.ws.Service.Mode.MESSAGE)
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	protected Logger log = LogUtil.getLogger(this);
@@ -95,19 +94,18 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			if (request == null) {
 				String faultcode = "soap:Server";
 				String faultstring = "SOAPMessage is null";
-				String httpRequestMethod = (String)webServiceContext.getMessageContext().get(MessageContext.HTTP_REQUEST_METHOD);
+				String httpRequestMethod = (String) webServiceContext.getMessageContext().get(MessageContext.HTTP_REQUEST_METHOD);
 				if (!"POST".equals(httpRequestMethod)) {
 					faultcode = "soap:Client";
 					faultstring = "Request was send using '" + httpRequestMethod + "' instead of 'POST'";
 				}
 				response = new Message(
 						"<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
-						"<soap:Body><soap:Fault>" +
-						"<faultcode>" + faultcode + "</faultcode>" +
-						"<faultstring>" + faultstring + "</faultstring>" +
-						"</soap:Fault></soap:Body></soap:Envelope>");
-			}
-			else {
+								"<soap:Body><soap:Fault>" +
+								"<faultcode>" + faultcode + "</faultcode>" +
+								"<faultstring>" + faultstring + "</faultstring>" +
+								"</soap:Fault></soap:Body></soap:Envelope>");
+			} else {
 				// Make mime headers in request available as session key
 				@SuppressWarnings("unchecked")
 				Iterator<MimeHeader> mimeHeaders = request.getMimeHeaders().getAllHeaders();
@@ -129,7 +127,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						sessionKey.setValue("attachment" + i);
 						attachment.addSubElement(sessionKey);
 						pipelineSession.put("attachment" + i, MessageUtils.parse(attachmentPart));
-						log.debug(getLogPrefix(messageId)+"adding attachment [attachment" + i+"] to session");
+						log.debug(getLogPrefix(messageId) + "adding attachment [attachment" + i + "] to session");
 
 						@SuppressWarnings("unchecked")
 						Iterator<MimeHeader> attachmentMimeHeaders = attachmentPart.getAllMimeHeaders();
@@ -145,25 +143,25 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 				String contentType = (String) webServiceContext.getMessageContext().get("Content-Type");
 				Message soapMessage = parseSOAPMessage(request, contentType);
 				try {
-					if(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE.equals(request.getSOAPPart().getEnvelope().getNamespaceURI())) {
+					if (SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE.equals(request.getSOAPPart().getEnvelope().getNamespaceURI())) {
 						soapProtocol = SOAPConstants.SOAP_1_2_PROTOCOL;
 					}
 				} catch (SOAPException e) {
 					log.error("unable to determine SOAP URI NS type, falling back to SOAP 1.1", e);
 				}
 
-				log.debug(getLogPrefix(messageId)+"transforming from SOAP message");
+				log.debug(getLogPrefix(messageId) + "transforming from SOAP message");
 				pipelineSession.put("soapProtocol", soapProtocol);
-				if(soapProtocol.equals(SOAPConstants.SOAP_1_1_PROTOCOL)) {
+				if (soapProtocol.equals(SOAPConstants.SOAP_1_1_PROTOCOL)) {
 					String soapAction = (String) webServiceContext.getMessageContext().get(SoapBindingConstants.SOAP_ACTION);
 					pipelineSession.put(SoapBindingConstants.SOAP_ACTION, soapAction);
 				} else {
-					if(StringUtils.isNotEmpty(contentType)) {
+					if (StringUtils.isNotEmpty(contentType)) {
 						String action = findAction(contentType);
-						if(StringUtils.isNotEmpty(action)) {
+						if (StringUtils.isNotEmpty(action)) {
 							pipelineSession.put(SoapBindingConstants.SOAP_ACTION, action);
 						} else {
-							log.warn(getLogPrefix(messageId)+"no SOAPAction found!");
+							log.warn(getLogPrefix(messageId) + "no SOAPAction found!");
 						}
 					}
 				}
@@ -174,7 +172,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 				pipelineSession.put(PipeLineSession.HTTP_RESPONSE_KEY, webServiceContext.getMessageContext().get(MessageContext.SERVLET_RESPONSE));
 
 				try {
-					log.debug(getLogPrefix(messageId)+"processing message");
+					log.debug(getLogPrefix(messageId) + "processing message");
 					response = processRequest(soapMessage, pipelineSession);
 				} catch (ListenerException e) {
 					String m = "Could not process SOAP message: " + e.getMessage();
@@ -184,27 +182,25 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			}
 
 			// Transform result string to SOAP message
-			log.debug(getLogPrefix(messageId)+"transforming to SOAP message");
+			log.debug(getLogPrefix(messageId) + "transforming to SOAP message");
 			SOAPMessage soapMessage = createSOAPMessage(response, soapProtocol);
 
 			try {
 				String multipartXml = pipelineSession.getString(attachmentXmlSessionKey);
-				log.debug(getLogPrefix(messageId)+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
+				log.debug(getLogPrefix(messageId) + "building multipart message with MultipartXmlSessionKey [" + multipartXml + "]");
 				if (StringUtils.isNotEmpty(multipartXml)) {
 					Element partsElement;
 					try {
 						partsElement = XmlUtils.buildElement(multipartXml);
-					}
-					catch (DomBuilderException e) {
+					} catch (DomBuilderException e) {
 						String m = "error building multipart xml";
 						log.error(m, e);
 						throw new WebServiceException(m, e);
 					}
 					Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 					if (parts.isEmpty()) {
-						log.warn(getLogPrefix(messageId)+"no part(s) in multipart xml [" + multipartXml + "]");
-					}
-					else {
+						log.warn(getLogPrefix(messageId) + "no part(s) in multipart xml [" + multipartXml + "]");
+					} else {
 						for (final Node part : parts) {
 							Element partElement = (Element) part;
 
@@ -221,7 +217,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 								attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
 
 								String filename = StringUtils.isNotBlank(name) ? name : ds.getName();
-								attachmentPart.addMimeHeader("Content-Disposition", "attachment; name=\""+filename+"\"; filename=\""+filename+"\"");
+								attachmentPart.addMimeHeader("Content-Disposition", "attachment; name=\"" + filename + "\"; filename=\"" + filename + "\"");
 								soapMessage.addAttachmentPart(attachmentPart);
 
 								log.debug("appended filepart [{}] key [{}]", filename, partSessionKey);
@@ -243,17 +239,18 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 	/**
 	 * Create a MessageFactory singleton
+	 *
 	 * @param soapProtocol see {@link SOAPConstants} for possible values
 	 * @return previously initialized or newly created MessageFactory
 	 * @throws SOAPException when it's not possible to instantiate a new MessageFactory
 	 */
 	private synchronized MessageFactory getMessageFactory(String soapProtocol) throws SOAPException {
-		if(!factory.containsKey(soapProtocol)) {
-			log.info("creating new MessageFactory for soapProtocol ["+soapProtocol+"]");
+		if (!factory.containsKey(soapProtocol)) {
+			log.info("creating new MessageFactory for soapProtocol [" + soapProtocol + "]");
 			factory.put(soapProtocol, MessageFactory.newInstance(soapProtocol));
 		}
 
-		log.debug("using cached MessageFactory for soapProtocol ["+soapProtocol+"]");
+		log.debug("using cached MessageFactory for soapProtocol [" + soapProtocol + "]");
 		return factory.get(soapProtocol);
 	}
 
@@ -261,12 +258,13 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	 * Add log prefix to make it easier to debug
 	 */
 	protected String getLogPrefix(String messageId) {
-		return "mid ["+messageId+"] ";
+		return "mid [" + messageId + "] ";
 	}
 
 	/**
 	 * Actually process the request
-	 * @param message message that was received
+	 *
+	 * @param message         message that was received
 	 * @param pipelineSession messageContext (containing attachments if available)
 	 * @return response to send back
 	 */
@@ -274,6 +272,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 	/**
 	 * SessionKey containing attachment information, or null if no attachments
+	 *
 	 * @param attachmentXmlSessionKey {@code <parts><part type="file" name="document.pdf" sessionKey="part_file" size="12345" mimeType="application/octet-stream"/></parts>}
 	 */
 	public void setAttachmentXmlSessionKey(String attachmentXmlSessionKey) {
@@ -300,7 +299,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	@SuppressWarnings("unchecked")
 	private Message parseSOAPMessage(SOAPMessage soapMessage, String contentType) {
 		org.frankframework.stream.MessageContext context = MessageUtils.getContext(soapMessage.getMimeHeaders().getAllHeaders());
-		if(StringUtils.isNotEmpty(contentType)) {
+		if (StringUtils.isNotEmpty(contentType)) {
 			context.withMimeType(contentType);
 		}
 		SOAPPart part = soapMessage.getSOAPPart();

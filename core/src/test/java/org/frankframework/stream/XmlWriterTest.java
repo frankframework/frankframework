@@ -22,7 +22,9 @@ import java.io.StringWriter;
 
 import org.frankframework.util.StreamUtil;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.Test;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
@@ -34,7 +36,7 @@ public class XmlWriterTest {
 	private final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
 	private final String CDATA_END = TEST_CDATA ? "]]>" : "";
 
-	protected String testString="<root><sub name=\"P &amp; Q €\">abc&amp;€</sub><sub>"+CDATA_START+"<a>a&amp;b€</a>"+CDATA_END+"</sub><!--this is comment--></root>";
+	protected String testString = "<root><sub name=\"P &amp; Q €\">abc&amp;€</sub><sub>" + CDATA_START + "<a>a&amp;b€</a>" + CDATA_END + "</sub><!--this is comment--></root>";
 
 	@Test
 	public void testToStream() throws Exception {
@@ -43,7 +45,7 @@ public class XmlWriterTest {
 
 		sendEvents(xmlWriter);
 
-		String actual = new String (target.toString(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
+		String actual = new String(target.toString(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 		assertEquals(testString, actual);
 	}
 
@@ -54,29 +56,29 @@ public class XmlWriterTest {
 
 		sendEvents(xmlWriter);
 
-		String actual = new String (target.toString());
+		String actual = new String(target.toString());
 		assertEquals(testString, actual);
 	}
 
 	private void sendEvents(ContentHandler handler) throws SAXException {
 		String line;
 		handler.startDocument();
-		handler.startElement("","root","root", new AttributesImpl());
-			AttributesImpl atts = new AttributesImpl();
-			atts.addAttribute("", "name", "name", "string", "P & Q €");
-			handler.startElement("","sub","sub", atts);
-				line="abc&€";
-				handler.characters(line.toCharArray(),0,line.length());
-			handler.endElement("","sub","sub");
-			handler.startElement("","sub","sub", new AttributesImpl());
-				((LexicalHandler)handler).startCDATA();
-				line="<a>a&amp;b€</a>";
-				handler.characters(line.toCharArray(),0,line.length());
-				((LexicalHandler)handler).endCDATA();
-			handler.endElement("","sub","sub");
-			line="this is comment";
-			((LexicalHandler)handler).comment(line.toCharArray(),0,line.length());
-		handler.endElement("","root","root");
+		handler.startElement("", "root", "root", new AttributesImpl());
+		AttributesImpl atts = new AttributesImpl();
+		atts.addAttribute("", "name", "name", "string", "P & Q €");
+		handler.startElement("", "sub", "sub", atts);
+		line = "abc&€";
+		handler.characters(line.toCharArray(), 0, line.length());
+		handler.endElement("", "sub", "sub");
+		handler.startElement("", "sub", "sub", new AttributesImpl());
+		((LexicalHandler) handler).startCDATA();
+		line = "<a>a&amp;b€</a>";
+		handler.characters(line.toCharArray(), 0, line.length());
+		((LexicalHandler) handler).endCDATA();
+		handler.endElement("", "sub", "sub");
+		line = "this is comment";
+		((LexicalHandler) handler).comment(line.toCharArray(), 0, line.length());
+		handler.endElement("", "root", "root");
 		handler.endDocument();
 	}
 }

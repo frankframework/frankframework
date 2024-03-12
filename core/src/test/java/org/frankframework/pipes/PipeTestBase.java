@@ -20,6 +20,7 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -36,7 +37,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 		pipe = createPipe();
 		autowireByType(pipe);
 		pipe.registerForward(new PipeForward("success", "READY"));
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipe.setName(pipe.getClass().getSimpleName() + " under test");
 		pipeline.addPipe(pipe);
 	}
 
@@ -72,6 +73,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	protected PipeRunResult doPipe(String input) throws PipeRunException {
 		return doPipe(pipe, new Message(input), session);
 	}
+
 	protected PipeRunResult doPipe(Message input) throws PipeRunException {
 		return doPipe(pipe, input, session);
 	}
@@ -112,17 +114,17 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	 */
 	protected Message getResource(String resource) {
 		String base = pipe.getClass().getSimpleName();
-		if(StringUtils.isEmpty(base)) {
+		if (StringUtils.isEmpty(base)) {
 			Class<?> superClass = pipe.getClass().getSuperclass();
-			if(superClass != null) {
+			if (superClass != null) {
 				base = superClass.getSimpleName();
 			}
 		}
-		assertTrue(StringUtils.isNotEmpty(base), "unable to determine ["+pipe+"] name");
+		assertTrue(StringUtils.isNotEmpty(base), "unable to determine [" + pipe + "] name");
 		String relativeUrl = FilenameUtils.normalize("/Pipes/" + base + "/" + resource, true);
 
 		URL url = PipeTestBase.class.getResource(relativeUrl);
-		assertNotNull(url, "unable to find resource ["+resource+"] in path ["+relativeUrl+"]");
+		assertNotNull(url, "unable to find resource [" + resource + "] in path [" + relativeUrl + "]");
 		return new UrlMessage(url);
 	}
 }

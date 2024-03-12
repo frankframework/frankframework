@@ -27,8 +27,9 @@ import com.sap.conn.jco.JCoStructure;
  *   TABLE|STRUCTURE
  * &lt;/I_HCDAK&gt;
  * </pre>
- * @author  Jaco de Groot
- * @since   5.0
+ *
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class StructureHandler extends RecordHandler {
 

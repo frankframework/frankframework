@@ -33,7 +33,7 @@ public class AttributePropertyResolver extends FullXmlFilter {
 
 	public AttributePropertyResolver(ContentHandler handler, Properties properties, Set<String> propsToHide) {
 		super(handler);
-		if(properties == null) {
+		if (properties == null) {
 			throw new IllegalArgumentException("no properties defined");
 		}
 		this.properties = properties;
@@ -42,6 +42,6 @@ public class AttributePropertyResolver extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		super.startElement(uri, localName, qName, new AttributesWrapper(attributes, v->StringResolver.substVars(v, properties, null, propsToHide, resolveWithPropertyName)));
+		super.startElement(uri, localName, qName, new AttributesWrapper(attributes, v -> StringResolver.substVars(v, properties, null, propsToHide, resolveWithPropertyName)));
 	}
 }

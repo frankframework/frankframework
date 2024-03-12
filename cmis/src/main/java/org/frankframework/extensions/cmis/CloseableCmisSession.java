@@ -17,6 +17,7 @@ package org.frankframework.extensions.cmis;
 
 import java.util.Map;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.chemistry.opencmis.client.api.ObjectFactory;
 import org.apache.chemistry.opencmis.client.bindings.cache.TypeDefinitionCache;
 import org.apache.chemistry.opencmis.client.runtime.SessionImpl;
@@ -24,8 +25,6 @@ import org.apache.chemistry.opencmis.client.runtime.cache.Cache;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
 import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
-
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Subclass of CMIS {@link SessionImpl} that is closeable so it can clean up
@@ -40,11 +39,11 @@ public class CloseableCmisSession extends SessionImpl implements AutoCloseable {
 
 	@Override
 	public void close() {
-		log.debug("CMIS Session Close, SPI Binding class name: [{}]", ()->getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
+		log.debug("CMIS Session Close, SPI Binding class name: [{}]", () -> getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
 		clear();
 		CmisBinding binding = getBinding();
 		if (binding != null) {
-			log.debug("Closing CMIS Bindings instance [{}:{}]", ()->binding.getClass().getSimpleName(), ()->binding);
+			log.debug("Closing CMIS Bindings instance [{}:{}]", () -> binding.getClass().getSimpleName(), () -> binding);
 			binding.close();
 		} else {
 			log.debug("Session has no CMIS Bindings");

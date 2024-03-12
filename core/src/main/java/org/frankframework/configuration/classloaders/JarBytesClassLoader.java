@@ -42,18 +42,18 @@ public abstract class JarBytesClassLoader extends BytesClassLoader {
 			JarEntry jarEntry;
 			while ((jarEntry = jarInputStream.getNextJarEntry()) != null) {
 				String fileName = jarEntry.getName();
-				if(getBasePath() != null) {
+				if (getBasePath() != null) {
 					boolean isFolder = fileName.endsWith("/"); // if the name ends with a slash, assume it's a folder
-					if(isFolder || fileName.startsWith("META-INF/")) { //Ignore all folders and files in META-INF
-						log.debug("ignoring {} [{}]", (isFolder?"folder":"file"), fileName);
+					if (isFolder || fileName.startsWith("META-INF/")) { //Ignore all folders and files in META-INF
+						log.debug("ignoring {} [{}]", (isFolder ? "folder" : "file"), fileName);
 						continue;
 					}
 
-					if(fileName.startsWith(getBasePath())) { //Remove BasePath from the filename
+					if (fileName.startsWith(getBasePath())) { //Remove BasePath from the filename
 						fileName = fileName.substring(getBasePath().length());
 					} else { //Found a file that's not in the BasePath folder
-						if(!fileName.endsWith(".class")) { //Allow classes to be in the root path, but not resources
-							log.warn("invalid file ["+fileName+"] not in folder ["+getBasePath()+"]");
+						if (!fileName.endsWith(".class")) { //Allow classes to be in the root path, but not resources
+							log.warn("invalid file [" + fileName + "] not in folder [" + getBasePath() + "]");
 							continue; //Don't add the file to the resources lists
 						}
 					}

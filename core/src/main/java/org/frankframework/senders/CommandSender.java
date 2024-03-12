@@ -36,10 +36,9 @@ import lombok.Getter;
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
  *
+ * @author Gerrit van Brakel
  * @ff.parameters All parameters present are appended as arguments to the command.
- *
- * @since   4.8
- * @author  Gerrit van Brakel
+ * @since 4.8
  */
 public class CommandSender extends SenderWithParametersBase {
 
@@ -57,17 +56,17 @@ public class CommandSender extends SenderWithParametersBase {
 			try {
 				commandline = commandToList(message.asString());
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix(),e);
+				throw new SenderException(getLogPrefix(), e);
 			}
 		}
-		if (paramList!=null) {
+		if (paramList != null) {
 			ParameterValueList pvl;
 			try {
 				pvl = paramList.getValues(message, session);
 			} catch (ParameterException e) {
-				throw new SenderException("Could not extract parametervalues",e);
+				throw new SenderException("Could not extract parametervalues", e);
 			}
-			for(ParameterValue pv : pvl) {
+			for (ParameterValue pv : pvl) {
 				commandline.add(pv.getValue());
 			}
 		}
@@ -77,7 +76,7 @@ public class CommandSender extends SenderWithParametersBase {
 	private List<String> commandToList(String command) {
 		List<String> list;
 		if (commandWithArguments) {
-			list=ProcessUtil.splitUpCommandString(command);
+			list = ProcessUtil.splitUpCommandString(command);
 		} else {
 			list = new ArrayList<>();
 			list.add(command);
@@ -94,14 +93,16 @@ public class CommandSender extends SenderWithParametersBase {
 	public void setCommand(String string) {
 		command = string;
 	}
+
 	public String getCommand() {
 		return command;
 	}
 
 	/**
 	 * The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
-	 * @deprecated use {@link #setTimeout(int)} instead.
+	 *
 	 * @ff.default 0
+	 * @deprecated use {@link #setTimeout(int)} instead.
 	 */
 	@Deprecated(since = "8.1")
 	@ConfigurationWarning("Use attribute timeout instead")
@@ -111,6 +112,7 @@ public class CommandSender extends SenderWithParametersBase {
 
 	/**
 	 * The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
+	 *
 	 * @ff.default 0
 	 */
 	public void setTimeout(int timeout) {
@@ -119,11 +121,13 @@ public class CommandSender extends SenderWithParametersBase {
 
 	/**
 	 * In case the command that will be executed contains arguments then this flag should be set to true
+	 *
 	 * @ff.default false
 	 */
 	public void setCommandWithArguments(boolean commandWithArguments) {
 		this.commandWithArguments = commandWithArguments;
 	}
+
 	public boolean getCommandWithArguments() {
 		return commandWithArguments;
 	}

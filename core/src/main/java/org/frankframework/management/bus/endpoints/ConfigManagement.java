@@ -60,6 +60,7 @@ public class ConfigManagement extends BusEndpointBase {
 
 	/**
 	 * The header 'loaded' is used to differentiate between the loaded and original (raw) XML.
+	 *
 	 * @return Configuration XML
 	 */
 	@ActionSelector(BusAction.GET)
@@ -69,7 +70,7 @@ public class ConfigManagement extends BusEndpointBase {
 		boolean loadedConfiguration = BusMessageUtils.getBooleanHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
 
-		if(configurationName != null) {
+		if (configurationName != null) {
 			Configuration configuration = getConfigurationByName(configurationName);
 			result.append(loadedConfiguration ? configuration.getLoadedConfiguration() : configuration.getOriginalConfiguration());
 		} else {
@@ -84,20 +85,21 @@ public class ConfigManagement extends BusEndpointBase {
 	/**
 	 * header configuration The name of the Configuration to find
 	 * header datasourceName The name of the datasource where the configurations are located.
+	 *
 	 * @return If the configuration is of type DatabaseClassLoader, the metadata of the configurations found in the database.
 	 */
 	@ActionSelector(BusAction.FIND)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getConfigurationDetailsByName(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		if(StringUtils.isNotEmpty(configurationName)) {
+		if (StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getConfigurationByName(configurationName);
 
-			if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+			if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 				String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 				List<ConfigurationDTO> configs = getConfigsFromDatabase(configurationName, datasourceName);
 
-				for(ConfigurationDTO config: configs) {
+				for (ConfigurationDTO config : configs) {
 					config.setLoaded(config.getVersion().equals(configuration.getVersion()));
 				}
 
@@ -121,6 +123,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 * header activate Whether the configuration should be activated
 	 * header autoreload Whether the configuration should be reloaded (on the next ReloadJob interval)
 	 * header datasourceName The name of the datasource where the configurations are located.
+	 *
 	 * @return Manages a configuration, either activates the config directly or sets the autoreload flag in the database
 	 */
 	@ActionSelector(BusAction.MANAGE)
@@ -135,15 +138,14 @@ public class ConfigManagement extends BusEndpointBase {
 		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 
 		try {
-			if(activate != null) {
-				if(ConfigurationUtils.activateConfig(getApplicationContext(), configurationName, version, datasourceName)) {
+			if (activate != null) {
+				if (ConfigurationUtils.activateConfig(getApplicationContext(), configurationName, version, datasourceName)) {
 					return EmptyResponseMessage.accepted();
 				}
-			}
-			else if(autoreload != null && ConfigurationUtils.autoReloadConfig(getApplicationContext(), configurationName, version, autoreload, datasourceName)) {
+			} else if (autoreload != null && ConfigurationUtils.autoReloadConfig(getApplicationContext(), configurationName, version, autoreload, datasourceName)) {
 				return EmptyResponseMessage.accepted();
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			throw new BusException("unable to update configuration settings in database", e);
 		}
 
@@ -163,11 +165,11 @@ public class ConfigManagement extends BusEndpointBase {
 
 		Map<String, String> result = new LinkedHashMap<>();
 		try {
-			if(multipleConfigs) {
+			if (multipleConfigs) {
 				result = ConfigurationUtils.processMultiConfigZipFile(getApplicationContext(), datasourceName, activateConfig, automaticReload, file, user);
 			} else {
-				String configName=ConfigurationUtils.addConfigToDatabase(getApplicationContext(), datasourceName, activateConfig, automaticReload, filename, file, user);
-				if(configName != null) {
+				String configName = ConfigurationUtils.addConfigToDatabase(getApplicationContext(), datasourceName, activateConfig, automaticReload, filename, file, user);
+				if (configName != null) {
 					result.put(configName, "loaded");
 				}
 			}
@@ -200,7 +202,7 @@ public class ConfigManagement extends BusEndpointBase {
 		byte[] config = (byte[]) configuration.get("CONFIG");
 
 		BinaryResponseMessage response = new BinaryResponseMessage(config);
-		response.setFilename(""+configuration.get("FILENAME"));
+		response.setFilename("" + configuration.get("FILENAME"));
 		return response;
 	}
 

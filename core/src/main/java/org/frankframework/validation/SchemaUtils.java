@@ -67,18 +67,18 @@ import org.frankframework.validation.xsd.StringXsd;
 public class SchemaUtils {
 	protected static final Logger LOG = LogUtil.getLogger(SchemaUtils.class);
 
-	public static final String XSD		  = XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
+	public static final String XSD = XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
 
-	public static final QName SCHEMA		 = new QName(XSD,  "schema");
-	public static final QName ELEMENT		 = new QName(XSD,  "element");
-	public static final QName IMPORT		 = new QName(XSD,  "import");
-	public static final QName INCLUDE		 = new QName(XSD,  "include");
-	public static final QName REDEFINE		 = new QName(XSD,  "redefine");
-	public static final QName TNS			 = new QName(null, "targetNamespace");
-	public static final QName ELFORMDEFAULT	 = new QName(null, "elementFormDefault");
+	public static final QName SCHEMA = new QName(XSD, "schema");
+	public static final QName ELEMENT = new QName(XSD, "element");
+	public static final QName IMPORT = new QName(XSD, "import");
+	public static final QName INCLUDE = new QName(XSD, "include");
+	public static final QName REDEFINE = new QName(XSD, "redefine");
+	public static final QName TNS = new QName(null, "targetNamespace");
+	public static final QName ELFORMDEFAULT = new QName(null, "elementFormDefault");
 	public static final QName SCHEMALOCATION = new QName(null, "schemaLocation");
-	public static final QName NAMESPACE		 = new QName(null, "namespace");
-	public static final QName NAME			 = new QName(null, "name");
+	public static final QName NAMESPACE = new QName(null, "namespace");
+	public static final QName NAME = new QName(null, "name");
 
 	public static final QName WSDL_SCHEMA = new QName(XSD, "schema", "");
 
@@ -105,7 +105,7 @@ public class SchemaUtils {
 
 	public static void mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(Map<String, Set<IXSD>> rootXsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException {
 		// As the root XSD's are written as includes there's no need to change the imports and includes in the root XSD's.
-		for (Map.Entry<String, Set<IXSD>> entry: rootXsdsGroupedByNamespace.entrySet()) {
+		for (Map.Entry<String, Set<IXSD>> entry : rootXsdsGroupedByNamespace.entrySet()) {
 			String namespace = entry.getKey();
 			Set<IXSD> xsds = entry.getValue();
 			xmlStreamWriter.writeStartElement(XSD, "schema");
@@ -127,7 +127,7 @@ public class SchemaUtils {
 	public static Set<IXSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<IXSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
 		Set<IXSD> resultXsds = new LinkedHashSet<>();
 		// iterate over the namespaces
-		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
+		for (Map.Entry<String, Set<IXSD>> entry : xsdsGroupedByNamespace.entrySet()) {
 			String namespace = entry.getKey();
 			Set<IXSD> xsds = entry.getValue();
 
@@ -137,7 +137,7 @@ public class SchemaUtils {
 			List<Attribute> rootAttributes = new ArrayList<>();
 			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
 			List<XMLEvent> imports = new ArrayList<>();
-			for (IXSD xsd: xsds) {
+			for (IXSD xsd : xsds) {
 				xsdToXmlStreamWriter(xsd, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports);
 			}
 			// Write XSD's with merged root element
@@ -153,7 +153,7 @@ public class SchemaUtils {
 			}
 			int i = 0;
 			// perform the merge
-			for (IXSD xsd: xsds) {
+			for (IXSD xsd : xsds) {
 				i++;
 				boolean skipRootElementStart;
 				boolean skipRootElementEnd;
@@ -186,7 +186,7 @@ public class SchemaUtils {
 			return;
 		}
 		StringBuilder message = new StringBuilder("Multiple XSDs for namespace '" + namespace + "' will be merged: ");
-		for (IXSD xsd: xsds) {
+		for (IXSD xsd : xsds) {
 			message.append("\n - XSD path '")
 					.append(xsd.getResourceTarget())
 					.append("'");
@@ -244,9 +244,9 @@ public class SchemaUtils {
 	 *
 	 * @param xsd
 	 * @param xmlStreamWriter
-	 * @param standalone When standalone the start and end document contants are ignored, hence the xml declaration is ignored.
+	 * @param standalone                    When standalone the start and end document contants are ignored, hence the xml declaration is ignored.
 	 * @param stripSchemaLocationFromImport Useful when generating a WSDL which should contain all XSD's inline (without includes or imports).
-	 *        The XSD might have an import with schemaLocation to make it valid on it's own, when stripSchemaLocationFromImport is true it will be removed.
+	 *                                      The XSD might have an import with schemaLocation to make it valid on it's own, when stripSchemaLocationFromImport is true it will be removed.
 	 */
 	public static void xsdToXmlStreamWriter(final IXSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
 		Map<String, String> namespacesToCorrect = new HashMap<>();
@@ -263,10 +263,10 @@ public class SchemaUtils {
 				switch (event.getEventType()) {
 					case XMLStreamConstants.START_DOCUMENT:
 					case XMLStreamConstants.END_DOCUMENT:
-						if (! standalone) {
+						if (!standalone) {
 							continue;
 						}
-					//$FALL-THROUGH$
+						//$FALL-THROUGH$
 					case XMLStreamConstants.SPACE:
 					case XMLStreamConstants.COMMENT:
 						break;
@@ -315,16 +315,18 @@ public class SchemaUtils {
 											startElement.getName().getLocalPart(),
 											rootAttributes.iterator(),
 											rootNamespaceAttributes.iterator(),
-											startElement.getNamespaceContext());
+											startElement.getNamespaceContext()
+									);
 								}
 							}
 							// Don't modify the reserved namespace http://www.w3.org/XML/1998/namespace which is by definition bound to the prefix xml (see http://www.w3.org/TR/xml-names/#ns-decl).
 							if (xsd.isAddNamespaceToSchema() && !xsd.getNamespace().equals("http://www.w3.org/XML/1998/namespace")) {
-								event = XmlUtils.mergeAttributes(startElement,
+								event = XmlUtils.mergeAttributes(
+										startElement,
 										Arrays.asList(new AttributeEvent(TNS, xsd.getNamespace()), new AttributeEvent(ELFORMDEFAULT, "qualified")).iterator(),
 										Arrays.asList(XmlUtils.EVENT_FACTORY.createNamespace(xsd.getNamespace())).iterator(),
 										XmlUtils.EVENT_FACTORY
-									);
+								);
 								if (!event.equals(startElement)) {
 									Attribute tns = startElement.getAttributeByName(TNS);
 									if (tns != null) {
@@ -382,13 +384,15 @@ public class SchemaUtils {
 												startElement.getNamespaces(),
 												startElement.getNamespaceContext(),
 												startElement.getLocation(),
-												startElement.getSchemaType());
+												startElement.getSchemaType()
+										);
 									} else {
 										String relativeTo = xsd.getParentLocation();
 										if (relativeTo.length() > 0 && location.startsWith(relativeTo)) {
 											location = location.substring(relativeTo.length());
 										}
-										event = XMLStreamUtils.mergeAttributes(startElement, Collections.singletonList(new AttributeEvent(SCHEMALOCATION, location)).iterator(), XmlUtils.EVENT_FACTORY);
+										event = XMLStreamUtils.mergeAttributes(startElement, Collections.singletonList(new AttributeEvent(SCHEMALOCATION, location))
+												.iterator(), XmlUtils.EVENT_FACTORY);
 									}
 								}
 							}
@@ -467,7 +471,13 @@ public class SchemaUtils {
 			if (LOG.isDebugEnabled()) {
 				StringBuilder message = new StringBuilder("Circular dependencies between schemas:");
 				for (IXSD xsd : xsdsWithDependencies) {
-					message.append(" [").append(xsd.toString()).append(" with target namespace ").append(xsd.getTargetNamespace()).append(" and imported namespaces ").append(xsd.getImportedNamespaces()).append("]");
+					message.append(" [")
+							.append(xsd.toString())
+							.append(" with target namespace ")
+							.append(xsd.getTargetNamespace())
+							.append(" and imported namespaces ")
+							.append(xsd.getImportedNamespaces())
+							.append("]");
 				}
 				LOG.debug(message.toString());
 			}

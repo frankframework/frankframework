@@ -16,6 +16,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +30,7 @@ public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 			@Override
 			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
-					return new SenderResult("{ \"input\": \""+message.asString()+"\"}");
+					return new SenderResult("{ \"input\": \"" + message.asString() + "\"}");
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
@@ -92,7 +93,7 @@ public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 		configureAndStartPipe();
 
 		Message input = MessageTestUtils.getMessage("/Align/Abc/abc.xml");
-		String expected =  "{ \"input\": \""+ TestFileUtils.getTestFile("/Align/Abc/abc-compact.json")+"\"}";
+		String expected = "{ \"input\": \"" + TestFileUtils.getTestFile("/Align/Abc/abc-compact.json") + "\"}";
 		PipeRunResult prr = doPipe(input);
 		Assertions.assertEquals("success", prr.getPipeForward().getName());
 		Assertions.assertEquals(expected, prr.getResult().asString());
@@ -111,9 +112,9 @@ public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 		configureAndStartPipe();
 
 		Message input = MessageTestUtils.getMessage("/Align/Abc/abc-compact.json");
-		String expected =  TestFileUtils.getTestFile("/Align/Abc/abc.xml");
+		String expected = TestFileUtils.getTestFile("/Align/Abc/abc.xml");
 		PipeRunResult prr = doPipe(input);
 		Assertions.assertEquals("success", prr.getPipeForward().getName());
-		assertXmlEquals("response converted", expected, prr.getResult().asString(),true);
+		assertXmlEquals("response converted", expected, prr.getResult().asString(), true);
 	}
 }

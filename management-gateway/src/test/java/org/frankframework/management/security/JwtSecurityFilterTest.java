@@ -25,6 +25,8 @@ import javax.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import org.frankframework.util.StreamUtil;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -32,8 +34,6 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import org.frankframework.util.StreamUtil;
 
 public class JwtSecurityFilterTest {
 
@@ -81,7 +81,7 @@ public class JwtSecurityFilterTest {
 		assertNotNull(jwt);
 
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
-		request.addHeader("Authentication", "Bearer "+ jwt);
+		request.addHeader("Authentication", "Bearer " + jwt);
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain chain = spy(MockFilterChain.class);
 

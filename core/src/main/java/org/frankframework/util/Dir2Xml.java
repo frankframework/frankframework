@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Johan Verrips IOS
  */
-public class Dir2Xml  {
+public class Dir2Xml {
 	protected static Logger log = LogUtil.getLogger(Dir2Xml.class);
 
 	private String path;
@@ -57,7 +57,7 @@ public class Dir2Xml  {
 		if (includeDirectories) {
 			File parent = dir.getParentFile();
 			if (parent != null) {
-				dirXml.addSubElement(getFileAsXmlBuilder(parent,".."));
+				dirXml.addSubElement(getFileAsXmlBuilder(parent, ".."));
 			}
 		}
 
@@ -72,7 +72,7 @@ public class Dir2Xml  {
 				numberOfDirectories++;
 				continue;
 			}
-			dirXml.addSubElement(getFileAsXmlBuilder(file,file.getName()));
+			dirXml.addSubElement(getFileAsXmlBuilder(file, file.getName()));
 		}
 
 		// TODO: implement includeDirectories on WildCardFilter
@@ -98,7 +98,7 @@ public class Dir2Xml  {
 		dirXml.addAttribute("count", count);
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
-			dirXml.addSubElement(getFileAsXmlBuilder(file,file.getName()));
+			dirXml.addSubElement(getFileAsXmlBuilder(file, file.getName()));
 		}
 		return dirXml.toXML();
 	}
@@ -133,8 +133,10 @@ public class Dir2Xml  {
 	public void setPath(String path) {
 		this.path = path;
 	}
+
 	/**
 	 * Set a Wildcard
+	 *
 	 * @see WildCardFilter
 	 */
 	public void setWildCard(String wildcard) {

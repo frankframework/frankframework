@@ -38,7 +38,7 @@ public class RestSender extends HttpSender {
 		result.addSubElement(statuscode);
 
 		Header[] headers = responseHandler.getAllHeaders();
-		if(headers != null) {
+		if (headers != null) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			for (int i = 0; i < headers.length; i++) {
 				Header header = headers[i];
@@ -55,8 +55,7 @@ public class RestSender extends HttpSender {
 			XmlBuilder message = new XmlBuilder("message");
 			message.setValue(responseString, false);
 			result.addSubElement(message);
-		}
-		else {
+		} else {
 			XmlBuilder message = new XmlBuilder("error");
 			message.setValue(responseString);
 			result.addSubElement(message);

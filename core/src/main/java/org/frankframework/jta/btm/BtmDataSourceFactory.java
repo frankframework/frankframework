@@ -53,7 +53,7 @@ public class BtmDataSourceFactory extends AbstractXADataSourceFactory implements
 		result.setMaxIdleTime(maxIdleTime);
 		result.setMaxLifeTime(maxLifeTime);
 
-		if(StringUtils.isNotBlank(testQuery)) {
+		if (StringUtils.isNotBlank(testQuery)) {
 			result.setTestQuery(testQuery);
 		}
 		result.setEnableJdbc4ConnectionTest(true); //Assume everything uses JDBC4. BTM will test if isValid exists, to avoid unnecessary 'future' calls.
@@ -71,7 +71,7 @@ public class BtmDataSourceFactory extends AbstractXADataSourceFactory implements
 	public synchronized void destroy() throws Exception {
 		for (DataSource dataSource : objects.values()) {
 			DataSource originalDataSource = getOriginalDataSource(dataSource);
-			if(originalDataSource instanceof PoolingDataSource) {
+			if (originalDataSource instanceof PoolingDataSource) {
 				((PoolingDataSource) originalDataSource).close();
 			}
 		}
@@ -79,7 +79,7 @@ public class BtmDataSourceFactory extends AbstractXADataSourceFactory implements
 	}
 
 	private DataSource getOriginalDataSource(DataSource dataSource) {
-		if(dataSource instanceof DelegatingDataSource) {
+		if (dataSource instanceof DelegatingDataSource) {
 			return getOriginalDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
 		}
 		return dataSource;

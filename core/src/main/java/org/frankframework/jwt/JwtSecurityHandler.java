@@ -51,9 +51,9 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	@Override
 	public boolean isUserInRole(String role) {
 		Object claim = claimsSet.get(roleClaim);
-		if(claim instanceof String) {
+		if (claim instanceof String) {
 			return role.equals(claim);
-		} else if(claim instanceof List) {
+		} else if (claim instanceof List) {
 			List<String> claimList = (List<String>) claim;
 			return claimList.stream().anyMatch(role::equals);
 		}
@@ -67,17 +67,17 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	public void validateClaims(String requiredClaims, String exactMatchClaims, String anyMatchClaims) throws AuthorizationException {
 		// verify required claims exist
-		if(StringUtils.isNotEmpty(requiredClaims)) {
+		if (StringUtils.isNotEmpty(requiredClaims)) {
 			validateRequiredClaims(requiredClaims);
 		}
 
 		// verify claims have expected values
-		if(StringUtils.isNotEmpty(exactMatchClaims)) {
+		if (StringUtils.isNotEmpty(exactMatchClaims)) {
 			validateExactMatchClaims(exactMatchClaims);
 		}
 
 		// verify matchOneOf claims
-		if(StringUtils.isNotEmpty(anyMatchClaims)) {
+		if (StringUtils.isNotEmpty(anyMatchClaims)) {
 			validateAnyMatchClaims(anyMatchClaims);
 		}
 	}
@@ -87,7 +87,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 				.filter(claim -> !claimsSet.containsKey(claim))
 				.collect(Collectors.toList());
 
-		if(!missingClaims.isEmpty()){
+		if (!missingClaims.isEmpty()) {
 			throw new AuthorizationException("JWT missing required claims: " + missingClaims);
 		}
 	}
@@ -97,10 +97,10 @@ public class JwtSecurityHandler implements ISecurityHandler {
 				.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
 				.findFirst();
 
-		if(nonMatchingClaim.isPresent()){
+		if (nonMatchingClaim.isPresent()) {
 			String key = nonMatchingClaim.get().getKey();
 			String expectedValue = nonMatchingClaim.get().getValue();
-			throw new AuthorizationException("JWT "+key+" claim has value ["+claimsSet.get(key)+"], must be ["+expectedValue+"]");
+			throw new AuthorizationException("JWT " + key + " claim has value [" + claimsSet.get(key) + "], must be [" + expectedValue + "]");
 		}
 	}
 
@@ -112,8 +112,8 @@ public class JwtSecurityHandler implements ISecurityHandler {
 				.stream()
 				.anyMatch(entry -> entry.getValue().contains(getClaimAsString(entry.getKey())));
 
-		if(!matchesOneOf){
-			throw new AuthorizationException("JWT does not match one of: ["+ anyMatchClaims +"]");
+		if (!matchesOneOf) {
+			throw new AuthorizationException("JWT does not match one of: [" + anyMatchClaims + "]");
 		}
 	}
 
@@ -126,7 +126,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		return String.valueOf(value);
 	}
 
-	private Stream<Map.Entry<String, String>> splitClaims(String claimsToSplit){
+	private Stream<Map.Entry<String, String>> splitClaims(String claimsToSplit) {
 		return StringUtil.splitToStream(claimsToSplit)
 				.map(s -> StringUtil.split(s, "="))
 				.filter(this::isValidKeyValuePair)

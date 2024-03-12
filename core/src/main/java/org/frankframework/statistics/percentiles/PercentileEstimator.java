@@ -25,11 +25,15 @@ import org.frankframework.util.XmlBuilder;
 public interface PercentileEstimator {
 
 	int getNumPercentiles();
+
 	int getPercentage(int index);
+
 	void addValue(long value, long count, long min, long max);
+
 	double getPercentileEstimate(int index, long count, long min, long max);
 
 	int getSampleCount(long count, long min, long max);
+
 	XmlBuilder getSample(int index, long count, long min, long max);
 
 }

@@ -32,7 +32,7 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 
-public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> extends IteratingPipe<A> {
+public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F, A>> extends IteratingPipe<A> {
 
 	private Set<String> onlyProperties;
 	private Set<String> excludeProperties;
@@ -50,19 +50,19 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	public void start() throws PipeStartException {
 		super.start();
 		try {
-			FS fileSystem=getFileSystem();
+			FS fileSystem = getFileSystem();
 			fileSystem.open();
 		} catch (FileSystemException e) {
-			throw new PipeStartException("Cannot open fileSystem",e);
+			throw new PipeStartException("Cannot open fileSystem", e);
 		}
 	}
 
 	@Override
-	public void stop()  {
+	public void stop() {
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {
-			log.warn("Cannot close fileSystem",e);
+			log.warn("Cannot close fileSystem", e);
 		}
 		super.stop();
 	}
@@ -107,34 +107,34 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	@Override
 	protected Message itemToMessage(A item) throws SenderException {
 		FS ifs = getFileSystem();
-		XmlBuilder result=new XmlBuilder("attachment");
+		XmlBuilder result = new XmlBuilder("attachment");
 		try {
 			result.addAttribute("name", ifs.getAttachmentName(item));
 			result.addAttribute("filename", ifs.getAttachmentFileName(item));
 			result.addAttribute("contentType", ifs.getAttachmentContentType(item));
 			result.addAttribute("size", ifs.getAttachmentSize(item));
-			Map<String,Object> attachmentProperties = ifs.getAdditionalAttachmentProperties(item);
-			if (attachmentProperties!=null) {
+			Map<String, Object> attachmentProperties = ifs.getAdditionalAttachmentProperties(item);
+			if (attachmentProperties != null) {
 				XmlBuilder properties = new XmlBuilder("properties");
-				Set<String> excludes=getExcludePropertiesSet();
-				Set<String> includes=getOnlyPropertiesSet();
-				if (excludes!=null || includes==null) {
-					for(Entry<String,Object>entry:attachmentProperties.entrySet()) {
-						if (excludes==null || !excludes.contains(entry.getKey())) {
+				Set<String> excludes = getExcludePropertiesSet();
+				Set<String> includes = getOnlyPropertiesSet();
+				if (excludes != null || includes == null) {
+					for (Entry<String, Object> entry : attachmentProperties.entrySet()) {
+						if (excludes == null || !excludes.contains(entry.getKey())) {
 							XmlBuilder property = new XmlBuilder("property");
 							property.addAttribute("name", entry.getKey());
-							if (entry.getValue()!=null) {
+							if (entry.getValue() != null) {
 								property.setValue(entry.getValue().toString());
 							}
 							properties.addSubElement(property);
 						}
 					}
 				} else {
-					for(String key:includes) {
+					for (String key : includes) {
 						XmlBuilder property = new XmlBuilder("property");
 						property.addAttribute("name", key);
-						Object value=attachmentProperties.get(key);
-						if (value!=null) {
+						Object value = attachmentProperties.get(key);
+						if (value != null) {
 							property.setValue(value.toString());
 						}
 						properties.addSubElement(property);
@@ -165,22 +165,24 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 
 	/** comma separated list of attachment properties to list */
 	public void setOnlyProperties(String onlyPropertiesList) {
-		if (onlyProperties==null) {
-			onlyProperties=new LinkedHashSet<>();
+		if (onlyProperties == null) {
+			onlyProperties = new LinkedHashSet<>();
 		}
-		Misc.addItemsToList(onlyProperties,onlyPropertiesList,"properties to list",false);
+		Misc.addItemsToList(onlyProperties, onlyPropertiesList, "properties to list", false);
 	}
+
 	public Set<String> getOnlyPropertiesSet() {
 		return onlyProperties;
 	}
 
 	/** comma separated list of attachment properties not to list. When specified, 'onlyProperties' is ignored */
 	public void setExcludeProperties(String excludePropertiesList) {
-		if (excludeProperties==null) {
-			excludeProperties=new LinkedHashSet<>();
+		if (excludeProperties == null) {
+			excludeProperties = new LinkedHashSet<>();
 		}
-		Misc.addItemsToList(excludeProperties,excludePropertiesList,"properties not to list",false);
+		Misc.addItemsToList(excludeProperties, excludePropertiesList, "properties not to list", false);
 	}
+
 	public Set<String> getExcludePropertiesSet() {
 		return excludeProperties;
 	}

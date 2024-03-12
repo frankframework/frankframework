@@ -69,7 +69,7 @@ public class TestConfiguration extends Configuration {
 			}
 		}
 
-		if(!TEST_CONFIGURATION_NAME.equals(AppConstants.getInstance().getProperty("instance.name"))) {
+		if (!TEST_CONFIGURATION_NAME.equals(AppConstants.getInstance().getProperty("instance.name"))) {
 			fail("instance.name has been altered");
 		}
 	}
@@ -108,7 +108,7 @@ public class TestConfiguration extends Configuration {
 	 */
 	@Override
 	public synchronized IbisManager getIbisManager() {
-		if(super.getIbisManager() == null) {
+		if (super.getIbisManager() == null) {
 			IbisManager ibisManager = new MockIbisManager();
 			ibisManager.addConfiguration(this);
 			getBeanFactory().registerSingleton("ibisManager", ibisManager);

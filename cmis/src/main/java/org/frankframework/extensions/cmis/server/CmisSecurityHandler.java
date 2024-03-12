@@ -26,7 +26,6 @@ import org.frankframework.util.CredentialFactory;
  * Wraps the CMIS SecurityContext in an ISecurityHandler.
  *
  * @author Niels Meijer
- *
  */
 public class CmisSecurityHandler implements ISecurityHandler {
 
@@ -54,6 +53,7 @@ public class CmisSecurityHandler implements ISecurityHandler {
 
 	/**
 	 * Can be used to authenticate the user against another system or pass the authentication context through.
+	 *
 	 * @return the user's credentials wrapped in a {@link CredentialFactory}
 	 */
 	public CredentialFactory getCredentials() {

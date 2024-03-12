@@ -18,9 +18,13 @@ package org.frankframework.stream;
 public interface ThreadLifeCycleEventListener<T> {
 
 	public T announceChildThread(Object owner, String correlationId);
+
 	public void cancelChildThread(T ref);
+
 	public <O> O threadCreated(T ref, O request);
+
 	public <O> O threadEnded(T ref, O result);
+
 	public Throwable threadAborted(T ref, Throwable t);
 
 }

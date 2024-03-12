@@ -37,7 +37,7 @@ import org.frankframework.util.XmlEncodingUtils;
 
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
- *
+ * <p>
  * <br/>
  * Sample xml:
  * <br/>
@@ -54,7 +54,7 @@ import org.frankframework.util.XmlEncodingUtils;
  * &lt;/errorMessage&gt;
  * </pre></code>
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
@@ -62,7 +62,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 
 	/**
 	 * Format the available parameters into a XML-message.
-	 *
+	 * <p>
 	 * Override this method in descender-classes to obtain the required behaviour.
 	 */
 	@Override
@@ -73,13 +73,13 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
 		}
-		String prefix=location!=null ? ClassUtils.nameOf(location) : null;
+		String prefix = location != null ? ClassUtils.nameOf(location) : null;
 		if (StringUtils.isNotEmpty(messageId)) {
-			prefix = StringUtil.concatStrings(prefix, " ", "msgId ["+messageId+"]");
+			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + messageId + "]");
 		}
 		errorMessage = StringUtil.concatStrings(prefix, ": ", errorMessage);
 
-		String originator = AppConstants.getInstance().getProperty("application.name")+" "+ AppConstants.getInstance().getProperty("application.version");
+		String originator = AppConstants.getInstance().getProperty("application.name") + " " + AppConstants.getInstance().getProperty("application.version");
 		// Build a Base xml
 		XmlBuilder errorXml = new XmlBuilder("errorMessage");
 		errorXml.addAttribute("timestamp", new Date().toString());
@@ -107,9 +107,9 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 		// originalMessageXml.setCdataValue(originalMessage);
 		try {
-			originalMessageXml.setValue(originalMessage!=null ? originalMessage.asString(): null, true);
+			originalMessageXml.setValue(originalMessage != null ? originalMessage.asString() : null, true);
 		} catch (IOException e) {
-			log.warn("Could not convert originalMessage for messageId ["+messageId+"]",e);
+			log.warn("Could not convert originalMessage for messageId [" + messageId + "]", e);
 			originalMessageXml.setValue(originalMessage.toString(), true);
 		}
 		errorXml.addSubElement(originalMessageXml);
@@ -122,7 +122,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			if (message == null || message.equals("")) {
 				message = t.getMessage();
 			} else {
-				message += ": "+t.getMessage();
+				message += ": " + t.getMessage();
 			}
 		}
 		return message;

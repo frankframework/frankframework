@@ -20,8 +20,10 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.http.MediaType;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
@@ -93,7 +95,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, input,session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
 		assertThat(e.getMessage(), containsString("Cannot find the declaration of element 'BusinessPartner'"));
 	}
 
@@ -102,13 +104,13 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setName("Response_Validator");
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 		pipe.setThrowException(true);
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward("success", null));
 		pipe.configure();
 		pipe.start();
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, input,session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
 		assertThat(e.getMessage(), containsString("Cannot find the declaration of element 'BusinessPartner'"));
 	}
 
@@ -126,7 +128,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		assertEquals(expected, prr.getResult().asString());
 		assertEquals(MediaType.APPLICATION_JSON, prr.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
@@ -145,7 +147,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response.xml");
 		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		assertEquals(expected, prr.getResult().asString());
 		assertEquals(MediaType.APPLICATION_XML, prr.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
@@ -165,7 +167,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		assertEquals(expected, prr.getResult().asString());
 	}
@@ -270,8 +272,12 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		PipeRunResult outResult = pipe.getResponseValidator().validate(inputMessage, session, "Root");
 
 		assertEquals(expectedFormat, pipe.getOutputFormat(session, true));
-		assertEquals(defaultFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, inResult.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
-		assertEquals(expectedFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, outResult.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
+		assertEquals(defaultFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, inResult.getResult()
+				.getContext()
+				.get(MessageContext.METADATA_MIMETYPE));
+		assertEquals(expectedFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, outResult.getResult()
+				.getContext()
+				.get(MessageContext.METADATA_MIMETYPE));
 	}
 
 	private void testDefaultAcceptHeaderFromXmlInputMessage(DocumentFormat defaultFormat, DocumentFormat expectedFormat, String acceptHeader) throws Exception {
@@ -292,8 +298,12 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		PipeRunResult outResult = pipe.getResponseValidator().validate(inputMessage, session, "Root");
 
 		assertEquals(expectedFormat, pipe.getOutputFormat(session, true));
-		assertEquals(defaultFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, inResult.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
-		assertEquals(expectedFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, outResult.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
+		assertEquals(defaultFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, inResult.getResult()
+				.getContext()
+				.get(MessageContext.METADATA_MIMETYPE));
+		assertEquals(expectedFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, outResult.getResult()
+				.getContext()
+				.get(MessageContext.METADATA_MIMETYPE));
 	}
 
 	@Test
@@ -354,14 +364,14 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input="";
+		String input = "";
 		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
 
-		session.put("b_key","b_value");
+		session.put("b_key", "b_value");
 		// session variable "c_key is not present, so there should be no 'c' element in the result
-		session.put("d_key","");
+		session.put("d_key", "");
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		assertEquals(expected, prr.getResult().asString());
 	}
@@ -380,10 +390,10 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input="";
+		String input = "";
 		String expected = TestFileUtils.getTestFile("/Align/NestedValue/nestedValue.xml");
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String actualXml = Message.asString(prr.getResult());
 
@@ -404,10 +414,10 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input    = TestFileUtils.getTestFile("/Align/DoubleId/Party-Template.json");
+		String input = TestFileUtils.getTestFile("/Align/DoubleId/Party-Template.json");
 		String expected = TestFileUtils.getTestFile("/Align/DoubleId/Party.xml");
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String actualXml = Message.asString(prr.getResult());
 
@@ -425,11 +435,11 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input    = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
+		String input = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/stringArray.xml");
 
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String actualXml = Message.asString(prr.getResult());
 
@@ -448,25 +458,25 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		pipe.addParameter(new Parameter("singleString", "tja"));
 
-		List<String> stringValues = Arrays.asList("aa","bb");
+		List<String> stringValues = Arrays.asList("aa", "bb");
 		session.put("StringValueList", stringValues);
 		pipe.addParameter(ParameterBuilder.create().withName("stringArray2").withSessionKey("StringValueList"));
 
-		List<String> intValues = Arrays.asList("11","22");
+		List<String> intValues = Arrays.asList("11", "22");
 		session.put("IntValueList", intValues);
 		pipe.addParameter(ParameterBuilder.create().withName("intArray").withSessionKey("IntValueList"));
 
-		List<String> stringElem3elements = Arrays.asList("aa","bb");
+		List<String> stringElem3elements = Arrays.asList("aa", "bb");
 		session.put("stringElem3elements", stringElem3elements);
 		pipe.addParameter(ParameterBuilder.create().withName("stringElem3").withSessionKey("stringElem3elements"));
 
 		pipe.configure();
 		pipe.start();
 
-		String input    = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
+		String input = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/allOptions.xml");
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String actualXml = Message.asString(prr.getResult());
 
@@ -493,11 +503,11 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		session.put("agreementNumbers", agreementNumbers);
 
-		String input    = "{}";
+		String input = "{}";
 		String expected = TestFileUtils.getTestFile("/Align/FindDocuments/FindDocumentsRequest.xml");
 
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String actualXml = Message.asString(prr.getResult());
 
@@ -525,11 +535,11 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		session.put("agreementNumbers", agreementNumbers);
 
-		String input    = "{}";
+		String input = "{}";
 		String expected = TestFileUtils.getTestFile("/Align/FindDocuments/FindDocumentsRequest.xml");
 
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String actualXml = Message.asString(prr.getResult());
 
@@ -550,10 +560,10 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input    = "{  }";
+		String input = "{  }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String actualXml = Message.asString(prr.getResult());
 
@@ -572,11 +582,11 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input    = "{  }";
+		String input = "{  }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
 
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String actualXml = Message.asString(prr.getResult());
 
@@ -595,10 +605,10 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input    = TestFileUtils.getTestFile("/Align/TextAndAttributes/input-compact.json");
+		String input = TestFileUtils.getTestFile("/Align/TextAndAttributes/input-compact.json");
 		String expected = TestFileUtils.getTestFile("/Align/TextAndAttributes/input.xml");
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 		String actualXml = Message.asString(prr.getResult());
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
@@ -612,15 +622,15 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 			pipe.setRoot("a");
 		}
 
-		pipe.registerForward(new PipeForward("failure",null));
-		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME,null));
+		pipe.registerForward(new PipeForward("failure", null));
+		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, null));
 
 		pipe.configure();
 		pipe.start();
 
-		String input    = TestFileUtils.getTestFile("/Align/Abc/"+inputFile);
+		String input = TestFileUtils.getTestFile("/Align/Abc/" + inputFile);
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String expectedForward = "success";
 		String actualForward = prr.getPipeForward().getName();
@@ -631,27 +641,32 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 	@Test
 	public void testStoreRootElementXml2Json() throws Exception {
-		testStoreRootElement(DocumentFormat.JSON,"abc.xml",false);
+		testStoreRootElement(DocumentFormat.JSON, "abc.xml", false);
 	}
+
 	@Test
 	public void testStoreRootElementJson2XmlFull() throws Exception {
-		testStoreRootElement(DocumentFormat.XML,"abc-full.json",false);
+		testStoreRootElement(DocumentFormat.XML, "abc-full.json", false);
 	}
+
 	@Test
 	public void testStoreRootElementJson2XmlCompact() throws Exception {
-		testStoreRootElement(DocumentFormat.XML,"abc-compact.json",true);
+		testStoreRootElement(DocumentFormat.XML, "abc-compact.json", true);
 	}
+
 	@Test
 	public void testStoreRootElementJson2JsonFull() throws Exception {
-		testStoreRootElement(DocumentFormat.JSON,"abc-full.json",false);
+		testStoreRootElement(DocumentFormat.JSON, "abc-full.json", false);
 	}
+
 	@Test
 	public void testStoreRootElementJson2JsonCompact() throws Exception {
-		testStoreRootElement(DocumentFormat.JSON,"abc-compact.json",true);
+		testStoreRootElement(DocumentFormat.JSON, "abc-compact.json", true);
 	}
+
 	@Test
 	public void testStoreRootElementXml2Xml() throws Exception {
-		testStoreRootElement(DocumentFormat.XML,"abc.xml",false);
+		testStoreRootElement(DocumentFormat.XML, "abc.xml", false);
 	}
 
 	public void testRecoverableError(DocumentFormat outputFormat, boolean ignoreUndeclaredElements, String expectedForward, String expectedErrorMessage) throws Exception {
@@ -663,17 +678,17 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setXmlReasonSessionKey("XmlReasons");
 		pipe.setIgnoreUndeclaredElements(ignoreUndeclaredElements);
 
-		pipe.registerForward(new PipeForward("failure",null));
-		pipe.registerForward(new PipeForward("warnings",null));
-		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME,null));
+		pipe.registerForward(new PipeForward("failure", null));
+		pipe.registerForward(new PipeForward("warnings", null));
+		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, null));
 
 		pipe.configure();
 		pipe.start();
 
-		String input          = TestFileUtils.getTestFile("/Align/Abc/abc-err"+ (outputFormat == DocumentFormat.XML ? ".json" : ".xml"));
-		String expectedResult = TestFileUtils.getTestFile("/Align/Abc/abc"+(outputFormat == DocumentFormat.XML ? ".xml" : "-compact.json"));
+		String input = TestFileUtils.getTestFile("/Align/Abc/abc-err" + (outputFormat == DocumentFormat.XML ? ".json" : ".xml"));
+		String expectedResult = TestFileUtils.getTestFile("/Align/Abc/abc" + (outputFormat == DocumentFormat.XML ? ".xml" : "-compact.json"));
 
-		PipeRunResult prr = doPipe(pipe, input,session);
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		assertEquals(expectedForward, prr.getPipeForward().getName());
 		if (outputFormat == DocumentFormat.XML) {
@@ -682,21 +697,24 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 			assertEquals(expectedResult, prr.getResult().asString());
 		}
 
-		assertThat((String)session.get("reasons"), containsString(expectedErrorMessage));
+		assertThat((String) session.get("reasons"), containsString(expectedErrorMessage));
 	}
 
 	@Test
 	public void testRecoverableErrorJson2Xml() throws Exception {
 		testRecoverableError(DocumentFormat.XML, false, "failure", "Cannot find the declaration of element [d]");
 	}
+
 	@Test
 	public void testValidWithWarningsJson2Xml() throws Exception {
 		testRecoverableError(DocumentFormat.XML, true, "warnings", "Cannot find the declaration of element [d]");
 	}
+
 	@Test
 	public void testRecoverableErrorXml2Json() throws Exception {
 		testRecoverableError(DocumentFormat.JSON, false, "failure", "No typeDefinition found for element [d]");
 	}
+
 	@Test
 	@Disabled("Cannot ignore XML validation failure")
 	public void testValidWithWarningsXml2Json() throws Exception {

@@ -17,23 +17,24 @@ public class XmlEncodingUtilsTest {
 
 	private static Stream<Arguments> testFileWithXmlDeclaration() {
 		return Stream.of(
-			Arguments.of(StandardCharsets.ISO_8859_1, null, "iso-8859-1.xml"),
-			Arguments.of(StandardCharsets.ISO_8859_1, StandardCharsets.ISO_8859_1, "iso-8859-1.xml"),
-			Arguments.of(StandardCharsets.ISO_8859_1, StandardCharsets.UTF_8, "iso-8859-1.xml"),
+				Arguments.of(StandardCharsets.ISO_8859_1, null, "iso-8859-1.xml"),
+				Arguments.of(StandardCharsets.ISO_8859_1, StandardCharsets.ISO_8859_1, "iso-8859-1.xml"),
+				Arguments.of(StandardCharsets.ISO_8859_1, StandardCharsets.UTF_8, "iso-8859-1.xml"),
 
-			Arguments.of(StandardCharsets.UTF_8, null, "utf8-with-bom.xml"),
-			Arguments.of(StandardCharsets.UTF_8, StandardCharsets.UTF_8, "utf8-with-bom.xml"),
-			Arguments.of(StandardCharsets.UTF_8, null, "utf8-without-bom.xml"),
+				Arguments.of(StandardCharsets.UTF_8, null, "utf8-with-bom.xml"),
+				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.UTF_8, "utf8-with-bom.xml"),
+				Arguments.of(StandardCharsets.UTF_8, null, "utf8-without-bom.xml"),
 
-			Arguments.of(StandardCharsets.UTF_8, null, "file-without-xml-declaration.xml"),
-			Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "file-without-xml-declaration.xml")
+				Arguments.of(StandardCharsets.UTF_8, null, "file-without-xml-declaration.xml"),
+				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "file-without-xml-declaration.xml")
 		);
 	}
+
 	private static Stream<Arguments> testFileWithXmlDeclarationStream() {
 		return Stream.of(
-			Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "utf8-with-bom.xml"),
-			Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "utf8-without-bom.xml"),
-			Arguments.of(StandardCharsets.UTF_8, null, "utf8-without-bom.xml")
+				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "utf8-with-bom.xml"),
+				Arguments.of(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, "utf8-without-bom.xml"),
+				Arguments.of(StandardCharsets.UTF_8, null, "utf8-without-bom.xml")
 		);
 	}
 
@@ -41,7 +42,7 @@ public class XmlEncodingUtilsTest {
 	@MethodSource("testFileWithXmlDeclaration")
 	public void testFileWithXmlDeclarationBytes(Charset expectedCharset, Charset defaultCharset, String resource) throws Exception {
 		// Arrange
-		URL url = XmlEncodingUtilsTest.class.getResource("/XmlEncodingUtils/"+resource);
+		URL url = XmlEncodingUtilsTest.class.getResource("/XmlEncodingUtils/" + resource);
 		byte[] bytes = StreamUtil.streamToBytes(url.openStream());
 
 		// Act
@@ -56,7 +57,7 @@ public class XmlEncodingUtilsTest {
 	@MethodSource({"testFileWithXmlDeclaration", "testFileWithXmlDeclarationStream"})
 	public void testFileWithXmlDeclarationStream(Charset expectedCharset, Charset defaultCharset, String resource) throws Exception {
 		// Arrange
-		URL url = XmlEncodingUtilsTest.class.getResource("/XmlEncodingUtils/"+resource);
+		URL url = XmlEncodingUtilsTest.class.getResource("/XmlEncodingUtils/" + resource);
 
 		// Act
 		final String charset = (defaultCharset != null) ? defaultCharset.name() : null;
@@ -73,7 +74,7 @@ public class XmlEncodingUtilsTest {
 		byte[] bytes = StreamUtil.streamToBytes(url.openStream());
 
 		// Act
-		Exception ex = assertThrows(IllegalArgumentException.class, () ->XmlEncodingUtils.readXml(bytes, null));
+		Exception ex = assertThrows(IllegalArgumentException.class, () -> XmlEncodingUtils.readXml(bytes, null));
 
 		// Assert
 		assertEquals("no valid xml declaration in string [<?xml \n<file>in root of classpath</file>]", ex.getMessage().replace("\r", ""));

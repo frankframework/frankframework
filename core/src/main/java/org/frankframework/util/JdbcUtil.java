@@ -688,7 +688,7 @@ public class JdbcUtil {
 					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				default:
-					log.warn("parameter type [{}] handled as String", ()-> JDBCType.valueOf(sqlTYpe).getName());
+					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlTYpe).getName());
 					//$FALL-THROUGH$
 				case Types.CHAR:
 				case Types.VARCHAR:

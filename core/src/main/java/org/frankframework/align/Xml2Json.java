@@ -29,11 +29,11 @@ import org.xml.sax.SAXException;
 public class Xml2Json extends XmlTo<JsonDocumentContainer> {
 
 	public Xml2Json(XmlAligner aligner, boolean skipArrayElementContainers, boolean skipRootElement) {
-		super(aligner, new JsonDocumentContainer(null, skipArrayElementContainers,skipRootElement));
+		super(aligner, new JsonDocumentContainer(null, skipArrayElementContainers, skipRootElement));
 	}
 
 	public static JsonDocumentContainer translate(String xml, URL schemaURL, boolean compactJsonArrays, boolean skipRootElement) throws SAXException, IOException {
-		JsonDocumentContainer documentContainer = new JsonDocumentContainer(null, compactJsonArrays,skipRootElement);
+		JsonDocumentContainer documentContainer = new JsonDocumentContainer(null, compactJsonArrays, skipRootElement);
 		translate(xml, schemaURL, documentContainer);
 		return documentContainer;
 	}

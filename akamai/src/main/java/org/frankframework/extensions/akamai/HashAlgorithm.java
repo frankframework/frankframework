@@ -19,14 +19,13 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import lombok.Getter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.UUIDUtil;
 
-import lombok.Getter;
-
 /**
  * An enum of the hash algorithms. Currently supported hashes include MD5; SHA1; SHA256
- *
+ * <p>
  * The string representation matches the java {@link java.security.MessageDigest#getInstance(String)} canonical names.
  *
  * @author Niels Meijer
@@ -50,7 +49,7 @@ public enum HashAlgorithm {
 		byte[] fileBytes = file.asByteArray();
 
 		byte[] checksum = computeHash(fileBytes, this);
-		if(checksum != null) {
+		if (checksum != null) {
 			return UUIDUtil.asHex(checksum);
 		}
 
@@ -60,10 +59,10 @@ public enum HashAlgorithm {
 	/**
 	 * Computes the hash of a given InputStream. This is a wrapper over the MessageDigest crypto functions.
 	 *
-	 * @param srcBytes to generate a hash over
+	 * @param srcBytes      to generate a hash over
 	 * @param hashAlgorithm the Algorithm to use to compute the hash
 	 * @return a byte[] representation of the hash. If the InputStream is a null object
-	 * then null will be returned. If the InputStream is empty an empty byte[] {} will be returned.
+	 * 		then null will be returned. If the InputStream is empty an empty byte[] {} will be returned.
 	 */
 	private static byte[] computeHash(byte[] srcBytes, HashAlgorithm hashAlgorithm) {
 		try {

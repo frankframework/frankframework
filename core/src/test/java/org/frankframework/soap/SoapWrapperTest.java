@@ -58,7 +58,9 @@ import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.AttributesWrapper;
 import org.frankframework.xml.FullXmlFilter;
 import org.frankframework.xml.XmlWriter;
+
 import org.junit.jupiter.api.Test;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

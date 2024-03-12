@@ -27,7 +27,7 @@ import org.frankframework.configuration.IbisContext;
  */
 public interface IConfigurationClassLoader {
 
-	String CLASSPATH_RESOURCE_SCHEME="classpath:";
+	String CLASSPATH_RESOURCE_SCHEME = "classpath:";
 
 	public enum ReportLevel {
 		DEBUG, INFO, WARN, ERROR;
@@ -37,6 +37,7 @@ public interface IConfigurationClassLoader {
 
 	/**
 	 * Configure the {@link IConfigurationClassLoader}'s implementation
+	 *
 	 * @throws ClassLoaderException when the {@link IConfigurationClassLoader}'s implementation cannot retrieve or load the configuration files
 	 */
 	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException;
@@ -48,6 +49,7 @@ public interface IConfigurationClassLoader {
 
 	/**
 	 * Defines the log level for errors caused by the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method
+	 *
 	 * @param level ReportLevel in string format to be parsed by the ClassLoaderManager digester
 	 */
 	public void setReportLevel(String level);

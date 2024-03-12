@@ -27,8 +27,8 @@ import org.frankframework.management.bus.BusTopic;
 /**
  * Shows the environment variables.
  *
- * @since	7.0-B1
- * @author	Niels Meijer
+ * @since 7.0-B1
+ * @author Niels Meijer
  */
 
 @Path("/")

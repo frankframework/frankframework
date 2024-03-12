@@ -30,6 +30,7 @@ import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("unchecked")
@@ -76,7 +77,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 		String input = "test-message";
 		RawMessageWrapper<M> rawMessage = getRawMessage(input);
 		assertTrue(rawMessage instanceof MessageWrapper);
-		assertEquals(input, ((MessageWrapper<Object>)rawMessage).getMessage().asString(), "MessageStoreListener should not manipulate the rawMessage");
+		assertEquals(input, ((MessageWrapper<Object>) rawMessage).getMessage().asString(), "MessageStoreListener should not manipulate the rawMessage");
 	}
 
 	@Test

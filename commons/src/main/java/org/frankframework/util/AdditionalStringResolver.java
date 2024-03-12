@@ -27,11 +27,11 @@ import java.util.Set;
  * of each class that implements this interface, and invoke it from {@link StringResolver#substVars(String, Map, Map, Set, String, String, boolean)}.
  * </p>
  * <p>
- *     Implementors are loaded via the JDK {@link java.util.ServiceLoader} mechanism.
+ * Implementors are loaded via the JDK {@link java.util.ServiceLoader} mechanism.
  * </p>
  * <p>
- *  It is <b>not</b> allowed to use a static reference to the logger in implementations.
- * 	Log4j2 uses StringResolver during instantiation.
+ * It is <b>not</b> allowed to use a static reference to the logger in implementations.
+ * Log4j2 uses StringResolver during instantiation.
  * </p>
  */
 public interface AdditionalStringResolver {
@@ -55,8 +55,8 @@ public interface AdditionalStringResolver {
 	 * @param resolveWithPropertyName Flag if values should be prefixed with name of resolved property, normally only
 	 *                                needed by caller.
 	 * @return Resolved property value, or {@link Optional#empty()} if it cannot be resolved by this implementation. If {@link Optional#empty()} is
-	 * returned, the {@link StringResolver} will then continue to try resolving the {@code key}. If any non-empty {@link Optional} is returned,
-	 * the {@link StringResolver} will use the value of that as value for the {@code key} and not look for other resolutions for the key.
+	 * 		returned, the {@link StringResolver} will then continue to try resolving the {@code key}. If any non-empty {@link Optional} is returned,
+	 * 		the {@link StringResolver} will use the value of that as value for the {@code key} and not look for other resolutions for the key.
 	 */
 	Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName);
 }

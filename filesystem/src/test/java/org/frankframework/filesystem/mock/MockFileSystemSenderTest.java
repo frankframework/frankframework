@@ -4,7 +4,7 @@ import org.frankframework.filesystem.FileSystemSender;
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 
-public class MockFileSystemSenderTest extends FileSystemSenderTest <FileSystemSender<MockFile, MockFileSystem<MockFile>>, MockFile,MockFileSystem<MockFile>>{
+public class MockFileSystemSenderTest extends FileSystemSenderTest<FileSystemSender<MockFile, MockFileSystem<MockFile>>, MockFile, MockFileSystem<MockFile>> {
 
 
 	@Override
@@ -14,8 +14,9 @@ public class MockFileSystemSenderTest extends FileSystemSenderTest <FileSystemSe
 
 	@Override
 	public FileSystemSender<MockFile, MockFileSystem<MockFile>> createFileSystemSender() {
-		FileSystemSender<MockFile,MockFileSystem<MockFile>> result=new FileSystemSender<>() {};
-		result.setFileSystem(((MockFileSystemTestHelper<MockFile>)helper).getFileSystem());
+		FileSystemSender<MockFile, MockFileSystem<MockFile>> result = new FileSystemSender<>() {
+		};
+		result.setFileSystem(((MockFileSystemTestHelper<MockFile>) helper).getFileSystem());
 		return result;
 	}
 }

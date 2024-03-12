@@ -35,7 +35,7 @@ import org.frankframework.xml.SaxException;
 
 public class IncludeFilter extends FullXmlFilter {
 
-	private final char[] NEWLINE="\n".toCharArray();
+	private final char[] NEWLINE = "\n".toCharArray();
 
 	private final String targetElement = "Include";
 	private final String targetAttribute = "ref";
@@ -58,17 +58,17 @@ public class IncludeFilter extends FullXmlFilter {
 		if (localName.equals(targetElement)) {
 			String ref = atts.getValue(targetAttribute);
 			characters(NEWLINE, 0, 1);
-			comment("start include '"+ref+"'");
+			comment("start include '" + ref + "'");
 			characters(NEWLINE, 0, 1);
 			if (StringUtils.isNotEmpty(ref)) {
 				Resource subResource;
 				try {
 					subResource = uriResolver.resolveToResource(ref, resource.getSystemId());
 				} catch (TransformerException e) {
-					throw new SaxException("Cannot open include ["+ref+"]", e);
+					throw new SaxException("Cannot open include [" + ref + "]", e);
 				}
-				if (subResource==null) {
-					throw new SaxException("Cannot find include ["+ref+"]");
+				if (subResource == null) {
+					throw new SaxException("Cannot find include [" + ref + "]");
 				}
 				XMLFilterImpl handlerTail = new BodyOnlyFilter(getContentHandler(), false);
 				ContentHandler includeHandler = handlerTail;
@@ -78,20 +78,20 @@ public class IncludeFilter extends FullXmlFilter {
 				includeHandler = new IncludeFilter(includeHandler, subResource);
 				XMLReader curParent = getParent();
 				try {
-					if (curParent!=null) {
+					if (curParent != null) {
 						setParent(handlerTail);
 					}
 					XmlUtils.parseXml(subResource, includeHandler);
 				} catch (IOException e) {
-					throw new SaxException("Cannot parse include ["+ref+"]", e);
+					throw new SaxException("Cannot parse include [" + ref + "]", e);
 				} finally {
-					if (curParent!=null) {
+					if (curParent != null) {
 						setParent(curParent);
 					}
 				}
 			}
 			characters(NEWLINE, 0, 1);
-			comment("end include '"+ref+"'");
+			comment("end include '" + ref + "'");
 			return;
 		}
 		super.startElement(uri, localName, qName, atts);

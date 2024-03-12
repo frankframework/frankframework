@@ -45,7 +45,7 @@ public class KafkaFacadeTest {
 	@MethodSource
 	void validateParameters(KafkaFacadeConfigurer configurer, boolean shouldSucceed, String name) {
 		configurer.configure(facade);
-		if(shouldSucceed) Assertions.assertDoesNotThrow(facade::configure, name);
+		if (shouldSucceed) Assertions.assertDoesNotThrow(facade::configure, name);
 		else Assertions.assertThrows(ConfigurationException.class, facade::configure, name);
 	}
 
@@ -56,12 +56,12 @@ public class KafkaFacadeTest {
 
 	static Stream<Arguments> validateParameters() {
 		return Stream.of(
-				Arguments.of((KafkaFacadeConfigurer)listener->listener.setBootstrapServers(null), false, "null bootstrapServers"),
-				Arguments.of((KafkaFacadeConfigurer)listener->listener.setBootstrapServers(""), false, "empty bootstrapServers"),
-				Arguments.of((KafkaFacadeConfigurer)listener->listener.setBootstrapServers("example.com:9092"), true, "valid bootstrapServers"),
-				Arguments.of((KafkaFacadeConfigurer)listener->listener.setClientId(null), false, "null clientId"),
-				Arguments.of((KafkaFacadeConfigurer)listener->listener.setClientId(""), false, "empty clientId"),
-				Arguments.of((KafkaFacadeConfigurer)listener->listener.setClientId("test"), true, "valid clientId")
+				Arguments.of((KafkaFacadeConfigurer) listener -> listener.setBootstrapServers(null), false, "null bootstrapServers"),
+				Arguments.of((KafkaFacadeConfigurer) listener -> listener.setBootstrapServers(""), false, "empty bootstrapServers"),
+				Arguments.of((KafkaFacadeConfigurer) listener -> listener.setBootstrapServers("example.com:9092"), true, "valid bootstrapServers"),
+				Arguments.of((KafkaFacadeConfigurer) listener -> listener.setClientId(null), false, "null clientId"),
+				Arguments.of((KafkaFacadeConfigurer) listener -> listener.setClientId(""), false, "empty clientId"),
+				Arguments.of((KafkaFacadeConfigurer) listener -> listener.setClientId("test"), true, "valid clientId")
 		);
 	}
 }

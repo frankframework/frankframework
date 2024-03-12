@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import org.frankframework.filesystem.FileSystemSender;
 import org.frankframework.filesystem.LocalFileSystem;
 
-public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSystem>{
+public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSystem> {
 
 	public LocalFileSystemSender() {
 		setFileSystem(new LocalFileSystem());

@@ -18,7 +18,7 @@ package org.frankframework.credentialprovider.util;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Cache<K,V,E extends Exception> {
+public class Cache<K, V, E extends Exception> {
 
 	private final Map<K, CacheEntry<V>> delegate;
 	private final int timeToLiveMillis;
@@ -28,7 +28,7 @@ public class Cache<K,V,E extends Exception> {
 		delegate = new ConcurrentHashMap<>();
 	}
 
-	public V computeIfAbsentOrExpired(K key, ThrowingFunction<K,V,E> valueSupplier) throws E {
+	public V computeIfAbsentOrExpired(K key, ThrowingFunction<K, V, E> valueSupplier) throws E {
 		CacheEntry<V> entry = delegate.computeIfAbsent(key, k -> new CacheEntry<>());
 		synchronized (entry) {
 			if (entry.isExpired()) {

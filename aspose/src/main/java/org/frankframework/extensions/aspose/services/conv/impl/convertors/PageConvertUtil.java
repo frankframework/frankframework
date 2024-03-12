@@ -17,8 +17,7 @@ package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
- *
+ * 		Hoorn</a> (d937275)
  */
 public class PageConvertUtil {
 

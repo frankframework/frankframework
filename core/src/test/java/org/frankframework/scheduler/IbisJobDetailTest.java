@@ -8,6 +8,7 @@ import org.frankframework.scheduler.job.SendMessageJob;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +30,7 @@ public class IbisJobDetailTest {
 		jobDef2.setName("fakeName2");
 		jobDef2.setJavaListener("fakeListener");
 		configuration.registerScheduledJob(jobDef2);
-}
+	}
 
 	@Test
 	public void compareEmptyJobs() throws Exception {
@@ -44,7 +45,7 @@ public class IbisJobDetailTest {
 		jobDef1.setCronExpression("0 0 * ? * * *");
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -53,7 +54,7 @@ public class IbisJobDetailTest {
 		jobDef2.setCronExpression("0 0 * ? * * *");
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -63,7 +64,7 @@ public class IbisJobDetailTest {
 		jobDef2.setCronExpression("0 0 * ? * * *");
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertTrue(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -73,7 +74,7 @@ public class IbisJobDetailTest {
 		jobDef2.setCronExpression("1 1 * ? * * *");
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -82,7 +83,7 @@ public class IbisJobDetailTest {
 		jobDef1.setInterval(100);
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -91,7 +92,7 @@ public class IbisJobDetailTest {
 		jobDef2.setInterval(100);
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -101,7 +102,7 @@ public class IbisJobDetailTest {
 		jobDef2.setInterval(100);
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertTrue(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -111,7 +112,7 @@ public class IbisJobDetailTest {
 		jobDef2.setInterval(200);
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -126,7 +127,7 @@ public class IbisJobDetailTest {
 		jobDef1.setLocker(locker);
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -141,7 +142,7 @@ public class IbisJobDetailTest {
 		jobDef2.setLocker(locker);
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -173,7 +174,7 @@ public class IbisJobDetailTest {
 		jobDef2.setLocker(locker2);
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertTrue(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -205,7 +206,7 @@ public class IbisJobDetailTest {
 		jobDef2.setLocker(locker2);
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -214,7 +215,7 @@ public class IbisJobDetailTest {
 		jobDef1.setMessage("fakeMessage");
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -223,7 +224,7 @@ public class IbisJobDetailTest {
 		jobDef2.setMessage("fakeMessage");
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -233,7 +234,7 @@ public class IbisJobDetailTest {
 		jobDef2.setMessage("fakeMessage");
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertTrue(jobDetail1.compareWith(jobDef2));
 	}
 
@@ -243,7 +244,7 @@ public class IbisJobDetailTest {
 		jobDef2.setMessage("fakeMessage 2");
 		jobDef1.configure();
 		jobDef2.configure();
-		IbisJobDetail jobDetail1 = (IbisJobDetail)IbisJobBuilder.fromJobDef(jobDef1).build();
+		IbisJobDetail jobDetail1 = (IbisJobDetail) IbisJobBuilder.fromJobDef(jobDef1).build();
 		assertFalse(jobDetail1.compareWith(jobDef2));
 	}
 

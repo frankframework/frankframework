@@ -23,9 +23,11 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.URLDataSourceFactory;
 import org.frankframework.util.SpringUtils;
+
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.ExceptionUtils;
+
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -38,7 +40,7 @@ import lombok.extern.log4j.Log4j2;
 
 /**
  * The DatabaseTestEnvironment will automatically be cleaned up after each test where it may throw exceptions if any connections have not been closed properly.
- * 
+ *
  * @author Niels Meijer
  */
 @Log4j2
@@ -57,6 +59,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 
 	/**
 	 * <b>Make sure to close this!</b>
+	 *
 	 * @return a new Connection each time this method is called
 	 */
 	public Connection getConnection() throws SQLException {
@@ -71,12 +74,12 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 
 	private Connection wrapCountingConnectionDelegate(Connection connection) throws Exception {
 		ProxyFactory factory = new ProxyFactory();
-		factory.setInterfaces(new Class[] {Connection.class});
+		factory.setInterfaces(new Class[]{Connection.class});
 
 		return (Connection) factory.create(new Class[0], new Object[0], new MethodHandler() {
 			@Override
 			public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
-				if(method.getName().equals("close")) {
+				if (method.getName().equals("close")) {
 					connectionCount.decrementAndGet();
 				}
 				return method.invoke(connection, args);
@@ -96,7 +99,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		dataSource = type.getDataSource(productKey);
 
 		String dsInfo; //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
-		if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+		if (dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
 			dsInfo = ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getTargetDataSource().toString();
 		} else {
 			dsInfo = dataSource.toString();
@@ -124,7 +127,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	}
 
 	private DataSource getTargetDataSource(DataSource dataSource) {
-		if(dataSource instanceof DelegatingDataSource) {
+		if (dataSource instanceof DelegatingDataSource) {
 			return getTargetDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
 		}
 		return dataSource;
@@ -137,7 +140,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 			String[] kvPair = part.split(" \\[");
 			String key = kvPair[0];
 			String value = (kvPair.length == 1) ? "" : kvPair[1];
-			if(!props.containsKey(key)) {
+			if (!props.containsKey(key)) {
 				props.put(key, value);
 			}
 		}
@@ -147,7 +150,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	/** Populates all database related fields that are normally wired through Spring */
 	public void autowire(@Nonnull Object bean) {
 		configuration.autowireByName(bean);
-		if(bean instanceof JdbcFacade) {
+		if (bean instanceof JdbcFacade) {
 			((JdbcFacade) bean).setDatasourceName(getDataSourceName());
 		}
 	}
@@ -168,7 +171,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		Collections.reverse(transactionsToClose);
 		transactionsToClose.forEach(this::completeTxSafely);
 
-		if(connectionCount.get() > 0) {
+		if (connectionCount.get() > 0) {
 			throw new JUnitException("Not all connections have been closed! Don't forget to close all database connections in your test.");
 		}
 	}
@@ -194,6 +197,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	private void registerForCleanup(final TransactionStatus tx) {
 		transactionsToClose.add(tx);
 	}
+
 	private void completeTxSafely(final TransactionStatus tx) {
 		if (!tx.isCompleted()) {
 			try {

@@ -27,6 +27,7 @@ import org.frankframework.parameters.ParameterList;
 public interface IWithParameters {
 
 	void addParameter(Parameter p);
+
 	ParameterList getParameterList(); // used by debugger, to show resolved values of parameters
 
 }

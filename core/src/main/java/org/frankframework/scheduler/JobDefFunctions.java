@@ -59,7 +59,7 @@ public enum JobDefFunctions implements DocumentedEnum {
 
 	public boolean isEqualToAtLeastOneOf(JobDefFunctions... functions) {
 		for (JobDefFunctions func : functions) {
-			if(this == func)
+			if (this == func)
 				return true;
 		}
 		return false;

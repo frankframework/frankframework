@@ -48,10 +48,10 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeline, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeline, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		TransactionDefinition txDef;
 		int txTimeout = 0;
-		if(pipe instanceof HasTransactionAttribute) {
+		if (pipe instanceof HasTransactionAttribute) {
 			HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
 			txDef = taPipe.getTxDef();
 			txTimeout = taPipe.getTransactionTimeout();
@@ -61,19 +61,19 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipe [" + pipe.getName() + "]");
 		boolean isTxCapable = hasTxCapableSender(pipe);
 		try {
-			if(isTxCapable && itx.isRollbackOnly()) {
+			if (isTxCapable && itx.isRollbackOnly()) {
 				throw new PipeRunException(pipe, "unable to execute SQL statement, transaction has been marked as failed by an earlier sender");
 			}
 
 			return execute(pipeline, pipe, message, chain, txTimeout);
 
 		} catch (Error | RuntimeException | PipeRunException ex) {
-			if(isTxCapable) {
+			if (isTxCapable) {
 				itx.setRollbackOnly();
 			}
 			throw ex;
 		} catch (Exception e) {
-			if(isTxCapable) {
+			if (isTxCapable) {
 				itx.setRollbackOnly();
 			}
 			throw new PipeRunException(pipe, "Caught unknown checked exception", e);
@@ -84,7 +84,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 
 	/** If the pipe implements HasSender and the sender is TX Capable, it should mark RollBackOnly! */
 	private boolean hasTxCapableSender(IPipe pipe) {
-		if(pipe instanceof HasSender) {
+		if (pipe instanceof HasSender) {
 			ISender sender = ((HasSender) pipe).getSender();
 			return sender instanceof JdbcFacade || sender instanceof JMSFacade;
 		}
@@ -92,7 +92,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	}
 
 	private PipeRunResult execute(PipeLine pipeLine, IPipe pipe, Message message, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain, int txTimeout) throws Exception {
-		TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "] running pipe ["+pipe.getName()+"]");
+		TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "] running pipe [" + pipe.getName() + "]");
 		Exception tCaught = null;
 		try {
 			tg.activateGuard(txTimeout);
@@ -101,8 +101,8 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 			tCaught = t;
 			throw tCaught;
 		} finally {
-			if(tg.cancel()) {
-				if(tCaught == null) {
+			if (tg.cancel()) {
+				if (tCaught == null) {
 					throw new PipeRunException(pipe, tg.getDescription() + " was interrupted");
 				}
 				log.warn("Thread interrupted, but propagating other caught exception of type [{}]", ClassUtils.nameOf(tCaught));

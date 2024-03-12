@@ -14,11 +14,12 @@ import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 
-import org.frankframework.filesystem.FileNotFoundException;
-import org.frankframework.testutil.TestAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import org.frankframework.filesystem.FileNotFoundException;
+import org.frankframework.testutil.TestAssertions;
 
 public class FileUtilsTest {
 
@@ -35,15 +36,15 @@ public class FileUtilsTest {
 	private File getFile(String fileName) throws FileNotFoundException {
 		String base = "/Util/FileUtils/";
 		URL pipes = this.getClass().getResource(base);
-		assertNotNull(pipes, "unable to find base ["+ base +"]");
+		assertNotNull(pipes, "unable to find base [" + base + "]");
 
 		File root = new File(pipes.getPath());
-		if(fileName == null) {
+		if (fileName == null) {
 			return root;
 		}
 		File child = new File(root, fileName);
-		if(!child.exists()) {
-			throw new FileNotFoundException("unable to find file ["+fileName+"] in folder ["+root.toPath()+"]");
+		if (!child.exists()) {
+			throw new FileNotFoundException("unable to find file [" + fileName + "] in folder [" + root.toPath() + "]");
 		}
 		return child;
 	}
@@ -86,7 +87,7 @@ public class FileUtilsTest {
 	void testCopyFile() throws Exception {
 		File sourceFile = getFile("fileToAppend.txt");
 		File destFile = getFile("copyFile.txt");
-    	assertTrue(FileUtils.copyFile(sourceFile, destFile, true));
+		assertTrue(FileUtils.copyFile(sourceFile, destFile, true));
 	}
 
 	@Test
@@ -136,8 +137,8 @@ public class FileUtilsTest {
 		assertEquals(2, files.length); // check if there are 2 files persent
 
 		int containsBothFiles = 0; //Stupid way to check file names ... sigh
-		for(File file : files) {
-			if("file.txt".equals(file.getName()) || "fileToAppend.txt".equals(file.getName())) {
+		for (File file : files) {
+			if ("file.txt".equals(file.getName()) || "fileToAppend.txt".equals(file.getName())) {
 				containsBothFiles++;
 			}
 		}
@@ -145,12 +146,13 @@ public class FileUtilsTest {
 		assertEquals(2, containsBothFiles);
 	}
 
-	@Test //retrieve the first file from a directory. Alphabetically it should first return 'copyFile'. Add a stability period, and check if it skips the first file
+	@Test
+		//retrieve the first file from a directory. Alphabetically it should first return 'copyFile'. Add a stability period, and check if it skips the first file
 	void testGetFirstFile() throws Exception {
 		assumeTrue(TestAssertions.isTestRunningOnWindows());
 
 		long stabilityPeriod = 5000;
-		getFile("copyFrom.txt").setLastModified(new Date().getTime()-(stabilityPeriod + 500)); //mark file as stable (add 500ms to the stability period because of HDD latency)
+		getFile("copyFrom.txt").setLastModified(new Date().getTime() - (stabilityPeriod + 500)); //mark file as stable (add 500ms to the stability period because of HDD latency)
 		getFile("copyFile.txt").setLastModified(new Date().getTime()); //update last modified to now, so it fails the stability period
 
 		File directory = getFile(null);

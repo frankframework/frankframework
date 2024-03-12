@@ -40,7 +40,7 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 
 	public S getSender(boolean addCustomHeader) throws Exception {
 		sender = createSender();
-		if(sender == null)
+		if (sender == null)
 			fail("sender not initialized");
 
 		CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
@@ -55,7 +55,7 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 		sender.setVerifyHostname(false);
 		sender.setAllowSelfSignedCertificates(true);
 
-		if(addCustomHeader) {
+		if (addCustomHeader) {
 			sender.setHeadersParams("custom-header");
 			sender.addParameter(new Parameter("custom-header", "value"));
 		}
@@ -64,8 +64,8 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 	}
 
 	protected String getFile(String file) throws IOException {
-		String content = TestFileUtils.getTestFile(BASEDIR+file);
-		assertNotNull(content, "file ["+BASEDIR+file+"] not found");
+		String content = TestFileUtils.getTestFile(BASEDIR + file);
+		assertNotNull(content, "file [" + BASEDIR + file + "] not found");
 		return content;
 	}
 }

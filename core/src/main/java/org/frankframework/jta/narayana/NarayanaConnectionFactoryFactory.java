@@ -48,7 +48,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper((XAConnectionFactory) connectionFactory);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
-			if(maxPoolSize > 1) {
+			if (maxPoolSize > 1) {
 				return createConnectionFactoryPool(connectionFactory);
 			}
 
@@ -58,14 +58,14 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 		}
 
 		log.info("ConnectionFactory [{}] is not XA enabled, unable to register with an Transaction Manager", connectionFactoryName);
-		if(maxPoolSize > 1) {
+		if (maxPoolSize > 1) {
 			return createConnectionFactoryPool(connectionFactory);
 		}
 		return connectionFactory;
 	}
 
 	private ConnectionFactory createConnectionFactoryPool(ConnectionFactory connectionFactory) {
-		if(connectionFactory instanceof XAConnectionFactory) {
+		if (connectionFactory instanceof XAConnectionFactory) {
 			JmsPoolXAConnectionFactory pooledConnectionFactory = new JmsPoolXAConnectionFactory();
 			pooledConnectionFactory.setTransactionManager(this.transactionManager.getTransactionManager());
 			pooledConnectionFactory.setConnectionFactory(connectionFactory);

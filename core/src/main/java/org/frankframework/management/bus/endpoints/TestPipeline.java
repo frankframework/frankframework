@@ -75,14 +75,14 @@ public class TestPipeline extends BusEndpointBase {
 
 		boolean expectsReply = message.getHeaders().containsKey("replyChannel");
 
-		if(!(message.getPayload() instanceof String)) {
+		if (!(message.getPayload() instanceof String)) {
 			throw new BusException("payload is not instance of String");
 		}
 
 		Map<String, String> threadContext = new HashMap<>();
 
 		String sessionKeys = BusMessageUtils.getHeader(message, "sessionKeys");
-		if(StringUtils.isNotEmpty(sessionKeys)) {
+		if (StringUtils.isNotEmpty(sessionKeys)) {
 			threadContext.putAll(getSessionKeysFromHeader(sessionKeys));
 		}
 
@@ -97,7 +97,7 @@ public class TestPipeline extends BusEndpointBase {
 		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
 		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
-			if(threadContext != null) {
+			if (threadContext != null) {
 				pls.putAll(threadContext);
 			}
 
@@ -108,7 +108,7 @@ public class TestPipeline extends BusEndpointBase {
 			try {
 				PipeLineResult plr = adapter.processMessage(messageId, new org.frankframework.stream.Message(payload), pls);
 
-				if(!expectsReply) {
+				if (!expectsReply) {
 					return null; //Abort here, we do not need a reply.
 				}
 
@@ -131,7 +131,7 @@ public class TestPipeline extends BusEndpointBase {
 		Map<String, String> context = new HashMap<>();
 		try {
 			PostedSessionKey[] postedSessionKeys = new ObjectMapper().readValue(sessionKeys, PostedSessionKey[].class);
-			for(PostedSessionKey psk : postedSessionKeys) {
+			for (PostedSessionKey psk : postedSessionKeys) {
 				context.put(psk.getKey(), psk.getValue());
 			}
 		} catch (Exception e) {
@@ -146,7 +146,7 @@ public class TestPipeline extends BusEndpointBase {
 	@Nonnull
 	protected Map<String, String> getSessionKeysFromPayload(String input) {
 		String str = findProcessingInstructions(input);
-		if(StringUtils.isEmpty(str)) {
+		if (StringUtils.isEmpty(str)) {
 			return Collections.emptyMap();
 		}
 
@@ -156,13 +156,13 @@ public class TestPipeline extends BusEndpointBase {
 			int indexBraceClose = 0;
 			int indexStartNextSearch = 0;
 			while (indexBraceOpen >= 0) {
-				indexBraceClose = str.indexOf("}", indexBraceOpen+1);
+				indexBraceClose = str.indexOf("}", indexBraceOpen + 1);
 				if (indexBraceClose > indexBraceOpen) {
-					String ibisContextLength = str.substring(indexBraceOpen+1, indexBraceClose);
+					String ibisContextLength = str.substring(indexBraceOpen + 1, indexBraceClose);
 					int icLength = Integer.parseInt(ibisContextLength);
 					if (icLength > 0) {
 						indexStartNextSearch = indexBraceClose + 1 + icLength;
-						String ibisContext = str.substring(indexBraceClose+1, indexStartNextSearch);
+						String ibisContext = str.substring(indexBraceClose + 1, indexStartNextSearch);
 						int indexEqualSign = ibisContext.indexOf("=");
 						String key;
 						String value;
@@ -170,8 +170,8 @@ public class TestPipeline extends BusEndpointBase {
 							key = ibisContext;
 							value = "";
 						} else {
-							key = ibisContext.substring(0,indexEqualSign);
-							value = ibisContext.substring(indexEqualSign+1);
+							key = ibisContext.substring(0, indexEqualSign);
+							value = ibisContext.substring(indexEqualSign + 1);
 						}
 						ibisContexts.put(key, value);
 					} else {
@@ -209,17 +209,17 @@ public class TestPipeline extends BusEndpointBase {
 
 	private String findProcessingInstructionsXslt() {
 		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-			+ "<xsl:output method=\"text\"/>"
-			+ "<xsl:template match=\"/\">"
-			+ "<xsl:for-each select=\"processing-instruction('ibiscontext')\">"
-			+ "<xsl:variable name=\"ic\" select=\"normalize-space(.)\"/>"
-			+ "<xsl:text>{</xsl:text>"
-			+ "<xsl:value-of select=\"string-length($ic)\"/>"
-			+ "<xsl:text>}</xsl:text>"
-			+ "<xsl:value-of select=\"$ic\"/>"
-			+ "</xsl:for-each>"
-			+ "</xsl:template>"
-			+ "</xsl:stylesheet>";
+				"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+						+ "<xsl:output method=\"text\"/>"
+						+ "<xsl:template match=\"/\">"
+						+ "<xsl:for-each select=\"processing-instruction('ibiscontext')\">"
+						+ "<xsl:variable name=\"ic\" select=\"normalize-space(.)\"/>"
+						+ "<xsl:text>{</xsl:text>"
+						+ "<xsl:value-of select=\"string-length($ic)\"/>"
+						+ "<xsl:text>}</xsl:text>"
+						+ "<xsl:value-of select=\"$ic\"/>"
+						+ "</xsl:for-each>"
+						+ "</xsl:template>"
+						+ "</xsl:stylesheet>";
 	}
 }

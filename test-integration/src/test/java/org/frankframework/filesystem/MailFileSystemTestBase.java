@@ -14,27 +14,26 @@ import org.frankframework.xml.SaxElementBuilder;
 
 /**
  * Performs a number of test for MailFileSystems.
- *
+ * <p>
  * Runs on 'IAF Integration Tests 1' base folder.
  * Subfolders:
- * 	AttachedMessage
- * 	FromAddressProblem
- * 	RaceFolder1
- * 	RaceFolder2
- * 	XmlProblem
- * 	XmlProblem2
- *
+ * AttachedMessage
+ * FromAddressProblem
+ * RaceFolder1
+ * RaceFolder2
+ * XmlProblem
+ * XmlProblem2
+ * <p>
  * creates a number of fs_test... folders
  */
-public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A>> extends SelfContainedBasicFileSystemTest<M, FS>{
+public abstract class MailFileSystemTestBase<M, A, FS extends IMailFileSystem<M, A>> extends SelfContainedBasicFileSystemTest<M, FS> {
 
 	protected String PROPERTY_FILE = "ExchangeMail.properties";
 
-	protected String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
-	protected String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
+	protected String username = PropertyUtil.getProperty(PROPERTY_FILE, "username");
+	protected String password = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 	protected String basefolder1 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder1");
 	protected String expectdBestReplyAddress = PropertyUtil.getProperty(PROPERTY_FILE, "bestReplyAddress");
-
 
 
 	@Test
@@ -62,7 +61,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		M emailMessage = getFirstFileFromFolder(null);
 		long actual = fileSystem.getFileSize(emailMessage);
 		long expected = 57343;
-		assertEquals(expected,actual);
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -70,7 +69,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		M emailMessage = getFirstFileFromFolder(null);
 		String subject = fileSystem.getSubject(emailMessage);
 		String expected = "Re: [frankframework/frankframework] Ladybug randomly stops report generation (#875)";
-		assertEquals(expected,subject);
+		assertEquals(expected, subject);
 	}
 
 	@Test
@@ -104,8 +103,8 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 	@Test
 	public void testToAddress() throws Exception {
 		M emailMessage = getFirstFileFromFolder(null);
-		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
-		List<String> adresses = (List<String>)properties.get(IMailFileSystem.TO_RECEPIENTS_KEY);
+		Map<String, Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
+		List<String> adresses = (List<String>) properties.get(IMailFileSystem.TO_RECEPIENTS_KEY);
 		String address = adresses.get(0);
 		String expected = "frankframework/frankframework <iaf@noreply.github.com>";
 		assertEquals(expected, address);
@@ -114,8 +113,8 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 	@Test
 	public void testFromAddress() throws Exception {
 		M emailMessage = getFirstFileFromFolder(null);
-		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
-		String address = (String)properties.get(IMailFileSystem.FROM_ADDRESS_KEY);
+		Map<String, Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
+		String address = (String) properties.get(IMailFileSystem.FROM_ADDRESS_KEY);
 		String expected = "ricardovh <notifications@github.com>";
 		assertEquals(expected, address);
 	}
@@ -123,8 +122,8 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 	@Test
 	public void testBestReplyAddress1() throws Exception {
 		M emailMessage = getFirstFileFromFolder(null);
-		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
-		String bestReplyAddress = (String)properties.get(IMailFileSystem.BEST_REPLY_ADDRESS_KEY);
+		Map<String, Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
+		String bestReplyAddress = (String) properties.get(IMailFileSystem.BEST_REPLY_ADDRESS_KEY);
 		String expected = "frankframework/frankframework <reply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com>";
 		assertEquals(expected, bestReplyAddress);
 	}
@@ -132,8 +131,8 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 	@Test
 	public void testBestReplyAddress2() throws Exception {
 		M emailMessage = getFirstFileFromFolder("XmlProblem");
-		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
-		String bestReplyAddress = (String)properties.get(IMailFileSystem.BEST_REPLY_ADDRESS_KEY);
+		Map<String, Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
+		String bestReplyAddress = (String) properties.get(IMailFileSystem.BEST_REPLY_ADDRESS_KEY);
 		assertEquals(expectdBestReplyAddress, bestReplyAddress);
 	}
 
@@ -161,7 +160,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		fileSystem.extractEmail(emailMessage, xml);
 		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailProblem.xml");
-		MatchUtils.assertXmlEquals(expected,xml.toString());
+		MatchUtils.assertXmlEquals(expected, xml.toString());
 	}
 
 	@Test
@@ -171,7 +170,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		fileSystem.extractEmail(emailMessage, xml);
 		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailProblem2.xml");
-		MatchUtils.assertXmlEquals(expected,xml.toString());
+		MatchUtils.assertXmlEquals(expected, xml.toString());
 	}
 
 	@Test
@@ -181,7 +180,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		fileSystem.extractEmail(emailMessage, xml);
 		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailFromAddressProblem.xml");
-		MatchUtils.assertXmlEquals(expected,xml.toString());
+		MatchUtils.assertXmlEquals(expected, xml.toString());
 	}
 
 	@Test
@@ -191,7 +190,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		fileSystem.extractEmail(emailMessage, xml);
 		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailAttachmentProblem.xml");
-		MatchUtils.assertXmlEquals(expected,xml.toString());
+		MatchUtils.assertXmlEquals(expected, xml.toString());
 	}
 
 //	@Test
@@ -221,7 +220,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		fileSystem.extractEmail(emailMessage, xml);
 		xml.close();
 		String expected = TestFileUtils.getTestFile("/ExchangeMailAttachedMessage.xml");
-		MatchUtils.assertXmlEquals(expected,xml.toString());
+		MatchUtils.assertXmlEquals(expected, xml.toString());
 	}
 
 	protected M prepareFolderAndGetFirstMessage(String folderName, String sourceFolder) throws Exception {
@@ -242,25 +241,24 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		String folderName2 = "RaceFolder2";
 
 		M orgItem = prepareFolderAndGetFirstMessage(folderName1, null);
-		System.out.println("Item original ["+fileSystem.getName(orgItem));
+		System.out.println("Item original [" + fileSystem.getName(orgItem));
 
 		System.out.println("moving item...");
 		M movedItem1 = fileSystem.moveFile(orgItem, folderName2, true, true);
-		System.out.println("Item original ["+fileSystem.getName(orgItem));
-		System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
+		System.out.println("Item original [" + fileSystem.getName(orgItem));
+		System.out.println("Item moved 1  [" + fileSystem.getName(movedItem1));
 
 		System.out.println("tring to move same item again...");
 		try {
 			M movedItem2 = fileSystem.moveFile(orgItem, folderName2, true, true);
-			System.out.println("Item original ["+fileSystem.getName(orgItem));
-			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem1));
-			System.out.println("Item moved 1  ["+fileSystem.getName(movedItem2));
+			System.out.println("Item original [" + fileSystem.getName(orgItem));
+			System.out.println("Item moved 1  [" + fileSystem.getName(movedItem1));
+			System.out.println("Item moved 1  [" + fileSystem.getName(movedItem2));
 			fail("Expected second move to fail");
 		} catch (FileSystemException e) {
 			log.debug("second move failed as expected", e);
 		}
 	}
-
 
 
 }

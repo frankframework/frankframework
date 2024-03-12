@@ -28,7 +28,6 @@ import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Supplier;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -38,17 +37,16 @@ import org.frankframework.util.FileUtils;
 /**
  * Pipe for deleting files.
  *
- *
  * @author John Dekker
- * @since  4.2
+ * @since 4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
 
 	private String filePattern;
 	private String filePatternSessionKey;
-	private boolean subdirectories=false;
-	private long lastModifiedDelta=0;
-	private boolean deleteEmptySubdirectories=false;
+	private boolean subdirectories = false;
+	private long lastModifiedDelta = 0;
+	private boolean deleteEmptySubdirectories = false;
 	private String wildcard;
 	private String excludeWildcard;
 	private long minStableTime = 1000;
@@ -96,8 +94,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			}
 
 			return new PipeRunResult(getSuccessForward(), message);
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			throw new PipeRunException(this, "Error while deleting file(s)", e);
 		}
 	}
@@ -109,8 +106,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			List<File> result = new ArrayList<>();
 			if (file.isDirectory()) {
 				getFilesForDeletion(result, file);
-			}
-			else {
+			} else {
 				if (fileFilter.accept(file))
 					result.add(file);
 			}
@@ -121,10 +117,10 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 
 	private void getFilesForDeletion(List<File> result, File directory) {
 		File[] files;
-		if (getWildcard()!=null) {
+		if (getWildcard() != null) {
 			//WildCardFilter filter = new WildCardFilter(getWildcard());
 			//files = directory.listFiles(filter);
-			files=FileUtils.getFiles(directory.getPath(), getWildcard(), getExcludeWildcard(), getMinStableTime());
+			files = FileUtils.getFiles(directory.getPath(), getWildcard(), getExcludeWildcard(), getMinStableTime());
 			for (File file : files) {
 				if (getLastModifiedDelta() < 0 || FileUtils.getLastModifiedDelta(file) > getLastModifiedDelta()) {
 					result.add(file);
@@ -159,7 +155,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			}
 		}
 		String[] entries = directory.list();
-		if (level>0 && (entries == null || entries.length==0)) {
+		if (level > 0 && (entries == null || entries.length == 0)) {
 			try {
 				Files.delete(directory.toPath());
 				log.info("deleted empty directory [{}]", directory::getAbsolutePath);
@@ -189,6 +185,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	public void setFilePattern(String string) {
 		filePattern = string;
 	}
+
 	public String getFilePattern() {
 		return filePattern;
 	}
@@ -197,39 +194,46 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	public void setFilePatternSessionKey(String string) {
 		filePatternSessionKey = string;
 	}
+
 	public String getFilePatternSessionKey() {
 		return filePatternSessionKey;
 	}
 
 	/**
 	 * time in milliseconds after last modification that must have passed at least before a file will be deleted (set to negative value to disable)
+	 *
 	 * @ff.default 0
 	 */
 	public void setLastModifiedDelta(long l) {
 		lastModifiedDelta = l;
 	}
+
 	public long getLastModifiedDelta() {
 		return lastModifiedDelta;
 	}
 
 	/**
 	 * when <code>true</code>, files  in subdirectories will be deleted, too
+	 *
 	 * @ff.default false
 	 */
 	public void setSubdirectories(boolean b) {
 		subdirectories = b;
 	}
+
 	public boolean isSubdirectories() {
 		return subdirectories;
 	}
 
 	/**
 	 * when <code>true</code>, empty subdirectories will be deleted, too
+	 *
 	 * @ff.default false
 	 */
 	public void setDeleteEmptySubdirectories(boolean b) {
 		deleteEmptySubdirectories = b;
 	}
+
 	public boolean isDeleteEmptySubdirectories() {
 		return deleteEmptySubdirectories;
 	}
@@ -238,6 +242,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	public void setWildcard(String string) {
 		wildcard = string;
 	}
+
 	public String getWildcard() {
 		return wildcard;
 	}
@@ -246,17 +251,20 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;
 	}
+
 	public String getExcludeWildcard() {
 		return excludeWildcard;
 	}
 
 	/**
 	 * Minimal age of file <i>in milliseconds</i>, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 to disable)
+	 *
 	 * @ff.default 1000
 	 */
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}
+
 	public long getMinStableTime() {
 		return minStableTime;
 	}

@@ -45,7 +45,7 @@ public class EnvironmentVariables extends BusEndpointBase {
 	public Message<String> getEnvironmentVariables(Message<?> message) {
 		List<String> propsToHide = new ArrayList<>();
 		String propertiesHideString = AppConstants.getInstance().getString("properties.hide", null);
-		if (propertiesHideString!=null) {
+		if (propertiesHideString != null) {
 			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
 		}
 
@@ -53,8 +53,8 @@ public class EnvironmentVariables extends BusEndpointBase {
 		Map<String, Object> configVars = new HashMap<>();
 
 		configVars.put("All", convertPropertiesToMap(AppConstants.getInstance(), propsToHide));
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			if(config.getClassLoader() != null) {
+		for (Configuration config : getIbisManager().getConfigurations()) {
+			if (config.getClassLoader() != null) {
 				configVars.put(config.getName(), convertPropertiesToMap(AppConstants.getInstance(config.getClassLoader()), propsToHide));
 			}
 		}
@@ -89,8 +89,8 @@ public class EnvironmentVariables extends BusEndpointBase {
 				}
 			} catch (Exception | StackOverflowError e) {
 				// catch StackOverflowErrors, to enable analysis of cyclic property definitions
-				String msg = "cannot get value of property ["+ propName+"]";
-				propValue = msg+" ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+				String msg = "cannot get value of property [" + propName + "]";
+				propValue = msg + " (" + ClassUtils.nameOf(e) + "): " + e.getMessage();
 				log.warn(msg, e);
 			}
 			properties.put(propName, propValue);

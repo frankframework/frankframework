@@ -5,10 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.logging.log4j.Level;
-import org.frankframework.core.IbisException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import org.apache.logging.log4j.Level;
+import org.frankframework.core.IbisException;
 
 public class BusExceptionTest {
 
@@ -19,10 +20,10 @@ public class BusExceptionTest {
 	public Exception innerException;
 
 	public static List<?> data() {
-		return Arrays.asList(new Object[][] {
-			{"", Level.WARN, null},
-			{": cannot configure", Level.ERROR, new IbisException("cannot configure")},
-			{": cannot configure: (IllegalStateException) something is wrong", Level.ERROR, new IbisException("cannot configure", new IllegalStateException("something is wrong"))},
+		return Arrays.asList(new Object[][]{
+				{"", Level.WARN, null},
+				{": cannot configure", Level.ERROR, new IbisException("cannot configure")},
+				{": cannot configure: (IllegalStateException) something is wrong", Level.ERROR, new IbisException("cannot configure", new IllegalStateException("something is wrong"))},
 		});
 	}
 

@@ -25,12 +25,15 @@ public class SaxTimeoutException extends SaxException {
 	public SaxTimeoutException() {
 		super();
 	}
+
 	public SaxTimeoutException(String message) {
 		super(message);
 	}
+
 	public SaxTimeoutException(String message, Exception cause) {
 		super(message, cause);
 	}
+
 	public SaxTimeoutException(Exception cause) {
 		super(cause);
 	}

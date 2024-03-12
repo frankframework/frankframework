@@ -28,6 +28,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.aspose.pdf.Document;
+
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
@@ -35,10 +38,6 @@ import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 import org.springframework.http.MediaType;
-
-import com.aspose.pdf.Document;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 abstract class AbstractConvertor implements Convertor {
@@ -125,7 +124,7 @@ abstract class AbstractConvertor implements Convertor {
 
 	protected int getNumberOfPages(File file) throws IOException {
 		int result = 0;
-		if(file != null) {
+		if (file != null) {
 			try (InputStream inStream = Files.newInputStream(file.toPath())) {
 				Document doc = new Document(inStream);
 				result = doc.getPages().size();
@@ -137,7 +136,7 @@ abstract class AbstractConvertor implements Convertor {
 
 	protected String createErrorMsg(Exception e) {
 		String timestamp = DateFormatUtils.now();
-		log.warn("failed to convert [{}] failed! (Timestamp: [{}])", logMethod(()-> getClass().getSimpleName()), logValue(timestamp), e);
+		log.warn("failed to convert [{}] failed! (Timestamp: [{}])", logMethod(() -> getClass().getSimpleName()), logValue(timestamp), e);
 		return "Conversion to PDF failed due to a technical failure. Please contact functional support." +
 				"(Timestamp: " + timestamp + ")";
 	}

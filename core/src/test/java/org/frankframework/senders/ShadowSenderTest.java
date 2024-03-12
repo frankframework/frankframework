@@ -21,10 +21,12 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.util.XmlUtils;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -87,18 +89,18 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 	@Test
 	public void testWithDefaultResultSender() throws Exception {
-		((ShadowSender)sender).setResultSender(null);
+		((ShadowSender) sender).setResultSender(null);
 		sender.configure();
 		sender.open();
-		assertEquals("resultSender", ((ShadowSender)sender).getResultSenderName());
+		assertEquals("resultSender", ((ShadowSender) sender).getResultSenderName());
 	}
 
 	@Test
 	public void testWithoutDefaultOriginalSender() throws Exception {
-		((ShadowSender)sender).setOriginalSender(null);
+		((ShadowSender) sender).setOriginalSender(null);
 		sender.configure();
 		sender.open();
-		assertEquals("originalSender", ((ShadowSender)sender).getOriginalSenderName());
+		assertEquals("originalSender", ((ShadowSender) sender).getOriginalSenderName());
 	}
 
 	@Test
@@ -134,7 +136,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testNoShadowSenders(boolean waitForCompletionOfShadows) throws Exception {
-		((ShadowSender)sender).setWaitForShadowsToFinish(waitForCompletionOfShadows);
+		((ShadowSender) sender).setWaitForShadowsToFinish(waitForCompletionOfShadows);
 		sender.configure();
 		sender.open();
 
@@ -145,12 +147,12 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			Thread.sleep(1000); // wait for results to be collected in the background
 		}
 		Message senderResult = null;
-		for(ISender sender : sender.getSenders()) {
-			if(RESULT_SENDER_NAME.equals(sender.getName())) {
-				senderResult = ((ResultSender)sender).getResult();
+		for (ISender sender : sender.getSenders()) {
+			if (RESULT_SENDER_NAME.equals(sender.getName())) {
+				senderResult = ((ResultSender) sender).getResult();
 			}
 		}
-		if(senderResult == null) {
+		if (senderResult == null) {
 			fail("no sender result");
 		}
 
@@ -163,7 +165,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
 		int duration = Integer.parseInt(origResult.getAttribute("duration"));
-		assertTrue(duration < 200, "test took more then [200ms] duration ["+duration+"]");
+		assertTrue(duration < 200, "test took more then [200ms] duration [" + duration + "]");
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(0, shadowResults.size());
@@ -182,12 +184,12 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 		Thread.sleep(3000); // wait for results to be collected in the background
 		Message senderResult = null;
-		for(ISender sender : sender.getSenders()) {
-			if(RESULT_SENDER_NAME.equals(sender.getName())) {
-				senderResult = ((ResultSender)sender).getResult();
+		for (ISender sender : sender.getSenders()) {
+			if (RESULT_SENDER_NAME.equals(sender.getName())) {
+				senderResult = ((ResultSender) sender).getResult();
 			}
 		}
-		if(senderResult == null) {
+		if (senderResult == null) {
 			fail("no sender result");
 		}
 
@@ -203,12 +205,12 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(3, shadowResults.size());
-		for(Node node : shadowResults) {
+		for (Node node : shadowResults) {
 			Element shadowResult = (Element) node;
 			assertEquals(INPUT_MESSAGE, XmlUtils.getStringValue(shadowResult, true));
 			assertTrue(shadowResult.getAttribute("senderName").startsWith("shadowSenderWithDelay"));
 			int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
-			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2150))));
+			assertThat("test duration was [" + duration + "]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2150))));
 		}
 	}
 
@@ -218,7 +220,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		sender.registerSender(new TestSender("shadowSenderWithDelay1"));
 		sender.registerSender(new TestSender("shadowSenderWithDelay2"));
 		sender.registerSender(new TestSender("shadowSenderWithDelay3"));
-		((ShadowSender)sender).setWaitForShadowsToFinish(false);
+		((ShadowSender) sender).setWaitForShadowsToFinish(false);
 
 		sender.configure();
 		sender.open();
@@ -235,12 +237,12 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 		Thread.sleep(3000); // wait for results to be collected in the background
 		Message senderResult = null;
-		for(ISender sender : sender.getSenders()) {
-			if(RESULT_SENDER_NAME.equals(sender.getName())) {
-				senderResult = ((ResultSender)sender).getResult();
+		for (ISender sender : sender.getSenders()) {
+			if (RESULT_SENDER_NAME.equals(sender.getName())) {
+				senderResult = ((ResultSender) sender).getResult();
 			}
 		}
-		if(senderResult == null) {
+		if (senderResult == null) {
 			fail("no sender result");
 		}
 
@@ -257,12 +259,12 @@ public class ShadowSenderTest extends ParallelSendersTest {
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(3, shadowResults.size());
-		for(Node node : shadowResults) {
+		for (Node node : shadowResults) {
 			Element shadowResult = (Element) node;
 			assertEquals(expectedMessage, XmlUtils.getStringValue(shadowResult, true));
 			assertTrue(shadowResult.getAttribute("senderName").startsWith("shadowSenderWithDelay"));
 			int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
-			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2150))));
+			assertThat("test duration was [" + duration + "]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2150))));
 		}
 	}
 

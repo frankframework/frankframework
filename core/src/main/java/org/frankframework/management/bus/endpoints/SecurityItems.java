@@ -121,7 +121,7 @@ public class SecurityItems extends BusEndpointBase {
 			String tcfName = jmsRealm.getTopicConnectionFactoryName();
 			String cfInfo = null;
 
-			if(StringUtils.isNotEmpty(dsName)) {
+			if (StringUtils.isNotEmpty(dsName)) {
 				realm = mapJmsRealmToDataSource(realmName, dsName);
 			} else {
 				JmsSender js = new JmsSender();
@@ -132,7 +132,7 @@ public class SecurityItems extends BusEndpointBase {
 				try {
 					cfInfo = js.getConnectionFactoryInfo();
 				} catch (JmsException e) {
-					log.debug("no connectionFactory ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+					log.debug("no connectionFactory (" + ClassUtils.nameOf(e) + "): " + e.getMessage());
 				}
 				if (StringUtils.isNotEmpty(qcfName)) {
 					realm.put("name", realmName);
@@ -156,7 +156,7 @@ public class SecurityItems extends BusEndpointBase {
 		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 
 		ArrayList<DataSourceDTO> dsList = new ArrayList<>();
-		for(String datasourceName : dataSourceNames) {
+		for (String datasourceName : dataSourceNames) {
 			DataSource ds = null;
 			try {
 				ds = dataSourceFactory.getDataSource(datasourceName);
@@ -179,7 +179,7 @@ public class SecurityItems extends BusEndpointBase {
 			this.datasourceName = datasourceName;
 			this.connectionPoolProperties = JdbcPoolUtil.getConnectionPoolInfo(ds);
 
-			if(ds instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+			if (ds instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
 				this.info = ((TransactionalDbmsSupportAwareDataSourceProxy) ds).getInfo();
 			} else {
 				this.info = null;
@@ -193,7 +193,7 @@ public class SecurityItems extends BusEndpointBase {
 		FixedQuerySender qs = createBean(FixedQuerySender.class);
 
 		qs.setQuery("select datasource from database");
-		if(StringUtils.isNotEmpty(jmsRealm)) {
+		if (StringUtils.isNotEmpty(jmsRealm)) {
 			realm.put("name", jmsRealm);
 			qs.setJmsRealm(jmsRealm);
 		} else {
@@ -205,7 +205,7 @@ public class SecurityItems extends BusEndpointBase {
 			qs.configure();
 			dsInfo = qs.getDatasourceInfo();
 		} catch (JdbcException | ConfigurationException e) {
-			log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
+			log.debug("no datasource (" + ClassUtils.nameOf(e) + "): " + e.getMessage());
 		}
 		realm.put("datasourceName", datasourceName);
 		realm.put("info", dsInfo);
@@ -213,7 +213,7 @@ public class SecurityItems extends BusEndpointBase {
 		return realm;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	private ArrayList<Object> addSapSystems() {
 		ArrayList<Object> sapSystemList = new ArrayList<>();
 		List<String> sapSystems = null;
@@ -222,16 +222,16 @@ public class SecurityItems extends BusEndpointBase {
 		try {
 			Class<?> c = Class.forName("org.frankframework.extensions.sap.SapSystemFactory");
 			Method factoryGetInstance = c.getMethod("getInstance");
-			sapSystemFactory = factoryGetInstance.invoke(null, (Object[])null);
+			sapSystemFactory = factoryGetInstance.invoke(null, (Object[]) null);
 			Method factoryGetRegisteredSapSystemsNamesAsList = c.getMethod("getRegisteredSapSystemsNamesAsList");
 
-			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, (Object[])null);
+			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, (Object[]) null);
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
 		} catch (Exception e) {
 			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + e.getMessage());
 		}
 
-		if (sapSystems!=null) {
+		if (sapSystems != null) {
 			Iterator<String> iter = sapSystems.iterator();
 			while (iter.hasNext()) {
 				Map<String, Object> ss = new HashMap<>();
@@ -252,7 +252,7 @@ public class SecurityItems extends BusEndpointBase {
 		List<String> entries = new LinkedList<>();
 		try {
 			Collection<String> knownAliases = CredentialFactory.getConfiguredAliases();
-			if (knownAliases!=null) {
+			if (knownAliases != null) {
 				entries.addAll(knownAliases); // start with all aliases in the CredentialProvider
 				Collections.sort(entries, Comparator.naturalOrder());
 			}
@@ -262,12 +262,12 @@ public class SecurityItems extends BusEndpointBase {
 		// and add all aliases that are used in the configuration
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			String configString = configuration.getLoadedConfiguration();
-			if(StringUtils.isEmpty(configString)) continue; //If a configuration can't be found, continue...
+			if (StringUtils.isEmpty(configString)) continue; //If a configuration can't be found, continue...
 
 			try {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
 				if (c != null && !c.isEmpty()) {
-					for (Iterator<String> cit = c.iterator(); cit.hasNext();) {
+					for (Iterator<String> cit = c.iterator(); cit.hasNext(); ) {
 						String entry = cit.next();
 						if (!entries.contains(entry)) {
 							entries.add(entry);
@@ -284,7 +284,7 @@ public class SecurityItems extends BusEndpointBase {
 	private List<Object> addAuthEntries() {
 		List<Object> authEntries = new LinkedList<>();
 
-		for(String authAlias : getAuthEntries()) {
+		for (String authAlias : getAuthEntries()) {
 			Map<String, Object> ae = new HashMap<>();
 
 			ae.put("alias", authAlias);
@@ -295,7 +295,7 @@ public class SecurityItems extends BusEndpointBase {
 			try {
 				userName = cf.getUsername();
 				passWord = cf.getPassword();
-				passWord = (passWord==null) ? "no password found" : StringUtils.repeat("*", cf.getPassword().length());
+				passWord = (passWord == null) ? "no password found" : StringUtils.repeat("*", cf.getPassword().length());
 			} catch (Exception e) {
 				log.warn(e.getMessage());
 				userName = "*** ERROR ***";
@@ -312,14 +312,14 @@ public class SecurityItems extends BusEndpointBase {
 
 	private Map<String, String[]> getSupportedProtocolsAndCyphers() {
 		Map<String, String[]> supportedOptions = new HashMap<>();
-        try {
+		try {
 			SSLParameters supportedSSLParameters = SSLContext.getDefault().getSupportedSSLParameters();
-            supportedOptions.put("protocols", supportedSSLParameters.getProtocols());
-			supportedOptions.put("cyphers",  supportedSSLParameters.getCipherSuites());
-        } catch (NoSuchAlgorithmException e) {
+			supportedOptions.put("protocols", supportedSSLParameters.getProtocols());
+			supportedOptions.put("cyphers", supportedSSLParameters.getCipherSuites());
+		} catch (NoSuchAlgorithmException e) {
 			supportedOptions.put("protocols", new String[0]);
 			supportedOptions.put("cyphers", new String[0]);
-        }
+		}
 		return supportedOptions;
-    }
+	}
 }

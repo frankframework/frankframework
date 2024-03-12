@@ -40,22 +40,25 @@ import org.frankframework.functional.ThrowingSupplier;
 public class StreamCaptureUtils {
 	protected static Logger log = LogManager.getLogger(StreamCaptureUtils.class);
 
-	public static final int DEFAULT_STREAM_CAPTURE_LIMIT=10000;
+	public static final int DEFAULT_STREAM_CAPTURE_LIMIT = 10000;
 
 	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
-		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; });
+		return watch(stream, onClose, (e) -> {
+			if (onException != null) onException.run();
+			return e;
+		});
 	}
 
-	public static InputStream watch(InputStream stream, Runnable onClose, Function<IOException,IOException> onException) {
+	public static InputStream watch(InputStream stream, Runnable onClose, Function<IOException, IOException> onException) {
 		class WatchedInputStream extends FilterInputStream {
 			public WatchedInputStream(InputStream in) {
 				super(in);
 			}
 
 			private IOException handleException(IOException e) {
-				if (onException!=null) {
+				if (onException != null) {
 					IOException r = onException.apply(e);
-					if (r!=null) {
+					if (r != null) {
 						return r;
 					}
 				}
@@ -69,7 +72,7 @@ public class StreamCaptureUtils {
 				} catch (IOException e) {
 					throw handleException(e);
 				}
-				if (onClose!=null) {
+				if (onClose != null) {
 					onClose.run();
 				}
 			}
@@ -163,9 +166,9 @@ public class StreamCaptureUtils {
 
 			@Override
 			public void write(char[] buffer, int offset, int length) throws IOException {
-				if (written<maxSize) {
+				if (written < maxSize) {
 					writer.write(buffer, offset, length);
-					if ((written+=length)>=maxSize) {
+					if ((written += length) >= maxSize) {
 						writer.close();
 					}
 				}
@@ -178,7 +181,7 @@ public class StreamCaptureUtils {
 
 			@Override
 			public void close() throws IOException {
-				if (written<maxSize) {
+				if (written < maxSize) {
 					writer.close();
 				}
 			}
@@ -198,7 +201,7 @@ public class StreamCaptureUtils {
 			@Override
 			public void close() throws IOException {
 				try {
-					if (counter.getByteCount()<maxSize && available()>0) {
+					if (counter.getByteCount() < maxSize && available() > 0) {
 						// Make the bytes available for debugger even when the stream was not used (might be because the
 						// pipe or sender that normally consumes the stream is stubbed by the debugger)
 						int len = read(new byte[maxSize]);
@@ -231,7 +234,7 @@ public class StreamCaptureUtils {
 	}
 
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
-		return new TeeOutputStream(stream, limitSize(capture,maxSize));
+		return new TeeOutputStream(stream, limitSize(capture, maxSize));
 	}
 
 	public static Reader captureReader(Reader in, Writer capture) {
@@ -239,7 +242,7 @@ public class StreamCaptureUtils {
 	}
 
 	public static Reader captureReader(Reader in, Writer capture, int maxSize, boolean captureRemainingOnClose) {
-		MarkCompensatingWriter markCompensatingWriter =  new MarkCompensatingWriter(limitSize(capture, maxSize));
+		MarkCompensatingWriter markCompensatingWriter = new MarkCompensatingWriter(limitSize(capture, maxSize));
 
 		return new TeeReader(in, markCompensatingWriter, true) {
 
@@ -247,8 +250,8 @@ public class StreamCaptureUtils {
 
 			private int readCounted(ThrowingSupplier<Integer, IOException> reader) throws IOException {
 				int len = reader.get();
-				if (len>0) {
-					charsRead+=len;
+				if (len > 0) {
+					charsRead += len;
 				}
 				return len;
 			}
@@ -320,7 +323,7 @@ public class StreamCaptureUtils {
 
 		@Override
 		public synchronized void write(int b) throws IOException {
-			if(bytesToSkip > 0) {
+			if (bytesToSkip > 0) {
 				--bytesToSkip;
 				return;
 			}
@@ -330,13 +333,13 @@ public class StreamCaptureUtils {
 
 		@Override
 		public synchronized void write(byte[] b, int off, int len) throws IOException {
-			if(bytesToSkip == 0) {
+			if (bytesToSkip == 0) {
 				out.write(b, off, len);
 				return;
 			}
 
 			int sizeToRead = Math.abs(off - len);
-			if(bytesToSkip < sizeToRead) {
+			if (bytesToSkip < sizeToRead) {
 				out.write(b, off + bytesToSkip, len - bytesToSkip);
 				reset();
 			} else {

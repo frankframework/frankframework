@@ -26,7 +26,7 @@ import org.frankframework.util.UUIDUtil;
 
 /**
  * Pipe that generates an UUID (Universally Unique Identifier).
- *
+ * <p>
  * Only type <code>alphanumeric</code> guarantees a 100% unique identifier, type <code>numeric</code> has a 0.01% chance of exactly the same id in case of multiple calls on the same host within a few milliseconds.
  *
  * @author Peter Leeuwenburgh
@@ -47,7 +47,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		String result = null;
-		if (getType()==Type.ALPHANUMERIC) {
+		if (getType() == Type.ALPHANUMERIC) {
 			result = UUIDUtil.createUUID();
 		} else {
 			result = UUIDUtil.createNumericUUID();
@@ -58,6 +58,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 
 	/**
 	 * Format of generated string.
+	 *
 	 * @ff.default alphanumeric
 	 */
 	public void setType(Type value) {

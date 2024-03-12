@@ -11,9 +11,9 @@ public class HttpUtilsTest {
 	@Test
 	public void testUrlDecode() {
 		assertAll(
-				()-> assertEquals("/adapter/dummy adapter/receiver/receiver!", HttpUtils.urlDecode("/adapter/dummy%20adapter/receiver/receiver%21")),
-				()-> assertEquals("/adapter/dummy ædåpter", HttpUtils.urlDecode("/adapter/dummy%20ædåpter")),
-				()-> assertThrows(IllegalArgumentException.class, () -> HttpUtils.urlDecode("/adæapter/dummy%%20adapter")) //IllegalArgument
-			);
+				() -> assertEquals("/adapter/dummy adapter/receiver/receiver!", HttpUtils.urlDecode("/adapter/dummy%20adapter/receiver/receiver%21")),
+				() -> assertEquals("/adapter/dummy ædåpter", HttpUtils.urlDecode("/adapter/dummy%20ædåpter")),
+				() -> assertThrows(IllegalArgumentException.class, () -> HttpUtils.urlDecode("/adæapter/dummy%%20adapter")) //IllegalArgument
+		);
 	}
 }

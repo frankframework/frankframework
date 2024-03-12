@@ -11,6 +11,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -66,7 +67,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 	}
 
 	private String ignoreHostname(String result) {
-		String firstPart = result.substring(result.indexOf("hostname=")+10);
+		String firstPart = result.substring(result.indexOf("hostname=") + 10);
 		String hostname = firstPart.substring(0, firstPart.indexOf("\" "));
 		return result.replaceAll(hostname, "XXX");
 	}

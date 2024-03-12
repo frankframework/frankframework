@@ -30,7 +30,8 @@ import org.frankframework.monitoring.EventThrowing;
 public class Event {
 	private List<EventThrowing> throwers = new ArrayList<>();
 
-	public Event() {}
+	public Event() {
+	}
 
 	public Event(EventThrowing thrower) {
 		throwers.add(thrower);
@@ -45,7 +46,7 @@ public class Event {
 	 */
 	public Map<String, List<String>> getSources() {
 		Map<String, List<String>> sources = new HashMap<>();
-		for(EventThrowing eventThrower : throwers) {
+		for (EventThrowing eventThrower : throwers) {
 			Adapter adapter = eventThrower.getAdapter();
 			List<String> sourceNames = sources.getOrDefault(adapter.getName(), new ArrayList<>());
 			sourceNames.add(eventThrower.getEventSourceName());

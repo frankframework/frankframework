@@ -10,6 +10,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.Test;
 
 import com.nimbusds.oauth2.sdk.TokenRequest;
@@ -33,18 +34,20 @@ public class OAuthAccessTokenManagerRequestTest {
 
 		tokenManager = new TestableOAuthAccessTokenManager(true, false);
 
-		TokenRequest tokenRequest =  tokenManager.createRequest(credentials);
+		TokenRequest tokenRequest = tokenManager.createRequest(credentials);
 
 		HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
 		assertEquals("POST", httpRequest.getMethod().name());
 		assertEquals("grant_type=client_credentials&scope=email", httpRequest.getQuery());
-		assertEquals("{Authorization=[Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap().toString());
+		assertEquals("{Authorization=[Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap()
+				.toString());
 
-		HttpPost apacheRequest = (HttpPost)tokenManager.convertToApacheHttpRequest(httpRequest);
+		HttpPost apacheRequest = (HttpPost) tokenManager.convertToApacheHttpRequest(httpRequest);
 		assertEquals("POST", apacheRequest.getMethod());
-		assertHeaderPresent(apacheRequest, "Authorization","Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=");
+		assertHeaderPresent(apacheRequest, "Authorization", "Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=");
 		assertEquals("[Content-Type: text/plain; charset=ISO-8859-1,Content-Length: 95,Chunked: false]", apacheRequest.getEntity().toString());
-		assertEquals("grant_type=client_credentials&scope=email&client_id=fakeClientId&client_secret=fakeClientSecret", StreamUtil.streamToString(apacheRequest.getEntity().getContent(), "\n", "UTF-8"));
+		assertEquals("grant_type=client_credentials&scope=email&client_id=fakeClientId&client_secret=fakeClientSecret", StreamUtil.streamToString(apacheRequest.getEntity()
+				.getContent(), "\n", "UTF-8"));
 	}
 
 	@Test
@@ -53,16 +56,17 @@ public class OAuthAccessTokenManagerRequestTest {
 
 		tokenManager = new TestableOAuthAccessTokenManager(true, true);
 
-		TokenRequest tokenRequest =  tokenManager.createRequest(credentials);
+		TokenRequest tokenRequest = tokenManager.createRequest(credentials);
 
 		HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
 		assertEquals("POST", httpRequest.getMethod().name());
 		assertEquals("grant_type=client_credentials&scope=email", httpRequest.getQuery());
-		assertEquals("{Authorization=[Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap().toString());
+		assertEquals("{Authorization=[Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap()
+				.toString());
 
-		HttpPost apacheRequest = (HttpPost)tokenManager.convertToApacheHttpRequest(httpRequest);
+		HttpPost apacheRequest = (HttpPost) tokenManager.convertToApacheHttpRequest(httpRequest);
 		assertEquals("POST", apacheRequest.getMethod());
-		assertHeaderPresent(apacheRequest, "Authorization","Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=");
+		assertHeaderPresent(apacheRequest, "Authorization", "Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=");
 		assertEquals("[Content-Type: text/plain; charset=ISO-8859-1,Content-Length: 41,Chunked: false]", apacheRequest.getEntity().toString());
 		assertEquals("grant_type=client_credentials&scope=email", StreamUtil.streamToString(apacheRequest.getEntity().getContent(), "\n", "UTF-8"));
 	}
@@ -73,17 +77,19 @@ public class OAuthAccessTokenManagerRequestTest {
 
 		tokenManager = new TestableOAuthAccessTokenManager(false, false);
 
-		TokenRequest tokenRequest =  tokenManager.createRequest(credentials);
+		TokenRequest tokenRequest = tokenManager.createRequest(credentials);
 
 		HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
 		assertEquals("POST", httpRequest.getMethod().name());
 		assertEquals("password=fakeCredentialPassword&grant_type=password&username=fakeCredentialUserName&scope=email", httpRequest.getQuery());
-		assertEquals("{Authorization=[Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap().toString());
+		assertEquals("{Authorization=[Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap()
+				.toString());
 
-		HttpPost apacheRequest = (HttpPost)tokenManager.convertToApacheHttpRequest(httpRequest);
+		HttpPost apacheRequest = (HttpPost) tokenManager.convertToApacheHttpRequest(httpRequest);
 		assertEquals("POST", apacheRequest.getMethod());
-		assertHeaderPresent(apacheRequest, "Authorization","Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=");
-		assertEquals("password=fakeCredentialPassword&grant_type=password&username=fakeCredentialUserName&scope=email&client_id=fakeClientId&client_secret=fakeClientSecret", StreamUtil.streamToString(apacheRequest.getEntity().getContent(), "\n", "UTF-8"));
+		assertHeaderPresent(apacheRequest, "Authorization", "Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=");
+		assertEquals("password=fakeCredentialPassword&grant_type=password&username=fakeCredentialUserName&scope=email&client_id=fakeClientId&client_secret=fakeClientSecret", StreamUtil.streamToString(apacheRequest.getEntity()
+				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: text/plain; charset=ISO-8859-1,Content-Length: 149,Chunked: false]", apacheRequest.getEntity().toString());
 	}
 
@@ -93,17 +99,19 @@ public class OAuthAccessTokenManagerRequestTest {
 
 		tokenManager = new TestableOAuthAccessTokenManager(false, true);
 
-		TokenRequest tokenRequest =  tokenManager.createRequest(credentials);
+		TokenRequest tokenRequest = tokenManager.createRequest(credentials);
 
 		HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
 		assertEquals("POST", httpRequest.getMethod().name());
 		assertEquals("password=fakeCredentialPassword&grant_type=password&username=fakeCredentialUserName&scope=email", httpRequest.getQuery());
-		assertEquals("{Authorization=[Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap().toString());
+		assertEquals("{Authorization=[Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=], Content-Type=[application/x-www-form-urlencoded; charset=UTF-8]}", httpRequest.getHeaderMap()
+				.toString());
 
-		HttpPost apacheRequest = (HttpPost)tokenManager.convertToApacheHttpRequest(httpRequest);
+		HttpPost apacheRequest = (HttpPost) tokenManager.convertToApacheHttpRequest(httpRequest);
 		assertEquals("POST", apacheRequest.getMethod());
-		assertHeaderPresent(apacheRequest, "Authorization","Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=");
-		assertEquals("password=fakeCredentialPassword&grant_type=password&username=fakeCredentialUserName&scope=email", StreamUtil.streamToString(apacheRequest.getEntity().getContent(), "\n", "UTF-8"));
+		assertHeaderPresent(apacheRequest, "Authorization", "Basic ZmFrZUNsaWVudElkOmZha2VDbGllbnRTZWNyZXQ=");
+		assertEquals("password=fakeCredentialPassword&grant_type=password&username=fakeCredentialUserName&scope=email", StreamUtil.streamToString(apacheRequest.getEntity()
+				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: text/plain; charset=ISO-8859-1,Content-Length: 95,Chunked: false]", apacheRequest.getEntity().toString());
 	}
 

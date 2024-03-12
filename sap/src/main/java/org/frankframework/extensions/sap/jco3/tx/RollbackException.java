@@ -16,8 +16,8 @@
 package org.frankframework.extensions.sap.jco3.tx;
 
 /**
- * @author  Jaco de Groot
- * @since   5.0
+ * @author Jaco de Groot
+ * @since 5.0
  */
 public class RollbackException extends RuntimeException {
 

@@ -37,7 +37,7 @@ import org.frankframework.util.LogUtil;
  * Sender that just logs its message.
  *
  * @author Gerrit van Brakel
- * @since  4.9
+ * @since 4.9
  */
 @Category("Advanced")
 public class LogSender extends SenderWithParametersBase {
@@ -55,7 +55,7 @@ public class LogSender extends SenderWithParametersBase {
 		logger = LogUtil.getLogger(getLogCategory());
 		checkStringAttributeOrParameter(LOG_LEVEL_ATTRIBUTE_NAME, logLevel, LOG_LEVEL_ATTRIBUTE_NAME);
 
-		if(StringUtils.isNotEmpty(logLevel)) {
+		if (StringUtils.isNotEmpty(logLevel)) {
 			defaultLogLevel = Level.valueOf(logLevel);
 		}
 	}
@@ -77,7 +77,7 @@ public class LogSender extends SenderWithParametersBase {
 		}
 		if (getParameterList() != null && pvl != null) {
 			for (ParameterValue param : pvl) {
-				if(!LOG_LEVEL_ATTRIBUTE_NAME.equals(param.getName())) {
+				if (!LOG_LEVEL_ATTRIBUTE_NAME.equals(param.getName())) {
 					logger.log(level, "parameter [{}] value [{}]", param.getName(), param.getValue());
 				}
 			}
@@ -97,6 +97,7 @@ public class LogSender extends SenderWithParametersBase {
 
 	/**
 	 * category under which messages are logged
+	 *
 	 * @ff.default name of the sender
 	 */
 	public void setLogCategory(String string) {
@@ -105,6 +106,7 @@ public class LogSender extends SenderWithParametersBase {
 
 	/**
 	 * level on which messages are logged
+	 *
 	 * @ff.default info
 	 */
 	public void setLogLevel(String level) {
@@ -113,8 +115,8 @@ public class LogSender extends SenderWithParametersBase {
 
 	@Override
 	public String toString() {
-		String level = (getParameterList() != null && getParameterList().findParameter(LOG_LEVEL_ATTRIBUTE_NAME)!=null) ? "dynamic" : logLevel;
-		return "LogSender ["+getName()+"] logLevel ["+level+"] logCategory ["+logCategory+"]";
+		String level = (getParameterList() != null && getParameterList().findParameter(LOG_LEVEL_ATTRIBUTE_NAME) != null) ? "dynamic" : logLevel;
+		return "LogSender [" + getName() + "] logLevel [" + level + "] logCategory [" + logCategory + "]";
 	}
 
 }

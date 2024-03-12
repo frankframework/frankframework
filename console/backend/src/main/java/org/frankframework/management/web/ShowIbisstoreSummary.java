@@ -46,10 +46,10 @@ public final class ShowIbisstoreSummary extends FrankApiBase {
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("datasource")) {
+			if (key.equalsIgnoreCase("datasource")) {
 				datasource = entry.getValue().toString();
 			}
-			if(key.equalsIgnoreCase("query")) {
+			if (key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
 			}
 		}

@@ -22,11 +22,10 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
-
 import com.sap.conn.jco.JCoException;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -54,7 +53,7 @@ public class SapSystemFactory {
 	public String getSapSystemInfo(String sapSystemName) {
 		Object sapSystem = sapSystems.get(sapSystemName);
 		if (sapSystem == null) {
-			log.error("no SapSystem found under name [" + sapSystem	+ "], factory contents [" + toString() + "]");
+			log.error("no SapSystem found under name [" + sapSystem + "], factory contents [" + toString() + "]");
 			return null;
 		}
 		SapSystem sapSystem3 = (SapSystem) sapSystem;

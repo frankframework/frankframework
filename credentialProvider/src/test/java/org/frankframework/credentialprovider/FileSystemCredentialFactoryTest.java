@@ -22,7 +22,7 @@ public class FileSystemCredentialFactoryTest {
 	@BeforeEach
 	public void setup() {
 		String url = this.getClass().getResource("/secrets").toExternalForm();
-		Path root =  Paths.get(url.substring(url.indexOf(":/")+2));
+		Path root = Paths.get(url.substring(url.indexOf(":/") + 2));
 		assumeTrue(Files.exists(root));
 
 		credentialFactory = new FileSystemCredentialFactory();
@@ -38,7 +38,7 @@ public class FileSystemCredentialFactoryTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
@@ -62,7 +62,7 @@ public class FileSystemCredentialFactoryTest {
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->defaultUsername, ()->defaultPassword);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> defaultUsername, () -> defaultPassword);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -77,7 +77,7 @@ public class FileSystemCredentialFactoryTest {
 		String expectedUsername = defaultUsername;
 		String expectedPassword = defaultPassword;
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->defaultUsername, ()->defaultPassword);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> defaultUsername, () -> defaultPassword);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -92,7 +92,7 @@ public class FileSystemCredentialFactoryTest {
 		String expectedUsername = username;
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -107,7 +107,7 @@ public class FileSystemCredentialFactoryTest {
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias, () -> username, () -> password);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());

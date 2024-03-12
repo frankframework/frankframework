@@ -68,16 +68,18 @@ public class TransformerErrorListener implements ErrorListener {
 	public void setFatalTransformerException(TransformerException fatalTransformerException) {
 		this.fatalTransformerException = fatalTransformerException;
 	}
+
 	public TransformerException getFatalTransformerException() {
 		return fatalTransformerException;
 	}
 
 	public void setFatalIOException(IOException fatalIOException) {
-		if (this.fatalIOException!=null && this.fatalIOException!=fatalIOException) {
-			log.warn("replacing fatalIOException",this.fatalIOException);
+		if (this.fatalIOException != null && this.fatalIOException != fatalIOException) {
+			log.warn("replacing fatalIOException", this.fatalIOException);
 		}
 		this.fatalIOException = fatalIOException;
 	}
+
 	public IOException getFatalIOException() {
 		return fatalIOException;
 	}

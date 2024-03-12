@@ -41,13 +41,13 @@ public class RetrieveContextPipe extends FixedForwardPipe {
 				}
 			}
 			try (ObjectBuilder logContext = document.addObjectField("logContext")) {
-				for (Entry<String,String> entry:ThreadContext.getContext().entrySet()) {
+				for (Entry<String, String> entry : ThreadContext.getContext().entrySet()) {
 					logContext.add(entry.getKey(), entry.getValue());
 				}
 			}
-			if (getParameterList()!=null && !getParameterList().isEmpty()) {
+			if (getParameterList() != null && !getParameterList().isEmpty()) {
 				try (ObjectBuilder parameters = document.addObjectField("parameters")) {
-					for (Entry<String,Object> entry:getParameterList().getValues(message, session).getValueMap().entrySet()) {
+					for (Entry<String, Object> entry : getParameterList().getValues(message, session).getValueMap().entrySet()) {
 						parameters.add(entry.getKey(), entry.getValue().toString());
 					}
 				} catch (ParameterException e) {

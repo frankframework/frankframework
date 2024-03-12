@@ -38,10 +38,9 @@ import org.frankframework.util.LogUtil;
  *
  * @author Johan Verrips
  * @author Niels Meijer
- *
  * @see ServiceClient
  */
-public class ServiceDispatcher  {
+public class ServiceDispatcher {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private final ConcurrentSkipListMap<String, ServiceClient> registeredListeners = new ConcurrentSkipListMap<>();
@@ -49,6 +48,7 @@ public class ServiceDispatcher  {
 
 	/**
 	 * Use this method to get hold of the <code>ServiceDispatcher</code>
+	 *
 	 * @return an instance of this class
 	 */
 	public static synchronized ServiceDispatcher getInstance() {
@@ -62,8 +62,8 @@ public class ServiceDispatcher  {
 	 * Dispatch a request {@link Message} to a service by its configured name.
 	 *
 	 * @param serviceName ServiceName given to the {@link ServiceClient} implementation that is to be called
-	 * @param message {@link Message} to be processed
-	 * @param session Existing {@link PipeLineSession}.
+	 * @param message     {@link Message} to be processed
+	 * @param session     Existing {@link PipeLineSession}.
 	 * @return {@link Message} with the result of the requested adapter execution.
 	 * @throws ListenerException If there was an error in request execution.
 	 */
@@ -72,13 +72,14 @@ public class ServiceDispatcher  {
 
 		ServiceClient client = registeredListeners.get(serviceName);
 		if (client == null) {
-			throw new ListenerException("service ["+ serviceName +"] is not registered");
+			throw new ListenerException("service [" + serviceName + "] is not registered");
 		}
 		return client.processRequest(message, session);
 	}
 
 	/**
 	 * Retrieve the names of the registered listeners in alphabetical order.
+	 *
 	 * @return Set with the names.
 	 */
 	public SortedSet<String> getRegisteredListenerNames() {
@@ -88,6 +89,7 @@ public class ServiceDispatcher  {
 
 	/**
 	 * Check whether a serviceName is registered at the <code>ServiceDispatcher</code>.
+	 *
 	 * @return true if the service is registered at this dispatcher, otherwise false
 	 */
 	public boolean isRegisteredServiceListener(String name) {
@@ -95,23 +97,23 @@ public class ServiceDispatcher  {
 	}
 
 	public synchronized void registerServiceClient(String name, ServiceClient listener) throws ListenerException {
-		if(StringUtils.isEmpty(name)) {
+		if (StringUtils.isEmpty(name)) {
 			throw new ListenerException("Cannot register a ServiceClient without name");
 		}
 		if (isRegisteredServiceListener(name)) {
-			throw new ListenerException("Dispatcher already has a ServiceClient registered under name ["+name+"]");
+			throw new ListenerException("Dispatcher already has a ServiceClient registered under name [" + name + "]");
 		}
 
 		registeredListeners.put(name, listener);
-		log.info("Listener ["+name+"] registered at ServiceDispatcher");
+		log.info("Listener [" + name + "] registered at ServiceDispatcher");
 	}
 
 	public void unregisterServiceClient(String name) {
 		if (!isRegisteredServiceListener(name)) {
-			log.warn("listener ["+name+"] not registered with ServiceDispatcher");
+			log.warn("listener [" + name + "] not registered with ServiceDispatcher");
 		} else {
 			registeredListeners.remove(name);
-			log.info("Listener ["+name+"] unregistered from ServiceDispatcher");
+			log.info("Listener [" + name + "] unregistered from ServiceDispatcher");
 		}
 	}
 

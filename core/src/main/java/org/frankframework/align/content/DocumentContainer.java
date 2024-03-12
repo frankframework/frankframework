@@ -20,6 +20,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
 public interface DocumentContainer extends ElementGroupContainer {
 
 	public void startElementGroup(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);
+
 	public void endElementGroup(String localName);
 
 }

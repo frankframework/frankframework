@@ -39,8 +39,8 @@ import org.frankframework.core.INamedObject;
 
 /**
  * A collection of class management utility methods.
- * @author Johan Verrips
  *
+ * @author Johan Verrips
  */
 public abstract class ClassUtils {
 	private static final Logger log = LogManager.getLogger(ClassUtils.class);
@@ -67,7 +67,7 @@ public abstract class ClassUtils {
 			try {
 				url = new URL(resourceToUse.replace(" ", "%20"));
 			} catch (MalformedURLException e) {
-				FileNotFoundException fnfe = new FileNotFoundException("Cannot find resource ["+resourceToUse+"]");
+				FileNotFoundException fnfe = new FileNotFoundException("Cannot find resource [" + resourceToUse + "]");
 				fnfe.initCause(e);
 				throw fnfe;
 			}
@@ -78,14 +78,14 @@ public abstract class ClassUtils {
 
 	/**
 	 * Retrieves the constructor of a class, based on the parameters
-	**/
+	 **/
 	public static Constructor<?> getConstructorOnType(Class<?> clas, Class<?>[] parameterTypes) throws NoSuchMethodException {
 		try {
 			return clas.getDeclaredConstructor(parameterTypes);
 		} catch (NoSuchMethodException e) {
 			StringBuilder builder = new StringBuilder("cannot create constructor for Class [" + clas.getName() + "]");
 			for (int i = 0; i < parameterTypes.length; i++) {
-				builder.append(", parameter ["+i+"] type [" + parameterTypes[i].getName()+"]");
+				builder.append(", parameter [" + i + "] type [" + parameterTypes[i].getName() + "]");
 			}
 			log.error(builder.toString(), e);
 			throw e;
@@ -97,17 +97,17 @@ public abstract class ClassUtils {
 	 *
 	 * @param aClass A class whose last modification date is queried
 	 * @return The time the given class was last modified
-	 * @exception IllegalArgumentException The class was not loaded from a file or directory
+	 * @throws IllegalArgumentException The class was not loaded from a file or directory
 	 */
 	public static long lastModified(Class<?> aClass) throws IllegalArgumentException {
 		URL url = aClass.getProtectionDomain().getCodeSource().getLocation();
 
-		if(!url.getProtocol().equals("file")) {
+		if (!url.getProtocol().equals("file")) {
 			throw new IllegalArgumentException("Class was not loaded from a file url");
 		}
 
 		File directory = new File(url.getFile());
-		if(!directory.isDirectory()) {
+		if (!directory.isDirectory()) {
 			throw new IllegalArgumentException("Class was not loaded from a directory");
 		}
 
@@ -124,7 +124,7 @@ public abstract class ClassUtils {
 	 *
 	 * @param className A class name
 	 * @return A new instance
-	 * @exception Exception If an instantiation error occurs
+	 * @throws Exception If an instantiation error occurs
 	 */
 	public static Object newInstance(String className) throws Exception {
 		return ClassUtils.loadClass(className).newInstance();
@@ -136,7 +136,7 @@ public abstract class ClassUtils {
 	 *
 	 * @param className A class name
 	 * @return The class pointed to by <code>className</code>
-	 * @exception ClassNotFoundException If a loading error occurs
+	 * @throws ClassNotFoundException If a loading error occurs
 	 */
 	public static Class<?> loadClass(String className) throws ClassNotFoundException {
 		return ClassUtils.getClassLoader().loadClass(className);
@@ -160,11 +160,11 @@ public abstract class ClassUtils {
 	 */
 	@Nonnull
 	public static String nameOf(Object o) {
-		String tail=null;
+		String tail = null;
 		if (o instanceof INamedObject) {
-			String name = ((INamedObject)o).getName();
+			String name = ((INamedObject) o).getName();
 			if (StringUtils.isNotEmpty(name)) {
-				tail = "["+ name +"]";
+				tail = "[" + name + "]";
 			}
 		}
 		return StringUtil.concatStrings(classNameOf(o), " ", tail);
@@ -175,18 +175,18 @@ public abstract class ClassUtils {
 	 */
 	@Nonnull
 	public static String classNameOf(Object o) {
-		if (o==null) {
+		if (o == null) {
 			return "<null>";
 		}
 		Class<?> clazz;
-		if(isClassPresent("org.springframework.util.ClassUtils")) {
-			if(o instanceof Class) {
-				clazz = org.springframework.util.ClassUtils.getUserClass((Class<?>)o);
+		if (isClassPresent("org.springframework.util.ClassUtils")) {
+			if (o instanceof Class) {
+				clazz = org.springframework.util.ClassUtils.getUserClass((Class<?>) o);
 			} else {
 				clazz = org.springframework.util.ClassUtils.getUserClass(o);
 			}
 		} else {
-			clazz = (o instanceof Class) ? (Class<?>)o : o.getClass();
+			clazz = (o instanceof Class) ? (Class<?>) o : o.getClass();
 		}
 
 		final String simpleName = clazz.getSimpleName();
@@ -208,17 +208,18 @@ public abstract class ClassUtils {
 	 * Throws IllegalStateException if the argument cannot be set on the target bean
 	 */
 	public static void invokeSetter(Object bean, Method method, String valueToSet) {
-		if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1) {
+		if (!method.getName().startsWith("set") || method.getParameterTypes().length != 1) {
 			throw new IllegalStateException("method must start with [set] and may only contain [1] parameter");
 		}
 
 		try {//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = parseValueToSet(method, valueToSet);
-			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, ()->valueToSet, ()->castValue.getClass().getCanonicalName(), ()->ClassUtils.nameOf(bean));
+			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, () -> valueToSet, () -> castValue.getClass()
+					.getCanonicalName(), () -> ClassUtils.nameOf(bean));
 
 			method.invoke(bean, castValue);
 		} catch (IllegalAccessException | InvocationTargetException e) {
-			throw new IllegalStateException("error while calling method ["+method.getName()+"] on ["+ClassUtils.nameOf(bean)+"]", e);
+			throw new IllegalStateException("error while calling method [" + method.getName() + "] on [" + ClassUtils.nameOf(bean) + "]", e);
 		}
 	}
 
@@ -230,12 +231,13 @@ public abstract class ClassUtils {
 			return convertToType(setterArgumentClass, value);
 		} catch (IllegalArgumentException e) {
 			String fieldName = StringUtil.lcFirst(m.getName().substring(3));
-			throw new IllegalArgumentException("cannot set field ["+fieldName+"]: " + e.getMessage(), e);
+			throw new IllegalArgumentException("cannot set field [" + fieldName + "]: " + e.getMessage(), e);
 		}
 	}
 
 	/**
 	 * Converts the String value to the supplied type.
+	 *
 	 * @param type to convert the input value to
 	 * @return The converted value, of type {@literal <T>}.
 	 * @throws IllegalArgumentException (or NumberFormatException) when the value cannot be converted to the given type T.
@@ -248,38 +250,39 @@ public abstract class ClassUtils {
 
 	private static Object convertToTypeRawTyped(Class<?> type, String value) throws IllegalArgumentException {
 		//Try to parse the value as an Enum
-		if(type.isEnum()) {
+		if (type.isEnum()) {
 			return parseAsEnum(type, value);
 		}
 
 		try {
 			switch (type.getTypeName()) {
-			case "int":
-			case "java.lang.Integer":
-				return Integer.parseInt(value);
-			case "long":
-			case "java.lang.Long":
-				return Long.parseLong(value);
-			case "boolean":
-			case "java.lang.Boolean":
-				if("".equals(value)) { //parseBoolean returns FALSE when it cannot parse the value
-					throw new IllegalArgumentException("cannot convert empty string to boolean");
-				}
-				return Boolean.parseBoolean(value);
-			case "java.lang.String":
-				return value;
-			default:
-				throw new IllegalArgumentException("cannot convert to type ["+type.getName()+"], not implemented");
+				case "int":
+				case "java.lang.Integer":
+					return Integer.parseInt(value);
+				case "long":
+				case "java.lang.Long":
+					return Long.parseLong(value);
+				case "boolean":
+				case "java.lang.Boolean":
+					if ("".equals(value)) { //parseBoolean returns FALSE when it cannot parse the value
+						throw new IllegalArgumentException("cannot convert empty string to boolean");
+					}
+					return Boolean.parseBoolean(value);
+				case "java.lang.String":
+					return value;
+				default:
+					throw new IllegalArgumentException("cannot convert to type [" + type.getName() + "], not implemented");
 			}
-		} catch(NumberFormatException e) { //Throw a -more descriptive- NumberFormatException instead of 'For input string'
-			throw new NumberFormatException("value ["+value+"] cannot be converted to a number ["+type.getName()+"]");
+		} catch (NumberFormatException e) { //Throw a -more descriptive- NumberFormatException instead of 'For input string'
+			throw new NumberFormatException("value [" + value + "] cannot be converted to a number [" + type.getName() + "]");
 		}
 	}
 
 	/**
 	 * Attempt to parse the attributes value as an Enum.
+	 *
 	 * @param enumClass The Enum class used to parse the value
-	 * @param value The value to be parsed
+	 * @param value     The value to be parsed
 	 * @return The Enum constant or <code>NULL</code>
 	 */
 	@SuppressWarnings("unchecked")
@@ -290,19 +293,22 @@ public abstract class ClassUtils {
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		invokeSetter(o, name, value, value.getClass());
 	}
+
 	public static void invokeSetter(Object o, String name, Object value, Class<?> clazz) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Class<?>[] argsTypes = { clazz };
-		Method setterMtd = o.getClass().getMethod(name, argsTypes );
-		Object[] args = { value };
+		Class<?>[] argsTypes = {clazz};
+		Method setterMtd = o.getClass().getMethod(name, argsTypes);
+		Object[] args = {value};
 		setterMtd.invoke(o, args);
 	}
+
 	public static Object invokeGetterSafe(Object o, String name, boolean forceAccess) {
 		try {
-			return invokeGetter(o,name,forceAccess);
+			return invokeGetter(o, name, forceAccess);
 		} catch (Exception e) {
-			return nameOf(o)+"."+name+"() "+nameOf(e)+": "+e.getMessage();
+			return nameOf(o) + "." + name + "() " + nameOf(e) + ": " + e.getMessage();
 		}
 	}
+
 	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		Method getterMtd = o.getClass().getMethod(name, (Class<?>[]) null);
 		if (forceAccess) {
@@ -310,31 +316,35 @@ public abstract class ClassUtils {
 		}
 		return getterMtd.invoke(o, (Object[]) null);
 	}
+
 	public static Object invokeGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return invokeGetter(o,name,false);
+		return invokeGetter(o, name, false);
 	}
 
 	public static String invokeStringGetterSafe(Object o, String name) {
 		try {
-			return invokeStringGetter(o,name);
+			return invokeStringGetter(o, name);
 		} catch (Exception e) {
-			return nameOf(o)+"."+name+"() "+nameOf(e)+": "+e.getMessage();
+			return nameOf(o) + "." + name + "() " + nameOf(e) + ": " + e.getMessage();
 		}
 	}
+
 	public static String invokeStringGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return (String)invokeGetter(o,name);
+		return (String) invokeGetter(o, name);
 	}
 
 	public static Object getFieldValueSafe(Object o, String name) {
 		try {
-			return getFieldValue(o,name);
+			return getFieldValue(o, name);
 		} catch (Exception e) {
-			return nameOf(o)+"."+name+" "+nameOf(e)+": "+e.getMessage();
+			return nameOf(o) + "." + name + " " + nameOf(e) + ": " + e.getMessage();
 		}
 	}
+
 	public static Object getFieldValue(Object o, Class<?> c, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		return c.getField(name).get(o);
 	}
+
 	public static Object getFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		return getFieldValue(o, o.getClass(), name);
 	}
@@ -349,6 +359,7 @@ public abstract class ClassUtils {
 			return e.getMessage();
 		}
 	}
+
 	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		return getDeclaredFieldValue(o, o.getClass(), name);
 	}
@@ -356,23 +367,30 @@ public abstract class ClassUtils {
 	private static void appendFieldsAndMethods(StringBuilder result, Object o, String type, Class<?> c) {
 		Field[] fields = c.getDeclaredFields();
 		Method[] methods = c.getDeclaredMethods();
-		result.append(type).append(" ").append(c.getName()).append(" #fields [").append(fields.length).append("] #methods [").append(methods.length).append("]");
-		if (fields.length>0 || methods.length>0) {
+		result.append(type)
+				.append(" ")
+				.append(c.getName())
+				.append(" #fields [")
+				.append(fields.length)
+				.append("] #methods [")
+				.append(methods.length)
+				.append("]");
+		if (fields.length > 0 || methods.length > 0) {
 			result.append(" {\n");
-			for (int i=0; i<fields.length; i++) {
-				Field f=fields[i];
+			for (int i = 0; i < fields.length; i++) {
+				Field f = fields[i];
 				Object value;
 				try {
 					f.setAccessible(true);
-					value=f.get(o);
+					value = f.get(o);
 				} catch (Exception e) {
-					value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
+					value = "Could not get value: " + ClassUtils.nameOf(e) + ": " + e.getMessage();
 				}
-				result.append("  field["+i+"] "+f.getName()+"("+f.getType().getName()+"): ["+value+"]\n");
+				result.append("  field[" + i + "] " + f.getName() + "(" + f.getType().getName() + "): [" + value + "]\n");
 			}
-			for (int i=0; i<methods.length; i++) {
-				Method m=methods[i];
-				result.append("  method["+i+"] "+m.getName());
+			for (int i = 0; i < methods.length; i++) {
+				Method m = methods[i];
+				result.append("  method[" + i + "] " + m.getName());
 				result.append("\n");
 			}
 			result.append("}");
@@ -381,21 +399,21 @@ public abstract class ClassUtils {
 	}
 
 	public static String debugObject(Object o) {
-		if (o==null) {
+		if (o == null) {
 			return null;
 		}
 
-		StringBuilder result = new StringBuilder(nameOf(o)+"\n");
-		Class<?> c=o.getClass();
+		StringBuilder result = new StringBuilder(nameOf(o) + "\n");
+		Class<?> c = o.getClass();
 		Class<?>[] interfaces = c.getInterfaces();
-		for (int i=0;i<interfaces.length; i++) {
-			appendFieldsAndMethods(result,o,"Interface",interfaces[i]);
+		for (int i = 0; i < interfaces.length; i++) {
+			appendFieldsAndMethods(result, o, "Interface", interfaces[i]);
 		}
-		while (c!=Object.class) {
-			appendFieldsAndMethods(result,o,"Class",c);
-			c=c.getSuperclass();
+		while (c != Object.class) {
+			appendFieldsAndMethods(result, o, "Class", c);
+			c = c.getSuperclass();
 		}
-		result.append("toString=["+o.toString()+"]\n");
+		result.append("toString=[" + o.toString() + "]\n");
 		return result.toString();
 	}
 
@@ -410,7 +428,7 @@ public abstract class ClassUtils {
 			}
 			classLoader = classLoader.getParent();
 			try {
-				if (classLoader!=null) {
+				if (classLoader != null) {
 					clazz = classLoader.loadClass(className);
 				} else {
 					clazz = ClassLoader.getSystemClassLoader().loadClass(className);
@@ -422,20 +440,20 @@ public abstract class ClassUtils {
 		return infoList;
 	}
 
-	public static Map<String,Object> getClassInfo(Class<?> clazz, ClassLoader classLoader) {
-		Map<String,Object> result = new LinkedHashMap<>();
-		String classLoaderName=classLoader!=null? classLoader.toString() : "<system classloader>";
+	public static Map<String, Object> getClassInfo(Class<?> clazz, ClassLoader classLoader) {
+		Map<String, Object> result = new LinkedHashMap<>();
+		String classLoaderName = classLoader != null ? classLoader.toString() : "<system classloader>";
 		result.put("classLoader", classLoaderName);
-		if (clazz!=null) {
+		if (clazz != null) {
 			Package pkg = clazz.getPackage();
-			result.put("specification",  pkg.getSpecificationTitle() +" version " + pkg.getSpecificationVersion() +" by "+ pkg.getSpecificationVendor());
-			result.put("implementation", pkg.getImplementationTitle()+" version " + pkg.getImplementationVersion()+" by "+ pkg.getImplementationVendor());
+			result.put("specification", pkg.getSpecificationTitle() + " version " + pkg.getSpecificationVersion() + " by " + pkg.getSpecificationVendor());
+			result.put("implementation", pkg.getImplementationTitle() + " version " + pkg.getImplementationVersion() + " by " + pkg.getImplementationVendor());
 
 			CodeSource codeSource = clazz.getProtectionDomain().getCodeSource();
-			result.put("codeSource", codeSource!=null ? codeSource.getLocation().toString() : "unknown");
+			result.put("codeSource", codeSource != null ? codeSource.getLocation().toString() : "unknown");
 
 			URL classLocation = clazz.getResource('/' + clazz.getName().replace('.', '/') + ".class");
-			result.put("location", classLocation!=null ? classLocation.toString() : "unknown");
+			result.put("location", classLocation != null ? classLocation.toString() : "unknown");
 		} else {
 			result.put("message", "Class not found in this classloader");
 		}

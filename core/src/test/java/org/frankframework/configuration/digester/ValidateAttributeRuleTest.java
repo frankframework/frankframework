@@ -27,10 +27,12 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.doc.Protected;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 
@@ -43,8 +45,8 @@ public class ValidateAttributeRuleTest extends Mockito {
 	//Convenience method to create an Attribute list to be parsed
 	private Attributes copyMapToAttrs(Map<String, String> map) {
 		List<String[]> attList = new LinkedList<>();
-		for(String key : map.keySet()) {
-			attList.add(new String[] {key , map.get(key)});
+		for (String key : map.keySet()) {
+			attList.add(new String[]{key, map.get(key)});
 		}
 
 		Attributes attrs = spy(Attributes.class);
@@ -81,10 +83,10 @@ public class ValidateAttributeRuleTest extends Mockito {
 		rule.begin(null, beanClass.getSimpleName(), copyMapToAttrs(attributes));
 
 		//Test the bean name with and without INamedObject interface
-		if(topBean instanceof ConfigWarningTestClass) {
+		if (topBean instanceof ConfigWarningTestClass) {
 			assertEquals("ConfigWarningTestClass [name here]", rule.getObjectName());
 		}
-		if(topBean instanceof DeprecatedTestClass) {
+		if (topBean instanceof DeprecatedTestClass) {
 			assertEquals("DeprecatedTestClass", rule.getObjectName());
 		}
 
@@ -141,7 +143,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals(false, bean.isTestBoolean(), "empty bool value should be ingored"); //may trigger a default warning exception
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
-		assertEquals(0, configWarnings.size(), "there should not be any configuration warnings but got: "+configWarnings.getWarnings());
+		assertEquals(0, configWarnings.size(), "there should not be any configuration warnings but got: " + configWarnings.getWarnings());
 	}
 
 	@Test
@@ -442,7 +444,8 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	private AppConstants loadAppConstants(ApplicationContext applicationContext) throws IOException {
-		AppConstants appConstants = AppConstants.getInstance(applicationContext != null ? applicationContext.getClassLoader() : this.getClass().getClassLoader());
+		AppConstants appConstants = AppConstants.getInstance(applicationContext != null ? applicationContext.getClassLoader() : this.getClass()
+				.getClassLoader());
 		appConstants.load(getClass().getClassLoader().getResourceAsStream("AppConstants/AppConstants_ValidateAttributeRuleTest.properties"));
 		return appConstants;
 	}

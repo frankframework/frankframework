@@ -15,12 +15,13 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	/**
 	 * Checks if a file with the specified name exists.
-	 * @param folder to search in for the file, set to null for root folder.
+	 *
+	 * @param folder   to search in for the file, set to null for root folder.
 	 * @param filename
 	 */
 	@Override
 	protected boolean _fileExists(String folder, String filename) throws Exception {
-		return helper._fileExists(folder,filename);
+		return helper._fileExists(folder, filename);
 	}
 
 	/**
@@ -82,7 +83,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
-		if (helper!=null) helper.tearDown();
+		if (helper != null) helper.tearDown();
 		super.tearDown();
 	}
 

@@ -7,8 +7,9 @@ import static org.mockito.Mockito.spy;
 
 import java.util.Map;
 
-import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.lifecycle.servlets.ServletAuthenticatorTest.SpringRootInitializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
@@ -61,7 +62,7 @@ class ServletAuthenticatorTest {
 		ServletConfiguration config = new ServletConfiguration();
 		config.afterPropertiesSet();
 		config.setUrlMapping("/iaf/api/*, !/iaf/api/server/health");
-		config.setSecurityRoles(new String[] {"IbisTester"});
+		config.setSecurityRoles(new String[]{"IbisTester"});
 		authenticator.registerServlet(config);
 
 		ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<Object>() {
@@ -79,7 +80,7 @@ class ServletAuthenticatorTest {
 		DefaultSecurityFilterChain filterChain = (DefaultSecurityFilterChain) authenticator.configureHttpSecurity(httpSecurity);
 
 		// Assert
-		assertArrayEquals(new String[] {"/iaf/api/*"}, authenticator.getPrivateEndpoints().toArray());
+		assertArrayEquals(new String[]{"/iaf/api/*"}, authenticator.getPrivateEndpoints().toArray());
 		RequestMatcher requestMatcher = filterChain.getRequestMatcher();
 		assertInstanceOf(URLRequestMatcher.class, requestMatcher);
 		assertTrue(requestMatcher.toString().contains("[/iaf/api/]")); // dirty check (for now)

@@ -25,13 +25,13 @@ import org.frankframework.stream.Message;
 /**
  * Echos input to output.
  *
- * @author  Gerrit van Brakel
- * @since   4.9
+ * @author Gerrit van Brakel
+ * @since 4.9
  */
 @Category("Basic")
 public class EchoSender extends SenderWithParametersBase {
 
-	private boolean synchronous=true;
+	private boolean synchronous = true;
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
@@ -40,11 +40,13 @@ public class EchoSender extends SenderWithParametersBase {
 
 	/**
 	 * hack to allow to introduce a correlationid
+	 *
 	 * @ff.default true
 	 */
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
+
 	@Override
 	public boolean isSynchronous() {
 		return synchronous;

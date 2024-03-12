@@ -63,8 +63,8 @@ public class BusResponseTypesTest {
 	public void testInvalidStatusCode() {
 		StringResponseMessage message = new StringResponseMessage("dummy input");
 		assertAll(
-			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(600)),
-			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(100))
+				() -> assertThrows(IllegalArgumentException.class, () -> message.setStatus(600)),
+				() -> assertThrows(IllegalArgumentException.class, () -> message.setStatus(100))
 		);
 	}
 

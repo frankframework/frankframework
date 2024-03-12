@@ -47,7 +47,7 @@ public class IbisJobBuilder {
 		job.setRequestsRecovery(false);
 		job.setJobType(jobType);
 
-		if(!jobDataMap.isEmpty())
+		if (!jobDataMap.isEmpty())
 			job.setJobDataMap(jobDataMap);
 
 		return job;
@@ -59,7 +59,7 @@ public class IbisJobBuilder {
 	}
 
 	public IbisJobBuilder withDescription(String jobDescription) {
-		if(StringUtils.isNotEmpty(jobDescription))
+		if (StringUtils.isNotEmpty(jobDescription))
 			this.description = jobDescription;
 
 		return this;
@@ -76,7 +76,7 @@ public class IbisJobBuilder {
 		builder.setJobDef(jobDef);
 		builder.withDescription(jobDef.getDescription());
 
-		if(jobDef instanceof DatabaseJob) {
+		if (jobDef instanceof DatabaseJob) {
 			builder.setJobType(JobType.DATABASE);
 		}
 

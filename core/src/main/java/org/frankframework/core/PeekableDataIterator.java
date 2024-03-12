@@ -14,6 +14,7 @@
    limitations under the License.
 */
 package org.frankframework.core;
+
 /**
  * Wrapper for IDataIterator, that allows to peek the object that will be returned by next().
  *
@@ -31,12 +32,12 @@ public class PeekableDataIterator<I> implements IDataIterator<I> {
 
 	@Override
 	public boolean hasNext() throws SenderException {
-		return peeked!=null || target.hasNext();
+		return peeked != null || target.hasNext();
 	}
 
 	@Override
 	public I next() throws SenderException {
-		if (peeked!=null) {
+		if (peeked != null) {
 			I result = peeked;
 			peeked = null;
 			return result;
@@ -49,8 +50,8 @@ public class PeekableDataIterator<I> implements IDataIterator<I> {
 	 * Returns object that will be returned by {@link #next()} if present, or null if not. Can be called multiple times.
 	 */
 	public I peek() throws SenderException {
-		if (peeked==null && hasNext()) {
-			peeked=target.next();
+		if (peeked == null && hasNext()) {
+			peeked = target.next();
 		}
 		return peeked;
 	}

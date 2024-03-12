@@ -97,6 +97,7 @@ import lombok.Setter;
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
  * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>
  * </p>
+ *
  * @author Johan Verrips
  * @author Gerrit van Brakel
  */
@@ -105,7 +106,7 @@ import lombok.Setter;
 public class MailSender extends MailSenderBase {
 
 	private @Getter String smtpHost;
-	private @Getter int smtpPort=25;
+	private @Getter int smtpPort = 25;
 	/**
 	 * When set to true, we ensure TLS is being used
 	 *
@@ -128,13 +129,13 @@ public class MailSender extends MailSenderBase {
 		properties.put("mail.smtp.connectiontimeout", getTimeout() + "");
 		properties.put("mail.smtp.timeout", getTimeout() + "");
 		String userId = getCredentialFactory().getUsername();
-		if(StringUtils.isNotEmpty(userId)) {
+		if (StringUtils.isNotEmpty(userId)) {
 			properties.put("mail.smtp.auth", "true");
 			properties.put("mail.smtp.user", userId);
 			properties.put("mail.smtp.password", getCredentialFactory().getPassword());
 		}
 		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
-		if(StringUtils.isNotEmpty(getBounceAddress())) {
+		if (StringUtils.isNotEmpty(getBounceAddress())) {
 			properties.put("mail.smtp.from", getBounceAddress());
 		}
 
@@ -156,14 +157,13 @@ public class MailSender extends MailSenderBase {
 	 */
 	protected Session createSession() throws SenderException {
 		try {
-			if(session == null) {
+			if (session == null) {
 				session = Session.getInstance(properties, null);
 				session.setDebug(log.isDebugEnabled());
 			}
 
 			return session;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new SenderException("MailSender got error", e);
 		}
 	}
@@ -172,7 +172,7 @@ public class MailSender extends MailSenderBase {
 	public String sendEmail(MailSessionBase mailSession) throws SenderException {
 		Session session = createSession();
 		log.debug("sending mail using session [{}]", session);
-		return sendEmail(session, (MailSession)mailSession);
+		return sendEmail(session, (MailSession) mailSession);
 	}
 
 	@Override
@@ -302,7 +302,7 @@ public class MailSender extends MailSenderBase {
 		String messageTypeWithCharset = setCharSet(charSet, messageType);
 
 		if (mailSession.isMessageBase64() && StringUtils.isNotEmpty(mailSession.getMessage())) {
-			if(!Base64.isBase64(mailSession.getMessage())) {
+			if (!Base64.isBase64(mailSession.getMessage())) {
 				throw new SenderException("Input message contains invalid Base64 characters");
 			}
 			byte[] message = Base64.decodeBase64(mailSession.getMessage());
@@ -396,6 +396,7 @@ public class MailSender extends MailSenderBase {
 
 	/**
 	 * Port of the SMTP-host by which the messages are to be send
+	 *
 	 * @ff.default 25
 	 */
 	public void setSmtpPort(int newSmtpPort) {

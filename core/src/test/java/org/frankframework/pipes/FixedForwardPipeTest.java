@@ -10,6 +10,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
+
 import org.junit.jupiter.api.Test;
 
 public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
@@ -38,7 +39,7 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 		configureAndStartPipe();
 		assertTrue(pipe.skipPipe(null, session));
 		assertTrue(pipe.skipPipe(new Message(""), session));
-		assertTrue(pipe.skipPipe(new Message((String)null), session));
+		assertTrue(pipe.skipPipe(new Message((String) null), session));
 		assertFalse(pipe.skipPipe(new Message("a"), session));
 	}
 
@@ -47,9 +48,9 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 		pipe.setOnlyIfSessionKey("onlyIfSessionKey");
 		pipe.setOnlyIfValue(onlyIfValue);
 		configureAndStartPipe();
-		if (sessionKeyValue!=null) {
+		if (sessionKeyValue != null) {
 			if (sessionKeyValue.equals("null")) {
-				sessionKeyValue=null;
+				sessionKeyValue = null;
 			}
 			session.put("onlyIfSessionKey", sessionKeyValue);
 		}
@@ -96,9 +97,9 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 		pipe.setUnlessSessionKey("unlessSessionKey");
 		pipe.setUnlessValue(unlessValue);
 		configureAndStartPipe();
-		if (sessionKeyValue!=null) {
+		if (sessionKeyValue != null) {
 			if (sessionKeyValue.equals("null")) {
-				sessionKeyValue=null;
+				sessionKeyValue = null;
 			}
 			session.put("unlessSessionKey", sessionKeyValue);
 		}

@@ -21,7 +21,6 @@ import org.frankframework.core.IbisException;
  * FlowGenerationException when unable to generate a Flow Diagram
  *
  * @author Niels Meijer
- *
  */
 public class FlowGenerationException extends IbisException {
 

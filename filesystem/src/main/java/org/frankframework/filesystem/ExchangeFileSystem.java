@@ -32,9 +32,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
-
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
@@ -85,6 +82,7 @@ import microsoft.exchange.webservices.data.search.FindItemsResults;
 import microsoft.exchange.webservices.data.search.FolderView;
 import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.SenderException;
@@ -97,6 +95,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.xml.SaxElementBuilder;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Implementation of a {@link IBasicFileSystem} of an Exchange Mail Inbox.
@@ -228,7 +227,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 			msalClientAdapter.configure();
 
 			clientCredentialParam = ClientCredentialParameters.builder(
-				Collections.singleton(SCOPE)
+					Collections.singleton(SCOPE)
 			).tenant(getTenantId()).build();
 		}
 	}
@@ -246,12 +245,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 				msalClientAdapter.open();
 
 				client = ConfidentialClientApplication.builder(
-						cf.getUsername(),
-						ClientCredentialFactory.createFromSecret(cf.getPassword()))
-					.authority(AUTHORITY + getTenantId())
-					.httpClient(msalClientAdapter)
-					.executorService(executor)
-					.build();
+								cf.getUsername(),
+								ClientCredentialFactory.createFromSecret(cf.getPassword())
+						)
+						.authority(AUTHORITY + getTenantId())
+						.httpClient(msalClientAdapter)
+						.executorService(executor)
+						.build();
 			} catch (MalformedURLException | SenderException e) {
 				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
 			}
@@ -608,12 +608,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		try {
 			if (emailMessage.getId() != null) {
 				PropertySet ps = new PropertySet(
-					EmailMessageSchema.DateTimeReceived,
-					EmailMessageSchema.From,
-					EmailMessageSchema.Subject,
-					EmailMessageSchema.DateTimeSent,
-					EmailMessageSchema.LastModifiedTime,
-					EmailMessageSchema.Size
+						EmailMessageSchema.DateTimeReceived,
+						EmailMessageSchema.From,
+						EmailMessageSchema.Subject,
+						EmailMessageSchema.DateTimeSent,
+						EmailMessageSchema.LastModifiedTime,
+						EmailMessageSchema.Size
 				);
 				if (isReadMimeContents()) {
 					ps.add(ItemSchema.MimeContent);
@@ -753,10 +753,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 			return Collections.emptyList();
 		}
 		return addressCollection
-			.getItems()
-			.stream()
-			.map(this::cleanAddress)
-			.collect(Collectors.toList());
+				.getItems()
+				.stream()
+				.map(this::cleanAddress)
+				.collect(Collectors.toList());
 	}
 
 
@@ -1060,8 +1060,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		try {
 			if (emailMessage.getId() != null) {
 				PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeSent, EmailMessageSchema.DateTimeReceived, EmailMessageSchema.From,
-					EmailMessageSchema.ToRecipients, EmailMessageSchema.CcRecipients, EmailMessageSchema.BccRecipients, EmailMessageSchema.Subject,
-					EmailMessageSchema.Body, EmailMessageSchema.Attachments);
+						EmailMessageSchema.ToRecipients, EmailMessageSchema.CcRecipients, EmailMessageSchema.BccRecipients, EmailMessageSchema.Subject,
+						EmailMessageSchema.Body, EmailMessageSchema.Attachments
+				);
 				emailMessage.load(ps);
 			}
 			MailFileSystemUtils.addEmailInfo(this, ref, emailXml);

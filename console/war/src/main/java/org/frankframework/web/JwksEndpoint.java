@@ -21,20 +21,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.security.JwtKeyGenerator;
+import org.frankframework.util.SpringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import lombok.Setter;
-
-import org.frankframework.management.security.JwtKeyGenerator;
-
-import org.frankframework.util.SpringUtils;
 
 @Configuration
 public class JwksEndpoint implements ApplicationContextAware {

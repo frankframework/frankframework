@@ -16,9 +16,8 @@
 
 package org.frankframework.extensions.mqtt;
 
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-
 import lombok.extern.log4j.Log4j2;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
@@ -31,7 +30,7 @@ import org.frankframework.stream.Message;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
- *
+ * <p>
  * Links to <a href="https://www.eclipse.org/paho/files/javadoc" target="_blank">https://www.eclipse.org/paho/files/javadoc</a> are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
  *
  * @author Niels Meijer
@@ -43,7 +42,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (paramList!=null) {
+		if (paramList != null) {
 			paramList.configure();
 		}
 
@@ -66,7 +65,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	@Override
 	public void addParameter(Parameter p) {
-		if (paramList==null) {
+		if (paramList == null) {
 			paramList = new ParameterList();
 		}
 		paramList.add(p);
@@ -84,7 +83,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException {
 		try {
-			if(!client.isConnected()) {
+			if (!client.isConnected()) {
 				super.open();
 			}
 
@@ -93,8 +92,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 			MqttMessage.setPayload(message.asByteArray());
 			MqttMessage.setQos(getQos());
 			client.publish(getTopic(), MqttMessage);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 		return message;

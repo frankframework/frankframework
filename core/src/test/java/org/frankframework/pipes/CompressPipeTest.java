@@ -29,6 +29,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -83,8 +84,8 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 		GregorianCalendar cal = new GregorianCalendar();
 		String path = prr.getResult().asString();
-		String expectedName = "blaat-"+cal.get(Calendar.YEAR)+".zip";
-		assertTrue(path.endsWith(expectedName), "path ["+path+"] does not end with ["+expectedName+"]");
+		String expectedName = "blaat-" + cal.get(Calendar.YEAR) + ".zip";
+		assertTrue(path.endsWith(expectedName), "path [" + path + "] does not end with [" + expectedName + "]");
 
 		try (ZipInputStream zipin = new ZipInputStream(new FileInputStream(path))) {
 			ZipEntry entry = zipin.getNextEntry();
@@ -350,7 +351,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setMessageIsContent(true);
 
 		configureAndStartPipe();
-		assertThrows(PipeRunException.class, ()->doPipe(Message.asMessage(DUMMY_STRING.getBytes())));
+		assertThrows(PipeRunException.class, () -> doPipe(Message.asMessage(DUMMY_STRING.getBytes())));
 	}
 
 	@Test
@@ -358,6 +359,6 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setMessageIsContent(true);
 
 		configureAndStartPipe();
-		assertThrows(PipeRunException.class, ()->doPipe(DUMMY_STRING));
+		assertThrows(PipeRunException.class, () -> doPipe(DUMMY_STRING));
 	}
 }

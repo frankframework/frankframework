@@ -21,8 +21,10 @@ import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
+
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -37,8 +39,8 @@ import bitronix.tm.journal.TransactionLogAppender;
 public class TestSelfRecoveringBTMDiskJournal {
 	static final String TEST_TABLE = "BTM_Temp_Table";
 
-	private static final String SELECT_QUERY = "SELECT count(*) FROM "+TEST_TABLE+" where tvarchar='TestSelfRecoveringBTMDiskJournal'";
-	private static final String INSERT_QUERY = "INSERT INTO "+TEST_TABLE+" (tkey, tvarchar) VALUES (?, 'TestSelfRecoveringBTMDiskJournal')";
+	private static final String SELECT_QUERY = "SELECT count(*) FROM " + TEST_TABLE + " where tvarchar='TestSelfRecoveringBTMDiskJournal'";
+	private static final String INSERT_QUERY = "INSERT INTO " + TEST_TABLE + " (tkey, tvarchar) VALUES (?, 'TestSelfRecoveringBTMDiskJournal')";
 	private static final AtomicInteger COUNT = new AtomicInteger(0);
 
 	private DatabaseTestEnvironment env;
@@ -50,9 +52,9 @@ public class TestSelfRecoveringBTMDiskJournal {
 
 		this.env = env;
 
-		try(Connection conn = env.getConnection()) {
-			if(env.getDbmsSupport().isTablePresent(conn, TEST_TABLE)) {
-				JdbcTestUtil.executeStatement(conn, "DELETE FROM "+TEST_TABLE+" where tvarchar='TestSelfRecoveringBTMDiskJournal'");
+		try (Connection conn = env.getConnection()) {
+			if (env.getDbmsSupport().isTablePresent(conn, TEST_TABLE)) {
+				JdbcTestUtil.executeStatement(conn, "DELETE FROM " + TEST_TABLE + " where tvarchar='TestSelfRecoveringBTMDiskJournal'");
 			}
 		}
 	}
@@ -98,7 +100,7 @@ public class TestSelfRecoveringBTMDiskJournal {
 		// previous commit corrupted the TX log due to a ClosedChannelException
 		runInsertQuery();
 
-		assertEquals(amount+1, getNumberOfLines());
+		assertEquals(amount + 1, getNumberOfLines());
 	}
 
 	@BTMArgumentSource

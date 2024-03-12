@@ -25,8 +25,8 @@ import org.frankframework.pipes.MessageSendingPipe;
  * Factory for instantiating listeners from the Digester framework.
  * Instantiates correlated listener in the context of a MessageSendingPipe.
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Tim van der Leeuw
+ * @since 4.8
  */
 public class ListenerFactory extends GenericFactory {
 	public static final String JMS_LISTENER_CLASSNAME_SUFFIX = ".JmsListener";

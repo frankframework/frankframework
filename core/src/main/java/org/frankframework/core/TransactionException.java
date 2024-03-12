@@ -18,20 +18,23 @@ package org.frankframework.core;
 /**
  * Wrapper for numerous transaction handling related exceptions.
  *
- * @author  Gerrit van Brakel
- * @since   4.1
+ * @author Gerrit van Brakel
+ * @since 4.1
  */
 public class TransactionException extends IbisException {
 
 	public TransactionException() {
 		super();
 	}
+
 	public TransactionException(String errMsg) {
 		super(errMsg);
 	}
+
 	public TransactionException(String errMsg, Throwable t) {
 		super(errMsg, t);
 	}
+
 	public TransactionException(Throwable t) {
 		super(t);
 	}
