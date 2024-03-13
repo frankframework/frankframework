@@ -92,8 +92,8 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 				log.warn("Error closing sender: [{}]", sender.getName(), e);
 			}
 		}
-
 	}
+
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		if (sender instanceof HasStatistics) {
