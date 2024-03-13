@@ -73,7 +73,7 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		sender.open();
-		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender), ReconnectSenderWrapper.class.getSimpleName());
+		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender), this);
 		return sender.sendMessage(message, session);
 	}
 
