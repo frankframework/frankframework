@@ -42,24 +42,10 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
 			sshd = SftpFileSystemTestHelper.createSshServer(username, password, port);
-			sshd.setFileSystemFactory(getTestDirectoryFS());
 			log.info("Starting SSH daemon at port {}", sshd.getPort());
 			sshd.start();
 			port = sshd.getPort();
 		}
-	}
-
-	/**
-	 * Creates the folder '../target/sftpTestFS' in which the tests will be executed.
-	 * This 'virtual FS' will pretend that the mentioned folder is the SFTP HOME directory.
-	 */
-	private static FileSystemFactory getTestDirectoryFS() throws IOException {
-		File targetFolder = new File(".", "target");
-		File sftpTestFS = new File(targetFolder.getCanonicalPath(), "sftpTestFS");
-		sftpTestFS.mkdir();
-		assertTrue(sftpTestFS.exists());
-
-		return new VirtualFileSystemFactory(sftpTestFS.toPath());
 	}
 
 	@Override
