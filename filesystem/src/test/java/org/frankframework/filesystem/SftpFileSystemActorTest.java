@@ -2,8 +2,10 @@ package org.frankframework.filesystem;
 
 import org.apache.sshd.server.SshServer;
 import org.frankframework.filesystem.ftp.SftpFileRef;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * This test class is created to test both SFtpFileSystem and SFtpFileSystemSender classes.
@@ -11,18 +13,18 @@ import org.junit.jupiter.api.BeforeEach;
  * @author Niels Meijer
  *
  */
+@Log4j2
 class SftpFileSystemActorTest extends FileSystemActorTest<SftpFileRef, SftpFileSystem> {
 
-	private final String username = "frankframework";
-	private final String password = "pass_123";
-	private final String host = "localhost";
+	private static final String username = "frankframework";
+	private static final String password = "pass_123";
+	private static final String host = "localhost";
 	private static int port = 22;
-	private String remoteDirectory = "/home/frankframework/sftp";
-	private SshServer sshd;
+	private static String remoteDirectory = "/home/frankframework/sftp";
+	private static SshServer sshd;
 
-	@Override
-	@BeforeEach
-	public void setUp() throws Exception {
+	@BeforeAll
+	public static void setUpOnce() throws Exception {
 		if("localhost".equals(host)) {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
@@ -31,19 +33,15 @@ class SftpFileSystemActorTest extends FileSystemActorTest<SftpFileRef, SftpFileS
 			sshd.start();
 			port = sshd.getPort();
 		}
-
-		super.setUp();
 	}
 
-	@Override
-	@AfterEach
-	public void tearDown() throws Exception {
+	@AfterAll
+	public static void tearDownOnce() throws Exception {
 		if(sshd != null) {
 			if(sshd.isStarted()) sshd.stop();
 			sshd.close(true);
 			sshd = null;
 		}
-		super.tearDown();
 	}
 
 	@Override
