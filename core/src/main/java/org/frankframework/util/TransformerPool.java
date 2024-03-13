@@ -41,11 +41,6 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.SoftReferenceObjectPool;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IConfigurationAware;
@@ -58,6 +53,11 @@ import org.frankframework.stream.ThreadConnector;
 import org.frankframework.xml.ClassLoaderURIResolver;
 import org.frankframework.xml.NonResolvingURIResolver;
 import org.frankframework.xml.TransformerFilter;
+import org.w3c.dom.Document;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 /**
  * Pool of transformers. As of IBIS 4.2.e the Templates object is used to
@@ -137,12 +137,6 @@ public class TransformerPool {
 
 	private TransformerPool(String xsltString, String sysId, int xsltVersion, IScopeProvider scopeProvider) throws TransformerConfigurationException {
 		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)), scopeProvider);
-	}
-
-	/** @deprecated Use Resource or UtilityInstance instead! This can/will cause memory leaks upon reloading configurations!!! */
-	@Deprecated
-	public static TransformerPool getInstance(String xsltString) throws TransformerConfigurationException {
-		return getInstance(xsltString, 0);
 	}
 
 	/** @deprecated Use Resource or UtilityInstance instead! This can/will cause memory leaks upon reloading configurations!!! */
@@ -272,7 +266,7 @@ public class TransformerPool {
 	}
 
 	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, @Nonnull OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
-		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, 0);
+		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, XmlUtils.DEFAULT_XSLT_VERSION);
 	}
 
 	private static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
@@ -280,7 +274,7 @@ public class TransformerPool {
 		log.debug("xpath [{}] resulted in xslt [{}]", xPathExpression, xslt);
 
 		try {
-			return new TransformerPool(xslt, null, xsltVersion);
+			return new TransformerPool(xslt, null, xsltVersion == 0 ? XmlUtils.DEFAULT_XSLT_VERSION : xsltVersion);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xPathExpression+"]", e);
 		}

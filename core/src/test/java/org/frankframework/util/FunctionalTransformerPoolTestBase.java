@@ -24,12 +24,9 @@ public class FunctionalTransformerPoolTestBase {
 		testTransformerPool(tp, input, expected, true, "String input");
 	}
 
-	public void testXslt(String xslt, String input, String expected) throws TransformerException, IOException, SAXException {
-		testXslt(xslt, input, expected, 0);
+	public void testXslt(String xslt, String input, String expected, int xsltVersion) throws TransformerException, IOException, SAXException {
+		TransformerPool tp = TransformerPool.getUtilityInstance(xslt, xsltVersion);
+		testTransformerPool(tp, input, expected);
 	}
 
-	public void testXslt(String xslt, String input, String expected, int xsltVersion) throws TransformerException, IOException, SAXException {
-		TransformerPool tp = TransformerPool.getInstance(xslt,xsltVersion);
-		testTransformerPool(tp,input,expected);
-	}
 }

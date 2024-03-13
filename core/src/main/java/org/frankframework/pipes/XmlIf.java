@@ -21,8 +21,6 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeForward;
@@ -37,6 +35,8 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Getter;
 
 /**
  * Selects an forward, based on XPath evaluation
@@ -77,7 +77,7 @@ public class XmlIf extends AbstractPipe {
 		super.configure();
 		if (StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
-				tp = TransformerPool.getInstance(makeStylesheet(getXpathExpression(), getExpressionValue()));
+				tp = TransformerPool.getInstance(makeStylesheet(getXpathExpression(), getExpressionValue()), xsltVersion);
 			} catch (TransformerConfigurationException e) {
 				throw new ConfigurationException("could not create transformer from xpathExpression ["+getXpathExpression()+"], target expressionValue ["+getExpressionValue()+"]",e);
 			}

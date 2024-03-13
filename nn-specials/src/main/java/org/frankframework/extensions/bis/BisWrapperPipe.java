@@ -23,10 +23,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -43,6 +39,9 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Services) standard.
@@ -236,7 +235,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			if (StringUtils.isNotEmpty(getInputXPath())) {
 				String bodyMessageNd = StringUtils.isNotEmpty(getInputNamespaceDefs()) ? soapNamespaceDefs + "\n" + getInputNamespaceDefs() : soapNamespaceDefs;
 				String bodyMessageXe = StringUtils.isNotEmpty(getInputXPath()) ? soapBodyXPath + "/" + getInputXPath() : soapBodyXPath + "/*";
-				bodyMessageTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bodyMessageNd, bodyMessageXe, OutputType.XML));
+				bodyMessageTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bodyMessageNd, bodyMessageXe, OutputType.XML), XmlUtils.DEFAULT_XSLT_VERSION);
 			}
 			String bisMessageHeaderNd = soapNamespaceDefs + "\n" + bisNamespaceDefs;
 			String bisMessageHeaderXe;
@@ -245,9 +244,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			} else {
 				bisMessageHeaderXe = soapHeaderXPath + "/" + bisMessageHeaderXPath;
 			}
-			bisMessageHeaderTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisMessageHeaderNd, bisMessageHeaderXe, OutputType.XML));
-			bisMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderConversationIdXPath, OutputType.TEXT));
-			bisMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderExternalRefToMessageIdXPath, OutputType.TEXT));
+			bisMessageHeaderTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisMessageHeaderNd, bisMessageHeaderXe, OutputType.XML), XmlUtils.DEFAULT_XSLT_VERSION);
+			bisMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderConversationIdXPath, OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
+			bisMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderExternalRefToMessageIdXPath, OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
 
 			String bisErrorNd = soapNamespaceDefs + "\n" + bisNamespaceDefs;
 			if (isBisResultInPayload()) {
@@ -256,7 +255,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				bisErrorXe = soapBodyXPath + "/" + bisErrorXPath;
 			}
 			bisErrorXe = bisErrorXe + " or string-length(" + soapBodyXPath + "/" + soapErrorXPath + ")&gt;0";
-			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, OutputType.TEXT));
+			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
 			if (isAddOutputNamespace()) {
 				addOutputNamespaceTp = XmlUtils.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
 			}

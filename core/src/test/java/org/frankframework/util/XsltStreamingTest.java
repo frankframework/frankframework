@@ -141,7 +141,7 @@ public class XsltStreamingTest {
 		SwitchCounter sc = new SwitchCounter();
 
 		String xpath="/root/a";
-		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,OutputType.XML, false, null, false, false, null, 1));
+		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,OutputType.XML, false, null, false, false, null, 1), 1);
 
 		SAXResult result = new SAXResult();
 		SaxLogger resultfilter = new SaxLogger("out>", sc);

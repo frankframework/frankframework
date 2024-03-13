@@ -93,8 +93,8 @@ public class SoapWrapper {
 
 	private void init() throws ConfigurationException {
 		try {
-			extractBodySoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, TransformerPool.OutputType.XML, false, null, false));
-			extractBodySoap12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, TransformerPool.OutputType.XML, false, null, false));
+			extractBodySoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, TransformerPool.OutputType.XML, false, false));
+			extractBodySoap12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, TransformerPool.OutputType.XML, false, false));
 			extractHeaderSoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, TransformerPool.OutputType.XML));
 			extractHeaderSoap12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_HEADER_XPATH, TransformerPool.OutputType.XML));
 			extractFaultCount11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, TransformerPool.OutputType.TEXT));
