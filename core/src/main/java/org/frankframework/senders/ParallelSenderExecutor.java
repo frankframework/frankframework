@@ -34,6 +34,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Semaphore semaphore; // supports to limit the number of threads processing in parallel, may be null
 	private Guard guard;         // supports to wait for all threads to have ended
 	private DistributionSummary summary;
+	private @Getter long duration;
 
 	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, DistributionSummary sk) {
 		this(sender, message, session, null, guard, sk);
@@ -61,7 +62,8 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 				log.warn("SenderExecutor caught exception",tr);
 			}
 			long t2 = System.currentTimeMillis();
-			summary.record(t2-t1);
+			duration = t2-t1;
+			summary.record(duration);
 		} finally {
 			if (semaphore!=null) {
 				semaphore.release();

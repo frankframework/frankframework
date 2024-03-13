@@ -222,8 +222,7 @@ public class ShadowSender extends ParallelSenders {
 		try (SaxElementBuilder resultXml = builder.startElement(tagName)) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 
-//			DistributionSummary sk = getStatisticsKeeper(sender);
-//			resultXml.addAttribute("duration", "" + sk.getLast());
+			resultXml.addAttribute("duration", ""+pse.getDuration());
 
 			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
 			resultXml.addAttribute("senderName", sender.getName());
