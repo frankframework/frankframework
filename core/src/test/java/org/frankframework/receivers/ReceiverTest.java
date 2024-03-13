@@ -44,8 +44,6 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.lang.reflect.Field;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -570,10 +568,10 @@ public class ReceiverTest {
 	}
 
 	@Test
-	void testGetDeliveryCountWithDirectoryListener() throws Exception {
+	void testGetDeliveryCount() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
-		DirectoryListener listener = spy(configuration.createBean(DirectoryListener.class));
+		MockPushingListener listener = spy(configuration.createBean(MockPushingListener.class));
 		doNothing().when(listener).open();
 
 		@SuppressWarnings("unchecked")
@@ -581,7 +579,7 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
 
-		Receiver<Path> receiver = setupReceiver(listener);
+		Receiver<String> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
@@ -596,8 +594,7 @@ public class ReceiverTest {
 		waitForState(adapter, RunState.STARTED);
 
 		final String messageId = "A Path";
-		Path fileMessage = Paths.get(messageId);
-		RawMessageWrapper<Path> rawMessageWrapper = new RawMessageWrapper<>(fileMessage, messageId, null);
+		RawMessageWrapper<String> rawMessageWrapper = new RawMessageWrapper<>("message", messageId, null);
 
 		// Act
 		int result1 = receiver.getDeliveryCount(rawMessageWrapper);

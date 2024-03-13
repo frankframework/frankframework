@@ -11,12 +11,12 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
-		<log4j2.version>2.23.0</log4j2.version>
+		<log4j2.version>2.23.1</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
-		<jackson.version>2.16.1</jackson.version>
+		<jackson.version>2.16.2</jackson.version>
 		<cxf.version>3.6.2</cxf.version>
 		<spring.version>5.3.32</spring.version>
 		<spring-security.version>5.8.10</spring-security.version>
@@ -25,10 +25,10 @@
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.13.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
-		<micrometer.version>1.12.3</micrometer.version>
+		<micrometer.version>1.12.4</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>3.0</frankdoc.version>
+		<frankdoc.version>3.0-SNAPSHOT</frankdoc.version>
 		<javadoc-plugin.version>3.6.3</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
@@ -275,6 +275,11 @@
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-batch</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-filesystem</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -628,7 +633,7 @@
 				<artifactId>maven-source-plugin</artifactId>
 			</plugin>
 			<plugin>
-				<groupId>org.commonjava.maven.plugins</groupId>
+				<groupId>com.github.hazendaz.maven</groupId>
 				<artifactId>directory-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
@@ -747,7 +752,7 @@
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
 					<version>1.18.20.0</version>
-					<dependencies>
+					<dependencies><!-- This specified version of Lombok can be removed when the lombok-maven-plugin is updated >= 1.18.30 -->
 						<dependency>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
@@ -792,9 +797,9 @@
 					</configuration>
 				</plugin>
 				<plugin>
-					<groupId>org.commonjava.maven.plugins</groupId>
+					<groupId>com.github.hazendaz.maven</groupId>
 					<artifactId>directory-maven-plugin</artifactId>
-					<version>1.0</version>
+					<version>1.1.1</version>
 					<executions>
 						<execution>
 							<id>find-project-root-directory</id>
@@ -923,7 +928,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.14.0</version>
+							<version>10.14.1</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -977,9 +982,9 @@
 								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>org.commonjava.maven.plugins</groupId>
+										<groupId>com.github.hazendaz.maven</groupId>
 										<artifactId>directory-maven-plugin</artifactId>
-										<versionRange>[1.0,)</versionRange>
+										<versionRange>[1,)</versionRange>
 										<goals>
 											<goal>directory-of</goal>
 										</goals>
@@ -1270,6 +1275,7 @@
 				<module>credentialProvider</module>
 				<module>management-gateway</module>
 				<module>core</module>
+				<module>filesystem</module>
 				<module>console</module>
 				<module>larva</module>
 				<module>ladybug</module>
@@ -1387,12 +1393,12 @@
 							<quiet>true</quiet>
 							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
-								<groupId>org.ibissource</groupId>
+								<groupId>org.frankframework</groupId>
 								<artifactId>frank-doc-doclet</artifactId>
 								<version>${frankdoc.version}</version>
 							</docletArtifact>
 							<frontendArtifact>
-								<groupId>org.ibissource</groupId>
+								<groupId>org.frankframework</groupId>
 								<artifactId>frank-doc-frontend</artifactId>
 								<version>${frankdoc.version}</version>
 							</frontendArtifact>
