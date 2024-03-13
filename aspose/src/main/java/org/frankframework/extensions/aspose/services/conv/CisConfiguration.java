@@ -22,12 +22,14 @@ public class CisConfiguration {
 	private @Getter String pdfOutputLocation;
 	private @Getter String charset;
 	private @Getter boolean loadExternalResources;
+	private @Getter int maxThreads;
 
-	public CisConfiguration(boolean loadExternalResources, String pdfOutputLocation, String charset, String fontsDirectory){
+	public CisConfiguration(boolean loadExternalResources, String pdfOutputLocation, String charset, String fontsDirectory, int maxThreads){
 		this.fontsDirectory = fontsDirectory;
 		this.pdfOutputLocation = pdfOutputLocation;
 		this.charset = charset;
 		this.loadExternalResources = loadExternalResources;
+		this.maxThreads = maxThreads;
 	}
 
 }
