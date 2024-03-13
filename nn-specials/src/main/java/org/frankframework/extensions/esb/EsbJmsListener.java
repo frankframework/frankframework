@@ -29,6 +29,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -62,6 +63,8 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final String MSGLOG_KEYS = APP_CONSTANTS.getProperty("msg.log.keys");
+	static final String JMS_RR_FORCE_MESSAGE_KEY = "jms.esb.rr.forceMessageIdAsCorrelationId.default";
+	private final String messageIdAsCorrelationIdRR = APP_CONSTANTS.getString(JMS_RR_FORCE_MESSAGE_KEY, null);
 
 	private @Getter MessageProtocol messageProtocol = null;
 	private @Getter boolean copyAEProperties = false;
@@ -80,7 +83,11 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == MessageProtocol.RR) {
 			if (getForceMessageIdAsCorrelationId() == null) {
-				setForceMessageIdAsCorrelationId(true);
+				if (StringUtils.isNotBlank(messageIdAsCorrelationIdRR)) {
+					setForceMessageIdAsCorrelationId(Boolean.parseBoolean(messageIdAsCorrelationIdRR));
+				} else {
+					setForceMessageIdAsCorrelationId(true);
+				}
 			}
 			if (getCacheMode()==CacheMode.CACHE_CONSUMER) {
 				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CacheMode.CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
@@ -243,20 +250,20 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	/**
 	 * if true, all JMS properties in the request starting with "ae_" are copied to the reply.
-	 * @ff.default false
 	 */
+	@Default("false")
 	public void setCopyAEProperties(boolean b) {
 		copyAEProperties = b;
 	}
 
+	/** if messageProtocol=RR, default value is: true */
 	@Override
-	@Default("if messageProtocol=<code>RR</code>: </td><td><code>true</code>")
 	public void setForceMessageIdAsCorrelationId(Boolean force) {
 		super.setForceMessageIdAsCorrelationId(force);
 	}
 
+	/** if messageProtocol=FF, default value is: false */
 	@Override
-	@Default("if messageProtocol=<code>FF</code>: <code>false</code>")
 	public void setUseReplyTo(boolean newUseReplyTo) {
 		super.setUseReplyTo(newUseReplyTo);
 	}

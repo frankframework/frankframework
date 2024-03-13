@@ -24,20 +24,20 @@
 			</exits>
 
 			<pipe name="fixedInsert" className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('LASTNAME',?)" queryType="insert">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('LASTNAME',?)">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="fixedInsert2" />
 			</pipe>
 
 			<pipe name="fixedInsert2" className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE1) VALUES ('this-column-does-not-exist')" queryType="insert"/>
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE1) VALUES ('this-column-does-not-exist')"/>
 				<forward name="success" path="fail"/>
 				<forward name="exception" path="fixedInsert3"/>
 			</pipe>
 
 			<pipe name="fixedInsert3" className="org.frankframework.pipes.SenderPipe" transactionAttribute="NotSupported">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE2) VALUES ('this-column-does-not-exist')" queryType="insert"/>
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE2) VALUES ('this-column-does-not-exist')"/>
 				<forward name="success" path="fail"/>
 				<forward name="exception" path="This PutInSession should throw an exception but not trigger a rollback"/>
 			</pipe>
@@ -63,7 +63,7 @@
 			</pipe>
 
 			<pipe name="fixedInsert4" className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('SURNAME',?)" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('SURNAME',?)" />
 					<param name="value" value="test2" />
 				<forward name="success" path="success" />
 			</pipe>

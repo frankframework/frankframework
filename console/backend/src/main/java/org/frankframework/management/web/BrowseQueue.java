@@ -48,7 +48,9 @@ public final class BrowseQueue extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("jms")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getBrowseQueue() {
+	@Relation("queuebrowser")
+	@Description("view a list of all JMS QueueConnectionFactories")
+	public Response getQueueConnectionFactories() {
 		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.GET));
 	}
 
@@ -57,7 +59,9 @@ public final class BrowseQueue extends FrankApiBase {
 	@Path("jms/browse")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response putBrowseQueue(Map<String, Object> json) {
+	@Relation("queuebrowser")
+	@Description("view a list of messages on a specific JMS queue")
+	public Response browseQueue(Map<String, Object> json) {
 
 		String connectionFactory = RequestUtils.getValue(json, "connectionFactory");
 		String destination = RequestUtils.getValue(json, "destination");

@@ -8,9 +8,8 @@ describe('InlinestoreComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ InlinestoreComponent ]
-    })
-    .compileComponents();
+      declarations: [InlinestoreComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(InlinestoreComponent);
     component = fixture.componentInstance;

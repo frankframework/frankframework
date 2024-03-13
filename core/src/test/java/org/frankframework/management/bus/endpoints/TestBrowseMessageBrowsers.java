@@ -56,6 +56,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.TransactionManagerMock;
 import org.frankframework.util.SpringUtils;
@@ -65,7 +66,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.messaging.Message;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@WithMockUser(roles = { "IbisTester" })
 public class TestBrowseMessageBrowsers extends BusTestBase {
 	private static final String JSON_MESSAGE = "{\"dummy\":1}";
 	private static final String XML_MESSAGE = "<dummy>2</dummy>";

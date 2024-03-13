@@ -8,9 +8,8 @@ describe('IframeLarvaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ IframeLarvaComponent ]
-    })
-    .compileComponents();
+      declarations: [IframeLarvaComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(IframeLarvaComponent);
     component = fixture.componentInstance;

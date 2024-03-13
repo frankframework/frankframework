@@ -39,6 +39,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.UUIDUtil;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 
 import lombok.Getter;
@@ -52,8 +53,9 @@ import nl.nn.testtool.run.ReportRunner;
 /**
  * @author Jaco de Groot
  */
-public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
+public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean {
 	private final Logger log = LogUtil.getLogger(this);
+	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 
@@ -66,6 +68,13 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(testTool == null) {
+			APPLICATION_LOG.info("No TestTool found on classpath, skipping testtool wireing.");
+		}
 	}
 
 	public void setPipeDescriptionProvider(PipeDescriptionProvider pipeDescriptionProvider) {
@@ -284,10 +293,10 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 									checkpointName = checkpoint.getName();
 									if (checkpointName.startsWith("SessionKey ")) {
 										String sessionKey = checkpointName.substring("SessionKey ".length());
-										if (!sessionKey.equals("cid") && !sessionKey.equals("mid")
+										if (!sessionKey.equals(PipeLineSession.CORRELATION_ID_KEY) && !sessionKey.equals(PipeLineSession.MESSAGE_ID_KEY)
 												// messageId and id were used before 7.9
 												&& !sessionKey.equals("messageId") && !sessionKey.equals("id")
-												&& !sessionKey.equals("originalMessage")) {
+												&& !sessionKey.equals(PipeLineSession.ORIGINAL_MESSAGE_KEY)) {
 											pipeLineSession.put(sessionKey, checkpoint.getMessage());
 										}
 									} else {

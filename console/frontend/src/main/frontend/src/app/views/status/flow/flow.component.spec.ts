@@ -8,9 +8,8 @@ describe('FlowComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FlowComponent ]
-    })
-    .compileComponents();
+      declarations: [FlowComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FlowComponent);
     component = fixture.componentInstance;

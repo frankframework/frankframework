@@ -120,7 +120,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 		try {
 			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,
-					destination, getExceptionListener(), getCacheMode(), getAcknowledgeModeEnum().getAcknowledgeMode(),
+					destination, getExceptionListener(), getCacheMode(), getAcknowledgeMode().getAcknowledgeMode(),
 					isJmsTransacted(), getMessageSelector(), getTimeout(), getPollGuardInterval());
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);

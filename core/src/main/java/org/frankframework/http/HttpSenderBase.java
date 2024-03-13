@@ -94,7 +94,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	public static final String MESSAGE_ID_HEADER = "Message-Id";
 	public static final String CORRELATION_ID_HEADER = "Correlation-Id";
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private final @Getter String domain = "Http";
 
 	private @Setter String sharedResourceRef;
 

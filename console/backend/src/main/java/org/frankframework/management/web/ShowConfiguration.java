@@ -57,7 +57,9 @@ public final class ShowConfiguration extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getXMLConfiguration(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
+	@Relation("application")
+	@Description("view all the loaded/original configurations")
+	public Response getConfigurationXML(@QueryParam("loadedConfiguration") boolean loaded, @QueryParam("flow") String flow) throws ApiException {
 		if(StringUtils.isNotEmpty(flow)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 			return callSyncGateway(builder);
@@ -73,6 +75,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Path("/configurations")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("application")
+	@Description("reload the entire application")
 	public Response fullReload(Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
 		if(value instanceof String && "reload".equals(value)) {
@@ -89,6 +93,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}")
 	@Produces(MediaType.APPLICATION_XML)
+	@Relation("configuration")
+	@Description("view individual loaded/original configuration")
 	public Response getConfigurationByName(@PathParam("configuration") String configurationName, @QueryParam("loadedConfiguration") boolean loaded) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.GET);
 		builder.addHeader("configuration", configurationName);
@@ -100,6 +106,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@PermitAll
 	@Path("/configurations/{configuration}/health")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("configuration")
+	@Description("view configuration health")
 	public Response getConfigurationHealth(@PathParam("configuration") String configurationName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.HEALTH);
 		builder.addHeader("configuration", configurationName);
@@ -109,6 +117,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/flow")
+	@Relation("configuration")
+	@Description("view configuration flow diagram")
 	public Response getConfigurationFlow(@PathParam("configuration") String configurationName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
 		builder.addHeader("configuration", configurationName);
@@ -120,6 +130,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Path("/configurations/{configuration}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("configuration")
+	@Description("reload a specific configuration")
 	public Response reloadConfiguration(@PathParam("configuration") String configurationName, Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
 		if(value instanceof String && "reload".equals(value)) {
@@ -137,6 +149,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/versions")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("configuration")
+	@Description("view a list of all known configuration versions")
 	public Response getConfigurationDetailsByName(@PathParam("configuration") String configurationName, @QueryParam("datasourceName") String datasourceName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.FIND);
 		builder.addHeader("configuration", configurationName);
@@ -149,6 +163,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Path("/configurations/{configuration}/versions/{version}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("configuration")
+	@Description("change the active configuration version, and optionally schedule or load it directly")
 	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("datasourceName") String datasourceName, Map<String, Object> json) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("configuration", configurationName);
@@ -176,6 +192,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	@Path("configurations")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("configuration")
+	@Description("upload a new configuration versions")
 	public Response uploadConfiguration(MultipartBody inputDataMap) throws ApiException {
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
@@ -211,6 +229,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/versions/{version}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Relation("configuration")
+	@Description("download a specific configuration version")
 	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("dataSourceName") String dataSourceName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
 		builder.addHeader("configuration", configurationName);
@@ -222,6 +242,8 @@ public final class ShowConfiguration extends FrankApiBase {
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/versions/{version}")
+	@Relation("configuration")
+	@Description("delete a specific configuration")
 	public Response deleteConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("datasourceName") String datasourceName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.DELETE);
 		builder.addHeader("configuration", configurationName);

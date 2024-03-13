@@ -78,6 +78,7 @@
 		<Logger name="liquibase" level="INFO" />
 		<Logger name="org.frankframework.jdbc.migration.LiquibaseXmlChangeLogParser" level="INFO" /> <!-- to avoid stacktraces in DEBUG mode about "Cannot enable ACCESS_EXTERNAL_SCHEMA" -->
 		<Logger name="org.frankframework.testtool" level="WARN" />
+		<Logger name="org.frankframework.larva" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
 		<Logger name="org.apache.cxf" level="WARN" />

@@ -15,7 +15,8 @@
 */
 package org.frankframework.processors;
 
-import org.frankframework.core.IExtendedPipe;
+import javax.annotation.Nonnull;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
@@ -33,7 +34,7 @@ import org.frankframework.util.Misc;
 public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		checkMessageSize(message.size(), pipeLine, pipe, true);
 		PipeRunResult pipeRunResult = chain.apply(message);
 
@@ -62,11 +63,8 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 			}
 
 			if (pipeLine.getMessageSizeWarnNum() >= 0 && messageLength >= pipeLine.getMessageSizeWarnNum()) {
-				log.warn(String.format("pipe [%s] of adapter [%s], " + (input ? "input" : "result") + " message size [%s] exceeds [%s]", pipe.getName(), pipeLine.getOwner().getName(), Misc.toFileSize(messageLength), Misc.toFileSize(pipeLine.getMessageSizeWarnNum())));
-				if (pipe instanceof IExtendedPipe) {
-					IExtendedPipe pe = (IExtendedPipe)pipe;
-					pe.throwEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
-				}
+				log.warn("pipe [{}] of adapter [{}], {} message size [{}] exceeds [{}]", pipe.getName(), pipeLine.getOwner().getName(), (input ? "input" : "result"), Misc.toFileSize(messageLength), Misc.toFileSize(pipeLine.getMessageSizeWarnNum()));
+				pipe.throwEvent(IPipe.MESSAGE_SIZE_MONITORING_EVENT);
 			}
 		}
 	}

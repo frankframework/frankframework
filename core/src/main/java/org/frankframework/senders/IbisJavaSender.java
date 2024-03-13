@@ -65,7 +65,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	private static final String MULTIPART_RESPONSE_CONTENT_TYPE = "application/octet-stream";
 	private static final String MULTIPART_RESPONSE_CHARSET = "UTF-8";
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
+	private final @Getter String domain = "JVM";
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;
@@ -98,6 +98,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result;
 		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
+			subAdapterSession.put(PipeLineSession.MANUAL_RETRY_KEY, session.get(PipeLineSession.MANUAL_RETRY_KEY, false));
 			try {
 				if (paramList != null) {
 					subAdapterSession.putAll(paramList.getValues(message, session).getValueMap());
@@ -124,7 +125,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 					serviceName = getServiceName();
 				}
 
-				String correlationID = session == null ? null : session.getCorrelationId();
+				String correlationID = session.getCorrelationId();
 				result = dm.processRequest(serviceName, correlationID, message.asString(), subAdapterSession);
 				if (isMultipartResponse()) {
 					return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));

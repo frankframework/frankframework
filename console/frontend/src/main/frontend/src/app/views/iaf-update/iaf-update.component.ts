@@ -6,7 +6,7 @@ import { SessionService } from 'src/app/services/session.service';
 @Component({
   selector: 'app-iaf-update',
   templateUrl: './iaf-update.component.html',
-  styleUrls: ['./iaf-update.component.scss']
+  styleUrls: ['./iaf-update.component.scss'],
 })
 export class IafUpdateComponent implements OnInit {
   release?: IAFRelease;
@@ -14,13 +14,13 @@ export class IafUpdateComponent implements OnInit {
   constructor(
     private router: Router,
     private sessionService: SessionService,
-  ) { };
+  ) {}
 
   ngOnInit(): void {
-    this.release = this.sessionService.get("IAF-Release");
+    this.release = this.sessionService.get('IAF-Release');
 
     if (this.release == undefined) {
       this.router.navigate(['/status']);
     }
-  };
+  }
 }

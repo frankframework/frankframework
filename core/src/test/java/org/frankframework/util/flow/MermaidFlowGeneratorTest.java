@@ -3,13 +3,14 @@ package org.frankframework.util.flow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class MermaidFlowGeneratorTest {
+class MermaidFlowGeneratorTest {
 
 	private static final String BASE_DIR = "/FlowDiagram/Mermaid/";
 	private static final String ORIGINAL_FILENAME = "/original.xml";
@@ -31,12 +32,12 @@ public class MermaidFlowGeneratorTest {
 		generator.afterPropertiesSet();
 
 		String testFile = TestFileUtils.getTestFile(testFileDir + ORIGINAL_FILENAME);
-		assertNotNull("unable to find test file ["+testFileDir + ORIGINAL_FILENAME+"]", testFile);
+		assertNotNull(testFile, "unable to find test file [" + testFileDir + ORIGINAL_FILENAME + "]");
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		generator.generateFlow(testFile, boas);
 
 		String expectedMermaid = TestFileUtils.getTestFile(testFileDir + EXPECTED_FILENAME);
-		TestAssertions.assertEqualsIgnoreCRLF(expectedMermaid, boas.toString("UTF-8"));
+		TestAssertions.assertEqualsIgnoreCRLF(expectedMermaid, boas.toString(StandardCharsets.UTF_8));
 		generator.destroy();
 	}
 }

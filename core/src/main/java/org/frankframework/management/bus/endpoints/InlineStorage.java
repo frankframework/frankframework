@@ -40,10 +40,13 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.receivers.Receiver;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 public class InlineStorage extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.INLINESTORAGE_SUMMARY)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getProcessStores(Message<?> message) {
 		Map<String, InlineStoreStateItem> storeItemsGroupedByProcessState = new LinkedHashMap<>();
 		Stream.of(ProcessState.values()).forEach(t -> storeItemsGroupedByProcessState.put(t.getName(), new InlineStoreStateItem())); // init item for each process state

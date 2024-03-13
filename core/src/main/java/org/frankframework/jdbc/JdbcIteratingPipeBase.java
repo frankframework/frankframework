@@ -47,7 +47,7 @@ import org.frankframework.util.SpringUtils;
  */
 public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
+	private final @Getter String domain = "JDBC";
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
 	protected class MixedQuerySender extends DirectQuerySender {

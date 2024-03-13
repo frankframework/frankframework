@@ -8,9 +8,8 @@ describe('JmsBrowseQueueComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ JmsBrowseQueueComponent ]
-    })
-    .compileComponents();
+      declarations: [JmsBrowseQueueComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(JmsBrowseQueueComponent);
     component = fixture.componentInstance;

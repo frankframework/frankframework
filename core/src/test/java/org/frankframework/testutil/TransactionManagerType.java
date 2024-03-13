@@ -47,13 +47,23 @@ public enum TransactionManagerType {
 		return ac.getBean(URLDataSourceFactory.class, "dataSourceFactory");
 	}
 
-	public TestConfiguration create() {
-		return create("H2"); //only used to satisfy Spring startup
+	/**
+	 * Create a new, fresh {@link TestConfiguration} instance. You can choose to have {@link TestConfiguration#configure()} run
+	 * automatically after creation, or not.
+	 *
+	 * @param autoConfigure If you do not need to modify the configuration, pass {@code true}. If you
+	 *                      need to add extra adapters and other beans after creating the configuration, then
+	 *                      pass {@code false} so you do not have to {@link TestConfiguration#stop()} the configuration
+	 *                      before adding these adapters.
+	 * @return New {@link TestConfiguration} instance.
+	 */
+	public TestConfiguration create(boolean autoConfigure) {
+		return create(autoConfigure, "H2"); //only used to satisfy Spring startup
 	}
 
-	private synchronized TestConfiguration create(String productKey) {
+	private synchronized TestConfiguration create(boolean autoConfigure, String productKey) {
 		log.info("create new TestConfiguration for database [{}]", productKey);
-		TestConfiguration config = new TestConfiguration(springConfigurationFiles);
+		TestConfiguration config = new TestConfiguration(autoConfigure, springConfigurationFiles);
 		MutablePropertySources propertySources = config.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
@@ -83,11 +93,19 @@ public enum TransactionManagerType {
 		}
 	}
 
+	/**
+	 * Get configuration context, cached if already created and otherwise a new one already started.
+	 *
+	 * @param productKey Type of configuration context to get
+	 * @return The {@link TestConfiguration} instance (new or cached)
+	 */
 	public TestConfiguration getConfigurationContext(String productKey) {
+		// If we need to create a new TestConfiguration, always created it with autoStart=true
+		// because that makes it more consistent between new and cached configuration.
 		if(this == TransactionManagerType.DATASOURCE) {
-			return datasourceConfigurations.computeIfAbsent(productKey, this::create);
+			return datasourceConfigurations.computeIfAbsent(productKey, (ignored)-> this.create(true));
 		}
-		return transactionManagerConfigurations.computeIfAbsent(this, TransactionManagerType::create);
+		return transactionManagerConfigurations.computeIfAbsent(this, (ignored) -> this.create(true));
 	}
 
 	public synchronized void closeConfigurationContext() {

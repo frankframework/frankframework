@@ -2,7 +2,7 @@ package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -137,7 +137,7 @@ public class PipeLineSessionTest {
 		assertEquals("test3", message3.asString());
 		assertEquals("test4", message4.asString());
 		assertTrue(message5.isEmpty(), "If key does not exist, result message should be empty");
-		assertNotNull(((Message) session.get("key2")).asObject(), "SessionKey 'key2' stored in Message should not be closed after reading value");
+		assertFalse(((Message) session.get("key2")).isNull(), "SessionKey 'key2' stored in Message should not be closed after reading value");
 	}
 
 	@Test
@@ -153,7 +153,7 @@ public class PipeLineSessionTest {
 		assertEquals("test3", message3);
 		assertEquals("test4", message4);
 		assertNull(message5, "If key does not exist, result string should be NULL");
-		assertNotNull(((Message) session.get("key2")).asObject(), "SessionKey 'key2' stored in Message should not be closed after reading value");
+		assertFalse(((Message) session.get("key2")).isNull(), "SessionKey 'key2' stored in Message should not be closed after reading value");
 	}
 
 	@Test
@@ -170,7 +170,7 @@ public class PipeLineSessionTest {
 
 	@Test
 	public void testDate() {
-		assertTrue(session.get("key7") instanceof Date);
+    assertInstanceOf(Date.class, session.get("key7"));
 	}
 
 	@Test
@@ -195,7 +195,7 @@ public class PipeLineSessionTest {
 		assertEquals(456, session.get("key8c", 0));
 		assertEquals(456, session.get("key8d", 0));
 
-		assertNotNull(((Message) session.get("key8c")).asObject(), "SessionKey 'key8c' stored in Message should not be closed after reading value");
+		assertFalse(((Message) session.get("key8c")).isNull(), "SessionKey 'key8c' stored in Message should not be closed after reading value");
 	}
 
 	@Test
@@ -222,7 +222,7 @@ public class PipeLineSessionTest {
 
 	@Test
 	public void testMap() {
-		assertTrue(session.get("key10") instanceof Map);
+    	assertInstanceOf(Map.class, session.get("key10"));
 		@SuppressWarnings("unchecked")
 		Map<String, Object> map = (Map<String, Object>) session.get("key10");
 		assertEquals(3, map.size());
@@ -326,7 +326,7 @@ public class PipeLineSessionTest {
 		assertTrue(to.getCloseables().containsKey(message));
 		assertTrue(to.getCloseables().containsKey(closeable1));
 		assertFalse(to.getCloseables().containsKey(closeable2));
-		assertNotNull(((Message) to.get("c")).asObject());
+		assertFalse(((Message) to.get("c")).isNull());
 		assertEquals("a message", ((Message) to.get("c")).asString());
 		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
 
@@ -334,8 +334,8 @@ public class PipeLineSessionTest {
 		to.close();
 
 		// Assert
-		assertNull(((Message) to.get("c")).asObject());
-		assertNotNull(((Message) to.get("__e")).asObject());
+		assertTrue(((Message) to.get("c")).isNull());
+		assertFalse(((Message) to.get("__e")).isNull());
 	}
 
 	@Test
@@ -375,7 +375,7 @@ public class PipeLineSessionTest {
 		assertEquals(15, to.get("a"));
 		assertNull(to.get("c"));
 
-		assertNull(message1.asObject());
+		assertTrue(message1.isNull());
 		assertEquals("m2", message2.asString());
 	}
 

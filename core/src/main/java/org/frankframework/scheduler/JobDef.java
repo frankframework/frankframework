@@ -298,7 +298,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private @Getter String cronExpression;
 	private @Getter long interval = -1;
 
-	private @Getter(onMethod = @__(@Override)) Locker locker = null;
+	private @Getter Locker locker = null;
 	private @Getter int numThreads = 1;
 	private int countThreads = 0;
 

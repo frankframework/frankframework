@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
@@ -7,30 +7,45 @@ import { AppConstants, AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
-
-
+import {
+  AdapterstatisticsService,
+  Statistics,
+} from './adapterstatistics.service';
 
 @Component({
   selector: 'app-adapterstatistics',
   templateUrl: './adapterstatistics.component.html',
-  styleUrls: ['./adapterstatistics.component.scss']
+  styleUrls: ['./adapterstatistics.component.scss'],
 })
 export class AdapterstatisticsComponent implements OnInit, OnDestroy {
-  defaults = { "name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last" };
+  defaults = {
+    name: 'Name',
+    count: 'Count',
+    min: 'Min',
+    max: 'Max',
+    avg: 'Average',
+    stdDev: 'StdDev',
+    sum: 'Sum',
+    first: 'First',
+    last: 'Last',
+  };
   adapterName: string | null = null;
   configuration: string | null = null;
   refreshing = false;
-  dataset: Partial<ChartDataset<"line", number[]>> = {
+  dataset: Partial<ChartDataset<'line', number[]>> = {
     fill: false,
-    backgroundColor: "#2f4050",
-    pointBackgroundColor: "#2f4050",
-    borderColor: "#2f4050",
-    pointBorderColor: "#2f4050",
+    backgroundColor: '#2f4050',
+    pointBackgroundColor: '#2f4050',
+    borderColor: '#2f4050',
+    pointBorderColor: '#2f4050',
     // hoverBackgroundColor: "#2f4050",
-    hoverBorderColor: "#2f4050",
+    hoverBorderColor: '#2f4050',
   };
-  hourlyStatistics: ChartData<'line', Statistics["hourly"][0]["count"][], Statistics["hourly"][0]["time"]> = {
+  hourlyStatistics: ChartData<
+    'line',
+    Statistics['hourly'][0]['count'][],
+    Statistics['hourly'][0]['time']
+  > = {
     labels: [],
     datasets: [],
   };
@@ -51,26 +66,26 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
         display: true,
         title: {
           display: true,
-          text: 'Messages Per Hour'
+          text: 'Messages Per Hour',
         },
         beginAtZero: true,
-        suggestedMax: 10
-      }
+        suggestedMax: 10,
+      },
     },
     hover: {
       mode: 'nearest',
-      intersect: true
+      intersect: true,
     },
     plugins: {
       legend: {
-        display: false
+        display: false,
       },
       tooltip: {
         mode: 'index',
         intersect: false,
         displayColors: false,
-      }
-    }
+      },
+    },
   };
 
   private _subscriptions = new Subscription();
@@ -84,106 +99,136 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     private statisticsService: AdapterstatisticsService,
     private SweetAlert: SweetalertService,
     private Debug: DebugService,
-    private Misc: MiscService
+    private Misc: MiscService,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-    });
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(
+      () => {
+        this.appConstants = this.appService.APP_CONSTANTS;
+      },
+    );
     this._subscriptions.add(appConstantsSubscription);
-}
+  }
 
-  ngOnInit() {
-    const routeParams = this.route.snapshot.paramMap;
-    this.adapterName = routeParams.get('name');
-    this.configuration = routeParams.get('configuration');
+  ngOnInit(): void {
+    const routeParameters = this.route.snapshot.paramMap;
+    this.adapterName = routeParameters.get('name');
+    this.configuration = routeParameters.get('configuration');
 
     if (!this.adapterName) {
-      this.SweetAlert.Warning("Adapter not found!");
+      this.SweetAlert.Warning('Adapter not found!');
       return;
     }
 
-    if (this.appConstants["Statistics.boundaries"]) {
+    if (this.appConstants['Statistics.boundaries']) {
       this.populateBoundaries(); //AppConstants already loaded
-    }
-    else {
-      const appConstantsSubscription = this.appService.appConstants$.subscribe(() => this.populateBoundaries()); //Wait for appConstants trigger to load
+    } else {
+      const appConstantsSubscription = this.appService.appConstants$.subscribe(
+        () => this.populateBoundaries(),
+      ); //Wait for appConstants trigger to load
       this._subscriptions.add(appConstantsSubscription);
     }
 
     window.setTimeout(() => {
       this.refresh();
     }, 1000);
-  };
+  }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  refresh() {
+  refresh(): void {
     this.refreshing = true;
-    this.statisticsService.getStatistics(this.configuration!, this.adapterName!).subscribe((data) => {
-      this.stats = data;
+    this.statisticsService
+      .getStatistics(this.configuration!, this.adapterName!)
+      .subscribe((data) => {
+        this.stats = data;
 
-      let labels: string[] = [];
-      let chartData: number[] = [];
-      for (const index in data["hourly"]) {
-        let hour = data["hourly"][index];
-        labels.push(hour["time"]);
-        if (this.appConstants["timezoneOffset"] != 0){
-          const offsetInHours = this.appConstants["timezoneOffset"] / 60;
-          const offsetIndex = +index + offsetInHours;
-          const wrapCutoff = 24;
-          const wrappedOffsetIndex = (wrapCutoff + offsetIndex % wrapCutoff) % wrapCutoff
-          hour = data["hourly"][wrappedOffsetIndex];
+        const labels: string[] = [];
+        const chartData: number[] = [];
+        for (const index in data['hourly']) {
+          let hour = data['hourly'][index];
+          labels.push(hour['time']);
+          if (this.appConstants['timezoneOffset'] != 0) {
+            const offsetInHours =
+              (this.appConstants['timezoneOffset'] as number) / 60;
+            const offsetIndex = +index + offsetInHours;
+            const wrapCutoff = 24;
+            const wrappedOffsetIndex =
+              (wrapCutoff + (offsetIndex % wrapCutoff)) % wrapCutoff;
+            hour = data['hourly'][wrappedOffsetIndex];
+          }
+          chartData.push(hour['count']);
         }
-        chartData.push(hour["count"]);
-      }
-      this.hourlyStatistics.labels = labels;
-      this.hourlyStatistics.datasets = [{
-        data: chartData,
-        ...this.dataset
-      }];
+        this.hourlyStatistics.labels = labels;
+        this.hourlyStatistics.datasets = [
+          {
+            data: chartData,
+            ...this.dataset,
+          },
+        ];
 
-      this.chart?.update();
+        this.chart?.update();
 
-      window.setTimeout(() => {
-        this.refreshing = false;
-      }, 500);
-    });
-  };
+        window.setTimeout(() => {
+          this.refreshing = false;
+        }, 500);
+      });
+  }
 
-  populateBoundaries() {
-    let timeBoundaries: string[] = this.appConstants["Statistics.boundaries"].split(",");
-    let sizeBoundaries: string[] = this.appConstants["Statistics.size.boundaries"].split(",");
-    let percBoundaries: string[] = this.appConstants["Statistics.percentiles"].split(",");
+  populateBoundaries(): void {
+    const timeBoundaries: string[] = (
+      this.appConstants['Statistics.boundaries'] as string
+    ).split(',');
+    const sizeBoundaries: string[] = (
+      this.appConstants['Statistics.size.boundaries'] as string
+    ).split(',');
+    const percBoundaries: string[] = (
+      this.appConstants['Statistics.percentiles'] as string
+    ).split(',');
 
-    let publishPercentiles = this.appConstants["Statistics.percentiles.publish"] == "true";
-    let publishHistograms = this.appConstants["Statistics.histograms.publish"] == "true";
-    let calculatePercentiles = this.appConstants["Statistics.percentiles.internal"] == "true";
-    let displayPercentiles = publishPercentiles || publishHistograms || calculatePercentiles;
+    const publishPercentiles =
+      this.appConstants['Statistics.percentiles.publish'] == 'true';
+    const publishHistograms =
+      this.appConstants['Statistics.histograms.publish'] == 'true';
+    const calculatePercentiles =
+      this.appConstants['Statistics.percentiles.internal'] == 'true';
+    const displayPercentiles =
+      publishPercentiles || publishHistograms || calculatePercentiles;
 
-    this.Debug.info("appending Statistic.boundaries", timeBoundaries, sizeBoundaries, percBoundaries);
+    this.Debug.info(
+      'appending Statistic.boundaries',
+      timeBoundaries,
+      sizeBoundaries,
+      percBoundaries,
+    );
 
     const statisticsTimeBoundariesAdditive: Record<string, string> = {};
     const statisticsSizeBoundariesAdditive: Record<string, string> = {};
 
-    for (const i in timeBoundaries) {
-      let j = timeBoundaries[i];
-      statisticsTimeBoundariesAdditive[j + "ms"] = "< " + j + "ms";
+    for (const index in timeBoundaries) {
+      const index_ = timeBoundaries[index];
+      statisticsTimeBoundariesAdditive[`${index_}ms`] = `< ${index_}ms`;
     }
-    for (const i in sizeBoundaries) {
-      let j = sizeBoundaries[i];
-      statisticsSizeBoundariesAdditive[j + "B"] = "< " + j + "B";
+    for (const index in sizeBoundaries) {
+      const index_ = sizeBoundaries[index];
+      statisticsSizeBoundariesAdditive[`${index_}B`] = `< ${index_}B`;
     }
     if (displayPercentiles) {
-      for (const i in percBoundaries) {
-        let j = "p" + percBoundaries[i];
-        statisticsTimeBoundariesAdditive[j] = j;
-        statisticsSizeBoundariesAdditive[j] = j;
+      for (const index in percBoundaries) {
+        const index_ = `p${percBoundaries[index]}`;
+        statisticsTimeBoundariesAdditive[index_] = index_;
+        statisticsSizeBoundariesAdditive[index_] = index_;
       }
     }
-    this.statisticsTimeBoundaries = { ...this.defaults, ...statisticsTimeBoundariesAdditive };
-    this.statisticsSizeBoundaries = { ...this.defaults, ...statisticsSizeBoundariesAdditive };
+    this.statisticsTimeBoundaries = {
+      ...this.defaults,
+      ...statisticsTimeBoundariesAdditive,
+    };
+    this.statisticsSizeBoundaries = {
+      ...this.defaults,
+      ...statisticsSizeBoundariesAdditive,
+    };
   }
 }

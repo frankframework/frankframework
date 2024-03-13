@@ -2,7 +2,7 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -65,28 +65,28 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "ingored", session);
-		assertNull(prr.getResult().asObject());
+		assertTrue(prr.getResult().isNull());
 	}
 
 	@Test
-	public void retrieveStringFromSession() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void retrieveStringFromSession() throws Exception {
 		pipe.setSessionKey("dummyString");
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "ingored", session);
-		String result = (String) prr.getResult().asObject();
+		String result = prr.getResult().asString();
 		assertEquals(DUMMY_DATA, result);
 	}
 
 	@Test
-	public void retrieveByteArrayFromSession() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void retrieveByteArrayFromSession() throws Exception {
 		pipe.setSessionKey("dummyByteArray");
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "ingored", session);
-		byte[] result = (byte[]) prr.getResult().asObject();
+		byte[] result = prr.getResult().asByteArray();
 		assertEquals(DUMMY_DATA, new String(result));
 	}
 
@@ -97,19 +97,19 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "ingored", session);
-		InputStream result = (InputStream) prr.getResult().asObject();
+		InputStream result = prr.getResult().asInputStream();
 		assertEquals(DUMMY_DATA, StreamUtil.streamToString(result));
 	}
 
 	@Test
-	public void retrieveEmptyMapFromSession() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void retrieveEmptyMapFromSession() throws Exception {
 		pipe.setType(ParameterType.MAP);
 		pipe.setSessionKey("emptyMap");
 		pipe.configure();
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "ingored", session);
-		String result = (String) prr.getResult().asObject();
+		String result = prr.getResult().asString();
 		assertEquals("<items/>", result.trim());
 	}
 
@@ -121,7 +121,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "ingored", session);
-		String result = (String) prr.getResult().asObject();
+		String result = prr.getResult().asString();
 
 		assertNotNull(result);
 		String key1 = null;
@@ -129,7 +129,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
 		//It's a bit random how the map is sorted.. sometimes key2 appears before key1
 		BufferedReader bufReader = new BufferedReader(new StringReader(result));
-		String line=null;
+		String line;
 		while( (line=bufReader.readLine()) != null ) {
 			if(line.indexOf("key1") > 0)
 				key1 = line.trim();

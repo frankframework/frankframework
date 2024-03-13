@@ -18,6 +18,9 @@ package org.frankframework.processors;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
@@ -37,7 +40,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 	private final Map<IPipe, Semaphore> pipeThreadCounts = new ConcurrentHashMap<>();
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		Semaphore s = getSemaphore(pipe);
 		if (s != null) {
@@ -63,13 +66,13 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 
 	// method needs to be overridden to enable AOP for debugger
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
 		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
 	}
 
 	// method needs to be overridden to enable AOP for debugger
 	@Override
-	public PipeRunResult validate(PipeLine pipeLine, IValidator validator, Message message, PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+	public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
 		return super.validate(pipeLine, validator, message, pipeLineSession, messageRoot);
 	}
 

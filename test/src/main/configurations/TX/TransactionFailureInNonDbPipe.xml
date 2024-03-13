@@ -24,7 +24,7 @@
 			</exits>
 
 			<pipe name="fixedInsert" className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('LASTNAME',?)" queryType="insert">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('LASTNAME',?)">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="causes a transaction timeout" />
@@ -57,7 +57,7 @@
 			</pipe>
 
 			<pipe name="fixedInsert4" className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('SURNAME',?)" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('SURNAME',?)" />
 					<param name="value" value="test2" />
 				<forward name="success" path="success" />
 			</pipe>

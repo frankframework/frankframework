@@ -59,10 +59,11 @@ public class TestPipeline extends FrankApiBase {
 	@POST
 	@RolesAllowed("IbisTester")
 	@Path("/test-pipeline")
-	@Relation("pipeline")
+	@Relation("testing")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postTestPipeLine(MultipartBody inputDataMap) throws ApiException {
+	@Description("send a message to an Adapters pipeline, bypassing the receiver")
+	public Response testPipeLine(MultipartBody inputDataMap) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		String configuration = RequestUtils.resolveStringFromMap(inputDataMap, "configuration");
 		builder.addHeader("configuration", configuration);

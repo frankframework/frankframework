@@ -34,9 +34,9 @@ import org.frankframework.core.IConfigurable;
 
 @Log4j2
 public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurable {
-	private final @Getter(onMethod = @__(@Override)) String domain = "KAFKA";
-	private final @Getter(onMethod = @__(@Override)) ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter(onMethod = @__(@Override)) @Setter ApplicationContext applicationContext;
+	private final @Getter String domain = "KAFKA";
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Setter @Getter String name;
 	/** The bootstrap servers to connect to, as a comma separated list. */

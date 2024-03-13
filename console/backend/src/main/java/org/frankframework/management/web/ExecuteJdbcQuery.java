@@ -43,10 +43,12 @@ import org.frankframework.util.RequestUtils;
 public final class ExecuteJdbcQuery extends FrankApiBase {
 
 	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/jdbc")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getJdbcInfo() throws ApiException {
+	@Relation("jdbc")
+	@Description("view a list of all JDBC DataSources")
+	public Response getJdbcDataSources() throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.GET);
 		return callSyncGateway(builder);
 	}
@@ -56,7 +58,9 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 	@Path("/jdbc/query")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(Map<String, Object> json) {
+	@Relation("jdbc")
+	@Description("execute a JDBC query on a datasource")
+	public Response executeJdbcQuery(Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.MANAGE);
 		String datasource = RequestUtils.getValue(json, "datasource");
 		String query = RequestUtils.getValue(json, "query");

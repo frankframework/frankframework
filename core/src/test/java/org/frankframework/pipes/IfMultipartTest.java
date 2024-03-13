@@ -10,7 +10,6 @@ import org.frankframework.core.PipeRunResult;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
@@ -19,14 +18,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
  *
  * @author <Sina Sen>
  */
-public class IfMultipartTest extends PipeTestBase<IfMultipart> {
+class IfMultipartTest extends PipeTestBase<IfMultipart> {
 
 	private MockHttpServletRequest request;
 
 	@BeforeEach
 	public void before() {
 		request = new MockHttpServletRequest();
-		MockitoAnnotations.initMocks(this);
 	}
 
 	@Override

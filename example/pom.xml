@@ -25,8 +25,8 @@
 		</dependency>
 		<!-- Includes missing javax.jms.JMSExceptions class -->
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 

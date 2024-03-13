@@ -27,17 +27,13 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
+import org.frankframework.cache.ICache;
+import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.CloseableThreadContext;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.cache.ICache;
-import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.doc.Category;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -51,6 +47,10 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Locker;
 import org.frankframework.util.Misc;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Required in each {@link Adapter} to transform incoming messages. A pipeline
@@ -126,7 +126,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter final List<IPipe> pipes	  = new ArrayList<>();
 
 	private @Getter Adapter adapter;    // for transaction managing
-	private @Getter INamedObject owner; // for logging purposes
+	private @Setter @Getter INamedObject owner; // for logging purposes
 	private @Setter PipeLineProcessor pipeLineProcessor;
 
 	private final Map<String, StatisticsKeeper> pipeStatistics = new Hashtable<>();
@@ -136,7 +136,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 
 	private @Getter final List<IPipeLineExitHandler> exitHandlers = new ArrayList<>();
-	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 
 	private boolean configurationSucceeded = false;
 	private boolean inputMessageConsumedMultipleTimes=false;
@@ -262,7 +261,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
 
 		inputMessageConsumedMultipleTimes |= pipes.stream()
-				.anyMatch(p -> p.consumesSessionVariable("originalMessage"));
+				.anyMatch(p -> p.consumesSessionVariable(PipeLineSession.ORIGINAL_MESSAGE_KEY));
 
 		super.configure();
 		log.debug("successfully configured");
@@ -299,29 +298,26 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	public void configure(IPipe pipe) throws ConfigurationException {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
-			if (pipe instanceof IExtendedPipe) {
-				IExtendedPipe epipe=(IExtendedPipe)pipe;
-				epipe.setPipeLine(this); //Temporary here because of validators and wrappers
+			pipe.setPipeLine(this); //Temporary here because of validators and wrappers
 
-				if (epipe.getDurationThreshold() >= 0) {
-					epipe.registerEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
-				}
-				epipe.registerEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-				if (getMessageSizeWarnNum() >= 0) {
-					epipe.registerEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
-				}
-				if (epipe.hasSizeStatistics()) {
-					if (pipe instanceof AbstractPipe) {
-						AbstractPipe aPipe = (AbstractPipe) pipe;
-						if (aPipe.getInSizeStatDummyObject() != null) {
-							pipeSizeStats.put(aPipe.getInSizeStatDummyObject().getName(), new SizeStatisticsKeeper(aPipe.getInSizeStatDummyObject().getName()));
-						}
-						if (aPipe.getOutSizeStatDummyObject() != null) {
-							pipeSizeStats.put(aPipe.getOutSizeStatDummyObject().getName(), new SizeStatisticsKeeper(aPipe.getOutSizeStatDummyObject().getName()));
-						}
-					} else {
-						pipeSizeStats.put(pipe.getName(), new SizeStatisticsKeeper(pipe.getName()));
+			if (pipe.getDurationThreshold() >= 0) {
+				pipe.registerEvent(IPipe.LONG_DURATION_MONITORING_EVENT);
+			}
+			pipe.registerEvent(IPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+			if (getMessageSizeWarnNum() >= 0) {
+				pipe.registerEvent(IPipe.MESSAGE_SIZE_MONITORING_EVENT);
+			}
+			if (pipe.hasSizeStatistics()) {
+				if (pipe instanceof AbstractPipe) {
+					AbstractPipe aPipe = (AbstractPipe) pipe;
+					if (aPipe.getInSizeStatDummyObject() != null) {
+						pipeSizeStats.put(aPipe.getInSizeStatDummyObject().getName(), new SizeStatisticsKeeper(aPipe.getInSizeStatDummyObject().getName()));
 					}
+					if (aPipe.getOutSizeStatDummyObject() != null) {
+						pipeSizeStats.put(aPipe.getOutSizeStatDummyObject().getName(), new SizeStatisticsKeeper(aPipe.getOutSizeStatDummyObject().getName()));
+					}
+				} else {
+					pipeSizeStats.put(pipe.getName(), new SizeStatisticsKeeper(pipe.getName()));
 				}
 			}
 
@@ -344,15 +340,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				}
 			}
 			pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
-			//congestionSensors.addSensor(pipe);
 		} catch (Throwable t) {
 			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
 			getAdapter().getMessageKeeper().error("Error initializing adapter ["+ getAdapter().getName()+"]: " +e.getMessage());
 			throw e;
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Pipe successfully configured");
-		}
+		log.debug("Pipe successfully configured");
 	}
 
 	public boolean configurationSucceeded() {
@@ -510,10 +503,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public void setAdapter(Adapter adapter) {
 		this.adapter = adapter;
 		setOwner(adapter);
-	}
-
-	public void setOwner(INamedObject owner) {
-		this.owner = owner;
 	}
 
 

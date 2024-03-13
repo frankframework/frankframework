@@ -27,6 +27,7 @@ import org.frankframework.monitoring.SourceFiltering;
 import org.frankframework.monitoring.Trigger;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
@@ -42,6 +43,11 @@ import org.springframework.messaging.MessageHandlingException;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@WithMockUser(roles = { "IbisTester" })
 public class TestMonitoring extends BusTestBase {
 	private static final String TEST_MONITOR_NAME = "TestMonitor";
 	private static final String TEST_TRIGGER_EVENT_NAME = "testEvent1";
