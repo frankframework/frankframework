@@ -45,12 +45,18 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 		sender.configure();
 		sender.open();
 
-		// Act
+		// Act 1
 		sender.sendMessageOrThrow(Message.nullMessage(), session).asString();
 
-		// Assert
+		// Assert 1
 		verify(senderMock, Mockito.times(2)).open();
 		verify(senderMock, Mockito.times(1)).close();
+
+		// Act 2: now close the session too
+		session.close();
+
+		// Assert 2: only now the sender should be closed
+		verify(senderMock, Mockito.times(2)).close();
 	}
 
 	private static class TestOpenAndConfigureSender extends SenderWithParametersBase {

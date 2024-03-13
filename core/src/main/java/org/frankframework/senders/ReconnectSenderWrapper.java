@@ -65,7 +65,6 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 			sender.open();
 			super.open();
 		} finally {
-			super.close();
 			sender.close(); //Only open to test the connection, close afterwards if all is ok.
 		}
 	}
@@ -73,7 +72,7 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		sender.open();
-		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender), this);
+		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender), this.toString());
 		return sender.sendMessage(message, session);
 	}
 
