@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
-import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
 
 import lombok.Getter;
@@ -100,14 +99,18 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			setUseReplyTo(false);
 		}
 		super.configure();
-		configureXPathLogging();
+		try {
+			configureXPathLogging();
+		} catch (TransformerConfigurationException e) {
+			throw new ConfigurationException(e);
+		}
 	}
 
 	protected Map<String, String> getxPathLogMap() {
 		return xPathLogMap;
 	}
 
-	private void configureXPathLogging() {
+	private void configureXPathLogging() throws TransformerConfigurationException {
 		String logKeys;
 		if(getXPathLoggingKeys() != null) //Override on listener level
 			logKeys = getXPathLoggingKeys();
@@ -119,8 +122,14 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 		for (String name : StringUtil.split(logKeys)) {
 			String xPath = APP_CONSTANTS.getProperty("msg.log.xPath." + name);
-			if(xPath != null)
+			if(xPath != null) {
 				xPathLogMap.put(name, xPath);
+				if (!LOG_KEY_TRANSFORMER_POOLS.containsKey(xPath)) {
+					LOG_KEY_TRANSFORMER_POOLS.put(xPath, TransformerPool.getUtilityInstance(
+						XmlUtils.createXPathEvaluatorSource(xPath), XmlUtils.DEFAULT_XSLT_VERSION
+					));
+				}
+			}
 		}
 	}
 
@@ -192,7 +201,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		String found = "";
 		if(message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
 			try {
-				TransformerPool test = getXPathTransformerPool(xPathExpression);
+				TransformerPool test = LOG_KEY_TRANSFORMER_POOLS.get(xPathExpression);
 				found = test.transform(message, null);
 
 				//xPath not found and message length is 0 but not null nor ""
@@ -202,15 +211,6 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			}
 		}
 		return found;
-	}
-
-	private static TransformerPool getXPathTransformerPool(String xPathExpression) throws TransformerConfigurationException {
-		if (LOG_KEY_TRANSFORMER_POOLS.containsKey(xPathExpression)) {
-			return LOG_KEY_TRANSFORMER_POOLS.get(xPathExpression);
-		}
-		TransformerPool xpathTransformerPool = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false), XmlUtils.DEFAULT_XSLT_VERSION);
-		LOG_KEY_TRANSFORMER_POOLS.put(xPathExpression, xpathTransformerPool);
-		return xpathTransformerPool;
 	}
 
 	@Override

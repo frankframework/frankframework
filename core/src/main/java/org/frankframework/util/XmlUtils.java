@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ public class XmlUtils {
 		return result;
 	}
 
-	protected static String makeDetectXsltVersionXslt() {
+	private static String makeDetectXsltVersionXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
@@ -194,7 +194,7 @@ public class XmlUtils {
 	}
 
 
-	protected static String makeGetXsltConfigXslt() {
+	private static String makeGetXsltConfigXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
@@ -241,7 +241,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(()->createXPathEvaluatorSource(XPATH_GETROOTNODENAME),"GetRootNodeName",true, false, DEFAULT_XSLT_VERSION);
 	}
 
-	protected static String makeRemoveNamespacesXsltTemplates() {
+	private static String makeRemoveNamespacesXsltTemplates() {
 		// TODO: Wish to get rid of this as well but it's still embedded in another XSLT.
 		return
 		"<xsl:template match=\"*\">"
@@ -259,7 +259,7 @@ public class XmlUtils {
 		+ "</xsl:template>";
 	}
 
-	protected static String makeGetRootNamespaceXslt() {
+	private static String makeGetRootNamespaceXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
@@ -273,7 +273,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(XmlUtils::makeGetRootNamespaceXslt,"GetRootNamespace",true,false, 2);
 	}
 
-	protected static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
+	private static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns=\""+namespace+"\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -309,7 +309,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(()->makeAddRootNamespaceXslt(namespace,omitXmlDeclaration,indent),"AddRootNamespace["+namespace+"]",omitXmlDeclaration,indent, 1);
 	}
 
-	protected static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
+	private static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -328,7 +328,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(()->makeChangeRootXslt(root,omitXmlDeclaration,indent),"ChangeRoot["+root+"]",omitXmlDeclaration,indent, 1);
 	}
 
-	protected static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
+	private static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -347,7 +347,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(()->makeRemoveUnusedNamespacesXslt(omitXmlDeclaration,indent),"RemoveUnusedNamespaces",omitXmlDeclaration,indent, 1);
 	}
 
-	protected static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
+	private static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
 		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 				+ "<xsl:output method=\"xml\" indent=\""
 				+ (indent ? "yes" : "no")
@@ -388,7 +388,7 @@ public class XmlUtils {
 		return getUtilityTransformerPool(()->makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration,indent),"RemoveUnusedNamespacesXslt2",omitXmlDeclaration,indent, 2);
 	}
 
-	protected static String makeCopyOfSelectXslt(String xpath, boolean omitXmlDeclaration, boolean indent) {
+	private static String makeCopyOfSelectXslt(String xpath, boolean omitXmlDeclaration, boolean indent) {
 		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 				+ "<xsl:output method=\"xml\" indent=\""
 				+ (indent ? "yes" : "no")
@@ -691,7 +691,7 @@ public class XmlUtils {
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
 	@Nonnull
-	public static String createXPathEvaluatorSource(String xPathExpression) {
+	public static String createXPathEvaluatorSource(@Nonnull String xPathExpression) {
 		return createXPathEvaluatorSource(null, xPathExpression, TransformerPool.OutputType.TEXT);
 	}
 

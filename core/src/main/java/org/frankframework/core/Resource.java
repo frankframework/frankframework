@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,16 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlUtils;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Reference to a resource, for instance on the classpath. Can be accessed multiple times.
@@ -47,15 +48,18 @@ public abstract class Resource implements IScopeProvider {
 		this.scopeProvider = scopeProvider;
 	}
 
-	public static Resource getResource(String resource) {
+	@Nullable
+	public static Resource getResource(@Nonnull String resource) {
 		return getResource(null, resource);
 	}
 
-	public static Resource getResource(IScopeProvider scopeProvider, String resource) {
+	@Nullable
+	public static Resource getResource(@Nullable IScopeProvider scopeProvider, @Nonnull String resource) {
 		return getResource(scopeProvider, resource, null);
 	}
 
-	public static Resource getResource(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
+	@Nullable
+	public static Resource getResource(@Nullable IScopeProvider scopeProvider, @Nonnull String resource, String allowedProtocols) {
 		if(scopeProvider == null) {
 			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
 		}
