@@ -93,16 +93,16 @@ public class SoapWrapper {
 
 	private void init() throws ConfigurationException {
 		try {
-			extractBodySoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, TransformerPool.OutputType.XML, false, false));
-			extractBodySoap12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, TransformerPool.OutputType.XML, false, false));
-			extractHeaderSoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, TransformerPool.OutputType.XML));
-			extractHeaderSoap12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_HEADER_XPATH, TransformerPool.OutputType.XML));
-			extractFaultCount11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, TransformerPool.OutputType.TEXT));
-			extractFaultCount12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_FAULTCOUNTER_XPATH, TransformerPool.OutputType.TEXT));
-			extractFaultCode11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCODE_XPATH_SOAP11, TransformerPool.OutputType.TEXT));
-			extractFaultCode12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_FAULTCODE_XPATH_SOAP12, TransformerPool.OutputType.TEXT));
-			extractFaultString11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTSTRING_XPATH_SOAP11, TransformerPool.OutputType.TEXT));
-			extractFaultString12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_FAULTSTRING_XPATH_SOAP12, TransformerPool.OutputType.TEXT));
+			extractBodySoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, TransformerPool.OutputType.XML, false, false), XmlUtils.DEFAULT_XSLT_VERSION);
+			extractBodySoap12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, TransformerPool.OutputType.XML, false, false), XmlUtils.DEFAULT_XSLT_VERSION);
+			extractHeaderSoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, TransformerPool.OutputType.XML), XmlUtils.DEFAULT_XSLT_VERSION);
+			extractHeaderSoap12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_HEADER_XPATH, TransformerPool.OutputType.XML), XmlUtils.DEFAULT_XSLT_VERSION);
+			extractFaultCount11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, TransformerPool.OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
+			extractFaultCount12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_FAULTCOUNTER_XPATH, TransformerPool.OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
+			extractFaultCode11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCODE_XPATH_SOAP11, TransformerPool.OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
+			extractFaultCode12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_FAULTCODE_XPATH_SOAP12, TransformerPool.OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
+			extractFaultString11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTSTRING_XPATH_SOAP11, TransformerPool.OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
+			extractFaultString12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_FAULTSTRING_XPATH_SOAP12, TransformerPool.OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create SOAP transformer", e);
 		}

@@ -96,8 +96,7 @@ public class TransformerPool {
 		this.configSource = configSource;
 		try {
 			if (xsltVersion <= 0) {
-				configMap = getConfigMap();
-				String version = configMap.get("version");
+				String version = getConfigMap().get("version");
 				xsltVersion = XmlUtils.interpretXsltVersion(version);
 			}
 		} catch (TransformerException | IOException e) {
@@ -111,7 +110,7 @@ public class TransformerPool {
 		tFactory = XmlUtils.getTransformerFactory(xsltVersion, factoryErrorListener);
 		if (scopeProvider != null) {
 			classLoaderURIResolver = new ClassLoaderURIResolver(scopeProvider);
-			log.debug("created Transformerpool for sysId [{}] scopeProvider [{}]", sysId, scopeProvider);
+			log.debug("created TransformerPool for sysId [{}] scopeProvider [{}]", sysId, scopeProvider);
 			tFactory.setURIResolver(classLoaderURIResolver);
 		} else {
 			classLoaderURIResolver = new NonResolvingURIResolver();
@@ -282,7 +281,7 @@ public class TransformerPool {
 
 	public void open() {
 		if (pool == null) {
-			pool = new SoftReferenceObjectPool<>(new BasePooledObjectFactory<Transformer>() {
+			pool = new SoftReferenceObjectPool<>(new BasePooledObjectFactory<>() {
 
 				@Override
 				public Transformer create() throws Exception {

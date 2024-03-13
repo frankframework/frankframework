@@ -32,12 +32,6 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.xml.sax.helpers.XMLFilterImpl;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.HasSpecialDefaultValues;
@@ -74,6 +68,12 @@ import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorException;
 import org.frankframework.validation.xsd.ResourceXsd;
 import org.frankframework.xml.RootElementToSessionKeyFilter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.xml.sax.helpers.XMLFilterImpl;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
@@ -148,7 +148,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
 				String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
 				try {
-					transformerPoolExtractSoapBody = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, OutputType.XML));
+					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, OutputType.XML), XmlUtils.DEFAULT_XSLT_VERSION);
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException("got error creating transformer from getSoapBody", te);
 				}
