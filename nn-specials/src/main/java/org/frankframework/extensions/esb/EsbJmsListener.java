@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.jms.BytesMessage;
@@ -28,6 +29,7 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
+import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -63,6 +65,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final String MSGLOG_KEYS = APP_CONSTANTS.getProperty("msg.log.keys");
+	private static final Map<String, TransformerPool> LOG_KEY_TRANSFORMER_POOLS = new ConcurrentHashMap<>();
 	static final String JMS_RR_FORCE_MESSAGE_KEY = "jms.esb.rr.forceMessageIdAsCorrelationId.default";
 	private final String messageIdAsCorrelationIdRR = APP_CONSTANTS.getString(JMS_RR_FORCE_MESSAGE_KEY, null);
 
@@ -173,7 +176,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
 				String sessionKey = pair.getKey();
 				String xPath = pair.getValue();
-				String result = getResultFromxPath(soapMessage, xPath);
+				String result = getResultFromXPath(soapMessage, xPath);
 				if (!result.isEmpty()) {
 					messageProperties.put(sessionKey, result);
 					xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
@@ -185,11 +188,11 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 	}
 
-	protected String getResultFromxPath(String message, String xPathExpression) {
+	protected String getResultFromXPath(String message, String xPathExpression) {
 		String found = "";
 		if(message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
 			try {
-				TransformerPool test = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
+				TransformerPool test = getXPathTransformerPool(xPathExpression);
 				found = test.transform(message, null);
 
 				//xPath not found and message length is 0 but not null nor ""
@@ -199,6 +202,15 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			}
 		}
 		return found;
+	}
+
+	private static TransformerPool getXPathTransformerPool(String xPathExpression) throws TransformerConfigurationException {
+		if (LOG_KEY_TRANSFORMER_POOLS.containsKey(xPathExpression)) {
+			return LOG_KEY_TRANSFORMER_POOLS.get(xPathExpression);
+		}
+		TransformerPool xpathTransformerPool = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false), XmlUtils.DEFAULT_XSLT_VERSION);
+		LOG_KEY_TRANSFORMER_POOLS.put(xPathExpression, xpathTransformerPool);
+		return xpathTransformerPool;
 	}
 
 	@Override

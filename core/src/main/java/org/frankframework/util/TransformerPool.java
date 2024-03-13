@@ -129,32 +129,38 @@ public class TransformerPool {
 		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource);
 	}
 
-	//TODO Fix this, Thread.currentThread().getContextClassLoader() should not be used and causes memory leaks upon reloading configurations!!!
-	private TransformerPool(String xsltString, String sysId, int xsltVersion) throws TransformerConfigurationException {
-		this(xsltString, sysId, xsltVersion, () -> Thread.currentThread().getContextClassLoader());
-	}
-
 	private TransformerPool(String xsltString, String sysId, int xsltVersion, IScopeProvider scopeProvider) throws TransformerConfigurationException {
 		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)), scopeProvider);
 	}
 
-	/** @deprecated Use Resource or UtilityInstance instead! This can/will cause memory leaks upon reloading configurations!!! */
-	@Deprecated
-	public static TransformerPool getInstance(String xsltString, int xsltVersion) throws TransformerConfigurationException {
-		return new TransformerPool(xsltString, null, xsltVersion);
-	}
-
 	/**
-	 * Special utility method to create a new TransformerPool without a ClassLoader.
-	 * Utility pools should never use configuration classloaders, instead always read from the classpath!
+	 * Get an instance of a TransformerPool that does <b>NOT</b> use a classloader and can therefore <b>NOT</b>
+	 * load any resources from classpath. This should be used primarily for TransformerPools that evaluate
+	 * XPath expressions and can not be statically cached.
 	 */
-	public static TransformerPool getUtilityInstance(String xsltString) throws TransformerConfigurationException {
-		return getUtilityInstance(xsltString, 2);
+	public static TransformerPool getInstance(String xsltString, int xsltVersion) throws TransformerConfigurationException {
+		return new TransformerPool(xsltString, null, xsltVersion, null);
+	}
+
+	/**
+	 * Get an instance of a TransformerPool that can load additional resources such as referenced URIs from the provided {@link IScopeProvider}.
+	 * WARNING: This should only be used to be able to load Configuration-specific resources in dynamically loaded
+	 * configurations. This should not be used for application-wide transformer pools.
+	 *
+	 * @param xsltString The XSLT to be evaluated, as string
+	 * @param xsltVersion Version of XSLT. Can be 0, 1, or 2. If 0, the actual version will be extracted from the stylesheet at a performance-penalty.
+	 * @param scopeProvider The {@link IScopeProvider} for loading additional resources
+	 * @return A TransformerPool instance for the input stylesheet.
+	 * @throws TransformerConfigurationException
+	 */
+	public static TransformerPool getInstance(String xsltString, int xsltVersion, IScopeProvider scopeProvider) throws TransformerConfigurationException {
+		return new TransformerPool(xsltString, null, xsltVersion, scopeProvider);
 	}
 
 	/**
 	 * Special utility method to create a new TransformerPool without a ClassLoader.
 	 * Utility pools should never use configuration classloaders, instead always read from the classpath!
+	 * Utility pools should always be cached statically for re-use. The caller-code is responsible for this.
 	 */
 	public static TransformerPool getUtilityInstance(String xsltString, int xsltVersion) throws TransformerConfigurationException {
 		return new TransformerPool(xsltString, null, xsltVersion, null) {
@@ -273,7 +279,7 @@ public class TransformerPool {
 		log.debug("xpath [{}] resulted in xslt [{}]", xPathExpression, xslt);
 
 		try {
-			return new TransformerPool(xslt, null, xsltVersion == 0 ? XmlUtils.DEFAULT_XSLT_VERSION : xsltVersion);
+			return new TransformerPool(xslt, null, xsltVersion == 0 ? XmlUtils.DEFAULT_XSLT_VERSION : xsltVersion, null);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xPathExpression+"]", e);
 		}
@@ -311,6 +317,7 @@ public class TransformerPool {
 		} catch (Exception e) {
 			log.warn("exception clearing transformerPool", e);
 		}
+		tFactory.setURIResolver(null);
 	}
 
 	protected Transformer getTransformer() throws TransformerConfigurationException {

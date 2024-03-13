@@ -106,7 +106,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				if (streamingXslt && getXsltVersion() != DEFAULT_XSLT_VERSION) {
 					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages", SuppressKeys.XSLT_STREAMING_SUPRESS_KEY);
 				}
-				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()), getXsltVersion());
+				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()), getXsltVersion(), this);
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("elementXPathExpression ["+getElementXPathExpression()+"]",e);
