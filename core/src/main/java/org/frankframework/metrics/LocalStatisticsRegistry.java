@@ -57,6 +57,10 @@ import jakarta.json.JsonStructure;
 public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	private static final NumberFormat DECIMAL_FORMAT = new DecimalFormat("#");
 
+	public LocalStatisticsRegistry() {
+		super();
+	}
+
 	public LocalStatisticsRegistry(SimpleConfig config) {
 		super(config, Clock.SYSTEM);
 	}

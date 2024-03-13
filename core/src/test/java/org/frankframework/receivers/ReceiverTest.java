@@ -179,7 +179,7 @@ public class ReceiverTest {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName("ReceiverTestAdapterName");
 
-		PipeLine pl = spy(new PipeLine());
+		PipeLine pl = spy(configuration.createBean(PipeLine.class));
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(exitState);

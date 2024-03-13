@@ -97,7 +97,7 @@ public class JavaListenerTest {
 		PipeProcessor pipeProcessor = new CorePipeProcessor();
 		pipeLineProcessor.setPipeProcessor(pipeProcessor);
 
-		PipeLine pl = spy(new PipeLine());
+		PipeLine pl = spy(configuration.createBean(PipeLine.class));
 		pl.setFirstPipe("dummy");
 		pl.setPipeLineProcessor(pipeLineProcessor);
 

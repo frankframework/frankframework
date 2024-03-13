@@ -107,7 +107,7 @@ public class ReceiverSubAdapterTest {
 
 	private Receiver<String> createReceiver(TestConfiguration configuration, PipeLine pipeline, String name, NarayanaJtaTransactionManager txManager) throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
-		Receiver<String> receiver = new Receiver<>();
+		Receiver<String> receiver = configuration.createBean(Receiver.class);
 		receiver.setName(name);
 		adapter.setName(name);
 

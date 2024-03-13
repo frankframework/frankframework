@@ -100,7 +100,7 @@ public class TestReceiverOnError {
 			return invocation.callRealMethod();
 		}).when(adapter).processMessageWithExceptions(anyString(), any(Message.class), any(PipeLineSession.class));
 
-		PipeLine pl = spy(new PipeLine());
+		PipeLine pl = spy(configuration.createBean(PipeLine.class));
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(ExitState.SUCCESS);

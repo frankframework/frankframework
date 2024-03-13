@@ -326,7 +326,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			getLocker().configure();
 		}
 
-		summary = configurationMetrics.createDistributionSummary(locker, FrankMeterType.JOB_DURATION);
+		summary = configurationMetrics.createDistributionSummary(this, FrankMeterType.JOB_DURATION);
 
 		getMessageKeeper().add("job successfully configured");
 		configured = true;

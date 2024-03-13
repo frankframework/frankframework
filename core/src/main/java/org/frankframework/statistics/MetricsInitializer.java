@@ -18,7 +18,6 @@ package org.frankframework.statistics;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
@@ -33,6 +32,7 @@ import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.scheduler.JobDef;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
@@ -88,17 +88,23 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return createCounter(type, getTags(frankElement, frankElement.getName(), null));
 	}
 
+	private String findName(INamedObject namedObject) {
+		return (StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject));
+	}
+	private String findName(IConfigurationAware namedObject) {
+		return (StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject));
+	}
+
 	/** This DistributionSummary is suffixed under a pipe */
 	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull INamedObject subFrankElement, @Nonnull FrankMeterType type) {
-		String name = (StringUtils.isNotEmpty(subFrankElement.getName()) ? subFrankElement.getName():ClassUtils.nameOf(subFrankElement));
-		return createSubDistributionSummary(parentFrankElement, name, type);
+		return createSubDistributionSummary(parentFrankElement, findName(subFrankElement), type);
 	}
 	public DistributionSummary createSubDistributionSummary(@Nonnull IConfigurationAware parentFrankElement, @Nonnull String subFrankElement, @Nonnull FrankMeterType type) {
-		List<Tag> tags = getTags(parentFrankElement, parentFrankElement.getName() + " -> " + subFrankElement, null);
+		List<Tag> tags = getTags(parentFrankElement, findName(parentFrankElement) + " -> " + subFrankElement, null);
 		return createDistributionSummary(type, tags);
 	}
 	public DistributionSummary createDistributionSummary(@Nonnull IConfigurationAware frankElement, @Nonnull FrankMeterType type) {
-		List<Tag> tags = getTags(frankElement, frankElement.getName(), null);
+		List<Tag> tags = getTags(frankElement, findName(frankElement), null);
 		return createDistributionSummary(type, tags);
 	}
 	public DistributionSummary createThreadBasedDistributionSummary(Receiver<?> receiver, FrankMeterType type, int threadNumber) {
@@ -149,8 +155,6 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 
 
 	private List<Tag> getTags(@Nonnull IConfigurationAware frankElement, @Nonnull String name, @Nullable List<Tag> extraTags) {
-		Objects.requireNonNull(frankElement.getName());
-
 		ApplicationContext configuration = frankElement.getApplicationContext();
 		List<Tag> tags = new ArrayList<>(5);
 		Adapter adapter = getAdapter(frankElement);
@@ -191,6 +195,8 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 			return "adapter";
 		} else if(frankElement instanceof ISender) {
 			return "sender";
+		} else if(frankElement instanceof JobDef) {
+			return "schedule";
 		} else {
 			throw new IllegalStateException("meter type not configured");
 		}
