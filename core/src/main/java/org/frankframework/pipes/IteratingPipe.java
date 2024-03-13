@@ -146,7 +146,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
-				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),OutputType.XML,false), XmlUtils.DEFAULT_XSLT_VERSION);
+				stopConditionTp=TransformerPool.getXPathTransformerPool(null,getStopConditionXPathExpression(),OutputType.XML);
 				stopConditionStatisticsKeeper =  new StatisticsKeeper("-> stop condition determination");
 			}
 		} catch (TransformerConfigurationException e) {

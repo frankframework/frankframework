@@ -707,23 +707,7 @@ public class XmlUtils {
 	 */
 	@Nonnull
 	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod) {
-		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, false);
-	}
-
-	/**
-	 * Create an XSLT stylesheet that can be used to evaluate the xpath expression passed in, in the given namespaces.
-	 * The stylesheet output type will be determined by the outputMethod parameter.
-	 * The stylesheet XSLT version will be {@link #DEFAULT_XSLT_VERSION}.
-	 *
-	 * @param namespaceDefs Definitions of the namespaces in which to evaluate the XPath Expression.
-	 * @param xPathExpression The XPath Expression to evaluate
-	 * @param outputMethod Type of output as per {@link TransformerPool.OutputType}.
-	 * @param includeXmlDeclaration If true, include XML declaration in the resulting XSLT.
-	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
-	 */
-	@Nonnull
-	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration) {
-		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, includeXmlDeclaration, true);
+		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, false, true);
 	}
 
 	/**

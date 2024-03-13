@@ -95,9 +95,9 @@ public class BisJmsSender extends JmsSender {
 		}
 		try {
 			bisUtils = BisUtils.getInstance();
-			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisUtils.getSoapNamespaceDefs() + "\n" + bisUtils.getBisNamespaceDefs(), (isResultInPayload() ? bisUtils.getBisErrorXPath() : bisUtils.getOldBisErrorXPath()), OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
-			responseTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getResponseNamespaceDefs()) ? bisUtils.getSoapNamespaceDefs() + "\n" + getResponseNamespaceDefs() : bisUtils.getSoapNamespaceDefs(), StringUtils.isNotEmpty(getResponseXPath()) ? bisUtils.getSoapBodyXPath() + "/" + getResponseXPath() : bisUtils.getSoapBodyXPath() + "/*", OutputType.XML), XmlUtils.DEFAULT_XSLT_VERSION);
-			bisErrorListTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisUtils.getSoapNamespaceDefs() + "\n" + bisUtils.getBisNamespaceDefs(), (isResultInPayload() ? bisUtils.getBisErrorListXPath() : bisUtils.getOldBisErrorListXPath()), OutputType.XML), XmlUtils.DEFAULT_XSLT_VERSION);
+			bisErrorTp = TransformerPool.getXPathTransformerPool(bisUtils.getSoapNamespaceDefs() + "\n" + bisUtils.getBisNamespaceDefs(), (isResultInPayload() ? bisUtils.getBisErrorXPath() : bisUtils.getOldBisErrorXPath()), OutputType.TEXT);
+			responseTp = TransformerPool.getXPathTransformerPool(StringUtils.isNotEmpty(getResponseNamespaceDefs()) ? bisUtils.getSoapNamespaceDefs() + "\n" + getResponseNamespaceDefs() : bisUtils.getSoapNamespaceDefs(), StringUtils.isNotEmpty(getResponseXPath()) ? bisUtils.getSoapBodyXPath() + "/" + getResponseXPath() : bisUtils.getSoapBodyXPath() + "/*", OutputType.XML);
+			bisErrorListTp = TransformerPool.getXPathTransformerPool(bisUtils.getSoapNamespaceDefs() + "\n" + bisUtils.getBisNamespaceDefs(), (isResultInPayload() ? bisUtils.getBisErrorListXPath() : bisUtils.getOldBisErrorListXPath()), OutputType.XML);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix() + "cannot create transformer", e);
 		}

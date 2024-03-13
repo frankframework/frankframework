@@ -134,15 +134,6 @@ public class TransformerPool {
 	}
 
 	/**
-	 * Get an instance of a TransformerPool that does <b>NOT</b> use a classloader and can therefore <b>NOT</b>
-	 * load any resources from classpath. This should be used primarily for TransformerPools that evaluate
-	 * XPath expressions and can not be statically cached.
-	 */
-	public static TransformerPool getInstance(@Nonnull String xsltString, int xsltVersion) throws TransformerConfigurationException {
-		return new TransformerPool(xsltString, null, xsltVersion, null);
-	}
-
-	/**
 	 * Get an instance of a TransformerPool that can load additional resources such as referenced URIs from the provided {@link IScopeProvider}.
 	 * WARNING: This should only be used to be able to load Configuration-specific resources in dynamically loaded
 	 * configurations. This should not be used for application-wide transformer pools.
@@ -171,10 +162,31 @@ public class TransformerPool {
 		};
 	}
 
+	/**
+	 * Get a TransformerPool instance that loads its XSLT stylesheet from the given resource. The XSLT
+	 * version will be dynamically derived from the stylesheet, at a performance penalty.
+	 *
+	 * @param resource {@link Resource} from which to load the stylesheet
+	 * @return TransformerPool instance for the XSLT stylesheet.
+	 * @throws TransformerConfigurationException Thrown if there was an exception creating the TransformerPool or parsing the XSLT stylesheet
+	 * @throws IOException Thrown if the resource cannot be loaded
+	 */
 	public static TransformerPool getInstance(@Nonnull Resource resource) throws TransformerConfigurationException, IOException {
 		return getInstance(resource, 0);
 	}
 
+	/**
+	 * Get a TransformerPool instance that loads its XSLT stylesheet from the given resource. The
+	 * XSLT version in the stylesheet should match the {@code xlstVersion} parameter, or be {@code 0} for
+	 * dynamic derivation at a performance penalty.
+	 *
+	 * @param resource The {@link Resource} from which to load the XSLT stylesheet
+	 * @param xsltVersion The XSLT version of the stylesheet. Can be 0, 1, or 2. If 0, the actual version will
+	 *                    be dynamically derived from the stylesheet itself on creation at a cost in performance.
+	 * @return TransformerPool instance for the XSLT stylesheet.
+	 * @throws TransformerConfigurationException Thrown if there was an exception creating the TransformerPool or parsing the XSLT stylesheet
+	 * @throws IOException Thrown if the resource cannot be loaded
+	 */
 	public static TransformerPool getInstance(@Nonnull Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException {
 		try {
 			return new TransformerPool(resource, xsltVersion);
@@ -229,7 +241,11 @@ public class TransformerPool {
 			if (StringUtils.isNotEmpty(styleSheetName)) {
 				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
 			}
-			return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, xsltVersion);
+			try {
+				return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, xsltVersion);
+			} catch (TransformerConfigurationException e) {
+				throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xPathExpression+"]", e);
+			}
 		}
 		if (!StringUtils.isEmpty(styleSheetName)) {
 			if (StringUtils.isNotEmpty(namespaceDefs)) {
@@ -274,20 +290,26 @@ public class TransformerPool {
 	}
 
 	@Nonnull
-	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws ConfigurationException {
+	public static TransformerPool getXPathTransformerPool(@Nonnull String xpathExpression, int xsltVersion) throws TransformerConfigurationException {
+		return getXPathTransformerPool(null, xpathExpression, OutputType.TEXT, false, null, xsltVersion);
+	}
+
+	@Nonnull
+	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @Nonnull String xpathExpression, @Nonnull OutputType outputMethod) throws TransformerConfigurationException {
+		return getXPathTransformerPool(namespaceDefs, xpathExpression, outputMethod, false, null, XmlUtils.DEFAULT_XSLT_VERSION);
+	}
+
+	@Nonnull
+	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws TransformerConfigurationException {
 		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, XmlUtils.DEFAULT_XSLT_VERSION);
 	}
 
 	@Nonnull
-	private static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws TransformerConfigurationException {
 		String xslt = XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, params, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
 		log.debug("xpath [{}] resulted in xslt [{}]", xPathExpression, xslt);
 
-		try {
-			return new TransformerPool(xslt, null, xsltVersion == 0 ? XmlUtils.DEFAULT_XSLT_VERSION : xsltVersion, null);
-		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xPathExpression+"]", e);
-		}
+		return new TransformerPool(xslt, null, xsltVersion == 0 ? XmlUtils.DEFAULT_XSLT_VERSION : xsltVersion, null);
 	}
 
 	public void open() {

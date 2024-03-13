@@ -79,11 +79,11 @@ public class BisUtils {
 	private void init() throws ConfigurationException {
 		try {
 			// messageHeaderInSoapBody=true (old)
-			oldMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderConversationIdXPath, OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
-			oldMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderExternalRefToMessageIdXPath, OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
+			oldMessageHeaderConversationIdTp = TransformerPool.getXPathTransformerPool(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderConversationIdXPath, OutputType.TEXT);
+			oldMessageHeaderExternalRefToMessageIdTp = TransformerPool.getXPathTransformerPool(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderExternalRefToMessageIdXPath, OutputType.TEXT);
 			// messageHeaderInSoapBody=false
-			messageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderConversationIdXPath, OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
-			messageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderExternalRefToMessageIdXPath, OutputType.TEXT), XmlUtils.DEFAULT_XSLT_VERSION);
+			messageHeaderConversationIdTp = TransformerPool.getXPathTransformerPool(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderConversationIdXPath, OutputType.TEXT);
+			messageHeaderExternalRefToMessageIdTp = TransformerPool.getXPathTransformerPool(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderExternalRefToMessageIdXPath, OutputType.TEXT);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create SOAP transformer", e);
 		}

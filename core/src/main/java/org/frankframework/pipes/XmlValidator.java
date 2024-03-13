@@ -148,7 +148,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
 				String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
 				try {
-					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, OutputType.XML), XmlUtils.DEFAULT_XSLT_VERSION);
+					transformerPoolExtractSoapBody = TransformerPool.getXPathTransformerPool(extractNamespaceDefs, extractBodyXPath, OutputType.XML);
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException("got error creating transformer from getSoapBody", te);
 				}

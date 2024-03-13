@@ -206,7 +206,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		String countRoot;
 		try {
 			String countRootXPath = "count(*/*[local-name()='element'])";
-			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath), XmlUtils.DEFAULT_XSLT_VERSION);
+			TransformerPool tp = TransformerPool.getXPathTransformerPool(countRootXPath, XmlUtils.DEFAULT_XSLT_VERSION);
 			Resource xsdResource = Resource.getResource(xsdFile.getPath());
 			countRoot = tp.transform(xsdResource.asSource());
 			if (StringUtils.isNotEmpty(countRoot)) {
@@ -233,9 +233,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 			Resource xsdResource = Resource.getResource(xsdFile.getPath());
 			if (StringUtils.isEmpty(namespace)) {
-				String xsdTargetNamespace = null;
+				String xsdTargetNamespace;
 				try {
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace"), XmlUtils.DEFAULT_XSLT_VERSION);
+					TransformerPool tp = TransformerPool.getXPathTransformerPool("*/@targetNamespace", XmlUtils.DEFAULT_XSLT_VERSION);
 					xsdTargetNamespace = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
 						log.debug("found target namespace [" + xsdTargetNamespace + "] in xsd file [" + xsdFile.getName() + "]");
@@ -265,7 +265,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				String xsdRoot;
 				try {
 					String rootXPath = "*/*[local-name()='element'][" + rootPosition + "]/@name";
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath), XmlUtils.DEFAULT_XSLT_VERSION);
+					TransformerPool tp = TransformerPool.getXPathTransformerPool(rootXPath, XmlUtils.DEFAULT_XSLT_VERSION);
 					xsdRoot = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdRoot)) {
 						log.debug("found root element [" + xsdRoot + "] in xsd file [" + xsdFile.getName() + "]");
