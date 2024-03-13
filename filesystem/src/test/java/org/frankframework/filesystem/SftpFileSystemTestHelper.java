@@ -69,7 +69,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 
 		SshServer sshd = SshServer.setUpDefaultServer();
 		sshd.setHost("localhost");
-		sshd.setPort(port);
+		sshd.setPort(port); // Setting port = 0 should work to find an available port, but it doesn't on the GitHub builds.
 		sshd.setPasswordAuthenticator((uname, psswrd, session) -> username.equals(uname) && password.equals(psswrd));
 		sshd.setHostBasedAuthenticator(new StaticHostBasedAuthenticator(true));
 
