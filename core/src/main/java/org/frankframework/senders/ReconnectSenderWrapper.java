@@ -30,7 +30,7 @@ import lombok.Setter;
 /**
  * Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
  * This prevents (long) open connections inside Senders and possible connection failures.
- * 
+ *
  * <b>Example:</b>
  * <pre><code>
  *   &lt;SenderPipe&gt;
@@ -71,11 +71,26 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		try {
-			sender.open();
-			return sender.sendMessage(message, session);
-		} finally {
-			sender.close();
+		sender.open();
+		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender), this.toString());
+		return sender.sendMessage(message, session);
+	}
+
+	public class AutoCloseableSenderWrapper implements AutoCloseable {
+		private final ISender sender;
+
+		public AutoCloseableSenderWrapper(ISender sender) {
+			this.sender = sender;
+		}
+
+		@Override
+		public void close() {
+			try {
+				log.debug("Closing sender after use: [{}]", sender.getName());
+				sender.close();
+			} catch (SenderException e) {
+				log.warn("Error closing sender: [{}]", sender.getName(), e);
+			}
 		}
 	}
 
