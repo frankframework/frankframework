@@ -1,9 +1,23 @@
 package org.frankframework.filesystem;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.Collections;
 import java.util.Vector;
+import java.util.random.RandomGenerator;
 
+import org.apache.sshd.common.file.FileSystemFactory;
+import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
+import org.apache.sshd.server.SshServer;
+import org.apache.sshd.server.auth.hostbased.StaticHostBasedAuthenticator;
+import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
+import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.filesystem.ftp.SftpSession;
 import org.frankframework.util.LogUtil;
@@ -14,6 +28,9 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpException;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	private final String username;
@@ -43,6 +60,54 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 	@AfterEach
 	public void tearDown() throws Exception {
 		SftpSession.close(ftpClient);
+	}
+
+	static SshServer createSshServer(String username, String password, int port) throws IOException {
+		if (port == 22) { // If previous random port did work fine, keep it
+			port = getFreePortNumber();
+		}
+
+		SshServer sshd = SshServer.setUpDefaultServer();
+		sshd.setHost("localhost");
+		sshd.setPort(port);
+		sshd.setPasswordAuthenticator((uname, psswrd, session) -> username.equals(uname) && password.equals(psswrd));
+		sshd.setHostBasedAuthenticator(new StaticHostBasedAuthenticator(true));
+
+		SftpSubsystemFactory sftpFactory = new SftpSubsystemFactory();
+		sshd.setSubsystemFactories(Collections.singletonList(sftpFactory));
+		sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
+		sshd.setFileSystemFactory(getTestDirectoryFS());
+		return sshd;
+	}
+
+	private static int getFreePortNumber() {
+		for (int i = 0; i <= 5; i++) {
+			int portNumber = RandomGenerator.getDefault().nextInt(1024, 65535);
+			try {
+				Socket s = new Socket();
+				log.debug("Trying to bind to port: {}", portNumber);
+				s.bind(new InetSocketAddress("localhost", portNumber));
+				s.close();
+			} catch (IOException e) {
+				log.debug("Can't bind to port {}: {}", portNumber, e.getMessage());
+				continue;
+			}
+			return portNumber;
+		}
+		throw new IllegalStateException("Could not find a free port number, after a few tries.");
+	}
+
+	/**
+	 * Creates the folder '../target/sftpTestFS' in which the tests will be executed.
+	 * This 'virtual FS' will pretend that the mentioned folder is the SFTP HOME directory.
+	 */
+	private static FileSystemFactory getTestDirectoryFS() throws IOException {
+		File targetFolder = new File(".", "target");
+		File sftpTestFS = new File(targetFolder.getCanonicalPath(), "sftpTestFS");
+		sftpTestFS.mkdir();
+		assertTrue(sftpTestFS.exists());
+
+		return new VirtualFileSystemFactory(sftpTestFS.toPath());
 	}
 
 	private void cleanFolder() {

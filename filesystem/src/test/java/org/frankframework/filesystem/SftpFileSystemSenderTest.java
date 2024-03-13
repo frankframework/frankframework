@@ -11,7 +11,7 @@ public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSyste
 	private final String username = "frankframework";
 	private final String password = "pass_123";
 	private final String host = "localhost";
-	private int port = 22;
+	private static int port = 22;
 	private String remoteDirectory = "/home/frankframework/sftp";
 
 	private SshServer sshd;
@@ -26,9 +26,9 @@ public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSyste
 	public void setUp() throws Exception {
 		if("localhost".equals(host)) {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
+			sshd = SftpFileSystemTestHelper.createSshServer(username, password, port);
 
-			sshd = SftpFileSystemTest.createSshServer(username, password);
-
+			log.info("Starting SSH daemon at port {}", sshd.getPort());
 			sshd.start();
 			port = sshd.getPort();
 		}

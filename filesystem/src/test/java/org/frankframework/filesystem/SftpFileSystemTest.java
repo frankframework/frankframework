@@ -6,15 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.random.RandomGenerator;
 
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
-import org.apache.sshd.server.auth.hostbased.StaticHostBasedAuthenticator;
-import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
-import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.frankframework.filesystem.ftp.SftpFileRef;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +26,7 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 	private final String username = "demo";
 	private final String password = "demo";
 	private final String host = "localhost";
-	private int port = 22;
+	private static int port = 22;
 	private String remoteDirectory = "/home/frankframework/sftp";
 	private SshServer sshd;
 
@@ -46,26 +41,12 @@ class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 		if("localhost".equals(host)) {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
-			sshd = createSshServer(username, password);
+			sshd = SftpFileSystemTestHelper.createSshServer(username, password, port);
+			sshd.setFileSystemFactory(getTestDirectoryFS());
 			log.info("Starting SSH daemon at port {}", sshd.getPort());
 			sshd.start();
 			port = sshd.getPort();
 		}
-	}
-
-	static SshServer createSshServer(String username, String password) throws IOException {
-		SshServer sshd = SshServer.setUpDefaultServer();
-		sshd.setHost("localhost");
-		sshd.setPort(RandomGenerator.getDefault().nextInt(1024, 65535));
-		sshd.setPasswordAuthenticator((uname, psswrd, session) -> username.equals(uname) && password.equals(psswrd));
-		sshd.setHostBasedAuthenticator(new StaticHostBasedAuthenticator(true));
-
-		SftpSubsystemFactory sftpFactory = new SftpSubsystemFactory();
-		sshd.setSubsystemFactories(Collections.singletonList(sftpFactory));
-		sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
-
-		sshd.setFileSystemFactory(getTestDirectoryFS());
-		return sshd;
 	}
 
 	/**
