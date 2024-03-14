@@ -90,7 +90,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 		try {
 			return (MetricsRegistryConfiguratorBase<?>) ClassUtils.newInstance(configuratorClassName);
 		} catch (Exception e) {
-			log.warn("cannot configure MeterRegistry ["+product+"]", e);
+			log.warn("cannot configure MeterRegistry [{}]", product, e);
 		}
 		return null;
 	}

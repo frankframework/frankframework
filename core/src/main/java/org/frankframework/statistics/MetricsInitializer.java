@@ -217,9 +217,9 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	@Override
 	public void destroy() throws Exception {
 		Search search = Search.in(registry).tag("configuration", applicationContext.getId());
-		search.counters().parallelStream().forEach(registry::remove);
-		search.gauges().parallelStream().forEach(registry::remove);
-		search.summaries().parallelStream().forEach(registry::remove);
+		search.counters().stream().forEach(registry::remove);
+		search.gauges().stream().forEach(registry::remove);
+		search.summaries().stream().forEach(registry::remove);
 	}
 
 }

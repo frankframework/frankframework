@@ -87,7 +87,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 
 		JsonObjectBuilder root = Json.createObjectBuilder();
 
-		Map<String, JsonObjectBuilder> pipeDuration = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_DURATION, "");
+		Map<String, JsonObjectBuilder> pipeDurations = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_DURATION, "");
 		JsonObjectBuilder pipelineSize = readSummary(adapterScopedMeters, FrankMeterType.PIPELINE_SIZE); //called "- pipeline in"
 		Map<String, JsonObjectBuilder> pipeSizeIn = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_SIZE_IN, " (in)");
 		Map<String, JsonObjectBuilder> pipeSizeOut = getDistributionSummary(adapterScopedMeters, FrankMeterType.PIPE_SIZE_OUT, " (out)");
@@ -104,9 +104,9 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 			waitStatistics.add(pipelineWaitTime);
 		}
 		for(String meterName : pipelineMeterOrder) {
-			JsonObjectBuilder meterJsonDing = pipeDuration.remove(meterName);
-			if(meterJsonDing != null) {
-				durationStatistics.add(meterJsonDing);
+			JsonObjectBuilder pipeDuration = pipeDurations.remove(meterName);
+			if(pipeDuration != null) {
+				durationStatistics.add(pipeDuration);
 			}
 			JsonObjectBuilder inStat = pipeSizeIn.remove(meterName);
 			if(inStat != null) {
@@ -121,7 +121,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 				waitStatistics.add(waitTime);
 			}
 		}
-		pipeDuration.values().stream().forEach(durationStatistics::add);
+		pipeDurations.values().stream().forEach(durationStatistics::add); //Add whatever remains (unsorted)
 
 		root.add("durationPerPipe", durationStatistics);
 		root.add("sizePerPipe", sizeStatistics);
@@ -155,13 +155,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		JsonArrayBuilder hourslyStatistics = Json.createArrayBuilder();
 		for (int i=0; i<numOfMessagesStartProcessingByHour.length; i++) {
 			JsonObjectBuilder item = Json.createObjectBuilder();
-			String startTime;
-			if (i<10) {
-				startTime = "0" + i + ":00";
-			} else {
-				startTime = i + ":00";
-			}
-			item.add("time", startTime);
+			item.add("time", String.format("%02d", i));
 			item.add("count", numOfMessagesStartProcessingByHour[i]);
 			hourslyStatistics.add(item);
 		}
