@@ -140,9 +140,13 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 			builder.percentilePrecision(percentilePrecision);
 			builder.publishPercentiles(getPercentiles());
 			if(FrankMeterType.TIME_UNIT.equals(type.getBaseUnit())) {
-				builder.serviceLevelObjectives(timeSLO.stream().mapToDouble(Double::parseDouble).toArray());
+				double[] slo = timeSLO.stream().mapToDouble(Double::parseDouble).toArray();
+				builder.serviceLevelObjectives(slo);
+				builder.maximumExpectedValue(slo[slo.length-1]);
 			} else if(FrankMeterType.SIZE_UNIT.equals(type.getBaseUnit())) {
-				builder.serviceLevelObjectives(sizeSLO.stream().mapToDouble(Double::parseDouble).toArray());
+				double[] slo = sizeSLO.stream().mapToDouble(Double::parseDouble).toArray();
+				builder.serviceLevelObjectives(slo);
+				builder.maximumExpectedValue(slo[slo.length-1]);
 			}
 
 			if(publishHistograms) {
