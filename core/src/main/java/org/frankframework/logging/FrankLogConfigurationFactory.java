@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!
+   Copyright 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,21 +39,24 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Order;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
-
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 
 /**
  * This ConfigurationFactory is loaded after the log4j2.properties file has been initialised.
  * Both Configurations are then combined via a CompositeConfiguration
+ * 
+ * The use of Lombok is not allowed!
  *
  * @author Murat Kaan Meral
  * @author Niels Meijer
  */
-//@Order(1000)
-//@Plugin(name = "IbisLoggerConfigurationFactory", category = ConfigurationFactory.CATEGORY)
-public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
+@Order(1000)
+@Plugin(name = "IbisLoggerConfigurationFactory", category = ConfigurationFactory.CATEGORY)
+public class FrankLogConfigurationFactory extends ConfigurationFactory {
 	public static final String LOG_PREFIX = "IbisLoggerConfigurationFactory class ";
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
