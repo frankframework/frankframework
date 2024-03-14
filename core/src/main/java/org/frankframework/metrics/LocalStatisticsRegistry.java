@@ -155,7 +155,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		JsonArrayBuilder hourslyStatistics = Json.createArrayBuilder();
 		for (int i=0; i<numOfMessagesStartProcessingByHour.length; i++) {
 			JsonObjectBuilder item = Json.createObjectBuilder();
-			item.add("time", String.format("%02d", i));
+			item.add("time", String.format("%02d:00", i));
 			item.add("count", numOfMessagesStartProcessingByHour[i]);
 			hourslyStatistics.add(item);
 		}
