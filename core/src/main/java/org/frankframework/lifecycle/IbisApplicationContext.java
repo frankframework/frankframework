@@ -248,6 +248,7 @@ public class IbisApplicationContext implements Closeable {
 		modulesToScanFor.add("frankframework-batch");
 		modulesToScanFor.add("frankframework-cmis");
 		modulesToScanFor.add("frankframework-commons");
+		modulesToScanFor.add("frankframework-filesystem");
 		modulesToScanFor.add("frankframework-console-backend");
 		modulesToScanFor.add("frankframework-core");
 		modulesToScanFor.add("frankframework-nn-specials");

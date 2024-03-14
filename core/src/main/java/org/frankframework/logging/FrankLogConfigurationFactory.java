@@ -39,8 +39,6 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
-import org.apache.logging.log4j.core.config.Order;
-import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
@@ -54,8 +52,8 @@ import org.frankframework.util.StringResolver;
  * @author Murat Kaan Meral
  * @author Niels Meijer
  */
-@Order(1000)
-@Plugin(name = "IbisLoggerConfigurationFactory", category = ConfigurationFactory.CATEGORY)
+//@Order(1000)
+//@Plugin(name = "FrankLogConfigurationFactory", category = ConfigurationFactory.CATEGORY)
 public class FrankLogConfigurationFactory extends ConfigurationFactory {
 	public static final String LOG_PREFIX = "IbisLoggerConfigurationFactory class ";
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
