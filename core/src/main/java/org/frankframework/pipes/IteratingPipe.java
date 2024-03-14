@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
-				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),OutputType.XML,false));
+				stopConditionTp=TransformerPool.getXPathTransformerPool(null,getStopConditionXPathExpression(),OutputType.XML);
 				stopConditionStatisticsKeeper =  new StatisticsKeeper("-> stop condition determination");
 			}
 		} catch (TransformerConfigurationException e) {
@@ -170,7 +170,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException, IOException {
-		IDataIterator<I> it=null;
+		IDataIterator<I> it;
 		StopReason stopReason = null;
 		if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
 			session.put(getItemNoSessionKey(),"0"); // prefill session variable, to have a value if iterator is empty

@@ -48,28 +48,24 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("UTC");
 
 	public void testGetRootNamespace(String input, String expected) throws SAXException, TransformerException, IOException, ConfigurationException {
-		testXslt(XmlUtils.makeGetRootNamespaceXslt(), input, expected);
 		testTransformerPool(XmlUtils.getGetRootNamespaceTransformerPool(), input, expected);
 	}
 
 	public void testAddRootNamespace(String namespace, String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
-		testXslt(XmlUtils.makeAddRootNamespaceXslt(namespace, omitXmlDeclaration, indent), input, expected);
 		testTransformerPool(XmlUtils.getAddRootNamespaceTransformerPool(namespace, omitXmlDeclaration, indent), input, expected);
 	}
 
 	public void testChangeRoot(String root, String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
-		testXslt(XmlUtils.makeChangeRootXslt(root, omitXmlDeclaration, indent), input, expected);
 		testTransformerPool(XmlUtils.getChangeRootTransformerPool(root, omitXmlDeclaration, indent), input, expected);
 	}
 
 	public void testRemoveUnusedNamespaces(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
-		testXslt(XmlUtils.makeRemoveUnusedNamespacesXslt(omitXmlDeclaration, indent), input, expected);
 		testTransformerPool(XmlUtils.getRemoveUnusedNamespacesTransformerPool(omitXmlDeclaration, indent), input, expected);
 	}
 
-	public void testRemoveUnusedNamespacesXslt2(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException {
-		testXslt(XmlUtils.makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration, indent),input,expected);
-//		testTransformerPool(XmlUtils.getRemoveUnusedNamespacesXslt2TransformerPool(omitXmlDeclaration, indent),input,expected);
+	// TODO: Why is this test not executed anymore?
+	public void testRemoveUnusedNamespacesXslt2(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
+		testTransformerPool(XmlUtils.getRemoveUnusedNamespacesXslt2TransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
 
 
