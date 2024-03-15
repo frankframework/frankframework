@@ -3,6 +3,7 @@ import { ViewportScroller } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
+import { copyToClipboard } from 'src/app/utils';
 
 type TransitionObject = {
   name?: string;
@@ -90,7 +91,7 @@ export class ConfigurationsShowComponent implements OnInit {
 
   clipboard(): void {
     if (this.configuration) {
-      this.appService.copyToClipboard(this.configuration);
+      copyToClipboard(this.configuration);
     }
   }
 

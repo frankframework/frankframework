@@ -3,25 +3,23 @@ import {
   Output,
   EventEmitter,
   ElementRef,
-  OnInit,
+  HostListener,
 } from '@angular/core';
 
 @Directive({
   selector: '[appQuickSubmitForm]',
 })
-export class QuickSubmitFormDirective implements OnInit {
+export class QuickSubmitFormDirective {
   @Output() quickSubmit = new EventEmitter<void>();
 
   constructor(private element: ElementRef) {}
 
-  ngOnInit(): void {
-    this.element.nativeElement.addEventListener(
-      'keydown',
-      (event: KeyboardEvent) => {
-        if (event.ctrlKey && event.key === 'Enter') {
-          this.quickSubmit.emit();
-        }
-      },
-    );
+  // keydown.ctrl.enter doesnt work somehow
+  @HostListener('keydown', ['$event'])
+  onEnter(event: KeyboardEvent): boolean | void {
+    if (event.ctrlKey && event.key === 'Enter') {
+      this.quickSubmit.emit();
+      return false;
+    }
   }
 }

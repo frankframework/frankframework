@@ -816,7 +816,7 @@
                           >
                             <span
                               class="text-{{
-                                getProcessStateIconColor(store.name)
+                                getProcessStateIconColorFn(store.name)
                               }}"
                               title="Browse messages with ProcessState: {{
                                 store.name
@@ -838,7 +838,7 @@
                               >
                                 <i
                                   class="fa {{
-                                    getProcessStateIcon(store.name)
+                                    getProcessStateIconFn(store.name)
                                   }}"
                                 ></i>
                                 ({{ store.numberOfMessages }})

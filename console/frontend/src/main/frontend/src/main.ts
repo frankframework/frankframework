@@ -9,25 +9,11 @@ import 'prismjs/plugins/custom-class/prism-custom-class';
 
 declare global {
   let ff_version: string;
-  let serverurl: string;
   interface Window {
     server: string;
   }
   // var jQuery: jQuery; already defined in @types/jquery (type import solves this for us?)
   // var $: jQuery;
-}
-
-try {
-  //Try and see if serverurl has been defined, if not try to deduct from local url;
-  window.server = serverurl;
-} catch {
-  let path = window.location.pathname;
-
-  if (path.includes('/iaf/gui'))
-    path = path.slice(0, Math.max(0, path.indexOf('/iaf/gui') + 1));
-  else if (path.includes('/', 1))
-    path = path.slice(0, Math.max(0, path.indexOf('/', 1) + 1));
-  window.server = path;
 }
 
 function main(): void {

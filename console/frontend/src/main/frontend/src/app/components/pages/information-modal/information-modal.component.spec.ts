@@ -1,4 +1,7 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { InformationModalComponent } from './information-modal.component';
 
@@ -8,7 +11,15 @@ describe('InformationModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [InformationModalComponent],
+      providers: [
+        {
+          provide: NgbActiveModal,
+          useValue: NgbActiveModal,
+        },
+      ],
+      schemas: [NO_ERRORS_SCHEMA], // only for directives
     }).compileComponents();
 
     fixture = TestBed.createComponent(InformationModalComponent);

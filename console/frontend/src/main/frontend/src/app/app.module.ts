@@ -52,7 +52,6 @@ import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistic
 import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
 import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
-import { FitHeightDirective } from './views/iframe/fit-height.directive';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { WebservicesComponent } from './views/webservices/webservices.component';
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
@@ -170,7 +169,6 @@ const windowProvider: ValueProvider = {
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
-    FitHeightDirective,
     SideNavigationDirective,
     ThSortableDirective,
     FileViewerComponent,

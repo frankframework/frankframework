@@ -8,6 +8,7 @@ import {
   ThSortableDirective,
   basicTableSort,
 } from 'src/app/components/th-sortable.directive';
+import { copyToClipboard } from 'src/app/utils';
 
 @Component({
   selector: 'app-logging',
@@ -97,9 +98,9 @@ export class LoggingComponent implements OnInit {
     });
   }
 
-  copyToClipboard(path: string): void {
+  copyAndTrimToClipboard(path: string): void {
     const textToCopy = path.trim();
-    this.appService.copyToClipboard(textToCopy);
+    copyToClipboard(textToCopy);
   }
 
   onSort(event: SortEvent): void {

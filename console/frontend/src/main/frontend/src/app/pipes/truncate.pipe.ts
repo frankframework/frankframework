@@ -1,11 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { AppService } from '../app.service';
+import { copyToClipboard } from '../utils';
 
 @Pipe({
   name: 'truncate',
 })
 export class TruncatePipe implements PipeTransform {
-  constructor(private appService: AppService) {}
+  constructor() {}
 
   transform(
     value: string,
@@ -16,7 +16,7 @@ export class TruncatePipe implements PipeTransform {
 
     if (onclickElement) {
       onclickElement.addEventListener('click', () => {
-        this.appService.copyToClipboard(value);
+        copyToClipboard(value);
       });
     }
 

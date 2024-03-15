@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
+import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
 
 type stateItemItem = {
   configurationName: string;
@@ -21,18 +22,17 @@ type InlineStore = Record<
 })
 export class InlinestoreComponent implements OnInit {
   result: InlineStore = {};
-  getProcessStateIcon = (
+  getProcessStateIconFn = (
     processState: string,
   ):
     | 'fa-server'
     | 'fa-gears'
     | 'fa-sign-in'
     | 'fa-pause-circle'
-    | 'fa-times-circle' => this.appService.getProcessStateIcon(processState);
-  getProcessStateIconColor = (
+    | 'fa-times-circle' => getProcessStateIcon(processState);
+  getProcessStateIconColorFn = (
     processState: string,
-  ): 'success' | 'warning' | 'danger' =>
-    this.appService.getProcessStateIconColor(processState);
+  ): 'success' | 'warning' | 'danger' => getProcessStateIconColor(processState);
 
   constructor(
     private http: HttpClient,
