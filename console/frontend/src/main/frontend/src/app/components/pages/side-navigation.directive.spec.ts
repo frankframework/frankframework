@@ -39,11 +39,8 @@ describe('SideNavigationDirective', () => {
     fixture.detectChanges(); // initial binding
   });
 
-  // TODO figure out a way to test metismenu
-  // https://angular.io/guide/testing-attribute-directives
-
-  // temporatory, remove when making actual tests
-  it('parent component should exist', () => {
+  // temporatory test, create more meaningful tests when metismenu has been replaced with own implementation or remove test if new dependency is sufficient enough
+  it('parent component should exist & recognise directive class', () => {
     expect(fixture).toBeTruthy();
   });
 });
