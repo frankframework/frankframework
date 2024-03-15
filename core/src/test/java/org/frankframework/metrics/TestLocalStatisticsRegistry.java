@@ -30,7 +30,6 @@ import jakarta.json.stream.JsonGenerator;
 public class TestLocalStatisticsRegistry {
 	private TestConfiguration configuration;
 	private LocalStatisticsRegistry registry;
-	private MetricsInitializer configurationMetrics;
 	private AtomicInteger inProcessInt = new AtomicInteger(0);
 
 	private Adapter adapter;
@@ -39,16 +38,22 @@ public class TestLocalStatisticsRegistry {
 	void beforeEach() throws ConfigurationException {
 		configuration = new TestConfiguration(false);
 		registry = configuration.getBean("meterRegistry", LocalStatisticsRegistry.class);
-		configurationMetrics = configuration.getBean("configurationMetrics", MetricsInitializer.class);
+		MetricsInitializer configurationMetrics = configuration.getBean("configurationMetrics", MetricsInitializer.class);
 
 		createAndRegisterAdapter();
+
+		// Create Dummy Gauge to test with
 		configurationMetrics.createGauge(adapter, FrankMeterType.PIPELINE_IN_PROCESS, inProcessInt::doubleValue);
+
+		// Configure the configuration (which initializes the meters)
 		configuration.configure();
 
+		// Ensure only 1 adapter exists
 		assertEquals(1, configuration.getAdapterManager().getAdapterList().size());
 	}
 
-	private void createAndRegisterAdapter() throws ConfigurationException {
+	@SuppressWarnings("unchecked")
+	private <M> void createAndRegisterAdapter() throws ConfigurationException {
 		adapter = configuration.createBean(Adapter.class);
 		adapter.setName("myAdapter");
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
@@ -57,9 +62,9 @@ public class TestLocalStatisticsRegistry {
 		pipeline.addPipe(echoPipe);
 		adapter.setPipeLine(pipeline);
 
-		Receiver receiver = configuration.createBean(Receiver.class);
+		Receiver<M> receiver = configuration.createBean(Receiver.class);
 		receiver.setName("myReceiver");
-		JavaListener listener = configuration.createBean(JavaListener.class);
+		JavaListener<M> listener = configuration.createBean(JavaListener.class);
 		receiver.setListener(listener);
 		adapter.registerReceiver(receiver);
 
