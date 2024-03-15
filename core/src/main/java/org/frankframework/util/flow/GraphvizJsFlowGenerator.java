@@ -21,15 +21,31 @@ import java.lang.ref.SoftReference;
 
 import org.springframework.http.MediaType;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.util.flow.graphviz.GraphvizEngine;
 
 /**
  * Initialized through Spring. Uses @{link GraphvizEngine} to get an available
  * JavaScriptEngine to generate the Flow images with.
  */
+@Log4j2
 public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 
 	private static final ThreadLocal<SoftReference<GraphvizEngine>> GRAPHVIZ_ENGINES = new ThreadLocal<>();
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		super.afterPropertiesSet();
+
+		try {
+			GraphvizEngine engine = new GraphvizEngine(); // Verify we can create a 'JavascriptEngine'
+			engine.close();
+		} catch (Throwable t) {
+			log.warn("failed to initalize GraphvizEngine", t);
+			throw t;
+		}
+	}
 
 	/**
 	 * The IFlowGenerator is wrapped in a SoftReference, wrapped in a ThreadLocal.
@@ -37,7 +53,7 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 	 * running out of heapspace, it will remove the IFlowGenerator. This method makes sure,
 	 * as long as the IFlowGenerator bean can initialize, always a valid instance is returned.
 	 */
-	public GraphvizEngine getGraphvizEngine() {
+	protected GraphvizEngine getGraphvizEngine() {
 		SoftReference<GraphvizEngine> reference = GRAPHVIZ_ENGINES.get();
 		if(reference == null || reference.get() == null) {
 			GraphvizEngine generator = createGraphvizEngine();
@@ -56,7 +72,6 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 		try {
 			return new GraphvizEngine();
 		} catch (Throwable t) {
-			log.warn("failed to initalize GraphvizEngine", t);
 			return null;
 		}
 	}

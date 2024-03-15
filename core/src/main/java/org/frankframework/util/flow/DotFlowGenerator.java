@@ -21,20 +21,15 @@ import java.nio.charset.StandardCharsets;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.logging.log4j.Logger;
-import org.frankframework.util.LogUtil;
+import org.frankframework.core.Resource;
 import org.frankframework.util.TransformerPool;
 import org.springframework.http.MediaType;
 import org.xml.sax.SAXException;
-
-import org.frankframework.core.Resource;
 
 /**
  * Flow generator to create DOT files
  */
 public class DotFlowGenerator implements IFlowGenerator {
-	protected static Logger log = LogUtil.getLogger(DotFlowGenerator.class);
-
 	private static final String ADAPTER2DOT_XSLT = "/xml/xsl/adapter2dot.xsl";
 	private static final String CONFIGURATION2DOT_XSLT = "/xml/xsl/configuration2dot.xsl";
 
