@@ -192,8 +192,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       this.appConstants['Statistics.percentiles.publish'] == 'true';
     const publishHistograms =
       this.appConstants['Statistics.histograms.publish'] == 'true';
-    const displayPercentiles =
-      publishPercentiles || publishHistograms;
+    const displayPercentiles = publishPercentiles || publishHistograms;
 
     this.Debug.info(
       'appending Statistic.boundaries',

@@ -1,0 +1,93 @@
+package org.frankframework.metrics;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.PipeLine;
+import org.frankframework.pipes.EchoPipe;
+import org.frankframework.receivers.JavaListener;
+import org.frankframework.receivers.Receiver;
+import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.MetricsInitializer;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonWriter;
+import jakarta.json.stream.JsonGenerator;
+
+public class TestLocalStatisticsRegistry {
+	private TestConfiguration configuration;
+	private LocalStatisticsRegistry registry;
+	private MetricsInitializer configurationMetrics;
+	private AtomicInteger inProcessInt = new AtomicInteger(0);
+
+	private Adapter adapter;
+
+	@BeforeEach
+	void beforeEach() throws ConfigurationException {
+		configuration = new TestConfiguration(false);
+		registry = configuration.getBean("meterRegistry", LocalStatisticsRegistry.class);
+		configurationMetrics = configuration.getBean("configurationMetrics", MetricsInitializer.class);
+
+		createAndRegisterAdapter();
+		configurationMetrics.createGauge(adapter, FrankMeterType.PIPELINE_IN_PROCESS, inProcessInt::doubleValue);
+		configuration.configure();
+
+		assertEquals(1, configuration.getAdapterManager().getAdapterList().size());
+	}
+
+	private void createAndRegisterAdapter() throws ConfigurationException {
+		adapter = configuration.createBean(Adapter.class);
+		adapter.setName("myAdapter");
+		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		EchoPipe echoPipe = configuration.createBean(EchoPipe.class);
+		echoPipe.setName("echoPipe");
+		pipeline.addPipe(echoPipe);
+		adapter.setPipeLine(pipeline);
+
+		Receiver receiver = configuration.createBean(Receiver.class);
+		receiver.setName("myReceiver");
+		JavaListener listener = configuration.createBean(JavaListener.class);
+		receiver.setListener(listener);
+		adapter.registerReceiver(receiver);
+
+		configuration.registerAdapter(adapter);
+	}
+
+	private static String jsonStructureToString(JsonStructure payload) {
+		Writer writer = new StringWriter();
+		Map<String, Boolean> config = new HashMap<>();
+		config.put(JsonGenerator.PRETTY_PRINTING, false);
+
+		try (JsonWriter jsonWriter = Json.createWriterFactory(config).createWriter(writer)) {
+			jsonWriter.write(payload);
+		}
+
+		return writer.toString();
+	}
+
+	@Test
+	void testLocalStatisticsRegistry() throws Exception {
+		JsonStructure json = registry.scrape(configuration.getName(), adapter);
+		String expected = TestFileUtils.getTestFile("/metrics/myAdapter.json");
+		MatchUtils.assertJsonEquals(expected, jsonStructureToString(json));
+
+		inProcessInt.addAndGet(100);
+
+		JsonStructure json2 = registry.scrape(configuration.getName(), adapter);
+		String expected2 = TestFileUtils.getTestFile("/metrics/myAdapter2.json");
+		MatchUtils.assertJsonEquals(expected2, jsonStructureToString(json2));
+	}
+}

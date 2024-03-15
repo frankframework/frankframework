@@ -36,11 +36,8 @@ import org.frankframework.scheduler.JobDef;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
-import org.springframework.beans.BeanInstantiationException;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -65,14 +62,12 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	private List<String> timeSLO; //ServiceLevelObjectives
 	private List<String> sizeSLO;
 
-	private MeterRegistry registry;
+	private @Setter MeterRegistry meterRegistry;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		try {
-			registry = applicationContext.getBean(MeterRegistry.class);
-		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-			throw new IllegalStateException("unable to initialize MetricsInitializer, no registry set", e);
+		if(meterRegistry == null) {
+			throw new IllegalStateException("unable to initialize MetricsInitializer, no registry set");
 		}
 
 		AppConstants appConstants = AppConstants.getInstance();
@@ -120,14 +115,14 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		if(type.getMeterType() != Type.COUNTER) {
 			throw new IllegalStateException("MeterType ["+type+"] must be of type [Counter]");
 		}
-		return Counter.builder(type.getMeterName()).tags(tags).baseUnit(type.getBaseUnit()).register(registry);
+		return Counter.builder(type.getMeterName()).tags(tags).baseUnit(type.getBaseUnit()).register(meterRegistry);
 	}
 
 	private Gauge createGauge(@Nonnull FrankMeterType type, List<Tag> tags, Supplier<Number> numberSupplier) {
 		if(type.getMeterType() != Type.GAUGE) {
 			throw new IllegalStateException("MeterType ["+type+"] must be of type [Gauge]");
 		}
-		return Gauge.builder(type.getMeterName(), numberSupplier).tags(tags).baseUnit(type.getBaseUnit()).register(registry);
+		return Gauge.builder(type.getMeterName(), numberSupplier).tags(tags).baseUnit(type.getBaseUnit()).register(meterRegistry);
 	}
 
 	private DistributionSummary createDistributionSummary(@Nonnull FrankMeterType type, List<Tag> tags) {
@@ -153,7 +148,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 				builder.publishPercentileHistogram();
 			}
 		}
-		return builder.register(registry);
+		return builder.register(meterRegistry);
 	}
 
 
@@ -216,10 +211,10 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 
 	@Override
 	public void destroy() throws Exception {
-		Search search = Search.in(registry).tag("configuration", applicationContext.getId());
-		search.counters().stream().forEach(registry::remove);
-		search.gauges().stream().forEach(registry::remove);
-		search.summaries().stream().forEach(registry::remove);
+		Search search = Search.in(meterRegistry).tag("configuration", applicationContext.getId());
+		search.counters().stream().forEach(meterRegistry::remove);
+		search.gauges().stream().forEach(meterRegistry::remove);
+		search.summaries().stream().forEach(meterRegistry::remove);
 	}
 
 }

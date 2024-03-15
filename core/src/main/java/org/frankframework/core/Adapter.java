@@ -655,7 +655,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @ff.mandatory
 	 */
 	@Override
-	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
+	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
