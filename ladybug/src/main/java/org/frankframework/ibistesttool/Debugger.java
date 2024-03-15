@@ -67,6 +67,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	protected Set<String> inRerun = new HashSet<>();
 
 	public void setTestTool(TestTool testTool) {
+		testTool.setDebugger(this);
 		this.testTool = testTool;
 	}
 
