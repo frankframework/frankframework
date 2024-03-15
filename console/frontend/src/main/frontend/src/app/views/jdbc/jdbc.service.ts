@@ -10,7 +10,6 @@ interface Date {
 
 interface Slot {
   id: string;
-  first: string;
   configuration: string;
   adapter: string;
   receiver: string;
