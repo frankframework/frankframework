@@ -329,7 +329,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						} else {
 							itemResult = sender.sendMessageOrThrow(message, session).asString();
 						}
-						senderStatistics.record(System.currentTimeMillis() - senderStartTime);
+						senderStatistics.record((double) System.currentTimeMillis() - senderStartTime);
 						if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {
 							endBlock();
 						}

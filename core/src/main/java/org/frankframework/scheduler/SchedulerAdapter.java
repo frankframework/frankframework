@@ -44,8 +44,9 @@ import org.quartz.impl.matchers.GroupMatcher;
  * It transforms the information from the scheduler to XML.
  * @author  Johan Verrips
  * @since 4.0
+ * @deprecated An external time series database should be used.
   */
-@Deprecated
+@Deprecated(forRemoval = true, since = "8.1")
 public class SchedulerAdapter {
 	protected Logger log=LogUtil.getLogger(this);
 

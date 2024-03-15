@@ -126,7 +126,7 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 			return super.getConnection();
 		} finally {
 			if(connectionStatistics != null) {
-				connectionStatistics.record(System.currentTimeMillis() - t0);
+				connectionStatistics.record((double) System.currentTimeMillis() - t0);
 			}
 		}
 	}

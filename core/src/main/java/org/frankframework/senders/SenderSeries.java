@@ -94,7 +94,7 @@ public class SenderSeries extends SenderWrapperBase {
 			message = result.getResult();
 			long t2 = System.currentTimeMillis();
 			DistributionSummary summary = getStatisticsKeeper(sender);
-			summary.record(t2-t1);
+			summary.record((double) t2-t1);
 			t1=t2;
 		}
 		return result!=null ? result : new SenderResult(message);

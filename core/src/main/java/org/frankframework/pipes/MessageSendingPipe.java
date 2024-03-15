@@ -699,7 +699,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			input = validationResult.getResult();
 		}
 		if (inputWrapper != null && inputValidator != null) {
-			getPipeSubStatistics("PreProcessing").record(System.currentTimeMillis() - preProcessInputStartTime);
+			getPipeSubStatistics("PreProcessing").record((double) System.currentTimeMillis() - preProcessInputStartTime);
 		}
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), input);
 	}
@@ -734,7 +734,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 
 		if (outputValidator != null && outputWrapper != null) {
-			getPipeSubStatistics("PostProcessing").record(System.currentTimeMillis() - postProcessInputStartTime);
+			getPipeSubStatistics("PostProcessing").record((double) System.currentTimeMillis() - postProcessInputStartTime);
 		}
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), output);
 	}
