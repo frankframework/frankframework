@@ -50,10 +50,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -1293,64 +1291,5 @@ public class MessageTest {
 		assertTrue(msg1.isNull());
 		assertFalse(msg2.isNull());
 		assertEquals("á", msg2.asString());
-	}
-
-	@Test
-	public void testReadMessageAsInputSourceWithUnspecifiedNonDefaultCharset() throws Exception {
-		// Arrange
-		URL testFileURL = TestFileUtils.getTestFileURL("/Message/testEncodedXml-ISO-8859-1-illegal-file.xml");
-		Message message = Message.asMessage(testFileURL.openStream());
-		message.getContext().withCharset("ISO-8859-1");
-
-		ContentHandler handler = new XmlWriter();
-		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
-
-		// Act
-		InputSource source = message.asInputSource();
-		xmlReader.parse(source);
-
-		// Assert
-		System.err.println(handler);
-		assertTrue(handler.toString().contains("Zoë"));
-	}
-
-	@Test
-	public void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws Exception {
-		// Arrange
-		URL testFileURL = TestFileUtils.getTestFileURL("/Message/testStringWithXmlDeclaration.xml");
-		Message message = Message.asMessage(testFileURL.openStream());
-		message.getContext().withCharset("ISO-8859-1");
-
-		ContentHandler handler = new XmlWriter();
-		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
-
-		// Act
-		InputSource source = message.asInputSource();
-		xmlReader.parse(source);
-
-		// Assert
-		System.err.println(handler);
-		// NB: This assert breaks, because the parser is not reading the input XML correctly.
-		// Shows how the "fix" could be wrong. (But of course, when encoding is specified externally in metadata, and it doesn't match the contents, that is the real bug...)
-//		assertTrue(handler.toString().contains("één €"));
-		assertFalse(handler.toString().contains("één €"));
-	}
-
-	@Test
-	public void testReadMessageAsInputSourceWithNonDefaultCharset() throws Exception {
-		// Arrange
-		URL testFileURL = TestFileUtils.getTestFileURL("/Message/testEncodedXml-ISO-8859-1-correct-file.xml");
-		Message message = Message.asMessage(testFileURL.openStream());
-
-		ContentHandler handler = new XmlWriter();
-		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
-
-		// Act
-		InputSource source = message.asInputSource();
-		xmlReader.parse(source);
-
-		// Assert
-		System.err.println(handler);
-		assertTrue(handler.toString().contains("Zoë"));
 	}
 }

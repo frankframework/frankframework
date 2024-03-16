@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,6 +14,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -21,23 +23,9 @@ import javax.xml.transform.TransformerFactory;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Resource;
-import org.frankframework.stream.FileMessage;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.UrlMessage;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.testutil.MessageTestUtils;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.testutil.TestScopeProvider;
-import org.frankframework.xml.StringBuilderContentHandler;
-import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -45,9 +33,11 @@ import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.xml.StringBuilderContentHandler;
@@ -317,56 +307,6 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 
-	private static Date getCorrectedDate(Date date) {
-		if (CI_TZ.hasSameRules(TEST_TZ)) {
-			return date;
-		} else {
-			Calendar calendar = Calendar.getInstance();
-			calendar.setTime(date);
-			int offset = CI_TZ.getOffset(calendar.getTime().getTime());
-			calendar.add(Calendar.MILLISECOND, -offset);
-			log.info("adjusting date [{}] with offset [{}] to [{}]", () -> date, () -> offset, calendar::getTime);
-			return calendar.getTime();
-		}
-	}
-
-	/**
-	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
-	 */
-	public static long getCorrectedDate(long l) {
-		Date date = new Date(l);
-		return getCorrectedDate(date).getTime();
-	}
-
-	private static Stream<Arguments> xmlDateTimeData() {
-		return Stream.of(Arguments.of("2013-12-10", 1386633600000L),
-				Arguments.of("2013-12-10T12:41:43", 1386679303000L),
-				Arguments.of("2023-12-09", 1702080000000L),
-				Arguments.of("2024-02-29T00:00:00", 1709164800000L),
-				Arguments.of("2400-02-29T18:08:05", 13574628485000L)
-		);
-	}
-
-	@ParameterizedTest
-	@MethodSource("xmlDateTimeData")
-	public void testParseXmlDateTime(String s, long l) {
-		Date date = XmlUtils.parseXmlDateTime(s);
-		assertEquals(getCorrectedDate(l), date.getTime());
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = {"2002-05-30T09:30:10-06:00", "2002-05-30T09:30:10+06:00", "2002-05-30T09:30:10.5", "2002-05-30T09:00:00"})
-	public void shouldReturnDateObjectWhenStringWithDateIsProvided(String s) {
-		assertInstanceOf(Date.class, XmlUtils.parseXmlDateTime(s));
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = {"2023-13-09T24:08:05", "2023-13-09T18:60:05", "2023-13-09T18:08:60", "2023-13-09T18:08:05", "2023-11-31T18:08:05", "2100-02-29T18:08:05", "2013-12-10 12:41:43"})
-	public void shouldThrowErrorWhenStringWithHoursOutOfBoundsIsProvided(String s) {
-		assertThrows(IllegalArgumentException.class, () -> XmlUtils.parseXmlDateTime(s));
-	}
-
-
 	static Stream<Arguments> readFileInDifferentWays(String resource) throws IOException, URISyntaxException {
 		URL testFileURL = TestFileUtils.getTestFileURL(resource);
 
@@ -399,14 +339,15 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		assertTrue(handler.toString().contains("værgeløn"));
 	}
 
-	static Stream<Arguments> testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
-		return readFileInDifferentWays("/Util/MessageUtils/utf8.xml");
+	static Stream<Arguments> testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
+		return readFileInDifferentWays("/Util/MessageUtils/utf8-with-bom.xml");
 	}
 	@ParameterizedTest
 	@MethodSource
-	public void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
+	public void testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
 		// Arrange
 		message.getContext().withCharset("ISO-8859-1");
+		assertEquals("ISO-8859-1", message.getCharset());
 
 		ContentHandler handler = new XmlWriter();
 		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
@@ -417,6 +358,29 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 		// Assert
 		assertTrue(handler.toString().contains("testFile with BOM —•˜›"));
+	}
+
+	static Stream<Arguments> testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
+		return readFileInDifferentWays("/Util/MessageUtils/utf8-without-bom.xml");
+	}
+	@ParameterizedTest
+	@MethodSource
+	public void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
+		// Arrange
+		message.getContext().withCharset("ISO-8859-1");
+		assertEquals("ISO-8859-1", message.getCharset());
+
+		ContentHandler handler = new XmlWriter();
+		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
+
+		// Act
+		InputSource source = message.asInputSource();
+		xmlReader.parse(source);
+
+		// Assert
+		// NB: This assert breaks, because the parser is not reading the input XML correctly.
+		// Shows how the "fix" could be wrong. (But of course, when encoding is specified externally in metadata, and it doesn't match the contents, that is the real bug...)
+		assertFalse(handler.toString().contains("testFile with BOM —•˜›"));
 	}
 
 	static Stream<Arguments> testReadMessageAsInputSourceWithNonDefaultCharset() throws IOException, URISyntaxException {
