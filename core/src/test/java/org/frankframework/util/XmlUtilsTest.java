@@ -379,14 +379,15 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		assertTrue(handler.toString().contains("værgeløn"));
 	}
 
-	static Stream<Arguments> testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
-		return readFileInDifferentWays("/Util/MessageUtils/utf8.xml");
+	static Stream<Arguments> testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
+		return readFileInDifferentWays("/Util/MessageUtils/utf8-with-bom.xml");
 	}
 	@ParameterizedTest
 	@MethodSource
-	public void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
+	public void testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
 		// Arrange
 		message.getContext().withCharset("ISO-8859-1");
+		assertEquals("ISO-8859-1", message.getCharset());
 
 		ContentHandler handler = new XmlWriter();
 		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
@@ -397,6 +398,29 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 		// Assert
 		assertTrue(handler.toString().contains("testFile with BOM —•˜›"));
+	}
+
+	static Stream<Arguments> testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
+		return readFileInDifferentWays("/Util/MessageUtils/utf8-without-bom.xml");
+	}
+	@ParameterizedTest
+	@MethodSource
+	public void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
+		// Arrange
+		message.getContext().withCharset("ISO-8859-1");
+		assertEquals("ISO-8859-1", message.getCharset());
+
+		ContentHandler handler = new XmlWriter();
+		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
+
+		// Act
+		InputSource source = message.asInputSource();
+		xmlReader.parse(source);
+
+		// Assert
+		// NB: This assert breaks, because the parser is not reading the input XML correctly.
+		// Shows how the "fix" could be wrong. (But of course, when encoding is specified externally in metadata, and it doesn't match the contents, that is the real bug...)
+		assertFalse(handler.toString().contains("testFile with BOM —•˜›"));
 	}
 
 	static Stream<Arguments> testReadMessageAsInputSourceWithNonDefaultCharset() throws IOException, URISyntaxException {
