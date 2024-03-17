@@ -239,13 +239,13 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 				if (StringUtils.isNotEmpty(slotid)) {
 					SlotIdRecord sir=slotmap.get(type+"/"+slotid);
 					if (sir!=null) {
-						slotBuilder.add("adapter",sir.adapterName());
-						slotBuilder.add("configuration",sir.configurationName());
-						if (StringUtils.isNotEmpty(sir.receiverName()) ) {
-							slotBuilder.add("receiver",sir.receiverName());
+						slotBuilder.add("adapter",sir.adapterName);
+						slotBuilder.add("configuration",sir.configurationName);
+						if (StringUtils.isNotEmpty(sir.receiverName) ) {
+							slotBuilder.add("receiver",sir.receiverName);
 						}
-						if (StringUtils.isNotEmpty(sir.pipeName()) ) {
-							slotBuilder.add("pipe",sir.pipeName());
+						if (StringUtils.isNotEmpty(sir.pipeName) ) {
+							slotBuilder.add("pipe",sir.pipeName);
 						}
 					}
 				}
@@ -280,9 +280,16 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 }
 
-record SlotIdRecord (
-	String configurationName,
-	String adapterName,
-	String receiverName,
-	String pipeName
-) {}
+class SlotIdRecord {
+	public String configurationName;
+	public String adapterName;
+	public String receiverName;
+	public String pipeName;
+
+	SlotIdRecord(String configurationName, String adapterName, String receiverName, String pipeName){
+		this.configurationName = configurationName;
+		this.adapterName = adapterName;
+		this.receiverName = receiverName;
+		this.pipeName = pipeName;
+	}
+}
