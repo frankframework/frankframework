@@ -46,11 +46,12 @@ import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 import org.frankframework.util.StringResolver;
 
 /**
- * This ConfigurationFactory is loaded after the log4j2.properties file has been initialised.
+ * This ConfigurationFactory is loaded after the log4j2.properties file has been initialized.
  * Both Configurations are then combined via a CompositeConfiguration
  * 
+ * NOTE:
  * The use of Lombok is not allowed!
- * Should not depend on any (util) classes that use a logger.
+ * Should not depend on any (util) classes that use a logger!
  *
  * @author Murat Kaan Meral
  * @author Niels Meijer
@@ -95,8 +96,8 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 
 			String configuration = readLog4jConfiguration(source.getInputStream());
 			Map<String, String> substitutions = populateThreadContextProperties(configuration, properties);
+			ThreadContext.clearMap(); //Remove previous stack, only add new values
 			ThreadContext.putAll(substitutions); // Only add the substituted variables to the ThreadContext
-			//Perhaps it's an idea to clear the ThreadContext after the configuration has been loaded.
 
 			initLogExpressionHiding(properties);
 
