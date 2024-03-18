@@ -213,7 +213,7 @@ public class SecurityItems extends BusEndpointBase {
 		return realm;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked", "rawtypes", "java:S1181" })
 	private ArrayList<Object> addSapSystems() {
 		ArrayList<Object> sapSystemList = new ArrayList<>();
 		List<String> sapSystems = null;
@@ -227,7 +227,7 @@ public class SecurityItems extends BusEndpointBase {
 
 			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, (Object[])null);
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
-		} catch (Throwable t) { //Don't change this throwable, AI doesn't know better...
+		} catch (Throwable t) {
 			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());
 		}
 

@@ -50,7 +50,7 @@ import org.frankframework.util.StringResolver;
  * Both Configurations are then combined via a CompositeConfiguration
  * 
  * NOTE:
- * The use of Lombok is not allowed!
+ * The use of Lombok is not allowed, this may break annotation processing! This is required now that package scanning is no longer allowed.
  * Should not depend on any (util) classes that use a logger!
  *
  * @author Murat Kaan Meral

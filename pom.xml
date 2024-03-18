@@ -308,46 +308,6 @@
 				<version>2.0.1</version>
 			</dependency>
 
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-core</artifactId>
-				<version>${log4j2.version}</version>
-			</dependency>
-			<!-- Servlet support for multiple contexts -->
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-web</artifactId>
-				<version>${log4j2.version}</version>
-			</dependency>
-			<!-- SLF4J Binding -->
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-slf4j-impl</artifactId>
-				<version>${log4j2.version}</version>
-			</dependency>
-			<!-- Apache Commons Logging Binding -->
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-jcl</artifactId>
-				<version>${log4j2.version}</version>
-			</dependency>
-			<!-- Java Util Logging Binding -->
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-jul</artifactId>
-				<version>${log4j2.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-layout-template-json</artifactId>
-				<version>${log4j2.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-kubernetes</artifactId>
-				<version>${log4j2.version}</version>
-			</dependency>
-
 			<!-- SLF4J Log bindings -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
