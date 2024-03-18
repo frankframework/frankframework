@@ -261,12 +261,20 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	/**
 	 * Provides advice for {@link ISender#sendMessageOrThrow(Message message, PipeLineSession session)}
 	 */
-	public SenderResult debugSenderWithForwardInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0);
-	}
 	public Message debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
+		if (!isEnabled()) {
+			return (Message) proceedingJoinPoint.proceed();
+		}
+
 		SenderResult result = debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0);
 		return result.getResult();
+	}
+
+	/**
+	 * Provides advice for {@link ISender#sendMessage(Message message, PipeLineSession session)}
+	 */
+	public SenderResult debugSenderWithForwardInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
+		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0);
 	}
 
 	/**
