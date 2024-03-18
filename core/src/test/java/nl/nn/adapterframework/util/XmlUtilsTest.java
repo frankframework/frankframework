@@ -1,16 +1,20 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -19,13 +23,21 @@ import javax.xml.transform.TransformerFactory;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.xml.StringBuilderContentHandler;
@@ -292,5 +304,101 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 		assertEquals(expected, XmlUtils.normalizeAttributeValue(input));
 		assertEquals(null, XmlUtils.normalizeAttributeValue(null));
+	}
+
+
+	static Stream<Arguments> readFileInDifferentWays(String resource) throws IOException, URISyntaxException {
+		URL testFileURL = TestFileUtils.getTestFileURL(resource);
+
+		return Stream.of(
+				Arguments.of(MessageTestUtils.getBinaryMessage(resource, false)), //InputStream
+				Arguments.of(MessageTestUtils.getCharacterMessage(resource, false)), //Reader
+				Arguments.of(new UrlMessage(testFileURL)), //Supplier
+				Arguments.of(new FileMessage(new File(testFileURL.toURI()))) //SerializableFileReference
+			);
+	}
+
+	static Stream<Arguments> testReadMessageAsInputSourceWithUnspecifiedNonDefaultCharset() throws IOException, URISyntaxException {
+		return readFileInDifferentWays("/Util/MessageUtils/iso-8859-1_without_xml_declaration.xml");
+	}
+	@ParameterizedTest
+	@MethodSource
+	public void testReadMessageAsInputSourceWithUnspecifiedNonDefaultCharset(Message message) throws Exception {
+		// Arrange
+		message.getContext().withCharset("ISO-8859-1");
+
+		ContentHandler handler = new XmlWriter();
+		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
+
+		// Act
+		InputSource source = message.asInputSource();
+		xmlReader.parse(source);
+
+		// Assert
+		assertTrue(handler.toString().contains("håndværkere"));
+		assertTrue(handler.toString().contains("værgeløn"));
+	}
+
+	static Stream<Arguments> testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
+		return readFileInDifferentWays("/Util/MessageUtils/utf8-with-bom.xml");
+	}
+	@ParameterizedTest
+	@MethodSource
+	public void testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
+		// Arrange
+		message.getContext().withCharset("ISO-8859-1");
+		assertEquals("ISO-8859-1", message.getCharset());
+
+		ContentHandler handler = new XmlWriter();
+		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
+
+		// Act
+		InputSource source = message.asInputSource();
+		xmlReader.parse(source);
+
+		// Assert
+		assertTrue(handler.toString().contains("testFile with BOM —•˜›"));
+	}
+
+	static Stream<Arguments> testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
+		return readFileInDifferentWays("/Util/MessageUtils/utf8-without-bom.xml");
+	}
+	@ParameterizedTest
+	@MethodSource
+	public void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
+		// Arrange
+		message.getContext().withCharset("ISO-8859-1");
+		assertEquals("ISO-8859-1", message.getCharset());
+
+		ContentHandler handler = new XmlWriter();
+		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
+
+		// Act
+		InputSource source = message.asInputSource();
+		xmlReader.parse(source);
+
+		// Assert
+		// NB: This assert breaks, because the parser is not reading the input XML correctly.
+		// Shows how the "fix" could be wrong. (But of course, when encoding is specified externally in metadata, and it doesn't match the contents, that is the real bug...)
+		assertFalse(handler.toString().contains("testFile with BOM —•˜›"));
+	}
+
+	static Stream<Arguments> testReadMessageAsInputSourceWithNonDefaultCharset() throws IOException, URISyntaxException {
+		return readFileInDifferentWays("/Util/MessageUtils/iso-8859-1.xml");
+	}
+	@ParameterizedTest
+	@MethodSource
+	public void testReadMessageAsInputSourceWithNonDefaultCharset(Message message) throws Exception {
+		// Arrange
+		ContentHandler handler = new XmlWriter();
+		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
+
+		// Act
+		InputSource source = message.asInputSource();
+		xmlReader.parse(source);
+
+		// Assert
+		assertTrue(handler.toString().contains("håndværkere"));
+		assertTrue(handler.toString().contains("værgeløn"));
 	}
 }
