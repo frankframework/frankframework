@@ -694,8 +694,8 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		}
 
 		@Override
-		public boolean hasSizeStatistics() {
-			return owner.hasSizeStatistics();
+		public boolean sizeStatisticsEnabled() {
+			return owner.sizeStatisticsEnabled();
 		}
 	}
 

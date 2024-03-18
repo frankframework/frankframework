@@ -192,10 +192,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       this.appConstants['Statistics.percentiles.publish'] == 'true';
     const publishHistograms =
       this.appConstants['Statistics.histograms.publish'] == 'true';
-    const calculatePercentiles =
-      this.appConstants['Statistics.percentiles.internal'] == 'true';
-    const displayPercentiles =
-      publishPercentiles || publishHistograms || calculatePercentiles;
+    const displayPercentiles = publishPercentiles || publishHistograms;
 
     this.Debug.info(
       'appending Statistic.boundaries',
@@ -209,11 +206,11 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
     for (const index in timeBoundaries) {
       const index_ = timeBoundaries[index];
-      statisticsTimeBoundariesAdditive[`${index_}ms`] = `< ${index_}ms`;
+      statisticsTimeBoundariesAdditive[`${index_}ms`] = `# < ${index_}ms`;
     }
     for (const index in sizeBoundaries) {
       const index_ = sizeBoundaries[index];
-      statisticsSizeBoundariesAdditive[`${index_}B`] = `< ${index_}B`;
+      statisticsSizeBoundariesAdditive[`${index_}B`] = `# < ${index_}B`;
     }
     if (displayPercentiles) {
       for (const index in percBoundaries) {

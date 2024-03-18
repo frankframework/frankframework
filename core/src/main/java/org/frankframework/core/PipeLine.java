@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package org.frankframework.core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,18 +37,17 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.doc.Category;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
-import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.processors.PipeLineProcessor;
+import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
-import org.frankframework.statistics.SizeStatisticsKeeper;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Locker;
 import org.frankframework.util.Misc;
 import org.springframework.context.ApplicationContext;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -100,6 +99,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public static final String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
 	public static final String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
+	private @Setter MetricsInitializer configurationMetrics;
+
 	public static final String PIPELINE_DURATION_STATS  = "duration";
 	public static final String PIPELINE_WAIT_STATS  = "wait";
 	public static final String PIPELINE_SIZE_STATS  = "msgsize";
@@ -129,10 +130,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Setter @Getter INamedObject owner; // for logging purposes
 	private @Setter PipeLineProcessor pipeLineProcessor;
 
-	private final Map<String, StatisticsKeeper> pipeStatistics = new Hashtable<>();
-	private final Map<String, StatisticsKeeper> pipeWaitingStatistics = new Hashtable<>();
-	private @Getter StatisticsKeeper requestSizeStats;
-	private final Map<String, StatisticsKeeper> pipeSizeStats = new Hashtable<>();
+	private @Getter DistributionSummary requestSizeStats;
+	private final Map<String, DistributionSummary> pipeStatistics = new ConcurrentHashMap<>();
+	private @Getter DistributionSummary pipelineWaitStatistics;
+	private final Map<String, DistributionSummary> pipeWaitStatistics = new ConcurrentHashMap<>();
+	private final Map<String, DistributionSummary> pipeSizeStats = new ConcurrentHashMap<>();
 
 
 	private @Getter final List<IPipeLineExitHandler> exitHandlers = new ArrayList<>();
@@ -258,7 +260,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			getLocker().configure();
 		}
 
-		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
+		requestSizeStats = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_SIZE);
+		pipelineWaitStatistics = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_WAIT_TIME);
 
 		inputMessageConsumedMultipleTimes |= pipes.stream()
 				.anyMatch(p -> p.consumesSessionVariable(PipeLineSession.ORIGINAL_MESSAGE_KEY));
@@ -307,19 +310,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			if (getMessageSizeWarnNum() >= 0) {
 				pipe.registerEvent(IPipe.MESSAGE_SIZE_MONITORING_EVENT);
 			}
-			if (pipe.hasSizeStatistics()) {
-				if (pipe instanceof AbstractPipe) {
-					AbstractPipe aPipe = (AbstractPipe) pipe;
-					if (aPipe.getInSizeStatDummyObject() != null) {
-						pipeSizeStats.put(aPipe.getInSizeStatDummyObject().getName(), new SizeStatisticsKeeper(aPipe.getInSizeStatDummyObject().getName()));
-					}
-					if (aPipe.getOutSizeStatDummyObject() != null) {
-						pipeSizeStats.put(aPipe.getOutSizeStatDummyObject().getName(), new SizeStatisticsKeeper(aPipe.getOutSizeStatDummyObject().getName()));
-					}
-				} else {
-					pipeSizeStats.put(pipe.getName(), new SizeStatisticsKeeper(pipe.getName()));
-				}
-			}
 
 			pipe.configure();
 
@@ -333,13 +323,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				}
 			}
 
-			if (pipe instanceof MessageSendingPipe) {
-				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
-				if (messageSendingPipe.getMessageLog() != null) {
-					pipeStatistics.put(messageSendingPipe.getMessageLog().getName(), new StatisticsKeeper(messageSendingPipe.getMessageLog().getName()));
-				}
-			}
-			pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
 		} catch (Throwable t) {
 			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
 			getAdapter().getMessageKeeper().error("Error initializing adapter ["+ getAdapter().getName()+"]: " +e.getMessage());
@@ -366,84 +349,20 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return pipesByName.size();
 	}
 
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		Object pipeStatsData = hski.openGroup(data, null, PIPELINE_DURATION_STATS);
-		handlePipeStat(getInputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
-		handlePipeStat(getOutputValidator(),pipeStatistics,pipeStatsData, hski, true, action);
-		handlePipeStat(getInputWrapper(),pipeStatistics,pipeStatsData, hski, true, action);
-		handlePipeStat(getOutputWrapper(),pipeStatistics,pipeStatsData, hski, true, action);
-		for (IPipe pipe : adapter.getPipeLine().getPipes()) {
-			handlePipeStat(pipe, pipeStatistics, pipeStatsData, hski, true, action);
-			if (pipe instanceof MessageSendingPipe) {
-				MessageSendingPipe messageSendingPipe = (MessageSendingPipe) pipe;
-				if (messageSendingPipe.getInputValidator() != null) {
-					handlePipeStat(messageSendingPipe.getInputValidator(), pipeStatistics, pipeStatsData, hski, true, action);
-				}
-				if (messageSendingPipe.getOutputValidator() != null) {
-					handlePipeStat(messageSendingPipe.getOutputValidator(), pipeStatistics, pipeStatsData, hski, true, action);
-				}
-				if (messageSendingPipe.getInputWrapper() != null) {
-					handlePipeStat(messageSendingPipe.getInputWrapper(), pipeStatistics, pipeStatsData, hski, true, action);
-				}
-				if (messageSendingPipe.getOutputWrapper() != null) {
-					handlePipeStat(messageSendingPipe.getOutputWrapper(), pipeStatistics, pipeStatsData, hski, true, action);
-				}
-				if (messageSendingPipe.getMessageLog() != null) {
-					handlePipeStat(messageSendingPipe.getMessageLog(),pipeStatistics,pipeStatsData,hski, true, action);
-				}
-			}
-		}
-		hski.closeGroup(pipeStatsData);
-
-		if (pipeWaitingStatistics.size() > 0) {
-			Object waitStatsData = hski.openGroup(data, null, PIPELINE_WAIT_STATS);
-			for (IPipe pipe : adapter.getPipeLine().getPipes()) {
-				handlePipeStat(pipe, pipeWaitingStatistics, waitStatsData, hski, false, action);
-			}
-			hski.closeGroup(waitStatsData);
-		}
-
-		Object sizeStatsData = hski.openGroup(data, null, PIPELINE_SIZE_STATS);
-		hski.handleStatisticsKeeper(sizeStatsData,getRequestSizeStats());
-		for (IPipe pipe : adapter.getPipeLine().getPipes()) {
-			if (pipe instanceof AbstractPipe) {
-				AbstractPipe aPipe = (AbstractPipe) pipe;
-				if (aPipe.getInSizeStatDummyObject() != null) {
-					handlePipeStat(aPipe.getInSizeStatDummyObject(), pipeSizeStats, sizeStatsData, hski, false, action);
-				}
-				if (aPipe.getOutSizeStatDummyObject() != null) {
-					handlePipeStat(aPipe.getOutSizeStatDummyObject(), pipeSizeStats, sizeStatsData, hski, false, action);
-				}
-			} else {
-				handlePipeStat(pipe, pipeSizeStats, sizeStatsData, hski, false, action);
-			}
-		}
-		hski.closeGroup(sizeStatsData);
+	/*
+	 * All pipe related statistics
+	 */
+	public @Nonnull DistributionSummary getPipeStatistics(IConfigurationAware pipe) {
+		return pipeStatistics.computeIfAbsent(pipe.getName(), name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_DURATION));
 	}
-
-	private void handlePipeStat(INamedObject pipe, Map<String, StatisticsKeeper> pipelineStatistics, Object pipeStatsData, StatisticsKeeperIterationHandler handler, boolean deep, Action action) throws SenderException {
-		if (pipe == null) {
-			return;
-		}
-		StatisticsKeeper pstat = pipelineStatistics.get(pipe.getName());
-		handler.handleStatisticsKeeper(pipeStatsData,pstat);
-		if (deep && pipe instanceof HasStatistics) {
-			((HasStatistics)pipe).iterateOverStatistics(handler,pipeStatsData,action);
-		}
+	public @Nonnull DistributionSummary getPipeWaitStatistics(IPipe pipe){
+		return pipeWaitStatistics.computeIfAbsent(pipe.getName(), name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_WAIT_TIME));
 	}
-
-	public StatisticsKeeper getPipeStatistics(INamedObject pipe){
-		return pipeStatistics.get(pipe.getName());
+	public @Nonnull DistributionSummary getPipeSizeInStatistics(IPipe pipe) {
+		return pipeSizeStats.computeIfAbsent(pipe.getName() + " (in)", name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_SIZE_IN));
 	}
-	public StatisticsKeeper getPipeWaitingStatistics(IPipe pipe){
-		return pipeWaitingStatistics.get(pipe.getName());
-	}
-	public StatisticsKeeper getPipeSizeStatistics(IPipe pipe){
-		return pipeSizeStats.get(pipe.getName());
-	}
-	public StatisticsKeeper getPipeSizeStatistics(INamedObject no){
-		return pipeSizeStats.get(no.getName());
+	public @Nonnull DistributionSummary getPipeSizeOutStatistics(IPipe pipe) {
+		return pipeSizeStats.computeIfAbsent(pipe.getName() + " (out)", name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_SIZE_OUT));
 	}
 
 
@@ -708,9 +627,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		pipesByName.put(name, pipe);
 		pipes.add(pipe);
-		if (pipe.getMaxThreads() > 0) {
-			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
-		}
 		log.debug("added pipe [" + pipe + "]");
 	}
 

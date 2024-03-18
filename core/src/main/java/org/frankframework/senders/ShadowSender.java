@@ -26,14 +26,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.util.Guard;
-import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.SaxDocumentBuilder;
-import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -42,6 +34,13 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.Guard;
+import org.frankframework.util.XmlUtils;
+import org.frankframework.xml.SaxDocumentBuilder;
+import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 /**
  * Collection of Senders, that are executed all at the same time. Once the results are processed, all results will be sent to the resultSender,
@@ -223,8 +222,7 @@ public class ShadowSender extends ParallelSenders {
 		try (SaxElementBuilder resultXml = builder.startElement(tagName)) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 
-			StatisticsKeeper sk = getStatisticsKeeper(sender);
-			resultXml.addAttribute("duration", "" + sk.getLast());
+			resultXml.addAttribute("duration", ""+pse.getDuration());
 
 			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
 			resultXml.addAttribute("senderName", sender.getName());

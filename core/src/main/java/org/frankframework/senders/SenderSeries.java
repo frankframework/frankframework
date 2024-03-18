@@ -20,19 +20,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Getter;
-import lombok.Setter;
+import javax.annotation.Nonnull;
+
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.statistics.HasStatistics;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
+import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Series of Senders, that are executed one after another.
@@ -43,7 +45,7 @@ import org.frankframework.util.ClassUtils;
 public class SenderSeries extends SenderWrapperBase {
 
 	private final List<ISender> senderList = new LinkedList<>();
-	private final Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<>();
+	private final Map<ISender, DistributionSummary> statisticsMap = new HashMap<>();
 	private @Getter @Setter boolean synchronous=true;
 
 	@Override
@@ -54,6 +56,9 @@ public class SenderSeries extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		for (ISender sender: getSenders()) {
+			if(sender instanceof AdapterAware) {
+				((AdapterAware) sender).setAdapter(adapter);
+			}
 			sender.configure();
 		}
 		super.configure();
@@ -88,23 +93,11 @@ public class SenderSeries extends SenderWrapperBase {
 			}
 			message = result.getResult();
 			long t2 = System.currentTimeMillis();
-			StatisticsKeeper sk = getStatisticsKeeper(sender);
-			sk.addValue(t2-t1);
+			DistributionSummary summary = getStatisticsKeeper(sender);
+			summary.record((double) t2-t1);
 			t1=t2;
 		}
 		return result!=null ? result : new SenderResult(message);
-	}
-
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		//Object senderData=hski.openGroup(data,getName(),"sender");
-		for (ISender sender: getSenders()) {
-			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));
-			if (sender instanceof HasStatistics) {
-				((HasStatistics)sender).iterateOverStatistics(hski,data,action);
-			}
-		}
-		//hski.closeGroup(senderData);
 	}
 
 	@Override
@@ -134,15 +127,14 @@ public class SenderSeries extends SenderWrapperBase {
 	public void registerSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added
-		statisticsMap.put(sender, new StatisticsKeeper("-> "+ClassUtils.nameOf(sender)));
+	}
+
+	protected @Nonnull DistributionSummary getStatisticsKeeper(ISender sender) {
+		return statisticsMap.computeIfAbsent(sender, ignored -> configurationMetrics.createSubDistributionSummary(this, sender, FrankMeterType.PIPE_DURATION));
 	}
 
 	protected Iterable<ISender> getSenders() {
 		return senderList;
-	}
-
-	protected StatisticsKeeper getStatisticsKeeper(ISender sender) {
-		return statisticsMap.get(sender);
 	}
 
 }

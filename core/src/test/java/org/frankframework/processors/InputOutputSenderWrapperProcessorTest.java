@@ -12,21 +12,45 @@ import org.frankframework.senders.SenderBase;
 import org.frankframework.senders.SenderSeries;
 import org.frankframework.senders.SenderWrapperBase;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.TestConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class InputOutputSenderWrapperProcessorTest {
 
+	private TestConfiguration configuration = new TestConfiguration();
 	private PipeLineSession session;
 	private String secondSenderOutput;
+	private SenderSeries sender;
 
 	@BeforeEach
 	public void setUp() {
 		session = new PipeLineSession();
 		secondSenderOutput = null;
+
+		sender = configuration.createBean(SenderSeries.class);
+		sender.registerSender(new SenderBase() {
+			@Override
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+				try {
+					return new SenderResult("Sender 1: ["+message.asString()+"]");
+				} catch (IOException e) {
+					throw new SenderException(e);
+				}
+			}});
+		sender.registerSender(new SenderBase() {
+			@Override
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+				try {
+					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
+					return new SenderResult(secondSenderOutput);
+				} catch (IOException e) {
+					throw new SenderException(e);
+				}
+			}});
 	}
 
-	public void testInputOutputSenderWrapperProcessor(SenderWrapperBase sender, String input, String expectedSecondSenderOutput, String expectedWrapperOutput, String expectedSessionKeyValue) throws Exception {
+	private void testInputOutputSenderWrapperProcessor(SenderWrapperBase sender, String input, String expectedSecondSenderOutput, String expectedWrapperOutput, String expectedSessionKeyValue) throws Exception {
 		InputOutputSenderWrapperProcessor processor = new InputOutputSenderWrapperProcessor();
 
 		SenderWrapperProcessor target = new SenderWrapperProcessor() {
@@ -47,34 +71,8 @@ public class InputOutputSenderWrapperProcessorTest {
 		assertEquals(expectedSessionKeyValue, Message.asString(session.get("storedResult")), "unexpected session variable value");
 	}
 
-	public SenderWrapperBase getSenderWrapper() {
-		SenderSeries senderSeries = new SenderSeries();
-		senderSeries.registerSender(new SenderBase() {
-			@Override
-			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-				try {
-					return new SenderResult("Sender 1: ["+message.asString()+"]");
-				} catch (IOException e) {
-					throw new SenderException(e);
-				}
-			}});
-		senderSeries.registerSender(new SenderBase() {
-			@Override
-			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-				try {
-					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
-					return new SenderResult(secondSenderOutput);
-				} catch (IOException e) {
-					throw new SenderException(e);
-				}
-			}});
-		return senderSeries;
-	}
-
 	@Test
 	public void testBasic() throws Exception {
-		SenderWrapperBase sender = getSenderWrapper();
-
 		String input = "abc";
 		String expectedSecondSenderOutput = "Sender 2: [Sender 1: [abc]]";
 		String expectedWrapperOutput = expectedSecondSenderOutput;
@@ -85,7 +83,6 @@ public class InputOutputSenderWrapperProcessorTest {
 
 	@Test
 	public void testGetInputFromFixedValue() throws Exception {
-		SenderWrapperBase sender = getSenderWrapper();
 		sender.setGetInputFromFixedValue("def");
 
 		String input = "abc";
@@ -98,7 +95,6 @@ public class InputOutputSenderWrapperProcessorTest {
 
 	@Test
 	public void testBasicPreserve() throws Exception {
-		SenderWrapperBase sender = getSenderWrapper();
 		sender.setPreserveInput(true);
 
 		String input = "abc";
@@ -111,7 +107,6 @@ public class InputOutputSenderWrapperProcessorTest {
 
 	@Test
 	public void testGetInputFromFixedValuePreserve() throws Exception {
-		SenderWrapperBase sender = getSenderWrapper();
 		sender.setGetInputFromFixedValue("def");
 		sender.setPreserveInput(true);
 
@@ -125,7 +120,6 @@ public class InputOutputSenderWrapperProcessorTest {
 
 	@Test
 	public void testBasicStoreResult() throws Exception {
-		SenderWrapperBase sender = getSenderWrapper();
 		sender.setStoreResultInSessionKey("storedResult");
 
 		String input = "abc";
@@ -138,7 +132,6 @@ public class InputOutputSenderWrapperProcessorTest {
 
 	@Test
 	public void testGetInputFromFixedValueStoreResult() throws Exception {
-		SenderWrapperBase sender = getSenderWrapper();
 		sender.setGetInputFromFixedValue("def");
 		sender.setStoreResultInSessionKey("storedResult");
 
@@ -152,7 +145,6 @@ public class InputOutputSenderWrapperProcessorTest {
 
 	@Test
 	public void testBasicPreserveStoreResult() throws Exception {
-		SenderWrapperBase sender = getSenderWrapper();
 		sender.setPreserveInput(true);
 		sender.setStoreResultInSessionKey("storedResult");
 
@@ -166,7 +158,6 @@ public class InputOutputSenderWrapperProcessorTest {
 
 	@Test
 	public void testStoreInput() throws Exception {
-		SenderWrapperBase sender = getSenderWrapper();
 		sender.setStoreInputInSessionKey("storedResult");
 
 		String input = "abc";
@@ -179,7 +170,6 @@ public class InputOutputSenderWrapperProcessorTest {
 
 	@Test
 	public void testGetInputFromFixedValuePreserveStoreResult() throws Exception {
-		SenderWrapperBase sender = getSenderWrapper();
 		sender.setGetInputFromFixedValue("def");
 		sender.setPreserveInput(true);
 		sender.setStoreResultInSessionKey("storedResult");

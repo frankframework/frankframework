@@ -16,23 +16,24 @@
 package org.frankframework.scheduler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.scheduler.job.IJob;
-import org.quartz.JobDetail;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.TransactionAttributes;
-
-import org.frankframework.statistics.StatisticsKeeper;
+import org.frankframework.scheduler.job.IJob;
+import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
+import org.quartz.JobDetail;
+import org.springframework.context.ApplicationContext;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -290,6 +291,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+	private @Setter MetricsInitializer configurationMetrics;
 	private @Getter boolean configured;
 
 	private @Getter String name;
@@ -305,7 +307,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
 
-	private StatisticsKeeper statsKeeper;
+	private DistributionSummary summary;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -324,7 +326,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			getLocker().configure();
 		}
 
-		statsKeeper = new StatisticsKeeper(getName());
+		summary = configurationMetrics.createDistributionSummary(this, FrankMeterType.JOB_DURATION);
 
 		getMessageKeeper().add("job successfully configured");
 		configured = true;
@@ -417,7 +419,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 		long endTime = System.currentTimeMillis();
 		long duration = endTime - startTime;
-		statsKeeper.addValue(duration);
+		summary.record(duration);
 		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
 	}
 
@@ -493,8 +495,4 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		this.messageKeeperSize = size;
 	}
 
-	@Override
-	public synchronized StatisticsKeeper getStatisticsKeeper() {
-		return statsKeeper;
-	}
 }

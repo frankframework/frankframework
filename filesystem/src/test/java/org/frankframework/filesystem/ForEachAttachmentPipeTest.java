@@ -31,6 +31,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		autowireByName(pipe);
 		pipe.registerForward(new PipeForward("success",null));
 		SenderSeries series = new SenderSeries();
+		autowireByName(series);
 		series.registerSender(new EchoSender());
 		pipe.setSender(series);
 	}

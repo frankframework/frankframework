@@ -23,16 +23,10 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.DummyNamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.PipeForward;
@@ -50,6 +44,11 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -103,7 +102,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Getter boolean removeCompactMsgNamespaces = true;
 	private @Getter boolean restoreMovedElements=false;
 
-	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
+	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", true);
 	private @Getter Locker locker;
 	private @Getter String emptyInputReplacement=null;
 	private @Getter boolean writeToSecLog = false;
@@ -117,14 +116,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
-
-	private final DummyNamedObject inSizeStatDummyObject;
-	private final DummyNamedObject outSizeStatDummyObject;
-
-	public AbstractPipe() {
-		inSizeStatDummyObject = new DummyNamedObject();
-		outSizeStatDummyObject = new DummyNamedObject();
-	}
 
 	/**
 	 * <code>configure()</code> is called after the {@link PipeLine Pipeline} is registered
@@ -322,8 +313,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Mandatory
 	public void setName(String name) {
 		this.name=name;
-		inSizeStatDummyObject.setName(getName() + " (in)");
-		outSizeStatDummyObject.setName(getName() + " (out)");
 	}
 
 	@Override
@@ -400,21 +389,15 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 
-
+	/**
+	 * Collect and aggregate Message size statistics
+	 */
 	public void setSizeStatistics(boolean sizeStatistics) {
 		this.sizeStatistics = sizeStatistics;
 	}
 	@Override
-	public boolean hasSizeStatistics() {
+	public boolean sizeStatisticsEnabled() {
 		return sizeStatistics;
-	}
-
-	public DummyNamedObject getInSizeStatDummyObject() {
-		return inSizeStatDummyObject;
-	}
-
-	public DummyNamedObject getOutSizeStatDummyObject() {
-		return outSizeStatDummyObject;
 	}
 
 	/** when set to <code>true</code> a record is written to the security log when the pipe has finished successfully */

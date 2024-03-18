@@ -35,6 +35,7 @@ import org.frankframework.util.HttpUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -162,7 +163,7 @@ public class OpenApiTestBase extends Mockito {
 //			return new AdapterBuilder(name, description);
 //		}
 		public AdapterBuilder(String name, String description) {
-			adapter = spy(Adapter.class);
+			adapter = spy(SpringUtils.createBean(configuration, Adapter.class));
 			when(adapter.getMessageKeeper()).thenReturn(new SysOutMessageKeeper());
 			adapter.setName(name);
 			adapter.setDescription(description);
@@ -258,8 +259,8 @@ public class OpenApiTestBase extends Mockito {
 		 * @param start automatically start the adapter upon creation
 		 */
 		public Adapter build(boolean start) throws ConfigurationException {
-			PipeLine pipeline = spy(PipeLine.class);
-			Receiver receiver = new Receiver();
+			PipeLine pipeline = spy(SpringUtils.createBean(configuration, PipeLine.class));
+			Receiver receiver = SpringUtils.createBean(configuration, Receiver.class);
 			receiver.setName("receiver");
 			receiver.setListener(listener);
 			pipeline.setInputValidator(inputValidator);

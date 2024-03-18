@@ -334,7 +334,7 @@ class IbisLocalSenderTest {
 
 	private JavaListener<?> setupJavaListener(TestConfiguration configuration, PipeLine pipeline, boolean callByServiceName) throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
-		Receiver<String> receiver = new Receiver<>();
+		Receiver<String> receiver = configuration.createBean(Receiver.class);
 		JavaListener<String> listener = configuration.createBean(JavaListener.class);
 		listener.setName("TEST");
 		listener.setServiceName(SERVICE_NAME);

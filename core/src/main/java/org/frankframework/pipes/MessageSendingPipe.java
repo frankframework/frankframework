@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.AdapterAware;
 import org.frankframework.core.DestinationValidator;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.HasSender;
@@ -66,9 +68,9 @@ import org.frankframework.processors.ListenerProcessor;
 import org.frankframework.processors.PipeProcessor;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.senders.IbisLocalSender;
+import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
@@ -81,6 +83,7 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -184,6 +187,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ListenerProcessor listenerProcessor;
 
+	private final Map<String, DistributionSummary> statisticsMap = new HashMap<>();
+	protected @Setter @Getter MetricsInitializer configurationMetrics;
+
 	public enum LinkMethod {
 		MESSAGEID, CORRELATIONID
 	}
@@ -223,6 +229,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 
 			try {
+				if(sender instanceof AdapterAware) {
+					((AdapterAware) sender).setAdapter(getAdapter());
+				}
+				if(StringUtils.isEmpty(sender.getName())) {
+					sender.setName(ClassUtils.nameOf(sender));
+				}
 				//In order to be able to suppress 'xxxSender may cause potential SQL injections!' config warnings
 				if(sender instanceof DirectQuerySender) {
 					((DirectQuerySender) getSender()).configure(getAdapter());
@@ -611,8 +623,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 		long messageLogEndTime = System.currentTimeMillis();
 		long messageLogDuration = messageLogEndTime - messageLogStartTime;
-		StatisticsKeeper sk = getPipeLine().getPipeStatistics(messageLog);
-		sk.addValue(messageLogDuration);
+		getPipeSubStatistics("MessageLog").record(messageLogDuration);
 		return correlationID;
 	}
 
@@ -656,6 +667,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	private PipeRunResult preProcessInput(Message input, PipeLineSession session) throws PipeRunException {
+		long preProcessInputStartTime = System.currentTimeMillis();
 		if (inputWrapper != null) {
 			log.debug("wrapping input");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, input, session);
@@ -669,6 +681,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (messageLog != null) {
 				preserve(input);
 			}
+
 			log.debug("input after wrapping [{}]", input);
 		}
 
@@ -682,12 +695,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (!validationResult.isSuccessful()) {
 				return validationResult;
 			}
+
 			input = validationResult.getResult();
+		}
+		if (inputWrapper != null && inputValidator != null) {
+			getPipeSubStatistics("PreProcessing").record((double) System.currentTimeMillis() - preProcessInputStartTime);
 		}
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), input);
 	}
 
 	private PipeRunResult postProcessOutput(Message output, PipeLineSession session) throws PipeRunException {
+		long postProcessInputStartTime = System.currentTimeMillis();
 		if (outputValidator != null) {
 			log.debug("validating response");
 			PipeRunResult validationResult;
@@ -701,7 +719,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			log.debug("response after validating ({}) [{}]", () -> ClassUtils.nameOf(validationResult.getResult()), validationResult::getResult);
 		}
 
-		if (outputWrapper!=null) {
+		if (outputWrapper != null) {
 			log.debug("wrapping response");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, output, session);
 			if (wrapResult == null) {
@@ -711,7 +729,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				return wrapResult;
 			}
 			output = wrapResult.getResult();
+
 			log.debug("response after wrapping ({}) [{}]", () -> ClassUtils.nameOf(wrapResult.getResult()), wrapResult::getResult);
+		}
+
+		if (outputValidator != null && outputWrapper != null) {
+			getPipeSubStatistics("PostProcessing").record((double) System.currentTimeMillis() - postProcessInputStartTime);
 		}
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), output);
 	}
@@ -931,18 +954,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		if (sender instanceof HasStatistics) {
-			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
-		}
-	}
-
-	@Override
-	public boolean hasSizeStatistics() {
-		if (!super.hasSizeStatistics()) {
+	public boolean sizeStatisticsEnabled() {
+		if (!super.sizeStatisticsEnabled()) {
 			return getSender().isSynchronous();
 		}
-		return super.hasSizeStatistics();
+		return super.sizeStatisticsEnabled();
+	}
+
+	private @Nonnull DistributionSummary getPipeSubStatistics(String name) {
+		return statisticsMap.computeIfAbsent(name, ignored -> configurationMetrics.createSubDistributionSummary(this, name, FrankMeterType.PIPE_DURATION));
 	}
 
 	@Override

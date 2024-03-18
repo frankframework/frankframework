@@ -15,7 +15,12 @@
 */
 package org.frankframework.metrics;
 
+import java.time.Duration;
+
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Meter.Id;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 
@@ -30,6 +35,26 @@ public class PrometheusRegistryConfigurator extends MetricsRegistryConfiguratorB
 
 	@Override
 	protected MeterRegistry createRegistry(PrometheusConfig config) {
-		return new PrometheusMeterRegistry(config);
+		return new PrometheusMeterRegistry(config) {
+
+			@Override
+			public DistributionSummary newDistributionSummary(Id id, DistributionStatisticConfig config, double scale) {
+				return super.newDistributionSummary(id, overrideDefaults(config), scale);
+			}
+		};
+	}
+
+	/**
+	 * Since whoever made the Prometheus registry doesn't want anyone to use ServiceLevelObjects, we have to always disable publishing them.
+	 * It's strange that Prometheus disables SLO but does NOT default percentilesHistogram to false.
+	 * 
+	 * See https://github.com/micrometer-metrics/micrometer/issues/4854
+	 */
+	private DistributionStatisticConfig overrideDefaults(DistributionStatisticConfig config) {
+		return DistributionStatisticConfig.builder()
+				.expiry(Duration.ofDays(7))
+				.percentilesHistogram(false)
+				.build()
+				.merge(config);
 	}
 }

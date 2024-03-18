@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,23 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.statistics;
+package org.frankframework.core;
 
-/**
- * @author  Gerrit van Brakel
- * @since
- */
-public class SizeStatisticsKeeper<B extends IBasics<S>, S> extends StatisticsKeeper<B,S> {
+import org.springframework.beans.factory.Aware;
 
-	private static final String statConfigKey="Statistics.size.boundaries";
-	public static final String DEFAULT_BOUNDARY_LIST="10000,100000,1000000";
+public interface AdapterAware extends Aware {
 
-	public SizeStatisticsKeeper(String name) {
-		super(name, (B)new BigBasics(), statConfigKey, DEFAULT_BOUNDARY_LIST);
-	}
-
-	public String getUnits() {
-		return "B";
-	}
-
+	void setAdapter(Adapter adapter);
 }
