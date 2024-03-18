@@ -105,7 +105,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 				if (errorStorage!=null) {
 					String slotId=errorStorage.getSlotId();
 					if (StringUtils.isNotEmpty(slotId)) {
-						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+						SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),receiver.getName(),null);
 						String type = errorStorage.getType();
 						slotmap.put(type+"/"+slotId,sir);
 					}
@@ -114,7 +114,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 				if (messageLog!=null) {
 					String slotId=messageLog.getSlotId();
 					if (StringUtils.isNotEmpty(slotId)) {
-						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+						SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),receiver.getName(),null);
 						String type = messageLog.getType();
 						slotmap.put(type+"/"+slotId,sir);
 					}
@@ -130,7 +130,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 						if (messageLog!=null) {
 							String slotId=messageLog.getSlotId();
 							if (StringUtils.isNotEmpty(slotId)) {
-								SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+								SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),null,msp.getName());
 								String type = messageLog.getType();
 								slotmap.put(type+"/"+slotId,sir);
 								slotmap.put(slotId,sir);
@@ -141,7 +141,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 								ITransactionalStorage transactionalStorage = (ITransactionalStorage) sender;
 								String slotId=transactionalStorage.getSlotId();
 								if (StringUtils.isNotEmpty(slotId)) {
-									SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+									SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),null,msp.getName());
 									String type = transactionalStorage.getType();
 									slotmap.put(type+"/"+slotId,sir);
 									slotmap.put(slotId,sir);
@@ -240,6 +240,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 					SlotIdRecord sir=slotmap.get(type+"/"+slotid);
 					if (sir!=null) {
 						slotBuilder.add("adapter",sir.adapterName);
+						slotBuilder.add("configuration",sir.configurationName);
 						if (StringUtils.isNotEmpty(sir.receiverName) ) {
 							slotBuilder.add("receiver",sir.receiverName);
 						}
@@ -280,15 +281,15 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 }
 
 class SlotIdRecord {
+	public String configurationName;
 	public String adapterName;
 	public String receiverName;
 	public String pipeName;
 
-	SlotIdRecord(String adapterName, String receiverName, String pipeName) {
-		super();
-		this.adapterName=adapterName;
-		this.receiverName=receiverName;
-		this.pipeName=pipeName;
+	SlotIdRecord(String configurationName, String adapterName, String receiverName, String pipeName){
+		this.configurationName = configurationName;
+		this.adapterName = adapterName;
+		this.receiverName = receiverName;
+		this.pipeName = pipeName;
 	}
 }
-
