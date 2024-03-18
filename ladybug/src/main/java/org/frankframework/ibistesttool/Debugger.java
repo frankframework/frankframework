@@ -31,6 +31,7 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
+import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.parameters.Parameter;
@@ -67,6 +68,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	protected Set<String> inRerun = new HashSet<>();
 
 	public void setTestTool(TestTool testTool) {
+		testTool.setDebugger(this);
 		this.testTool = testTool;
 	}
 
@@ -267,7 +269,6 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
-		String errorMessage = null;
 		if (securityContext.isUserInRoles(testerRoles)) {
 			int i = 0;
 			List<Checkpoint> checkpoints = originalReport.getCheckpoints();
@@ -306,7 +307,12 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 								// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
 								String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
 								pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-								adapter.processMessage(messageId, inputMessage, pipeLineSession);
+								PipeLineResult result = adapter.processMessage(messageId, inputMessage, pipeLineSession);
+								try {
+									result.getResult().close();
+								} catch (IOException e) {
+									return "IOException': unable to close response message";
+								}
 							}
 						} finally {
 							synchronized(inRerun) {
@@ -314,18 +320,18 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 							}
 						}
 					} else {
-						errorMessage = "Adapter in state '" + runState + "'";
+						return "Adapter in state '" + runState + "'";
 					}
 				} else {
-					errorMessage = "Adapter '" + pipelineName + "' not found";
+					return "Adapter '" + pipelineName + "' not found";
 				}
 			} else {
-				errorMessage = "First checkpoint isn't a pipeline";
+				return "First checkpoint isn't a pipeline";
 			}
 		} else {
-			errorMessage = "Not allowed";
+			return "Not allowed";
 		}
-		return errorMessage;
+		return null;
 	}
 
 	@Override
@@ -361,7 +367,6 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	private boolean stubINamedObject(String checkpointNamePrefix, INamedObject namedObject, String correlationId) {
-		boolean stub = false;
 		boolean rerun;
 		synchronized(inRerun) {
 			rerun = inRerun.contains(correlationId);
@@ -372,20 +377,18 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 //				stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, getDefaultStubStrategy());
 				// TODO zou ook gewoon het orginele report kunnen gebruiken (via opslaan in iets als inRerun) of inRerun ook via testTool doen?
 				Report reportInProgress = testTool.getReportInProgress(correlationId);
-				stub = stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
+				return stub(getCheckpointNameForINamedObject(checkpointNamePrefix, namedObject), true, (reportInProgress==null?null:reportInProgress.getStubStrategy()));
 			} else {
 				if (originalEndpoint.getStub() == Checkpoint.STUB_FOLLOW_REPORT_STRATEGY) {
-					stub = stub(originalEndpoint, originalEndpoint.getReport().getStubStrategy());
+					return stub(originalEndpoint, originalEndpoint.getReport().getStubStrategy());
 				} else if (originalEndpoint.getStub() == Checkpoint.STUB_NO) {
-					stub = false;
+					return false;
 				} else if (originalEndpoint.getStub() == Checkpoint.STUB_YES) {
-					stub = true;
+					return true;
 				}
 			}
-		} else {
-			stub = false;
 		}
-		return stub;
+		return false;
 	}
 
 	private boolean stub(String checkpointName, boolean isEndpoint, String stubStrategy) {
