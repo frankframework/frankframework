@@ -54,12 +54,22 @@
                                 </tr>
                             </thead>
                             <tbody *ngFor="let t of result">
-                                <tr *ngFor="let s of t.slots">
-                                    <td *ngIf="s.first" [attr.rowspan]="t.slotcount" title="{{ t.name }}">{{ t.type }}</td>
-                                    <td *ngIf="s.first" [attr.rowspan]="t.slotcount">{{ t.msgcount }}</td>
+                                <tr *ngFor="let s of t.slots; let first = first">
+                                    <ng-container *ngIf="first; else notFirstSlot">
+                                      <td [attr.rowspan]="t.slotcount" title="{{ t.name }}">
+                                        {{ t.type }}
+                                      </td>
+                                      <td [attr.rowspan]="t.slotcount">
+                                        {{ t.msgcount }}
+                                      </td>
+                                    </ng-container>
+                                    <ng-template #notFirstSlot>
+                                      <td></td>
+                                      <td></td>
+                                    </ng-template>
                                     <td>{{ s.id }}</td>
-                                    <td *ngIf="s.adapter">{{ s.adapter }}</td>
-                                    <td *ngIf="!s.adapter">-</td>
+                                    <td *ngIf="s.adapter; else noSlotAdapter">{{ s.adapter }}</td>
+                                    <ng-template #noSlotAdapter>-</ng-template>
                                     <td *ngIf="s.receiver">
                                         <span class="text-success" title="View Messages Processed by {{ s.receiver }}">
                                             <button
