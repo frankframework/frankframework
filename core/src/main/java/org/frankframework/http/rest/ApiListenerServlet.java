@@ -32,6 +32,16 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.nimbusds.jose.util.JSONObjectUtils;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
@@ -58,17 +68,6 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
-
-import com.nimbusds.jose.util.JSONObjectUtils;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
 
 /**
  *
@@ -168,7 +167,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 			/*
 			 * Generate an OpenApi json file for a set of ApiDispatchConfigs
-			 * @Deprecated This is here to support old url's
+			 * @Deprecated This is here to support old urls
 			 */
 			if(uri.endsWith("openapi.json")) {
 				generatePartialOpenApiSpec(uri, request, response);
@@ -189,7 +188,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			response.sendError(404, "OpenApi specification not found");
 			return;
 		}
-		JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+		JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint, request);
 		returnJson(response, 200, jsonSchema);
 	}
 
@@ -200,12 +199,12 @@ public class ApiListenerServlet extends HttpServletBase {
 		if(specUri != null) {
 			ApiDispatchConfig apiConfig = dispatcher.findExactMatchingConfigForUri(specUri);
 			if(apiConfig != null) {
-				jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+				jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint, request);
 			} else {
 				jsonSchema = null;
 			}
 		} else {
-			jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint, request);
 		}
 		if (jsonSchema == null) {
 			response.sendError(404, "OpenApi specification not found");

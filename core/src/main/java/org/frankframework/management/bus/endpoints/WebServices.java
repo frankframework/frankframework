@@ -30,6 +30,15 @@ import java.util.SortedMap;
 import javax.annotation.security.RolesAllowed;
 import javax.xml.stream.XMLStreamException;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -58,15 +67,6 @@ import org.frankframework.soap.WsdlGeneratorUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
-import lombok.Getter;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.WEBSERVICES)
@@ -100,17 +100,16 @@ public class WebServices extends BusEndpointBase {
 
 	public StringResponseMessage getOpenApiSpec(Message<?> message) {
 		String uri = BusMessageUtils.getHeader(message, "uri", null);
-
-		JsonObject jsonSchema = null;
+		JsonObject jsonSchema;
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		if(uri != null) {
 			ApiDispatchConfig apiConfig = dispatcher.findExactMatchingConfigForUri(uri);
 			if(apiConfig == null) {
 				throw new BusException("unable to find Dispatch configuration for uri");
 			}
-			jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, null);
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, uri, null);
 		} else {
-			jsonSchema = dispatcher.generateOpenApiJsonSchema(null);
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(null, null);
 		}
 
 		Map<String, Boolean> config = new HashMap<>();
@@ -134,7 +133,7 @@ public class WebServices extends BusEndpointBase {
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 
 		String generationInfo = "by FrankConsole";
-		WsdlGenerator wsdl = null;
+		WsdlGenerator wsdl;
 		try {
 			wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
