@@ -1,6 +1,6 @@
 package org.frankframework.logging;
 
-import static org.frankframework.logging.IbisLoggerConfigurationFactory.LOG4J_PROPERTY_REGEX;
+import static org.frankframework.logging.FrankLogConfigurationFactory.LOG4J_PROPERTY_REGEX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class IbisLoggerConfigurationFactoryTest {
+class FrankLogConfigurationFactoryTest {
 
 	@ParameterizedTest
 	@CsvSource({
@@ -80,7 +80,7 @@ class IbisLoggerConfigurationFactoryTest {
 		List<Map.Entry<String, String>> expectedEntries = sortMapEntries(expected);
 
 		// Act
-		Map<String, String> result = IbisLoggerConfigurationFactory.populateThreadContextProperties(config, properties);
+		Map<String, String> result = FrankLogConfigurationFactory.populateThreadContextProperties(config, properties);
 
 		// Assert
 		assertIterableEquals(expectedEntries, sortMapEntries(result));

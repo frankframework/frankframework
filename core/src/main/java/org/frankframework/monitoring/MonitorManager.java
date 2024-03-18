@@ -94,7 +94,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		String eventCode = event.getEventCode();
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
+			log.debug(getLogPrefix()+" registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
 		}
 
 		registerEvent(thrower, eventCode);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!
+   Copyright 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -33,6 +34,8 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -40,21 +43,23 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
-
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringResolver;
 
 /**
- * This ConfigurationFactory is loaded after the log4j2.properties file has been initialised.
+ * This ConfigurationFactory is loaded after the log4j2.properties file has been initialized.
  * Both Configurations are then combined via a CompositeConfiguration
+ * 
+ * NOTE:
+ * The use of Lombok is not allowed, this may break annotation processing! This is required now that package scanning is no longer allowed.
+ * Should not depend on any (util) classes that use a logger!
  *
  * @author Murat Kaan Meral
  * @author Niels Meijer
  */
 //@Order(1000)
-//@Plugin(name = "IbisLoggerConfigurationFactory", category = ConfigurationFactory.CATEGORY)
-public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
-	public static final String LOG_PREFIX = "IbisLoggerConfigurationFactory class ";
+//@Plugin(name = "FrankLogConfigurationFactory", category = ConfigurationFactory.CATEGORY)
+public class FrankLogConfigurationFactory extends ConfigurationFactory {
+	public static final String LOG_PREFIX = "FrankLogConfigurationFactory class ";
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
 	public static final String LOG4J_PROPERTY_REGEX = "(?<=\\$\\{ctx:)([^:].*?)(?=(:-[^}]*+)?})";
@@ -78,20 +83,21 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 	@Override
 	protected String[] getSupportedTypes() {
-		return new String[] {".xml"};
+		return new String[] {"log4j4ibis.xml"};
 	}
 
+	/** Also called when refreshed (see UpdateLogDefinitions) */
 	@Override
 	public Configuration getConfiguration(LoggerContext loggerContext, ConfigurationSource source) {
 		try {
 			setLogDir();
-			setLevel();
+			Properties properties = getProperties();
+			setLevel(properties);
 
 			String configuration = readLog4jConfiguration(source.getInputStream());
-			Properties properties = getProperties();
 			Map<String, String> substitutions = populateThreadContextProperties(configuration, properties);
+			ThreadContext.clearMap(); //Remove previous stack, only add new values
 			ThreadContext.putAll(substitutions); // Only add the substituted variables to the ThreadContext
-			//Perhaps it's an idea to clear the ThreadContext after the configuration has been loaded.
 
 			initLogExpressionHiding(properties);
 
@@ -172,12 +178,25 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		URL url = this.getClass().getClassLoader().getResource(filename);
 		if(url != null) {
 			Properties properties = new Properties();
-			try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+			try(InputStream is = url.openStream(); Reader reader = getCharsetDetectingInputStreamReader(is)) {
 				properties.load(reader);
 			}
 			return properties;
 		}
 		return null;
+	}
+
+	/* May be duplicate code, but the LogFactory may not depend on any class that uses a logger. */
+	private static Reader getCharsetDetectingInputStreamReader(InputStream inputStream) throws IOException {
+		BOMInputStream bOMInputStream = BOMInputStream.builder()
+				.setInputStream(inputStream)
+				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
+				.get();
+
+		ByteOrderMark bom = bOMInputStream.getBOM();
+		String charsetName = bom == null ? StandardCharsets.UTF_8.displayName() : bom.getCharsetName();
+
+		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
 
 	private static void setInstanceNameLc(Properties log4jProperties) {
@@ -247,16 +266,17 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	 * If not set, sets it based on {@code dtap.stage}: When system property {@code dtap.stage}
 	 * is {@code ACC} or {@code PRD} then the log level is set to {@code WARN}, otherwise to {@code DEBUG}.
 	 */
-	private static void setLevel() {
-		if (System.getProperty("log.level") == null) {
+	private static void setLevel(Properties properties) {
+		if (properties.getProperty("log.level") == null) {
 			// In the log4j4ibis.xml the rootlogger contains the loglevel: ${log.level}
 			// You can set this property in the log4j4ibis.properties, or as system property.
 			// To make sure the IBIS can start up if no log.level property has been found, it has to be explicitly set
-			String stage = System.getProperty("dtap.stage");
+			String stage = properties.getProperty("dtap.stage");
 			String logLevel = "DEBUG";
 			if("ACC".equalsIgnoreCase(stage) || "PRD".equalsIgnoreCase(stage)) {
 				logLevel = "WARN";
 			}
+			properties.setProperty("log.level", logLevel);
 			System.setProperty("log.level", logLevel);
 		}
 	}

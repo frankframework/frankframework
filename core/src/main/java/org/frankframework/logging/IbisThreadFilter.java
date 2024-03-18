@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.config.Node;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
@@ -33,7 +34,7 @@ import org.apache.logging.log4j.core.filter.AbstractFilter;
  * @author Peter Leeuwenburgh
  * @author Murat Kaan Meral
  */
-@Plugin(name = "IbisThreadFilter", category = "Core", elementType = "filter", printObject = true)
+@Plugin(name = "IbisThreadFilter", category = Node.CATEGORY, elementType = "filter", printObject = true)
 public class IbisThreadFilter extends AbstractFilter {
 	protected Pattern regex;
 	protected Level level;

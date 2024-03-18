@@ -56,7 +56,6 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-layout-template-json</artifactId>
-			<version>${log4j2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -897,7 +896,7 @@
 						<phase>process-classes</phase>
 						<configuration>
 							<proc>only</proc>
-							<compileSourceRoots>${project.build.directory}/generated-sources/delombok</compileSourceRoots>
+							<compileSourceRoots>${project.build.outputDirectory}</compileSourceRoots>
 							<annotationProcessors>
 								<annotationProcessor>org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor</annotationProcessor>
 							</annotationProcessors>
