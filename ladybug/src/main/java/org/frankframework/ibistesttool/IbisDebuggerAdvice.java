@@ -217,7 +217,12 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			try {
 				Object[] args = proceedingJoinPoint.getArgs();
 				args[messageParamIndex] = message;
-				senderResult = (SenderResult) proceedingJoinPoint.proceed(args);
+				Object result = proceedingJoinPoint.proceed(args);
+				if(result instanceof Message) {
+					senderResult = new SenderResult((Message) result);
+				} else {
+					senderResult = (SenderResult) result;
+				}
 			} catch(Throwable throwable) {
 				throw ibisDebugger.senderAbort(sender, correlationId, throwable);
 			}
@@ -256,8 +261,12 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	/**
 	 * Provides advice for {@link ISender#sendMessageOrThrow(Message message, PipeLineSession session)}
 	 */
-	public SenderResult debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
+	public SenderResult debugSenderWithForwardInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
 		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0);
+	}
+	public Message debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
+		SenderResult result = debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0);
+		return result.getResult();
 	}
 
 	/**

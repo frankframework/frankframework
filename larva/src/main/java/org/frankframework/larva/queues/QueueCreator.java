@@ -270,7 +270,7 @@ public class QueueCreator {
 
 						deleteQuerySender.configure();
 						deleteQuerySender.open();
-						deleteQuerySender.sendMessageOrThrow(LarvaTool.TESTTOOL_DUMMY_MESSAGE, null).close();
+						deleteQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(deleteQuerySender), null).close();
 						deleteQuerySender.close();
 					} catch(ConfigurationException e) {
 						closeQueues(queues, properties, correlationId);
@@ -317,7 +317,7 @@ public class QueueCreator {
 					if (queues != null) {
 						try (PipeLineSession session = new PipeLineSession()) {
 							session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-							Message message = prePostFixedQuerySender.sendMessageOrThrow(LarvaTool.TESTTOOL_DUMMY_MESSAGE, session);
+							Message message = prePostFixedQuerySender.sendMessageOrThrow(LarvaTool.getQueryFromSender(prePostFixedQuerySender), session);
 							String result = message.asString();
 							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 							querySendersInfo.put("prePostQueryResult", result);

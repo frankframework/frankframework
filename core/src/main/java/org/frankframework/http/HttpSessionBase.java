@@ -214,7 +214,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	/**
 	 * Makes sure only http(s) requests can be performed.
 	 */
-	protected URI getURI(String url) throws URISyntaxException {
+	protected URI getURI(@Nonnull String url) throws URISyntaxException {
 		URIBuilder uri = new URIBuilder(url);
 
 		if(uri.getScheme() == null) {

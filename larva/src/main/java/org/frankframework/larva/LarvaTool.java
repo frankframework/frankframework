@@ -105,7 +105,6 @@ import jakarta.json.JsonException;
 public class LarvaTool {
 	private static final Logger logger = LogUtil.getLogger(LarvaTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
-	public static final Message TESTTOOL_DUMMY_MESSAGE = new Message("<LarvaTool>Dummy message</LarvaTool>");
 	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND = -1;
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<LarvaTool>Clean up reply</LarvaTool>";
 	public static final int RESULT_ERROR = 0;
@@ -1083,12 +1082,12 @@ public class LarvaTool {
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
 						PipeLineSession session = new PipeLineSession();
 						session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-						String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
+						String postResult = prePostFixedQuerySender.sendMessageOrThrow(getQueryFromSender(prePostFixedQuerySender), session).asString();
 						if (!preResult.equals(postResult)) {
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
-								message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
+								message = readQueryFixedQuerySender.sendMessageOrThrow(getQueryFromSender(readQueryFixedQuerySender), session).asString();
 							} catch(TimeoutException e) {
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e);
 							} catch(IOException | SenderException e) {
@@ -1421,7 +1420,7 @@ public class LarvaTool {
 				String postResult;
 				try (PipeLineSession session = new PipeLineSession()) {
 					session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-					Message message = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session);
+					Message message = prePostFixedQuerySender.sendMessageOrThrow(getQueryFromSender(prePostFixedQuerySender), session);
 					postResult = message.asString();
 					message.close();
 				}
@@ -1445,7 +1444,7 @@ public class LarvaTool {
 			try {
 				PipeLineSession session = new PipeLineSession();
 				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-				message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
+				message = readQueryFixedQuerySender.sendMessageOrThrow(getQueryFromSender(readQueryFixedQuerySender), session).asString();
 			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e);
 			} catch (IOException | SenderException e) {
@@ -1466,6 +1465,10 @@ public class LarvaTool {
 			}
 		}
 		return result;
+	}
+
+	public static Message getQueryFromSender(FixedQuerySender sender) {
+		return new Message(sender.getQuery());
 	}
 
 	protected int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Queue> queues, String correlationId) {
