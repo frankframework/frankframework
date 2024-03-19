@@ -2,6 +2,7 @@ package org.frankframework.management.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -43,6 +44,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 		String requestUrl = "/file-viewer?file=" + fileName;
 		Response response = dispatcher.dispatchRequest(HttpMethod.GET, requestUrl, null, IbisRole.IbisTester, Map.of("Accept", MediaType.TEXT_HTML));
 		StreamingOutput result = (StreamingOutput) response.getEntity();
+		assertNotNull(result);
 
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		result.write(boas);
@@ -60,6 +62,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 		String requestUrl = "/file-viewer?file=" + fileName;
 		Response response = dispatcher.dispatchRequest(HttpMethod.GET, requestUrl, null, IbisRole.IbisTester, Map.of("Accept", MediaType.TEXT_PLAIN));
 		InputStream result = (InputStream) response.getEntity();
+		assertNotNull(result);
 
 		String resultString = StreamUtil.streamToString(result);
 		assertFalse(resultString.contains("<br>"));
@@ -85,6 +88,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 		String requestUrl = "/file-viewer?file=" + fileName + "&accept=application/octet-stream"; // ignore accept header & use parameter
 		Response response = dispatcher.dispatchRequest(HttpMethod.GET, requestUrl, null, IbisRole.IbisTester, Map.of("Accept", MediaType.TEXT_PLAIN));
 		InputStream result = (InputStream) response.getEntity();
+		assertNotNull(result);
 
 		String resultString = StreamUtil.streamToString(result);
 		assertFalse(resultString.contains("<br>"));
