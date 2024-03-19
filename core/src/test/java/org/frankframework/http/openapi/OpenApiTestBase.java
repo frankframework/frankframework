@@ -1,5 +1,6 @@
-package org.frankframework.http.rest;
+package org.frankframework.http.openapi;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -9,9 +10,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mockito;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -23,7 +31,11 @@ import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
+import org.frankframework.http.rest.ApiListener;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
+import org.frankframework.http.rest.ApiListenerServlet;
+import org.frankframework.http.rest.ApiServiceDispatcher;
+import org.frankframework.http.rest.MediaTypes;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.Json2XmlValidator;
@@ -36,11 +48,6 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -229,19 +236,18 @@ public class OpenApiTestBase extends Mockito {
 			}
 			return this;
 		}
+
 		public AdapterBuilder addExit(int exitCode) {
 			return addExit(exitCode, null, false);
 		}
+
 		public AdapterBuilder addExit(int exitCode, String responseRoot, boolean isEmpty) {
 			PipeLineExit ple = new PipeLineExit();
 			ple.setCode(exitCode);
 			ple.setResponseRoot(responseRoot);
 			ple.setEmpty(isEmpty);
 			switch (exitCode) {
-				case 200:
-					ple.setState(ExitState.SUCCESS);
-					break;
-				case 201:
+				case 200, 201:
 					ple.setState(ExitState.SUCCESS);
 					break;
 				default:
@@ -251,6 +257,7 @@ public class OpenApiTestBase extends Mockito {
 			this.exits.add(ple);
 			return this;
 		}
+
 		public Adapter build() throws ConfigurationException {
 			return build(false);
 		}
@@ -294,15 +301,10 @@ public class OpenApiTestBase extends Mockito {
 				adapter.startRunning();
 			}
 			for (Adapter adapter : adapters) {
-				while (adapter.getRunState()!=RunState.STARTED) {
-					log.info("adapter RunState [{}]", adapter::getRunStateAsString);
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-						fail("InterruptedException occurred");
-					}
-				}
+				log.info("adapter RunState [{}]", adapter::getRunStateAsString);
+				await().pollInterval(10, TimeUnit.MILLISECONDS)
+						.atMost(5, TimeUnit.SECONDS)
+						.until(() -> adapter.getRunState() == RunState.STARTED);
 			}
 		}
 
