@@ -18,7 +18,6 @@ package org.frankframework.http.rest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -26,7 +25,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
 
 import jakarta.json.JsonObject;
 import lombok.extern.log4j.Log4j2;
@@ -34,8 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
-import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.http.openapi.OpenApiGenerator;
+import org.frankframework.pipes.Json2XmlValidator;
 
 /**
  * This class registers dispatches requests to the proper registered ApiListeners.
@@ -286,13 +284,13 @@ public class ApiServiceDispatcher {
 		return Collections.unmodifiableSortedMap(patternClients);
 	}
 
-	public JsonObject generateOpenApiJsonSchema(String endpoint, HttpServletRequest request) {
-		return OpenApiGenerator.generateOpenApiJsonSchema(getPatternClients().values(), endpoint, request);
+	public JsonObject generateOpenApiJsonSchema(String endpoint) {
+		return OpenApiGenerator.generateOpenApiJsonSchema(getPatternClients().values(), endpoint);
 	}
 
-	public JsonObject generateOpenApiJsonSchema(ApiDispatchConfig client, String endpoint, HttpServletRequest request) {
+	public JsonObject generateOpenApiJsonSchema(ApiDispatchConfig client, String endpoint) {
 		List<ApiDispatchConfig> clientList = List.of(client);
-		return OpenApiGenerator.generateOpenApiJsonSchema(clientList, endpoint, request);
+		return OpenApiGenerator.generateOpenApiJsonSchema(clientList, endpoint);
 	}
 
 	public static Json2XmlValidator getJsonValidator(PipeLine pipeline, boolean forOutputValidation) {
@@ -307,12 +305,11 @@ public class ApiServiceDispatcher {
 	}
 
 	public void clear() {
-		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
-			String uriPattern = it.next();
+		for (String uriPattern : patternClients.keySet()) {
 			ApiDispatchConfig config = patternClients.remove(uriPattern);
-			if(config != null) config.clear();
+			if (config != null) config.clear();
 		}
-		if(!patternClients.isEmpty()) {
+		if (!patternClients.isEmpty()) {
 			log.warn("unable to gracefully unregister [{}] DispatchConfigs", patternClients.size());
 			patternClients.clear();
 		}

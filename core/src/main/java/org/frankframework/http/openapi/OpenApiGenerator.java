@@ -15,16 +15,6 @@ limitations under the License.
 */
 package org.frankframework.http.openapi;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -46,13 +36,20 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.HttpUtils;
 import org.springframework.util.MimeType;
+
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class OpenApiGenerator {
 
-	public static JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients, String endpoint, HttpServletRequest request) {
+	public static JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients, String endpoint) {
 		JsonObjectBuilder root = Json.createObjectBuilder();
 		root.add("openapi", "3.0.0");
 		String instanceName = AppConstants.getInstance().getProperty("instance.name");
@@ -62,7 +59,7 @@ public class OpenApiGenerator {
 		info.add("description", "OpenApi auto-generated at " + DateFormatUtils.getTimeStamp() + " for " + instanceName + " (" + environment + ")");
 		info.add("version", "unknown");
 		root.add("info", info);
-		root.add("servers", mapServers(endpoint, request));
+		root.add("servers", mapServers(endpoint));
 
 		JsonObjectBuilder paths = Json.createObjectBuilder();
 		JsonObjectBuilder schemas = Json.createObjectBuilder();
@@ -103,25 +100,17 @@ public class OpenApiGenerator {
 		return root.build();
 	}
 
-	private static JsonArrayBuilder mapServers(String url, HttpServletRequest request) {
+	private static JsonArrayBuilder mapServers(String endpoint) {
 		JsonArrayBuilder serversArray = Json.createArrayBuilder();
 		String servletPath = AppConstants.getInstance().getString("servlet.ApiListenerServlet.urlMapping", "/api");
 
-		// Get load balancer url if exists
+		// Get load balancer.url if exists
 		String loadBalancerUrl = AppConstants.getInstance().getProperty("loadBalancer.url", null);
 		if (StringUtils.isNotEmpty(loadBalancerUrl)) {
 			serversArray.add(Json.createObjectBuilder().add("url", loadBalancerUrl + servletPath).add("description", "load balancer"));
-		} else if (request != null) { // fall back to the request url
-			String requestUrl = HttpUtils.urlDecode(request.getRequestURL()
-					.toString()); // raw request -> schema+hostname+port/context-path/servlet-path/+request-uri
-			String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /. Is automatically decoded by the web container!
-			String fullRequestUrl = requestUrl.substring(0, requestUrl.indexOf(requestPath));
-			serversArray.add(Json.createObjectBuilder().add("url", fullRequestUrl));
-		} else if (StringUtils.isNotBlank(url)) { // fall back to the request url
-			// TODO: validate if serverName property is set, including protocol and port
-			serversArray.add(Json.createObjectBuilder().add("url", url));
+		} else if (StringUtils.isNotBlank(endpoint)) { // fall back to the request endpoint
+			serversArray.add(Json.createObjectBuilder().add("url", endpoint));
 		}
-
 		return serversArray;
 	}
 

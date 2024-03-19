@@ -107,9 +107,9 @@ public class WebServices extends BusEndpointBase {
 			if(apiConfig == null) {
 				throw new BusException("unable to find Dispatch configuration for uri");
 			}
-			jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, uri, null);
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, uri);
 		} else {
-			jsonSchema = dispatcher.generateOpenApiJsonSchema(null, null);
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(null); // endpoint should be resolved from loadbalancer.url property
 		}
 
 		Map<String, Boolean> config = new HashMap<>();

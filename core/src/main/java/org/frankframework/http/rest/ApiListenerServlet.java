@@ -188,7 +188,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			response.sendError(404, "OpenApi specification not found");
 			return;
 		}
-		JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint, request);
+		JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
 		returnJson(response, 200, jsonSchema);
 	}
 
@@ -199,12 +199,12 @@ public class ApiListenerServlet extends HttpServletBase {
 		if(specUri != null) {
 			ApiDispatchConfig apiConfig = dispatcher.findExactMatchingConfigForUri(specUri);
 			if(apiConfig != null) {
-				jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint, request);
+				jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
 			} else {
 				jsonSchema = null;
 			}
 		} else {
-			jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint, request);
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
 		}
 		if (jsonSchema == null) {
 			response.sendError(404, "OpenApi specification not found");
