@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,6 +18,10 @@ import java.io.StringReader;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.AdapterManager;
 import org.frankframework.configuration.ConfigurationException;
@@ -36,9 +41,6 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class JavaListenerTest {
 	private TestConfiguration configuration;
@@ -113,7 +115,7 @@ public class JavaListenerTest {
 		pl.addPipe(pipe);
 
 		PipeLineExit ple = new PipeLineExit();
-		ple.setPath("success");
+		ple.setName("success");
 		ple.setState(PipeLine.ExitState.SUCCESS);
 		pl.registerPipeLineExit(ple);
 		adapter.setPipeLine(pl);
@@ -135,14 +137,13 @@ public class JavaListenerTest {
 	public void testProcessRequestString() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		HashMap context = new HashMap<>();
 		listener.setThrowException(true);
 
 		// start adapter
 		startAdapter();
 
 		// Act
-		String result = listener.processRequest("correlation-id", rawTestMessage, context);
+		String result = listener.processRequest("correlation-id", rawTestMessage, null);
 
 		// Assert
 		assertEquals("TEST", result);
@@ -165,6 +166,7 @@ public class JavaListenerTest {
 		assertTrue(result.requiresStream(), "Result message should be a stream");
 		assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
 		assertEquals("TEST", result.asString());
+		testMessage.close();
 	}
 
 	@Test
@@ -185,26 +187,34 @@ public class JavaListenerTest {
 
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
-		//noinspection deprecation
 		assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
 		assertEquals("TEST", result.asString());
+		result.close();
 	}
 
 	@Test
 	public void testProcessRequestMessageWithException() throws Exception {
-		// Arrange
-		String rawTestMessage = "TEST";
-		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		// Arrange 1
+		Message testMessage = Message.asMessage(new StringReader("TEST"));
 		listener.setThrowException(true);
+		assertSame(Receiver.OnError.CONTINUE, receiver.getOnError()); // Validate default setting: in state CONTINUE after an error occurs
 
 		PipeLine pl = adapter.getPipeLine();
 		doThrow(PipeRunException.class).when(pl).process(any(), any(), any());
 
-		// start adapter
 		startAdapter();
 
-		// Act / Assert
+		// Act / Assert 1 - OnError.CONTINUE
 		assertThrows(ListenerException.class, () -> listener.processRequest(testMessage, session));
+    	assertSame(RunState.STARTED, receiver.getRunState(), "Receiver should still be in state STARTED");
+
+		// Arrange 2
+		receiver.setOnError(Receiver.OnError.CLOSE); // Put receiver in state STOPPED after an error occurs
+
+		// Act / Assert	2 - OnError.CLOSE
+		assertThrows(ListenerException.class, () -> listener.processRequest(testMessage, session));
+		assertSame(RunState.STOPPED, receiver.getRunState(), "Receiver should be in state STOPPED");
+		testMessage.close();
 	}
 
 	@Test
@@ -227,6 +237,8 @@ public class JavaListenerTest {
 		String resultString = result.asString();
 		assertTrue(resultString.contains("FAILED PIPE"), "Result message should contain string 'FAILED PIPE'");
 		assertTrue(resultString.startsWith("<errorMessage"), "Result message should start with string '<errorMessage'");
+		result.close();
+		testMessage.close();
 	}
 
 	@Test
@@ -249,6 +261,7 @@ public class JavaListenerTest {
 			() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
 			() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]")
 		);
+		testMessage.close();
 	}
 
 	@Test
@@ -272,13 +285,14 @@ public class JavaListenerTest {
 				() -> assertEquals("return-value", session.get("copy-this")),
 				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]")
 		);
+		testMessage.close();
 	}
 
 	@Test
 	public void testProcessRequestStringWithReturnSessionKeys() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		HashMap context = new HashMap<>();
+		HashMap<String, String> context = new HashMap<>();
 		context.put("copy-this", "original-value");
 
 		// start adapter
@@ -300,7 +314,7 @@ public class JavaListenerTest {
 	public void testProcessRequestStringWithReturnSessionKeysWhenNoneConfigured() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		HashMap context = new HashMap<>();
+		HashMap<String, String> context = new HashMap<>();
 		context.put("copy-this", "original-value");
 		listener.setReturnedSessionKeys(null);
 

@@ -38,7 +38,6 @@ public class ExceptionPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-
 		String errorMessage;
 		try {
 			errorMessage = message.asString();
@@ -58,7 +57,7 @@ public class ExceptionPipe extends FixedForwardPipe {
 
 
 	/**
-	 * when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and no rollback is performed).
+	 * When <code>true</code>, a PipeRunException is thrown. Otherwise, the output is only logged as an error (and no rollback is performed).
 	 * @ff.default true
 	 */
 	public void setThrowException(boolean b) {
