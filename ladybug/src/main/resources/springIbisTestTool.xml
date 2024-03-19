@@ -84,7 +84,10 @@
 			<ref bean="debugStorageFile"/>
 		</property>
 	</bean>
-	<bean name="debugStorageDatabase" class="nl.nn.testtool.storage.database.DatabaseStorage" autowire="byName"
+	<bean
+		name="debugStorageDatabase"
+		class="nl.nn.testtool.storage.database.DatabaseStorage"
+		autowire="byName"
 		depends-on="ladybugDatabaseChangelog"
 		>
 		<property name="name" value="DatabaseDebugStorage"/>
@@ -169,7 +172,11 @@
 		<constructor-arg value="${ibistesttool.reportTransformation}"/>
 	</bean>
 
-	<bean name="pipeDescriptionProvider" class="org.frankframework.ibistesttool.PipeDescriptionProvider" autowire="byName"/>
+	<bean
+		name="pipeDescriptionProvider"
+		class="org.frankframework.ibistesttool.PipeDescriptionProvider"
+		autowire="byName"
+	/>
 
 	<util:list id="observerRoles">
 		<value>IbisObserver</value>
@@ -206,14 +213,26 @@
 		<property name="dataSource" ref="defaultDataSource"/>
 	</bean>
 
-	<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
+	<bean
+		name="ladybugDatabaseChangelog"
+		class="liquibase.integration.spring.SpringLiquibase"
+		depends-on="databaseStartupValidator"
+		>
 		<property name="dataSource" ref="defaultDataSource"/>
 		<property name="changeLog" value="classpath:ladybug/LadybugDatabaseChangelog.xml"/>
 	</bean>
 
-	<bean name="ladybugTestDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">
+	<bean
+		name="ladybugTestDatabaseChangelog"
+		class="liquibase.integration.spring.SpringLiquibase"
+		depends-on="databaseStartupValidator"
+		>
 		<property name="dataSource" ref="defaultDataSource"/>
 		<property name="changeLog" value="classpath:ladybug/LadybugTestDatabaseChangelog.xml"/>
+	</bean>
+
+	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
+		<property name="dataSource" ref="defaultDataSource"/>
 	</bean>
 
 </beans>
