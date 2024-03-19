@@ -230,8 +230,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		CONTINUE,
 
 		/**
-		 * If an error occurs (eg. connection is lost) the receiver will be stopped and marked as ERROR
-		 * Once every <code>recover.adapters.interval</code> it will be attempted to (re-) start the receiver.
+		 * If an error occurs (e.g. connection is lost) the receiver will be stopped and marked as ERROR
+		 * Once every <code>recover.adapters.interval</code> it attempts to (re-) start the receiver.
 		 */
 		RECOVER,
 
@@ -239,7 +239,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		CLOSE
 	}
 
-	/** Currently, this feature is only implemented for {@link IPushingListener}s, like Tibco and SAP. */
 	private @Getter OnError onError = OnError.CONTINUE;
 
 	private @Getter String name;
@@ -1999,7 +1998,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	}
 
 	/**
-	 * One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously
+	 * One of 'continue', 'recover' or 'close'. Controls the behaviour of the Receiver, when it encounters an error during processing of a message.
 	 * @ff.default CONTINUE
 	 */
 	public void setOnError(OnError value) {

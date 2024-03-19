@@ -17,10 +17,9 @@ package org.frankframework.pipes;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -46,7 +45,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	private String signs=";:_%$#@!><";
 
 	private SecureRandom random;
-	private boolean useSecureRandom = true; // more secure but mutch slower
+	private boolean useSecureRandom = true; // more secure but much slower
 
 	int numOfLCharacters=2;
 	int numOfUCharacters=2;
@@ -86,13 +85,12 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	protected  String generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers){
-		StringBuilder resultSb=new StringBuilder();
-		resultSb.append(getRandomElementsOfString(getLCharacters(), numOfLCharacters));
-		resultSb.append(getRandomElementsOfString(getUCharacters(), numOfUCharacters));
-		resultSb.append(getRandomElementsOfString(getSigns(), numOfSigns));
-		resultSb.append(getRandomElementsOfString(getNumbers(), numOfNumbers));
-		String result=garbleString(resultSb.toString());
-		return result;
+		StringBuilder result = new StringBuilder();
+		result.append(getRandomElementsOfString(getLCharacters(), numOfLCharacters));
+		result.append(getRandomElementsOfString(getUCharacters(), numOfUCharacters));
+		result.append(getRandomElementsOfString(getSigns(), numOfSigns));
+		result.append(getRandomElementsOfString(getNumbers(), numOfNumbers));
+		return garbleString(result.toString());
 	}
 
 	protected  String getRandomElementsOfString(String input, int count){
@@ -102,7 +100,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 			if (useSecureRandom)
 				rnd=random.nextInt(input.length());
 			else
-				rnd=new Double((Math.random()*input.length()-0.5)).intValue();
+				rnd = Double.valueOf((Math.random() * input.length() - 0.5)).intValue();
 			resultSb.append(input.charAt(rnd));
 		}
 		return resultSb.toString();
@@ -111,16 +109,16 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	/**
 	 * Change the order of the characters in a <code>String</code>
 	 */
-	protected String garbleString(String input){
-		List clist=new Vector();
-		for (int n=0;n<input.length(); n++){
-			clist.add(""+input.charAt(n));
+	protected String garbleString(String input) {
+		List<String> clist = new ArrayList<>();
+		for (int n = 0; n < input.length(); n++) {
+			clist.add(String.valueOf(input.charAt(n)));
 		}
 		Collections.shuffle(clist);
-		StringBuilder resultSb=new StringBuilder();
+		StringBuilder resultSb = new StringBuilder();
 		String currentChar;
-		for (Iterator t=clist.iterator();t.hasNext();){
-			currentChar=(String)t.next();
+		for (String s : clist) {
+			currentChar = s;
 			resultSb.append(currentChar);
 		}
 		return resultSb.toString();
