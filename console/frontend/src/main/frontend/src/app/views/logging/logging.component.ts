@@ -64,7 +64,8 @@ export class LoggingComponent implements OnInit {
   }
 
   download(file: LoggingFile): void {
-    const url = `${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(file.path)}`;
+    const contentType = 'application/octet-stream'; // always download instead of possibly display in new tab
+    const url = `${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(file.path)}&accept=${contentType}`;
     window.open(url, '_blank');
   }
 

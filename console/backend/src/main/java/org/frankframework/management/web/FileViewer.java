@@ -44,10 +44,10 @@ public class FileViewer extends FrankApiBase {
 	@Produces({"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
 	@Relation("logging")
 	@Description("view or download a (log)file")
-	public Response getFileContent(@QueryParam("file") String file, @HeaderParam("Accept") String acceptHeader) {
+	public Response getFileContent(@QueryParam("file") String file, @QueryParam("accept") String acceptParam, @HeaderParam("Accept") String acceptHeader) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
 		if (StringUtils.isEmpty(acceptHeader)) acceptHeader = "*/*";
-		String acceptType = acceptHeader.split(",")[0];
+		String acceptType = !StringUtils.isEmpty(acceptParam) ? acceptParam : acceptHeader.split(",")[0];
 		String wantedType = MediaType.valueOf(acceptType).getSubtype();
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", wantedType);
