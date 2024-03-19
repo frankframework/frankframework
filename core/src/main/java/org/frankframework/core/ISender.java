@@ -15,6 +15,7 @@
 */
 package org.frankframework.core;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
@@ -79,7 +80,8 @@ public interface ISender extends IConfigurable {
 		SenderResult senderResult = sendMessage(message, session);
 		Message result = senderResult.getResult();
 		if (!senderResult.isSuccess()) {
-			SenderException se = new SenderException(senderResult.getErrorMessage());
+			String reason = StringUtils.isNotEmpty(senderResult.getErrorMessage()) ? senderResult.getErrorMessage() : "sender finished processing using undefined error forward";
+			SenderException se = new SenderException(reason);
 			try {
 				result.close();
 			} catch (Exception e) {

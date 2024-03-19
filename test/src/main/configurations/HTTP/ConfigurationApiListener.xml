@@ -30,6 +30,24 @@
 
 		</pipeline>
 	</adapter>
+	<adapter name="ApiListener_SimpleGet">
+		<receiver
+			processResultCacheSize="0"
+			>
+			<listener
+				name="SimpleGetListener"
+				className="org.frankframework.http.rest.ApiListener"
+				uriPattern="get"
+			/>
+		</receiver>
+		<pipeline>
+
+			<pipe name="FixedResultPipe" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;success/&gt;">
+				<forward name="success" path="READY" />
+			</pipe>
+
+		</pipeline>
+	</adapter>
 	<adapter name="ApiListener_SimpleInsertWithTransactedException">
 		<receiver
 			checkForDuplicates="true"
@@ -89,9 +107,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="ApiListener_MultiOriginalMessage">
-		<receiver
-			processResultCacheSize="0"
-		>
+		<receiver processResultCacheSize="0">
 			<listener
 				name="MultipleUseOfOriginalMessage"
 				className="org.frankframework.http.rest.ApiListener"
@@ -131,9 +147,8 @@
 				</sender>
 			</pipe>
 
-			<pipe
-                    name="successOrException"
-                    className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="statusCode">
+			<pipe name="successOrException"
+				className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="statusCode">
 				<forward name="200" path="EXIT" />
 				<forward name="304" path="EXIT" />
 				<forward name="500" path="FixedResultOnException" />
@@ -142,6 +157,23 @@
 			<pipe name="FixedResultOnException" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;error/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="CallApiListenerMultipleTimes">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-CallApiListenermMultipleTimes" />
+		</receiver>
+		<pipeline firstPipe="forEachElement">
+
+			<ForEachChildElementPipe name="forEachElement" elementXPathExpression="/requests/request">
+				<HttpSender urlParam="url_param" allowSelfSignedCertificates="true" verifyHostname="false" authAlias="${framework.api.user.alias}" headersParams="Message-Id, Correlation-Id">
+					<param name="url_param" xpathExpression="*/@uri" /> <!-- use pipeline input -->
+					<param name="Message-Id" pattern="{uuid}" />
+					<param name="Correlation-Id" pattern="{uuid}" />
+				</HttpSender>
+			</ForEachChildElementPipe>
+
 		</pipeline>
 	</adapter>
 
@@ -179,9 +211,8 @@
 				/>
 			</pipe>
 
-			<pipe
-                    name="consume"
-                    className="org.frankframework.pipes.LargeBlockTester" direction="consume" blockSize="10000" blockCount="20"
+			<pipe name="consume"
+				className="org.frankframework.pipes.LargeBlockTester" direction="consume" blockSize="10000" blockCount="20"
 			/>
 		</pipeline>
 	</adapter>

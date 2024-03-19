@@ -1,0 +1,22 @@
+<requests>
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+	<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/get" />
+</requests>
