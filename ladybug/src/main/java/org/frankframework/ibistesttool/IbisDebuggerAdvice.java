@@ -45,6 +45,7 @@ import org.frankframework.processors.CacheSenderWrapperProcessor;
 import org.frankframework.processors.CheckSemaphorePipeProcessor;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
+import org.frankframework.scheduler.job.SendMessageJob.SendMessageJobSender;
 import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.senders.SenderWrapperBase;
 import org.frankframework.stream.Message;
@@ -262,7 +263,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	 * Provides advice for {@link ISender#sendMessageOrThrow(Message message, PipeLineSession session)}
 	 */
 	public Message debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
-		if (!isEnabled()) {
+		if (!isEnabled() || proceedingJoinPoint.getTarget() instanceof SendMessageJobSender) {
 			return (Message) proceedingJoinPoint.proceed();
 		}
 
