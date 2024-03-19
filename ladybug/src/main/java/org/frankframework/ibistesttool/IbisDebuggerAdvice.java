@@ -21,13 +21,12 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.ICorrelatedPullingListener;
-import org.frankframework.core.IPipe;
 import org.frankframework.core.INamedObject;
+import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.IWithParameters;
@@ -53,7 +52,6 @@ import org.frankframework.stream.ThreadConnector;
 import org.frankframework.stream.ThreadLifeCycleEventListener;
 import org.frankframework.stream.xml.XmlTee;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.xml.IXmlDebugger;
 import org.frankframework.xml.PrettyPrintFilter;
@@ -63,12 +61,16 @@ import org.springframework.context.ApplicationListener;
 import org.xml.sax.ContentHandler;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
+ * @author Niels Meijer
  */
+@Log4j2
 public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
-	protected Logger log = LogUtil.getLogger(this);
+
+	private static final String REQUESTER = "TestTool";
 
 	private @Setter IbisDebugger ibisDebugger;
 	private @Setter IbisManager ibisManager;
@@ -255,7 +257,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 		Message capturedResult = ibisDebugger.senderOutput(sender, correlationId, senderResult.getResult());
 		senderResult.setResult(capturedResult);
-		session.scheduleCloseOnSessionExit(capturedResult, "TestTool"); //The Ladybug may change the result (when stubbed).
+		session.scheduleCloseOnSessionExit(capturedResult, REQUESTER); //The Ladybug may change the result (when stubbed).
 		return senderResult;
 	}
 
@@ -294,6 +296,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
+			session.scheduleCloseOnSessionExit(writer, REQUESTER);
 			XmlWriter xmlWriter = new XmlWriter(StreamCaptureUtils.limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		}
@@ -438,11 +441,11 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (StringUtils.isNotEmpty(inputFromFixedValue)) {
 			input =  Message.asMessage(ibisDebugger.getInputFromFixedValue(correlationId, inputFromFixedValue));
 		}
-		if (input == null || input.isEmpty()) {
-			if (StringUtils.isNotEmpty(emptyInputReplacement)) {
-				input = Message.asMessage(ibisDebugger.getEmptyInputReplacement(correlationId, emptyInputReplacement));
-			}
+		if (StringUtils.isNotEmpty(emptyInputReplacement) && Message.isEmpty(input)) {
+			input = Message.asMessage(ibisDebugger.getEmptyInputReplacement(correlationId, emptyInputReplacement));
 		}
+
+		pipeLineSession.scheduleCloseOnSessionExit(input, REQUESTER); //If we're pointcutting and manipulating the Message, we need to schedule it to be closed...
 		return input;
 	}
 
