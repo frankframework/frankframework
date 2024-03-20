@@ -187,7 +187,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			ServletConfiguration config = servletManager.getServlet(ApiListenerServlet.class.getSimpleName());
 			if (config != null) {
 				if (config.getUrlMapping().size() == 1) {
-					builder.append(config.getUrlMapping().get(0));
+					// Replace /api/* with /api. Doing this in ApiListenerServlet.getUrlMapping() is not possible.
+					builder.append(config.getUrlMapping().get(0).replace("/*", ""));
 				} else {
 					builder.append(config.getUrlMapping());
 				}
