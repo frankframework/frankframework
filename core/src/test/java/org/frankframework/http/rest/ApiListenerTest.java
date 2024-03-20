@@ -251,7 +251,7 @@ public class ApiListenerTest {
 		ServletManager manager = spy(new ServletManager(null));
 		Servlet servlet = mock(Servlet.class);
 		when(servlet.getName()).thenReturn(ApiListenerServlet.class.getSimpleName());
-		when(servlet.getUrlMapping()).thenReturn("aap,noot");
+		when(servlet.getUrlMapping()).thenReturn("aap/*,/noot/*");
 		ServletConfiguration servletConfig = spy(new ServletConfiguration());
 		doNothing().when(servletConfig).loadProperties();
 		servletConfig.fromServlet(servlet);

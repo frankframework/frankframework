@@ -247,7 +247,8 @@ public class OpenApiTestBase extends Mockito {
 			ple.setResponseRoot(responseRoot);
 			ple.setEmpty(isEmpty);
 			switch (exitCode) {
-				case 200, 201:
+				case 200:
+				case 201:
 					ple.setState(ExitState.SUCCESS);
 					break;
 				default:
