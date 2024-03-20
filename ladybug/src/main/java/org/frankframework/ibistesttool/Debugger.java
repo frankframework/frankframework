@@ -73,7 +73,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(testTool == null) {
 			APPLICATION_LOG.info("No TestTool found on classpath, skipping testtool wireing.");
 		}

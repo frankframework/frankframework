@@ -67,7 +67,7 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(!isEnabled()) {
 			return;
 		}
