@@ -417,7 +417,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			StatusLine statusline = httpResponse.getStatusLine();
 			statusCode = statusline.getStatusCode();
 			success = validateResponseCode(statusCode);
-			reasonPhrase = StringUtils.isNotEmpty(statusline.getReasonPhrase()) ? statusline.getReasonPhrase() : "got HTTP error ["+statusCode+"]";
+			reasonPhrase = StringUtils.isNotEmpty(statusline.getReasonPhrase()) ? statusline.getReasonPhrase() : "HTTP status-code ["+statusCode+"]";
 
 			if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
 				session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
