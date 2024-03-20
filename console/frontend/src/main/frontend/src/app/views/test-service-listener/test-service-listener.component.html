@@ -18,15 +18,18 @@
                 >Select a service</label
               >
               <div class="col-sm-9">
-                <select
+                <input
+                  list="services"
+                  autocomplete="off"
                   class="form-control"
                   name="service"
                   [(ngModel)]="form.service"
-                >
+                />
+                <datalist id="services">
                   <option *ngFor="let service of services">
                     {{ service }}
                   </option>
-                </select>
+                </datalist>
               </div>
             </div>
             <div class="row form-group">
