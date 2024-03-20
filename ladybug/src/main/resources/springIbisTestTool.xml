@@ -222,10 +222,14 @@
 		<property name="changeLog" value="classpath:ladybug/LadybugDatabaseChangelog.xml"/>
 	</bean>
 
+	<!--
+	Depends on ladybugDatabaseChangelog to prevent parallel execution of both change logs which on Oracle can give:
+	ORA-08177: can't serialize access for this transaction
+	-->
 	<bean
 		name="ladybugTestDatabaseChangelog"
 		class="liquibase.integration.spring.SpringLiquibase"
-		depends-on="databaseStartupValidator"
+		depends-on="ladybugDatabaseChangelog"
 		>
 		<property name="dataSource" ref="defaultDataSource"/>
 		<property name="changeLog" value="classpath:ladybug/LadybugTestDatabaseChangelog.xml"/>
