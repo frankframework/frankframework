@@ -71,6 +71,7 @@
 
 	<build>
 		<plugins>
+			<!-- Added because the ObfuscationEngine class needs the add-exports section -->
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
