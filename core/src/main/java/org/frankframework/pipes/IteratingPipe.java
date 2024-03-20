@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
@@ -121,7 +121,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	protected TransformerPool msgTransformerPool;
 	private TransformerPool stopConditionTp=null;
 
-	private final Map<String, DistributionSummary> statisticsMap = new HashMap<>();
+	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 
 	private Semaphore childThreadSemaphore=null;
 
