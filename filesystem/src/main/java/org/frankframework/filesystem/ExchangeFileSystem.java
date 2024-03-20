@@ -28,12 +28,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
+import javax.annotation.Nonnull;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
@@ -63,8 +63,6 @@ import microsoft.exchange.webservices.data.core.service.response.ResponseMessage
 import microsoft.exchange.webservices.data.core.service.schema.EmailMessageSchema;
 import microsoft.exchange.webservices.data.core.service.schema.FolderSchema;
 import microsoft.exchange.webservices.data.core.service.schema.ItemSchema;
-import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
-import microsoft.exchange.webservices.data.credential.WebCredentials;
 import microsoft.exchange.webservices.data.credential.WebProxyCredentials;
 import microsoft.exchange.webservices.data.misc.ImpersonatedUserId;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
@@ -85,8 +83,8 @@ import microsoft.exchange.webservices.data.search.FindItemsResults;
 import microsoft.exchange.webservices.data.search.FolderView;
 import microsoft.exchange.webservices.data.search.ItemView;
 import microsoft.exchange.webservices.data.search.filter.SearchFilter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.SenderException;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
@@ -97,13 +95,14 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.xml.SaxElementBuilder;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Implementation of a {@link IBasicFileSystem} of an Exchange Mail Inbox.
  * <br/>
  * To make use of modern authentication:
  * <ol>
- *     	<li>Create an application in Azure AD -> App Registrations. For more information please read {@link "https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
+ *     	<li>Create an application in Azure AD -> App Registrations. For more information please read {@link "https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth"}</li>
  *     	<li>Request the required API permissions within desired scope <code>https://outlook.office365.com/</code> in Azure AD -> App Registrations -> MyApp -> API Permissions.</li>
  *     	<li>Create a secret for your application in Azure AD -> App Registrations -> MyApp -> Certificates and Secrets</li>
  *     	<li>Configure the clientSecret directly as password or as the password of a JAAS entry referred to by authAlias. Only available upon creation of your secret in the previous step.</li>
@@ -115,16 +114,16 @@ import org.frankframework.xml.SaxElementBuilder;
  * <p>
  * N.B. MS Exchange is susceptible to problems with invalid XML characters, like &amp;#x3;.
  * To work around these problems, a special streaming XMLInputFactory is configured in
- * METAINF/services/javax.xml.stream.XMLInputFactory as org.frankframework.xml.StaxParserFactory
+ * META-INF/services/javax.xml.stream.XMLInputFactory as org.frankframework.xml.StaxParserFactory
  *
  * @author Peter Leeuwenburgh (as {@link ExchangeMailListener})
  * @author Gerrit van Brakel
  */
 public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageReference, ExchangeAttachmentReference, ExchangeService> implements HasKeystore, HasTruststore {
 	private final @Getter String domain = "Exchange";
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
-	private @Getter String name = "ExchangeFileSystem";
+	private final @Getter String name = "ExchangeFileSystem";
 
 	private @Getter String mailAddress;
 	private @Getter String mailboxObjectSeparator = "|";
@@ -139,9 +138,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	private @Getter String proxyAuthAlias = null;
 	private @Getter String proxyDomain = null;
 
-	private final String AUTHORITY = "https://login.microsoftonline.com/";
-	private final String SCOPE = "https://outlook.office365.com/.default";
-	private final String ANCHOR_HEADER = "X-AnchorMailbox";
+	private static final String AUTHORITY = "https://login.microsoftonline.com/";
+	private static final String SCOPE = "https://outlook.office365.com/.default";
+	private static final String ANCHOR_HEADER = "X-AnchorMailbox";
 	private @Getter String clientId = null;
 	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
@@ -239,7 +238,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		super.open();
 		if (msalClientAdapter != null) {
 			executor = Executors.newSingleThreadExecutor(); //Create a new Executor in the same thread(context) to avoid SecurityExceptions when setting a ClassLoader on the Runnable.
-
 			CredentialFactory cf = getCredentials();
 
 			try {
@@ -277,8 +275,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
-		FolderId basefolderId;
-
 		log.debug("searching inbox ");
 		FolderId inboxId;
 		if (StringUtils.isNotEmpty(emailAddress)) {
@@ -289,6 +285,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		}
 		log.debug("determined inbox [" + inboxId + "] foldername [" + inboxId.getFolderName() + "]");
 
+		FolderId basefolderId;
 		if (StringUtils.isNotEmpty(baseFolderName)) {
 			try {
 				basefolderId = findFolder(inboxId, baseFolderName);
@@ -376,21 +373,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	private void setCredentialsOnService(ExchangeService exchangeService) throws FileSystemException {
-		if (client != null) {
-			CompletableFuture<IAuthenticationResult> future = client.acquireToken(clientCredentialParam);
-			try {
-				String token = future.get().accessToken();
-				// use OAuth Bearer token authentication
-				exchangeService.getHttpHeaders().put("Authorization", "Bearer " + token);
-			} catch (Exception e) {
-				throw new FileSystemException("Could not generate access token!", e);
-			}
-		} else {
-			CredentialFactory cf = getCredentials();
-			// use deprecated Basic Authentication. Support will end 2021-Q3!
-			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
-			ExchangeCredentials exchangeCredentials = new WebCredentials(cf.getUsername(), cf.getPassword());
-			exchangeService.setCredentials(exchangeCredentials);
+		if (client == null) {
+			throw new FileSystemException("No client available to authenticate with.");
+		}
+		CompletableFuture<IAuthenticationResult> future = client.acquireToken(clientCredentialParam);
+		try {
+			String token = future.get().accessToken();
+			// use OAuth Bearer token authentication
+			exchangeService.getHttpHeaders().put("Authorization", "Bearer " + token);
+		} catch (InterruptedException | ExecutionException e) {
+			Thread.currentThread().interrupt();
+			throw new FileSystemException("Could not generate access token!", e);
 		}
 	}
 
@@ -464,7 +457,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	@Override
-	public ExchangeMessageReference toFile(String filename) throws FileSystemException {
+	public ExchangeMessageReference toFile(@Nonnull String filename) throws FileSystemException {
 		log.debug("Get EmailMessage for reference [{}]", filename);
 		ExchangeObjectReference reference = asObjectReference(filename);
 		ExchangeService exchangeService = getConnection(reference);
@@ -482,7 +475,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	@Override
-	public ExchangeMessageReference toFile(String folder, String filename) throws FileSystemException {
+	public ExchangeMessageReference toFile(String folder, @Nonnull String filename) throws FileSystemException {
 		return toFile(filename);
 	}
 
@@ -608,12 +601,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		try {
 			if (emailMessage.getId() != null) {
 				PropertySet ps = new PropertySet(
-					EmailMessageSchema.DateTimeReceived,
-					EmailMessageSchema.From,
-					EmailMessageSchema.Subject,
-					EmailMessageSchema.DateTimeSent,
-					EmailMessageSchema.LastModifiedTime,
-					EmailMessageSchema.Size
+						ItemSchema.DateTimeReceived,
+						EmailMessageSchema.From,
+						ItemSchema.Subject,
+						ItemSchema.DateTimeSent,
+						ItemSchema.LastModifiedTime,
+						ItemSchema.Size
 				);
 				if (isReadMimeContents()) {
 					ps.add(ItemSchema.MimeContent);
@@ -842,7 +835,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		EmailMessage emailMessage = f.getMessage();
 		try {
 			if (emailMessage.getId() != null) {
-				PropertySet ps = new PropertySet(EmailMessageSchema.Attachments);
+				PropertySet ps = new PropertySet(ItemSchema.Attachments);
 				emailMessage.load(ps);
 			}
 			AttachmentCollection attachmentCollection = emailMessage.getAttachments();
@@ -1041,7 +1034,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		}
 	}
 
-
 	@Override
 	public Message getMimeContent(ExchangeMessageReference ref) throws FileSystemException {
 		final EmailMessage emailMessage = ref.getMessage();
@@ -1059,9 +1051,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		final EmailMessage emailMessage = ref.getMessage();
 		try {
 			if (emailMessage.getId() != null) {
-				PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeSent, EmailMessageSchema.DateTimeReceived, EmailMessageSchema.From,
-					EmailMessageSchema.ToRecipients, EmailMessageSchema.CcRecipients, EmailMessageSchema.BccRecipients, EmailMessageSchema.Subject,
-					EmailMessageSchema.Body, EmailMessageSchema.Attachments);
+				PropertySet ps = new PropertySet(
+						ItemSchema.DateTimeSent, ItemSchema.DateTimeReceived, EmailMessageSchema.From, EmailMessageSchema.ToRecipients,
+						EmailMessageSchema.CcRecipients, EmailMessageSchema.BccRecipients, ItemSchema.Subject, ItemSchema.Body, ItemSchema.Attachments
+				);
 				emailMessage.load(ps);
 			}
 			MailFileSystemUtils.addEmailInfo(this, ref, emailXml);
@@ -1206,28 +1199,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	@Override
 	public void setAuthAlias(String authAlias) {
 		super.setAuthAlias(authAlias);
-	}
-
-	/**
-	 * Username for authentication to Exchange mail server. Ignored when tenantId is also specified
-	 */
-	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret!")
-	@Override
-	public void setUsername(String username) {
-		super.setUsername(username);
-		setClientId(username);
-	}
-
-	/**
-	 * Password for authentication to Exchange mail server. Ignored when tenantId is also specified
-	 */
-	@Deprecated
-	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret!")
-	@Override
-	public void setPassword(String password) {
-		super.setPassword(password);
-		setClientSecret(password);
 	}
 
 	/**
