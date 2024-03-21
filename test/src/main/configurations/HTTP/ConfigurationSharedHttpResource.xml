@@ -37,7 +37,7 @@
 
 		<Pipeline firstPipe="forEachElement">
 			<ForEachChildElementPipe name="forEachElement" elementXPathExpression="/requests/request">
-				<ParallelSendersSender name="testje">
+				<ParallelSendersSender name="testje" maxConcurrentThreads="1"><!-- not the best solution but saves from having to configure a sub-adapter -->
 					<HttpSender name="myFirstHttpSender" sharedResourceRef="SharedApiListenerHttpSession1" urlParam="url_param">
 						<param name="url_param" xpathExpression="concat($uri, '?nr=1')"> <!-- nr=1 using session=1 -->
 							<param name="uri" xpathExpression="*/@uri" />
@@ -53,12 +53,12 @@
 							<param name="uri" xpathExpression="*/@uri" />
 						</param>
 					</HttpSender>
-					<HttpSender name="myThirdHttpSender" sharedResourceRef="SharedApiListenerHttpSession2" urlParam="url_param">
+					<HttpSender name="myFourthHttpSender" sharedResourceRef="SharedApiListenerHttpSession2" urlParam="url_param">
 						<param name="url_param" xpathExpression="concat($uri, '?nr=4')"> <!-- nr=4 using session=2 -->
 							<param name="uri" xpathExpression="*/@uri" />
 						</param>
 					</HttpSender>
-					<HttpSender name="myThirdHttpSender" sharedResourceRef="SharedApiListenerHttpSession1" urlParam="url_param">
+					<HttpSender name="myFifthHttpSender" sharedResourceRef="SharedApiListenerHttpSession1" urlParam="url_param">
 						<param name="url_param" xpathExpression="concat($uri, '?nr=5')"> <!-- nr=5 using session=1 -->
 							<param name="uri" xpathExpression="*/@uri" />
 						</param>
@@ -75,6 +75,7 @@
 		<Pipeline>
 			<SenderPipe name="IbisLocalSender">
 				<ParallelSendersSender>
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
 					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
 					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
 					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
