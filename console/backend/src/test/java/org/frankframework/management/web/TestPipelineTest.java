@@ -71,19 +71,36 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 	}
 
 	@Test
-	public void testZipMessage() throws Exception {
+	public void testStoredZipMessage() throws Exception {
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
-		URL zip = TestPipelineTest.class.getResource("/TestPipeline/temp.zip");
+		URL zip = TestPipelineTest.class.getResource("/TestPipeline/stored.zip");
 
 		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new StringAttachment("adapter", "HelloWorld"));
-		attachments.add(new FileAttachment("file", zip.openStream(), "archive.zip"));
+		attachments.add(new FileAttachment("file", zip.openStream(), "archive2.zip"));
 
 		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-pipeline", attachments);
 		assertEquals("application/json", response.getHeaderString("Content-Type"));
-		String expected = "{\"result\":\"Test1.txt: SUCCESS\\nTest2.txt: SUCCESS\\n\",\"state\":\"SUCCESS\"}";
+		String expected = "{\"result\":\"msg-7.xml: SUCCESS\\n\",\"state\":\"SUCCESS\"}";
+		assertEquals(expected, response.getEntity().toString());
+	}
+
+	@Test
+	public void testDeflatedZipMessage() throws Exception {
+		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
+
+		URL zip = TestPipelineTest.class.getResource("/TestPipeline/deflated.zip");
+
+		List<Attachment> attachments = new ArrayList<>();
+		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
+		attachments.add(new StringAttachment("adapter", "HelloWorld"));
+		attachments.add(new FileAttachment("file", zip.openStream(), "archive3.zip"));
+
+		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-pipeline", attachments);
+		assertEquals("application/json", response.getHeaderString("Content-Type"));
+		String expected = "{\"result\":\"msg-2.xml: SUCCESS\\n\",\"state\":\"SUCCESS\"}";
 		assertEquals(expected, response.getEntity().toString());
 	}
 
