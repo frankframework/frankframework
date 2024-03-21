@@ -158,9 +158,9 @@ public class TransactionalStorage extends FrankApiBase {
 				try (ZipOutputStream zos = new ZipOutputStream(out)) {
 					for (String messageId : messageIdArray) {
 						// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-						messageId = HttpUtils.urlDecode(messageId);
+						String decodedMessageId = HttpUtils.urlDecode(messageId);
 
-						builder.addHeader("messageId", messageId);
+						builder.addHeader("messageId", decodedMessageId);
 						Message<?> message = sendSyncMessage(builder);
 						String mimeType = BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY);
 
@@ -172,10 +172,9 @@ public class TransactionalStorage extends FrankApiBase {
 						}
 
 						String payload = (String) message.getPayload();
-						byte[] payloadBytes = StringUtils.getBytes(payload, StandardCharsets.UTF_8);
-						ZipEntry entry = new ZipEntry("msg-"+messageId+filenameExtension);
+						ZipEntry entry = new ZipEntry("msg-"+decodedMessageId+filenameExtension);
 						zos.putNextEntry(entry);
-						zos.write(payloadBytes);
+						zos.write(payload.getBytes(StandardCharsets.UTF_8));
 						zos.closeEntry();
 					}
                 } catch (IOException e) {

@@ -149,20 +149,20 @@ public class TestPipeline extends FrankApiBase {
 	private String processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		StringBuilder result = new StringBuilder();
 
-		ZipInputStream archive = new ZipInputStream(file);
-		ZipEntry zipEntry;
-		while ((zipEntry = archive.getNextEntry()) != null) {
-			String name = zipEntry.getName();
-			String currentMessage = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(StreamUtil.dontClose(archive)), null);
+		try(ZipInputStream archive = new ZipInputStream(file)) {
+			ZipEntry zipEntry;
+			while ((zipEntry = archive.getNextEntry()) != null) {
+				String name = zipEntry.getName();
+				String currentMessage = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(StreamUtil.dontClose(archive)), null);
 
-			builder.setPayload(currentMessage);
-			Message<?> response = sendSyncMessage(builder);
-			result.append(name);
-			result.append(": ");
-			result.append(BusMessageUtils.getHeader(response, ResponseMessageBase.STATE_KEY));
-			result.append("\n");
+				builder.setPayload(currentMessage);
+				Message<?> response = sendSyncMessage(builder);
+				result.append(name);
+				result.append(": ");
+				result.append(BusMessageUtils.getHeader(response, ResponseMessageBase.STATE_KEY));
+				result.append("\n");
+			}
 		}
-		archive.close();
 
 		return result.toString();
 	}
