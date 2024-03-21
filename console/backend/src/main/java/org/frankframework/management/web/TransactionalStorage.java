@@ -17,6 +17,7 @@ package org.frankframework.management.web;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -157,9 +158,9 @@ public class TransactionalStorage extends FrankApiBase {
 				try (ZipOutputStream zos = new ZipOutputStream(out)) {
 					for (String messageId : messageIdArray) {
 						// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-						messageId = HttpUtils.urlDecode(messageId);
+						String decodedMessageId = HttpUtils.urlDecode(messageId);
 
-						builder.addHeader("messageId", messageId);
+						builder.addHeader("messageId", decodedMessageId);
 						Message<?> message = sendSyncMessage(builder);
 						String mimeType = BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY);
 
@@ -171,12 +172,12 @@ public class TransactionalStorage extends FrankApiBase {
 						}
 
 						String payload = (String) message.getPayload();
-						ZipEntry entry = new ZipEntry("msg-"+messageId+filenameExtension);
+						ZipEntry entry = new ZipEntry("msg-"+decodedMessageId+filenameExtension);
 						zos.putNextEntry(entry);
-						zos.write(payload.getBytes());
+						zos.write(payload.getBytes(StandardCharsets.UTF_8));
 						zos.closeEntry();
 					}
-				} catch (IOException e) {
+                } catch (IOException e) {
 					throw new ApiException("Failed to create zip file with messages.", e);
 				}
 			}
