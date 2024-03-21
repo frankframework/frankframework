@@ -22,17 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ISender;
-import org.frankframework.core.SenderException;
-import org.frankframework.doc.Category;
-import org.frankframework.util.Misc;
-import org.frankframework.util.XmlUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import com.sun.mail.smtp.SMTPMessage;
 
 import jakarta.activation.DataHandler;
@@ -49,6 +38,17 @@ import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.ISender;
+import org.frankframework.core.SenderException;
+import org.frankframework.doc.Category;
+import org.frankframework.util.Misc;
+import org.frankframework.util.XmlUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * {@link ISender sender} that sends a mail specified by an XML message.
@@ -102,7 +102,7 @@ import lombok.Setter;
  */
 
 @Category("Advanced")
-public class MailSender extends MailSenderBase {
+public class MailSender extends MailSenderBase implements HasPhysicalDestination {
 
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
@@ -113,7 +113,7 @@ public class MailSender extends MailSenderBase {
 	 */
 	private @Setter boolean useSsl = false;
 
-	private @Getter Properties properties = new Properties();
+	private final @Getter Properties properties = new Properties();
 	private Session session = null;
 
 	@Override
@@ -220,22 +220,22 @@ public class MailSender extends MailSenderBase {
 	}
 
 	private String sendEmail(Session session, MailSession mailSession) throws SenderException {
-		StringBuilder logBuffer = new StringBuilder();
+		StringBuilder builder = new StringBuilder();
 
 		if (log.isDebugEnabled()) {
-			logBuffer.append("MailSender [" + getName() + "] sending message ");
-			logBuffer.append("[smtpHost=" + getSmtpHost());
-			logBuffer.append("[from=" + mailSession.getFrom() + "]");
-			logBuffer.append("[subject=" + mailSession.getSubject() + "]");
-			logBuffer.append("[threadTopic=" + mailSession.getThreadTopic() + "]");
-			logBuffer.append("[text=" + mailSession.getMessage() + "]");
-			logBuffer.append("[type=" + mailSession.getMessageType() + "]");
-			logBuffer.append("[base64=" + mailSession.isMessageBase64() + "]");
-			logBuffer.append("[attachments=" + mailSession.getAttachmentList().size() + "]");
-			log.debug(logBuffer);
+			builder.append("MailSender [").append(getName()).append("] sending message ");
+			builder.append("[smtpHost=").append(getSmtpHost());
+			builder.append("[from=").append(mailSession.getFrom()).append("]");
+			builder.append("[subject=").append(mailSession.getSubject()).append("]");
+			builder.append("[threadTopic=").append(mailSession.getThreadTopic()).append("]");
+			builder.append("[text=").append(mailSession.getMessage()).append("]");
+			builder.append("[type=").append(mailSession.getMessageType()).append("]");
+			builder.append("[base64=").append(mailSession.isMessageBase64()).append("]");
+			builder.append("[attachments=").append(mailSession.getAttachmentList().size()).append("]");
+			log.debug(builder);
 		}
 
-		MimeMessage msg = createMessage(session, mailSession, logBuffer);
+		MimeMessage msg = createMessage(session, mailSession, builder);
 
 		// send the message
 		// Only send if some recipients remained after whitelisting
@@ -400,6 +400,16 @@ public class MailSender extends MailSenderBase {
 	 */
 	public void setSmtpPort(int newSmtpPort) {
 		smtpPort = newSmtpPort;
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return getSmtpHost() + ":" + getSmtpPort() + "; TLS=" + useSsl;
+	}
+
+	@Override
+	public String getDomain() {
+		return "SMTP";
 	}
 
 	public class MailSession extends MailSessionBase {
