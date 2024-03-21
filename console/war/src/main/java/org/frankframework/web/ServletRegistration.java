@@ -44,7 +44,7 @@ public class ServletRegistration extends ServletRegistrationBean<Servlet> implem
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
 		Servlet servlet = (Servlet) SpringUtils.createBean(applicationContext, servletClass);
 		servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
