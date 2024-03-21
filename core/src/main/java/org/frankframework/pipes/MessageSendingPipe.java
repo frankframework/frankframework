@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerException;
@@ -187,7 +187,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ListenerProcessor listenerProcessor;
 
-	private final Map<String, DistributionSummary> statisticsMap = new HashMap<>();
+	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 	protected @Setter @Getter MetricsInitializer configurationMetrics;
 
 	public enum LinkMethod {

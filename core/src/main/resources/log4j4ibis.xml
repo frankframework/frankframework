@@ -124,7 +124,11 @@
 		<Logger name="APPLICATION" additivity="true" level="DEBUG">
 			<AppenderRef ref="systemout"/>
 		</Logger>
+
 		<Logger name="nl.nn.testtool" additivity="false" level="INFO">
+			<AppenderRef ref="ladybug"/>
+		</Logger>
+		<Logger name="nl.nn.xmldecoder" additivity="false" level="INFO">
 			<AppenderRef ref="ladybug"/>
 		</Logger>
 		<Logger name="org.frankframework.ibistesttool" additivity="false" level="INFO">

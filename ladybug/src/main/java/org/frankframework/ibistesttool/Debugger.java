@@ -45,6 +45,7 @@ import org.springframework.context.ApplicationListener;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -54,8 +55,8 @@ import nl.nn.testtool.run.ReportRunner;
 /**
  * @author Jaco de Groot
  */
+@Log4j2
 public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean {
-	private final Logger log = LogUtil.getLogger(this);
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
@@ -70,11 +71,13 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	public void setTestTool(TestTool testTool) {
 		testTool.setDebugger(this);
 		this.testTool = testTool;
+		log.info("configuring debugger on TestTool [{}]", testTool);
 	}
 
 	@Override
 	public void afterPropertiesSet() {
 		if(testTool == null) {
+			log.info("no TestTool found on classpath, skipping testtool wireing.");
 			APPLICATION_LOG.info("No TestTool found on classpath, skipping testtool wireing.");
 		}
 	}
@@ -216,6 +219,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	@Override
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
 		if (parameter.isHidden()) {
+			log.debug("hiding parameter [{}] value", parameter::getName);
 			String hiddenValue;
 			try {
 				hiddenValue = StringUtil.hide(Message.asString(value));
@@ -442,13 +446,15 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	public void updateReportGeneratorStatus(boolean enabled) {
 		if (ibisManager != null && ibisManager.getApplicationEventPublisher() != null) {
 			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
+			log.debug("sending DebuggerStatusChangedEvent [{}]", event);
 			ibisManager.getApplicationEventPublisher().publishEvent(event);
 		}
 	}
 
 	@Override
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
-		if (testTool != null && event.getSource()!=this) {
+		if (testTool != null && event.getSource() != this) {
+			log.debug("received DebuggerStatusChangedEvent [{}]", event);
 			testTool.setReportGeneratorEnabled(event.isEnabled());
 		}
 	}

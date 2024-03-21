@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
 	// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
 	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
-	private static boolean enabled=true;
+	private boolean enabled = true;
 
 	private final AtomicInteger threadCounter = new AtomicInteger(0);
 
@@ -481,16 +481,17 @@ public static class ParallelSenderExecutorWrapper implements Runnable {
 		return session==null?null:session.getCorrelationId();
 	}
 
-	public void setEnabled(boolean enable) {
+	private void setEnabled(boolean enable) {
 		enabled = enable;
 		AppConstants.getInstance().put("testtool.enabled", String.valueOf(enable));
 	}
-	public boolean isEnabled() {
+	private boolean isEnabled() {
 		return ibisDebugger != null && enabled;
 	}
 
 	@Override
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
+		log.debug("received DebuggerStatusChangedEvent [{}]", event);
 		setEnabled(event.isEnabled());
 	}
 }

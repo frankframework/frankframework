@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
 */
 package org.frankframework.senders;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
 
@@ -45,7 +45,7 @@ import lombok.Setter;
 public class SenderSeries extends SenderWrapperBase {
 
 	private final List<ISender> senderList = new LinkedList<>();
-	private final Map<ISender, DistributionSummary> statisticsMap = new HashMap<>();
+	private final Map<ISender, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 	private @Getter @Setter boolean synchronous=true;
 
 	@Override

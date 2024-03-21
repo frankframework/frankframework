@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,16 @@
 */
 package org.frankframework.http;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-
 import org.frankframework.core.SharedResource;
 
 /**
  * Shared HTTPSession, implements {@link SharedResource} so it can be set in the Configuration.xml
  */
-public class HttpSession extends HttpSessionBase implements SharedResource<CloseableHttpClient> {
+public class HttpSession extends HttpSessionBase implements SharedResource<HttpSession> {
 
 	@Override
-	public CloseableHttpClient getSharedResource() {
-		return getHttpClient();
+	public HttpSession getSharedResource() {
+		return this;
 	}
 
 }

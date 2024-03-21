@@ -58,33 +58,36 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.encryption.AuthSSLContextFactory;
+import org.frankframework.encryption.HasKeystore;
+import org.frankframework.encryption.HasTruststore;
+import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.authentication.AuthenticationScheme;
 import org.frankframework.http.authentication.HttpAuthenticationException;
 import org.frankframework.http.authentication.OAuthAccessTokenManager;
 import org.frankframework.http.authentication.OAuthAuthenticationScheme;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.encryption.AuthSSLContextFactory;
-import org.frankframework.encryption.HasKeystore;
-import org.frankframework.encryption.HasTruststore;
-import org.frankframework.encryption.KeystoreType;
-
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
+import org.springframework.context.ApplicationContext;
+import org.springframework.util.Assert;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * <p>
@@ -154,7 +157,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private @Getter int connectionTimeToLive = 900; // [s]
 	private @Getter int connectionIdleTimeout = 10; // [s]
 	private final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-	private final HttpClientContext httpClientContext = HttpClientContext.create();
+	private @Getter HttpClientContext defaultHttpClientContext;
+	private HttpClientContext httpClientContext;
 	private @Getter CloseableHttpClient httpClient;
 
 	/* SECURITY */
@@ -237,6 +241,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		/**
 		 * TODO find out if this really breaks proxy authentication or not.
 		 */
+		defaultHttpClientContext = HttpClientContext.create(); //Only create a new HttpContext when configure is called (which doesn't happen when using a SharedResource)
 //		httpClientBuilder.disableAuthCaching();
 
 		if (getMaxConnections() <= 0) {
@@ -291,7 +296,10 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 		sslSocketFactory = getSSLConnectionSocketFactory(); //Configure it here, so we can handle exceptions
 
+		preAuthenticate();
 		configureRedirectStrategy();
+
+		httpClientContext = defaultHttpClientContext; //Ensure a local instance is used when no SharedResource is present.
 	}
 
 	private void validateProtocolsAndCiphers() throws ConfigurationException {
@@ -366,13 +374,16 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		buildHttpClient();
 	}
 
-	protected void buildHttpClient() {
+	private void buildHttpClient() {
 		configureConnectionManager();
 		httpClient = httpClientBuilder.build();
 	}
 
 	protected void setHttpClient(CloseableHttpClient httpClient) {
 		this.httpClient = httpClient;
+	}
+	protected void setHttpContext(HttpClientContext httpContext) {
+		this.defaultHttpClientContext = httpContext;
 	}
 
 	@Override
@@ -393,6 +404,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	private void setupAuthentication(CredentialFactory proxyCredentials, HttpHost proxy, RequestConfig.Builder requestConfigBuilder) throws HttpAuthenticationException {
+		Assert.notNull(defaultHttpClientContext, "no HttpClientContext created during configure"); //This should be set in #configure()
+
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		if (StringUtils.isNotEmpty(credentials.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
 
@@ -404,7 +417,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
 				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, user_cf==null, isAuthenticatedTokenRequest(), this, getTokenExpiry());
-				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
+				defaultHttpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
 		}
@@ -421,12 +434,12 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			if(isPrefillProxyAuthCache()) {
 				requestConfigBuilder.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
 
-				AuthCache authCache = httpClientContext.getAuthCache();
+				AuthCache authCache = defaultHttpClientContext.getAuthCache();
 				if(authCache == null)
 					authCache = new BasicAuthCache();
 
 				authCache.put(proxy, new BasicScheme());
-				httpClientContext.setAuthCache(authCache);
+				defaultHttpClientContext.setAuthCache(authCache);
 			}
 
 		}
@@ -434,12 +447,12 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 	}
 
-	protected void preAuthenticate() {
+	private void preAuthenticate() {
 		if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
-			AuthState authState = httpClientContext.getTargetAuthState();
+			AuthState authState = defaultHttpClientContext.getTargetAuthState();
 			if (authState==null) {
 				authState = new AuthState();
-				httpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
+				defaultHttpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
 			authState.update(getPreferredAuthenticationScheme().createScheme(), getCredentials());
@@ -488,9 +501,21 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		return sslConnectionSocketFactory;
 	}
 
-	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase) throws IOException {
+	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase, PipeLineSession session) throws IOException {
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
-		return getHttpClient().execute(targetHost, httpRequestBase, httpClientContext);
+
+		CloseableHttpClient client = getHttpClient();
+		HttpClientContext context = httpClientContext != null ? httpClientContext : getOrCreateHttpClientContext(client, session);
+		log.trace("executing request using HttpClient [{}] and HttpContext [{}]", client::hashCode, () -> context);
+		return client.execute(targetHost, httpRequestBase, context);
+	}
+
+	private synchronized HttpClientContext getOrCreateHttpClientContext(CloseableHttpClient client, PipeLineSession session) {
+		return (HttpClientContext) session.computeIfAbsent(PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX + "HttpContext" + client.hashCode(), key -> {
+			HttpClientContext context = HttpClientContext.adapt(new BasicHttpContext(defaultHttpClientContext));
+			context.setCookieStore(new BasicCookieStore());
+			return context;
+		});
 	}
 
 	/**
