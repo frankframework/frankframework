@@ -17,6 +17,7 @@ package org.frankframework.management.web;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -171,12 +172,13 @@ public class TransactionalStorage extends FrankApiBase {
 						}
 
 						String payload = (String) message.getPayload();
+						byte[] payloadBytes = StringUtils.getBytes(payload, StandardCharsets.UTF_8);
 						ZipEntry entry = new ZipEntry("msg-"+messageId+filenameExtension);
 						zos.putNextEntry(entry);
-						zos.write(payload.getBytes());
+						zos.write(payloadBytes);
 						zos.closeEntry();
 					}
-				} catch (IOException e) {
+                } catch (IOException e) {
 					throw new ApiException("Failed to create zip file with messages.", e);
 				}
 			}
