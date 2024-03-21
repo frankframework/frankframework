@@ -29,10 +29,7 @@
 
 	<Adapter name="SharedHTTPResource">
 		<Receiver>
-			<JavaListener serviceName="ibis4test-CallEndpointUsingSharedResource" />
-		</Receiver>
-		<Receiver>
-			<JavaListener name="SharedHTTPResource-Local" />
+			<JavaListener name="SharedHTTPResource-Local" serviceName="ibis4test-CallEndpointUsingSharedResource" />
 		</Receiver>
 
 		<Pipeline firstPipe="forEachElement">
@@ -70,7 +67,7 @@
 
 	<Adapter name="ConcurrentSharedHTTPResource" description="calls the SharedHTTPResource adapter 5 times">
 		<Receiver>
-			<JavaListener serviceName="ibis4test-CallConcurrentSharedHTTPResource" />
+			<JavaListener name="ConcurrentSharedHTTPResource-Local" serviceName="ibis4test-CallConcurrentSharedHTTPResource" />
 		</Receiver>
 		<Pipeline>
 			<SenderPipe name="IbisLocalSender">
