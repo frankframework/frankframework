@@ -1252,10 +1252,17 @@
 			</modules>
 			<repositories>
 				<repository>
+					<id>central</id>
+					<name>Central Repository</name>
+					<url>https://repo.maven.apache.org/maven2/</url>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
+				<repository>
 					<id>proprietary</id>
 					<url>https://nexus.frankframework.org/content/repositories/private/</url>
 					<snapshots>
-						<!-- Prevent Maven from attempting to download non existing /x.y-SNAPSHOT/maven-metadata.xml on this url for every module on every build -->
 						<enabled>false</enabled>
 					</snapshots>
 				</repository>
