@@ -584,9 +584,7 @@
 				<version>3.2.5</version>
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					<parallel>all</parallel>
-					<useUnlimitedThreads>true</useUnlimitedThreads>
-					<threadCountSuites>3</threadCountSuites>
+					<reuseForks>false</reuseForks>
 					<includes>
 						<include>**/*.java</include>
 					</includes>
