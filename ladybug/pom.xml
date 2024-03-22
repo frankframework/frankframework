@@ -118,7 +118,7 @@
 					</snapshots>
 				</repository>
 				<repository>
-					<id>ibissource</id>
+					<id>frankframework</id>
 					<url>https://nexus.frankframework.org/content/groups/public</url>
 				</repository>
 			</repositories>
