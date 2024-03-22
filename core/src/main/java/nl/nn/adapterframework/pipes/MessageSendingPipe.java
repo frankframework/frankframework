@@ -493,6 +493,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 			} catch (Exception e) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
+				PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
+				if (exceptionForward != null) {
+					log.warn("exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:", e);
+					return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null,e,this,input,session.getMessageId(),0));
+				}
 				throw new PipeRunException(this, "caught exception", e);
 			}
 
