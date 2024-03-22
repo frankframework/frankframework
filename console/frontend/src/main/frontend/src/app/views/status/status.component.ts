@@ -41,6 +41,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   configurationFlowDiagram: string | null = null;
   isConfigStubbed: Record<string, boolean> = {};
   isConfigReloading: Record<string, boolean> = {};
+  isConfigAutoReloadable: Record<string, boolean> = {};
   msgBoxExpanded = false;
   adapterShowContent: Record<keyof typeof this.adapters, boolean> = {};
   loadFlowInline = true;
@@ -302,6 +303,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     for (const index in this.appService.configurations) {
       const config = this.appService.configurations[index];
       this.isConfigStubbed[config.name] = config.stubbed;
+      this.isConfigAutoReloadable[config.name] = config.autoreload ?? false;
       this.isConfigReloading[config.name] =
         config.state == 'STARTING' || config.state == 'STOPPING'; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
     }
