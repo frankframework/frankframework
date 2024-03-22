@@ -48,14 +48,23 @@ import org.mockito.stubbing.Answer;
 import lombok.Getter;
 
 public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
+
 	private final String lineSeparator = System.getProperty("line.separator");
+	private final int statusCode;
+
+	public HttpResponseMock() {
+		this(200);
+	}
+	public HttpResponseMock(int statusCode) {
+		this.statusCode = statusCode;
+	}
 
 	private HttpResponse buildResponse(InputStream content) throws UnsupportedOperationException, IOException {
 		CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
 		StatusLine statusLine = mock(StatusLine.class);
 		HttpEntity httpEntity = mock(HttpEntity.class);
 
-		when(statusLine.getStatusCode()).thenReturn(200);
+		when(statusLine.getStatusCode()).thenReturn(statusCode);
 		when(httpResponse.getStatusLine()).thenReturn(statusLine);
 
 		when(httpEntity.getContent()).thenReturn(content);

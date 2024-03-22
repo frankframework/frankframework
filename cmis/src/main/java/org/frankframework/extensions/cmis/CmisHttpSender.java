@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,9 +38,9 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
 import org.frankframework.http.HttpResponseHandler;
 import org.frankframework.http.HttpSenderBase;
 import org.frankframework.parameters.ParameterValueList;
@@ -141,6 +141,10 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 		return method;
 	}
 
+	protected boolean validateResponseCode(int statusCode) {
+		return true; //Always success
+	}
+
 	@Override
 	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws IOException {
 		int responseCode = -1;
@@ -149,8 +153,6 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			responseCode = statusline.getStatusCode();
 
 			Message responseMessage = responseHandler.getResponseMessage();
-			responseMessage.closeOnCloseOf(session, this);
-
 			InputStream responseStream = null;
 			InputStream errorStream = null;
 			Map<String, List<String>> headerFields = responseHandler.getHeaderFields();
@@ -161,30 +163,33 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 				errorStream = responseMessage.asInputStream();
 			}
 			Response response = new Response(responseCode, statusline.toString(), headerFields, responseStream, errorStream);
-			session.put("response", response);
+			session.put("__response", response);
 		}
 		catch(Exception e) {
 			throw new CmisConnectionException(getUrl(), responseCode, e);
 		}
 
-		return new Message("response");
+		return Message.nullMessage();
 	}
 
 	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) {
 		//Prepare the message. We will overwrite things later...
 		int responseCode = -1;
 
-		PipeLineSession pls = new PipeLineSession();
-		pls.put("writer", writer);
-		pls.put("url", url);
-		pls.put("method", method);
-		pls.put("headers", headers);
-
-		try (Message ignored = sendMessageOrThrow(Message.nullMessage(), pls)) {
-			// Message is unused, we use 'Output writer' instead
-			return (Response) pls.get("response");
-		} catch (Exception e) {
-			throw new CmisConnectionException(getUrl(), responseCode, e);
+		try(PipeLineSession pls = new PipeLineSession()) {
+			pls.put("writer", writer);
+			pls.put("url", url);
+			pls.put("method", method);
+			pls.put("headers", headers);
+	
+			try {
+				// Message is unused, we use 'Output writer' instead
+				SenderResult ignored = sendMessage(Message.nullMessage(), pls);
+				ignored.getResult().close(); // close our nullMessage
+				return (Response) pls.get("__response");
+			} catch (Exception e) {
+				throw new CmisConnectionException(getUrl(), responseCode, e);
+			}
 		}
 	}
 
