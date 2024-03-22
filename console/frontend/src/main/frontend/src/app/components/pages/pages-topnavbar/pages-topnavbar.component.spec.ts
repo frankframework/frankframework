@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { PagesTopnavbarComponent } from './pages-topnavbar.component';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('PagesTopnavbarComponent', () => {
   let component: PagesTopnavbarComponent;
@@ -8,9 +10,10 @@ describe('PagesTopnavbarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PagesTopnavbarComponent ]
-    })
-    .compileComponents();
+      imports: [HttpClientTestingModule],
+      declarations: [PagesTopnavbarComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PagesTopnavbarComponent);
     component = fixture.componentInstance;

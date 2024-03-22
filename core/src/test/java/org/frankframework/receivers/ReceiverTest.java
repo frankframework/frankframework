@@ -44,8 +44,6 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.lang.reflect.Field;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -61,7 +59,6 @@ import javax.jms.Destination;
 import javax.jms.TextMessage;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.configuration.AdapterManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IListenerConnector;
@@ -180,7 +177,7 @@ public class ReceiverTest {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName("ReceiverTestAdapterName");
 
-		PipeLine pl = spy(new PipeLine());
+		PipeLine pl = spy(configuration.createBean(PipeLine.class));
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(exitState);
@@ -257,13 +254,11 @@ public class ReceiverTest {
 	private static TestConfiguration buildConfiguration(TransactionManagerType txManagerType) {
 		TestConfiguration configuration;
 		if (txManagerType != null) {
-			configuration = txManagerType.create();
+			configuration = txManagerType.create(false);
 		} else {
-			configuration = new TestConfiguration();
+			configuration = new TestConfiguration(false);
 		}
 
-		configuration.stop();
-		configuration.getBean("adapterManager", AdapterManager.class).close();
 		LOG.info("!Configuration Context for [{}] has been created.", txManagerType);
 		return configuration;
 	}
@@ -573,10 +568,10 @@ public class ReceiverTest {
 	}
 
 	@Test
-	void testGetDeliveryCountWithDirectoryListener() throws Exception {
+	void testGetDeliveryCount() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
-		DirectoryListener listener = spy(configuration.createBean(DirectoryListener.class));
+		MockPushingListener listener = spy(configuration.createBean(MockPushingListener.class));
 		doNothing().when(listener).open();
 
 		@SuppressWarnings("unchecked")
@@ -584,7 +579,7 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
 
-		Receiver<Path> receiver = setupReceiver(listener);
+		Receiver<String> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
@@ -599,8 +594,7 @@ public class ReceiverTest {
 		waitForState(adapter, RunState.STARTED);
 
 		final String messageId = "A Path";
-		Path fileMessage = Paths.get(messageId);
-		RawMessageWrapper<Path> rawMessageWrapper = new RawMessageWrapper<>(fileMessage, messageId, null);
+		RawMessageWrapper<String> rawMessageWrapper = new RawMessageWrapper<>("message", messageId, null);
 
 		// Act
 		int result1 = receiver.getDeliveryCount(rawMessageWrapper);
@@ -659,7 +653,7 @@ public class ReceiverTest {
 			// Assert
 			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
 			assertTrue(result.requiresStream(), "Result message should be a stream");
-			assertTrue(result.asObject() instanceof Reader, "Result message should be a stream");
+			assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
 			assertEquals("TEST", result.asString());
 		} finally {
 			configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);

@@ -155,7 +155,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply String (Filename, with processFile=true), File or InputStream as input");
 		}
-		InputStream source=null;
+		InputStream source;
 		if (isProcessFile()) {
 			try {
 				String filename=null;

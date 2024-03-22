@@ -1,43 +1,49 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService, Certificate } from 'src/app/app.service';
 
-export interface CertificateList {
+export type CertificateList = {
   adapter: string;
   pipe: string;
   certificate: Certificate;
-}
+};
 
-export interface SecurityRole {
+export type SecurityRole = {
   allowed: boolean;
   name: string;
-}
+};
 
-export interface AuthEntry {
+export type AuthEntry = {
   alias: string;
   username: string;
   password: string;
-}
+};
 
-export interface SapSystem {
+export type SapSystem = {
   name: string;
   info: string;
-}
+};
 
-export interface JmsRealm {
+export type JmsRealm = {
   name: string;
   info: string | null;
   datasourceName?: string;
   connectionPoolProperties?: string;
   queueConnectionFactoryName?: string;
   topicConnectionFactoryName?: string;
-}
+};
 
-export interface Datasource {
+export type Datasource = {
   datasourceName: string;
   info: string;
   connectionPoolProperties: string;
-}
+};
+
+export type supportedConnectionOptions = {
+  protocols: string[];
+  cyphers: string[];
+};
 
 interface SecurityItems {
   securityRoles: Record<string, SecurityRole>;
@@ -46,19 +52,21 @@ interface SecurityItems {
   jmsRealms: JmsRealm[];
   sapSystems: SapSystem[];
   xmlComponents: Record<string, string>;
+  supportedConnectionOptions: supportedConnectionOptions;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SecurityItemsService {
-
   constructor(
     private http: HttpClient,
     private appService: AppService,
-  ) { }
+  ) {}
 
-  getSecurityItems() {
-    return this.http.get<SecurityItems>(this.appService.absoluteApiPath + "securityitems");
+  getSecurityItems(): Observable<SecurityItems> {
+    return this.http.get<SecurityItems>(
+      `${this.appService.absoluteApiPath}securityitems`,
+    );
   }
 }

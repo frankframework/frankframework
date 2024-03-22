@@ -43,7 +43,6 @@
 				<FixedQuerySender
 					name="insertPipe"
 					query="INSERT INTO IBISFILETRIGGER (MESSAGEID, FILENAME, FILEURI, CREATED_AT, FILESIZE, FLOWID, MESSAGE, STATUS, UPDATED_AT) VALUES (?{MESSAGEID}, ?{FILENAME}, ?{FILEURI}, CURRENT_TIMESTAMP, ?{FILESIZE}, ?{FLOWID}, ?{MESSAGE}, 'A', CURRENT_TIMESTAMP)"
-					queryType="OTHER"
 				>
 					<Param name="MESSAGEID" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
 					<Param name="FILENAME" sessionKey="originalMessage" xpathExpression="file/@name" />

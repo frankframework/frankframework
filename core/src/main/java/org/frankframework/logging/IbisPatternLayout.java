@@ -19,8 +19,10 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.Node;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginConfiguration;
@@ -34,7 +36,7 @@ import org.apache.logging.log4j.core.pattern.PatternParser;
  * Implementation of {@link IbisMaskingLayout} to serialize given log events
  * according to the given pattern.
  */
-@Plugin(name = "IbisPatternLayout", category = "Core", elementType = "layout", printObject = true)
+@Plugin(name = "IbisPatternLayout", category = Node.CATEGORY, elementType = Layout.ELEMENT_TYPE, printObject = true)
 public class IbisPatternLayout extends IbisMaskingLayout {
 
 	private static final String DEFAULT_PATTERN = "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X %c{2} - %m%n";

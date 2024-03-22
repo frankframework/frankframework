@@ -20,9 +20,8 @@
 	<dependencies>
 		<!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<scope>provided</scope>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 
 		<!-- This dependency is here because of the IbisMetricsPipe -->
@@ -43,6 +42,12 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -304,11 +309,6 @@
 					<artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
 					<version>${geronimo.j2ee.spec.version}</version>
 					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jms_1.1_spec</artifactId>
-					<scope>compile</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.geronimo.specs</groupId>

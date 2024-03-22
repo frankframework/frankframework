@@ -49,6 +49,8 @@ import org.frankframework.util.Locker;
 
 import org.frankframework.util.SpringUtils;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 public class CreateScheduledJob extends BusEndpointBase {
 
@@ -58,6 +60,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.SCHEDULER)
 	@ActionSelector(BusAction.UPLOAD)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> createOrUpdateSchedule(Message<?> message) {
 		String jobName = BusMessageUtils.getHeader(message, "job");
 		if(StringUtils.isEmpty(jobName)) {

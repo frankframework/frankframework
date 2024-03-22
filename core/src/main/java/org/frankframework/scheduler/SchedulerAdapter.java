@@ -15,14 +15,19 @@
 */
 package org.frankframework.scheduler;
 
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.IbisManager;
 import org.frankframework.scheduler.job.IJob;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageKeeper;
+import org.frankframework.util.XmlBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -34,27 +39,16 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
-
-import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.IbisManager;
-
-import org.frankframework.statistics.ItemList;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper;
-import org.frankframework.util.XmlBuilder;
 /**
  * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
  * It transforms the information from the scheduler to XML.
  * @author  Johan Verrips
  * @since 4.0
+ * @deprecated An external time series database should be used.
   */
+@Deprecated(forRemoval = true, since = "8.1")
 public class SchedulerAdapter {
 	protected Logger log=LogUtil.getLogger(this);
-
-	private final DecimalFormat tf = new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
-	private final DecimalFormat pf = new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
 
 	/**
 	 * Get all jobgroups, jobs within this group, the jobdetail and the
@@ -108,8 +102,6 @@ public class SchedulerAdapter {
 					}
 					XmlBuilder ms = getJobMessages(jobDef);
 					jn.addSubElement(ms);
-					XmlBuilder jrs= getJobRunStatistics(jobDef);
-					jn.addSubElement(jrs);
 				}
 				el.addSubElement(jb);
 				xbRoot.addSubElement(el);
@@ -147,19 +139,6 @@ public class SchedulerAdapter {
 			}
 		}
 		return jobMessages;
-	}
-
-	public XmlBuilder getJobRunStatistics(IJob jobdef) {
-		XmlBuilder jobRunStatistics = new XmlBuilder("jobRunStatistics");
-		if (jobdef != null) {
-			StatisticsKeeper statsKeeper = jobdef.getStatisticsKeeper();
-			if (statsKeeper != null) {
-				XmlBuilder jobRunDuration = statsKeeper.toXml("jobRunDuration",
-						false, tf, pf);
-				jobRunStatistics.addSubElement(jobRunDuration);
-			}
-		}
-		return jobRunStatistics;
 	}
 
 	public XmlBuilder getSchedulerCalendarNamesToXml(Scheduler theScheduler) {

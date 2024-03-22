@@ -29,8 +29,7 @@
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TCLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_CLOB())"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
-					queryType="insert" />
+					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" />
 				<forward name="success" path="insertBigClob2" />
 			</pipe>
 
@@ -71,8 +70,7 @@
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
-					queryType="insert" />
+					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" />
 				<forward name="success" path="insertBigBlobText2" />
 			</pipe>
 
@@ -108,8 +106,7 @@
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
-					queryType="insert" />
+					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" />
 				<forward name="success" path="insertBigBlobBinary2" />
 			</pipe>
 

@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.ParameterException;
@@ -64,7 +65,6 @@ import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DB2DocumentWriter;
 import org.frankframework.util.DB2XMLWriter;
-import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
@@ -103,7 +103,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	public static final String UNP_START = "?{";
 	public static final String UNP_END = "}";
 
-	private QueryType queryType = QueryType.OTHER;
+	private @Getter QueryType queryType = QueryType.OTHER;
 	private @Getter int maxRows=-1; // return all rows
 	private @Getter int startRow=1;
 	private @Getter boolean scalar=false;
@@ -152,7 +152,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		/** To execute Oracle PL/SQL package */
 		PACKAGE,
 		/** For queries that return no data */
-		OTHER
+		OTHER,
+		/** Deprecated: Use OTHER instead */
+		@ConfigurationWarning("Use queryType 'OTHER' instead")
+		@Deprecated(since = "8.1") INSERT,
+		/** Deprecated: Use OTHER instead */
+		@ConfigurationWarning("Use queryType 'OTHER' instead")
+		@Deprecated(since = "8.1") DELETE,
+		/** Deprecated: Use OTHER instead */
+		@ConfigurationWarning("Use queryType 'OTHER' instead")
+		@Deprecated(since = "8.1") UPDATE
 	}
 
 	@Override
@@ -167,7 +176,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			// don't call StringUtil.split(*) b/c we want an array, not a list.
 			columnsReturnedList = getColumnsReturned().trim().split("\\s*,+\\s*");
 		}
-		if (getBatchSize()>0 && getQueryTypeEnum() != QueryType.OTHER) {
+		if (getBatchSize()>0 && getQueryType() != QueryType.OTHER) {
 			throw new ConfigurationException(getLogPrefix()+"batchSize>0 only valid for queryType 'other'");
 		}
 	}
@@ -255,7 +264,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
-		PreparedStatement statement = getStatement(connection, query, getQueryTypeEnum());
+		PreparedStatement statement = getStatement(connection, query, getQueryType());
 		log.debug(getLogPrefix() + "obtained prepared statement to execute");
 		PreparedStatement resultQueryStatement;
 		if (convertedResultQuery != null) {
@@ -264,7 +273,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} else {
 			resultQueryStatement = null;
 		}
-		return new QueryExecutionContext(query, convertedResultQuery, getQueryTypeEnum(), newParameterList, connection, statement, resultQueryStatement);
+		return new QueryExecutionContext(query, convertedResultQuery, getQueryType(), newParameterList, connection, statement, resultQueryStatement);
 	}
 
 
@@ -863,15 +872,17 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	 * Type of query to be executed
 	 * @ff.default OTHER
 	 */
-	public void setQueryType(String queryType) {
-		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
-			this.queryType=QueryType.OTHER;
-		} else {
-			this.queryType = EnumUtils.parse(QueryType.class, queryType);
+	public void setQueryType(QueryType queryType) {
+		switch (queryType) {
+			case INSERT:
+			case DELETE:
+			case UPDATE:
+				this.queryType = QueryType.OTHER;
+				break;
+			default:
+				this.queryType = queryType;
+				break;
 		}
-	}
-	public QueryType getQueryTypeEnum() {
-		return queryType;
 	}
 
 	/**

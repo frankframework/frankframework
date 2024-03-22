@@ -563,10 +563,15 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 
 		if (result instanceof Message) { //we just need to check if the message is null or not!
-			if (Message.isNull((Message)result)) {
+			Message resultMessage = (Message) result;
+			if (Message.isNull(resultMessage)) {
 				result = null;
-			} else if (((Message)result).asObject() instanceof String) { //Used by getMinLength and getMaxLength
-				result = ((Message) result).asObject();
+			} else if (resultMessage.isRequestOfType(String.class)) { //Used by getMinLength and getMaxLength
+				try {
+					result = resultMessage.asString();
+				} catch (IOException ignored) {
+					// Already checked for String, so this should never happen
+				}
 			}
 		}
 		if (result != null && !"".equals(result)) {
@@ -650,18 +655,17 @@ public class Parameter implements IConfigurable, IWithParameters {
 		Message requestMessage = Message.asMessage(request);
 		Object result = request;
 		try {
-			Object requestObject = requestMessage.asObject();
 			switch(getType()) {
 				case NODE:
 					try {
 						if (isRemoveNamespaces()) {
 							requestMessage = XmlUtils.removeNamespaces(requestMessage);
 						}
-						if(requestObject instanceof Document) {
-							return ((Document)requestObject).getDocumentElement();
+						if(request instanceof Document) {
+							return ((Document)request).getDocumentElement();
 						}
-						if(requestObject instanceof Node) {
-							return requestObject;
+						if(request instanceof Node) {
+							return request;
 						}
 						result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware).getDocumentElement();
 						final Object finalResult = result;
@@ -675,8 +679,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 						if (isRemoveNamespaces()) {
 							requestMessage = XmlUtils.removeNamespaces(requestMessage);
 						}
-						if(requestObject instanceof Document) {
-							return requestObject;
+						if(request instanceof Document) {
+							return request;
 						}
 						result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware);
 						final Object finalResult = result;
@@ -689,8 +693,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 				case DATETIME:
 				case TIMESTAMP:
 				case TIME: {
-					if (requestObject instanceof Date) {
-						return requestObject;
+					if (request instanceof Date) {
+						return request;
 					}
 					Message finalRequestMessage = requestMessage;
 					LOG.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> finalRequestMessage, this::getFormatString);
@@ -703,8 +707,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 					break;
 				}
 				case XMLDATETIME: {
-					if (requestObject instanceof Date) {
-						return requestObject;
+					if (request instanceof Date) {
+						return request;
 					}
 					Message finalRequestMessage = requestMessage;
 					LOG.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> finalRequestMessage);
@@ -712,8 +716,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 					break;
 				}
 				case NUMBER: {
-					if (requestObject instanceof Number) {
-						return requestObject;
+					if (request instanceof Number) {
+						return request;
 					}
 					Message finalRequestMessage = requestMessage;
 					LOG.debug("Parameter [{}] converting result [{}] to number decimalSeparator [{}] groupingSeparator [{}]", this::getName, ()->finalRequestMessage, decimalFormatSymbols::getDecimalSeparator, decimalFormatSymbols::getGroupingSeparator);
@@ -727,8 +731,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 					break;
 				}
 				case INTEGER: {
-					if (requestObject instanceof Integer) {
-						return requestObject;
+					if (request instanceof Integer) {
+						return request;
 					}
 					Message finalRequestMessage = requestMessage;
 					LOG.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->finalRequestMessage);
@@ -740,8 +744,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 					break;
 				}
 				case BOOLEAN: {
-					if (requestObject instanceof Boolean) {
-						return requestObject;
+					if (request instanceof Boolean) {
+						return request;
 					}
 					Message finalRequestMessage = requestMessage;
 					LOG.debug("Parameter [{}] converting result [{}] to boolean", this::getName, ()->finalRequestMessage);
@@ -832,16 +836,22 @@ public class Parameter implements IConfigurable, IWithParameters {
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
 		if (substitutionValue == null) {
-			Message substitutionValueMessage = session.getMessage(name);
-			if (!substitutionValueMessage.isEmpty()) {
-				if (substitutionValueMessage.asObject() instanceof Date) {
-					substitutionValue = preFormatDateType(substitutionValueMessage.asObject(), formatType, formatString);
+			Object substitutionValueMessage = session.get(name);
+			if (substitutionValueMessage != null) {
+				if (substitutionValueMessage instanceof Date) {
+					substitutionValue = preFormatDateType(substitutionValueMessage, formatType, formatString);
 				} else {
-					try {
-						substitutionValue = substitutionValueMessage.asString();
-					} catch (IOException e) {
-						throw new ParameterException(getName(), "Cannot get substitution value", e);
+					if (substitutionValueMessage instanceof String) {
+						substitutionValue = substitutionValueMessage;
+					} else {
+						try {
+							Message message = Message.asMessage(substitutionValueMessage); // Do not close object from session here; might be reused later
+							substitutionValue = message.asString();
+						} catch (IOException e) {
+							throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name, e);
+						}
 					}
+					if (substitutionValue == null) throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name);
 				}
 			}
 		}

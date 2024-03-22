@@ -37,7 +37,7 @@ import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.Adapter;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.TestTool;
+import org.frankframework.larva.LarvaTool;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
@@ -91,7 +91,7 @@ public class IbisTester {
 				request.setParameter("scenariosrootdirectory", scenariosRootDir);
 			}
 			Writer writer = new StringWriter();
-			TestTool.runScenarios(ibisContext, request, writer, silent, webAppPath);
+			LarvaTool.runScenarios(ibisContext, request, writer, silent, webAppPath);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
 				return XmlUtils.toXhtml(Message.asMessage(htmlString));

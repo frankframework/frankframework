@@ -20,22 +20,24 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IDualModeValidator;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.stream.Message;
+import org.frankframework.util.Locker;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.XmlValidatorException;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
@@ -158,17 +160,22 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 		return null;
 	}
 
+	/**
+	 * Wrapper for the response validator. It has its own name and forwards, but delegates the actual work to the original validator.
+	 * It overrides the stop and start method to prevent the original validator from being started and stopped.
+	 */
 	public static class ResponseValidatorWrapper implements IValidator {
 
 		private @Getter @Setter String name;
 
-		private Map<String, PipeForward> forwards=new HashMap<>();
+		private final Map<String, PipeForward> forwards = new HashMap<>();
 
 		protected ValidatorBase owner;
+
 		public ResponseValidatorWrapper(ValidatorBase owner) {
 			super();
-			this.owner=owner;
-			name="ResponseValidator of "+owner.getName();
+			this.owner = owner;
+			name = "ResponseValidator of " + owner.getName();
 		}
 
 		@Override
@@ -226,6 +233,176 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 		@Override
 		public boolean consumesSessionVariable(String sessionKey) {
 			return owner.consumesSessionVariable(sessionKey);
+		}
+
+		@Override
+		public void setPipeLine(PipeLine pipeline) {
+			owner.setPipeLine(pipeline);
+		}
+
+		@Override
+		public void setGetInputFromSessionKey(String string) {
+			owner.setGetInputFromSessionKey(string);
+		}
+
+		@Override
+		public String getGetInputFromSessionKey() {
+			return owner.getGetInputFromSessionKey();
+		}
+
+		@Override
+		public void setGetInputFromFixedValue(String string) {
+			owner.setGetInputFromFixedValue(string);
+		}
+
+		@Override
+		public String getGetInputFromFixedValue() {
+			return owner.getGetInputFromFixedValue();
+		}
+
+		@Override
+		public void setEmptyInputReplacement(String string) {
+			owner.setEmptyInputReplacement(string);
+		}
+
+		@Override
+		public String getEmptyInputReplacement() {
+			return owner.getEmptyInputReplacement();
+		}
+
+		@Override
+		public void setPreserveInput(boolean preserveInput) {
+			owner.setPreserveInput(preserveInput);
+		}
+
+		@Override
+		public boolean isPreserveInput() {
+			return owner.isPreserveInput();
+		}
+
+		@Override
+		public void setStoreResultInSessionKey(String string) {
+			owner.setStoreResultInSessionKey(string);
+		}
+
+		@Override
+		public String getStoreResultInSessionKey() {
+			return owner.getStoreResultInSessionKey();
+		}
+
+		@Override
+		public void setChompCharSize(String string) {
+			owner.setChompCharSize(string);
+		}
+
+		@Override
+		public String getChompCharSize() {
+			return owner.getChompCharSize();
+		}
+
+		@Override
+		public void setElementToMove(String string) {
+			owner.setElementToMove(string);
+		}
+
+		@Override
+		public String getElementToMove() {
+			return owner.getElementToMove();
+		}
+
+		@Override
+		public void setElementToMoveSessionKey(String string) {
+			owner.setElementToMoveSessionKey(string);
+		}
+
+		@Override
+		public String getElementToMoveSessionKey() {
+			return owner.getElementToMoveSessionKey();
+		}
+
+		@Override
+		public void setElementToMoveChain(String string) {
+			owner.setElementToMoveChain(string);
+		}
+
+		@Override
+		public String getElementToMoveChain() {
+			return owner.getElementToMoveChain();
+		}
+
+		@Override
+		public void setRemoveCompactMsgNamespaces(boolean b) {
+			owner.setRemoveCompactMsgNamespaces(b);
+		}
+
+		@Override
+		public boolean isRemoveCompactMsgNamespaces() {
+			return owner.isRemoveCompactMsgNamespaces();
+		}
+
+		@Override
+		public void setRestoreMovedElements(boolean restoreMovedElements) {
+			owner.setRestoreMovedElements(restoreMovedElements);
+		}
+
+		@Override
+		public boolean isRestoreMovedElements() {
+			return owner.isRestoreMovedElements();
+		}
+
+		@Override
+		public void setDurationThreshold(long maxDuration) {
+			owner.setDurationThreshold(maxDuration);
+		}
+
+		@Override
+		public long getDurationThreshold() {
+			return owner.getDurationThreshold();
+		}
+
+		@Override
+		public void setLocker(Locker locker) {
+			owner.setLocker(locker);
+		}
+
+		@Override
+		public Locker getLocker() {
+			return owner.getLocker();
+		}
+
+		@Override
+		public void setWriteToSecLog(boolean b) {
+			owner.setWriteToSecLog(b);
+		}
+
+		@Override
+		public boolean isWriteToSecLog() {
+			return owner.isWriteToSecLog();
+		}
+
+		@Override
+		public void setSecLogSessionKeys(String string) {
+			owner.setSecLogSessionKeys(string);
+		}
+
+		@Override
+		public String getSecLogSessionKeys() {
+			return owner.getSecLogSessionKeys();
+		}
+
+		@Override
+		public void registerEvent(String description) {
+			owner.registerEvent(description);
+		}
+
+		@Override
+		public void throwEvent(String event, Message eventMessage) {
+			owner.throwEvent(event, eventMessage);
+		}
+
+		@Override
+		public boolean sizeStatisticsEnabled() {
+			return owner.sizeStatisticsEnabled();
 		}
 	}
 

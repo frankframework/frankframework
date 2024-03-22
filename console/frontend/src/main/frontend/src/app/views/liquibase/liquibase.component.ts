@@ -5,22 +5,22 @@ import { JdbcService } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 interface Form {
-  configuration: string
+  configuration: string;
 }
 
 @Component({
   selector: 'app-liquibase',
   templateUrl: './liquibase.component.html',
-  styleUrls: ['./liquibase.component.scss']
+  styleUrls: ['./liquibase.component.scss'],
 })
 export class LiquibaseComponent implements OnInit, OnDestroy {
   form: Form = {
-    configuration: ""
+    configuration: '',
   };
   file: File | null = null;
   generateSql: boolean = false;
-  error: string = "";
-  result: string = "";
+  error: string = '';
+  result: string = '';
   configurations: Configuration[] = [];
   filteredConfigurations: Configuration[] = [];
 
@@ -28,57 +28,66 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
 
   constructor(
     private appService: AppService,
-    private jdbcService: JdbcService
-  ) { };
+    private jdbcService: JdbcService,
+  ) {}
 
   ngOnInit(): void {
-    const findFirstAvailabeConfiguration = () => {
-      this.configurations = this.appService.configurations;
-      this.filteredConfigurations = this.configurations.filter((item) => item.jdbcMigrator === true);
-
-      for (let i in this.filteredConfigurations) {
-        let configuration = this.configurations[i];
-
-        if (configuration.jdbcMigrator) {
-          this.form['configuration'] = configuration.name;
-          break;
-        };
-      };
-    };
-
-    const configurationsSubscription = this.appService.configurations$.subscribe(() => findFirstAvailabeConfiguration());
+    const configurationsSubscription =
+      this.appService.configurations$.subscribe(() =>
+        this.findFirstAvailabeConfiguration(),
+      );
     this._subscriptions.add(configurationsSubscription);
-    findFirstAvailabeConfiguration();
+    this.findFirstAvailabeConfiguration();
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  download() {
-    window.open(this.appService.getServerPath() + "iaf/api/jdbc/liquibase/");
-  };
+  download(): void {
+    window.open(`${this.appService.getServerPath()}iaf/api/jdbc/liquibase/`);
+  }
 
-  submit(formData: Form) {
-    if (!formData) formData = { configuration: "" };
-    var fd = new FormData();
+  submit(formData: Form): void {
+    if (!formData) formData = { configuration: '' };
+    const fd = new FormData();
     this.generateSql = true;
 
     if (this.file != null) {
-      fd.append("file", this.file as any);
-    };
+      fd.append('file', this.file as unknown as string);
+    }
 
-    fd.append("configuration", formData.configuration);
+    fd.append('configuration', formData.configuration);
 
-    this.jdbcService.postJdbcLiquibase(fd).subscribe({ next: returnData => {
-      this.error = "";
-      this.generateSql = false;
-      this.result = returnData.result;
-    }, error: (errorData: HttpErrorResponse) => {
-      this.generateSql = false;
-      const error = (errorData && errorData.error) ? errorData.error : "An error occured!";
-      this.error = typeof error === 'object' ? error.error : error;
-      this.result = "";
-    }}); // TODO no intercept
-  };
+    this.jdbcService.postJdbcLiquibase(fd).subscribe({
+      next: (returnData) => {
+        this.error = '';
+        this.generateSql = false;
+        this.result = returnData.result;
+      },
+      error: (errorData: HttpErrorResponse) => {
+        this.generateSql = false;
+        const error =
+          errorData && errorData.error ? errorData.error : 'An error occured!';
+        this.error = typeof error === 'object' ? error.error : error;
+        this.result = '';
+      },
+    }); // TODO no intercept
+  }
+
+  private findFirstAvailabeConfiguration(): void {
+    this.configurations = this.appService.configurations;
+    this.filteredConfigurations = this.configurations.filter(
+      (item) => item.jdbcMigrator === true,
+    );
+
+    for (const index in this.filteredConfigurations) {
+      const configuration = this.configurations[index];
+
+      if (configuration.jdbcMigrator) {
+        this.form['configuration'] = configuration.name;
+        break;
+      }
+    }
+  }
 }

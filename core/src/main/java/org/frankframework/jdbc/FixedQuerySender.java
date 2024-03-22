@@ -103,7 +103,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		return new SenderResult(executeStatementSet(blockHandle, message, session, null).getResult());
 	}
 
-	/** The SQL query text to be excecuted each time sendMessage() is called
+	/** The SQL query text to be executed each time sendMessage() is called
 	 * @ff.mandatory
 	 */
 	public void setQuery(String query) {

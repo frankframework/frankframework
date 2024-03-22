@@ -16,13 +16,12 @@
 package org.frankframework.senders;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.AdapterAware;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.statistics.HasStatistics;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.stream.Message;
 
 import lombok.Setter;
@@ -30,7 +29,7 @@ import lombok.Setter;
 /**
  * Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
  * This prevents (long) open connections inside Senders and possible connection failures.
- * 
+ *
  * <b>Example:</b>
  * <pre><code>
  *   &lt;SenderPipe&gt;
@@ -56,6 +55,10 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		sender.configure();
+		if(sender instanceof AdapterAware) {
+			((AdapterAware) sender).setAdapter(adapter);
+		}
+
 		super.configure();
 	}
 
@@ -71,21 +74,29 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		try {
-			sender.open();
-			return sender.sendMessage(message, session);
-		} finally {
-			sender.close();
-		}
+		sender.open();
+		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender), this.toString());
+		return sender.sendMessage(message, session);
 	}
 
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		if (sender instanceof HasStatistics) {
-			((HasStatistics) sender).iterateOverStatistics(hski,data,action);
-		}
-	}
+	public class AutoCloseableSenderWrapper implements AutoCloseable {
+		private final ISender sender;
 
+		public AutoCloseableSenderWrapper(ISender sender) {
+			this.sender = sender;
+		}
+
+		@Override
+		public void close() {
+			try {
+				log.debug("Closing sender after use: [{}]", sender.getName());
+				sender.close();
+			} catch (SenderException e) {
+				log.warn("Error closing sender: [{}]", sender.getName(), e);
+			}
+		}
+
+	}
 	@Override
 	public boolean isSynchronous() {
 		return sender.isSynchronous();

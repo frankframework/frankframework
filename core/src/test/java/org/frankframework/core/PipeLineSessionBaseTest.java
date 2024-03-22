@@ -1,9 +1,11 @@
 package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -59,21 +61,21 @@ public class PipeLineSessionBaseTest {
 
 	@Test
 	public void testBoolean() {
-		assertEquals(true, session.get("boolean1", true));
-		assertEquals(true, session.get("boolean1", false));
-		assertEquals(false, session.get("boolean2", true));
-		assertEquals(false, session.get("boolean2", false));
-		assertEquals(true, session.get("boolean3", true));
-		assertEquals(true, session.get("boolean3", false));
-		assertEquals(false, session.get("boolean4", false));
-		assertEquals(false, session.get("boolean4", true));
+		assertTrue(session.get("boolean1", true));
+		assertTrue(session.get("boolean1", false));
+		assertFalse(session.get("boolean2", true));
+		assertFalse(session.get("boolean2", false));
+		assertTrue(session.get("boolean3", true));
+		assertTrue(session.get("boolean3", false));
+		assertFalse(session.get("boolean4", false));
+		assertFalse(session.get("boolean4", true));
 
-		assertEquals(false, session.get("string3", true));
-		assertEquals(false, session.get("string4", true));
-		assertEquals(true, session.get("string5", true));
+		assertFalse(session.get("string3", true));
+		assertFalse(session.get("string4", true));
+		assertTrue(session.get("string5", true));
 
-		assertEquals(false, session.get("object1", true));
-		assertEquals(false, session.get("object1", false));
+		assertFalse(session.get("object1", true));
+		assertFalse(session.get("object1", false));
 	}
 
 	@Test
@@ -86,8 +88,8 @@ public class PipeLineSessionBaseTest {
 		assertEquals("", session.get("string3", "not empty"));
 		assertEquals("null", session.get("string4", "null"));
 		assertEquals("null", session.get("string4", "not null"));
-		assertEquals(null, session.get("string5", null));
-		assertEquals("", session.get("string5", new String()));
+    	assertNull(session.get("string5", null));
+		assertEquals("", session.get("string5", ""));
 	}
 
 	@Test
@@ -154,7 +156,7 @@ public class PipeLineSessionBaseTest {
 		}
 
 		@Override
-		public int read() throws IOException {
+		public int read() {
 			return 0;
 		}
 	}
@@ -172,11 +174,11 @@ public class PipeLineSessionBaseTest {
 		Message md = new Message(d);
 
 		ma.closeOnCloseOf(session, "testCloseables()");
-		InputStream p = (InputStream)ma.asObject();
+		InputStream p = ma.asInputStream();
 		ma.closeOnCloseOf(session, "testCloseables()");
-		InputStream q = (InputStream)ma.asObject();
+		InputStream q = ma.asInputStream();
 
-		assertTrue(p==q, "scheduling a resource twice must yield the same object");
+    	assertSame(p, q, "scheduling a resource twice must yield the same object");
 
 		mb.closeOnCloseOf(session, "testCloseables()");
 		mc.closeOnCloseOf(session, "testCloseables()");
@@ -194,5 +196,9 @@ public class PipeLineSessionBaseTest {
 		assertEquals(1, b.closes);
 		assertEquals(0, c.closes);
 		assertEquals(1, d.closes);
+		ma.close();
+		mb.close();
+		mc.close();
+		md.close();
 	}
 }

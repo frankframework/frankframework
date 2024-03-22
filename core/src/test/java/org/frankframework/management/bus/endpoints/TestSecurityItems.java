@@ -44,6 +44,9 @@ public class TestSecurityItems extends BusTestBase {
 		String expectedJson = TestFileUtils.getTestFile("/Management/securityItemsResponse.json");
 		String payload = (String) response.getPayload();
 		payload = payload.replaceAll("hashCode: \\d+", "HASHCODE");
+		payload = payload.replaceAll("(?:\"cyphers\":)\\[([\\r\\s\\t\\n\\w \",]+)+(:?\\])", "\"cyphers\":[\"IGNORE\"]");
+		payload = payload.replaceAll("(?:\"protocols\":)\\[([\\r\\s\\t\\n\\w \",.]+)+(:?\\])", "\"protocols\":[\"IGNORE\"]");
+
 		MatchUtils.assertJsonEquals(expectedJson, payload);
 	}
 }

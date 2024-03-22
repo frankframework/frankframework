@@ -48,11 +48,14 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.JsonResponseMessage;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.QUEUE)
 public class BrowseQueue extends BusEndpointBase {
 
 	@ActionSelector(BusAction.GET)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getConnectionFactories(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
 		IConnectionFactoryFactory connectionFactoryFactory = getBean("connectionFactoryFactory", IConnectionFactoryFactory.class);
@@ -68,6 +71,7 @@ public class BrowseQueue extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.FIND)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> findMessagesOnQueue(Message<?> message) {
 		String connectionFactory = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY);
 		if(StringUtils.isEmpty(connectionFactory)) {

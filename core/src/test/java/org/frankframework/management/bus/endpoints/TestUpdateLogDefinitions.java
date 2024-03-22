@@ -14,6 +14,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.ResponseMessageBase;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
@@ -21,9 +22,14 @@ import org.springframework.messaging.MessageHandlingException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
 /**
  * In the Log4J4Ibis.xml is a org.frankframework.management.bus definition which we use here to test the BUS responses.
  */
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@WithMockUser(roles = { "IbisTester" })
 @SuppressWarnings("unchecked") //can be removed once we implement a DAO
 public class TestUpdateLogDefinitions extends BusTestBase {
 	private static final String LOG_DEFINITION_PACKAGE = "org.frankframework.management.bus";

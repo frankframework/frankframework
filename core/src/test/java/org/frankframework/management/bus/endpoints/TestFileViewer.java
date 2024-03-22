@@ -6,6 +6,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.ResponseMessageBase;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.Assertions;
@@ -14,16 +15,18 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.io.InputStream;
 
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@WithMockUser(roles = { "IbisTester" })
 public class TestFileViewer extends BusTestBase {
 
 	private static final String TestFileName = "FileViewer.txt";
 	private static final String TestFilePath = "/Management/" + TestFileName;
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getFileContent() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
 		request.setHeader("resultType", "plain");
@@ -36,7 +39,6 @@ public class TestFileViewer extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getFileWithHtmlContentType(){
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
 		request.setHeader("resultType", "html");
@@ -50,7 +52,6 @@ public class TestFileViewer extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getFileWithXmlContentType(){
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
 		request.setHeader("resultType", "xml");
@@ -64,7 +65,6 @@ public class TestFileViewer extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getFileWithTextContentType(){
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
 		request.setHeader("resultType", "plain");
@@ -78,7 +78,6 @@ public class TestFileViewer extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getFileWithZipContentType(){
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
 		request.setHeader("resultType", "zip");
@@ -92,7 +91,6 @@ public class TestFileViewer extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getFileWithAnyContentType(){
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
 		request.setHeader("resultType", "*");
@@ -106,7 +104,6 @@ public class TestFileViewer extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getFileWithoutFilename(){
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
 		request.setHeader("resultType", "*");
@@ -118,7 +115,6 @@ public class TestFileViewer extends BusTestBase {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getFileWithoutType(){
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.FILE_VIEWER, BusAction.GET);
 		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));

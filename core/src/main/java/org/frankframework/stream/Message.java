@@ -665,7 +665,7 @@ public class Message implements Serializable, Closeable {
 			return new InputSource(new StringReader((String) request));
 		}
 		LOG.debug("returning {} as InputSource", this::getObjectId);
-		if (isBinary()) {
+		if (isBinary() && getCharset() == null) { //When a charset is present it should be used.
 			return new InputSource(asInputStream());
 		}
 		return new InputSource(asReader());
@@ -772,6 +772,14 @@ public class Message implements Serializable, Closeable {
 
 	public boolean isNull() {
 		return request == null;
+	}
+
+	/** @return true if the request is or extends of the specified type at parameter clazz */
+	public boolean isRequestOfType(Class<?> clazz) {
+		if (request == null) {
+			return false;
+		}
+		return clazz.equals(request.getClass()) || clazz.isAssignableFrom(request.getClass());
 	}
 
 	/**

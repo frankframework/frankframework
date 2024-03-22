@@ -50,6 +50,8 @@ public class ShowMonitors extends FrankApiBase {
 	@GET
 	@Path("/")
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@Relation("monitoring")
+	@Description("view all available monitors")
 	public Response getMonitors(@PathParam("configuration") String configurationName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -58,10 +60,12 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@POST
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("monitoring")
+	@Description("add a new monitor")
 	public Response addMonitor(@PathParam("configuration") String configurationName, Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -78,6 +82,8 @@ public class ShowMonitors extends FrankApiBase {
 	@GET
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
+	@Relation("monitoring")
+	@Description("get a specific monitor")
 	public Response getMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -87,10 +93,12 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@PUT
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("monitoring")
+	@Description("update a specific monitor")
 	public Response updateMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
@@ -106,9 +114,11 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@DELETE
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("monitoring")
+	@Description("delete a specific monitor")
 	public Response deleteMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -121,6 +131,8 @@ public class ShowMonitors extends FrankApiBase {
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("monitoring")
+	@Description("view specific monitor")
 	public Response getTriggers(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -129,11 +141,13 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@POST
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
+	@Relation("monitoring")
+	@Description("update a specific monitors triggers")
+	public Response addTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
 		builder.addHeader(MONITOR_HEADER, monitorName);
@@ -147,6 +161,8 @@ public class ShowMonitors extends FrankApiBase {
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("monitoring")
+	@Description("view all triggers for a specific monitor")
 	public Response getTrigger(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("trigger") Integer id) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -156,10 +172,12 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@PUT
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("monitoring")
+	@Description("update a specific monitor triggers")
 	public Response updateTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int index, Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
@@ -171,9 +189,11 @@ public class ShowMonitors extends FrankApiBase {
 	}
 
 	@DELETE
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("monitoring")
+	@Description("delete a specific monitor trigger")
 	public Response deleteTrigger(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int id) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);

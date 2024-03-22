@@ -28,7 +28,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
-import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
@@ -36,9 +35,6 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jndi.JndiBase;
 import org.frankframework.jndi.JndiDataSourceFactory;
-import org.frankframework.statistics.HasStatistics;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
@@ -62,8 +58,8 @@ import lombok.Setter;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, HasStatistics {
-	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
+public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled {
+	private final @Getter String domain = "JDBC";
 	private String datasourceName = null;
 	@Getter private String authAlias = null;
 	@Getter private String username = null;
@@ -75,7 +71,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	private DbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
 	private CredentialFactory cf=null;
-	private StatisticsKeeper connectionStatistics;
 
 	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
 
@@ -101,7 +96,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getAuthAlias())) {
 			cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		}
-		connectionStatistics = new StatisticsKeeper("getConnection for "+getName());
 	}
 
 	protected DataSource getDatasource() throws JdbcException {
@@ -157,22 +151,14 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
-		long t0 = System.currentTimeMillis();
+		DataSource ds = getDatasource();
 		try {
-			DataSource ds = getDatasource();
-			try {
-				if (cf!=null) {
-					return ds.getConnection(cf.getUsername(), cf.getPassword());
-				}
-				return ds.getConnection();
-			} catch (SQLException e) {
-				throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDatasourceName()+"]", e);
+			if (cf!=null) {
+				return ds.getConnection(cf.getUsername(), cf.getPassword());
 			}
-		} finally {
-			if (connectionStatistics!=null) {
-				long t1= System.currentTimeMillis();
-				connectionStatistics.addValue(t1-t0);
-			}
+			return ds.getConnection();
+		} catch (SQLException e) {
+			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDatasourceName()+"]", e);
 		}
 	}
 
@@ -189,11 +175,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
 			}
 		}
-	}
-
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		hski.handleStatisticsKeeper(data, connectionStatistics);
 	}
 
 	@Override

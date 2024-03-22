@@ -15,11 +15,9 @@
 */
 package org.frankframework.processors;
 
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.core.HasSender;
 import org.frankframework.core.HasTransactionAttribute;
 import org.frankframework.core.IPipe;
@@ -36,6 +34,11 @@ import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author Jaco de Groot
@@ -45,7 +48,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeline, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeline, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		TransactionDefinition txDef;
 		int txTimeout = 0;
 		if(pipe instanceof HasTransactionAttribute) {

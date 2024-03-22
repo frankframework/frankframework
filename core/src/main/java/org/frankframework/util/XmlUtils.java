@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
@@ -157,11 +158,6 @@ public class XmlUtils {
 		return new GDate(s).getDate();
 	}
 
-	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		//log.debug("utility transformer pool key ["+key+"] xslt ["+xslt+"]");
-		return getUtilityTransformerPool(xsltSupplier, key, omitXmlDeclaration, indent, 0);
-	}
-
 	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
 		String fullKey=key+"-"+omitXmlDeclaration+"-"+indent;
 		TransformerPool result = utilityTPs.get(fullKey);
@@ -179,7 +175,7 @@ public class XmlUtils {
 		return result;
 	}
 
-	protected static String makeDetectXsltVersionXslt() {
+	private static String makeDetectXsltVersionXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
@@ -198,7 +194,7 @@ public class XmlUtils {
 	}
 
 
-	protected static String makeGetXsltConfigXslt() {
+	private static String makeGetXsltConfigXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
@@ -242,10 +238,10 @@ public class XmlUtils {
 	}
 
 	public static TransformerPool getGetRootNodeNameTransformerPool() throws ConfigurationException {
-		return getUtilityTransformerPool(()->createXPathEvaluatorSource(XPATH_GETROOTNODENAME, TransformerPool.OutputType.TEXT),"GetRootNodeName",true, false);
+		return getUtilityTransformerPool(()->createXPathEvaluatorSource(XPATH_GETROOTNODENAME),"GetRootNodeName",true, false, DEFAULT_XSLT_VERSION);
 	}
 
-	protected static String makeRemoveNamespacesXsltTemplates() {
+	private static String makeRemoveNamespacesXsltTemplates() {
 		// TODO: Wish to get rid of this as well but it's still embedded in another XSLT.
 		return
 		"<xsl:template match=\"*\">"
@@ -263,7 +259,7 @@ public class XmlUtils {
 		+ "</xsl:template>";
 	}
 
-	protected static String makeGetRootNamespaceXslt() {
+	private static String makeGetRootNamespaceXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"text\"/>"
@@ -274,10 +270,10 @@ public class XmlUtils {
 	}
 
 	public static TransformerPool getGetRootNamespaceTransformerPool() throws ConfigurationException {
-		return getUtilityTransformerPool(XmlUtils::makeGetRootNamespaceXslt,"GetRootNamespace",true,false);
+		return getUtilityTransformerPool(XmlUtils::makeGetRootNamespaceXslt,"GetRootNamespace",true,false, 2);
 	}
 
-	protected static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
+	private static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns=\""+namespace+"\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -310,10 +306,10 @@ public class XmlUtils {
 	}
 
 	public static TransformerPool getAddRootNamespaceTransformerPool(String namespace, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(()->makeAddRootNamespaceXslt(namespace,omitXmlDeclaration,indent),"AddRootNamespace["+namespace+"]",omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(()->makeAddRootNamespaceXslt(namespace,omitXmlDeclaration,indent),"AddRootNamespace["+namespace+"]",omitXmlDeclaration,indent, 1);
 	}
 
-	protected static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
+	private static String makeChangeRootXslt(String root, boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -329,10 +325,10 @@ public class XmlUtils {
 	}
 
 	public static TransformerPool getChangeRootTransformerPool(String root, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(()->makeChangeRootXslt(root,omitXmlDeclaration,indent),"ChangeRoot["+root+"]",omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(()->makeChangeRootXslt(root,omitXmlDeclaration,indent),"ChangeRoot["+root+"]",omitXmlDeclaration,indent, 1);
 	}
 
-	protected static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
+	private static String makeRemoveUnusedNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
@@ -348,10 +344,10 @@ public class XmlUtils {
 	}
 
 	public static TransformerPool getRemoveUnusedNamespacesTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(()->makeRemoveUnusedNamespacesXslt(omitXmlDeclaration,indent),"RemoveUnusedNamespaces",omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(()->makeRemoveUnusedNamespacesXslt(omitXmlDeclaration,indent),"RemoveUnusedNamespaces",omitXmlDeclaration,indent, 1);
 	}
 
-	protected static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
+	private static String makeRemoveUnusedNamespacesXslt2(boolean omitXmlDeclaration, boolean indent) {
 		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 				+ "<xsl:output method=\"xml\" indent=\""
 				+ (indent ? "yes" : "no")
@@ -389,10 +385,10 @@ public class XmlUtils {
 	}
 
 	public static TransformerPool getRemoveUnusedNamespacesXslt2TransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(()->makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration,indent),"RemoveUnusedNamespacesXslt2",omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(()->makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration,indent),"RemoveUnusedNamespacesXslt2",omitXmlDeclaration,indent, 2);
 	}
 
-	protected static String makeCopyOfSelectXslt(String xpath, boolean omitXmlDeclaration, boolean indent) {
+	private static String makeCopyOfSelectXslt(String xpath, boolean omitXmlDeclaration, boolean indent) {
 		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 				+ "<xsl:output method=\"xml\" indent=\""
 				+ (indent ? "yes" : "no")
@@ -406,7 +402,7 @@ public class XmlUtils {
 	}
 
 	public static TransformerPool getCopyOfSelectTransformerPool(String xpath, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(()->makeCopyOfSelectXslt(xpath,omitXmlDeclaration,indent),"CopyOfSelect["+xpath+"]",omitXmlDeclaration,indent);
+		return getUtilityTransformerPool(()->makeCopyOfSelectXslt(xpath,omitXmlDeclaration,indent),"CopyOfSelect["+xpath+"]",omitXmlDeclaration,indent, 2);
 	}
 
 
@@ -686,34 +682,70 @@ public class XmlUtils {
 		return namespaceMap;
 	}
 
-	public static String createXPathEvaluatorSource(String XPathExpression) {
-		return createXPathEvaluatorSource(XPathExpression, TransformerPool.OutputType.TEXT);
-	}
-
-	public static String createXPathEvaluatorSource(String xPathExpression, TransformerPool.OutputType outputMethod) {
-		return createXPathEvaluatorSource(null, xPathExpression, outputMethod);
-	}
-
-	public static String createXPathEvaluatorSource(String namespaceDefs, String xPathExpression, TransformerPool.OutputType outputMethod) {
-		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, false);
-	}
-
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration) {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, null);
-	}
-
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params) {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, true);
-	}
-
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace) {
-		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, false, null, 0);
-	}
-
-	/*
-	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
+	/**
+	 * Create an XSLT stylesheet that can be used to evaluate the xpath expression passed in.
+	 * The stylesheet will result in TEXT output.
+	 * The stylesheet XSLT version will be {@link #DEFAULT_XSLT_VERSION}.
+	 *
+	 * @param xPathExpression The XPath Expression to evaluate
+	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String xpathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
+	@Nonnull
+	public static String createXPathEvaluatorSource(@Nonnull String xPathExpression) {
+		return createXPathEvaluatorSource(null, xPathExpression, TransformerPool.OutputType.TEXT);
+	}
+
+	/**
+	 * Create an XSLT stylesheet that can be used to evaluate the xpath expression passed in, in the given namespaces.
+	 * The stylesheet output type will be determined by the outputMethod parameter.
+	 * The stylesheet XSLT version will be {@link #DEFAULT_XSLT_VERSION}.
+	 *
+	 * @param namespaceDefs Definitions of the namespaces in which to evaluate the XPath Expression.
+	 * @param xPathExpression The XPath Expression to evaluate
+	 * @param outputMethod Type of output as per {@link TransformerPool.OutputType}.
+	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
+	 */
+	@Nonnull
+	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod) {
+		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, false, true);
+	}
+
+	/**
+	 * Create an XSLT stylesheet that can be used to evaluate the xpath expression passed in, in the given namespaces.
+	 * The stylesheet output type will be determined by the outputMethod parameter.
+	 * The stylesheet XSLT version will be {@link #DEFAULT_XSLT_VERSION}.
+	 *
+	 * @param namespaceDefs Definitions of the namespaces in which to evaluate the XPath Expression.
+	 * @param xPathExpression The XPath Expression to evaluate
+	 * @param outputMethod Type of output as per {@link TransformerPool.OutputType}. If outputMethod is {@link TransformerPool.OutputType#XML} then
+	 *                     the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
+	 * @param includeXmlDeclaration If true, and outputMethod is {@link TransformerPool.OutputType#XML} then include XML declaration in the output after the XSLT is applied.
+	 * @param stripSpace If true then strip spaces in the output.
+	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
+	 */
+	@Nonnull
+	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, boolean stripSpace) {
+		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, includeXmlDeclaration, null, stripSpace, false, null, DEFAULT_XSLT_VERSION);
+	}
+
+	/**
+	 * Create an XSLT stylesheet that can be used to evaluate the xpath expression passed in, in the given namespaces.
+	 * The stylesheet output type will be determined by the outputMethod parameter.
+	 *
+	 * @param namespaceDefs Definitions of the namespaces in which to evaluate the XPath Expression.
+	 * @param xPathExpression The XPath Expression to evaluate
+	 * @param outputMethod Type of output as per {@link TransformerPool.OutputType}. If outputMethod is {@link TransformerPool.OutputType#XML} then
+	 *                     the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
+	 * @param includeXmlDeclaration If true, and outputMethod is {@link TransformerPool.OutputType#XML} then include XML declaration in the output after the XSLT is applied.
+	 * @param params A {@link ParameterList} to evaluate while generating the stylesheet.
+	 * @param stripSpace If true then strip spaces in the output.
+	 * @param ignoreNamespaces If true then namespaces are ignored during the evaluation.
+	 * @param separator Separator between values if output method is {@link TransformerPool.OutputType#TEXT}.
+	 * @param xsltVersion Version of XSLT for which to generate the stylesheet. Can be 0, 1, or 2. If 0, then {@link #DEFAULT_XSLT_VERSION} is used.
+	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
+	 */
+	@Nonnull
+	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
 		final String copyMethod;
@@ -725,11 +757,27 @@ public class XmlUtils {
 
 		final String separatorString = separator != null ? " separator=\"" + separator + "\"" : "";
 
-		return createXPathEvaluatorSource(x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlEncodingUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", xpathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
+		return createXPathEvaluatorSource(ignored -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlEncodingUtils.encodeChars(xPathExpression) + "\"" + separatorString + "/>", xPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
 	}
 
-	public static String createXPathEvaluatorSource(Function<String,String> xpathContainerSupplier, String xpathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
-		if (StringUtils.isEmpty(xpathExpression)) {
+	/**
+	 * Create an XSLT stylesheet that can be used to evaluate the xpath expression passed in, in the given namespaces.
+	 * The stylesheet output type will be determined by the outputMethod parameter.
+	 *
+	 * @param xpathContainerSupplier A supplier function to transform the XPath expression to the required XSLT tags for generating the output that is desired.
+	 * @param xPathExpression The XPath Expression to evaluate
+	 * @param outputMethod Type of output as per {@link TransformerPool.OutputType}. If outputMethod is {@link TransformerPool.OutputType#XML} then
+	 *                     the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
+	 * @param includeXmlDeclaration If true, and outputMethod is {@link TransformerPool.OutputType#XML} then include XML declaration in the output after the XSLT is applied.
+	 * @param params A {@link ParameterList} to evaluate while generating the stylesheet.
+	 * @param stripSpace If true then strip spaces in the output.
+	 * @param ignoreNamespaces If true then namespaces are ignored during the evaluation.
+	 * @param xsltVersion Version of XSLT for which to generate the stylesheet. Can be 0, 1, or 2. If 0, then {@link #DEFAULT_XSLT_VERSION} is used.
+	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
+	 */
+	@Nonnull
+	public static String createXPathEvaluatorSource(@Nonnull Function<String,String> xpathContainerSupplier, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
+		if (StringUtils.isEmpty(xPathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}
 
@@ -744,6 +792,9 @@ public class XmlUtils {
 		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt: xslt1 'Can not convert #RTREEFRAG to a NodeList'
 		if(version == 1 && ignoreNamespaces) {
 			ignoreNamespaces = false;
+		}
+		if (outputMethod == TransformerPool.OutputType.TEXT && includeXmlDeclaration) {
+			includeXmlDeclaration = false;
 		}
 
 		String xsl =
@@ -764,12 +815,12 @@ public class XmlUtils {
 				"<xsl:template name=\"expression\">" +
 					"<xsl:param name=\"root\" />" +
 					"<xsl:for-each select=\"$root\">" +
-						xpathContainerSupplier.apply(xpathExpression) +
+						xpathContainerSupplier.apply(xPathExpression) +
 					"</xsl:for-each>" +
 				"</xsl:template>"
 			:
 			"<xsl:template match=\"/\">" +
-				xpathContainerSupplier.apply(xpathExpression) +
+				xpathContainerSupplier.apply(xPathExpression) +
 			"</xsl:template>" )+
 			"</xsl:stylesheet>";
 

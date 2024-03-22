@@ -1,6 +1,3 @@
-<!-- Angular ui-router hack-->
-<div ui-view></div>
-
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
     <div class="col-lg-12">
@@ -19,14 +16,25 @@
               </thead>
               <tbody>
                 <tr *ngFor="let rolesKV of securityRoles | keyvalue">
-                  <td>{{rolesKV.value.name}}</td>
-                  <td><i [ngClass]="rolesKV.value.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i></td>
+                  <td>{{ rolesKV.value.name }}</td>
+                  <td>
+                    <i
+                      [ngClass]="
+                        rolesKV.value.allowed
+                          ? 'fa fa-check-square'
+                          : 'fa fa-times-circle'
+                      "
+                    ></i>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <div class="col-md-5 m-t-md table-responsive" *ngIf="authEntries.length > 0">
+        <div
+          class="col-md-5 m-t-md table-responsive"
+          *ngIf="authEntries.length > 0"
+        >
           <div class="ibox-title">
             <h4>Used Authentication Entries</h4>
           </div>
@@ -41,36 +49,18 @@
               </thead>
               <tbody>
                 <tr *ngFor="let alias of authEntries">
-                  <td>{{alias.alias}}</td>
-                  <td>{{alias.username}}</td>
-                  <td>{{alias.password}}</td>
+                  <td>{{ alias.alias }}</td>
+                  <td>{{ alias.username }}</td>
+                  <td>{{ alias.password }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <div class="col-md-12 col-lg-6 m-t-md table-responsive" *ngIf="xmlComponents">
-          <div class="ibox-title">
-            <h4>XML Components</h4>
-          </div>
-          <div class="ibox-content">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Component</th>
-                  <th>Version</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of xmlComponents | keyvalue">
-                  <td>{{item.key}}</td>
-                  <td>{{item.value}}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="col-md-4 m-t-md table-responsive" *ngIf="sapSystems.length > 0">
+        <div
+          class="col-md-4 m-t-md table-responsive"
+          *ngIf="sapSystems.length > 0"
+        >
           <div class="ibox-title">
             <h4>Used Sap Systems</h4>
           </div>
@@ -84,14 +74,17 @@
               </thead>
               <tbody>
                 <tr *ngFor="let sap of sapSystems">
-                  <td>{{sap.name}}</td>
-                  <td>{{sap.info}}</td>
+                  <td>{{ sap.name }}</td>
+                  <td>{{ sap.info }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <div class="col-md-4 m-t-md table-responsive" *ngIf="certificates.length > 0">
+        <div
+          class="col-md-4 m-t-md table-responsive"
+          *ngIf="certificates.length > 0"
+        >
           <div class="ibox-title">
             <h4>Used Certificates</h4>
           </div>
@@ -106,17 +99,20 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let cert in certificates">
-                  <td>{{cert.adapter}}</td>
-                  <td>{{cert.pipe}}</td>
-                  <td>{{cert.certificate.name}}</td>
-                  <td>{{cert.certificate}}</td>
+                <tr *ngFor="let cert; in: certificates">
+                  <td>{{ cert.adapter }}</td>
+                  <td>{{ cert.pipe }}</td>
+                  <td>{{ cert.certificate.name }}</td>
+                  <td>{{ cert.certificate }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <div class="col-md-12 m-t-md table-responsive" *ngIf="jmsRealms.length > 0">
+        <div
+          class="col-md-12 m-t-md table-responsive"
+          *ngIf="jmsRealms.length > 0"
+        >
           <div class="ibox-title">
             <h4>Used JmsRealms</h4>
           </div>
@@ -134,18 +130,21 @@
               <tbody>
                 <ng-container *ngFor="let realm of jmsRealms">
                   <tr>
-                    <td>{{realm.name}}</td>
-                    <td>{{realm.datasourceName}}</td>
-                    <td>{{realm.queueConnectionFactoryName}}</td>
-                    <td>{{realm.topicConnectionFactoryName}}</td>
-                    <td>{{realm.info}}</td>
+                    <td>{{ realm.name }}</td>
+                    <td>{{ realm.datasourceName }}</td>
+                    <td>{{ realm.queueConnectionFactoryName }}</td>
+                    <td>{{ realm.topicConnectionFactoryName }}</td>
+                    <td>{{ realm.info }}</td>
                   </tr>
                 </ng-container>
               </tbody>
             </table>
           </div>
         </div>
-        <div class="col-md-12 m-t-md table-responsive" *ngIf="datasources.length > 0">
+        <div
+          class="col-md-12 m-t-md table-responsive"
+          *ngIf="datasources.length > 0"
+        >
           <div class="ibox-title">
             <h4>Used DataSources</h4>
           </div>
@@ -160,15 +159,56 @@
               <tbody>
                 <ng-container *ngFor="let datasource of datasources">
                   <tr>
-                    <td rowspan="2">{{datasource.datasourceName}}</td>
-                    <td>{{datasource.info}}</td>
+                    <td rowspan="2">{{ datasource.datasourceName }}</td>
+                    <td>{{ datasource.info }}</td>
                   </tr>
                   <tr>
-                    <td>{{datasource.connectionPoolProperties}}</td>
+                    <td>{{ datasource.connectionPoolProperties }}</td>
                   </tr>
                 </ng-container>
               </tbody>
             </table>
+          </div>
+        </div>
+        <div
+          class="col-md-12 col-lg-6 m-t-md table-responsive"
+          *ngIf="xmlComponents"
+        >
+          <div class="ibox-title">
+            <h4>XML Components</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Version</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of xmlComponents | keyvalue">
+                  <td>{{ item.key }}</td>
+                  <td>{{ item.value }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-12 col-lg-6 m-t-md table-responsive">
+          <div class="ibox-title">
+            <h4>Available protocols & Cyphers</h4>
+          </div>
+          <div class="ibox-content lists-container">
+            <ul class="protocols-list">
+              <li *ngFor="let cypher of supportedConnectionOptions.cyphers">
+                {{ cypher }}
+              </li>
+            </ul>
+            <ul class="cyphers-list">
+              <li *ngFor="let protocol of supportedConnectionOptions.protocols">
+                {{ protocol }}
+              </li>
+            </ul>
           </div>
         </div>
       </div>

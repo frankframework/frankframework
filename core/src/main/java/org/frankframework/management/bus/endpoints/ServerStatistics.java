@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.PermitAll;
 import javax.servlet.ServletContext;
 
 import org.frankframework.management.bus.TopicSelector;
@@ -56,6 +57,7 @@ public class ServerStatistics extends BusEndpointBase {
 	private static boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 
 	@ActionSelector(BusAction.GET)
+	@PermitAll
 	public Message<String> getServerInformation(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
 
@@ -100,6 +102,7 @@ public class ServerStatistics extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.WARNINGS)
+	@PermitAll
 	public Message<String> getApplicationWarnings() {
 		Map<String, Object> returnMap = new HashMap<>();
 		MessageEventListener eventListener = getBean("MessageEventListener", MessageEventListener.class);

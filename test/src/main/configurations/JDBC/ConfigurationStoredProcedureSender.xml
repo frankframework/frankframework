@@ -21,7 +21,6 @@
 			<SenderPipe name="Call StoredProcedure To Insert Record">
 				<StoredProcedureQuerySender
 					query="CALL INSERT_SIMPLE_NO_RETURN(?, ?)"
-					queryType="other"
 					resultQuery="SELECT COUNT(*) FROM IBISTEMP WHERE tvarchar = 'a text'"
 					scalar="true"
 					>
@@ -33,7 +32,6 @@
 			<SenderPipe name="Call StoredProcedure To Count Records">
 				<StoredProcedureQuerySender
 						query="CALL COUNT_MESSAGES(?, ?)"
-						queryType="other"
 						scalar="true"
 				>
 					<param name="vchar" value="a text" />

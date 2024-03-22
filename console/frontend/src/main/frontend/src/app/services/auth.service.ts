@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { MiscService } from './misc.service';
 import { Base64Service } from './base64.service';
 import { AppConstants, AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private authToken?: string;
@@ -17,43 +16,44 @@ export class AuthService {
     private http: HttpClient,
     private router: Router,
     private appService: AppService,
-    private Base64: Base64Service
+    private Base64: Base64Service,
   ) {
-    this.appConstants = this.appService.APP_CONSTANTS
+    this.appConstants = this.appService.APP_CONSTANTS;
     this.appService.appConstants$.subscribe(() => {
       this.appConstants = this.appService.APP_CONSTANTS;
     });
   }
 
   login(username: string, password: string): void {
-    if (username != "anonymous") {
-      this.authToken = this.Base64.encode(username + ':' + password);
+    if (username != 'anonymous') {
+      this.authToken = this.Base64.encode(`${username}:${password}`);
       sessionStorage.setItem('authToken', this.authToken);
     }
-    let location = sessionStorage.getItem('location') || "status";
-    let absUrl = window.location.href.split("login")[0];
-    window.location.href = (absUrl + location);
+    const location = sessionStorage.getItem('location') || 'status';
+    const absUrl = window.location.href.split('login')[0];
+    window.location.href = absUrl + location;
     window.location.reload();
   }
 
   loggedin(): void {
-    let token = this.getAuthToken();
-    if (token != null && token != "null") {
-      if (this.router.url.indexOf("login") >= 0)
-        this.router.navigateByUrl(sessionStorage.getItem('location') || "status");
-    }
-    else {
-      if (this.appConstants["init"] > 0) {
-        if (this.router.url.indexOf("login") < 0)
-          sessionStorage.setItem('location', this.router.url || "status");
-        this.router.navigateByUrl("login");
+    const token = this.getAuthToken();
+    if (token != null && token != 'null') {
+      if (this.router.url.includes('login'))
+        this.router.navigateByUrl(
+          sessionStorage.getItem('location') || 'status',
+        );
+    } else {
+      if ((this.appConstants['init'] as number) > 0) {
+        if (!this.router.url.includes('login'))
+          sessionStorage.setItem('location', this.router.url || 'status');
+        this.router.navigateByUrl('login');
       }
     }
   }
 
-  logout(): Observable<Object> {
+  logout(): Observable<object> {
     sessionStorage.clear();
-    return this.http.get(this.appService.getServerPath() + "iaf/api/logout");
+    return this.http.get(`${this.appService.getServerPath()}iaf/api/logout`);
   }
 
   getAuthToken(): string | null {

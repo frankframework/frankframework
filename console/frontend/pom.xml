@@ -122,9 +122,9 @@
 								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>org.commonjava.maven.plugins</groupId>
+										<groupId>com.github.hazendaz.maven</groupId>
 										<artifactId>directory-maven-plugin</artifactId>
-										<versionRange>[1.0,)</versionRange>
+										<versionRange>[1,)</versionRange>
 										<goals>
 											<goal>directory-of</goal>
 										</goals>

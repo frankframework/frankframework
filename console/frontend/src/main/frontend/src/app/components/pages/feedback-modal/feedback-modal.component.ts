@@ -6,20 +6,20 @@ import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 type FeedbackForm = {
-  rating: number,
-  name: string,
-  feedback: string
+  rating: number;
+  name: string;
+  feedback: string;
 };
 
 @Component({
   selector: 'app-feedback-modal',
   templateUrl: './feedback-modal.component.html',
-  styleUrls: ['./feedback-modal.component.scss']
+  styleUrls: ['./feedback-modal.component.scss'],
 })
 export class FeedbackModalComponent implements OnInit {
   @Input() rating: number = 0;
 
-  form: FeedbackForm = { rating: this.rating, name: "", feedback: "" };
+  form: FeedbackForm = { rating: this.rating, name: '', feedback: '' };
 
   private appConstants: AppConstants;
 
@@ -28,15 +28,15 @@ export class FeedbackModalComponent implements OnInit {
     private activeModal: NgbActiveModal,
     private appService: AppService,
     private sweetalertService: SweetalertService,
-    private toastService: ToastService
-  ){
+    private toastService: ToastService,
+  ) {
     this.appConstants = this.appService.APP_CONSTANTS;
     this.appService.appConstants$.subscribe(() => {
       this.appConstants = this.appService.APP_CONSTANTS;
-    })
+    });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     window.setTimeout(() => {
       while (this.rating >= 0) {
         this.setRate(this.rating);
@@ -45,40 +45,53 @@ export class FeedbackModalComponent implements OnInit {
     }, 150);
   }
 
-  setRating(ev: MouseEvent, i: number) {
+  setRating(event: MouseEvent, index: number): void {
     this.resetRating();
-    this.form.rating = i;
-    let j = i;
-    while (j >= 0) {
-      this.setRate(j);
-      j--;
+    this.form.rating = index;
+    let index_ = index;
+    while (index_ >= 0) {
+      this.setRate(index_);
+      index_--;
     }
   }
 
-  submit(form: FeedbackForm) {
+  submit(form: FeedbackForm): void {
     form.rating++;
-    this.http.post<{result: string}>(this.appConstants["console.feedbackURL"], form).subscribe({ next: (response) => {
-      if (response['result'] == "ok")
-        this.toastService.success("Thank you for sending us feedback!");
-      else
-        this.sweetalertService.Error("Oops, something went wrong...", "Please try again later!");
-    }, error: () => {
-      this.sweetalertService.Error("Oops, something went wrong...", "Please try again later!");
-    }});
+    this.http
+      .post<{
+        result: string;
+      }>(this.appConstants['console.feedbackURL'] as string, form)
+      .subscribe({
+        next: (response) => {
+          if (response['result'] == 'ok')
+            this.toastService.success('Thank you for sending us feedback!');
+          else
+            this.sweetalertService.Error(
+              'Oops, something went wrong...',
+              'Please try again later!',
+            );
+        },
+        error: () => {
+          this.sweetalertService.Error(
+            'Oops, something went wrong...',
+            'Please try again later!',
+          );
+        },
+      });
     this.activeModal.close();
   }
 
-  close() {
+  close(): void {
     this.activeModal.close();
   }
 
-  private setRate(i: number) {
-    $(".rating i.rating" + i).removeClass("fa-star-o");
-    $(".rating i.rating" + i).addClass("fa-star");
+  private setRate(index: number): void {
+    $(`.rating i.rating${index}`).removeClass('fa-star-o');
+    $(`.rating i.rating${index}`).addClass('fa-star');
   }
-  private resetRating() {
-    $(".rating i").each((i, e) => {
-      $(e).addClass("fa-star-o").removeClass("fa-star");
+  private resetRating(): void {
+    $('.rating i').each((index, element) => {
+      $(element).addClass('fa-star-o').removeClass('fa-star');
     });
   }
 }

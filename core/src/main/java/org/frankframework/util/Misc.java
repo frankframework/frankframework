@@ -34,18 +34,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.logging.log4j.Logger;
-import org.xml.sax.InputSource;
-
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IMessageBrowser.HideMethod;
+import org.xml.sax.InputSource;
 
 
 /**
@@ -207,11 +206,7 @@ public class Misc {
 	 * }
 	 */
 	public static String listToString(List<String> list) {
-		StringBuilder sb = new StringBuilder();
-		for (String s : list) {
-			sb.append(s);
-		}
-		return sb.toString();
+		return String.join("", list);
 	}
 
 	/**

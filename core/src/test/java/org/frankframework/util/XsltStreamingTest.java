@@ -141,19 +141,19 @@ public class XsltStreamingTest {
 		SwitchCounter sc = new SwitchCounter();
 
 		String xpath="/root/a";
-		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,OutputType.XML, false, null, false, false, null, 1));
+		TransformerPool tp = TransformerPool.getXPathTransformerPool(null, xpath, OutputType.XML, false, null, 1);
 
 		SAXResult result = new SAXResult();
 		SaxLogger resultfilter = new SaxLogger("out>", sc);
 		result.setHandler(resultfilter);
 
-		String input="<root>";
+		StringBuilder input= new StringBuilder("<root>");
 		for (int i=0;i<5;i++) {
-			input+="<a>"+i+"</a>"+"<b>opvulling</b>";
+			input.append("<a>").append(i).append("</a>").append("<b>opvulling</b>");
 		}
-		input+="</root>";
+		input.append("</root>");
 
-		ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes());
+		ByteArrayInputStream bais = new ByteArrayInputStream(input.toString().getBytes());
 		Source source = new StreamSource(new LoggingInputStream(bais, sc));
 
 		tp.transform(source, result);

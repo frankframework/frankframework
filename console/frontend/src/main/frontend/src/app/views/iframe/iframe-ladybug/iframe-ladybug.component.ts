@@ -1,24 +1,26 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Component, OnInit } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
+import { BaseIframeComponent } from '../iframe.base';
 
 @Component({
   selector: 'app-iframe-ladybug',
   templateUrl: '../iframe.component.html',
-  styleUrls: ['../iframe.component.scss']
+  styleUrls: ['../iframe.component.scss'],
 })
-export class IframeLadybugComponent implements OnInit {
-  url: string = "";
-  iframeSrc?: SafeResourceUrl;
-  redirectURL?: string;
-
+export class IframeLadybugComponent
+  extends BaseIframeComponent
+  implements OnInit
+{
   constructor(
     private sanitizer: DomSanitizer,
     private appService: AppService,
-  ) { };
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
-    this.url = this.appService.getServerPath() + "iaf/testtool";
+    this.url = `${this.appService.getServerPath()}iaf/testtool`;
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
-  };
+  }
 }

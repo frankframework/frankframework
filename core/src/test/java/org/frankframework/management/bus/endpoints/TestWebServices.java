@@ -29,6 +29,7 @@ import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.XmlValidator;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
@@ -38,7 +39,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@WithMockUser(roles = { "IbisTester" })
 public class TestWebServices extends BusTestBase {
 	private static final String API_LISTENER_ENDPOINT = "/api-uri-pattern";
 	private Adapter adapterWithRestListener;

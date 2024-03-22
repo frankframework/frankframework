@@ -67,7 +67,7 @@ import lombok.Getter;
 
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
-	private final @Getter(onMethod = @__(@Override)) String domain = "Amazon";
+	private final @Getter String domain = "Amazon";
 	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 
 	private static final String BUCKET_OBJECT_SEPARATOR = "|";

@@ -53,6 +53,8 @@ import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeperMessage;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)
 public class GetSchedules extends BusEndpointBase {
@@ -66,6 +68,7 @@ public class GetSchedules extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.GET)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getSchedules(Message<?> message) {
 		Scheduler scheduler = getScheduler();
 		Map<String, Object> returnMap = new HashMap<>();
@@ -82,6 +85,7 @@ public class GetSchedules extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.FIND)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getSchedule(Message<?> message) {
 		String jobName = BusMessageUtils.getHeader(message, "job");
 		String groupName = BusMessageUtils.getHeader(message, "group");

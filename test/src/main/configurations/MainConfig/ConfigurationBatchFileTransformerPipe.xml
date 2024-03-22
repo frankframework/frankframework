@@ -48,7 +48,7 @@
 				- originalBlock
 			-->
 			<pipe name="InsertData1" className="org.frankframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" />
 				<forward name="success" path="InsertData2" />
 			</pipe>
 
@@ -59,7 +59,7 @@
 				<forward name="success" path="InsertData3" />
 			</pipe>
 			<pipe name="InsertData3" className="org.frankframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" />
 				<forward name="success" path="InsertData4" />
 			</pipe>
 

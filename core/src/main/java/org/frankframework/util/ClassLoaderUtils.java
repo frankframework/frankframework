@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2023 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.IScopeProvider;
@@ -40,6 +40,7 @@ public abstract class ClassLoaderUtils {
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
+	@Nullable
 	public static URL getResourceURL(String resource) {
 		return getResourceURL(null, resource);
 	}
@@ -53,7 +54,7 @@ public abstract class ClassLoaderUtils {
 	 *
 	 * @see IbisContext#init()
 	 */
-	public static URL getResourceURL(IScopeProvider scopeProvider, String resource) {
+	public static URL getResourceURL(@Nullable IScopeProvider scopeProvider, @Nonnull String resource) {
 		return getResourceURL(scopeProvider, resource, null);
 	}
 
@@ -63,8 +64,9 @@ public abstract class ClassLoaderUtils {
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
-	public static URL getResourceURL(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
-		ClassLoader classLoader = null;
+	@Nullable
+	public static URL getResourceURL(@Nullable IScopeProvider scopeProvider, @Nonnull String resource, @Nullable String allowedProtocols) {
+		ClassLoader classLoader;
 		if(scopeProvider == null) { // Used by ClassPath resources
 			classLoader = Thread.currentThread().getContextClassLoader();
 		} else {
@@ -125,11 +127,13 @@ public abstract class ClassLoaderUtils {
 		}
 	}
 
+	@Nonnull
 	public static List<String> getAllowedProtocols() {
 		return toList(DEFAULT_ALLOWED_PROTOCOLS);
 	}
 
-	private static List<String> toList(String protocolList) {
+	@Nonnull
+	private static List<String> toList(@Nullable String protocolList) {
 		if(StringUtils.isBlank(protocolList)) {
 			return Collections.emptyList();
 		}

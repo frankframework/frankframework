@@ -26,6 +26,7 @@ import lombok.Getter;
 import org.frankframework.core.IErrorMessageFormatter;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IScopeProvider;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -99,7 +100,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			errorXml.addSubElement(detailsXml);
 		}
 
-		XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
+		XmlBuilder originalMessageXml = new XmlBuilder(PipeLineSession.ORIGINAL_MESSAGE_KEY);
 		originalMessageXml.addAttribute("messageId", messageId);
 		if (receivedTime != 0) {
 			originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());

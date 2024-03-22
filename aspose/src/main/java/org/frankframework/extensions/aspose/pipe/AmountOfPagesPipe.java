@@ -18,14 +18,15 @@ package org.frankframework.extensions.aspose.pipe;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.aspose.pdf.Document;
-import com.aspose.pdf.exceptions.InvalidPasswordException;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Default;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
+
+import com.aspose.pdf.Document;
+import com.aspose.pdf.exceptions.InvalidPasswordException;
 
 /**
  * Returns the amount of pages of a PDF file.
@@ -57,8 +58,8 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 
 	/**
 	 * Charset to be used to encode the given input string
-	 * @ff.default UTF-8
 	 */
+	@Default("UTF-8")
 	public void setCharset(String charset){
 		this.charset = charset;
 	}

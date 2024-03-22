@@ -6,6 +6,7 @@ webapp/
 webapp\
 .angular/
 .angular\
+.prettierrc
 overlays/
 overlays\
 docker/

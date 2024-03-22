@@ -20,18 +20,20 @@ import java.util.ListIterator;
 
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
-import nl.nn.testtool.filter.CheckpointMatcher;
 
 /**
  * Only show senders and pipelines (within these senders) (show only the pipeline checkpoints, not it's children)
  *
  * @author Jaco de Groot
  */
-public class GrayBox implements CheckpointMatcher {
-
+public class GrayBox extends AbstractBox {
+	@Override
 	public boolean match(Report report, Checkpoint checkpoint) {
 		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
 				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
+			if (hasStartPointOnLevel(report, checkpoint)) {
+				return false;
+			}
 			List<Checkpoint> checkpoints = report.getCheckpoints();
 			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
 			while (iterator.hasPrevious()) {
@@ -46,31 +48,25 @@ public class GrayBox implements CheckpointMatcher {
 		}
 	}
 
-	protected boolean isSender(Checkpoint checkpoint) {
-		return checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ");
-	}
-
-	protected boolean isPipeline(Checkpoint checkpoint) {
-		return checkpoint.getName() != null && checkpoint.getName().startsWith("Pipeline ");
-	}
-
-	private boolean isSenderOrPipelineOrFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
-		return isSenderOrPipeline(checkpoint) || isFirstOrLastCheckpoint(report, checkpoint);
-	}
-
-	protected boolean isSenderOrPipeline(Checkpoint checkpoint) {
-		return isSender(checkpoint) || isPipeline(checkpoint);
-	}
-
-	private boolean isFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
+	public boolean hasStartPointOnLevel(Report report, Checkpoint checkpoint) {
 		List<Checkpoint> checkpoints = report.getCheckpoints();
-		if (!checkpoints.isEmpty()) {
-			Checkpoint firstCheckpoint = checkpoints.get(0);
-			if (checkpoint.equals(firstCheckpoint)) {
+		ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
+		int currentLevel = checkpoint.getLevel();
+		while (iterator.hasNext()) {
+			Checkpoint nextCheckpoint = iterator.next();
+			if (nextCheckpoint.getLevel() < currentLevel || nextCheckpoint.getType() == Checkpoint.TYPE_ENDPOINT) {
+				break;
+			}
+			if (nextCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
 				return true;
 			}
-			Checkpoint lastCheckpoint = checkpoints.get(checkpoints.size() - 1);
-			if (checkpoint.equals(lastCheckpoint)) {
+		}
+		while (iterator.hasPrevious()) {
+			Checkpoint previousCheckpoint = iterator.previous();
+			if (previousCheckpoint.getLevel() < currentLevel) {
+				break;
+			}
+			if (previousCheckpoint.getType() == Checkpoint.TYPE_STARTPOINT) {
 				return true;
 			}
 		}

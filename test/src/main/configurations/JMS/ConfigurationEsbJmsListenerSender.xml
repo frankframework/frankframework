@@ -116,8 +116,7 @@
 				className="org.frankframework.pipes.SenderPipe"
 				getInputFromSessionKey="originalMessage">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)"
-					queryType="insert">
+					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="switchAction" />
@@ -128,8 +127,7 @@
 				className="org.frankframework.pipes.SenderPipe"
 				getInputFromSessionKey="originalMessage" transactionAttribute="NotSupported">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)"
-					queryType="insert">
+					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="exception" />

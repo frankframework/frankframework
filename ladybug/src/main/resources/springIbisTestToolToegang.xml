@@ -29,7 +29,6 @@
 					<property name="label" value="Gebruiker"/>
 					<property name="xpath" value="//profile/entity/attribute[@name='gebruiker.GEBRNM']"/>
 				</bean>
-				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
 			</list>
 		</property>
 	</bean>
@@ -50,7 +49,7 @@
 			</list>
 		</property>
 	</bean>
-	
+
 	<bean name="views" class="nl.nn.testtool.filter.Views">
 		<property name="views">
 			<list>
@@ -58,6 +57,20 @@
 				<ref bean="grayBoxView"/>
 				<ref bean="blackBoxView"/>
 				<ref bean="profileXmlView"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean name="messageTransformer" class="nl.nn.testtool.transform.LinkingMessageTransformer">
+		<property name="messageTransformers">
+			<list>
+				<bean class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
+				<bean class="nl.nn.testtool.transform.HideMessageTransformer">
+					<property name="nameEquals" value="SessionKey Temp:Password"/>
+				</bean>
+				<bean class="nl.nn.testtool.transform.HideMessageTransformer">
+					<property name="nameEquals" value="Parameter password"/>
+				</bean>
 			</list>
 		</property>
 	</bean>

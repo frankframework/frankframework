@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PagesNavigationComponent } from './pages-navigation.component';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('PagesNavigationComponent', () => {
   let component: PagesNavigationComponent;
@@ -8,9 +9,9 @@ describe('PagesNavigationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PagesNavigationComponent ]
-    })
-    .compileComponents();
+      declarations: [PagesNavigationComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PagesNavigationComponent);
     component = fixture.componentInstance;

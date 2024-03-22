@@ -1,15 +1,19 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
+import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
 
 type stateItemItem = {
-  configurationName: string,
-  adapterName: string,
-  receiverName: string,
-  messageCount: number
-}
+  configurationName: string;
+  adapterName: string;
+  receiverName: string;
+  messageCount: number;
+};
 
-type InlineStore = Record<string, { items: stateItemItem[], totalMessageCount: number }>;
+type InlineStore = Record<
+  string,
+  { items: stateItemItem[]; totalMessageCount: number }
+>;
 
 @Component({
   selector: 'app-inlinestore',
@@ -18,17 +22,30 @@ type InlineStore = Record<string, { items: stateItemItem[], totalMessageCount: n
 })
 export class InlinestoreComponent implements OnInit {
   result: InlineStore = {};
-  getProcessStateIcon = (processState: string) => this.appService.getProcessStateIcon(processState);
-  getProcessStateIconColor = (processState: string) => this.appService.getProcessStateIconColor(processState)
+  getProcessStateIconFn = (
+    processState: string,
+  ):
+    | 'fa-server'
+    | 'fa-gears'
+    | 'fa-sign-in'
+    | 'fa-pause-circle'
+    | 'fa-times-circle' => getProcessStateIcon(processState);
+  getProcessStateIconColorFn = (
+    processState: string,
+  ): 'success' | 'warning' | 'danger' => getProcessStateIconColor(processState);
 
   constructor(
     private http: HttpClient,
     private appService: AppService,
-  ) { };
+  ) {}
 
   ngOnInit(): void {
-    this.http.get<InlineStore>(this.appService.absoluteApiPath + "inlinestores/overview").subscribe((data) => {
-      this.result = data;
-    });
-  };
+    this.http
+      .get<InlineStore>(
+        `${this.appService.absoluteApiPath}inlinestores/overview`,
+      )
+      .subscribe((data) => {
+        this.result = data;
+      });
+  }
 }

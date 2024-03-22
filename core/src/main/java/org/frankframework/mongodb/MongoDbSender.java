@@ -85,7 +85,7 @@ import org.frankframework.util.StringResolver;
  */
 public class MongoDbSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Mongo";
+	private final @Getter String domain = "Mongo";
 	public static final String PARAM_DATABASE="database";
 	public static final String PARAM_COLLECTION="collection";
 	public static final String PARAM_FILTER="filter";

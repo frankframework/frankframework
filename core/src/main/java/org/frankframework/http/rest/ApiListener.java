@@ -63,7 +63,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
 	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", false);
 	private @Getter String operationId;
@@ -100,7 +100,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String roleClaim;
 
 	private @Getter String principalNameClaim = "sub";
-	private @Getter(onMethod = @__(@Override)) String physicalDestinationName = null;
+	private @Getter String physicalDestinationName = null;
 
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
 	private @Setter ServletManager servletManager;
@@ -186,10 +186,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if (servletManager != null) {
 			ServletConfiguration config = servletManager.getServlet(ApiListenerServlet.class.getSimpleName());
 			if (config != null) {
-				if (config.getUrlMapping().size() == 1) {
-					builder.append(config.getUrlMapping().get(0));
+				List<String> modifiedUrls = config.getUrlMapping().stream()
+						.map(url -> url.replace("/*", ""))
+						.collect(Collectors.toList());
+				if (modifiedUrls.size() == 1) {
+					// Replace /api/* with /api. Doing this in ApiListenerServlet.getUrlMapping() is not possible.
+					builder.append(modifiedUrls.get(0));
 				} else {
-					builder.append(config.getUrlMapping());
+					builder.append(modifiedUrls);
 				}
 			}
 		}

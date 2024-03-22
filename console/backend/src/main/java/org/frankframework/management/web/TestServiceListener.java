@@ -50,21 +50,24 @@ import org.frankframework.util.XmlEncodingUtils;
 public class TestServiceListener extends FrankApiBase {
 
 	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/test-servicelistener")
-	@Relation("servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Relation("testing")
+	@Description("view a list of all available service-listeners")
 	public Response getServiceListeners() throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SERVICE_LISTENER, BusAction.GET);
 		return callSyncGateway(builder);
 	}
 
 	@POST
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed("IbisTester")
 	@Path("/test-servicelistener")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postServiceListeners(MultipartBody inputDataMap) throws ApiException {
+	@Relation("testing")
+	@Description("send a message to a service listeners, triggering an adapter to process the message")
+	public Response postServiceListener(MultipartBody inputDataMap) throws ApiException {
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}

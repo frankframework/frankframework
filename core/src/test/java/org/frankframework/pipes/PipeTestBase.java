@@ -3,6 +3,7 @@ package org.frankframework.pipes;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -81,7 +82,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
 	@SuppressWarnings("deprecation")
 	protected PipeRunResult doPipe(final P pipe, final Message input, final PipeLineSession session) throws PipeRunException {
-		if (input != null && input.asObject() instanceof InputStream) {
+		if (input != null && input.isRequestOfType(InputStream.class)) {
 			// Wrap input-stream in a stream that forces IOExceptions after it is closed; close the session
 			// (and thus any messages attached) after running the pipe so that reading the result message
 			// will verify the original input-stream of the input-message is not used beyond due-date.
@@ -89,9 +90,14 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 			// an open session after running the pipe.
 			try (PipeLineSession ignored = session) {
 				input.unscheduleFromCloseOnExitOf(session);
-				Message wrappedInput = new Message(new ThrowingAfterCloseInputStream((InputStream) input.asObject()));
+				Message wrappedInput;
+				try {
+					wrappedInput = new Message(new ThrowingAfterCloseInputStream(input.asInputStream()));
+				} catch (IOException e) {
+					throw new PipeRunException(pipe, "Error getting inputStream of input message", e);
+				}
 				wrappedInput.closeOnCloseOf(session, pipe);
-				session.computeIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, k -> wrappedInput);
+				session.putIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, wrappedInput);
 				PipeRunResult result = pipe.doPipe(wrappedInput, session);
 				session.unscheduleCloseOnSessionExit(result.getResult());
 				return result;

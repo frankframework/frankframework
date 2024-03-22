@@ -51,50 +51,50 @@ public class AuthSSLContextFactory {
 	protected @Setter @Getter String protocol = "TLSv1.2";
 
 	private final HasKeystore keystoreOwner;
-	private final HasTruststore trustoreOwner;
+	private final HasTruststore truststoreOwner;
 
 	protected SSLContext sslContext = null;
 
-	public static void verifyKeystoreConfiguration(HasKeystore keystoreOwner, HasTruststore trustoreOwner) throws ConfigurationException {
+	public static void verifyKeystoreConfiguration(HasKeystore keystoreOwner, HasTruststore truststoreOwner) throws ConfigurationException {
 		URL keystoreUrl = null;
 		URL truststoreUrl = null;
 
-		if (keystoreOwner!=null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
+		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
 			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 			if (keystoreUrl == null) {
-				throw new ConfigurationException("cannot find URL for keystore resource ["+keystoreOwner.getKeystore()+"]");
+				throw new ConfigurationException("cannot find URL for keystore resource [" + keystoreOwner.getKeystore() + "]");
 			}
-			log.debug("resolved keystore-URL to ["+keystoreUrl.toString()+"]");
+			log.debug("resolved keystore-URL to [" + keystoreUrl.toString() + "]");
 
-			if(keystoreOwner.getKeystoreType()==KeystoreType.PKCS12 && (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasPassword()) || StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasAuthAlias()))) {
-				ConfigurationWarnings.add(keystoreOwner, log, "KeystoreType ["+KeystoreType.PKCS12+"] does not guarantee to support using different passwords for the keys and the keystore.", SuppressKeys.MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY);
+			if (keystoreOwner.getKeystoreType() == KeystoreType.PKCS12 && (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasPassword()) || StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasAuthAlias()))) {
+				ConfigurationWarnings.add(keystoreOwner, log, "KeystoreType [" + KeystoreType.PKCS12 + "] does not guarantee to support using different passwords for the keys and the keystore.", SuppressKeys.MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY);
 			}
 		}
-		if (trustoreOwner!=null && StringUtils.isNotEmpty(trustoreOwner.getTruststore())) {
-			truststoreUrl = ClassLoaderUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
+		if (truststoreOwner != null && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
+			truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 			if (truststoreUrl == null) {
-				throw new ConfigurationException("cannot find URL for truststore resource ["+trustoreOwner.getTruststore()+"]");
+				throw new ConfigurationException("cannot find URL for truststore resource [" + truststoreOwner.getTruststore() + "]");
 			}
-			log.debug("resolved truststore-URL to ["+truststoreUrl.toString()+"]");
+			log.debug("resolved truststore-URL to [" + truststoreUrl.toString() + "]");
 		}
 	}
 
-	public static SSLSocketFactory createSSLSocketFactory(HasKeystore keystoreOwner, HasTruststore trustoreOwner, String protocol) throws GeneralSecurityException, IOException {
-		AuthSSLContextFactory sslContextFactory = new AuthSSLContextFactory(keystoreOwner, trustoreOwner, protocol);
+	public static SSLSocketFactory createSSLSocketFactory(HasKeystore keystoreOwner, HasTruststore truststoreOwner, String protocol) throws GeneralSecurityException, IOException {
+		AuthSSLContextFactory sslContextFactory = new AuthSSLContextFactory(keystoreOwner, truststoreOwner, protocol);
 		return sslContextFactory.getSSLSocketFactory();
 	}
 
-	public static SSLContext createSSLContext(HasKeystore keystoreOwner, HasTruststore trustoreOwner, String protocol) throws GeneralSecurityException, IOException {
-		AuthSSLContextFactory sslContextFactory = new AuthSSLContextFactory(keystoreOwner, trustoreOwner, protocol);
+	public static SSLContext createSSLContext(HasKeystore keystoreOwner, HasTruststore truststoreOwner, String protocol) throws GeneralSecurityException, IOException {
+		AuthSSLContextFactory sslContextFactory = new AuthSSLContextFactory(keystoreOwner, truststoreOwner, protocol);
 		return sslContextFactory.getSSLContext();
 	}
 
-	private AuthSSLContextFactory(HasKeystore keystoreOwner, HasTruststore trustoreOwner, String protocol) {
+	private AuthSSLContextFactory(HasKeystore keystoreOwner, HasTruststore truststoreOwner, String protocol) {
 
-		this.keystoreOwner =keystoreOwner;
-		this.trustoreOwner =trustoreOwner;
+		this.keystoreOwner = keystoreOwner;
+		this.truststoreOwner = truststoreOwner;
 
-		if(StringUtils.isNotEmpty(protocol)) {
+		if (StringUtils.isNotEmpty(protocol)) {
 			this.protocol = protocol;
 		}
 	}
@@ -105,19 +105,19 @@ public class AuthSSLContextFactory {
 		URL truststoreUrl = null;
 		SSLContext sslcontext;
 
-		if (keystoreOwner!=null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
+		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
 			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		}
-		if (trustoreOwner!=null && StringUtils.isNotEmpty(trustoreOwner.getTruststore())) {
-			truststoreUrl = ClassLoaderUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
+		if (truststoreOwner != null && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
+			truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 		}
-		boolean allowSelfSignedCertificates = trustoreOwner!=null && trustoreOwner.isAllowSelfSignedCertificates();
+		boolean allowSelfSignedCertificates = truststoreOwner != null && truststoreOwner.isAllowSelfSignedCertificates();
 
-		if (keystoreUrl==null && truststoreUrl==null && !allowSelfSignedCertificates) {
+		if (keystoreUrl == null && truststoreUrl == null && !allowSelfSignedCertificates) {
 			sslcontext = SSLContext.getDefault();
 		} else {
 			KeyManager[] keymanagers = null;
-			if (keystoreUrl!=null) {
+			if (keystoreUrl != null) {
 				CredentialFactory keystoreCf = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
 				KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystoreCf.getPassword(), keystoreOwner.getKeystoreType(), "Certificate chain");
 
@@ -126,7 +126,7 @@ public class AuthSSLContextFactory {
 					keystoreAliasCf = new CredentialFactory(keystoreOwner.getKeystoreAliasAuthAlias(), null, keystoreOwner.getKeystoreAliasPassword());
 				}
 				if (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAlias())) {
-					keymanagers = new KeyManager[] { KeyManagerUtils.createClientKeyManager(keystore, keystoreOwner.getKeystoreAlias(), keystoreAliasCf.getPassword())};
+					keymanagers = new KeyManager[] {KeyManagerUtils.createClientKeyManager(keystore, keystoreOwner.getKeystoreAlias(), keystoreAliasCf.getPassword())};
 				} else {
 					keymanagers = PkiUtil.createKeyManagers(keystore, keystoreAliasCf.getPassword(), keystoreOwner.getKeyManagerAlgorithm());
 				}
@@ -134,10 +134,10 @@ public class AuthSSLContextFactory {
 
 			KeyStore truststore = null;
 			TrustManager[] trustmanagers = null;
-			if (truststoreUrl!=null) {
-				CredentialFactory truststoreCf  = new CredentialFactory(trustoreOwner.getTruststoreAuthAlias(),  null, trustoreOwner.getTruststorePassword());
-				truststore = PkiUtil.createKeyStore(truststoreUrl, truststoreCf.getPassword(), trustoreOwner.getTruststoreType(), "Trusted Certificate");
-				String algorithm = trustoreOwner!=null ? trustoreOwner.getTrustManagerAlgorithm() : null;
+			if (truststoreUrl != null) {
+				CredentialFactory truststoreCf  = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(),  null, truststoreOwner.getTruststorePassword());
+				truststore = PkiUtil.createKeyStore(truststoreUrl, truststoreCf.getPassword(), truststoreOwner.getTruststoreType(), "Trusted Certificate");
+				String algorithm = truststoreOwner != null ? truststoreOwner.getTrustManagerAlgorithm() : null;
 				trustmanagers = PkiUtil.createTrustManagers(truststore, algorithm);
 			}
 
@@ -163,13 +163,13 @@ public class AuthSSLContextFactory {
 	public SSLSocketFactory getSSLSocketFactory() throws GeneralSecurityException, IOException {
 		URL keystoreUrl = null;
 		URL truststoreUrl = null;
-		if (keystoreOwner!=null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
+		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
 			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		}
-		if (trustoreOwner!=null && StringUtils.isNotEmpty(trustoreOwner.getTruststore())) {
-			truststoreUrl = ClassLoaderUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
+		if (truststoreOwner != null && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
+			truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 		}
-		if (keystoreUrl == null && truststoreUrl == null && (trustoreOwner==null || !trustoreOwner.isAllowSelfSignedCertificates())) {
+		if (keystoreUrl == null && truststoreUrl == null && (truststoreOwner == null || !truststoreOwner.isAllowSelfSignedCertificates())) {
 			// Add javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory if none has been set.
 			// See: http://httpcomponents.10934.n7.nabble.com/Upgrading-commons-httpclient-3-x-to-HttpClient4-x-td19333.html
 			//
@@ -223,7 +223,7 @@ public class AuthSSLContextFactory {
 					}
 				}
 			} catch (CertificateException e) {
-				if (trustoreOwner!=null && trustoreOwner.isIgnoreCertificateExpiredException()) {
+				if (truststoreOwner != null && truststoreOwner.isIgnoreCertificateExpiredException()) {
 					log.warn("error occurred during checking trusted server: " + e.getMessage());
 				} else {
 					throw e;

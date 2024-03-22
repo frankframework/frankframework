@@ -11,7 +11,10 @@
               routerLink="/configurations/upload"
               class="btn btn-xs pull-right btn-info"
               type="button"
-            ><i class="fa fa-upload" aria-hidden="true"></i><span> Upload Config</span></button>
+            >
+              <i class="fa fa-upload" aria-hidden="true"></i
+              ><span> Upload Config</span>
+            </button>
           </div>
           <h4>Manage Configurations</h4>
         </div>
@@ -29,15 +32,27 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let conf of configurations" [ngClass]="{'text-danger': (conf.exception) }" [title]="conf.exception ?? ''">
-                <td *ngIf="conf.type == 'DatabaseClassLoader'"><a [routerLink]="['/configurations/manage/', conf.name]" [state]="{ configuration: conf }">{{conf.name}}</a></td>
-                <td *ngIf="conf.type != 'DatabaseClassLoader'">{{conf.name}}</td>
-                <td>{{conf.version ? conf.version : "-"}}</td>
-                <td>{{conf.type ? conf.type : "-"}}</td>
-                <td>{{conf.parent ? conf.parent : "-"}}</td>
-                <td>{{conf.filename ? conf.filename : "-"}}</td>
-                <td>{{conf.created ? conf.created : "-"}}</td>
-                <td>{{conf.user ? conf.user : "-"}}</td>
+              <tr
+                *ngFor="let conf of configurations"
+                [ngClass]="{ 'text-danger': conf.exception }"
+                [title]="conf.exception ?? ''"
+              >
+                <td *ngIf="conf.type === 'DatabaseClassLoader'">
+                  <a
+                    [routerLink]="['/configurations/manage/', conf.name]"
+                    [state]="{ configuration: conf }"
+                    >{{ conf.name }}</a
+                  >
+                </td>
+                <td *ngIf="conf.type !== 'DatabaseClassLoader'">
+                  {{ conf.name }}
+                </td>
+                <td>{{ conf.version ? conf.version : '-' }}</td>
+                <td>{{ conf.type ? conf.type : '-' }}</td>
+                <td>{{ conf.parent ? conf.parent : '-' }}</td>
+                <td>{{ conf.filename ? conf.filename : '-' }}</td>
+                <td>{{ conf.created ? conf.created : '-' }}</td>
+                <td>{{ conf.user ? conf.user : '-' }}</td>
               </tr>
             </tbody>
           </table>

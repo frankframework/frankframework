@@ -25,9 +25,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.management.bus.TopicSelector;
 import org.springframework.messaging.Message;
 import org.xml.sax.SAXException;
@@ -65,6 +67,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.JDBC)
 	@ActionSelector(BusAction.FIND)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> handleBrowseDatabase(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String tableName = BusMessageUtils.getHeader(message, "table");
@@ -98,7 +101,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			qs.setName("BrowseTable QuerySender");
 			qs.setDatasourceName(datasource);
 
-			qs.setQueryType("select");
+			qs.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
 			qs.setSqlDialect("Oracle");
 			qs.setBlobSmartGet(true);
 			qs.setIncludeFieldDefinition(true);

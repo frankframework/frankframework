@@ -4,21 +4,21 @@ import { Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 
 interface stackTrace {
-  className: string
-  methodName: string
-  lineNumber: string
-};
+  className: string;
+  methodName: string;
+  lineNumber: string;
+}
 
 type ServerError = {
-  status: string,
-  error: string,
-  stackTrace?: stackTrace[],
-}
+  status: string;
+  error: string;
+  stackTrace?: stackTrace[];
+};
 
 @Component({
   selector: 'app-error',
   templateUrl: './error.component.html',
-  styleUrls: ['./error.component.scss']
+  styleUrls: ['./error.component.scss'],
 })
 export class ErrorComponent implements OnInit {
   cooldownCounter: number = 0;
@@ -28,48 +28,53 @@ export class ErrorComponent implements OnInit {
   constructor(
     private router: Router,
     private http: HttpClient,
-    private appService: AppService
-  ) { };
+    private appService: AppService,
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.checkState();
-  };
+  }
 
-  cooldown(data: ServerError) {
+  cooldown(data: ServerError): void {
     this.cooldownCounter = 60;
 
-    if (data.status === "error"
-      || data.status === "INTERNAL_SERVER_ERROR"
-      || data.status === "Internal Server Error"
-      || data.status === "Gateway Timeout") {
+    if (
+      data.status === 'error' ||
+      data.status === 'INTERNAL_SERVER_ERROR' ||
+      data.status === 'Internal Server Error' ||
+      data.status === 'Gateway Timeout'
+    ) {
       this.appService.updateStartupError(data.error);
       this.stackTrace = data.stackTrace;
 
-      let interval = window.setInterval(() => {
+      const interval = window.setInterval(() => {
         this.cooldownCounter--;
         if (this.cooldownCounter < 1) {
           clearInterval(interval);
           this.checkState();
-        };
+        }
       }, 1000);
-    } else if (data.status === "SERVICE_UNAVAILABLE" || "Service Unavailable") {
+    } else if (data.status === 'SERVICE_UNAVAILABLE' || 'Service Unavailable') {
       this.router.navigate(['/status']);
-    };
-  };
+    }
+  }
 
-  checkState() {
-    this.appService.getServerHealth().subscribe({ next: () => {
-      this.router.navigate(['/status']);
-      /* setTimeout(() => {
+  checkState(): void {
+    this.appService.getServerHealth().subscribe({
+      next: () => {
+        this.router.navigate(['/status']);
+        /* setTimeout(() => {
         window.location.reload();
       }, 50); */
-    }, error: (response: HttpErrorResponse) => {
-      try {
-        const serverError: ServerError = JSON.parse(response.error);
-        this.cooldown(serverError);
-      } catch {
-        this.cooldown({ error: response.error, status: response.statusText });
-      }
-    }});
-  };
+      },
+      error: (response: HttpErrorResponse) => {
+        try {
+          const serverError: ServerError = JSON.parse(response.error);
+          this.cooldown(serverError);
+        } catch {
+          this.cooldown({ error: response.error, status: response.statusText });
+        }
+      },
+    });
+  }
 }

@@ -21,6 +21,14 @@
             "allowed": false
         }
     ],
+	"supportedConnectionOptions": {
+		"cyphers": [
+			"IGNORE"
+		],
+		"protocols": [
+			"IGNORE"
+		]
+	},
     "datasources": [
         {
             "datasourceName": "jdbc/testconfiguration",

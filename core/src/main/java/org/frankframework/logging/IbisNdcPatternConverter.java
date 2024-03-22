@@ -28,7 +28,7 @@ import org.apache.logging.log4j.core.pattern.PatternConverter;
 public class IbisNdcPatternConverter extends LogEventPatternConverter {
 
 	private IbisNdcPatternConverter() {
-		super("IbisNdcPatternConverter", "ndc");
+		super("IbisNdcPatternConverter", "TC");
 	}
 
 	public static IbisNdcPatternConverter newInstance() {

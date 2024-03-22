@@ -107,7 +107,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 		if (message!=null && !session.getTransacted() && getMessageListener() instanceof SpringJmsConnector) {
 			SpringJmsConnector springJmsConnector = (SpringJmsConnector)getMessageListener();
 			JmsListener listener = (JmsListener)springJmsConnector.getListener();
-			if (listener.getAcknowledgeModeEnum()== JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+			if (listener.getAcknowledgeMode() == JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 				// Avoid message.acknowledge() in super.commitIfNecessray if AcknowledgeMode=CLIENT_ACKNOWLEDGE
 				// Acknowledgement for CLIENT_ACKNOWLEDGE is done in afterMessageProcessed
 				log.debug("Skip client acknowledge in commitIfNecessary()");

@@ -39,7 +39,7 @@ import org.frankframework.util.XmlUtils;
  * tag found in the input XML. Every field tag should have a type attribute
  * that specifies the type of conversion that needs to be done on the string
  * specified by the value attribute. A value attribute also needs to be present
- * for every field tag. Currently two types of conversion are supported:
+ * for every field tag. Currently, two types of conversion are supported:
  *
  * <ul>
  *   <li><code>GetBytesFromString</code>, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)</li>
@@ -73,7 +73,7 @@ import org.frankframework.util.XmlUtils;
  *   <li>The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F</li>
  * </ul>
  *
- * The Packed-decimal is prefixed with zero's when the specified size is bigger
+ * The Packed-decimal is prefixed with zeroes when the specified size is bigger
  * than the number of decimals. An exception is thrown when the specified size
  * is smaller than the number of decimals.
  *
@@ -117,18 +117,16 @@ public class BytesOutputPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		Object result = null;
-
 		try {
 			FieldsContentHandler fieldsContentHandler = new FieldsContentHandler();
 			XmlUtils.parseXml(message.asInputSource(), fieldsContentHandler);
-			result = fieldsContentHandler.getResult();
+			byte[] result = fieldsContentHandler.getResult();
+			return new PipeRunResult(getSuccessForward(), result);
 		} catch (SAXException e) {
 			throw new PipeRunException(this, "SAXException", e);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "IOException", e);
 		}
-		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private static class FieldsContentHandler extends DefaultHandler {
@@ -161,7 +159,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 					if (value == null) {
 						throw new SAXException("Value is null for field with type [" + type + "]");
 					}
-					if (value.length() < 1) {
+					if (value.isEmpty()) {
 						throw new SAXException("Value is empty for field with type [" + type + "]");
 					}
 					if (value.length() > 1) {
@@ -182,7 +180,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 					if (sizeString == null) {
 						throw new SAXException("Size is null for field with type [" + type + "] and value [" + value + "]");
 					}
-					if (sizeString.length() < 1) {
+					if (sizeString.isEmpty()) {
 						throw new SAXException("Size is empty for field with type [" + type + "] and value [" + value + "]");
 					}
 					for (int i = 0; i < sizeString.length(); i++) {
@@ -190,7 +188,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 							throw new SAXException("Size [" + sizeString + "] is not a valid number for field with type [" + type + "] and value [" + value + "]");
 						}
 					}
-					int size = new Integer(sizeString).intValue();
+					int size = Integer.parseInt(sizeString);
 					byte[] bytes = new byte[size];
 					for (int i = 0; i < bytes.length; i++) {
 						bytes[i] = 0;

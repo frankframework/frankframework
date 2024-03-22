@@ -15,23 +15,20 @@
 */
 package org.frankframework.scheduler.job;
 
-import org.quartz.JobDetail;
-
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.scheduler.ConfiguredJob;
-import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeper;
+import org.quartz.JobDetail;
 
 @FrankDocGroup(FrankDocGroupValue.JOB)
 public interface IJob extends IConfigurable {
 
 	/**
-	 * Actual implementation of the {@link IJob}. Is wrapped around a {@link Locker}, {@link MessageKeeper exceptions}
-	 * and {@link StatisticsKeeper statistics} will be managed automatically.
+	 * Actual implementation of the {@link IJob}. Is wrapped around a {@link Locker} and {@link MessageKeeper exceptions} will be managed automatically.
 	 * @exception TimeoutException when the TransactionTimeout has been reached
 	 * @exception JobExecutionException when the implementation fails to execute
 	 */
@@ -63,8 +60,6 @@ public interface IJob extends IConfigurable {
 
 	/** Only register (and trigger) Jobs that have been successfully configured. */
 	public boolean isConfigured();
-
-	public StatisticsKeeper getStatisticsKeeper();
 
 	public MessageKeeper getMessageKeeper();
 

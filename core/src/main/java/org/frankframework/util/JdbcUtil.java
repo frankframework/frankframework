@@ -725,10 +725,8 @@ public class JdbcUtil {
 		if (target instanceof String) {
 			return getFileOutputStream((String) target);
 		}
-		if (target instanceof Message) {
-			if (((Message) target).asObject() instanceof String) {
-				return getFileOutputStream(((Message) target).asString());
-			}
+		if (target instanceof Message && ((Message) target).isRequestOfType(String.class)) {
+			return getFileOutputStream(((Message) target).asString());
 		}
 		return null;
 	}
