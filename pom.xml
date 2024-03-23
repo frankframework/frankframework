@@ -1179,7 +1179,7 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>ibissource</id>
+			<id>frankframework</id>
 			<url>https://nexus.frankframework.org/content/groups/public</url>
 		</repository>
 	</repositories>
@@ -1245,11 +1245,11 @@
 			<id>ibissource</id>
 			<distributionManagement>
 				<repository>
-					<id>ibissource</id>
+					<id>frankframework</id>
 					<url>https://nexus.frankframework.org/content/repositories/releases</url>
 				</repository>
 				<snapshotRepository>
-					<id>ibissource</id>
+					<id>frankframework</id>
 					<url>https://nexus.frankframework.org/content/repositories/snapshots</url>
 				</snapshotRepository>
 				<site>
@@ -1316,10 +1316,17 @@
 			</modules>
 			<repositories>
 				<repository>
+					<id>central</id>
+					<name>Central Repository</name>
+					<url>https://repo.maven.apache.org/maven2/</url>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
+				<repository>
 					<id>proprietary</id>
 					<url>https://nexus.frankframework.org/content/repositories/private/</url>
 					<snapshots>
-						<!-- Prevent Maven from attempting to download non existing /x.y-SNAPSHOT/maven-metadata.xml on this url for every module on every build -->
 						<enabled>false</enabled>
 					</snapshots>
 				</repository>
@@ -1364,7 +1371,7 @@
 			</activation>
 			<pluginRepositories>
 				<pluginRepository>
-					<id>ibissource</id>
+					<id>frankframework</id>
 					<url>https://nexus.frankframework.org/content/groups/public</url>
 					<snapshots>
 						<enabled>true</enabled>
