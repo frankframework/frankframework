@@ -59,6 +59,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 		boolean isTxCapable = hasTxCapableSender(pipe);
 		try {
 			if(isTxCapable && itx.isRollbackOnly()) {
+				log.trace("fail-fast exception: may not execute [{}] due to rollback-only state", pipe);
 				throw new PipeRunException(pipe, "unable to execute SQL statement, transaction has been marked as failed by an earlier sender");
 			}
 
@@ -66,11 +67,13 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 
 		} catch (Error | RuntimeException | PipeRunException ex) {
 			if(isTxCapable) {
+				log.trace("marking pipeline [{}] as rollback-only due to pipe [{}] exception", pipeline, pipe);
 				itx.setRollbackOnly();
 			}
 			throw ex;
 		} catch (Exception e) {
 			if(isTxCapable) {
+				log.trace("marking pipeline [{}] as rollback-only due to pipe [{}] exception", pipeline, pipe);
 				itx.setRollbackOnly();
 			}
 			throw new PipeRunException(pipe, "Caught unknown checked exception", e);
