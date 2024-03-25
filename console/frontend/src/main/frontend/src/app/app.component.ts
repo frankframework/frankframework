@@ -581,10 +581,7 @@ export class AppComponent implements OnInit, OnDestroy {
   hasAdapterReloaded(adapter: Adapter): boolean {
     const oldAdapter =
       this.appService.adapters[`${adapter.configuration}/${adapter.name}`];
-    if (adapter.upSince > oldAdapter?.upSince) {
-      return true;
-    }
-    return false;
+    return adapter.upSince > oldAdapter?.upSince;
   }
 
   openInfoModel(): void {
