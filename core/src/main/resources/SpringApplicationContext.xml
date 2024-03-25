@@ -154,14 +154,15 @@
 		scope="prototype"
 		>
 		<property name="pipeProcessor">
+			<!-- allows a managed exception to be stored in the session -->
 			<bean
-				class="org.frankframework.processors.ExceptionHandlingPipeProcessor"
+				class="org.frankframework.processors.InputOutputPipeProcessor"
 				autowire="byName"
 				scope="prototype"
 				>
 				<property name="pipeProcessor">
 					<bean
-						class="org.frankframework.processors.InputOutputPipeProcessor"
+						class="org.frankframework.processors.ExceptionHandlingPipeProcessor"
 						autowire="byName"
 						scope="prototype"
 						>
