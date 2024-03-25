@@ -41,6 +41,7 @@ import { Title } from '@angular/platform-browser';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
+import { ToastService } from './services/toast.service';
 
 @Component({
   selector: 'app-root',
@@ -79,6 +80,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private debugService: DebugService,
     private sweetAlertService: SweetalertService,
+    private toastService: ToastService,
     private appService: AppService,
     private idle: Idle,
     private modalService: NgbModal,
@@ -426,6 +428,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const raw_adapter_data: Record<string, string> = {};
     const pollerCallback = (allAdapters: Record<string, Adapter>): void => {
+      let reloadedAdapters = false;
+
       for (const index in raw_adapter_data) {
         //Check if any old adapters should be removed
         if (!allAdapters[index]) {
@@ -487,6 +491,9 @@ export class AppComponent implements OnInit, OnDestroy {
             adapter.status = 'stopped';
           }
 
+          if (!reloadedAdapters)
+            reloadedAdapters = this.hasAdapterReloaded(adapter);
+
           this.appService.adapters[`${adapter.configuration}/${adapter.name}`] =
             adapter;
 
@@ -499,6 +506,12 @@ export class AppComponent implements OnInit, OnDestroy {
           this.updateAdapterNotifications(adapter);
         }
       }
+      if (reloadedAdapters)
+        this.toastService.success(
+          'Reloaded',
+          'Adapter(s) have successfully been reloaded!',
+          { timeout: 3000 },
+        );
       this.appService.updateAdapters(this.appService.adapters);
     };
 
@@ -563,6 +576,15 @@ export class AppComponent implements OnInit, OnDestroy {
         },
       );
     }
+  }
+
+  hasAdapterReloaded(adapter: Adapter): boolean {
+    const oldAdapter =
+      this.appService.adapters[`${adapter.configuration}/${adapter.name}`];
+    if (adapter.upSince > oldAdapter?.upSince) {
+      return true;
+    }
+    return false;
   }
 
   openInfoModel(): void {
