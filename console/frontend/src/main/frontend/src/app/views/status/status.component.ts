@@ -279,8 +279,10 @@ export class StatusComponent implements OnInit, OnDestroy {
         }
         if (ready) {
           //Remove poller once all states are STARTED
-          this.Poller.remove('server/configurations');
-          if (callback != null && typeof callback == 'function') callback();
+          window.setTimeout(() => {
+            this.Poller.remove('server/configurations');
+            if (callback != null && typeof callback == 'function') callback();
+          });
         }
       },
       true,
