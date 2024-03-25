@@ -12,7 +12,6 @@
 
 	<properties>
 		<ladybug.version>2.3-20240316.003130</ladybug.version>
-		<spring.boot.version>2.7.18</spring.boot.version>
 	</properties>
 
 	<dependencies>
