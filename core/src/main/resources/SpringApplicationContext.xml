@@ -160,14 +160,15 @@
 		scope="prototype"
 		>
 		<property name="pipeProcessor">
+			<!-- allows a managed exception to be stored in the session -->
 			<bean
-				class="nl.nn.adapterframework.processors.ExceptionHandlingPipeProcessor"
+				class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
 				autowire="byName"
 				scope="prototype"
 				>
 				<property name="pipeProcessor">
 					<bean
-						class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
+						class="nl.nn.adapterframework.processors.ExceptionHandlingPipeProcessor"
 						autowire="byName"
 						scope="prototype"
 						>

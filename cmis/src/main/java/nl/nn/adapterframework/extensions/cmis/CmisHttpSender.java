@@ -41,6 +41,7 @@ import org.apache.http.entity.ByteArrayEntity;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -142,6 +143,11 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
+	protected boolean validateResponseCode(int statusCode) {
+		return true; //Always success
+	}
+
+	@Override
 	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		int responseCode = -1;
 		try {
@@ -149,8 +155,6 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			responseCode = statusline.getStatusCode();
 
 			Message responseMessage = responseHandler.getResponseMessage();
-			responseMessage.closeOnCloseOf(session, this);
-
 			InputStream responseStream = null;
 			InputStream errorStream = null;
 			Map<String, List<String>> headerFields = responseHandler.getHeaderFields();
@@ -161,30 +165,33 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 				errorStream = responseMessage.asInputStream();
 			}
 			Response response = new Response(responseCode, statusline.toString(), headerFields, responseStream, errorStream);
-			session.put("response", response);
+			session.put("__response", response);
 		}
 		catch(Exception e) {
 			throw new CmisConnectionException(getUrl(), responseCode, e);
 		}
 
-		return new Message("response");
+		return Message.nullMessage();
 	}
 
 	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) {
 		//Prepare the message. We will overwrite things later...
 		int responseCode = -1;
 
-		PipeLineSession pls = new PipeLineSession();
-		pls.put("writer", writer);
-		pls.put("url", url);
-		pls.put("method", method);
-		pls.put("headers", headers);
-
-		try (Message ignored = sendMessageOrThrow(Message.nullMessage(), pls)) {
-			// Message is unused, we use 'Output writer' instead
-			return (Response) pls.get("response");
-		} catch (Exception e) {
-			throw new CmisConnectionException(getUrl(), responseCode, e);
+		try(PipeLineSession pls = new PipeLineSession()) {
+			pls.put("writer", writer);
+			pls.put("url", url);
+			pls.put("method", method);
+			pls.put("headers", headers);
+	
+			try {
+				// Message is unused, we use 'Output writer' instead
+				SenderResult ignored = sendMessage(Message.nullMessage(), pls);
+				ignored.getResult().close(); // close our nullMessage
+				return (Response) pls.get("__response");
+			} catch (Exception e) {
+				throw new CmisConnectionException(getUrl(), responseCode, e);
+			}
 		}
 	}
 

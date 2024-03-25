@@ -23,6 +23,7 @@
 				<exit path="ERROR" state="error"/>
 			</exits>
 
+			<!-- instead 1 record in the database -->
 			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('LASTNAME',?)" queryType="insert">
 					<param name="value" value="test1" />
@@ -30,18 +31,21 @@
 				<forward name="success" path="fixedInsert2" />
 			</pipe>
 
+			<!-- attempt to insert 1 record in the database, should give an error because the column doesn't exist, should mark as rollbackOnly -->
 			<pipe name="fixedInsert2" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE1) VALUES ('this-column-does-not-exist')" queryType="insert"/>
 				<forward name="success" path="fail"/>
 				<forward name="exception" path="fixedInsert3"/>
 			</pipe>
 
+			<!-- attempt to insert 1 record in the database, should give an error because the column doesn't exist, should fail but not change the tx status -->
 			<pipe name="fixedInsert3" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="NotSupported">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE2) VALUES ('this-column-does-not-exist')" queryType="insert"/>
 				<forward name="success" path="fail"/>
 				<forward name="exception" path="This PutInSession should throw an exception but not trigger a rollback"/>
 			</pipe>
 
+			<!-- force an SenderException in a non-tx-captable Sender, should fail but not change the tx status -->
 			<pipe name="This PutInSession should throw an exception but not trigger a rollback"
 				className="nl.nn.adapterframework.pipes.PutInSession"
 				getInputFromFixedValue="tralala"
@@ -62,6 +66,7 @@
 				<forward name="success" path="EXIT"/>
 			</pipe>
 
+			<!-- force an SenderException in a tx-captable Sender, sql is correct but should not be allowed to execute due to rollbackOnly -->
 			<pipe name="fixedInsert4" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('SURNAME',?)" queryType="insert" />
 					<param name="value" value="test2" />
