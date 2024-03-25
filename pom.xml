@@ -21,6 +21,7 @@
 		<spring.version>5.3.33</spring.version>
 		<spring-security.version>5.8.11</spring-security.version>
 		<spring-integration.version>5.5.20</spring-integration.version>
+		<spring.boot.version>2.7.18</spring.boot.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.13.1.Final</narayana.version>
