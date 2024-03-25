@@ -18,6 +18,7 @@ package org.frankframework.processors;
 import java.time.Instant;
 import java.util.Map;
 
+import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
@@ -45,8 +46,16 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 					tsReceivedLong = tsReceivedDate.toEpochMilli();
 				}
 
+				final Message errorMessage;
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();
-				Message errorMessage = emf.format(e.getMessage(), e.getCause(), pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+
+				if(e instanceof PipeRunException) {
+					INamedObject location = ((PipeRunException) e).getPipeInError();
+					errorMessage = emf.format(null, e.getCause(), location, message, pipeLineSession.getMessageId(), tsReceivedLong);
+				} else {
+					errorMessage = emf.format(null, e, pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+				}
+
 				log.info("exception occured, forwarding to exception-forward [{}], exception:\n", PipeForward.EXCEPTION_FORWARD_NAME, e);
 				return new PipeRunResult(pipe.getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), errorMessage);
 			}
