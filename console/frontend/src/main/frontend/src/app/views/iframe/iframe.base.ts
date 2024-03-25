@@ -28,4 +28,8 @@ export abstract class BaseIframeComponent {
   getTopBarHeight(): number {
     return this.topBarHeightPx;
   }
+
+  navigateToUrl(): void {
+    window.open(this.url, '_blank');
+  }
 }

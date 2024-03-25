@@ -2,6 +2,10 @@
   style="margin: 0 -15px; height: calc(100% - {{ getTopBarHeight() }}px);"
   *ngIf="url.length > 0"
 >
+  <button (click)="navigateToUrl()" class="btn btn-xs pull-right">
+    <i class="fa fa-arrow-circle-right"></i>
+    Popout
+  </button>
   <iframe
     [src]="iframeSrc"
     style="width: 100%; height: 100%; border: none; overflow: hidden"
