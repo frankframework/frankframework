@@ -22,9 +22,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.frankframework.lifecycle.ApplicationServerConfigurer;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.SpringContextScope;
+import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
 import org.frankframework.util.AppConstants;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -52,13 +52,16 @@ public class IafTestInitializer {
 
 	// Should start a XmlServletWebServerApplicationContext.
 	public static void main(String[] args) throws IOException {
-		String logDir = getLogDir();
+		String currentDir = System.getProperty("user.dir");
+		Path projectPath = Path.of(currentDir).toAbsolutePath();
+
+		String logDir = getLogDir(projectPath);
 
 		System.setProperty("application.security.http.authentication", "false");
 		System.setProperty("application.security.http.transportGuarantee", "none");
 		System.setProperty("dtap.stage", "LOC");
 		System.setProperty("log.dir", logDir);
-		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
+		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
 
 		SpringApplication app = new SpringApplication();
 		app.addInitializers(new ConfigureAppConstants());
@@ -71,10 +74,8 @@ public class IafTestInitializer {
 		app.run(args);
 	}
 
-	private static String getLogDir() throws IOException {
-		String currentDir = System.getProperty("user.dir");
-		Path absPath = Path.of(currentDir).toAbsolutePath();
-		Path targetPath = absPath.resolve("target");
+	private static String getLogDir(Path projectPath) throws IOException {
+		Path targetPath = projectPath.resolve("target");
 		if(Files.exists(targetPath) && Files.isDirectory(targetPath)) {
 			Path logDir = targetPath.resolve("logs");
 			if(!Files.exists(logDir)) {

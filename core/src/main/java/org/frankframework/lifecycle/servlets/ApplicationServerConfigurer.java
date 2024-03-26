@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.lifecycle;
+package org.frankframework.lifecycle.servlets;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -29,11 +29,8 @@ import org.springframework.web.WebApplicationInitializer;
 import lombok.extern.log4j.Log4j2;
 
 /**
- * Programmatically load the Frank!Framework Web Environment.
- * It's important this is loaded first, and before any programmatic listeners have been added.
- * The EnvironmentContext will load servlets and filters.
- *
- * Uses the same order as well as delegation as the SpringBootServletInitializer used in the Frank!Console WAR.
+ * It's important this is loaded first, and before any programmatic listeners have been added to determine the Application Server type.
+ * We should technically use different profiles for this, but for now, it overwites the default Spring Context
  *
  * @author Niels Meijer
  */

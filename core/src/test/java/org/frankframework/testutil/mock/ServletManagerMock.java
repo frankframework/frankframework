@@ -5,7 +5,7 @@ import org.frankframework.lifecycle.ServletManager;
 public class ServletManagerMock extends ServletManager {
 
 	public ServletManagerMock() {
-		super(null);
+		super();
 	}
 
 	@Override

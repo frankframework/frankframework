@@ -278,6 +278,11 @@
 			<dependencies>
 				<dependency>
 					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-filesystem</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-larva</artifactId>
 					<scope>runtime</scope>
 				</dependency>
@@ -294,6 +299,31 @@
 				<dependency>
 					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-console-backend</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-akamai</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-cmis</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-aws</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-messaging</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-batch</artifactId>
 					<scope>runtime</scope>
 				</dependency>
 			</dependencies>

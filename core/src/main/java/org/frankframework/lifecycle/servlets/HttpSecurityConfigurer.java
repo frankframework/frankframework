@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import java.util.EnumSet;
 import java.util.Map;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration.Dynamic;
 import javax.servlet.ServletContext;
 
+import org.frankframework.lifecycle.ServletManager;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +32,9 @@ import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.filter.DelegatingFilterProxy;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.frankframework.lifecycle.ServletManager;
 
 @Log4j2
 @Order(Ordered.LOWEST_PRECEDENCE)
@@ -60,11 +56,6 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 		if(!(beanFactory instanceof ConfigurableListableBeanFactory)) {
 			throw new IllegalStateException("beanFactory not set or not instanceof ConfigurableListableBeanFactory");
 		}
-
-		// Add the SpringSecurity filter to enable authentication
-		Dynamic filter = servletContext.addFilter("springSecurityFilterChain", DelegatingFilterProxy.class);
-		filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
-		servletContext.log("registered SpringSecurityFilter");
 	}
 
 	@Override
