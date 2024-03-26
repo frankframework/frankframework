@@ -159,20 +159,20 @@ export class StatusComponent implements OnInit, OnDestroy {
     let filterStr = [];
     let filterCount = 0;
     for (const f in this.filter) {
-      if (this.filter[f as keyof Filter]){
+      if (this.filter[f as keyof Filter]) {
         filterStr.push(f);
-        filterCount+=1;
+        filterCount += 1;
       }
     }
     let transitionObj: Record<string, string> = {};
-    if(filterCount < 3)
+    if (filterCount < 3)
       transitionObj["filter"] = filterStr.join("+");
     if (this.selectedConfiguration != "All")
       transitionObj["configuration"] = this.selectedConfiguration;
     if (this.searchText.length > 0)
       transitionObj["search"] = this.searchText;
 
-    this.router.navigate([],{ relativeTo: this.route, queryParams: transitionObj, preserveFragment: true });
+    this.router.navigate([], { relativeTo: this.route, queryParams: transitionObj, preserveFragment: true });
   };
 
   collapseAll() {
@@ -227,8 +227,10 @@ export class StatusComponent implements OnInit, OnDestroy {
         }
       }
       if (ready) { //Remove poller once all states are STARTED
-        this.Poller.remove("server/configurations");
-        if (callback != null && typeof callback == "function") callback();
+        window.setTimeout(() => {
+          this.Poller.remove('server/configurations');
+          if (callback != null && typeof callback == 'function') callback();
+        });
       }
     }, true);
   }
