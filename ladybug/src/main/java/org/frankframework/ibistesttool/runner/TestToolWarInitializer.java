@@ -40,7 +40,7 @@ import org.springframework.web.context.WebApplicationContext;
  * @author Niels Meijer
  */
 @Order(500)
-public class WarInitializer extends SpringBootServletInitializer {
+public class TestToolWarInitializer extends SpringBootServletInitializer {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	@Configuration
@@ -72,15 +72,18 @@ public class WarInitializer extends SpringBootServletInitializer {
 
 	@Override
 	protected WebApplicationContext run(SpringApplication application) {
+		AppConstants properties = AppConstants.getInstance(); //Deep clone of the AppConstants
+		String file = properties.getProperty("ibistesttool.springConfigFile", "springIbisTestTool.xml");
+
+		application.setAllowBeanDefinitionOverriding(true);//Only allow this (by default) for this context. application.propeties may be overwritten..
 		Set<String> set = new HashSet<>();
-		set.add(getConfigFile());
+		set.add(getConfigFile(file));
 		application.setSources(set);
-		application.setDefaultProperties(AppConstants.getInstance());
+		application.setDefaultProperties(properties);
 		return super.run(application);
 	}
 
-	private String getConfigFile() {
-		String file = AppConstants.getInstance().getProperty("ibistesttool.springConfigFile", "springIbisTestTool.xml");
+	private String getConfigFile(String file) {
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		URL fileURL = classLoader.getResource(file);
 		if(fileURL == null) {

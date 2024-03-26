@@ -48,6 +48,40 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- provided dependencies will be added to the executable (Spring) WAR -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<version>${spring.boot.version}</version>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-autoconfigure</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.yaml</groupId>
+					<artifactId>snakeyaml</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<version>${spring.boot.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-loader</artifactId>
+			<version>${spring.boot.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -250,6 +284,16 @@
 				<dependency>
 					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-ladybug</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-console-frontend</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-console-backend</artifactId>
 					<scope>runtime</scope>
 				</dependency>
 			</dependencies>

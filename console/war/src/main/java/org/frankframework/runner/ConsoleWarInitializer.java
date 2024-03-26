@@ -29,7 +29,7 @@ import org.springframework.web.context.WebApplicationContext;
  *
  * @author Niels Meijer
  */
-public class WarInitializer extends SpringBootServletInitializer {
+public class ConsoleWarInitializer extends SpringBootServletInitializer {
 
 	@Configuration
 	public static class WarConfiguration {

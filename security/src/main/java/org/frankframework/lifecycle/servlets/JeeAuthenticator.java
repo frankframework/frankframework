@@ -19,6 +19,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -90,8 +93,12 @@ public class JeeAuthenticator extends ServletAuthenticatorBase {
 	// Reads the web.xml file 'security-roles'
 	private MappableAttributesRetriever getWebXmlSecurityRoles() {
 		DelegatedMappableAttributesRetriever attributeRetriever = new DelegatedMappableAttributesRetriever();
-		MappableAttributesRetriever webXml = SpringUtils.createBean(getApplicationContext(), WebXmlMappableAttributesRetriever.class);
-		attributeRetriever.addMappableAttributes(webXml.getMappableAttributes());
+		try {
+			MappableAttributesRetriever webXml = SpringUtils.createBean(getApplicationContext(), WebXmlMappableAttributesRetriever.class);
+			attributeRetriever.addMappableAttributes(webXml.getMappableAttributes());
+		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
+			log.info("unable to read web.xml file, caught exception: {}", e::getMessage);
+		}
 		attributeRetriever.addMappableAttributes(new HashSet<>(getSecurityRoles()));
 		return attributeRetriever;
 	}
