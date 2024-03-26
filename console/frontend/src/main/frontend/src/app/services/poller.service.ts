@@ -164,7 +164,10 @@ class PollerObject {
   }
 
   stop(): void {
-    if (!this.started()) return;
+    if (!this.started()) {
+      this.waiting = true;
+      return;
+    }
 
     this.ai.list = [];
     this.ai.avg = 0;

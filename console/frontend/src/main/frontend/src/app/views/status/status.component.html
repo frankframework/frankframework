@@ -91,6 +91,11 @@
               >STUBBED</span
             >
             <span
+              *ngIf="isConfigAutoReloadable[selectedConfiguration]"
+              class="label label-warning"
+              >AUTORELOADABLE</span
+            >
+            <span
               *ngIf="isConfigReloading[selectedConfiguration]"
               class="label label-warning"
               >RELOADING</span
