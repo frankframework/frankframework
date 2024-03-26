@@ -42,7 +42,7 @@ export class JmsSendMessageComponent implements OnInit {
     encoding: '',
   };
 
-  constructor(private jmsService: JmsService) { }
+  constructor(private jmsService: JmsService) {}
 
   ngOnInit(): void {
     this.jmsService.getJms().subscribe((data) => {
