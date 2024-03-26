@@ -63,6 +63,7 @@ public class IafTestInitializer {
 		System.setProperty("application.security.http.authentication", "false");
 		System.setProperty("application.security.http.transportGuarantee", "none");
 		System.setProperty("dtap.stage", "LOC");
+		System.setProperty("active.jms", "false");
 		System.setProperty("log.dir", getLogDir(projectDir));
 		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
 
