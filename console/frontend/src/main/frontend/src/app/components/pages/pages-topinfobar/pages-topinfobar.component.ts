@@ -11,6 +11,7 @@ import { AppService } from 'src/app/app.service';
 export class PagesTopinfobarComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   breadcrumbs: string = 'Loading';
+  popoutUrl: string | null = null;
 
   private _subscriptions = new Subscription();
 
@@ -26,6 +27,7 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         const childRoute = this.route.children.pop()!;
         this.breadcrumbs = childRoute.snapshot.data['breadcrumbs'] ?? 'Error';
+        this.popoutUrl = null;
       });
     const loadingSubscription = this.appService.loading$.subscribe(
       (loading) => (this.loading = loading),
@@ -36,9 +38,18 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
         (breadcrumbs) => (this.breadcrumbs = breadcrumbs),
       );
     this._subscriptions.add(customBreadcrumbsSubscription);
+    const iframePopoutUrlSubscription =
+      this.appService.iframePopoutUrl$.subscribe(
+        (url) => (this.popoutUrl = url),
+      );
+    this._subscriptions.add(iframePopoutUrlSubscription);
   }
 
   ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  navigateToUrl(): void {
+    if (this.popoutUrl) window.open(this.popoutUrl, '_blank');
   }
 }

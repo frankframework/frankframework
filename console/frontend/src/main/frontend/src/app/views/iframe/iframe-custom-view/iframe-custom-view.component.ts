@@ -15,13 +15,13 @@ export class IframeCustomViewComponent
   implements OnInit
 {
   constructor(
-    private sanitizer: DomSanitizer,
+    sanitizer: DomSanitizer,
+    appService: AppService,
     private router: Router,
     private location: LocationStrategy,
-    private appService: AppService,
     private window: Window,
   ) {
-    super();
+    super(sanitizer, appService);
   }
 
   ngOnInit(): void {
@@ -40,5 +40,6 @@ export class IframeCustomViewComponent
       this.redirectURL = view['url'];
     } else this.url = this.appService.getServerPath() + view['url'];
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
+    this.appService.setIframePopoutUrl(this.url);
   }
 }

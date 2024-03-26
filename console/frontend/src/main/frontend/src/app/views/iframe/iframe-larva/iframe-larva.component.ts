@@ -11,15 +11,11 @@ export class IframeLarvaComponent
   extends BaseIframeComponent
   implements OnInit
 {
-  constructor(
-    private sanitizer: DomSanitizer,
-    private appService: AppService,
-  ) {
-    super();
+  constructor(sanitizer: DomSanitizer, appService: AppService) {
+    super(sanitizer, appService);
   }
 
   ngOnInit(): void {
-    this.url = `${this.appService.getServerPath()}iaf/larva`;
-    this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
+    this.setIframeSource('larva');
   }
 }
