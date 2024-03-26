@@ -1,12 +1,20 @@
-Ibis AdapterFramework release notes
+Frank!Framework release notes
 ===================================
 
-[Tags](https://github.com/ibissource/iaf/releases)
+[Tags](https://github.com/frankframework/frankframework/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
-Upcoming (7.9)
---------------
-[Commits](https://github.com/ibissource/iaf/compare/v7.8-RC1...HEAD)
+7.9.1
+---
+[Commits](https://github.com/frankframework/frankframework/compare/v7.9.0...v7.9.1)
+
+Improved Connection Pooling mechanism for JMS and JDBC connections.
+Reduced default JMS connection amount.
+Front-end Console fixes.
+
+7.9
+---
+[Commits](https://github.com/frankframework/frankframework/compare/v7.8-RC1...v7.9.0)
 
 ### Non backwards compatible changes
 
@@ -37,7 +45,7 @@ Upcoming (7.9)
 
 7.8-RC1
 ---
-[Commits](https://github.com/ibissource/iaf/compare/v7.7...v7.8-RC1)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.7...v7.8-RC1)
 
 LCM dependencies (where possible)
 Generic bugfixes
@@ -104,16 +112,16 @@ Performance enhancements
 - Larva uses different correlationId in the format *Test Tool correlation id(${counter})* for each scenario.
 - To use files in ZipIteratorPipe and UnzipPipe the attribute processFilename="true" must be set. Otherwise the data will not be interpreted as a filename, but as data.
 - JsonPipe version 1 has been removed. Json to Xml conversion has slightly changed:
-  - null values are rendered as '<elem nil="true"/>' instead of '<elem>null</elem>'
-  - default array element containers are '<item>' instead of '<array>'
-  - multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
+	- null values are rendered as '<elem nil="true"/>' instead of '<elem>null</elem>'
+	- default array element containers are '<item>' instead of '<array>'
+	- multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
 - MessageSendingPipe and descendants (like SenderPipe and ForEachChildElementPipe) no longer set presumedTimeOutInterval by default.
 
 
 7.7
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6.1...v7.6.2)
 
 - New FrankDoc XSD and website
 - LCM Dependencies
@@ -178,16 +186,16 @@ Performance enhancements
 - JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1" (deprecated)
 - CompareStringPipe xml=true, now does an (actual) XML compare; ignoring attribute order and whitespaces.
 - Remove Struts management console (including the IAF-WebControl Configuration)
-- Server healthcheck at /iaf/api/server/health is now publicly accessible. 
+- Server healthcheck at /iaf/api/server/health is now publicly accessible.
   It will return 200 when all adapters are up, 503 when one or more are stopped. Previously, 401 was returned in all cases when called unauthenticated
-- Property references like `${property}` in configuration files are now resolved *after* the XML is parsed, and should therefor no longer contain characters that 
+- Property references like `${property}` in configuration files are now resolved *after* the XML is parsed, and should therefor no longer contain characters that
   are invalid in XML encoded as entities. So characters like '<', '>' and '"' should appear 'as is' in properties, not as '&lt;', '&gt' and '&quot'.
 
 
 
 7.6.2
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6.1...v7.6.2)
 
 - Fix gui log error message when more then x files (#2426)
 - Ladybug report keeps in progress while adapter is finished (#2496)
@@ -196,7 +204,7 @@ Performance enhancements
 
 7.6.1
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.6...7.6-release)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6...7.6-release)
 
 - Do not close zip archive during processing (#2109)
 - Fix log statements with throwables (#2135)
@@ -221,7 +229,7 @@ Performance enhancements
 
 7.6
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC2...v7.6)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6-RC2...v7.6)
 
 - Add writeLineSeparator attribute to FileSystemPipe (#1916)
 - Fix exception pipe should to not follow exception forward (#1913)
@@ -238,8 +246,7 @@ Performance enhancements
 
 7.6-RC2
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...v7.6-RC2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?tag=v7.6-RC2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6-RC1...v7.6-RC2)
 
 - Reduce debug logging and fix JBoss project names (#1592)
 - Fix 'Move to InProcess' in transaction (#1603)
@@ -268,8 +275,7 @@ Performance enhancements
 
 7.6-RC1
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.5...v7.6-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?tag=v7.6-RC1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5...v7.6-RC1)
 
 - Debug streaming messages
 - Add TextSplitterPipe
@@ -282,7 +288,7 @@ Performance enhancements
 - Add SignaturePipe
 - Support automatic closing of streams
 - Support generation of SQL update script from Liquibase
-- Rework Locker 
+- Rework Locker
 - Full DBMS support for H2, Oracle, MSSql, MySql, MariaDB and PostgreSQL
 - Use Message as primary input-output object for, e.g. for Pipes and Senders
 - Introduce RetryFlag, set as session variable if a message is retried
@@ -320,8 +326,7 @@ Performance enhancements
 7.5
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC4...v7.5)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC4...v7.5)
 
 - Sync testtool enable/disable buttons (#1036)
 - Fix #1029 handling absolute paths in LocalFileSystem (#1046)
@@ -340,8 +345,7 @@ Performance enhancements
 7.5-RC4
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC3...v7.5-RC4)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC4)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC3...v7.5-RC4)
 
 - Set receiver color to red when in error (#761)
 - Set property to disable SecurityManager (#746)
@@ -379,8 +383,7 @@ Performance enhancements
 7.5-RC3
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC2...v7.5-RC3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC2...v7.5-RC3)
 
 - Fix GUI 3.0 global console warnings #505
 - Fix configurations being reloaded due to not having a (valid) version #506
@@ -405,8 +408,7 @@ Performance enhancements
 7.5-RC2
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC1...v7.5-RC2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC1...v7.5-RC2)
 
 - Nested stacktrace ends at ForEachChildElementPipe #425
 - Empty JDBC result throws NullPointerException #426
@@ -434,14 +436,13 @@ Performance enhancements
 7.5-RC1
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.4...v7.5-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.4...v7.5-RC1)
 
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
 - Enable to specify a namespace without a prefix in attribute namespaceDefs, to help simplify xpathExpressions e.g. into '/root/sub' instead of '/\*[local-name()='root']/\*[local-name()='sub'.
-- Make ForEachChildElementPipe optionally streaming when using elementXPathExpression too. N.B. This requires an XsltProcessor that properly supports streaming. The versions of Saxon and Xalan that we currently employ do not; 
-  Add options 'targetElement' and 'containerElement' to ForEachChildElementPipe to enable processing of very large files, avoiding memory problems that still exist with 
+- Make ForEachChildElementPipe optionally streaming when using elementXPathExpression too. N.B. This requires an XsltProcessor that properly supports streaming. The versions of Saxon and Xalan that we currently employ do not;
+  Add options 'targetElement' and 'containerElement' to ForEachChildElementPipe to enable processing of very large files, avoiding memory problems that still exist with
   xpath expressions for very large files;
   Make Xslt streaming default for xsltVersion=1
 - Bugfix (un)loading configs in JmxMbeanHelper
@@ -477,7 +478,7 @@ Performance enhancements
 - Fix and Cleanup MailSender and MailSenderBase
 - Upgrade ladybug to version 2.0.9
 - Namespace support for skip empty tags
-- Base64 encode and decode option for FileSystemPipe, FileSystemSender and descendants 
+- Base64 encode and decode option for FileSystemPipe, FileSystemSender and descendants
 - Add option to rotate by size, number of files or number of days to FileSystemPipe, FileSystemSender and descendants
 - FileSystemSenders now return an InputStream when action=read
 - XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
@@ -492,7 +493,7 @@ Performance enhancements
 
 ### Non backwards compatible changes
 
-- Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
+- Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList,
   fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups and random.
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
 - The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
@@ -505,14 +506,13 @@ Performance enhancements
 7.4
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.3...v7.4)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.4)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.3...v7.4)
 
 - Improve validation config warnings
 - ShowConfigurationStatus - improve error view
 - Possibility to add new domains independently of ear file
-    - UploadConfigService adapter
-    - Facility to (de)activate configs
+	- UploadConfigService adapter
+	- Facility to (de)activate configs
 - Add Samba2Filesystem, used in SambaSender, SambaPipe and SambaListener
 - Fix scheduler seconds/miliseconds bug
 - Fix ability to run xslt1 xPath expressions with the xsltpipe and sender
@@ -526,8 +526,7 @@ Performance enhancements
 7.3
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.2...v7.3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.2...v7.3)
 
 - Refactor CmisListener to an event based listener, you can now have multiple listeners listening to different events
 - The cmis bridge functionality on the sender has been removed. In order to use the bridge you need to configure properties in the WAR/EAR file. See CmisSessionBuilder for more information about the properties that can be set
@@ -538,8 +537,7 @@ Performance enhancements
 7.3-RC1
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.2...v7.3-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.3-RC1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.2...v7.3-RC1)
 
 - Generate IbisDoc and XSD and support beautiful configuration xml. The XSD can be used for code completion of beautiful Ibis configurations in Eclipse
 - Use XSLT 2.0 instead of 1.0 for configuration tweaks (e.g. stub4testtool.xsl)
@@ -582,8 +580,7 @@ Performance enhancements
 7.2
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1...v7.2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1...v7.2)
 
 - Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
 - Various bugfixes en performance improvements in SOAPProviders (WebServiceListener)
@@ -606,8 +603,7 @@ Performance enhancements
 7.1
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B4...v7.1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1-B4...v7.1)
 
 - Fix NPE in HttpSender when no charset is supplied in multipart response
 - Modify GetFromSession to get key from input as well as sessionKey
@@ -632,8 +628,7 @@ Performance enhancements
 7.1-B4
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B3...v7.1-B4)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B4)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1-B3...v7.1-B4)
 
 
 - Prevent poll guard to stop and start listener when recovering
@@ -651,8 +646,7 @@ Performance enhancements
 7.1-B3
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B2...v7.1-B3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1-B2...v7.1-B3)
 
 - Many IAF GUI 3.0 improvements
 - Fix Ladybug
@@ -671,8 +665,7 @@ Performance enhancements
 7.1-B2
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B1...v7.1-B2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1-B1...v7.1-B2)
 
 - Add updateEtag sessionKey to the ApiListener so it can be changed at runtime
 - Modify HttpSender logging to only give warnings for 4xx (client errors) and 5xx (server errors)
@@ -688,21 +681,20 @@ Performance enhancements
 - Add WebAppClassLoader as default configuration classloader
 - Add forgotten struts2rest services to web.xml LoginFilter
 - Upgrade Bitronix to version 3.0.0-MK1
-    The latest version has fixed the possiblity to set a dataSource bean on poolingDataSource and a connectionFactory bean on poolingConnectionFactory instead of using driverProperties.
-    As well as many other bugfixes and improvements, see https://github.com/bitronix/btm for more info.
+  The latest version has fixed the possiblity to set a dataSource bean on poolingDataSource and a connectionFactory bean on poolingConnectionFactory instead of using driverProperties.
+  As well as many other bugfixes and improvements, see https://github.com/bitronix/btm for more info.
 - LCM update quartz scheduler to use a slightly newer version
-    Version 1.7.2 requires java 1.5.x, which is probably the reason the older version 1.6.6 was used. Version 1.6.6 is not hosted on maven central, which is the reason for this LCM upgrade.
-    For the Quartz release notes see: https://web.archive.org/web/20100721184042/http://quartz-scheduler.org:80/
+  Version 1.7.2 requires java 1.5.x, which is probably the reason the older version 1.6.6 was used. Version 1.6.6 is not hosted on maven central, which is the reason for this LCM upgrade.
+  For the Quartz release notes see: https://web.archive.org/web/20100721184042/http://quartz-scheduler.org:80/
 - Remove custom ibis modules
-    These modules were introduced due to java 4 and 5 compilation issues and runtime issues on WAS4 and WAS5.
+  These modules were introduced due to java 4 and 5 compilation issues and runtime issues on WAS4 and WAS5.
 - Mavenize Ladybug
 
 
 7.1-B1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC3...v7.1-B1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-RC3...v7.1-B1)
 
 - Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
 - Show provided JmsDestinations with usage in showSecurityItems
@@ -757,10 +749,10 @@ Performance enhancements
 - Fix stale connections not being cleaned up by the ConnectionPoolManager. See: https://issues.apache.org/jira/browse/HTTPCLIENT-1609
 - Fix multipart parsing issues
 - Update to latest Ladybug Test Tool version
-    - Add custom XmlDecoder for testtool imports
-    - Display escaped characters with different background color
-    - Support Unicode supplementary characters (don't handle a smiley as two characters)
-    - Change colors to be IAF GUI 3.0 friendly
+	- Add custom XmlDecoder for testtool imports
+	- Display escaped characters with different background color
+	- Support Unicode supplementary characters (don't handle a smiley as two characters)
+	- Change colors to be IAF GUI 3.0 friendly
 - Prevent Show Tibco Queues to still fail when passive servers in server url
 - Fix servlets in web.xml causing errors when cmis dependency is missing
 - Bugfix error "ShowConfigurationStatus.xsl line [683]: Cannot convert string to double"
@@ -769,10 +761,10 @@ Performance enhancements
 - Bugfix multiple WebServiceSender and MTOM related issues
 - Add IAF-TEST module for IAF integration tests
 - Update to latest Ladybug Test Tool version
-    - Bugfix pipe description from old configuration (before reload) being showed
-    - Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
-    - Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
-    - Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
+	- Bugfix pipe description from old configuration (before reload) being showed
+	- Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
+	- Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
+	- Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
 - Add LarvaPipe
 - Fix sub-resources eTag handling for ApiListener
 - Add wssPasswordDigest attribute to WebServiceSender
@@ -788,26 +780,24 @@ Performance enhancements
 7.0-RC3
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC2...v7.0-RC3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-RC2...v7.0-RC3)
 
 - Refactor ReplacerPipe replaceNonXmlChar and fix javadoc
 - Support Unicode supplementary characters (like a smiley) in replace/stripNonValidXmlCharacters (which is used in ReplacerPipe). In the old code a Unicode supplementary character like a smiley was seen as two characters which would both be replaced/stripped. To be backwards compatible the Unicode supplementary characters are still replaced/stripped (by one character instead of two) but can be allowed using allowUnicodeSupplementaryCharacters
 - Support document(), xsl:import, and xsl:include with config in database
 - Fix NPE in ApiEhCache after a full reload
 - Update to latest Ladybug Test Tool version
-    - Bugfix pipe description from old configuration (before reload) being showed
-    - Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
-    - Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
-    - Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
+	- Bugfix pipe description from old configuration (before reload) being showed
+	- Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
+	- Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
+	- Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
 
 
 
 7.0-RC2
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC1...v7.0-RC2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-RC1...v7.0-RC2)
 
 - Ignore import with namespace but without schemaLocation (fix on previous commit 'Support schema attribute with config in database and refactor ClassUtils.getResourceURL()')
 - Rewrite dependencies on removed URL fallback in ClassUtils.getResourceURL()
@@ -825,8 +815,7 @@ Performance enhancements
 7.0-RC1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-B3...v7.0-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-B3...v7.0-RC1)
 
 - Add support for integer and boolean parameters when using QuerySenders
 - Fix broken "Show configuration warnings only at relevant configuration"
@@ -835,7 +824,7 @@ Performance enhancements
 - Fix jsonpipe adding root elements when direction is xml2json
 - Fix JdbcQuery, TestService and SendJmsMessage pages to log messages when sec.log.includeMessage=true
 - First steps towards unit testing without application server
-- Add attribute soapBodyNamespace to WsdlXmlValidator 
+- Add attribute soapBodyNamespace to WsdlXmlValidator
 - Add Akamai Sender module
 - Support multiple configuration directories for DirectoryClassLoader
 - Add rootDir property to AkamaiSender
@@ -879,8 +868,7 @@ Performance enhancements
 7.0-B3
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-B2...v7.0-B3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-B3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-B2...v7.0-B3)
 
 - Add json to xml and xml to json conversion as well as json validation to xmlvalidators
 - Prevent XML Entity Expansion (XEE) injection
@@ -899,7 +887,7 @@ Performance enhancements
 - Show "Test a PipeLine" pipeline logging (bugfix)
 - Hide strings in IBIS console messages too (same as in logging)
 - Move config warning "Element not in list of available root elements" to startup
-- Larva: add possibility to overwrite windiff command 
+- Larva: add possibility to overwrite windiff command
 - Add IbisWebService constraint to /rest/* endpoint
 - Remove "webContent.dir" bean from spring configuration
 - Larva: add possiblity to autosave TestTool differences
@@ -911,8 +899,7 @@ Performance enhancements
 7.0-B2
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-B1...v7.0-B2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-B2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-B1...v7.0-B2)
 
 - Fix IFSA no longer gives a warning when the managed connection factory can't be found
 - Add consumes and produces option to rest endpoints to set mediatypes, this also transforms the data from and to JSON/XML when set
@@ -928,7 +915,7 @@ Performance enhancements
 - Add attribute mtomEnabled to HttpSender (to support MTOM in requests)
 - Introduction of the pipe IfMultipart
 - Add attribute elseForwardOnEmptyInput to IsXmlIfPipe
-- Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart) 
+- Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart)
 - Fix splitting messagingLayer made configurable in EsbSoapWrapper
 - Add commons-validator dependency for Jboss servers
 - Fix fieldnames in query result are now automatically capitalized
@@ -944,7 +931,7 @@ Performance enhancements
 - Avoid NPE in "Show Scheduler Status"
 - Add IbisTester role to IBIS LoginFilter
 - Add queueConnectionFactoryName to XmlJmsBrowserSender possible input elements
-- Make xmlStreamWriter in ScanTibcoSolutionPipe use central 
+- Make xmlStreamWriter in ScanTibcoSolutionPipe use central
 - Create XMLStreamWriter with XmlUtils.OUTPUT_FACTORY in all classes (ScanTibcoSolutionPipe didn't use XmlUtils.OUTPUT_FACTORY yet)
 - Set log.dir automatically for Vanilla/Eclipse Tomcat too
 - Add testtool.enabled property to enable the testtool on ACC and PRD
@@ -965,8 +952,8 @@ Performance enhancements
 - Add custom SSLSocketFactory to CmisSender
 - Fix JDBC driver default date format to yyyy-MM-dd
 - Fix JDBC driver default timestamp format to yyyy-MM-dd HH:mm:ss
-- Bugfix in ShowIbisstoreSummary "(SQLServerException) SQLState [S00010], errorCode [195]: 'to_char' is not a recognized built-in function name." 
-- Add DllServiceDispatcher see [ibis-servicedispatcher](https://github.com/ibissource/ibis-servicedispatcher/commit/f759f897b063757bcc7a50229715035159d79dd5)
+- Bugfix in ShowIbisstoreSummary "(SQLServerException) SQLState [S00010], errorCode [195]: 'to_char' is not a recognized built-in function name."
+- Add DllServiceDispatcher see [ibis-servicedispatcher](https://github.com/frankframework/servicedispatcher/commit/f759f897b063757bcc7a50229715035159d79dd5)
 - Bugfix in ShowIbisstoreSummary (caused 2014-11-26)
 - Fix connection leak in DomainTransformerPipe
 - Prevent 'sap.jcoDestination does not exist'
@@ -991,8 +978,7 @@ Performance enhancements
 7.0-B1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v6.1...v7.0-B1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-B1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v6.1...v7.0-B1)
 
 - Replace Apache Commons Collections library v3.2 by v3.2.2
 - Don't temporarily move already temporarily moved messages
@@ -1155,8 +1141,7 @@ Performance enhancements
 6.1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v6.0...v6.1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v6.1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v6.0...v6.1)
 
 - Equalize/refactor file name determination for FilePipe/Sender (for action "read" also consider attribute fileName and for action "info" also consider attributes fileName and classpath)
 - Add CrlPipe
@@ -1219,7 +1204,7 @@ Performance enhancements
 ### Non backwards compatible changes
 
 - Don't add namespace to schema by default when targetNamespace present and default namespace is not. This is probably rarely the case. It doesn't make sense to change the default value in this case (only). Explicitly set addNamespaceToSchema to true when needed
-	- ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``  
+	- ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``
 - When present remove springIbisTestTool[name].xml and add property ibistesttool.custom=[name] to DeploymentSpecifics.properties. The springIbisTestTool[name].xml should now be present in IAF jars, mail springIbisTestTool[name].xml to Jaco or Peter to double check
 
 
@@ -1227,8 +1212,7 @@ Performance enhancements
 6.0
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5.6.1...v6.0)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v6.0)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5.6.1...v6.0)
 
 - Add support for jetty-maven-plugin
 - Add note "Theme Bootstrap is part of a beta version" in main page of IBIS console for theme "bootstrap"
@@ -1417,18 +1401,16 @@ Performance enhancements
 5.6.1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5.6...v5.6.1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.6.1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5.6...v5.6.1)
 
-- Fixed bug in EsbSoapWrapper where Result element was inserted instead of Status element 
+- Fixed bug in EsbSoapWrapper where Result element was inserted instead of Status element
 
 
 
 5.6
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5.5...v5.6)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.6)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5.5...v5.6)
 
 - Move missing errorStorage warning from MessageKeeper (at adapter level) and logfile to ConfigurationWarnings (top of console main page).
 - Replace (broken) enforceMQCompliancy on JmsSender with MQSender.
@@ -1455,8 +1437,7 @@ Performance enhancements
 5.5
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5.4...v5.5)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.5)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5.4...v5.5)
 
 - Also when not transacted don't retrow exception caught in JMS listener (caused connection to be closed and caused possible other threads on the same listener to experience "javax.jms.IllegalStateException: Consumer closed").
 - Tweaked error logging and configuration warnings about transactional processing.
@@ -1487,8 +1468,7 @@ Performance enhancements
 5.4
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5_3...v5_4)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.4)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5_3...v5_4)
 
 - First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
 - added "Used SapSystems" to console function "Show Security Items"
@@ -1508,7 +1488,7 @@ Performance enhancements
 5.3
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
+[Commits](https://github.com/frankframework/frankframework/compare/v5_2...v5_3)
 
 - Better DB2 support.
 - Some steps towards making a release with Maven.
