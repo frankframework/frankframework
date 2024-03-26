@@ -27,6 +27,7 @@ export class JmsSendMessageComponent implements OnInit {
   file: File | null = null;
   connectionFactories: string[] = [];
   error: string = '';
+  successMessage: string = '';
   form: Form = {
     destination: '',
     replyTo: '',
@@ -41,7 +42,7 @@ export class JmsSendMessageComponent implements OnInit {
     encoding: '',
   };
 
-  constructor(private jmsService: JmsService) {}
+  constructor(private jmsService: JmsService) { }
 
   ngOnInit(): void {
     this.jmsService.getJms().subscribe((data) => {
@@ -51,6 +52,7 @@ export class JmsSendMessageComponent implements OnInit {
 
   submit(formData: Form): void {
     this.processing = true;
+    this.successMessage = '';
     if (!formData) return;
 
     const fd = new FormData();
@@ -106,6 +108,7 @@ export class JmsSendMessageComponent implements OnInit {
       next: () => {
         this.error = '';
         this.processing = false;
+        this.successMessage = 'JMS Message sent successfully';
       },
       error: (errorData: HttpErrorResponse) => {
         this.processing = false;
@@ -119,6 +122,7 @@ export class JmsSendMessageComponent implements OnInit {
 
   reset(): void {
     this.error = '';
+    this.successMessage = '';
     if (!this.form) return;
     if (this.form['destination']) this.form['destination'] = '';
     if (this.form['replyTo']) this.form['replyTo'] = '';
