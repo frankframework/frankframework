@@ -27,6 +27,7 @@ export class JmsSendMessageComponent implements OnInit {
   file: File | null = null;
   connectionFactories: string[] = [];
   error: string = "";
+  successMessage: string = '';
   form: Form = {
     destination: "",
     replyTo: "",
@@ -51,6 +52,7 @@ export class JmsSendMessageComponent implements OnInit {
 
   submit(formData: Form) {
     this.processing = true;
+    this.successMessage = '';
     if (!formData) return;
 
     var fd = new FormData();
@@ -90,18 +92,22 @@ export class JmsSendMessageComponent implements OnInit {
       return;
     }
 
-    this.jmsService.postJmsMessage(fd).subscribe({ next: (returnData) => {
-      this.error = "";
-      this.processing = false;
-    }, error: (errorData: HttpErrorResponse) => {
-      this.processing = false;
-      const error = errorData.error ? errorData.error.error : "An unknown error occured, check the logs for more info.";
-      this.error = typeof error === 'object' ? error.error : error;
-    }});
+    this.jmsService.postJmsMessage(fd).subscribe({
+      next: (returnData) => {
+        this.error = "";
+        this.processing = false;
+        this.successMessage = 'JMS Message sent successfully';
+      }, error: (errorData: HttpErrorResponse) => {
+        this.processing = false;
+        const error = errorData.error ? errorData.error.error : "An unknown error occured, check the logs for more info.";
+        this.error = typeof error === 'object' ? error.error : error;
+      }
+    });
   };
 
   reset() {
     this.error = "";
+    this.successMessage = '';
     if (!this.form) return;
     if (this.form["destination"])
       this.form["destination"] = "";
