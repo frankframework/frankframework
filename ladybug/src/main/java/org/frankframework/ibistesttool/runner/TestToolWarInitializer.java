@@ -72,10 +72,11 @@ public class TestToolWarInitializer extends SpringBootServletInitializer {
 
 	@Override
 	protected WebApplicationContext run(SpringApplication application) {
-		AppConstants properties = AppConstants.getInstance(); //Deep clone of the AppConstants
+		AppConstants properties = AppConstants.getInstance();
 		String file = properties.getProperty("ibistesttool.springConfigFile", "springIbisTestTool.xml");
 
-		application.setAllowBeanDefinitionOverriding(true);//Only allow this (by default) for this context. application.propeties may be overwritten..
+		//Only allow this (by default) for this context, application.propeties may be overwritten.
+		application.setAllowBeanDefinitionOverriding(true);
 		Set<String> set = new HashSet<>();
 		set.add(getConfigFile(file));
 		application.setSources(set);

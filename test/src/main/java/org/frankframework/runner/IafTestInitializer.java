@@ -24,7 +24,10 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
+import org.apache.logging.log4j.LogManager;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
@@ -43,7 +46,14 @@ import org.springframework.core.env.PropertiesPropertySource;
  */
 public class IafTestInitializer {
 
-	public static class ApplicationInitializer extends FrankApplicationInitializer implements ServletContextInitializer {}
+	public static class ApplicationInitializerWrapper implements ServletContextInitializer {
+		@Override
+		public void onStartup(ServletContext servletContext) throws ServletException {
+			FrankApplicationInitializer init = new FrankApplicationInitializer();
+			init.onStartup(servletContext);
+			LogManager.getLogger("APPLICATION").info("Started Frank!Application");
+		}
+	}
 
 	public static class ConfigureAppConstants implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -71,7 +81,7 @@ public class IafTestInitializer {
 		app.addInitializers(new ConfigureAppConstants());
 		app.setWebApplicationType(WebApplicationType.SERVLET);
 		Set<String> set = new HashSet<>();
-		app.addPrimarySources(List.of(ApplicationInitializer.class));
+		app.addPrimarySources(List.of(ApplicationInitializerWrapper.class));
 		set.add(SpringContextScope.ENVIRONMENT.getContextFile());
 		set.add("TestFrankContext.xml");
 		app.setSources(set);

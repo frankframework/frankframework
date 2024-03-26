@@ -269,10 +269,10 @@
 		In newer versions of Eclipse (at least version 20181214-0600 onwards) this seems to have been resolved.
 		-->
 		<profile>
-			<id>m2e</id>
+			<id>spring-boot</id>
 			<activation>
 				<property>
-					<name>m2e.version</name>
+					<name>m2e.version</name><!-- automatically enables it on Eclipse -->
 				</property>
 			</activation>
 			<dependencies>
