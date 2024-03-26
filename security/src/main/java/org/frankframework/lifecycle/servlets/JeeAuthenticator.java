@@ -93,7 +93,7 @@ public class JeeAuthenticator extends ServletAuthenticatorBase {
 	// Reads the web.xml file 'security-roles'
 	private MappableAttributesRetriever getWebXmlSecurityRoles() {
 		DelegatedMappableAttributesRetriever attributeRetriever = new DelegatedMappableAttributesRetriever();
-		try {
+		try {// If no web.xml is present this (default) authenticator will fail (and prevent the application from starting up.
 			MappableAttributesRetriever webXml = SpringUtils.createBean(getApplicationContext(), WebXmlMappableAttributesRetriever.class);
 			attributeRetriever.addMappableAttributes(webXml.getMappableAttributes());
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {

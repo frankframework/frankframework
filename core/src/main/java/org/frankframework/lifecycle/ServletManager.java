@@ -102,6 +102,10 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		return Collections.unmodifiableList(registeredRoles);
 	}
 
+	/*
+	 * Maybe a bit overkill to use ServletContextAware and Autowired but this ensures that the 
+	 * ServletContext is always set, when running traditional WAR as well as via Spring Boot.
+	 */
 	@Override
 	@Autowired
 	@Lazy
