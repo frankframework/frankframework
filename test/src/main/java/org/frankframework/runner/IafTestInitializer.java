@@ -21,6 +21,9 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
 
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.SpringContextScope;
@@ -50,17 +53,17 @@ public class IafTestInitializer {
 		}
 	}
 
-	// Should start a XmlServletWebServerApplicationContext.
+	// requires --add-opens=java.base/java.lang=ALL-UNNAMED
 	public static void main(String[] args) throws IOException {
-		String currentDir = System.getProperty("user.dir");
-		Path projectPath = Path.of(currentDir).toAbsolutePath();
+		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
+		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
 
-		String logDir = getLogDir(projectPath);
+		getConfigurationsDirectory(projectDir);
 
 		System.setProperty("application.security.http.authentication", "false");
 		System.setProperty("application.security.http.transportGuarantee", "none");
 		System.setProperty("dtap.stage", "LOC");
-		System.setProperty("log.dir", logDir);
+		System.setProperty("log.dir", getLogDir(projectDir));
 		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
 
 		SpringApplication app = new SpringApplication();
@@ -74,6 +77,36 @@ public class IafTestInitializer {
 		app.run(args);
 	}
 
+	private static void getConfigurationsDirectory(Path projectDir) throws IOException {
+		Path configurationDir = projectDir.resolve("src/main/configurations").toAbsolutePath();
+		System.setProperty("configurations.directory", configurationDir.toString());
+
+		// Loop though all directories (depth = 1) + skip current directory.
+		try(Stream<Path> folders = Files.walk(configurationDir, 1).skip(1).filter(Files::isDirectory)) {
+			folders.forEach(path -> {
+				String name = path.getFileName().toString();
+				System.setProperty("configurations."+name+".classLoaderType", "ScanningDirectoryClassLoader");
+				System.setProperty("configurations."+name+".configurationFile", "Configuration.xml");
+				System.setProperty("configurations."+name+".basePath", name);
+			});
+		}
+	}
+
+	// Eclipse runs from the module (relative) directory.
+	// IntelliJ runs from the project root directory.
+	private static @Nonnull Path validateIfEclipseOrIntelliJ(Path runFromDir) throws IOException {
+		if(Files.exists(runFromDir.resolve(".github"))) { // this folder exists in the project ROOT directory
+			Path module = runFromDir.resolve("test");
+			if(Files.exists(module)) {
+				return module;
+			}
+			throw new IOException("assuming we're using IntelliJ but cannot find the FF! Test module");
+		}
+
+		return runFromDir;
+	}
+
+	// Store the logs by default in ./test/target/logs
 	private static String getLogDir(Path projectPath) throws IOException {
 		Path targetPath = projectPath.resolve("target");
 		if(Files.exists(targetPath) && Files.isDirectory(targetPath)) {
