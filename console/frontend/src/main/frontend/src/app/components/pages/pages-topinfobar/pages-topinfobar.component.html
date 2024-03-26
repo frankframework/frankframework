@@ -4,6 +4,12 @@
       <li class="active">
         <strong>{{ breadcrumbs }}</strong>
       </li>
+      <li *ngIf="popoutUrl">
+        <button (click)="navigateToUrl()" class="btn btn-xs pull-right">
+          <i class="fa fa-arrow-circle-right"></i>
+          Pop Out
+        </button>
+      </li>
     </ol>
   </div>
   <div class="col-sm-4">
