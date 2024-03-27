@@ -126,7 +126,7 @@
 		<property name="reportsFolder" value="${ibistesttool.directory}"/>
 	</bean>
 	<bean name="testStorageDatabase" class="nl.nn.testtool.storage.database.DatabaseTestStorage" autowire="byName"
-		depends-on="ladybugTestDatabaseChangelog"
+		depends-on="ladybugDatabaseChangelog"
 		>
 		<property name="name" value="Test"/>
 	</bean>
@@ -219,20 +219,7 @@
 		depends-on="databaseStartupValidator"
 		>
 		<property name="dataSource" ref="defaultDataSource"/>
-		<property name="changeLog" value="classpath:ladybug/LadybugDatabaseChangelog.xml"/>
-	</bean>
-
-	<!--
-	Depends on ladybugDatabaseChangelog to prevent parallel execution of both change logs which on Oracle can give:
-	ORA-08177: can't serialize access for this transaction
-	-->
-	<bean
-		name="ladybugTestDatabaseChangelog"
-		class="liquibase.integration.spring.SpringLiquibase"
-		depends-on="ladybugDatabaseChangelog"
-		>
-		<property name="dataSource" ref="defaultDataSource"/>
-		<property name="changeLog" value="classpath:ladybug/LadybugTestDatabaseChangelog.xml"/>
+		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
 	</bean>
 
 	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
