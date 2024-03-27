@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.IbisContext;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -28,11 +32,6 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import lombok.extern.log4j.Log4j2;
-import org.frankframework.configuration.IbisContext;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.Misc;
 
 /**
  * Spring WebApplicationInitializer that should start after the {@link FrankEnvironmentInitializer} has been configured.
@@ -60,12 +59,6 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 			appConstants.put("webapp.realpath", realPath);
 		} else {
 			log.warn("Could not determine webapp.realpath");
-		}
-		String projectBaseDir = Misc.getProjectBaseDir();
-		if (projectBaseDir != null) {
-			appConstants.put("project.basedir", projectBaseDir);
-		} else {
-			log.info("Could not determine project.basedir");
 		}
 
 		ApplicationContext parentContext = null;

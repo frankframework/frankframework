@@ -103,7 +103,7 @@
 
 	<profiles>
 		<profile>
-			<id>ibissource</id>
+			<id>frankframework</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>

@@ -38,9 +38,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
+import org.springframework.web.context.ServletContextAware;
 
 import lombok.Setter;
 import org.frankframework.lifecycle.servlets.AuthenticationType;
@@ -81,10 +84,10 @@ import org.frankframework.util.StringUtil;
  * @author Niels Meijer
  *
  */
-public class ServletManager implements ApplicationContextAware, InitializingBean {
+public class ServletManager implements ApplicationContextAware, InitializingBean, ServletContextAware {
 
 	private ServletContext servletContext = null;
-	private final List<String> registeredRoles = new ArrayList<>();
+	private final List<String> registeredRoles = new ArrayList<>(ServletAuthenticatorBase.DEFAULT_IBIS_ROLES); //Add the default IBIS roles
 	private final Logger log = LogUtil.getLogger(this);
 	private final Map<String, ServletConfiguration> servlets = new HashMap<>();
 	private final Map<String, IAuthenticator> authenticators = new HashMap<>();
@@ -99,15 +102,23 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		return Collections.unmodifiableList(registeredRoles);
 	}
 
-	public ServletManager(ServletContext servletContext) {
+	/*
+	 * Maybe a bit overkill to use ServletContextAware and Autowired but this ensures that the 
+	 * ServletContext is always set, when running traditional WAR as well as via Spring Boot.
+	 */
+	@Override
+	@Autowired
+	@Lazy
+	public void setServletContext(ServletContext servletContext) {
 		this.servletContext = servletContext;
-
-		//Add the default IBIS roles
-		registeredRoles.addAll(ServletAuthenticatorBase.DEFAULT_IBIS_ROLES);
 	}
 
 	@Override // After initialization but before other servlets are wired
 	public void afterPropertiesSet() throws Exception {
+		if(servletContext == null) {
+			throw new IllegalStateException("not ServletContext configured");
+		}
+
 		Environment env = applicationContext.getEnvironment();
 		SecuritySettings.setupDefaultSecuritySettings(env);
 		allowUnsecureOptionsRequest = env.getProperty(ServletAuthenticatorBase.ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
