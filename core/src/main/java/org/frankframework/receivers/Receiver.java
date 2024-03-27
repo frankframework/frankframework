@@ -1197,7 +1197,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 			MessageWrapper<M> messageWithMessageIdAndCorrelationId = new MessageWrapper<>(messageWrapper, messageWrapper.getMessage(), messageId, businessCorrelationId);
 
-			boolean exitWithoutProcessing = checkMessageHistory(messageWithMessageIdAndCorrelationId, session, manualRetry, duplicatesAlreadyChecked);
+			boolean exitWithoutProcessing = checkMessageHistory(messageWithMessageIdAndCorrelationId, session, manualRetry, historyAlreadyChecked);
 			if (exitWithoutProcessing) {
 				return Message.nullMessage();
 			}
