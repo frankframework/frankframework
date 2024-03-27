@@ -55,16 +55,16 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
-					<param name="SOURCE" value="${hostname}_FF1" />
+					<param name="SOURCE" value="${hostname}_FF" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/JmsFFSender" />
 				<forward name="success" path="switchAction" />
 			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
-				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" />
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
-				<forward name="success" path="EXIT" />
+				xpathExpression="request/@action" getInputFromSessionKey="originalMessage">
+				<forward name="echo" path="EXIT" />
+				<forward name="listenerException" path="EXIT" />
 			</pipe>
 			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
@@ -133,7 +133,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
-					<param name="SOURCE" value="${hostname}_FF3" />
+					<param name="SOURCE" value="${hostname}_FF" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/JmsFFSenderWithRead" />
@@ -170,12 +170,12 @@
 	<adapter name="JmsFFListener" description="Test the functioning of the JmsListener (FF)"
 		active="${active.jms}">
 		<receiver name="JmsFFListener" transactionAttribute="Required"
-			elementToMoveChain="Location" removeCompactMsgNamespaces="false"
+			elementToMove="location" removeCompactMsgNamespaces="false"
 			maxRetries="0" hideRegex="(?&lt;=&lt;value&gt;).*?(?=&lt;/value&gt;)"
 			hideMethod="firstHalf">
 			<listener className="nl.nn.adapterframework.jms.JmsListener"
 				destinationName="${jms.destination.i4testiaf_ff}" useReplyTo="false" jmsRealm="qcf"
-				messageSelector="SOURCE='${hostname}_FF3'" />
+				messageSelector="SOURCE='${hostname}_FF'" />
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/JmsFFListener" />
 		</receiver>
@@ -189,6 +189,14 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe"
+				getInputFromFixedValue="ERROR">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<!-- when the incoming message is 'listenerException' validates the elementToMove has done it's job -->
+			<pipe name="listenerException" className="nl.nn.adapterframework.pipes.XmlSwitch"
+				forwardNameSessionKey="ref_location" notFoundForwardName="EXIT" />
+			<pipe name="move-me" className="nl.nn.adapterframework.pipes.ExceptionPipe"
 				getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>
