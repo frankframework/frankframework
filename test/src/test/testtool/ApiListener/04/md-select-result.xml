@@ -15,11 +15,17 @@
 						<field name="TYPE">A</field>
 						<field name="SLOTID">ApiListenerDuplicateCheck</field>
 						<field name="MESSAGEID">Test Tool correlation id</field>
+						<field name="MESSAGE">&lt;request uri="httpIGNORE/api/exception"&gt;
+&lt;content&gt;goes-here&lt;/content&gt;
+&lt;/request&gt;</field>
 					</row>
 					<row number="1">
 						<field name="TYPE">E</field>
 						<field name="SLOTID">ApiListenerDuplicateCheck-Errors</field>
 						<field name="MESSAGEID">Test Tool correlation id</field>
+						<field name="MESSAGE">&lt;request uri="httpIGNORE/api/exception"&gt;
+&lt;content&gt;goes-here&lt;/content&gt;
+&lt;/request&gt;</field>
 					</row>
 				</rowset>
 			</result>
