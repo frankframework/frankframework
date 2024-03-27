@@ -47,6 +47,8 @@
 		<artemis.driver.version>2.19.1</artemis.driver.version><!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
+
+		<aws.java.sdk.version>2.25.17</aws.java.sdk.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -404,6 +406,14 @@
 				<groupId>org.springframework.security</groupId>
 				<artifactId>spring-security-bom</artifactId>
 				<version>${spring-security.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>bom</artifactId>
+				<version>${aws.java.sdk.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
