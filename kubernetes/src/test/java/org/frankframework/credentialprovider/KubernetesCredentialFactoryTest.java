@@ -99,7 +99,7 @@ class KubernetesCredentialFactoryTest {
 
 	@Test
 	void testGetCredentialsWithDetails() throws UnsupportedOperationException {
-		ICredentials credential1 = credentialFactory.getCredentials("alias1", () -> "testUsername1", () -> "testPassword1");
+		ICredentials credential1 = credentialFactory.getCredentials("alias1", () -> "testUsername", () -> "testPassword");
 		assertEquals("testUsername1", credential1.getUsername());
 		assertEquals("testPassword1", credential1.getPassword());
 
