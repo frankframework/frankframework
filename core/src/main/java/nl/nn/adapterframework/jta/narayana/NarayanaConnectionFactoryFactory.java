@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,13 +22,14 @@ import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.jboss.narayana.jta.jms.JmsXAResourceRecoveryHelper;
 import org.jboss.narayana.jta.jms.TransactionHelper;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
-import org.messaginghub.pooled.jms.JmsPoolXAConnectionFactory;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
+import nl.nn.adapterframework.jta.CustomJmsPoolConnectionFactory;
+import nl.nn.adapterframework.jta.CustomJmsPoolXaConnectionFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -36,8 +37,10 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
+	private @Getter @Setter int minIdle = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.minIdle", 1);
+	private @Getter @Setter int maxIdle = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdle", 2);
 	private @Getter @Setter int maxIdleTime = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdleTime", 60);
-	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 20);
+	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 5);
 	private @Getter @Setter int connectionCheckInterval = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.checkInterval", 300);
 	private @Getter @Setter int maxSessions = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxSessions", 500);
 	private @Getter @Setter int sessionWaitTimeout = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connections.sessionWaitTimeout", 15);
@@ -66,14 +69,20 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 
 	private ConnectionFactory createConnectionFactoryPool(ConnectionFactory connectionFactory) {
 		if(connectionFactory instanceof XAConnectionFactory) {
-			JmsPoolXAConnectionFactory pooledConnectionFactory = new JmsPoolXAConnectionFactory();
+			CustomJmsPoolXaConnectionFactory pooledConnectionFactory = new CustomJmsPoolXaConnectionFactory();
 			pooledConnectionFactory.setTransactionManager(this.transactionManager.getTransactionManager());
 			pooledConnectionFactory.setConnectionFactory(connectionFactory);
+			pooledConnectionFactory.setMinIdle(minIdle);
+			pooledConnectionFactory.setMaxIdle(maxIdle);
+			pooledConnectionFactory.setMaxIdleTimeSeconds(maxIdleTime);
 			return augmentPool(pooledConnectionFactory);
 		}
 
-		JmsPoolConnectionFactory pooledConnectionFactory = new JmsPoolConnectionFactory();
+		CustomJmsPoolConnectionFactory pooledConnectionFactory = new CustomJmsPoolConnectionFactory();
 		pooledConnectionFactory.setConnectionFactory(connectionFactory);
+		pooledConnectionFactory.setMinIdle(minIdle);
+		pooledConnectionFactory.setMaxIdle(maxIdle);
+		pooledConnectionFactory.setMaxIdleTimeSeconds(maxIdleTime);
 		return augmentPool(pooledConnectionFactory);
 	}
 

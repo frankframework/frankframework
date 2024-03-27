@@ -9,7 +9,7 @@ This guide was written with the assertion that you are A) using Eclipse, and B) 
 Download the following JAR files. We advise you to place them in the Servers\lib folder of your Eclipse workspace. If you don't have this folder, you can create it.
 If you use IntelliJ, open "Settings | Build, Execution, Deployment | Application Servers", locate your Tomcat application server, and add these libraries:
 * [geronimo-j2ee-management\_1.1_spec-1.0.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-j2ee-management_1.1_spec/1.0.1)
-* [geronimo-jms\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jms_1.1_spec/1.1.1)
+* [geronimo-jms\_2.0_spec-1.0-alpha-2.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jms_2.0_spec/1.0-alpha-2)
 * [geronimo-jta\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jta_1.1_spec/1.1.1)
 
 If you want to use Queuing or a DBMS other than H2, you need to ensure the corresponding JDBC drivers are in place:
