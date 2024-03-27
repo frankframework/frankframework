@@ -213,6 +213,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- Upgrade commons-compress because of vulnerability; transitive dep of tika-parsers -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>1.26.1</version>
+		</dependency>
+
 
 		<!-- Explicitly here because we want to force 'our' version and not the inherited version from DSN -->
 		<dependency>
@@ -316,6 +323,14 @@
 	</dependencies>
 
 	<repositories>
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 		<repository>
 			<id>AsposeJavaAPI</id>
 			<name>Aspose Java Repository</name>
