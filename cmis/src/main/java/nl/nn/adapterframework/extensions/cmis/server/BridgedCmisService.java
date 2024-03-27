@@ -17,7 +17,7 @@ package nl.nn.adapterframework.extensions.cmis.server;
 
 import java.lang.reflect.Method;
 
-import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.AclService;
@@ -32,6 +32,7 @@ import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.apache.chemistry.opencmis.commons.spi.VersioningService;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.extensions.cmis.CloseableCmisSession;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionException;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisDiscoveryService;
@@ -39,7 +40,9 @@ import nl.nn.adapterframework.extensions.cmis.server.impl.IbisNavigationService;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisObjectService;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisRepositoryService;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * After each request the CallContext is removed.
@@ -79,13 +82,13 @@ public class BridgedCmisService extends FilterCmisService {
 				continue;
 
 			//Remove set from the method name
-			String setter = firstCharToLower(method.getName().substring(3));
+			String setter = StringUtil.lcFirst(method.getName().substring(3));
 			String value = APP_CONSTANTS.getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter);
 			if(value == null)
 				continue;
 
 			//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
-			Object castValue = getCastValue(method.getParameterTypes()[0], value);
+			Object castValue = ClassUtils.convertToType(method.getParameterTypes()[0], value);
 			log.debug("trying to set property ["+RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+sessionBuilder+"]");
 
 			try {
@@ -96,27 +99,15 @@ public class BridgedCmisService extends FilterCmisService {
 		}
 
 		try {
-			Session session = sessionBuilder.build();
+			SessionParameterMap map = sessionBuilder.build();
+			CloseableCmisSession session = new CloseableCmisSession(map);
+			session.connect();
 			return session.getBinding();
 		}
 		catch (CmisSessionException e) {
 			log.error("unable to create cmis session", e);
 			throw new CmisConnectionException(e.getMessage());
 		}
-	}
-
-	private String firstCharToLower(String input) {
-		return input.substring(0, 1).toLowerCase() + input.substring(1);
-	}
-
-	private Object getCastValue(Class<?> class1, String value) {
-		String className = class1.getName().toLowerCase();
-		if("boolean".equals(className))
-			return Boolean.parseBoolean(value);
-		else if("int".equals(className) || "integer".equals(className))
-			return Integer.parseInt(value);
-		else
-			return value;
 	}
 
 	@Override
