@@ -48,6 +48,8 @@
 		<artemis.driver.version>2.31.2</artemis.driver.version>
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
+
+		<aws.java.sdk.version>2.25.17</aws.java.sdk.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -133,6 +135,12 @@
 				<artifactId>netty-transport-native-epoll</artifactId>
 				<version>4.1.104.Final</version>
 			</dependency>
+			<dependency><!-- Can be removed when SQS jar is updated > 2.25.17, with an updated netty-nio-client > 2.25.17 and has a higher version of netty-codec-http. -->
+				<groupId>io.netty</groupId>
+				<artifactId>netty-codec-http</artifactId>
+				<version>4.1.108.Final</version>
+			</dependency>
+
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
@@ -424,6 +432,14 @@
 				<groupId>org.springframework.security</groupId>
 				<artifactId>spring-security-bom</artifactId>
 				<version>${spring-security.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>bom</artifactId>
+				<version>${aws.java.sdk.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -1163,7 +1179,7 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>ibissource</id>
+			<id>frankframework</id>
 			<url>https://nexus.frankframework.org/content/groups/public</url>
 		</repository>
 	</repositories>
@@ -1229,11 +1245,11 @@
 			<id>ibissource</id>
 			<distributionManagement>
 				<repository>
-					<id>ibissource</id>
+					<id>frankframework</id>
 					<url>https://nexus.frankframework.org/content/repositories/releases</url>
 				</repository>
 				<snapshotRepository>
-					<id>ibissource</id>
+					<id>frankframework</id>
 					<url>https://nexus.frankframework.org/content/repositories/snapshots</url>
 				</snapshotRepository>
 				<site>
@@ -1300,10 +1316,17 @@
 			</modules>
 			<repositories>
 				<repository>
+					<id>central</id>
+					<name>Central Repository</name>
+					<url>https://repo.maven.apache.org/maven2/</url>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
+				<repository>
 					<id>proprietary</id>
 					<url>https://nexus.frankframework.org/content/repositories/private/</url>
 					<snapshots>
-						<!-- Prevent Maven from attempting to download non existing /x.y-SNAPSHOT/maven-metadata.xml on this url for every module on every build -->
 						<enabled>false</enabled>
 					</snapshots>
 				</repository>
@@ -1348,7 +1371,7 @@
 			</activation>
 			<pluginRepositories>
 				<pluginRepository>
-					<id>ibissource</id>
+					<id>frankframework</id>
 					<url>https://nexus.frankframework.org/content/groups/public</url>
 					<snapshots>
 						<enabled>true</enabled>
