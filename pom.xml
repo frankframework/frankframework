@@ -134,6 +134,12 @@
 				<artifactId>netty-transport-native-epoll</artifactId>
 				<version>4.1.103.Final</version>
 			</dependency>
+			<dependency><!-- Can be removed when SQS jar is updated > 2.25.17, with an updated netty-nio-client > 2.25.17 and has a higher version of netty-codec-http. -->
+				<groupId>io.netty</groupId>
+				<artifactId>netty-codec-http</artifactId>
+				<version>4.1.108.Final</version>
+			</dependency>
+
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
