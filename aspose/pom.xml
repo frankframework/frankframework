@@ -14,12 +14,12 @@
 		<!-- NOTE: some dependencies require the classifier tag to be set to jdk16 (1.6) -->
 		<!-- Latest versions and what libraries need the classifier can be checked on the -->
 		<!-- AsposeJava Maven repository: https://releases.aspose.com/java/repo/com/aspose/ -->
-		<aspose.cells.version>23.10</aspose.cells.version>
-		<aspose.email.version>23.9</aspose.email.version>
-		<aspose.imaging.version>23.10</aspose.imaging.version>
-		<aspose.pdf.version>23.10</aspose.pdf.version>
-		<aspose.slides.version>23.10</aspose.slides.version>
-		<aspose.words.version>23.10</aspose.words.version>
+		<aspose.cells.version>24.3</aspose.cells.version>
+		<aspose.email.version>24.2</aspose.email.version>
+		<aspose.imaging.version>24.3</aspose.imaging.version>
+		<aspose.pdf.version>24.2</aspose.pdf.version>
+		<aspose.slides.version>24.3</aspose.slides.version>
+		<aspose.words.version>24.3</aspose.words.version>
 	</properties>
 
 	<dependencies>
@@ -237,39 +237,41 @@
 			<artifactId>aspose-pdf</artifactId>
 			<version>${aspose.pdf.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-email</artifactId>
 			<version>${aspose.email.version}</version>
 			<classifier>jdk16</classifier>
 		</dependency>
-
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-words</artifactId>
 			<version>${aspose.words.version}</version>
-			<classifier>jdk16</classifier>
+			<classifier>jdk17</classifier>
 		</dependency>
-
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-cells</artifactId>
 			<version>${aspose.cells.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-slides</artifactId>
 			<version>${aspose.slides.version}</version>
 			<classifier>jdk16</classifier>
 		</dependency>
-
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-imaging</artifactId>
  			<version>${aspose.imaging.version}</version>
 			<classifier>jdk16</classifier>
+		</dependency>
+
+		<!-- Upgrade commons-compress because of vulnerability; transitive dep of tika-parsers -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>1.26.1</version>
 		</dependency>
 
 		<!-- test scoped dependencies -->
