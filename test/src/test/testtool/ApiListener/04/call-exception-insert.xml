@@ -1,1 +1,3 @@
-<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exception"/>
+<request uri="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exception">
+<content>goes-here</content>
+</request>

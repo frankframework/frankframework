@@ -11,6 +11,9 @@
 			<column>
 				<name>MESSAGEID</name>
 			</column>
+			<column>
+				<name>MESSAGE</name>
+			</column>
 		</columns>
 		<where>SLOTID IN ('ApiListenerDuplicateCheck', 'ApiListenerDuplicateCheck-Errors')</where>
 		<order>TYPE</order>

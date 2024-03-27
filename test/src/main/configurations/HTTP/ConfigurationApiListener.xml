@@ -81,6 +81,7 @@
 		<receiver
 			checkForDuplicates="true"
 			processResultCacheSize="0"
+			elementToMove="content"
 			>
 			<listener
 				name="SimpleInsertListener"
