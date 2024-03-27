@@ -14,6 +14,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,9 +45,12 @@ class KubernetesCredentialFactoryTest {
 		secret5.getData().replace(KubernetesCredentialFactory.USERNAME_KEY, "wrongBase64Encoding");
 
 		when(client.secrets()).thenReturn(mock(MixedOperation.class));
-		when(client.secrets().inNamespace(KubernetesCredentialFactory.namespace)).thenReturn(mock(NonNamespaceOperation.class));
-		when(client.secrets().inNamespace(KubernetesCredentialFactory.namespace).list()).thenReturn(mock(SecretList.class));
-		when(client.secrets().inNamespace(KubernetesCredentialFactory.namespace).list().getItems()).thenReturn(List.of(secret1, secret2, secret3, secret4, secret5));
+		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE)).thenReturn(mock(NonNamespaceOperation.class));
+		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list()).thenReturn(mock(SecretList.class));
+		when(client.secrets()
+				.inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE)
+				.list()
+				.getItems()).thenReturn(List.of(secret1, secret2, secret3, secret4, secret5));
 
 		when(client.getConfiguration()).thenReturn(new Config());
 		CredentialConstants.getInstance().setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
@@ -114,12 +118,22 @@ class KubernetesCredentialFactoryTest {
 
 	@Test
 	void testGetCredentialsWithoutEnoughDetails() throws UnsupportedOperationException {
-		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(null, () -> "testUsername2", null));
-		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(null, null, () -> "testPassword2"));
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials(null, () -> "testUsername2", null));
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials(null, null, () -> "testPassword2"));
 	}
 
 	@Test
-	void testCachingSecretsWorks(){
+	void testUnknownAliasNoDefaults() {
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials("fakeAlias", () -> null, () -> null));
+	}
+
+	@Test
+	void testGetCredentialsWithWrongDetails() {
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials(null, () -> "fakeUsername", () -> "fakePassword"));
+	}
+
+	@Test
+	void testCachingSecretsWorks() {
 		// Should be called once
 		Mockito.clearInvocations(client);
 		credentialFactory.clearTimer();

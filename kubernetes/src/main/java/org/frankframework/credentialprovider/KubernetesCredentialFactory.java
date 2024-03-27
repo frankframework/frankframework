@@ -18,6 +18,7 @@ package org.frankframework.credentialprovider;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -47,8 +48,9 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 	public static final long CREDENTIALS_CACHE_DURATION_MILLIS = 60_000L;
 	protected static final String USERNAME_KEY = "username";
 	protected static final String PASSWORD_KEY = "password";
+	public static final String DEFAULT_NAMESPACE = "default";
+	protected String namespace = DEFAULT_NAMESPACE;
 	private KubernetesClient client;
-	protected static String namespace = "default";
 	protected List<KubernetesCredentials> credentials; // Refreshed every SECRETS_CACHE_TIMEOUT_MILLIS
 	private long lastFetch = 0;
 
@@ -77,7 +79,7 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 		// Fetch secrets directly at startup, from Kubernetes cluster
 		log.info("Fetching secrets from Kubernetes namespace: " + namespace);
 		credentials = getCredentials();
-		log.info("Loaded Credential amount: " + credentials.size());
+		log.info("Loaded Credential amount from Kubernetes: " + credentials.size());
 	}
 
 	@Override
@@ -88,20 +90,20 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 	@Override
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		if (StringUtils.isNotEmpty(alias)) {
-			KubernetesCredentials credentialFromAlias = getCredentials().stream()
+			return getCredentials().stream()
+					.filter(credential -> credential.getAlias() != null)
 					.filter(credential -> credential.getAlias().equalsIgnoreCase(alias))
-					.findFirst().orElse(null);
-			if (credentialFromAlias != null) {
-				return credentialFromAlias;
-			}
+					.findFirst()
+					.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
 		}
 		if (defaultUsernameSupplier == null || defaultPasswordSupplier == null) {
-			throw new IllegalArgumentException("No working alias and no default credentials supplied");
+			throw new NoSuchElementException("No alias supplied and also no default credentials supplied: cannot obtain credentials");
 		}
 		return getCredentials().stream()
 				.filter(credential -> defaultUsernameSupplier.get().equalsIgnoreCase(credential.getUsername()))
 				.filter(credential -> defaultPasswordSupplier.get().equalsIgnoreCase(credential.getPassword()))
-				.findFirst().orElse(null);
+				.findFirst()
+				.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from supplied username and password"));
 	}
 
 	@Override
