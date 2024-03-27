@@ -99,11 +99,7 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 		if (defaultUsernameSupplier == null || defaultPasswordSupplier == null) {
 			throw new NoSuchElementException("No alias supplied and also no default credentials supplied: cannot obtain credentials");
 		}
-		return getCredentials().stream()
-				.filter(credential -> defaultUsernameSupplier.get().equalsIgnoreCase(credential.getUsername()))
-				.filter(credential -> defaultPasswordSupplier.get().equalsIgnoreCase(credential.getPassword()))
-				.findFirst()
-				.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from supplied username and password"));
+		return new KubernetesCredentials(null, defaultUsernameSupplier.get(), defaultPasswordSupplier.get());
 	}
 
 	@Override
