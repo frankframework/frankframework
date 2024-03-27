@@ -1192,15 +1192,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId());
 
 			String messageId = ensureMessageIdNotEmpty(messageWrapper.getId());
-			Message message = compactMessageIfRequired(messageWrapper.getMessage(), session);
-
 			final String businessCorrelationId = getBusinessCorrelationId(messageWrapper, messageId, session);
 			session.put(PipeLineSession.CORRELATION_ID_KEY, businessCorrelationId);
 
-			MessageWrapper<M> businessMessage = new MessageWrapper<>(messageWrapper, message, messageId, businessCorrelationId);
+			MessageWrapper<M> messageWithMessageIdAndCorrelationId = new MessageWrapper<>(messageWrapper, messageWrapper.getMessage(), messageId, businessCorrelationId);
 
-			final String label = extractLabel(message);
-			boolean exitWithoutProcessing = checkMessageHistory(businessMessage, session, manualRetry, historyAlreadyChecked);
+			boolean exitWithoutProcessing = checkMessageHistory(messageWithMessageIdAndCorrelationId, session, manualRetry, duplicatesAlreadyChecked);
 			if (exitWithoutProcessing) {
 				return Message.nullMessage();
 			}
@@ -1216,12 +1213,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message result = null;
 			PipeLineResult pipeLineResult = null;
 			try {
-				numReceived.increase();
+				final Message compactedMessage = compactMessageIfRequired(messageWrapper.getMessage(), session);
+
+				numReceived.increment();
+
 				showProcessingContext(messageId, businessCorrelationId, session);
 	//			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 				try {
-					if (getMessageLog()!=null) {
-						getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, businessMessage);
+					if (getMessageLog() != null) {
+						final String label = extractLabel(compactedMessage);
+						getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, messageWithMessageIdAndCorrelationId);
 					}
 					log.debug("{} preparing TimeoutGuard", logPrefix);
 					TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
@@ -1229,7 +1230,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						log.debug("{} activating TimeoutGuard with transactionTimeout [{}]s", logPrefix, getTransactionTimeout());
 						tg.activateGuard(getTransactionTimeout());
 
-						pipeLineResult = adapter.processMessageWithExceptions(messageId, businessMessage.getMessage(), session);
+						pipeLineResult = adapter.processMessageWithExceptions(messageId, compactedMessage, session);
 
 						setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
 						session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, String.valueOf(pipeLineResult.getExitCode()));
@@ -1275,7 +1276,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						pipeLineResult=new PipeLineResult();
 					}
 					if (Message.isEmpty(pipeLineResult.getResult())) {
-						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp));
+						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,compactedMessage,messageId,this,startProcessingTimestamp));
 					}
 					throw wrapExceptionAsListenerException(t);
 				}
@@ -1354,6 +1355,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (getChompCharSize() != null || getElementToMove() != null || getElementToMoveChain() != null) {
 			log.debug("{} compact received message", getLogPrefix());
 			try {
+				message.preserve();
 				message = compactMessage(message, session);
 			} catch (Exception e) {
 				String msg="error during compacting received message to more compact format";
