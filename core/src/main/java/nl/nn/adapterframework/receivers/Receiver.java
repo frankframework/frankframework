@@ -1205,6 +1205,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (getChompCharSize() != null || getElementToMove() != null || getElementToMoveChain() != null) {
 				log.debug(getLogPrefix()+"compact received message");
 				try {
+					message.preserve();
 					CompactSaxHandler handler = new CompactSaxHandler();
 					handler.setChompCharSize(getChompCharSize());
 					handler.setElementToMove(getElementToMove());
