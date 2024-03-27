@@ -1370,6 +1370,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (getChompCharSize() != null || getElementToMove() != null || getElementToMoveChain() != null) {
 			log.debug("{} compact received message", getLogPrefix());
 			try {
+				message.preserve();
 				message = compactMessage(message, session);
 			} catch (Exception e) {
 				String msg="error during compacting received message to more compact format";
