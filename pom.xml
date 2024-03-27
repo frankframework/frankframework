@@ -50,6 +50,8 @@
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 
+		<aws.java.sdk.version>2.25.17</aws.java.sdk.version>
+
 		<!-- Some test dependency versions -->
 		<mockito.version>5.11.0</mockito.version>
 		<junit.version>5.10.2</junit.version>
@@ -360,6 +362,14 @@
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-bom</artifactId>
 				<version>${log4j2.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>bom</artifactId>
+				<version>${aws.java.sdk.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
