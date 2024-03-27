@@ -1215,7 +1215,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			try {
 				final Message compactedMessage = compactMessageIfRequired(messageWrapper.getMessage(), session);
 
-				numReceived.increment();
+                numReceived.increase();
 
 				showProcessingContext(messageId, businessCorrelationId, session);
 	//			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
