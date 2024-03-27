@@ -35,9 +35,9 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.Adapter;
+import org.frankframework.larva.LarvaTool;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.Message;
-import org.frankframework.larva.LarvaTool;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
@@ -162,9 +162,6 @@ public class IbisTester {
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
 		webAppPath = getWebContentDirectory();
-		String projectBaseDir = Misc.getProjectBaseDir();
-		appConstants.put("project.basedir", projectBaseDir);
-		debug("***set property with name [project.basedir] and value [" + projectBaseDir + "]***");
 
 		System.setProperty("jdbc.migrator.active", "true");
 		// appConstants.put("validators.disabled", "true");

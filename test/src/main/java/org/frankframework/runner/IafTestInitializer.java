@@ -125,7 +125,7 @@ public class IafTestInitializer {
 			if(!Files.exists(logDir)) {
 				Files.createDirectory(logDir);
 			}
-			return logDir.toAbsolutePath().toString();
+			return logDir.toAbsolutePath().toString().replace("\\", "/"); // Slashes are required for the larva tool...
 		}
 		throw new IOException("unable to determine log directory");
 	}

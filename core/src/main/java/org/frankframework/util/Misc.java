@@ -34,17 +34,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.core.IMessageBrowser.HideMethod;
+import org.xml.sax.InputSource;
+
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.core.IMessageBrowser.HideMethod;
-import org.xml.sax.InputSource;
 
 
 /**
@@ -346,24 +347,6 @@ public class Misc {
 			log.warn("unable to parse build-output-directory using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
 			return null;
 		}
-	}
-
-	public static String getProjectBaseDir() {
-		String buildOutputDirectory = getBuildOutputDirectory();
-		if (buildOutputDirectory != null) {
-			// classic java project: {project.basedir}/WebContent/WEB-INF/classes
-			// maven project: {project.basedir}/target/classes
-			File dir = new File(buildOutputDirectory);
-			while (dir != null) {
-				String name = dir.getName();
-				if ("WebContent".equalsIgnoreCase(name)
-						|| "target".equalsIgnoreCase(name)) {
-					return dir.getParent();
-				}
-				dir = dir.getParentFile();
-			}
-		}
-		return null;
 	}
 
 	public static <T> void addToSortedListUnique(List<T> list, T item) {

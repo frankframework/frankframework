@@ -37,10 +37,12 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * Spring Boot entrypoint when running as a normal WAR application.
  *
+ * Has an order of 500 because it should start after the EnvironmentContext and before the ApplicationContext.
+ * 
  * @author Niels Meijer
  */
 @Order(500)
-public class TestToolWarInitializer extends SpringBootServletInitializer {
+public class LadybugWarInitializer extends SpringBootServletInitializer {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	@Configuration
