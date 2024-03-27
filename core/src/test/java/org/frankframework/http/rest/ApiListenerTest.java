@@ -230,7 +230,7 @@ public class ApiListenerTest {
 
 	@Test
 	public void testGetPhysicalDestinationNameWith1Endpoint() throws Exception {
-		ServletManager manager = spy(new ServletManager(null));
+		ServletManager manager = spy(new ServletManager());
 		Servlet servlet = mock(Servlet.class);
 		when(servlet.getName()).thenReturn(ApiListenerServlet.class.getSimpleName());
 		when(servlet.getUrlMapping()).thenReturn("aapje/*");
@@ -248,7 +248,7 @@ public class ApiListenerTest {
 
 	@Test
 	public void testGetPhysicalDestinationNameWith2Endpoints() throws Exception {
-		ServletManager manager = spy(new ServletManager(null));
+		ServletManager manager = spy(new ServletManager());
 		Servlet servlet = mock(Servlet.class);
 		when(servlet.getName()).thenReturn(ApiListenerServlet.class.getSimpleName());
 		when(servlet.getUrlMapping()).thenReturn("aap/*,/noot/*");

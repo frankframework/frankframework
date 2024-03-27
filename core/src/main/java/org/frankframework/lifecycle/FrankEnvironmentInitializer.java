@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.bus.spring.SpringBus;
-import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
@@ -48,13 +46,13 @@ import lombok.extern.log4j.Log4j2;
  * @author Niels Meijer
  */
 @Log4j2
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE+1) //2nd highest precedence
 public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
-		WebApplicationContext applicationContext = createApplicationContext(servletContext);
+		WebApplicationContext applicationContext = createApplicationContext();
 		ContextLoader contextLoader = new ContextLoader(applicationContext);
 
 		try {
@@ -91,11 +89,8 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 		}
 	}
 
-	private WebApplicationContext createApplicationContext(ServletContext servletContext) {
-		System.setProperty(EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER, "false");
+	private WebApplicationContext createApplicationContext() {
 		APPLICATION_LOG.debug("Starting Frank EnvironmentContext");
-
-		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
 		applicationContext.setConfigLocations(SpringContextScope.ENVIRONMENT.getContextFile());
@@ -107,31 +102,5 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.ENVIRONMENT.getFriendlyName(), AppConstants.getInstance()));
 
 		return applicationContext;
-	}
-
-	private void determineApplicationServerType(ServletContext servletContext) {
-		String serverInfo = servletContext.getServerInfo();
-		String autoDeterminedApplicationServerType = null;
-		if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
-			autoDeterminedApplicationServerType = "TOMCAT";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
-			autoDeterminedApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
-			autoDeterminedApplicationServerType = "JBOSS";
-		} else {
-			autoDeterminedApplicationServerType = "TOMCAT";
-			APPLICATION_LOG.warn("Unknown server info [{}] default application server type could not be determined, TOMCAT will be used as default value", serverInfo);
-		}
-
-		//has it explicitly been set? if not, set the property
-		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-		String serverCustomization = System.getProperty(AppConstants.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY,"");
-		if (autoDeterminedApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
-			log.info("property [{}] already has a default value [{}]", AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
-		}
-		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
-			APPLICATION_LOG.info("Determined ApplicationServer [{}]{}", autoDeterminedApplicationServerType, (StringUtils.isNotEmpty(serverCustomization) ? " customization ["+serverCustomization+"]":""));
-			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
-		}
 	}
 }

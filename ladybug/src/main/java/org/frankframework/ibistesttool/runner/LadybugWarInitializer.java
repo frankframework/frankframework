@@ -37,10 +37,12 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * Spring Boot entrypoint when running as a normal WAR application.
  *
+ * Has an order of 500 because it should start after the EnvironmentContext and before the ApplicationContext.
+ * 
  * @author Niels Meijer
  */
 @Order(500)
-public class WarInitializer extends SpringBootServletInitializer {
+public class LadybugWarInitializer extends SpringBootServletInitializer {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	@Configuration
@@ -72,15 +74,19 @@ public class WarInitializer extends SpringBootServletInitializer {
 
 	@Override
 	protected WebApplicationContext run(SpringApplication application) {
+		AppConstants properties = AppConstants.getInstance();
+		String file = properties.getProperty("ibistesttool.springConfigFile", "springIbisTestTool.xml");
+
+		//Only allow this (by default) for this context, application.propeties may be overwritten.
+		application.setAllowBeanDefinitionOverriding(true);
 		Set<String> set = new HashSet<>();
-		set.add(getConfigFile());
+		set.add(getConfigFile(file));
 		application.setSources(set);
-		application.setDefaultProperties(AppConstants.getInstance());
+		application.setDefaultProperties(properties);
 		return super.run(application);
 	}
 
-	private String getConfigFile() {
-		String file = AppConstants.getInstance().getProperty("ibistesttool.springConfigFile", "springIbisTestTool.xml");
+	private String getConfigFile(String file) {
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		URL fileURL = classLoader.getResource(file);
 		if(fileURL == null) {
