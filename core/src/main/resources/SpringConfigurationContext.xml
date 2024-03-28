@@ -13,26 +13,29 @@
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
 	">
 
-	<!-- AOP has to be enabled explicitly on a per Context basis -->
-	<aop:config proxy-target-class="true" />
+	<!-- AOP has to be enabled explicitly on a per Context basis. This allows us to programmatically enable and disable Ladybug 'point-cutting'. -->
+	<beans profile="aop">
+		<aop:config proxy-target-class="true" />
+	</beans>
 
-	<bean name="configurationDigester" class="org.frankframework.configuration.ConfigurationDigester" scope="singleton" />
+	<beans>
+		<bean name="configurationDigester" class="org.frankframework.configuration.ConfigurationDigester" scope="singleton" />
 
-	<bean name="lifecycleProcessor" class="org.frankframework.lifecycle.ConfiguringLifecycleProcessor" />
+		<bean name="lifecycleProcessor" class="org.frankframework.lifecycle.ConfiguringLifecycleProcessor" />
 
-	<bean name="configurationMetrics" class="org.frankframework.statistics.MetricsInitializer" />
+		<bean name="configurationMetrics" class="org.frankframework.statistics.MetricsInitializer" />
 
-	<bean name="sharedWsdlDefinitions" class="org.frankframework.core.SharedWsdlDefinitions" scope="singleton"/>
+		<bean name="sharedWsdlDefinitions" class="org.frankframework.core.SharedWsdlDefinitions" scope="singleton"/>
 
-	<bean name="adapterManager" class="org.frankframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
-	<bean name="scheduleManager" class="org.frankframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
+		<bean name="adapterManager" class="org.frankframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
+		<bean name="scheduleManager" class="org.frankframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
 
-	<bean name="jdbcMigrator" class="org.frankframework.jdbc.migration.LiquibaseMigrator" scope="prototype" lazy-init="true" />
+		<bean name="jdbcMigrator" class="org.frankframework.jdbc.migration.LiquibaseMigrator" scope="prototype" lazy-init="true" />
 
-	<bean name="configurationWarnings" class="org.frankframework.configuration.ConfigurationWarnings" />
-	<bean name="eventPublisher" class="org.frankframework.monitoring.EventPublisher" />
+		<bean name="configurationWarnings" class="org.frankframework.configuration.ConfigurationWarnings" />
+		<bean name="eventPublisher" class="org.frankframework.monitoring.EventPublisher" />
 
-	<bean name="monitorManager" class="org.frankframework.monitoring.MonitorManager" />
+		<bean name="monitorManager" class="org.frankframework.monitoring.MonitorManager" />
 <!-- 	<bean name="applicationEventMulticaster" class="org.frankframework.lifecycle.FrankEventMulticaster" /> -->
-
+	</beans>
 </beans>
