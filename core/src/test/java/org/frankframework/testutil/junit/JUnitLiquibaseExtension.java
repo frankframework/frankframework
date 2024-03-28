@@ -184,8 +184,13 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 				try {
 					liquibase.dropAll();
 				} catch(Exception e) {
-					log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
-					liquibase.rollback(liquibase.getChangeSetStatuses(null, new LabelExpression()).size(), null);
+					log.info("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
+					try {
+						liquibase.rollback(liquibase.getChangeSetStatuses(null, new LabelExpression()).size(), null);
+					} catch(Exception e2) {
+						e2.addSuppressed(e);
+						log.warn("Liquibase failed to rollback the changesets", e2);
+					}
 				}
 				liquibase.close();
 			}
