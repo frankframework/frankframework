@@ -256,22 +256,10 @@
 	</reporting>
 
 	<profiles>
-		<!--
-		Copy dependencies from iaf-webapp/pom.xml to make m2e add dependent-module
-		elements to org.eclipse.wst.common.component. Maven doesn't need this copy
-		to add the jar files to the war file. Might be a bug in m2e:
-		https://bugs.eclipse.org/bugs/show_bug.cgi?id=398138
-		Note: Maven will copy the jar files from the war in the local repository
-		which might be an old snapshot.
-
-		In older versions of Eclipse (Kepler - 20140224-0627) the larva and ladybug modules are not automatically added to the (correct) classpath.
-		Because of this the example module will throw a FileNotFoundException on springIbisTestTool.xml which prevents the Frank!Framework from starting up.
-		In newer versions of Eclipse (at least version 20181214-0600 onwards) this seems to have been resolved.
-		-->
 		<profile>
 			<id>spring-boot</id>
 			<activation>
-				<property>
+				<property><!-- IntelliJ could use ${idea.version} but Maven limitations don't allow us to check multiple properties -->
 					<name>m2e.version</name><!-- automatically enables it on Eclipse -->
 				</property>
 			</activation>
