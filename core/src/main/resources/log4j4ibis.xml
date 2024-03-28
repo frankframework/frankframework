@@ -105,7 +105,6 @@
 
 		<Logger name="liquibase.migrationLog" level="INFO">
 			<AppenderRef ref="systemout"/>
-			<AppenderRef ref="config"/>
 		</Logger>
 
 		<Logger name="MSG" additivity="false" level="INFO">

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.frankframework.core.IConfigurable;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.pipes.AbstractPipe;
 
 /**
@@ -29,7 +30,7 @@ import org.frankframework.pipes.AbstractPipe;
  *
  * @author  John Dekker
  */
-@FrankDocGroup(name = "Batch")
+@FrankDocGroup(FrankDocGroupValue.BATCH)
 public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);

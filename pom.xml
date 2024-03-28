@@ -29,7 +29,7 @@
 		<micrometer.version>1.12.4</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>3.0-SNAPSHOT</frankdoc.version>
+		<frankdoc.version>3.1-SNAPSHOT</frankdoc.version>
 		<javadoc-plugin.version>3.6.3</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
@@ -50,7 +50,7 @@
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 
-		<aws.java.sdk.version>2.25.17</aws.java.sdk.version>
+		<aws.java.sdk.version>2.25.19</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.11.0</mockito.version>
@@ -133,7 +133,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>3.25.3</version>
+				<version>4.26.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
@@ -143,7 +143,12 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>32.1.3-jre</version>
+				<version>33.1.0-jre</version>
+			</dependency>
+			<dependency><!-- needed for io.fabric8:kubernetes-client transitive deps -->
+				<groupId>com.squareup.okhttp3</groupId>
+				<artifactId>okhttp</artifactId>
+				<version>4.12.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.nimbusds</groupId>
@@ -290,7 +295,11 @@
 				<artifactId>frankframework-filesystem</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
+			<dependency>
+				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-kubernetes</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>org.frankframework</groupId>
@@ -1236,6 +1245,7 @@
 				<module>aspose</module>
 				<module>nn-specials</module>
 				<module>messaging</module>
+				<module>kubernetes</module>
 				<module>bundle-full</module>
 
 				<module>webapp</module>
