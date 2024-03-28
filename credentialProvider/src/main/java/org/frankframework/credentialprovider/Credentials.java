@@ -30,7 +30,7 @@ public class Credentials implements ICredentials {
 	@Setter private String password;
 	private final Supplier<String> usernameSupplier;
 	private final Supplier<String> passwordSupplier;
-	private boolean gotCredentials=false;
+	private boolean hasCredentials = false;
 
 	public Credentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		super();
@@ -39,35 +39,31 @@ public class Credentials implements ICredentials {
 		passwordSupplier = defaultPasswordSupplier;
 	}
 
-
 	private void getCredentials() {
-		if (!gotCredentials) {
+		if (hasCredentials) return;
 
-			if (StringUtils.isNotEmpty(getAlias())) {
-				try {
-					getCredentialsFromAlias();
-				} catch (RuntimeException e) {
-
-					if (usernameSupplier!=null) {
-						username = usernameSupplier.get();
-					}
-					if (passwordSupplier!=null) {
-						password = passwordSupplier.get();
-					}
-
-					if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
-						throw e;
-					}
+		if (StringUtils.isNotEmpty(getAlias())) {
+			try {
+				getCredentialsFromAlias();
+			} catch (RuntimeException e) {
+				if (usernameSupplier != null) {
+					username = usernameSupplier.get();
+				}
+				if (passwordSupplier != null) {
+					password = passwordSupplier.get();
+				}
+				if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
+					throw e;
 				}
 			}
-			if ((username == null || username.isEmpty()) && usernameSupplier != null) {
-				username = usernameSupplier.get();
-			}
-			if ((password == null || password.isEmpty()) && passwordSupplier != null) {
-				password = passwordSupplier.get();
-			}
-			gotCredentials=true;
 		}
+		if ((username == null || username.isEmpty()) && usernameSupplier != null) {
+			username = usernameSupplier.get();
+		}
+		if ((password == null || password.isEmpty()) && passwordSupplier != null) {
+			password = passwordSupplier.get();
+		}
+		hasCredentials = true;
 	}
 
 	protected void getCredentialsFromAlias() {
@@ -78,17 +74,16 @@ public class Credentials implements ICredentials {
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append(getClass().getSimpleName()).append("@").append(Integer.toHexString(hashCode()));
-		builder.append(" alias [").append(getAlias()).append("]");
-		builder.append(" username [").append(username).append("]");
-		return builder.toString();
+		return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) +
+				" alias [" + getAlias() + "]" +
+				" username [" + username + "]";
 	}
 
 	public void setAlias(String string) {
 		alias = string;
-		gotCredentials=false;
+		hasCredentials = false;
 	}
+
 	@Override
 	public String getAlias() {
 		return alias;
