@@ -220,6 +220,14 @@
 		>
 		<property name="dataSource" ref="defaultDataSource"/>
 		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
+		<property name="uiService">
+			<!-- Show "Running Changeset: ..." in System.out -->
+			<value type="liquibase.ui.UIServiceEnum">CONSOLE</value>
+		</property>
+		<property name="showSummaryOutput">
+			<!-- Don't show "UPDATE SUMMARY" in System.out -->
+			<value type="liquibase.UpdateSummaryOutputEnum">LOG</value>
+		</property>
 	</bean>
 
 	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
