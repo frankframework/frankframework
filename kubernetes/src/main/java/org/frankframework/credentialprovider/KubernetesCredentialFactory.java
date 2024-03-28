@@ -51,7 +51,7 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 	public static final String DEFAULT_NAMESPACE = "default";
 	protected String namespace = DEFAULT_NAMESPACE;
 	private KubernetesClient client;
-	protected List<KubernetesCredentials> credentials; // Refreshed every SECRETS_CACHE_TIMEOUT_MILLIS
+	protected List<Credentials> credentials; // Refreshed every SECRETS_CACHE_TIMEOUT_MILLIS
 	private long lastFetch = 0;
 
 	@Override
@@ -96,21 +96,18 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 					.findFirst()
 					.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
 		}
-		if (defaultUsernameSupplier == null && defaultPasswordSupplier == null) {
-			throw new NoSuchElementException("No alias supplied and also no default credentials supplied: cannot obtain credentials");
-		}
-		return new KubernetesCredentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
+		return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
 	@Override
 	public Collection<String> getConfiguredAliases() {
 		return getCredentials().stream()
-				.map(KubernetesCredentials::getAlias)
+				.map(Credentials::getAlias)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 	}
 
-	protected synchronized List<KubernetesCredentials> getCredentials() {
+	protected synchronized List<Credentials> getCredentials() {
 		if (lastFetch + CREDENTIALS_CACHE_DURATION_MILLIS > System.currentTimeMillis()) {
 			return credentials;
 		}
@@ -120,10 +117,10 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 			log.warning("No secrets found in namespace: " + namespace);
 		}
 		credentials = secrets.stream()
-				.map(secret -> new KubernetesCredentials(
+				.map(secret -> new Credentials(
 						secret.getMetadata().getName(),
-						decodeFromSecret(secret, USERNAME_KEY),
-						decodeFromSecret(secret, PASSWORD_KEY)
+						() -> decodeFromSecret(secret, USERNAME_KEY),
+						() -> decodeFromSecret(secret, PASSWORD_KEY)
 				))
 				.collect(Collectors.toList());
 		return credentials;

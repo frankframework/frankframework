@@ -73,7 +73,7 @@ class KubernetesCredentialFactoryTest {
 
 	@Test
 	void testGetCredentials() throws UnsupportedOperationException {
-		List<KubernetesCredentials> credentials = credentialFactory.getCredentials();
+		List<Credentials> credentials = credentialFactory.getCredentials();
 		assertEquals("alias1", credentials.get(0).getAlias());
 		assertEquals("testUsername1", credentials.get(0).getUsername());
 		assertEquals("testPassword1", credentials.get(0).getPassword());
@@ -133,6 +133,19 @@ class KubernetesCredentialFactoryTest {
 	@Test
 	void testUnknownAliasNoDefaults() {
 		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials("fakeAlias", () -> null, () -> null));
+	}
+
+	@Test
+	void testGetCredentialsWithNothing() {
+		ICredentials credentials = credentialFactory.getCredentials(null, () -> null, () -> null);
+		assertNull(credentials.getAlias());
+		assertNull(credentials.getUsername());
+		assertNull(credentials.getPassword());
+
+		ICredentials credentials2 = credentialFactory.getCredentials(null, null, null);
+		assertNull(credentials2.getAlias());
+		assertNull(credentials2.getUsername());
+		assertNull(credentials2.getPassword());
 	}
 
 	@Test
