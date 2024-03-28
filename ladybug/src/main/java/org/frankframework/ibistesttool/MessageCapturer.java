@@ -21,6 +21,8 @@ import java.io.Writer;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.ibistesttool.capture.OutputStreamCaptureWrapper;
+import org.frankframework.ibistesttool.capture.WriterCaptureWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +53,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message) {
 			try {
-				((Message)message).captureCharacterStream(writer, maxMessageLength);
+				((Message)message).captureCharacterStream(new WriterCaptureWrapper(writer), maxMessageLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {
@@ -77,7 +79,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 			Message m = (Message)message;
 			charsetNotifier.accept(m.getCharset());
 			try {
-				((Message)message).captureBinaryStream(outputStream, maxMessageLength);
+				((Message)message).captureBinaryStream(new OutputStreamCaptureWrapper(outputStream), maxMessageLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {
@@ -90,5 +92,4 @@ public class MessageCapturer extends MessageCapturerImpl {
 		}
 		return super.toOutputStream(message, outputStream, charsetNotifier, exceptionNotifier);
 	}
-
 }
