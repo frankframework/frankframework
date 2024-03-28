@@ -47,12 +47,13 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.addParameter(new Parameter(name, value));
 	}
 
-	@Test
+ 	@Test
 	public void testUnwrap() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
+		pipe.setOmitXmlDeclaration(false);
 		configureAndStartPipe();
 
-		String input = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>"
+		String input = SoapWrapperPipe.DEFAULT_XML_HEADER + "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>"
 				+ DEFAULT_BODY_END;
 		String expected = "<root xmlns=\"" + TARGET_NAMESPACE + "\">\n"
 				+ "<attrib>1</attrib>\n"
@@ -76,7 +77,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		P wrapPipeSoap = createWrapperSoapPipe(SoapVersion.SOAP11, true);
 
 		// Arrange
-		String inputSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
+		String inputSoap12 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
 		PipeLineSession pipeLineSession = new PipeLineSession();
 		// Act
@@ -270,6 +271,31 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 		assertTrue(getConfigurationWarnings().getWarnings().isEmpty());
+	}
+
+	@Test
+	void testWrapWithAddingXMLHeader() throws Exception {
+		pipe.setOutputNamespace(TARGET_NAMESPACE);
+		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
+		pipe.setOmitXmlDeclaration(false);
+		pipeline.addPipe(pipe);
+		configureAndStartPipe();
+
+		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
+		String expected = SoapWrapperPipe.DEFAULT_XML_HEADER + "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
+
+		PipeRunResult prr1 = doPipe(pipe, input, new PipeLineSession());
+		PipeRunResult prr2 = doPipe(pipe, SoapWrapperPipe.DEFAULT_XML_HEADER + input, new PipeLineSession()); // With XML header input
+
+		String actual1 = prr1.getResult().asString();
+		String actual2 = prr2.getResult().asString();
+
+		TestAssertions.assertEqualsIgnoreCRLF(expected, actual1);
+		TestAssertions.assertEqualsIgnoreCRLF(expected, actual2);
+
+		List<String> warnings = getConfigurationWarnings().getWarnings();
+		assertEquals(1, warnings.size());
+		assertTrue(warnings.get(0).contains("should NOT be used to wrap a message in an InputWrapper"));
 	}
 
 	@Test
