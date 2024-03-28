@@ -252,10 +252,10 @@ public class SoapWrapper {
 	}
 
 	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace, String soapHeader, String namespaceDefs) throws IOException {
-		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null, null, false);
+		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null, null, false, false);
 	}
 
-	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace, String soapHeaderInitial, String namespaceDefs, String soapNamespace, CredentialFactory wsscf, boolean passwordDigest) throws IOException {
+	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace, String soapHeaderInitial, String namespaceDefs, String soapNamespace, CredentialFactory wsscf, boolean passwordDigest, boolean includeXmlDeclaration) throws IOException {
 		String soapHeader = "";
 		String encodingStyle = "";
 		String targetObjectNamespaceClause = "";
@@ -278,13 +278,14 @@ public class SoapWrapper {
 				if (separatorPos < 1) {
 					namespaceClause.append(" xmlns=\"").append(namespaceDef).append("\"");
 				} else {
-					namespaceClause.append(" xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"");
+					namespaceClause.append(" xmlns:").append(namespaceDef.substring(0, separatorPos)).append("=\"").append(namespaceDef.substring(separatorPos + 1)).append("\"");
 				}
 			}
 			log.debug("namespaceClause [{}]", namespaceClause);
 		}
 		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
-		Message result = new Message("<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
+		Message result = new Message((includeXmlDeclaration ? SoapWrapperPipe.DEFAULT_XML_HEADER : "") +
+				"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
 				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message.asString())
 				+ "</soapenv:Body>" + "</soapenv:Envelope>");
 		if (wsscf != null) {

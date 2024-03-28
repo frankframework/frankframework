@@ -632,8 +632,8 @@ public class XmlUtils {
 					while (Character.isWhitespace(xmlString.charAt(endPos))) {
 						endPos++;
 					}
-				} catch (IndexOutOfBoundsException e) {
-					log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
+				} catch (IndexOutOfBoundsException ignored) {
+					// ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declaration, and not a body
 				}
 				return xmlString.substring(endPos);
 			}
