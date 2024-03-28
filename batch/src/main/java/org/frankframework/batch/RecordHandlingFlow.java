@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.util.LogUtil;
+
+import lombok.Getter;
 
 /**
  * The flow contains the handlers to handle records of a specific type.
@@ -33,7 +34,7 @@ import org.frankframework.util.LogUtil;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@FrankDocGroup(name = "Batch")
+@FrankDocGroup(FrankDocGroupValue.BATCH)
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 

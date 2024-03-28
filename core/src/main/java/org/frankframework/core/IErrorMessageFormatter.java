@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.frankframework.core;
 
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.stream.Message;
 
 /**
@@ -25,7 +26,7 @@ import org.frankframework.stream.Message;
  *
  * @author Johan Verrips
  */
-@FrankDocGroup(order = 60, name = "ErrorMessageFormatters")
+@FrankDocGroup(FrankDocGroupValue.ERROR_MESSAGE_FORMATTER)
 public interface IErrorMessageFormatter {
 
 	Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);

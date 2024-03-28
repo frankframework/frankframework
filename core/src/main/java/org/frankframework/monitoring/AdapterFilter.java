@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 /**
  * Filter on Adapters, used by Triggers.
@@ -26,7 +27,7 @@ import org.frankframework.doc.FrankDocGroup;
  * @author  Gerrit van Brakel
  * @since   4.9.8
  */
-@FrankDocGroup(name = "Monitoring")
+@FrankDocGroup(FrankDocGroupValue.MONITORING)
 public class AdapterFilter {
 
 	private String adapter;
