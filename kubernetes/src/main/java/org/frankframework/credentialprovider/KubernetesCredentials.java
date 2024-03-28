@@ -15,6 +15,8 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.util.function.Supplier;
+
 import lombok.Getter;
 
 @Getter
@@ -28,6 +30,16 @@ public class KubernetesCredentials implements ICredentials {
 		this.alias = alias;
 		this.username = username;
 		this.password = password;
+	}
+
+	public KubernetesCredentials(String alias, Supplier<String> username, Supplier<String> password) {
+		this.alias = alias;
+		if (username != null) {
+			this.username = username.get();
+		} else this.username = null;
+		if (password != null) {
+			this.password = password.get();
+		} else this.password = null;
 	}
 
 	@Override

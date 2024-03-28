@@ -117,9 +117,17 @@ class KubernetesCredentialFactoryTest {
 	}
 
 	@Test
-	void testGetCredentialsWithoutEnoughDetails() throws UnsupportedOperationException {
-		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials(null, () -> "testUsername2", null));
-		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials(null, null, () -> "testPassword2"));
+	void testGetCredentialsWithOneDetail() throws UnsupportedOperationException {
+		ICredentials credentials1 = credentialFactory.getCredentials(null, () -> "testUsername2", null);
+		ICredentials credentials2 = credentialFactory.getCredentials(null, null, () -> "testPassword2");
+
+		assertEquals("testUsername2", credentials1.getUsername());
+		assertNull(credentials1.getPassword());
+		assertNull(credentials1.getAlias());
+
+		assertEquals("testPassword2", credentials2.getPassword());
+		assertNull(credentials2.getUsername());
+		assertNull(credentials2.getAlias());
 	}
 
 	@Test
