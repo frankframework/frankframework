@@ -65,8 +65,8 @@ public class ApiMemcached implements IApiCache {
 		String address = ac.getProperty("etag.cache.server", "localhost:11211");
 		String username = ac.getProperty("etag.cache.username", "");
 		String password = ac.getProperty("etag.cache.password", "");
-		String alias = ac.getProperty("etag.cache.authalias", "");
-		CredentialFactory credentailFactory = new CredentialFactory(alias, username, password);
+		String alias = ac.getProperty("etag.cache.authAlias", "");
+		CredentialFactory credentialFactory = new CredentialFactory(alias, username, password);
 		int timeout = ac.getInt("etag.cache.timeout", DEFAULT_OPERATION_TIMEOUT);
 
 		List<InetSocketAddress> addresses = AddrUtil.getAddresses(address);
@@ -81,8 +81,8 @@ public class ApiMemcached implements IApiCache {
 		else
 			connectionFactoryBuilder.setFailureMode(FailureMode.Retry);
 
-		if(StringUtils.isNotEmpty(credentailFactory.getUsername())) {
-			connectionFactoryBuilder.setAuthDescriptor(AuthDescriptor.typical(credentailFactory.getUsername(), credentailFactory.getPassword()));
+		if(StringUtils.isNotEmpty(credentialFactory.getUsername())) {
+			connectionFactoryBuilder.setAuthDescriptor(AuthDescriptor.typical(credentialFactory.getUsername(), credentialFactory.getPassword()));
 		}
 
 		ConnectionFactory cf = connectionFactoryBuilder.build();

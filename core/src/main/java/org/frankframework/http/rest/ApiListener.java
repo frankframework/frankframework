@@ -68,7 +68,7 @@ import lombok.Setter;
  * <li>etag.cache.server=ip or hostname:port</li>
  * <li>etag.cache.type=memcached</li>
  * </ul>
- * In case authentication is required the following properties can be used:
+ * In case authentication, is required the following application properties can be used:
  * <ul>
  * <li>etag.cache.username</li>
  * <li>etag.cache.password</li>
