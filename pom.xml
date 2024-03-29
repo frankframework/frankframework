@@ -494,6 +494,56 @@
 				<version>1.18.32</version>
 				<scope>provided</scope>
 			</dependency>
+
+			<!-- Spring Boot context loaders -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter</artifactId>
+				<version>${spring.boot.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-logging</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-autoconfigure</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.yaml</groupId>
+						<artifactId>snakeyaml</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-security</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+
+			<!-- contains Tomcat for executable WAR archives -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-tomcat</artifactId>
+				<version>${spring.boot.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<!-- contains the class and application 'loaders' for executable archives -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-loader</artifactId>
+				<version>${spring.boot.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<!-- aggregates all loggers to SLF4J -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-logging</artifactId>
+				<version>${spring.boot.version}</version>
+				<scope>provided</scope>
+			</dependency>
+
+			<!-- test scoped dependencies -->
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter</artifactId>
