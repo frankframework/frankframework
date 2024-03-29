@@ -26,6 +26,8 @@ ul.cyphers-list {
 
     &:has(i) {
       text-align: center;
+      width: 0;
+      min-width: fit-content;
     }
   }
 }
