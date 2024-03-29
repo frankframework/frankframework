@@ -55,6 +55,19 @@ interface SecurityItems {
   supportedConnectionOptions: supportedConnectionOptions;
 }
 
+export type HttpRequestMethodType = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+export type Link = {
+  name: string;
+  rel: string;
+  description: string;
+  href: string;
+  type: HttpRequestMethodType;
+  roles: string[];
+};
+
+export type Links = { links: Link[] };
+
 @Injectable({
   providedIn: 'root',
 })
@@ -67,6 +80,12 @@ export class SecurityItemsService {
   getSecurityItems(): Observable<SecurityItems> {
     return this.http.get<SecurityItems>(
       `${this.appService.absoluteApiPath}securityitems`,
+    );
+  }
+
+  getEndpointsWithRoles(): Observable<Links> {
+    return this.http.get<Links>(
+      `${this.appService.absoluteApiPath}?allowedRoles=true`,
     );
   }
 }

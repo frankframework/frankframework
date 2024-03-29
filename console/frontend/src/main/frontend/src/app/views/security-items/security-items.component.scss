@@ -19,3 +19,13 @@ ul.cyphers-list {
     }
   }
 }
+
+.roles-overview {
+  td {
+    text-transform: capitalize;
+
+    &:has(i) {
+      text-align: center;
+    }
+  }
+}
