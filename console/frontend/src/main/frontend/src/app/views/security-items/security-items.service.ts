@@ -55,7 +55,16 @@ interface SecurityItems {
   supportedConnectionOptions: supportedConnectionOptions;
 }
 
-export type HttpRequestMethodType = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type HttpRequestMethodType =
+  | 'GET'
+  | 'HEAD'
+  | 'POST'
+  | 'PUT'
+  | 'DELETE'
+  | 'CONNECT'
+  | 'OPTIONS'
+  | 'TRACE'
+  | 'PATCH';
 
 export type Link = {
   name: string;
