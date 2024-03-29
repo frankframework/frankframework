@@ -522,12 +522,32 @@
 			</dependency>
 
 			<!-- contains Tomcat for executable WAR archives -->
+			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-core</artifactId>
+				<version>9.0.87</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-el</artifactId>
+				<version>9.0.87</version>
+				<scope>provided</scope>
+			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-tomcat</artifactId>
 				<version>${spring.boot.version}</version>
 				<scope>provided</scope>
+				<exclusions>
+					<!-- contains a CVE and we don't use websockets anyways -->
+					<exclusion>
+						<groupId>org.apache.tomcat.embed</groupId>
+						<artifactId>tomcat-embed-websocket</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
+
 			<!-- contains the class and application 'loaders' for executable archives -->
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
@@ -536,6 +556,12 @@
 				<scope>provided</scope>
 			</dependency>
 			<!-- aggregates all loggers to SLF4J -->
+			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>1.3.14</version>
+				<scope>provided</scope>
+			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-logging</artifactId>
