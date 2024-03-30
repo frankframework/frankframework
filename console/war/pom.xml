@@ -13,7 +13,6 @@
 	<packaging>war</packaging>
 
 	<properties>
-		<spring.boot.version>2.7.18</spring.boot.version>
 		<m2eclipse.wtp.contextRoot>iaf-console</m2eclipse.wtp.contextRoot>
 	</properties>
 
@@ -91,13 +90,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<version>${spring.boot.version}</version>
-			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-logging</artifactId>
+			<version>${spring.boot.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-loader</artifactId>
 			<version>${spring.boot.version}</version>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
