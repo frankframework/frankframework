@@ -980,8 +980,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				message = getListener().extractMessage(rawMessageWrapper, context);
 			}
 			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, message);
-			if (errorSender!=null) {
-				errorSender.sendMessageOrThrow(message, null);
+			if (errorSender != null) {
+				try(PipeLineSession session = new PipeLineSession(); Message senderResult = errorSender.sendMessageOrThrow(message, session)) {
+					log.debug("error-sender result [{}]", senderResult);
+				}
 			}
 			if (errorStorage!=null) {
 				Serializable sobj = serializeMessageObject(rawMessageWrapper, message);
@@ -1790,11 +1792,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	private String sendResultToSender(Message result) {
 		String errorMessage = null;
-		try {
-			if (getSender() != null) {
-				log.debug("Receiver [{}] sending result to configured sender", this::getName);
-				getSender().sendMessageOrThrow(result, null); // sending correlated responses via a receiver embedded sender is not supported
-			}
+		try(PipeLineSession session = new PipeLineSession()) {
+			log.debug("Receiver [{}] sending result to configured sender [{}]", this::getName, this::getSender);
+			getSender().sendMessageOrThrow(result, null); // sending correlated responses via a receiver embedded sender is not supported
 		} catch (Exception e) {
 			String msg = "caught exception in message post processing";
 			error(msg, e);

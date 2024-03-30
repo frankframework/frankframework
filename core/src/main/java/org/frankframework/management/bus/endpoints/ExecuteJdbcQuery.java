@@ -26,7 +26,7 @@ import org.frankframework.management.bus.TopicSelector;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.util.MimeType;
-
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
@@ -99,7 +99,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		String result;
 		MimeType mimetype;
 
-		try {
+		try(PipeLineSession session = new PipeLineSession()) {
 			qs.setName("ExecuteJdbc QuerySender");
 			qs.setDatasourceName(datasource);
 			qs.setQueryType(queryType);
@@ -110,7 +110,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			qs.configure(true);
 			qs.open();
 
-			org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), null);
+			org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session);
 
 			switch (resultType) {
 			case CSV:

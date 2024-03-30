@@ -20,6 +20,7 @@ import org.frankframework.management.bus.TopicSelector;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsSender;
@@ -103,9 +104,9 @@ public class SendJmsMessage extends BusEndpointBase {
 	}
 
 	private Message<?> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
-		try {
+		try(PipeLineSession session = new PipeLineSession()) {
 			qms.open();
-			org.frankframework.stream.Message responseMessage = qms.sendMessageOrThrow(org.frankframework.stream.Message.asMessage(requestMessage), null);
+			org.frankframework.stream.Message responseMessage = qms.sendMessageOrThrow(org.frankframework.stream.Message.asMessage(requestMessage), session);
 			if(!expectsReply) {
 				return null;
 			}
