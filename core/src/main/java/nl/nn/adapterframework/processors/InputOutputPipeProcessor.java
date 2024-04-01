@@ -103,7 +103,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffPipe = (FixedForwardPipe) pipe;
 				if (ffPipe.skipPipe(message, pipeLineSession)) {
-					log.info("skipping pipe [{}] because of empty input", pipe::getName);
+					log.info("skipped pipe processing");
 					pipeRunResult = new PipeRunResult(ffPipe.getSuccessForward(), message);
 				}
 			}
