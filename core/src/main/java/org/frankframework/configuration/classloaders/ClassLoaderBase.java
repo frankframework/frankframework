@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.configuration.classloaders;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -36,6 +37,9 @@ import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
 
 import org.frankframework.util.StreamUtil;
+import org.springframework.cglib.core.ReflectUtils;
+import org.springframework.core.SmartClassLoader;
+import org.springframework.lang.Nullable;
 
 /**
  * Abstract base class for for IBIS Configuration ClassLoaders.
@@ -45,7 +49,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Niels Meijer
  */
-public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader {
+public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader, SmartClassLoader {
 
 	private IbisContext ibisContext = null;
 	private String configurationName = null;
@@ -269,6 +273,19 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	/**
+	 * <p>
+	 * Fixes <code>--add-opens=java.base/java.lang=ALL-UNNAMED</code> problem when loading classes dynamically when CGLIB is enabled.
+	 * See https://github.com/spring-projects/spring-framework/issues/26403 for more background information.
+	 * </p>
+	 * 
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Class<?> publicDefineClass(String name, byte[] b, @Nullable ProtectionDomain protectionDomain) {
+		return super.defineClass(name, b, 0, b.length, protectionDomain);
+	}
+
+	/**
 	 * This method will only be called for classes that have not been previously loaded yet.
 	 * Custom code will not update if you change the configuration.
 	 *
@@ -287,7 +304,8 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 					try {
 						byte[] bytes = StreamUtil.streamToBytes(url.openStream());
-						Class<?> clazz = super.defineClass(name, bytes, 0, bytes.length);
+						ProtectionDomain protectionDomain = ReflectUtils.getProtectionDomain(this.getClass());
+						Class<?> clazz = publicDefineClass(name, bytes, protectionDomain);
 
 						if(resolve) {
 							resolveClass(clazz);
