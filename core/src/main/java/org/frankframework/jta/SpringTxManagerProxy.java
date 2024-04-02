@@ -68,7 +68,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	public void commit(TransactionStatus txStatus) throws TransactionException {
 		if (txStatus.isRollbackOnly()) {
 			Exception e = new Exception("<TX> Warning - Silent rollback from commit");
-			log.warn("<TX> Executing silent rollback without exception from tx.commit! TransactionStatus: [{}], Stacktrace:", txStatus, e);
+			log.info("<TX> Executing silent rollback without exception from tx.commit! TransactionStatus: [{}], Stacktrace:", txStatus, e);
 			rollback(txStatus);
 		} else {
 			if (trace && log.isDebugEnabled()) log.debug("committing transaction [{}]", txStatus);
