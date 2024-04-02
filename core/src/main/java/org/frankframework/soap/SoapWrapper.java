@@ -284,6 +284,7 @@ public class SoapWrapper {
 			log.debug("namespaceClause [{}]", namespaceClause);
 		}
 		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
+		// XmlUtils.skipXmlDeclaration call below removes the xml declaration from the message, so adding it back if required
 		Message result = new Message((includeXmlDeclaration ? SoapWrapperPipe.DEFAULT_XML_HEADER : "") +
 				"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
 				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message.asString())

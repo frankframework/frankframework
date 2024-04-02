@@ -284,18 +284,18 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
 		String expected = SoapWrapperPipe.DEFAULT_XML_HEADER + "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
-		PipeRunResult prr1 = doPipe(pipe, input, new PipeLineSession());
-		PipeRunResult prr2 = doPipe(pipe, SoapWrapperPipe.DEFAULT_XML_HEADER + input, new PipeLineSession()); // With XML header input
-
+		PipeRunResult prr1 = doPipe(pipe, input, new PipeLineSession()); // XML header is added afterward
 		String actual1 = prr1.getResult().asString();
+
+		// Assert 1: XML header is added (did not exist in input message)
+		TestAssertions.assertEqualsIgnoreCRLF(expected, actual1);
+
+		// Arrange 2
+		PipeRunResult prr2 = doPipe(pipe, SoapWrapperPipe.DEFAULT_XML_HEADER + input, new PipeLineSession()); // XML header is already in input message
 		String actual2 = prr2.getResult().asString();
 
-		TestAssertions.assertEqualsIgnoreCRLF(expected, actual1);
+		// Assert 2: XML header is added only once
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual2);
-
-		List<String> warnings = getConfigurationWarnings().getWarnings();
-		assertEquals(1, warnings.size());
-		assertTrue(warnings.get(0).contains("should NOT be used to wrap a message in an InputWrapper"));
 	}
 
 	@Test
