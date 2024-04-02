@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { AppService } from 'src/app/app.service';
+import { copyToClipboard } from '../../../utils';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-information-modal',
@@ -8,6 +10,8 @@ import { AppService } from 'src/app/app.service';
   styleUrls: ['./information-modal.component.scss'],
 })
 export class InformationModalComponent implements OnInit {
+  @ViewChild('environmentInformation')
+  environmentInformation!: ElementRef<HTMLParagraphElement>;
   error = false;
 
   framework: {
@@ -44,6 +48,7 @@ export class InformationModalComponent implements OnInit {
   constructor(
     private activeModal: NgbActiveModal,
     private appService: AppService,
+    private toastService: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -66,5 +71,13 @@ export class InformationModalComponent implements OnInit {
 
   close(): void {
     this.activeModal.close();
+  }
+
+  copy(): void {
+    copyToClipboard(this.environmentInformation.nativeElement.innerText); // Needs to be innerText to copy newlines.
+    this.toastService.success(
+      'Copied',
+      'Copied environment information to clipboard',
+    );
   }
 }
