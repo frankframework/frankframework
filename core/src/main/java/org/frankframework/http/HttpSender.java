@@ -199,7 +199,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	/**
-	 * Returns HttpRequestBase, with (optional) RAW or as BINAIRY content
+	 * Returns HttpRequestBase, with (optional) RAW or as BINARY content
 	 */
 	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters) throws SenderException {
 		try {

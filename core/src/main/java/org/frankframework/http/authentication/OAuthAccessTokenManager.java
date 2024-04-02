@@ -67,7 +67,7 @@ import org.frankframework.util.StringUtil;
 public class OAuthAccessTokenManager {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private URI tokenEndpoint;
+	private final URI tokenEndpoint;
 	private final Scope scope;
 	private final CredentialFactory clientCredentialFactory;
 	private final boolean useClientCredentialsGrant;
@@ -184,7 +184,10 @@ public class OAuthAccessTokenManager {
 				break;
 			case POST:
 				apacheHttpRequest = new HttpPost(httpRequest.getURL().toExternalForm());
-				apacheHttpRequest.addHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+				// add Content-Type if not present in the incoming request
+				if (httpRequest.getHeaderMap().keySet().stream().noneMatch(h -> h.equalsIgnoreCase("Content-Type"))) {
+					apacheHttpRequest.addHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+				}
 				try {
 					((HttpPost)apacheHttpRequest).setEntity(new StringEntity(query));
 				} catch (UnsupportedEncodingException e) {
