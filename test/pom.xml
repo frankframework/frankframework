@@ -39,6 +39,11 @@
 			<type>war</type>
 		</dependency>
 		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
