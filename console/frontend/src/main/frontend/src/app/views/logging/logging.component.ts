@@ -1,5 +1,5 @@
 import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { LoggingService, LoggingFile } from './logging.service';
@@ -35,32 +35,37 @@ export class LoggingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe((parameters) => {
-      const directoryParameter = parameters.get('directory') ?? '';
-      const fileParameter = parameters.get('file') ?? '';
-
-      //This is only "" when the user opens the logging page
-      const directory =
-        directoryParameter && directoryParameter.length > 0
-          ? directoryParameter
-          : '';
-      //The file param is only set when the user copy pastes an url in their browser
-      if (fileParameter && fileParameter.length > 0) {
-        const file = fileParameter;
-        this.directory = directory;
-        this.path = `${directory}/${file}`;
-        this.viewFile = this.path;
-      } else {
-        this.openDirectory(directory);
-      }
+    this.route.paramMap.subscribe((parameters) => {
+      this.handleUrlParameters(parameters);
     });
+    this.route.queryParamMap.subscribe((parameters) => {
+      this.handleUrlParameters(parameters);
+    });
+  }
+
+  handleUrlParameters(parameters: ParamMap): void {
+    const directoryParameter = parameters.get('directory') ?? '';
+    const fileParameter = parameters.get('file') ?? '';
+
+    //This is only "" when the user opens the logging page
+    const directory =
+      directoryParameter && directoryParameter.length > 0
+        ? directoryParameter
+        : '';
+    //The file param is only set when the user copies and pastes an url in their browser
+    if (fileParameter && fileParameter.length > 0) {
+      const file = fileParameter;
+      this.directory = directory;
+      this.path = `${directory}/${file}`;
+      this.viewFile = this.path;
+    } else {
+      this.openDirectory(directory);
+    }
   }
 
   closeFile(): void {
     this.viewFile = null;
-    this.router.navigate(['/logging'], {
-      queryParams: { directory: this.directory },
-    });
+    this.router.navigate(['/logging', this.directory]);
   }
 
   download(file: LoggingFile): void {
@@ -71,13 +76,9 @@ export class LoggingComponent implements OnInit {
 
   open(file: LoggingFile): void {
     if (file.type == 'directory') {
-      this.router.navigate(['/logging'], {
-        queryParams: { directory: file.path },
-      });
+      this.router.navigate(['/logging', file.path]);
     } else {
-      this.router.navigate(['/logging'], {
-        queryParams: { directory: this.directory, file: file.name },
-      });
+      this.router.navigate(['/logging', this.directory, file.name]);
     }
   }
 

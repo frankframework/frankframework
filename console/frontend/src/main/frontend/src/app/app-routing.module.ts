@@ -142,6 +142,22 @@ const routes: Routes = [
     },
   },
   {
+    path: 'logging/:directory',
+    component: LoggingComponent,
+    title: 'Logging',
+    data: {
+      breadcrumbs: 'Logging > Log Files',
+    },
+  },
+  {
+    path: 'logging/:directory/:file',
+    component: LoggingComponent,
+    title: 'Logging',
+    data: {
+      breadcrumbs: 'Logging > Log Files',
+    },
+  },
+  {
     path: 'jms/send-message',
     component: JmsSendMessageComponent,
     title: 'Send JMS Message',
