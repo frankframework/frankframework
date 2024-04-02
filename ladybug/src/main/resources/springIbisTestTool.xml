@@ -206,7 +206,7 @@
 	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.DataSourceFactory"/>
 
 	<bean name="defaultDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
-		<constructor-arg value="${ladybug.jdbc.migrator.datasource:${jdbc.datasource.default}}"/>
+		<constructor-arg value="${ladybug.jdbc.datasource:${jdbc.datasource.default}}"/>
 	</bean>
 
 	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
