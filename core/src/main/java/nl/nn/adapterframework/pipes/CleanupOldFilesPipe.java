@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -37,6 +38,8 @@ import nl.nn.adapterframework.util.FileUtils;
  * @author John Dekker
  * @since  4.2
  */
+@Deprecated
+@ConfigurationWarning("This code only works with local filesystems instead of all filesystems, is unmaintained and will be deleted in 8.0 and onward. Use a (Local)FileSystemPipe with an IteratorPipe to achieve similar effect.")
 public class CleanupOldFilesPipe extends FixedForwardPipe {
 
 	private String filePattern;
