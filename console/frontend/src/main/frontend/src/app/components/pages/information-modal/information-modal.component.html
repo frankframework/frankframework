@@ -4,8 +4,10 @@
   </div>
   <div class="modal-body" *ngIf="!error">
     <h3 *ngIf="framework.name === ''">Loading...</h3>
-    <p>
-      <strong>{{ framework.name }} {{ framework.version }}</strong
+    <p #environmentInformation>
+      <strong
+        >{{ framework.name
+        }}{{ framework.version ? ' ' + framework.version : '' }}</strong
       >: {{ instance.name }} {{ instance.version }}<br />
       Running on <strong>{{ machineName }}</strong> using
       <strong>{{ applicationServer }}</strong
@@ -43,6 +45,14 @@
         >Frank!Manual</a
       >
     </span>
+    <button
+      type="button"
+      class="btn btn-white"
+      title="Copy to clipboard"
+      (click)="copy()"
+    >
+      <i class="fa fa-clipboard"></i>
+    </button>
     <button type="button" class="btn btn-white" (click)="close()">Close</button>
   </div>
 </div>
