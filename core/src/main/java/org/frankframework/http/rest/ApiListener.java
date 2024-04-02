@@ -310,7 +310,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * The required contentType on requests, if it doesn't match the request will fail
+	 * The required contentType on requests, if it doesn't match a 415 Unsupported Media Type is replied
 	 *
 	 * @ff.default ANY
 	 */
