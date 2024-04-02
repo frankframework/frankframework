@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import org.apache.logging.log4j.LogManager;
+import org.frankframework.ibistesttool.runner.LadybugWarInitializer;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
@@ -52,6 +53,16 @@ public class IafTestInitializer {
 			FrankApplicationInitializer init = new FrankApplicationInitializer();
 			init.onStartup(servletContext);
 			LogManager.getLogger("APPLICATION").info("Started Frank!Application");
+		}
+	}
+
+	public static class LadybugInitializerWrapper implements ServletContextInitializer {
+		@Override
+		public void onStartup(ServletContext servletContext) throws ServletException {
+			System.setProperty("ladybug.jdbc.datasource", "");
+			LadybugWarInitializer init = new LadybugWarInitializer();
+			init.onStartup(servletContext);
+			LogManager.getLogger("APPLICATION").info("Started Ladybug");
 		}
 	}
 
@@ -81,7 +92,7 @@ public class IafTestInitializer {
 		app.addInitializers(new ConfigureAppConstants());
 		app.setWebApplicationType(WebApplicationType.SERVLET);
 		Set<String> set = new HashSet<>();
-		app.addPrimarySources(List.of(ApplicationInitializerWrapper.class));
+		app.addPrimarySources(List.of(LadybugInitializerWrapper.class, ApplicationInitializerWrapper.class));
 		set.add(SpringContextScope.ENVIRONMENT.getContextFile());
 		set.add("TestFrankContext.xml");
 		app.setSources(set);

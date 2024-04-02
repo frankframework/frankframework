@@ -257,6 +257,10 @@
 				</dependency>
 				<dependency>
 					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-ladybug</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-console-frontend</artifactId>
 					<scope>runtime</scope>
 				</dependency>
