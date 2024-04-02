@@ -15,6 +15,8 @@
 */
 package org.frankframework.core;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.ElementType;
@@ -77,7 +79,7 @@ public interface ISender extends IConfigurable {
 	 */
 	SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
-	default Message sendMessageOrThrow(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	default @Nonnull Message sendMessageOrThrow(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult senderResult = sendMessage(message, session);
 		Message result = senderResult.getResult();
 		if (!senderResult.isSuccess()) {

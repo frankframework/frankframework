@@ -35,7 +35,7 @@ import org.springframework.messaging.Message;
 import org.xml.sax.SAXException;
 
 import org.frankframework.jdbc.DirectQuerySender;
-
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.transformer.QueryOutputToListOfMaps;
@@ -133,8 +133,10 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				Transformer t = XmlUtils.createTransformer(url);
 				query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 			}
-			try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), null)) {
-				result = message.asString();
+			try(PipeLineSession session = new PipeLineSession()) {
+				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session)) {
+					result = message.asString();
+				}
 			}
 		} catch (Exception t) {
 			throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
