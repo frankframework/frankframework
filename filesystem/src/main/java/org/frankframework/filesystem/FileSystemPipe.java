@@ -77,7 +77,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 			fileSystem.open();
 			actor.open();
 		} catch (FileSystemException e) {
-			throw new PipeStartException("Cannot open fileSystem",e);
+			throw new PipeStartException("Pipe [" + getName() + "]: Cannot open fileSystem",e);
 		}
 	}
 
