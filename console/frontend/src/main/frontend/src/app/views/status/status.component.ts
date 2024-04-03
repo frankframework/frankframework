@@ -143,30 +143,37 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.alerts = this.appService.alerts;
     this.messageLog = this.appService.messageLog;
     this.adapters = this.appService.adapters;
+
     const configurationsSubscription =
       this.appService.configurations$.subscribe(() =>
         this.check4StubbedConfigs(),
       );
     this._subscriptions.add(configurationsSubscription);
+
     const summariesSubscription = this.appService.summaries$.subscribe(() => {
       this.adapterSummary = this.appService.adapterSummary;
       this.receiverSummary = this.appService.receiverSummary;
       this.messageSummary = this.appService.messageSummary;
     });
     this._subscriptions.add(summariesSubscription);
+
     const alertsSubscription = this.appService.alerts$.subscribe(() => {
       this.alerts = [...this.appService.alerts];
     });
     this._subscriptions.add(alertsSubscription);
+
     const messageLogSubscription = this.appService.messageLog$.subscribe(() => {
       this.messageLog = { ...this.appService.messageLog };
     });
     this._subscriptions.add(messageLogSubscription);
+
     const adaptersSubscription = this.appService.adapters$.subscribe(() => {
       this.adapters = { ...this.appService.adapters };
       this.updateAdapterShownContent();
     });
     this._subscriptions.add(adaptersSubscription);
+
+    this.updateAdapterShownContent();
   }
 
   ngOnDestroy(): void {
@@ -418,7 +425,6 @@ export class StatusComponent implements OnInit, OnDestroy {
     if (adapter.status == 'stopped') {
       return true;
     } else if (this.adapterName != '' && adapter.name == this.adapterName) {
-      this.viewportScroller.scrollToAnchor(this.adapterName); // this.$anchorScroll();
       return true;
     } else {
       return false;
@@ -427,10 +433,17 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   private updateAdapterShownContent(): void {
     for (const adapter in this.adapters) {
-      if (!this.adapterShowContent.hasOwnProperty(adapter))
+      if (!this.adapterShowContent.hasOwnProperty(adapter)){
         this.adapterShowContent[adapter] = this.determineShowContent(
           this.adapters[adapter],
         );
+
+        if (this.adapterName === this.adapters[adapter].name) {
+          setTimeout(() => {
+            document.querySelector(`#${this.adapterName}`)?.scrollIntoView();
+          })
+        }
+      }
     }
   }
 }

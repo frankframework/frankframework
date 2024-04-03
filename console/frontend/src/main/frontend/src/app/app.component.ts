@@ -544,7 +544,6 @@ export class AppComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.appService.updateLoading(false);
       this.loading = false;
-      this.scrollToAdapter();
 
       this.pollerService.add(
         'adapters?expanded=all',
@@ -553,14 +552,6 @@ export class AppComponent implements OnInit, OnDestroy {
         },
         true,
       );
-    });
-  }
-
-  scrollToAdapter(): void {
-    this.urlHash$.subscribe((hash) => {
-      if (this.router.url.startsWith('/status') && hash && hash !== '') {
-        this.viewportScroller.scrollToAnchor(hash);
-      }
     });
   }
 

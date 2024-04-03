@@ -260,7 +260,6 @@ export class AppService {
   private dtapStageSubject = new Subject<string>();
   private databaseSchedulesEnabledSubject = new Subject<boolean>();
   private summariesSubject = new Subject<void>();
-  private GDPRSubject = new Subject<void>();
   private iframePopoutUrlSubject = new Subject<string>();
 
   loading$ = this.loadingSubject.asObservable();
@@ -276,7 +275,6 @@ export class AppService {
   databaseSchedulesEnabled$ =
     this.databaseSchedulesEnabledSubject.asObservable();
   summaries$ = this.summariesSubject.asObservable();
-  GDPR$ = this.GDPRSubject.asObservable();
   iframePopoutUrl$ = this.iframePopoutUrlSubject.asObservable();
 
   adapters: Record<string, Adapter> = {};
@@ -353,10 +351,6 @@ export class AppService {
 
   triggerAppConstants(): void {
     this.appConstantsSubject.next();
-  }
-
-  triggerGDPR(): void {
-    this.GDPRSubject.next();
   }
 
   updateAdapters(adapters: Record<string, Adapter>): void {
