@@ -18,7 +18,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
-	private AtomicBoolean isOpen = new AtomicBoolean(false);
+	private final AtomicBoolean isOpen = new AtomicBoolean(false);
 
 	@Override
 	public void configure() throws ConfigurationException {

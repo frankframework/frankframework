@@ -181,8 +181,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	private boolean timeoutPending=false;
 
-	private boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
-	private boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
+	private final boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
+	private final boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
 
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ListenerProcessor listenerProcessor;

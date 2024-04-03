@@ -39,7 +39,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 	private @Setter int sleepBetweenServedBlocks = 0;
 	private @Setter Direction direction=Direction.PRODUCE;
 
-	private static AtomicInteger totalBlocksServed = new AtomicInteger();
+	private static final AtomicInteger totalBlocksServed = new AtomicInteger();
 
 	public enum Direction {
 		PRODUCE,
