@@ -144,16 +144,16 @@ import lombok.Setter;
 public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeystore, HasTruststore {
 	protected final Logger log = LogUtil.getLogger(this);
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	/* CONNECTION POOL */
-	private @Getter int timeout = 10000;
+	private @Getter int timeout = 10_000;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
 	private @Getter boolean staleChecking=true;
-	private @Getter int staleTimeout = 5000; // [ms]
+	private @Getter int staleTimeout = 5_000; // [ms]
 	private @Getter int connectionTimeToLive = 900; // [s]
 	private @Getter int connectionIdleTimeout = 10; // [s]
 	private final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
@@ -362,7 +362,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		connectionManager.setDefaultMaxPerRoute(getMaxConnections());
 
 		if (isStaleChecking()) {
-			log.info("set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
+			log.info("set up connectionManager, setting stale checking [true]");
 			connectionManager.setValidateAfterInactivity(getStaleTimeout());
 		}
 

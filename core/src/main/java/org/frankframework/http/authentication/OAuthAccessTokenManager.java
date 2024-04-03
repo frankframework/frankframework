@@ -185,15 +185,14 @@ public class OAuthAccessTokenManager {
 			case POST:
 				apacheHttpRequest = new HttpPost(httpRequest.getURL().toExternalForm());
 				// add Content-Type if not present in the incoming request
-				if (httpRequest.getHeaderMap().keySet().stream().noneMatch(h -> h.equalsIgnoreCase("Content-Type"))) {
-					apacheHttpRequest.addHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+				if (httpRequest.getHeaderMap().keySet().stream().noneMatch(header -> header.equalsIgnoreCase("Content-Type"))) {
+					apacheHttpRequest.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 				}
 				try {
 					((HttpPost)apacheHttpRequest).setEntity(new StringEntity(query));
 				} catch (UnsupportedEncodingException e) {
 					throw new HttpAuthenticationException("Could not create TokenRequest", e);
 				}
-
 				break;
 			default:
 				throw new IllegalStateException("Illegal Method, must be GET or POST");
