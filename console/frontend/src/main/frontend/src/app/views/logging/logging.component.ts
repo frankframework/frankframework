@@ -9,6 +9,8 @@ import {
   basicTableSort,
 } from 'src/app/components/th-sortable.directive';
 import { copyToClipboard } from 'src/app/utils';
+import { concat, merge } from 'rxjs';
+import { zip } from 'rxjs/internal/operators/zip';
 
 @Component({
   selector: 'app-logging',
@@ -35,25 +37,23 @@ export class LoggingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((parameters) => {
-      this.handleUrlParameters(parameters);
-    });
-    this.route.queryParamMap.subscribe((parameters) => {
-      this.handleUrlParameters(parameters);
-    });
+    concat(this.route.paramMap, this.route.queryParamMap).subscribe(
+      (parameters) => {
+        this.handleUrlParameters(parameters);
+      },
+    );
   }
 
   handleUrlParameters(parameters: ParamMap): void {
     const directoryParameter = parameters.get('directory') ?? '';
     const fileParameter = parameters.get('file') ?? '';
 
+    this.setBreadcrumb(directoryParameter, fileParameter);
+
     //This is only "" when the user opens the logging page
-    const directory =
-      directoryParameter && directoryParameter.length > 0
-        ? directoryParameter
-        : '';
+    const directory = directoryParameter.length > 0 ? directoryParameter : '';
     //The file param is only set when the user copies and pastes an url in their browser
-    if (fileParameter && fileParameter.length > 0) {
+    if (fileParameter.length > 0) {
       const file = fileParameter;
       this.directory = directory;
       this.path = `${directory}/${file}`;
@@ -61,6 +61,15 @@ export class LoggingComponent implements OnInit {
     } else {
       this.openDirectory(directory);
     }
+  }
+
+  setBreadcrumb(directory: string, file: string): void {
+    let breadcrumb = 'Logging > ';
+    breadcrumb += directory ? `Show Directory (${directory})` : 'Show Files';
+    if (file) {
+      breadcrumb += ` > Show File (${file})`;
+    }
+    this.appService.customBreadcrumbs(breadcrumb);
   }
 
   closeFile(): void {
