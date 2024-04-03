@@ -72,7 +72,7 @@ const routes: Routes = [
     component: StorageComponent,
     title: '',
     data: {
-      breadcrumbs: '',
+      breadcrumbIsCustom: true,
     },
     children: [
       {
@@ -122,15 +122,7 @@ const routes: Routes = [
     component: ConfigurationsManageDetailsComponent,
     title: 'Manage Configurations',
     data: {
-      breadcrumbs: 'Configurations > Manage',
-    },
-  },
-  {
-    path: 'logging',
-    component: LoggingComponent,
-    title: 'Logging',
-    data: {
-      breadcrumbs: 'Logging > Log Files',
+      breadcrumbIsCustom: true,
     },
   },
   {
@@ -139,6 +131,30 @@ const routes: Routes = [
     title: 'Logging',
     data: {
       breadcrumbs: 'Logging > Log Settings',
+    },
+  },
+  {
+    path: 'logging',
+    component: LoggingComponent,
+    title: 'Logging',
+    data: {
+      breadcrumbIsCustom: true,
+    },
+  },
+  {
+    path: 'logging/:directory',
+    component: LoggingComponent,
+    title: 'Logging',
+    data: {
+      breadcrumbIsCustom: true,
+    },
+  },
+  {
+    path: 'logging/:directory/:file',
+    component: LoggingComponent,
+    title: 'Logging',
+    data: {
+      breadcrumbIsCustom: true,
     },
   },
   {
