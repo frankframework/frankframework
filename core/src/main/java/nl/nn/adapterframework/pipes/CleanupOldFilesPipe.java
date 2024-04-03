@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * @since  4.2
  */
 @Deprecated
-@ConfigurationWarning("This code only works with local filesystems instead of all filesystems, is unmaintained and will be deleted in 8.0 and onward. Use a (Local)FileSystemPipe with an IteratorPipe to achieve similar effect.")
+@ConfigurationWarning("This pipe only works with local filesystems instead of all types filesystems and will be deleted in 8.0.1 and onward. Use a (Local)FileSystemPipe with action 'rmdir', or action 'list' together with an IteratorPipe to achieve similar effect.")
 public class CleanupOldFilesPipe extends FixedForwardPipe {
 
 	private String filePattern;
