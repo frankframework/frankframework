@@ -1145,8 +1145,26 @@
  by OpenAPI specifications. The Frank!Framework generates an OpenAPI specification for each ApiListener and
  also an OpenAPI specification for all ApiListeners in all configurations. You can
  find them in the Frank!Console under main menu item Webservices, heading Available ApiListeners.
+ &lt;p&gt;
  The generated OpenAPI specifications have &lt;code&gt;servers&lt;/code&gt; and &lt;code&gt;paths&lt;/code&gt; objects and
- therefore they document the full URLs of the provided services.</xs:documentation>
+ therefore they document the full URLs of the provided services.
+ &lt;p&gt;
+ It is possible to automatically generate eTags over the listener result. This can be controlled by globally 
+ setting the property &lt;code&gt;api.etag.enabled&lt;/code&gt; or by setting the attribute &lt;code&gt;updateEtag="true"&lt;/code&gt;.
+ When enabled the listener will respond to the 'if-match', 'if-none-match' headers and may return status code 304.
+ &lt;p&gt;
+ In order to make eTags work across multiple nodes you must configure Memcached to store the eTags.
+ The following properties will need to be set:
+ &lt;ul&gt;
+ &lt;li&gt;etag.cache.server=ip or hostname:port&lt;/li&gt;
+ &lt;li&gt;etag.cache.type=memcached&lt;/li&gt;
+ &lt;/ul&gt;
+ In case authentication, is required the following application properties can be used:
+ &lt;ul&gt;
+ &lt;li&gt;etag.cache.username&lt;/li&gt;
+ &lt;li&gt;etag.cache.password&lt;/li&gt;
+ &lt;li&gt;etag.cache.authalias&lt;/li&gt;
+ &lt;/ul&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -11857,7 +11875,7 @@
  tag found in the input XML. Every field tag should have a type attribute
  that specifies the type of conversion that needs to be done on the string
  specified by the value attribute. A value attribute also needs to be present
- for every field tag. Currently two types of conversion are supported:
+ for every field tag. Currently, two types of conversion are supported:
 
  &lt;ul&gt;
    &lt;li&gt;&lt;code&gt;GetBytesFromString&lt;/code&gt;, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)&lt;/li&gt;
@@ -11891,7 +11909,7 @@
    &lt;li&gt;The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F&lt;/li&gt;
  &lt;/ul&gt;
 
- The Packed-decimal is prefixed with zero's when the specified size is bigger
+ The Packed-decimal is prefixed with zeroes when the specified size is bigger
  than the number of decimals. An exception is thrown when the specified size
  is smaller than the number of decimals.
 
@@ -11942,18 +11960,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ChecksumPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="CleanupOldFilesPipe">
-        <xs:annotation>
-          <xs:documentation>Pipe for deleting files.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="CleanupOldFilesPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -12842,6 +12848,18 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="MailSenderPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ObfuscatePipe">
+        <xs:annotation>
+          <xs:documentation>Pipe that performs obfuscation on a message, using the tibcrypt library.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ObfuscatePipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -13947,57 +13965,6 @@
     <xs:attributeGroup ref="ChecksumPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="CleanupOldFilesPipeType">
-    <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="CleanupOldFilesPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CleanupOldFilesPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="CleanupOldFilesPipeDeclaredAttributeGroup">
-    <xs:attribute name="filePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>files that match this pattern will be deleted. parameters of the pipe are applied to this pattern. if this attribute is not set, the input of the pipe is interpreted as the file to be removed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="filePatternSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>session key that contains the pattern of files to be deleted, only used if filePattern is not set</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="lastModifiedDelta" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>time in milliseconds after last modification that must have passed at least before a file will be deleted (set to negative value to disable) Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="subdirectories" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, files  in subdirectories will be deleted, too Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="deleteEmptySubdirectories" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, empty subdirectories will be deleted, too Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="wildcard" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>filter of files to delete. if not set and a directory is specified, all files in the directory are interpreted to be deleted</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="excludeWildcard" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>filter of files to be excluded for deletion</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="minStableTime" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Minimal age of file &lt;i&gt;in milliseconds&lt;/i&gt;, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 to disable) Default: 1000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="CleanupOldFilesPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="CleanupOldFilesPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="ClobLineIteratingPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
@@ -14249,7 +14216,7 @@
     </xs:attribute>
     <xs:attribute name="direction">
       <xs:simpleType>
-        <xs:union memberTypes="DirectionAttributeValuesType_6 variableRef" />
+        <xs:union memberTypes="DirectionAttributeValuesType_7 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="encodeSubstring" type="frankBoolean">
@@ -14590,7 +14557,7 @@
         <xs:documentation>Direction of the transformation. Default: JSON2XML</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="DirectionAttributeValuesType_7 variableRef" />
+        <xs:union memberTypes="DirectionAttributeValuesType_8 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="addXmlRootElement" type="frankBoolean">
@@ -15151,6 +15118,25 @@
     <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.MailSenderPipe" use="prohibited" />
   </xs:complexType>
+  <xs:complexType name="ObfuscatePipeType">
+    <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    <xs:attributeGroup ref="ObfuscatePipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.tibco.pipes.ObfuscatePipe" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="ObfuscatePipeDeclaredAttributeGroup">
+    <xs:attribute name="direction">
+      <xs:annotation>
+        <xs:documentation>Default: OBFUSCATE</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DirectionAttributeValuesType_6 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ObfuscatePipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="ObfuscatePipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="PGPPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="PGPPipeCumulativeAttributeGroup" />
@@ -17855,7 +17841,7 @@
       <xs:enumeration value="UPPERCASE" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="DirectionAttributeValuesType_6">
+  <xs:simpleType name="DirectionAttributeValuesType_7">
     <xs:restriction base="xs:string">
       <xs:enumeration value="ENCODE" />
       <xs:enumeration value="DECODE" />
@@ -17877,10 +17863,16 @@
       <xs:enumeration value="Hex" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="DirectionAttributeValuesType_7">
+  <xs:simpleType name="DirectionAttributeValuesType_8">
     <xs:restriction base="xs:string">
       <xs:enumeration value="JSON2XML" />
       <xs:enumeration value="XML2JSON" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DirectionAttributeValuesType_6">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="OBFUSCATE" />
+      <xs:enumeration value="DEOBFUSCATE" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ActionAttributeValuesType_4">
