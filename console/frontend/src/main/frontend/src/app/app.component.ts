@@ -13,8 +13,10 @@ import {
   AdapterMessage,
   AppConstants,
   AppService,
+  ConsoleState,
   MessageLog,
   ServerInfo,
+  appInitState,
 } from './app.service';
 import {
   ActivatedRoute,
@@ -59,11 +61,12 @@ export class AppComponent implements OnInit, OnDestroy {
   serverTime = '';
   startupError: string | null = null;
   userName?: string;
-  appConstants: AppConstants;
   routeData: Data = {};
   routeQueryParams: ParamMap = convertToParamMap({});
   isLoginView: boolean = false;
 
+  private appConstants: AppConstants;
+  private consoleState: ConsoleState;
   private urlHash$!: Observable<string | null>;
   private _subscriptions = new Subscription();
   private serializedRawAdapterData: Record<string, string> = {};
@@ -88,6 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
     @Inject(LOCALE_ID) private locale: string,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
+    this.consoleState = this.appService.CONSOLE_STATE;
   }
 
   ngOnInit(): void {
@@ -201,28 +205,27 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeFrankConsole(): void {
-    if (this.appConstants['init'] === -1) {
-      this.appConstants['init'] = 0;
+    if (this.consoleState.init ===  appInitState.UN_INIT) {
+      this.consoleState.init = appInitState.PRE_INIT;
       this.debugService.log('Initializing Frank!Console');
-    } else if (this.appConstants['init'] === 0) {
+    } else if (this.consoleState.init === appInitState.PRE_INIT) {
       this.debugService.log('Cancelling 2nd initialization attempt');
       Pace.stop();
       return;
     } else {
       this.debugService.info(
         'Loading Frank!Console',
-        this.appConstants['init'],
+        this.consoleState.init,
       );
     }
 
-    if (this.appConstants['init'] === 0) {
-      //Only continue if the init state was -1
-      this.appConstants['init'] = 1;
+    if (this.consoleState.init === appInitState.PRE_INIT) {
+      this.consoleState.init = appInitState.INIT;
       this.appService.getServerInfo().subscribe({
         next: (data) => {
           this.serverInfo = data;
 
-          this.appConstants['init'] = 2;
+          this.consoleState.init = appInitState.POST_INIT;
           if (!this.router.url.includes('login')) {
             this.idle.watch();
             this.renderer.removeClass(document.body, 'gray-bg');
@@ -283,14 +286,14 @@ export class AppComponent implements OnInit, OnDestroy {
           this.initializeWarnings();
         },
         error: (error: HttpErrorResponse) => {
-          if (error.status == 500) {
+          if (error.status.toString().startsWith('5')) { // HTTP 5xx error
             this.router.navigate(['error']);
           }
         },
       });
       this.appService.getEnvironmentVariables().subscribe((data) => {
         if (data['Application Constants']) {
-          this.appConstants = $.extend(
+          this.appConstants = Object.assign(
             this.appConstants,
             data['Application Constants']['All'],
           ); //make FF!Application Constants default
@@ -422,17 +425,31 @@ export class AppComponent implements OnInit, OnDestroy {
       true,
       60_000,
     );
+
+    this.initializeAdapters();
+  }
+
+  initializeAdapters(): void {
+    //Get base information first, then update it with more details
+    this.appService
+      .getAdapters()
+      .pipe(first())
+      .subscribe((data: Record<string, Adapter>) => {
+        this.finalizeStartup(data);
+      });
   }
 
   pollerCallback(allAdapters: Record<string, Adapter>): void {
     let reloadedAdapters = false;
+    const updatedAdapters: typeof this.appService.adapters = {};
+    const deletedAdapters: string[] = [];
 
     for (const index in this.serializedRawAdapterData) {
       //Check if any old adapters should be removed
       if (!allAdapters[index]) {
+        deletedAdapters.push(index);
         delete this.serializedRawAdapterData[index];
-        delete this.appService.adapters[index];
-        this.debugService.log(`removed adapter [${index}]`);
+        this.debugService.log(`removing adapter [${index}]`);
       }
     }
 
@@ -493,7 +510,7 @@ export class AppComponent implements OnInit, OnDestroy {
         if (!reloadedAdapters)
           reloadedAdapters = this.hasAdapterReloaded(adapter);
 
-        this.appService.adapters[`${adapter.configuration}/${adapter.name}`] =
+        updatedAdapters[`${adapter.configuration}/${adapter.name}`] =
           adapter;
 
         const selectedConfiguration =
@@ -505,38 +522,38 @@ export class AppComponent implements OnInit, OnDestroy {
         this.updateAdapterNotifications(adapter);
       }
     }
+
+    const oldAdapters = {...this.appService.adapters};
+    for (const index of deletedAdapters) {
+      delete oldAdapters[index];
+    }
+
+    this.appService.updateAdapters({ ...oldAdapters, ...updatedAdapters});
+
     if (reloadedAdapters)
       this.toastService.success(
         'Reloaded',
         'Adapter(s) have successfully been reloaded!',
         { timeout: 3000 },
       );
-    this.appService.updateAdapters(this.appService.adapters);
-  }
-
-  initializeAdapters(): void {
-    //Get base information first, then update it with more details
-    this.appService
-      .getAdapters()
-      .pipe(first())
-      .subscribe((data: Record<string, Adapter>) => {
-        this.finalizeStartup(data);
-      });
   }
 
   finalizeStartup(data: Record<string, Adapter>): void {
     this.pollerCallback(data);
-    this.appService.updateLoading(false);
-    this.loading = false;
-    this.scrollToAdapter();
 
-    this.pollerService.add(
-      'adapters?expanded=all',
-      (data: unknown) => {
-        this.pollerCallback(data as Record<string, Adapter>);
-      },
-      true,
-    );
+    setTimeout(() => {
+      this.appService.updateLoading(false);
+      this.loading = false;
+      this.scrollToAdapter();
+
+      this.pollerService.add(
+        'adapters?expanded=all',
+        (data: unknown) => {
+          this.pollerCallback(data as Record<string, Adapter>);
+        },
+        true,
+      );
+    });
   }
 
   scrollToAdapter(): void {

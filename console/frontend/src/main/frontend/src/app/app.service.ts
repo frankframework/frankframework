@@ -230,6 +230,20 @@ export type ServerEnvironmentVariables = {
 
 export type AppConstants = Record<string, string | number | boolean | object>;
 
+export const appInitState = {
+  'UN_INIT': -1,
+  'PRE_INIT': 0,
+  'INIT': 1,
+  'POST_INIT': 2
+ } as const;
+export type AppInitState = typeof appInitState[keyof typeof appInitState];
+
+export type ConsoleState = {
+  server: string;
+  timeOffset: number;
+  init: AppInitState;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -296,14 +310,11 @@ export class AppService {
     //Configure these in the server AppConstants!!!
     //The settings here are defaults and will be overwritten upon set in any .properties file.
 
-    //Server to connect to, defaults to local server.
-    server: computeServerPath(),
-
     //How often the interactive frontend should poll the FF API for new data
-    'console.pollerInterval': 30_000,
+    'console.pollerInterval': 10_000,
 
     //How often the interactive frontend should poll during IDLE state
-    'console.idle.pollerInterval': 180_000,
+    'console.idle.pollerInterval': 60_000,
 
     //After x minutes the app goes into 'idle' state (use 0 to disable)
     'console.idle.time': 300,
@@ -315,15 +326,12 @@ export class AppService {
     'console.dateFormat': 'yyyy-MM-dd HH:mm:ss',
 
     //These will automatically be updated.
+  };
+
+  CONSOLE_STATE: ConsoleState = {
+    server: computeServerPath(),
     timeOffset: 0,
-    init: -1,
-    getString: function (variable: keyof AppConstants) {
-      return this[variable];
-    },
-    getBoolean: function (variable: keyof AppConstants, dfault: unknown) {
-      if (this[variable] != undefined) return this[variable] === 'true';
-      return dfault;
-    },
+    init: appInitState.UN_INIT,
   };
 
   absoluteApiPath = `${this.getServerPath()}iaf/api/`;
@@ -436,7 +444,7 @@ export class AppService {
   }
 
   getServerPath(): string {
-    let absolutePath = this.APP_CONSTANTS['server'] as string;
+    let absolutePath = this.CONSOLE_STATE.server;
     if (absolutePath && absolutePath.slice(-1) != '/') absolutePath += '/';
     return absolutePath;
   }
