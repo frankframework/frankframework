@@ -324,8 +324,6 @@ export class AppService {
 
     //Time format in which to display the time and date.
     'console.dateFormat': 'yyyy-MM-dd HH:mm:ss',
-
-    //These will automatically be updated.
   };
 
   CONSOLE_STATE: ConsoleState = {

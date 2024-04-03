@@ -241,7 +241,7 @@ export class AppComponent implements OnInit, OnDestroy {
             new Date(data.serverTime).toUTCString(),
           );
           const localTime = Date.parse(new Date().toUTCString());
-          this.appConstants['timeOffset'] = serverTime - localTime;
+          this.consoleState.timeOffset = serverTime - localTime;
           // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
           this.appConstants['timezoneOffset'] = 0;
           //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
@@ -250,7 +250,7 @@ export class AppComponent implements OnInit, OnDestroy {
             const serverDate = new Date();
             serverDate.setTime(
               serverDate.getTime() -
-                (this.appConstants['timeOffset'] as number),
+                this.consoleState.timeOffset,
             );
             this.serverTime = formatDate(
               serverDate,

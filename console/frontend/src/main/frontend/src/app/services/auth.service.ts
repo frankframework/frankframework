@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Base64Service } from './base64.service';
-import { AppConstants, AppService } from '../app.service';
+import { AppConstants, AppService, ConsoleState } from '../app.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -10,7 +10,7 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
   private authToken?: string;
-  private appConstants: AppConstants;
+  private consoleState: ConsoleState;
 
   constructor(
     private http: HttpClient,
@@ -18,10 +18,7 @@ export class AuthService {
     private appService: AppService,
     private Base64: Base64Service,
   ) {
-    this.appConstants = this.appService.APP_CONSTANTS;
-    this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-    });
+    this.consoleState = this.appService.CONSOLE_STATE;
   }
 
   login(username: string, password: string): void {
@@ -43,7 +40,7 @@ export class AuthService {
           sessionStorage.getItem('location') || 'status',
         );
     } else {
-      if ((this.appConstants['init'] as number) > 0) {
+      if (this.consoleState.init > 0) {
         if (!this.router.url.includes('login'))
           sessionStorage.setItem('location', this.router.url || 'status');
         this.router.navigateByUrl('login');
