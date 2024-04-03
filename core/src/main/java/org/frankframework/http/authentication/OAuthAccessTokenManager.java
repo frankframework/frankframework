@@ -194,7 +194,7 @@ public class OAuthAccessTokenManager {
 			default:
 				throw new IllegalStateException("Illegal Method, must be GET or POST");
 		}
-		httpRequest.getHeaderMap().forEach((k,l) -> l.forEach(v -> apacheHttpRequest.addHeader(k, v)));
+		httpRequest.getHeaderMap().forEach((k,l) -> l.forEach(v -> apacheHttpRequest.setHeader(k, v)));
 		return apacheHttpRequest;
 	}
 
