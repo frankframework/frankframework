@@ -141,8 +141,6 @@ public class OAuthAccessTokenManager {
 		Secret clientSecret = new Secret(clientCredentialFactory.getPassword());
 		ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
 
-		// ClientSecretPost
-
 		return new TokenRequest(tokenEndpoint, clientAuth, grant, scope);
 	}
 
