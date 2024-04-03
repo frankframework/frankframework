@@ -31,6 +31,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	private static final String TARGET_NAMESPACE = "urn:fakenamespace";
 	private static final String DEFAULT_BODY_END = "<root xmlns=\"" + TARGET_NAMESPACE + "\">\n<attrib>1</attrib>\n<attrib>2</attrib>\n"
 			+ "</root></soapenv:Body></soapenv:Envelope>";
+	private static final String DEFAULT_XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 	private final String messageBody = "<soapenv:Body><FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\">"
 			+ "<Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\"><Status>OK</Status></Result>"
