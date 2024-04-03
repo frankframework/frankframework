@@ -9,7 +9,7 @@ import {
   basicTableSort,
 } from 'src/app/components/th-sortable.directive';
 import { copyToClipboard } from 'src/app/utils';
-import { concat, merge } from 'rxjs';
+import { combineLatest, concat, forkJoin, merge } from 'rxjs';
 import { zip } from 'rxjs/internal/operators/zip';
 
 @Component({
@@ -37,11 +37,12 @@ export class LoggingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    concat(this.route.paramMap, this.route.queryParamMap).subscribe(
-      (parameters) => {
-        this.handleUrlParameters(parameters);
-      },
-    );
+    this.route.paramMap.subscribe((parameters) => {
+      this.handleUrlParameters(parameters);
+    });
+    this.route.queryParamMap.subscribe((parameters) => {
+      this.handleOldUrlParameters(parameters);
+    });
   }
 
   handleUrlParameters(parameters: ParamMap): void {
@@ -60,6 +61,15 @@ export class LoggingComponent implements OnInit {
       this.viewFile = this.path;
     } else {
       this.openDirectory(directory);
+    }
+  }
+
+  handleOldUrlParameters(parameters: ParamMap): void {
+    const directoryParameter = parameters.get('directory') ?? '';
+    const fileParameter = parameters.get('file') ?? '';
+
+    if (directoryParameter) {
+      this.router.navigate(['/logging', directoryParameter, fileParameter]);
     }
   }
 
