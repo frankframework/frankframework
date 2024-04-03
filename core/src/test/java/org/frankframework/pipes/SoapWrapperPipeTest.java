@@ -38,6 +38,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	private final String soapMessageSoap11 = "<soapenv:Envelope xmlns:soapenv=\"" + SoapVersion.SOAP11.namespace + "\">" + messageBody;
 	private final String soapMessageSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SoapVersion.SOAP12.namespace + "\">" + messageBody;
 
+
 	@Override
 	public P createPipe() {
 		return (P) new SoapWrapperPipe();
@@ -53,7 +54,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.setOmitXmlDeclaration(false);
 		configureAndStartPipe();
 
-		String input = SoapWrapperPipe.DEFAULT_XML_HEADER + "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>"
+		String input = DEFAULT_XML_HEADER + "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>"
 				+ DEFAULT_BODY_END;
 		String expected = "<root xmlns=\"" + TARGET_NAMESPACE + "\">\n"
 				+ "<attrib>1</attrib>\n"
@@ -282,7 +283,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		configureAndStartPipe();
 
 		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
-		String expected = SoapWrapperPipe.DEFAULT_XML_HEADER + "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
+		String expected = DEFAULT_XML_HEADER + "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
 		PipeRunResult prr1 = doPipe(pipe, input, new PipeLineSession()); // XML header is added afterward
 		String actual1 = prr1.getResult().asString();
@@ -291,7 +292,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual1);
 
 		// Arrange 2
-		PipeRunResult prr2 = doPipe(pipe, SoapWrapperPipe.DEFAULT_XML_HEADER + input, new PipeLineSession()); // XML header is already in input message
+		PipeRunResult prr2 = doPipe(pipe, DEFAULT_XML_HEADER + input, new PipeLineSession()); // XML header is already in input message
 		String actual2 = prr2.getResult().asString();
 
 		// Assert 2: XML header is added only once

@@ -50,7 +50,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	protected static final String DEFAULT_SOAP_HEADER_SESSION_KEY = "soapHeader";
 	protected static final String DEFAULT_SOAP_NAMESPACE_SESSION_KEY = "soapNamespace";
 	protected static final SoapVersion DEFAULT_SOAP_VERSION_FOR_WRAPPING = SoapVersion.SOAP11;
-	public static final String DEFAULT_XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 	private @Getter Direction direction = Direction.WRAP;
 	private @Getter SoapVersion soapVersion = SoapVersion.AUTO;

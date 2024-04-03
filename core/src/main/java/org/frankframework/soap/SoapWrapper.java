@@ -16,6 +16,7 @@
 package org.frankframework.soap;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.StringTokenizer;
 
 import javax.xml.soap.MessageFactory;
@@ -278,14 +279,15 @@ public class SoapWrapper {
 				if (separatorPos < 1) {
 					namespaceClause.append(" xmlns=\"").append(namespaceDef).append("\"");
 				} else {
-					namespaceClause.append(" xmlns:").append(namespaceDef.substring(0, separatorPos)).append("=\"").append(namespaceDef.substring(separatorPos + 1)).append("\"");
+					namespaceClause.append(" xmlns:").append(namespaceDef, 0, separatorPos).append("=\"").append(namespaceDef.substring(separatorPos + 1)).append("\"");
 				}
 			}
 			log.debug("namespaceClause [{}]", namespaceClause);
 		}
 		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
 		// XmlUtils.skipXmlDeclaration call below removes the xml declaration from the message, so adding it back if required
-		Message result = new Message((includeXmlDeclaration ? SoapWrapperPipe.DEFAULT_XML_HEADER : "") +
+		String xmlHeader = createXmlHeader(message, includeXmlDeclaration);
+		Message result = new Message(xmlHeader +
 				"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
 				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message.asString())
 				+ "</soapenv:Body>" + "</soapenv:Envelope>");
@@ -293,6 +295,15 @@ public class SoapWrapper {
 			result = signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
 		}
 		return result;
+	}
+
+	private static String createXmlHeader(final Message message, boolean includeXmlDeclaration) {
+		if (!includeXmlDeclaration) return "";
+		String charset = message.getCharset();
+		if (charset == null) {
+			charset = StandardCharsets.UTF_8.name();
+		}
+		return "<?xml version=\"1.0\" encoding=\"" + charset + "\"?>";
 	}
 
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {
