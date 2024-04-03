@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * @author Peter Leeuwenburgh
  */
 @Deprecated
-@ConfigurationWarning("Please replace with UnzipPipe. Configure UnzipPipe with getInputFromSessionKey='file', directorySessionKey='destination' and keepOriginalFileName='true'.")
+@ConfigurationWarning("Please replace with UnzipPipe. Configure UnzipPipe with getInputFromSessionKey='file', directorySessionKey='destination' and keepOriginalFileName='true'. UploadFilePipe will be deleted in 8.0.1 and onward")
 public class UploadFilePipe extends FixedForwardPipe {
 
 	private String directory;
