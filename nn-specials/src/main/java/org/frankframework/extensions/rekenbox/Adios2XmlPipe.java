@@ -113,7 +113,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 
 			String elementName = localName;
-			if(elementName == null || elementName.equals("")) {
+			if(elementName == null || "".equals(elementName)) {
 				elementName = qName;
 			}
 			// log.debug("elementName ["+elementName+"]:
@@ -121,7 +121,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 			// @naam=["+attributes.getValue("naam")+"]
 			// @index=["+attributes.getValue("index")+"]");
 
-			if(elementName.equals("rubriek")) {
+			if("rubriek".equals(elementName)) {
 				String nummer = attributes.getValue("nummer");
 				String naam = attributes.getValue("naam");
 				String index = attributes.getValue("index");
@@ -131,49 +131,49 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				String waarde = attributes.getValue("waarde");
 
 				// find nummer from naam
-				if(naam != null && !naam.equals("")) {
+				if(naam != null && !"".equals(naam)) {
 					String nummerByNaam = (String) rubriek2nummer.get(naam);
 					if(nummerByNaam == null) {
 						throw new SAXException("cannot find nummer for [" + naam + "] in rubriek");
 					}
 					// check if nummer from naam matches nummer in rubriek, if present
-					if(nummer != null && !nummer.equals("") && !nummer.equals(nummerByNaam)) {
+					if(nummer != null && !"".equals(nummer) && !nummer.equals(nummerByNaam)) {
 						throw new SAXException("nummer [" + nummerByNaam + "] found for naam [" + naam + "] does not match nummer [" + nummer + "] in rubriek");
 					}
 					nummer = nummerByNaam;
 				}
-				if(nummer == null || nummer.equals("")) {
+				if(nummer == null || "".equals(nummer)) {
 					throw new SAXException("cannot find 'naam' or 'nummer' in rubriek");
 				}
 
 				// find recordnr from recordname
-				if(record != null && !record.equals("")) {
+				if(record != null && !"".equals(record)) {
 					String nummerByNaam = (String) record2nummer.get(record);
 					if(nummerByNaam == null) {
 						throw new SAXException("cannot find recordnr for record [" + record + "] in rubriek");
 					}
 					// check if recordnr from recordname matches recordnr in rubriek, if present
-					if(recordnr != null && !recordnr.equals("") && !recordnr.equals(nummerByNaam)) {
+					if(recordnr != null && !"".equals(recordnr) && !recordnr.equals(nummerByNaam)) {
 						throw new SAXException("recordnr [" + nummerByNaam + "] found for record [" + record + "] does not match recordnr [" + recordnr + "] in rubriek");
 					}
 					recordnr = nummerByNaam;
 				}
-				if(recordnr != null && recordnr.equals("")) {
+				if("".equals(recordnr)) {
 					recordnr = null;
 				}
 
 				if(recordnr != null) {
 					result.append(recordnr);
-					if(recordindex != null && !recordindex.equals(""))
+					if(recordindex != null && !"".equals(recordindex))
 						result.append("[" + recordindex + "]");
 					result.append(",");
 				}
 				result.append(nummer);
-				if(index != null && !index.equals("")) {
+				if(index != null && !"".equals(index)) {
 					result.append("[" + index + "]");
 				}
 				result.append(":" + waarde + ";" + SystemUtils.LINE_SEPARATOR);
-			} else if(elementName.equals("adios")) {
+			} else if("adios".equals(elementName)) {
 				result.append(attributes.getValue("rekenbox") + ":;" + SystemUtils.LINE_SEPARATOR);
 			}
 		}

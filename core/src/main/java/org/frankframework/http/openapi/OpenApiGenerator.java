@@ -125,7 +125,7 @@ public class OpenApiGenerator {
 		if (inputValidator != null && !inputValidator.getParameterList().isEmpty()) {
 			for (Parameter parameter : inputValidator.getParameterList()) {
 				String parameterSessionKey = parameter.getSessionKey();
-				if (StringUtils.isNotEmpty(parameterSessionKey) && !parameterSessionKey.equals("headers") && !paramsFromHeaderAndCookie.contains(parameterSessionKey)) {
+				if (StringUtils.isNotEmpty(parameterSessionKey) && !"headers".equals(parameterSessionKey) && !paramsFromHeaderAndCookie.contains(parameterSessionKey)) {
 					Parameter.ParameterType parameterType = parameter.getType() != null ? parameter.getType() : Parameter.ParameterType.STRING;
 					paramBuilder.add(addParameterToSchema(parameterSessionKey, "query", false, Json.createObjectBuilder()
 							.add("type", parameterType.toString().toLowerCase())));

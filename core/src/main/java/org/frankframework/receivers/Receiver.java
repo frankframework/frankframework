@@ -363,7 +363,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				.append(messageId).append("] correlationId [").append(correlationId).append("]:");
 
 			session.forEach((key, value) -> {
-				String strValue = key.equals("messageText") ? "(... see elsewhere ...)" : String.valueOf(value);
+				String strValue = "messageText".equals(key) ? "(... see elsewhere ...)" : String.valueOf(value);
 				contextDump.append(" ").append(key).append("=[").append(hiddenSessionKeys.contains(key) ? StringUtil.hide(strValue) : strValue).append("]");
 			});
 			log.debug(getLogPrefix()+contextDump);

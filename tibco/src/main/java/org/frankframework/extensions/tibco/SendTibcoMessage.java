@@ -166,11 +166,11 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		if (StringUtils.isEmpty(soapAction_work) && !StringUtils.isEmpty(queueName_work)) {
 			String[] q = queueName_work.split("\\.");
 			if (q.length>0) {
-				if (q[0].equalsIgnoreCase("P2P") && q.length>=4) {
+				if ("P2P".equalsIgnoreCase(q[0]) && q.length>=4) {
 					soapAction_work = q[3];
-				} else if (q[0].equalsIgnoreCase("ESB") && q.length==8) {
+				} else if ("ESB".equalsIgnoreCase(q[0]) && q.length==8) {
 					soapAction_work = q[5] + "_" + q[6];
-				} else if (q[0].equalsIgnoreCase("ESB") && q.length>8) {
+				} else if ("ESB".equalsIgnoreCase(q[0]) && q.length>8) {
 					soapAction_work = q[6] + "_" + q[7];
 				}
 			}

@@ -507,7 +507,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				sendResult = sendMessage(input, session, getSender(), threadContext);
 				if (retryTp != null) {
 					String retry = retryTp.transform(sendResult.getResult().asString(),null);
-					if (retry.equalsIgnoreCase("true")) {
+					if ("true".equalsIgnoreCase(retry)) {
 						if (retriesLeft >= 1) {
 							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
 						}

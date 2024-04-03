@@ -90,7 +90,7 @@ public abstract class MultipartUtils {
 			String[] cte = part.getHeader("Content-Transfer-Encoding");
 			if(cte != null) {
 				String cteFields = cte[0]; //Content-Transfer-Encoding - binary || 8bit
-				if(cteFields != null && cteFields.equalsIgnoreCase("binary")) {
+				if("binary".equalsIgnoreCase(cteFields)) {
 					return true;
 				}
 			}

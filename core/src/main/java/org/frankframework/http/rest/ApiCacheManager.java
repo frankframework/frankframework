@@ -33,7 +33,7 @@ public class ApiCacheManager {
 	 */
 	public static synchronized IApiCache getInstance() {
 		if( cache == null ) {
-			if(etagCacheType.equalsIgnoreCase("memcached")) {
+			if("memcached".equalsIgnoreCase(etagCacheType)) {
 				cache = new ApiMemcached();
 			}
 			else {

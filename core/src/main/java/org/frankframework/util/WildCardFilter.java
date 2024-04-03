@@ -67,7 +67,7 @@ public class WildCardFilter implements FilenameFilter {
 		while(tokens.hasMoreTokens()) {
 			token = tokens.nextToken();
 
-			if(token.equals("*")) {
+			if("*".equals(token)) {
 				pattern.addElement(FIND);
 				if(tokens.hasMoreTokens()) {
 					token = tokens.nextToken();

@@ -71,7 +71,7 @@ public class SqlTranslatorTest {
 		try {
 			return checkExceptionClass(t, Class.forName(c));
 		} catch (ClassNotFoundException e) {
-			if (c.equalsIgnoreCase("success"))
+			if ("success".equalsIgnoreCase(c))
 				return false;
 			throw t;
 		}

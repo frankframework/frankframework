@@ -62,13 +62,13 @@ public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 					writer.append('"').append(key).append("\":");
 				}
 			}
-			if (localname.equals("array")) {
+			if ("array".equals(localname)) {
 				writer.write("[");
-			} else if (localname.equals("map")) {
+			} else if ("map".equals(localname)) {
 				writer.write("{");
-			} else if (localname.equals("null")) {
+			} else if ("null".equals(localname)) {
 				writer.write("null");
-			} else if (localname.equals("string")) {
+			} else if ("string".equals(localname)) {
 				stringOpen=true;
 			}
 		} catch (IOException e) {
@@ -79,11 +79,11 @@ public class XmlJsonWriter extends DefaultHandler implements ContentHandler {
 	@Override
 	public void endElement(String uri, String localname, String qname) throws SAXException {
 		try {
-			if (localname.equals("array")) {
+			if ("array".equals(localname)) {
 				writer.write("]");
-			} else if (localname.equals("map")) {
+			} else if ("map".equals(localname)) {
 				writer.write("}");
-			} else if (localname.equals("string")) {
+			} else if ("string".equals(localname)) {
 				stringOpen=false;
 			}
 			commaRequired=true;

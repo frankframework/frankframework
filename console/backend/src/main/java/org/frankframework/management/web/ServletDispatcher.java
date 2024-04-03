@@ -82,7 +82,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		 * Log POST, PUT and DELETE requests
 		 */
 		final String method = request.getMethod();
-		if(!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("OPTIONS")) {
+		if(!"GET".equalsIgnoreCase(method) && !"OPTIONS".equalsIgnoreCase(method)) {
 			secLog.debug("received http request from URI [{}:{}] issued by [{}]", method, request.getRequestURI(), HttpUtils.getCommandIssuedBy(request));
 		}
 

@@ -56,7 +56,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 			log.debug("cleaning folder [{}]", folder);
 			FTPFile[] files = ftpClient.listFiles(folder);
 			for (FTPFile o : files) {
-				if (o.isDirectory() && !o.getName().equals(".") && !o.getName().equals("..")) {
+				if (o.isDirectory() && !".".equals(o.getName()) && !"..".equals(o.getName())) {
 					FTPFile[] filesInFolder = ftpClient.listFiles(folder + o.getName());
 					for (FTPFile ftpFile : filesInFolder) {
 						if (ftpFile.isDirectory()) {

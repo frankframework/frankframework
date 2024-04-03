@@ -94,7 +94,7 @@ public class TestReceiverOnError {
 
 		doAnswer(invocation -> {
 			Message m = invocation.getArgument(1);
-			if(m.asString().equals("processMessageException")) {
+			if("processMessageException".equals(m.asString())) {
 				throw new ListenerException(m.asString());
 			}
 			return invocation.callRealMethod();

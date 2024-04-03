@@ -178,7 +178,7 @@ public class DbmsSupportTest {
 				int datatype = rs.getInt("DATA_TYPE");
 				int columnSize = rs.getInt("COLUMN_SIZE");
 
-				if (columnName.equalsIgnoreCase("TINT")) {
+				if ("TINT".equalsIgnoreCase(columnName)) {
 					return;
 				}
 			}
@@ -204,7 +204,7 @@ public class DbmsSupportTest {
 					int datatype = rs.getInt("DATA_TYPE");
 					int columnSize = rs.getInt("COLUMN_SIZE");
 
-					if (columnName.equalsIgnoreCase("TINT")) {
+					if ("TINT".equalsIgnoreCase(columnName)) {
 						return;
 					}
 				}
@@ -231,10 +231,10 @@ public class DbmsSupportTest {
 				int datatype = rs.getInt("DATA_TYPE");
 				int columnSize = rs.getInt("COLUMN_SIZE");
 
-				if (columnName.equalsIgnoreCase("TINT")) {
+				if ("TINT".equalsIgnoreCase(columnName)) {
 					foundTINT = true;
 				}
-				if (columnName.equalsIgnoreCase("TCHAR")) {
+				if ("TCHAR".equalsIgnoreCase(columnName)) {
 					foundTCHAR = true;
 				}
 			}
@@ -337,7 +337,7 @@ public class DbmsSupportTest {
 		String datetime = DateFormatUtils.now(DateFormatUtils.GENERIC_DATETIME_FORMATTER);
 		String date = DateFormatUtils.now(DateFormatUtils.ISO_DATE_FORMATTER);
 
-		assumeFalse(dbmsSupport.getDbmsName().equals("Oracle")); // This fails on Oracle, cannot set a non-integer number via setString()
+		assumeFalse("Oracle".equals(dbmsSupport.getDbmsName())); // This fails on Oracle, cannot set a non-integer number via setString()
 		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 

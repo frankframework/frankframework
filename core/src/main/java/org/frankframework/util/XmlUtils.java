@@ -1106,9 +1106,9 @@ public class XmlUtils {
 		if (str == null) {
 			return defaultValue;
 		}
-		return str.equalsIgnoreCase("true")
-				|| str.equalsIgnoreCase("yes")
-				|| str.equalsIgnoreCase("on");
+		return "true".equalsIgnoreCase(str)
+				|| "yes".equalsIgnoreCase(str)
+				|| "on".equalsIgnoreCase(str);
 	}
 	/**
 	 * Method getChildTagAsLong.

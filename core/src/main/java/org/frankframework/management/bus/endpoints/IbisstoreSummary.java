@@ -216,7 +216,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 				}
 				typeBuilder = Json.createObjectBuilder();
 				typeBuilder.add("type", type);
-				if (type.equalsIgnoreCase("E")) {
+				if ("E".equalsIgnoreCase(type)) {
 					typeBuilder.add("name","errorlog");
 				} else {
 					typeBuilder.add("name","messagelog");

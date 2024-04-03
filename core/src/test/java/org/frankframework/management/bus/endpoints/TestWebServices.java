@@ -277,7 +277,7 @@ public class TestWebServices extends BusTestBase {
 			byte[] buffer = new byte[2048];
 			for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
 				String name = entry.getName();
-				if(name.equals("wsl-adapter.wsdl")) {
+				if("wsl-adapter.wsdl".equals(name)) {
 					int len;
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
 					while((len = archive.read(buffer)) > 0) {

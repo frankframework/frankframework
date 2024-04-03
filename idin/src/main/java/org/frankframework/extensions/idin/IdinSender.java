@@ -175,7 +175,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 		XmlBuilder result = new XmlBuilder("result");
 		ErrorResponse error = null;
 
-		if(getAction().equals("DIRECTORY")) {
+		if("DIRECTORY".equals(getAction())) {
 			DirectoryResponse response = getCommunicator().getDirectory();
 
 			if(response.getIsError()) {
@@ -220,7 +220,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				log.debug(response.getRawMessage());
 			}
 		}
-		else if(getAction().equals("RESPONSE")) {
+		else if("RESPONSE".equals(getAction())) {
 			String transactionID = XmlUtils.getChildTagAsString(queryElement, "transactionID");
 			if(StringUtils.isEmpty(transactionID))
 				throw new SenderException("no transactionID was supplied");
@@ -279,7 +279,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 				log.debug(response.getRawMessage());
 			}
 		}
-		else if(getAction().equals("AUTHENTICATE")) {
+		else if("AUTHENTICATE".equals(getAction())) {
 			AuthenticationRequest authRequest = new AuthenticationRequest();
 
 			String issuerId = XmlUtils.getChildTagAsString(queryElement, "issuerId");

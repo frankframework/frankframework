@@ -76,7 +76,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		return (Connection) factory.create(new Class[0], new Object[0], new MethodHandler() {
 			@Override
 			public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
-				if(method.getName().equals("close")) {
+				if("close".equals(method.getName())) {
 					connectionCount.decrementAndGet();
 				}
 				return method.invoke(connection, args);

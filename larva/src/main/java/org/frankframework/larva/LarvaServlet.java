@@ -92,7 +92,7 @@ public class LarvaServlet extends HttpServletBase {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
 
-		if(path.equals("/") || path.equalsIgnoreCase("/index.jsp")) {
+		if("/".equals(path) || "/index.jsp".equalsIgnoreCase(path)) {
 			handleIndex(req, resp);
 			return;
 		} else {
@@ -108,10 +108,10 @@ public class LarvaServlet extends HttpServletBase {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
-		if(path.equals("/") || path.equalsIgnoreCase("/index.jsp")) {
+		if("/".equals(path) || "/index.jsp".equalsIgnoreCase(path)) {
 			handleIndex(req, resp);
 			return;
-		} else if (path.equals("/saveResultToFile.jsp")) {
+		} else if ("/saveResultToFile.jsp".equals(path)) {
 			handleSaveResult(req, resp);
 			return;
 		}
@@ -154,7 +154,7 @@ public class LarvaServlet extends HttpServletBase {
 		resp.setContentType("text/html");
 		Writer writer = resp.getWriter();
 		if(request.getParameter("cmd") != null) {
-			if (request.getParameter("cmd").equals("indentWindiff")) {
+			if ("indentWindiff".equals(request.getParameter("cmd"))) {
 				writer.append(getTemplate("Comparing result"));
 			} else {
 				writer.append(getTemplate("Save actual result"));
@@ -167,7 +167,7 @@ public class LarvaServlet extends HttpServletBase {
 			writer.append("<p>No file name received!</p>");
 			writer.append("<p>In case you use Tomcat and large messages this might be caused by maxPostSize which is set to 2097152 (2 megabytes) by default. Add maxPostSize to the Connector element in server.xml with a larger value or 0.</p>");
 		} else {
-			if (request.getParameter("cmd").equals("indentWindiff")) {
+			if ("indentWindiff".equals(request.getParameter("cmd"))) {
 				writer.append("<p>Comparing actual result with expected result...</p>");
 				writer.flush();
 				try {

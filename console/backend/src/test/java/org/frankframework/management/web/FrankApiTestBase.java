@@ -256,7 +256,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			String rsResourceKey = compileKey(httpMethod, url);
 			log.info("trying to dispatch request to [{}]", rsResourceKey);
 
-			if(httpMethod.equalsIgnoreCase("GET") && jsonOrFormdata != null) {
+			if("GET".equalsIgnoreCase(httpMethod) && jsonOrFormdata != null) {
 				fail("can't use arguments on a GET request");
 			}
 			applyIbisRole(role);

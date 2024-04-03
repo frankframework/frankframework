@@ -75,7 +75,7 @@ public class Debugger extends org.frankframework.ibistesttool.Debugger {
 				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
 			}
 			PipeLineResult processResult = adapter.processMessage(correlationId, new Message(inputMessage), pipeLineSession);
-			if (!(processResult.isSuccessful() && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
+			if (!(processResult.isSuccessful() && "<ok/>".equalsIgnoreCase(processResult.getResult().asString()))) {
 				return "Rerun failed. Result of adapter " + RESEND_ADAPTER_NAME + ": " + processResult.getResult().asString();
 			}
 			return null;

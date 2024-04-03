@@ -74,7 +74,7 @@ public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {
 			assertEquals(expectedOutcome, prr.getPipeForward().getName());
 		} catch (Exception e) {
 			// Case of an error while expecting a success
-			if (expectedOutcome.equalsIgnoreCase("success"))
+			if ("success".equalsIgnoreCase(expectedOutcome))
 				throw e;
 
 			// Make sure the full stack trace is printed for easy debugging.

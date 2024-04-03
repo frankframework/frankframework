@@ -130,10 +130,10 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
 		boolean remove = false;
 
-		if (root.equalsIgnoreCase("browse")) {
+		if ("browse".equalsIgnoreCase(root)) {
 			// OK
 		} else {
-			if (root.equalsIgnoreCase("remove")) {
+			if ("remove".equalsIgnoreCase(root)) {
 				remove = true;
 			} else {
 				throw new SenderException(getLogPrefix()

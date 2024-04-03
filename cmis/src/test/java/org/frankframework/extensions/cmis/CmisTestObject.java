@@ -44,7 +44,7 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 			objectId = (String) properties.get(PropertyIds.NAME);
 		}
 
-		if(objectId != null && objectId.equals("NOT_FOUND")) {
+		if("NOT_FOUND".equals(objectId)) {
 			throw new CmisObjectNotFoundException();
 		}
 
@@ -124,7 +124,7 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 
 	@Override
 	public boolean hasAllowableAction(Action action) {
-		return objectId.equals("ALLOWED");
+		return "ALLOWED".equals(objectId);
 	}
 
 	@Override

@@ -803,7 +803,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	private Object preFormatDateType(Object rawValue, String formatType, String patternFormatString) throws ParameterException {
-		if (formatType!=null && (formatType.equalsIgnoreCase("date") || formatType.equalsIgnoreCase("time"))) {
+		if (formatType!=null && ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType))) {
 			if (rawValue instanceof Date) {
 				return rawValue;
 			}

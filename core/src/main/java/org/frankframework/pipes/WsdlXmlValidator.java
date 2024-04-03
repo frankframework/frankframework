@@ -133,7 +133,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			boolean soapBodyFound = false;
 			for (int i = 0; i < childNodes.getLength(); i++) {
 				Node n = childNodes.item(i);
-				if (n.getNodeType() == Node.ELEMENT_NODE && n.getLocalName().equals("element")) {
+				if (n.getNodeType() == Node.ELEMENT_NODE && "element".equals(n.getLocalName())) {
 					String name = n.getAttributes().getNamedItem("name").getNodeValue();
 					if (getSoapBody().equals(name)) {
 						soapBodyFound = true;

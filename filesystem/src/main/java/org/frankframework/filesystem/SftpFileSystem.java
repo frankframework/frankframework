@@ -265,7 +265,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		}
 		for (LsEntry ftpFile : files) {
 			String fileName = ftpFile.getFilename();
-			if (fileName.equals(".") || fileName.equals("..")) {
+			if (".".equals(fileName) || "..".equals(fileName)) {
 				continue;
 			}
 			if (ftpFile.getAttrs().isDir()) {

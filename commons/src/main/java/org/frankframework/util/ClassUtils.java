@@ -102,7 +102,7 @@ public abstract class ClassUtils {
 	public static long lastModified(Class<?> aClass) throws IllegalArgumentException {
 		URL url = aClass.getProtectionDomain().getCodeSource().getLocation();
 
-		if(!url.getProtocol().equals("file")) {
+		if(!"file".equals(url.getProtocol())) {
 			throw new IllegalArgumentException("Class was not loaded from a file url");
 		}
 

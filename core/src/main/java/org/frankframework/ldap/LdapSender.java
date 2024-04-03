@@ -739,7 +739,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			dirContext = getDirContext(paramValueMap);
 			return searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).toXML();
 		} catch (NamingException e) {
-			if (isReplyNotFound() && e.getMessage().equals("Unprocessed Continuation Reference(s)")) {
+			if (isReplyNotFound() && "Unprocessed Continuation Reference(s)".equals(e.getMessage())) {
 				if (log.isDebugEnabled()) log.debug("Searching object not found using filter[" + filterExpression + "]");
 				return DEFAULT_RESULT_SEARCH;
 			}

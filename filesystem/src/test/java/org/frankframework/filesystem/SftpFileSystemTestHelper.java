@@ -122,7 +122,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 		Vector<LsEntry> files = ftpClient.ls(folder==null ? "*" : folder);
 		for (LsEntry ftpFile : files) {
 			String fileName = ftpFile.getFilename();
-			if (fileName.equals(".") || fileName.equals("..")) {
+			if (".".equals(fileName) || "..".equals(fileName)) {
 				continue;
 			}
 			String recursiveName = folder != null ? folder + "/" + ftpFile.getFilename() : ftpFile.getFilename();

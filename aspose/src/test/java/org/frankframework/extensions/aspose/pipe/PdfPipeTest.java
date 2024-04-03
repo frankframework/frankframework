@@ -144,7 +144,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	private void updateExpectedSource(final String convertedFilePath, final String expectedFilePath, final String expectedFile) throws IOException {
-		if (!System.getProperty("pdfPipeTest.updateExpectations", "false").equalsIgnoreCase("true")) {
+		if (!"true".equalsIgnoreCase(System.getProperty("pdfPipeTest.updateExpectations", "false"))) {
 			return;
 		}
 

@@ -49,7 +49,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	@Override
 	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> context) throws ListenerException {
 		String text = rawMessage.getRawMessage();
-		if(text.equals("extractMessageException")) {
+		if("extractMessageException".equals(text)) {
 			throw new ListenerException(text);
 		}
 		return Message.asMessage(text);

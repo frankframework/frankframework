@@ -264,7 +264,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 		List<FileIdBothDirectoryInformation> list = diskShare.list("/");
 		for(FileIdBothDirectoryInformation fi : list) {
-			if(fi.getFileName().equals(".") || fi.getFileName().equals("..")) {
+			if(".".equals(fi.getFileName()) || "..".equals(fi.getFileName())) {
 				continue;
 			}
 			if(!EnumWithValue.EnumUtils.isSet(fi.getFileAttributes(), FILE_ATTRIBUTE_DIRECTORY)) {

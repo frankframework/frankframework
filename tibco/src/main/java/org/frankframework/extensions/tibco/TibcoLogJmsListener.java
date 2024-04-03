@@ -66,10 +66,10 @@ public class TibcoLogJmsListener extends JmsListener {
 		boolean first = true;
 		while (it.hasNext()) {
 			String mapName = (String) it.next();
-			if (mapName.equalsIgnoreCase("_cl.creationTimes")) {
+			if ("_cl.creationTimes".equalsIgnoreCase(mapName)) {
 				creationTimes = tjmMessage.getLong(mapName);
 			} else {
-				if (mapName.equalsIgnoreCase("_cl.severity")) {
+				if ("_cl.severity".equalsIgnoreCase(mapName)) {
 					severity = tjmMessage.getInt(mapName);
 					severityStr = logLevelToText(severity);
 					if (severityStr == null) {
@@ -77,21 +77,21 @@ public class TibcoLogJmsListener extends JmsListener {
 					}
 					severityStr = StringUtils.rightPad(severityStr, 5);
 				} else {
-					if (mapName.equalsIgnoreCase("_cl.msg")) {
+					if ("_cl.msg".equalsIgnoreCase(mapName)) {
 						msg = tjmMessage.getString(mapName);
 					} else {
-						if (mapName.equalsIgnoreCase("_cl.engineName")) {
+						if ("_cl.engineName".equalsIgnoreCase(mapName)) {
 							engineName = tjmMessage.getString(mapName);
 						} else {
-							if (mapName.equalsIgnoreCase("_cl.jobId")) {
+							if ("_cl.jobId".equalsIgnoreCase(mapName)) {
 								jobId = tjmMessage.getString(mapName);
 							} else {
 								String mapValue = tjmMessage.getString(mapName);
-								if (mapName.equalsIgnoreCase("_cl.physicalCompId.matrix.env")) {
+								if ("_cl.physicalCompId.matrix.env".equalsIgnoreCase(mapName)) {
 									environment = mapValue;
 									context.put("environment", environment);
 								}
-								if (mapName.equalsIgnoreCase("_cl.physicalCompId.matrix.node")) {
+								if ("_cl.physicalCompId.matrix.node".equalsIgnoreCase(mapName)) {
 									node = mapValue;
 								}
 								if (first) {
