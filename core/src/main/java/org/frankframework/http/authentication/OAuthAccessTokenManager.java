@@ -184,10 +184,7 @@ public class OAuthAccessTokenManager {
 				break;
 			case POST:
 				apacheHttpRequest = new HttpPost(httpRequest.getURL().toExternalForm());
-				// add Content-Type if not present in the incoming request
-				if (httpRequest.getHeaderMap().keySet().stream().noneMatch(header -> header.equalsIgnoreCase("Content-Type"))) {
-					apacheHttpRequest.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-				}
+				httpRequest.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 				try {
 					((HttpPost)apacheHttpRequest).setEntity(new StringEntity(query));
 				} catch (UnsupportedEncodingException e) {
