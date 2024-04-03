@@ -261,14 +261,14 @@ public class ConfigurationUtils {
 			int updated = 0;
 
 			if (activateConfig) {
-				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(false))+" WHERE NAME=?");
+				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(false))+" WHERE NAME=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
 					stmt.setString(1, name);
 					updated = stmt.executeUpdate();
 				}
 			}
 			if (updated > 0) {
-				String query = ("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION = ?");
+				String query = "DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION = ?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
 					stmt.setString(1, name);
 					stmt.setString(2, version);
@@ -278,7 +278,7 @@ public class ConfigurationUtils {
 
 			String activeBool = qs.getDbmsSupport().getBooleanValue(activateConfig);
 			String reloadBool = qs.getDbmsSupport().getBooleanValue(automaticReload);
-			String query = ("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, "+activeBool+", "+reloadBool+")");
+			String query = "INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, "+activeBool+", "+reloadBool+")";
 			try (PreparedStatement stmt = conn.prepareStatement(query)) {
 				stmt.setString(1, name);
 				stmt.setString(2, version);
@@ -315,7 +315,7 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			try (Connection conn = qs.getConnection()) {
-				String query = ("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION=?");
+				String query = "DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
 					stmt.setString(1, name);
 					stmt.setString(2, version);

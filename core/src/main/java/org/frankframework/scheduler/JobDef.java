@@ -420,7 +420,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		long endTime = System.currentTimeMillis();
 		long duration = endTime - startTime;
 		summary.record(duration);
-		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
+		getMessageKeeper().add("finished running the job in ["+duration+"] ms");
 	}
 
 	protected IbisManager getIbisManager() {

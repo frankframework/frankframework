@@ -331,7 +331,7 @@ public class MongoDbSender extends SenderWithParametersBase implements HasPhysic
 		if (StringUtils.isEmpty(databaseName)) {
 			throw new SenderException("no database found from attribute or parameter");
 		}
-		return mongoDatabases.computeIfAbsent(databaseName, (d)->mongoClient.getDatabase(databaseName));
+		return mongoDatabases.computeIfAbsent(databaseName, d->mongoClient.getDatabase(databaseName));
 	}
 
 	protected MongoCollection<Document> getCollection(MongoDatabase mongoDatabase, ParameterValueList pvl) throws SenderException {

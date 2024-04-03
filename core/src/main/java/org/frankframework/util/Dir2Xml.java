@@ -50,7 +50,7 @@ public class Dir2Xml  {
 		if (files != null) {
 			Arrays.sort(files, new FileNameComparator());
 		}
-		int count = (files == null ? 0 : files.length);
+		int count = files == null ? 0 : files.length;
 		XmlBuilder dirXml = new XmlBuilder("directory");
 		dirXml.addAttribute("name", path);
 
@@ -92,7 +92,7 @@ public class Dir2Xml  {
 		if (files != null) {
 			Arrays.sort(files, new FileNameComparator());
 		}
-		int count = (files == null ? 0 : files.length);
+		int count = files == null ? 0 : files.length;
 		XmlBuilder dirXml = new XmlBuilder("directory");
 		dirXml.addAttribute("name", path);
 		dirXml.addAttribute("count", count);

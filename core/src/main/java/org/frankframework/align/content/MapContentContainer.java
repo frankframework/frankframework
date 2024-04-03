@@ -70,7 +70,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 		currentValue=null;
 		currentIsNull=false;
 		if (typeDefinition instanceof XSSimpleType) {
-			type=(ScalarType.findType(((XSSimpleType)typeDefinition)));
+			type=ScalarType.findType(((XSSimpleType)typeDefinition));
 		}
 	}
 

@@ -136,7 +136,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		for (String part : parts) {
 			String[] kvPair = part.split(" \\[");
 			String key = kvPair[0];
-			String value = (kvPair.length == 1) ? "" : kvPair[1];
+			String value = kvPair.length == 1 ? "" : kvPair[1];
 			if(!props.containsKey(key)) {
 				props.put(key, value);
 			}

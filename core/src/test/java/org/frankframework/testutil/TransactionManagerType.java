@@ -103,9 +103,9 @@ public enum TransactionManagerType {
 		// If we need to create a new TestConfiguration, always created it with autoStart=true
 		// because that makes it more consistent between new and cached configuration.
 		if(this == TransactionManagerType.DATASOURCE) {
-			return datasourceConfigurations.computeIfAbsent(productKey, (ignored)-> this.create(true));
+			return datasourceConfigurations.computeIfAbsent(productKey, ignored-> this.create(true));
 		}
-		return transactionManagerConfigurations.computeIfAbsent(this, (ignored) -> this.create(true));
+		return transactionManagerConfigurations.computeIfAbsent(this, ignored -> this.create(true));
 	}
 
 	public synchronized void closeConfigurationContext() {

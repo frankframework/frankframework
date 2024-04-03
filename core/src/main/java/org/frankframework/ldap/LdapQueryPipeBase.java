@@ -93,11 +93,11 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 			url=getLdapProviderURL();
 		} else {
 			String s = useSsl ? "ldaps://" : "ldap://";
-			String h = (host != null) ? host : "";
-			String p = (port != -1) ? (":" + port) : "";
+			String h = host != null ? host : "";
+			String p = port != -1 ? (":" + port) : "";
 			url=s + h + p;
 		}
-		String d = (baseDN != null) ? ("/" + baseDN.replaceAll("\\s", "%20")) : "";
+		String d = baseDN != null ? ("/" + baseDN.replaceAll("\\s", "%20")) : "";
 		return url + d;
 	}
 

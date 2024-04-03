@@ -203,7 +203,7 @@ public class MessagingSource  {
 	private StringBuilder getConnectionPoolInfo(ConnectionFactory qcfd) {
 		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append(CLOSE);
 		if (qcfd instanceof PoolingConnectionFactory) {
-			PoolingConnectionFactory poolcf = ((PoolingConnectionFactory)qcfd);
+			PoolingConnectionFactory poolcf = (PoolingConnectionFactory)qcfd;
 			result.append("idle connections [").append(poolcf.getInPoolSize()).append(CLOSE);
 			result.append("min poolsize [").append(poolcf.getMinPoolSize()).append(CLOSE);
 			result.append("max poolsize [").append(poolcf.getMaxPoolSize()).append(CLOSE);
@@ -211,7 +211,7 @@ public class MessagingSource  {
 			result.append("max life time [").append(poolcf.getMaxLifeTime()).append(CLOSE);
 		}
 		if (qcfd instanceof JmsPoolConnectionFactory) {
-			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
+			JmsPoolConnectionFactory poolcf = (JmsPoolConnectionFactory)qcfd;
 			result.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
 			result.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
 			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);

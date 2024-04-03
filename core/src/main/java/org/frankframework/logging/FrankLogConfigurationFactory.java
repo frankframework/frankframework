@@ -292,7 +292,7 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 		for(String option : logDirectoryHierarchy) {
 			int splitIndex = option.indexOf('/');
 
-			String property = System.getProperty(option.substring(0, (splitIndex == -1) ? option.length() : splitIndex));
+			String property = System.getProperty(option.substring(0, splitIndex == -1 ? option.length() : splitIndex));
 			if(property == null)
 				continue;
 

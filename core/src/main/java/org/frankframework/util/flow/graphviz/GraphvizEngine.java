@@ -203,7 +203,7 @@ public class GraphvizEngine {
 				try {
 					log.debug("Trying Javascript engine [{}] for Graphviz.", engine);
 					Class<?> clazz = Class.forName(engine);
-					JavascriptEngine<?> javascriptEngine = ((JavascriptEngine<?>) clazz.getDeclaredConstructor().newInstance());
+					JavascriptEngine<?> javascriptEngine = (JavascriptEngine<?>) clazz.getDeclaredConstructor().newInstance();
 					ResultHandler handler = new ResultHandler();
 
 					startEngine(javascriptEngine, handler, initScript, graphvisJsLibrary);

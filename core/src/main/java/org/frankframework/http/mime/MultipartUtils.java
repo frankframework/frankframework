@@ -33,7 +33,7 @@ public abstract class MultipartUtils {
 	public static boolean isMultipart(HttpServletRequest request) {
 		String httpMethod = request.getMethod().toUpperCase();
 		if("POST".equals(httpMethod) || "PUT".equals(httpMethod) || "PATCH".equals(httpMethod)) {
-			return (request.getContentType() != null && request.getContentType().startsWith(MULTIPART));
+			return request.getContentType() != null && request.getContentType().startsWith(MULTIPART);
 		}
 		return false;
 	}

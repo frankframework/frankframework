@@ -68,7 +68,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 				@PathParam("messageId") String messageId,
 				@QueryParam("configuration") String configuration
 			) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
 
@@ -99,7 +99,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 			@PathParam("messageId") String messageId,
 			@QueryParam("configuration") String configuration
 		) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
 
@@ -130,7 +130,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 			@QueryParam("configuration") String configuration,
 			MultipartBody input
 		) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, config);
@@ -212,7 +212,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 				@QueryParam("skip") int skipMessages,
 				@QueryParam("max") int maxMessages
 			) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, config);
@@ -255,7 +255,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 			@PathParam("messageId") String messageId,
 			@QueryParam("configuration") String configuration
 		) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
@@ -276,7 +276,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Deprecated
 	public Response resendReceiverMessagesOld(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, @QueryParam("configuration") String configuration, MultipartBody input) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, config);
@@ -316,7 +316,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 	public Response changeProcessStateOld(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver,
 			@PathParam("processState") String processState, @PathParam("targetState") String targetState, MultipartBody input,
 			@QueryParam("configuration") String configuration) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, config);
@@ -357,7 +357,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 			@PathParam("receiverName") String receiver,
 			@PathParam("messageId") String messageId,
 			@QueryParam("configuration") String configuration) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, config);
@@ -379,7 +379,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Deprecated
 	public Response deleteReceiverMessagesOld(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, @QueryParam("configuration") String configuration, MultipartBody input) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, config);

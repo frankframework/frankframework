@@ -552,7 +552,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 		private boolean allowHiddenFile(SmbFileRef file) {
 			boolean isHidden = EnumWithValue.EnumUtils.isSet(file.getAttributes().getBasicInformation().getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_HIDDEN);
-			return (isListHiddenFiles() || !isHidden);
+			return isListHiddenFiles() || !isHidden;
 		}
 
 		@Override

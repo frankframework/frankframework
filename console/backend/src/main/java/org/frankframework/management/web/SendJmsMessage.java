@@ -119,7 +119,7 @@ public class SendJmsMessage extends FrankApiBase {
 		}
 
 		builder.setPayload(message);
-		return (synchronous) ? callSyncGateway(builder) : callAsyncGateway(builder);
+		return synchronous ? callSyncGateway(builder) : callAsyncGateway(builder);
 	}
 
 

@@ -160,7 +160,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public boolean _fileExists(String folder, String filename) throws Exception {
-		String path = (folder != null) ? folder + "/" + filename : filename;
+		String path = folder != null ? folder + "/" + filename : filename;
 		boolean exists = diskShare.fileExists(path);
 		return exists;
 	}
@@ -173,7 +173,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _deleteFile(String folder, String filename) throws Exception {
-		String path = (folder != null) ? folder + "/" + filename : filename;
+		String path = folder != null ? folder + "/" + filename : filename;
 		diskShare.rm(path);
 	}
 
@@ -182,7 +182,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 
-		String path = (folder != null) ? folder + "/" + filename : filename;
+		String path = folder != null ? folder + "/" + filename : filename;
 		final File file = diskShare.openFile(path, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 		OutputStream out = file.getOutputStream();
@@ -203,7 +203,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public InputStream _readFile(String folder, String filename) throws Exception {
-		String path = (folder != null) ? folder + "/" + filename : filename;
+		String path = folder != null ? folder + "/" + filename : filename;
 		final File file = getFile(path, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		InputStream is = file.getInputStream();
 		FilterInputStream fis = new FilterInputStream(is) {

@@ -42,7 +42,7 @@ public class MultipartHttpSender extends HttpSender {
 	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) throws IOException {
 		String partType = element.getAttribute("type"); //File or otherwise
 		String partName = element.getAttribute("name"); //Name of the part
-		String fileName = (StringUtils.isNotEmpty(element.getAttribute("filename"))) ? element.getAttribute("filename") : element.getAttribute("fileName"); //Name of the file
+		String fileName = StringUtils.isNotEmpty(element.getAttribute("filename")) ? element.getAttribute("filename") : element.getAttribute("fileName"); //Name of the file
 		String sessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String mimeType = element.getAttribute("mimeType"); //MimeType of the part
 		String partValue = element.getAttribute("value"); //Value when SessionKey is empty or not set

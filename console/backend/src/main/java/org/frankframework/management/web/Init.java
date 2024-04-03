@@ -69,7 +69,7 @@ public class Init extends FrankApiBase {
 		for (ClassResourceInfo cri : getJAXRSService().getClassResourceInfo()) {
 			MethodDispatcher methods = cri.getMethodDispatcher();
 			Path basePathAnnotation = cri.getPath();
-			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "/";
+			final String basePath = basePathAnnotation != null ? basePathAnnotation.value() : "/";
 			for (OperationResourceInfo operation : methods.getOperationResourceInfos()) {
 				Method method = operation.getMethodToInvoke();
 				String relation = null;
@@ -163,7 +163,7 @@ public class Init extends FrankApiBase {
 			pathToUse.append("/");
 		}
 		pathToUse.append(basePath);
-		pathToUse.append( (basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
+		pathToUse.append( basePath.endsWith("/") && path.startsWith("/") ? path.substring(1) : path);
 		return pathToUse.toString();
 	}
 }

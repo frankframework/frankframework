@@ -338,7 +338,7 @@ public class AdapterStatus extends BusEndpointBase {
 					sender = ((HasSender)listener).getSender();
 				}
 
-				boolean isRestListener = (listener instanceof RestListener);
+				boolean isRestListener = listener instanceof RestListener;
 				listenerInfo.put("isRestListener", isRestListener);
 				if (isRestListener) {
 					RestListener rl = (RestListener) listener;

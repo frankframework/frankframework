@@ -146,7 +146,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		String rekenboxInput = sInput.substring(i);
 
 		String exeName = runPath + rekenboxName + "." + executableExtension;
-		if(!(new File(exeName).exists())) {
+		if(!new File(exeName).exists()) {
 			throw new PipeRunException(this, "executable file [" + exeName + "] does not exist; requestmessage: [" + sInput + "]");
 		}
 

@@ -186,11 +186,11 @@ public abstract class ClassUtils {
 				clazz = org.springframework.util.ClassUtils.getUserClass(o);
 			}
 		} else {
-			clazz = (o instanceof Class) ? (Class<?>)o : o.getClass();
+			clazz = o instanceof Class ? (Class<?>)o : o.getClass();
 		}
 
 		final String simpleName = clazz.getSimpleName();
-		return (StringUtils.isNotEmpty(simpleName)) ? simpleName : clazz.getTypeName();
+		return StringUtils.isNotEmpty(simpleName) ? simpleName : clazz.getTypeName();
 	}
 
 	public static boolean isClassPresent(String classname) {

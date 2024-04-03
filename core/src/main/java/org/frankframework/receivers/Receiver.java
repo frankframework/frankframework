@@ -1552,7 +1552,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	private int getListenerDeliveryCount(RawMessageWrapper<M> rawMessageWrapper, IListener<M> origin) {
 		//noinspection unchecked
-		return (origin instanceof IKnowsDeliveryCount<?>) ? ((IKnowsDeliveryCount<M>) origin).getDeliveryCount(rawMessageWrapper) : -1;
+		return origin instanceof IKnowsDeliveryCount<?> ? ((IKnowsDeliveryCount<M>) origin).getDeliveryCount(rawMessageWrapper) : -1;
 	}
 
 	private void resetProblematicHistory(String messageId) {
@@ -1902,21 +1902,21 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * get the number of messages received by this receiver.
 	 */
 	public double getMessagesReceived() {
-		return (numReceived == null) ? 0 : numReceived.count();
+		return numReceived == null ? 0 : numReceived.count();
 	}
 
 	/**
 	 * get the number of duplicate messages received this receiver.
 	 */
 	public double getMessagesRetried() {
-		return (numRetried == null) ? 0 : numRetried.count();
+		return numRetried == null ? 0 : numRetried.count();
 	}
 
 	/**
 	 * Get the number of messages rejected (discarded or put in errorStorage).
 	 */
 	public double getMessagesRejected() {
-		return (numRejected == null) ? 0 : numRejected.count();
+		return numRejected == null ? 0 : numRejected.count();
 	}
 
 	public long getLastMessageDate() {

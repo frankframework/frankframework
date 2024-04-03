@@ -134,7 +134,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	private LinkedList<LsEntry> list(String folder) throws SftpException {
-		String path = (folder == null) ? "*" : folder;
+		String path = folder == null ? "*" : folder;
 		return new LinkedList<>(ftpClient.ls(path));
 	}
 
@@ -269,7 +269,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				continue;
 			}
 			if (ftpFile.getAttrs().isDir()) {
-				String recursiveName = (folder != null) ? folder + "/" + ftpFile.getFilename() : ftpFile.getFilename();
+				String recursiveName = folder != null ? folder + "/" + ftpFile.getFilename() : ftpFile.getFilename();
 				removeDirectoryContent(recursiveName);
 			} else {
 				SftpFileRef ftpFileRef = SftpFileRef.fromLsEntry(ftpFile, folder);

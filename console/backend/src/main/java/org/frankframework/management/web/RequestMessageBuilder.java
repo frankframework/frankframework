@@ -106,7 +106,7 @@ public class RequestMessageBuilder {
 		if(SEC_LOG.isInfoEnabled()) {
 			String method = base.getServletRequest().getMethod();
 			String issuedBy = sanitizeForLog(HttpUtils.getCommandIssuedBy(base.getServletRequest()));
-			if((method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("OPTIONS"))) {
+			if(method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("OPTIONS")) {
 				SEC_LOG.debug("created bus request from URI [{}:{}] issued by{}", method, base.getUriInfo().getRequestUri(), issuedBy);
 			} else {
 				String headers = customHeaders.entrySet().stream()
@@ -137,7 +137,7 @@ public class RequestMessageBuilder {
 		builder.append("=");
 
 		Object value = entry.getValue();
-		builder.append((value instanceof String) ? sanitizeForLog((String) value) : value);
+		builder.append(value instanceof String ? sanitizeForLog((String) value) : value);
 
 		return builder.toString();
 	}

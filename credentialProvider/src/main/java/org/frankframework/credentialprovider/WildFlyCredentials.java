@@ -54,7 +54,7 @@ public class WildFlyCredentials extends Credentials {
 
 	private boolean aliasExists(String suffix) throws CredentialStoreException {
 		String key=getAlias()+suffix;
-		return (cs.exists(key, PasswordCredential.class));
+		return cs.exists(key, PasswordCredential.class);
 	}
 
 

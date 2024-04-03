@@ -54,7 +54,7 @@ public class JmsRealmFactory {
 		if (self == null) {
 			self = new JmsRealmFactory();
 		}
-		return (self);
+		return self;
 
 	}
 

@@ -959,7 +959,7 @@ public class ReceiverTest {
 
 		List<String> errors = adapter.getMessageKeeper()
 				.stream()
-				.filter((msg) -> msg != null && "ERROR".equals(msg.getMessageLevel()))
+				.filter(msg -> msg != null && "ERROR".equals(msg.getMessageLevel()))
 				.map(Object::toString)
 				.collect(Collectors.toList());
 
@@ -1022,7 +1022,7 @@ public class ReceiverTest {
 
 		List<String> warnings = adapter.getMessageKeeper()
 				.stream()
-				.filter((msg) -> msg instanceof MessageKeeperMessage && "WARN".equals(((MessageKeeperMessage)msg).getMessageLevel()))
+				.filter(msg -> msg instanceof MessageKeeperMessage && "WARN".equals(((MessageKeeperMessage)msg).getMessageLevel()))
 				.map(Object::toString)
 				.collect(Collectors.toList());
 		assertThat(warnings, everyItem(containsString("JMS poll timeout")));

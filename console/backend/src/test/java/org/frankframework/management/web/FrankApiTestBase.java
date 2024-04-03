@@ -147,7 +147,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		public void register(M jaxRsResource) {
 			Method[] classMethods = jaxRsResource.getClass().getDeclaredMethods();
 			Path basePathAnnotation = AnnotationUtils.findAnnotation(jaxRsResource.getClass(), Path.class);
-			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "/";
+			final String basePath = basePathAnnotation != null ? basePathAnnotation.value() : "/";
 			for(Method classMethod : classMethods) {
 				int modifiers = classMethod.getModifiers();
 				if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
@@ -173,7 +173,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 				pathToUse.append("/");
 			}
 			pathToUse.append(basePath);
-			pathToUse.append( (basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
+			pathToUse.append( basePath.endsWith("/") && path.startsWith("/") ? path.substring(1) : path);
 			return pathToUse.toString();
 		}
 
@@ -267,7 +267,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			}
 
 			Path basePathAnnotation = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Path.class);
-			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "";
+			final String basePath = basePathAnnotation != null ? basePathAnnotation.value() : "";
 			final String methodPath = basePath + method.getAnnotation(Path.class).value();
 
 			log.debug("found JAX-RS resource [{}]", ()->compileKey(httpMethod, methodPath));

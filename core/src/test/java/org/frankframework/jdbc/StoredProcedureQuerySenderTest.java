@@ -892,7 +892,7 @@ public class StoredProcedureQuerySenderTest {
 		Connection connection = databaseTestEnvironment.getConnection();
 		try (PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{"tkey"})) {
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8));
-			statement.setBlob(1, (compressed) ? new DeflaterInputStream(inputStream) : inputStream);
+			statement.setBlob(1, compressed ? new DeflaterInputStream(inputStream) : inputStream);
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {

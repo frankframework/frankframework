@@ -161,8 +161,8 @@ public class SchemaUtils {
 					skipRootElementStart = false;
 					skipRootElementEnd = false;
 				} else {
-					skipRootElementStart = (i != 1);
-					skipRootElementEnd = (i < xsds.size());
+					skipRootElementStart = i != 1;
+					skipRootElementEnd = i < xsds.size();
 				}
 				xsdToXmlStreamWriter(xsd, w, false, true, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports, false);
 			}

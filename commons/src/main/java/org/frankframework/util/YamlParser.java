@@ -95,7 +95,7 @@ public class YamlParser {
 	 */
 	private void handleMapValue(final String key, Map<String, Object> map) {
 		String name = (String) map.remove("name");
-		String updatedKey = (StringUtils.isNotEmpty(name)) ? (key + "." + name) : key;
+		String updatedKey = StringUtils.isNotEmpty(name) ? (key + "." + name) : key;
 
 		map.entrySet().forEach(entry -> handleRawValue(updatedKey + "." + entry.getKey(), entry.getValue()) );
 	}

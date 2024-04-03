@@ -590,12 +590,12 @@ public class PDFUtil {
 		int pagecount = document.getNumberOfPages();
 		logger.fine("Page Count : " + pagecount + ", Given start page: " + start + ", Given end page: " + end);
 
-		if((start > 0 && start <= pagecount)){
+		if(start > 0 && start <= pagecount){
 			this.startPage = start;
 		}else{
 			this.startPage = 1;
 		}
-		if((end > 0 && end >= start && end <= pagecount)){
+		if(end > 0 && end >= start && end <= pagecount){
 			this.endPage = end;
 		}else{
 			this.endPage = pagecount;

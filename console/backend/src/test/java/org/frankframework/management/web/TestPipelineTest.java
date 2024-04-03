@@ -106,7 +106,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 
 	@Test
 	public void testPipelineBinaryResponse() {
-		doAnswer((e) -> new BinaryResponseMessage("dummy data".getBytes())).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
+		doAnswer(e -> new BinaryResponseMessage("dummy data".getBytes())).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
@@ -120,7 +120,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 
 	@Test
 	public void testPipelineUnknownResponse() {
-		doAnswer((e) -> new GenericMessage<>(123L)).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
+		doAnswer(e -> new GenericMessage<>(123L)).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
@@ -135,7 +135,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 		String input = "\"\n<asdf>asd\rasd\rasd\rasd\rad\rccc\rttt\rbbb\ryyy\ruuu\roooo\r</asdf>\"";
 		InputStream message = new ByteArrayInputStream(input.getBytes()); // Stream is needed to test the line endings conversion
 		GenericMessage<InputStream> genericMessage = new GenericMessage<>(message, new MessageHeaders(null));
-		doAnswer((e) -> genericMessage).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
+		doAnswer(e -> genericMessage).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "FakeMainConfig"));
