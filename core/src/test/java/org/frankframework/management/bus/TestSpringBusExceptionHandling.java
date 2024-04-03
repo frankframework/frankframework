@@ -2,24 +2,21 @@ package org.frankframework.management.bus;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.frankframework.management.bus.BusTestEndpoints.ExceptionTestTypes;
 import org.frankframework.stream.StreamingException;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(initializers = {SpringRootInitializer.class})
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestSpringBusExceptionHandling extends BusTestBase {
 
 	@Test
@@ -32,8 +29,23 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 
 		// Assert
-		assertTrue(e.getCause() instanceof BusException);
+		assertInstanceOf(BusException.class, e.getCause());
 		assertEquals("message without cause", e.getCause().getMessage());
+	}
+
+	@Test
+	public void testEndpointNotFoundException() {
+		// Arrange
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.WARNINGS);
+		request.setHeader("type", ExceptionTestTypes.NOT_FOUND.name());
+
+		// Act
+		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+
+		// Assert
+		assertInstanceOf(BusException.class, e.getCause());
+		assertEquals("Resource not found", e.getCause().getMessage());
+		assertEquals(404, ((BusException)e.getCause()).getStatusCode());
 	}
 
 	@Test
@@ -46,7 +58,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 
 		// Assert
-		assertTrue(e.getCause() instanceof BusException);
+		assertInstanceOf(BusException.class, e.getCause());
 		assertEquals("message with a cause: cannot stream: cannot configure: (IllegalStateException) something is wrong", e.getCause().getMessage());
 	}
 
@@ -60,7 +72,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 
 		// Assert
-		assertTrue(e.getCause() instanceof StreamingException);
+		assertInstanceOf(StreamingException.class, e.getCause());
 		String message = e.getMessage();
 		assertThat(message, Matchers.startsWith("error occurred during processing message in 'MethodInvokingMessageProcessor'"));
 		assertThat(message, Matchers.endsWith("nested exception is org.frankframework.stream.StreamingException: cannot stream: cannot configure: (IllegalStateException) something is wrong"));
@@ -75,7 +87,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 
 		// Assert
-		assertTrue(e.getCause() instanceof AuthenticationException);
+		assertInstanceOf(AuthenticationException.class, e.getCause());
 		assertEquals("An Authentication object was not found in the SecurityContext", e.getCause().getMessage());
 	}
 
@@ -89,7 +101,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 
 		// Assert
-		assertTrue(e.getCause() instanceof AccessDeniedException);
+		assertInstanceOf(AccessDeniedException.class, e.getCause());
 		assertEquals("Access Denied", e.getCause().getMessage());
 	}
 }

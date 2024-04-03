@@ -29,15 +29,16 @@ import lombok.Getter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IAdapter;
-import org.frankframework.core.IExtendedPipe;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.PipeLine;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 
 import org.frankframework.dbms.Dbms;
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.Parameter.ParameterType;
@@ -107,11 +108,11 @@ public class CleanupDatabaseJob extends JobDef {
 
 		for (String datasourceName : datasourceNames) {
 			FixedQuerySender qs = null;
-			try {
+			try(PipeLineSession session = new PipeLineSession()) {
 				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
 				qs.setDatasourceName(datasourceName);
 				qs.setName("cleanupDatabase-IBISLOCK");
-				qs.setQueryType("other");
+				qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
@@ -123,7 +124,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.open();
 
 				int numberOfRowsAffected;
-				try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+				try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
 					numberOfRowsAffected = Integer.parseInt(Objects.requireNonNull(result.asString()));
 				}
 				if (numberOfRowsAffected > 0) {
@@ -156,7 +157,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
 				qs.setDatasourceName(mlo.getDatasourceName());
 				qs.setName("cleanupDatabase-" + mlo.getTableName());
-				qs.setQueryType("other");
+				qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 
@@ -172,7 +173,8 @@ public class CleanupDatabaseJob extends JobDef {
 				boolean deletedAllRecords = false;
 				while (!deletedAllRecords) {
 					int numberOfRowsAffected;
-					try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+					try(PipeLineSession session = new PipeLineSession();
+							Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
 						String resultString = result.asString();
 						log.info("deleted [{}] rows", resultString);
 						if (!NumberUtils.isDigits(resultString)) {
@@ -223,13 +225,10 @@ public class CleanupDatabaseJob extends JobDef {
 				PipeLine pipeLine = adapter.getPipeLine();
 				if (pipeLine != null) {
 					for (IPipe pipe : pipeLine.getPipes()) {
-						if (pipe instanceof IExtendedPipe) {
-							IExtendedPipe extendedPipe = (IExtendedPipe) pipe;
-							if (extendedPipe.getLocker() != null) {
-								String datasourceName = extendedPipe.getLocker().getDatasourceName();
-								if (StringUtils.isNotEmpty(datasourceName)) {
-									datasourceNames.add(datasourceName);
-								}
+						if (pipe.getLocker() != null) {
+							String datasourceName = pipe.getLocker().getDatasourceName();
+							if (StringUtils.isNotEmpty(datasourceName)) {
+								datasourceNames.add(datasourceName);
 							}
 						}
 					}

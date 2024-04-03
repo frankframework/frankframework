@@ -15,6 +15,7 @@
 */
 package org.frankframework.stream;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -31,19 +32,23 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.util.FileUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class SerializableFileReferenceTest {
-	private final Logger log = LogManager.getLogger(SerializableFileReferenceTest.class);
 	private static final String TEST_DATA = "Test-DÁTAç";
+	private String testDataEnriched;
 
 	private static final String[][] referenceWires = {
 		{"7.8.1 2023-05-15", "aced0005737200376e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e53657269616c697a61626c6546696c655265666572656e636500000000000000010300035a000662696e6172794a000473697a654c0007636861727365747400124c6a6176612f6c616e672f537472696e673b787077240000000000000001000000000000000c0000055554462d38546573742d44c3815441c3a778"},
@@ -59,21 +64,57 @@ public class SerializableFileReferenceTest {
 	private SerializableFileReference reference;
 	private File tempFile;
 
+	@BeforeEach
+	public void setUp(TestInfo testInfo) throws Exception {
+		testDataEnriched = TEST_DATA + "-" + testInfo.getDisplayName();
+	}
+
 	@AfterEach
 	public void tearDown() throws Exception {
 		if (reference != null) {
 			reference.close();
 		}
 		if (tempFile != null) {
-			tempFile.delete();
+			Files.deleteIfExists(tempFile.toPath());
+			assertFalse(Files.exists(tempFile.toPath()), "Temp file should not exist after test");
 		}
+	}
+
+	@Test
+	void testTemporaryFilesShouldBeRemoved() throws Exception {
+		// Arrange & Act
+		Path filePath = Path.of(performCleanerTests());
+		assertTrue(Files.exists(filePath), "File should exist after test, otherwise it was already closed too early");
+
+		// GC can clean up the file
+		System.gc();
+		// Assert: Give the garbage collector some time to clean up
+		await().pollInterval(50, TimeUnit.MILLISECONDS)
+				.atMost(2, TimeUnit.SECONDS)
+				.until(() -> !Files.exists(filePath));
+	}
+
+	private String performCleanerTests() throws Exception {
+		// Arrange
+		reference = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
+
+		// Act
+		try (SerializableFileReference ref = reference) {
+			// Assert
+			assertNotNull(ref);
+		}
+		assertFalse(Files.exists(reference.getPath()), "Path should not exist after close");
+
+		// Arrange
+		SerializableFileReference reference2 = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
+		return reference2.getPath().toString();
 	}
 
 	@Test
 	public void ofInputStream() throws Exception {
 		// Arrange
 		final boolean[] closed = {false};
-		InputStream in = new ByteArrayInputStream(TEST_DATA.getBytes(StandardCharsets.UTF_8)) {
+		InputStream in = new ByteArrayInputStream(testDataEnriched.getBytes(StandardCharsets.UTF_8)) {
 			@Override
 			public void close() throws IOException {
 				closed[0] = true;
@@ -96,7 +137,7 @@ public class SerializableFileReferenceTest {
 			fileData = reader.readLine();
 		}
 
-		assertEquals(TEST_DATA, fileData);
+		assertEquals(testDataEnriched, fileData);
 
 		reference.close();
 		assertFalse(Files.exists(path), "Path should not exist after close");
@@ -105,7 +146,7 @@ public class SerializableFileReferenceTest {
 	@Test
 	public void ofByteArray() throws Exception {
 		// Arrange
-		byte[] data = TEST_DATA.getBytes(StandardCharsets.UTF_8);
+		byte[] data = testDataEnriched.getBytes(StandardCharsets.UTF_8);
 
 		// Act
 		reference = SerializableFileReference.of(data);
@@ -121,7 +162,7 @@ public class SerializableFileReferenceTest {
 			fileData = reader.readLine();
 		}
 
-		assertEquals(TEST_DATA, fileData);
+		assertEquals(testDataEnriched, fileData);
 
 		reference.close();
 		assertFalse(Files.exists(path), "Path should not exist after close");
@@ -131,7 +172,7 @@ public class SerializableFileReferenceTest {
 	public void ofReader() throws Exception {
 		// Arrange
 		final boolean[] closed = {false};
-		Reader in = new StringReader(TEST_DATA) {
+		Reader in = new StringReader(testDataEnriched) {
 			@Override
 			public void close() {
 				closed[0] = true;
@@ -154,7 +195,7 @@ public class SerializableFileReferenceTest {
 			fileData = reader.readLine();
 		}
 
-		assertEquals(TEST_DATA, fileData);
+		assertEquals(testDataEnriched, fileData);
 
 		reference.close();
 		assertFalse(Files.exists(path), "Path should not exist after close");
@@ -163,7 +204,7 @@ public class SerializableFileReferenceTest {
 	@Test
 	public void ofString() throws Exception {
 		// Act
-		reference = SerializableFileReference.of(TEST_DATA, StandardCharsets.UTF_8.name());
+		reference = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
 
 		// Assert
 		Path path = reference.getPath();
@@ -176,7 +217,7 @@ public class SerializableFileReferenceTest {
 			fileData = reader.readLine();
 		}
 
-		assertEquals(TEST_DATA, fileData);
+		assertEquals(testDataEnriched, fileData);
 
 		reference.close();
 		assertFalse(Files.exists(path), "Path should not exist after close");
@@ -185,19 +226,19 @@ public class SerializableFileReferenceTest {
 	@Test
 	public void getSize() throws Exception {
 		// Arrange
-		reference = SerializableFileReference.of(TEST_DATA, StandardCharsets.UTF_8.name());
+		reference = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
 
 		// Act
 		long result = reference.getSize();
 
 		// Assert
-		assertEquals(TEST_DATA.getBytes(StandardCharsets.UTF_8).length, result);
+		assertEquals(testDataEnriched.getBytes(StandardCharsets.UTF_8).length, result);
 	}
 
 	@Test
 	public void getReader() throws Exception {
 		// Arrange
-		reference = SerializableFileReference.of(TEST_DATA, StandardCharsets.UTF_8.name());
+		reference = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
 
 		// Act
 		String fileData;
@@ -205,13 +246,13 @@ public class SerializableFileReferenceTest {
 			// Assert
 			fileData = reader.readLine();
 		}
-		assertEquals(TEST_DATA, fileData);
+		assertEquals(testDataEnriched, fileData);
 	}
 
 	@Test
 	public void getInputStream() throws Exception {
 		// Arrange
-		reference = SerializableFileReference.of(TEST_DATA, StandardCharsets.UTF_8.name());
+		reference = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
 
 		// Act
 		byte[] fileData = new byte[1000];
@@ -220,14 +261,14 @@ public class SerializableFileReferenceTest {
 			// Assert
 			fileLen = in.read(fileData);
 		}
-		assertEquals(TEST_DATA.getBytes(StandardCharsets.UTF_8).length, fileLen);
-		assertEquals(TEST_DATA, new String(fileData, 0, fileLen, StandardCharsets.UTF_8));
+		assertEquals(testDataEnriched.getBytes(StandardCharsets.UTF_8).length, fileLen);
+		assertEquals(testDataEnriched, new String(fileData, 0, fileLen, StandardCharsets.UTF_8));
 	}
 
 	@Test
 	public void testRemoveTempFileOnCloseOfSession() throws Exception {
 		// Arrange
-		reference = SerializableFileReference.of(TEST_DATA, StandardCharsets.UTF_8.name());
+		reference = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
 		Path path = reference.getPath();
 		Message message = new Message(reference, new MessageContext(), reference.getClass());
 
@@ -244,22 +285,22 @@ public class SerializableFileReferenceTest {
 	public void testWithReferenceToExistingFile() throws Exception {
 		// Arrange
 		tempFile = FileUtils.createTempFile();
-		MessageTest.writeContentsToFile(tempFile, TEST_DATA);
+		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 
 		// Act
 		Message message = new FileMessage(tempFile, "UTF-8");
 
 		// Assert
-		assertTrue(message.asObject() instanceof SerializableFileReference, "Message request should be instance of SerializableFileReference");
+		assertTrue(message.isRequestOfType(SerializableFileReference.class), "Message request should be instance of SerializableFileReference");
 		assertFalse(message.isBinary(), "Should not be binary");
 
-		reference = (SerializableFileReference)message.asObject();
+		reference = (SerializableFileReference) message.asObject();
 		assertFalse(reference.isBinary(), "Should not be binary");
 		Path path = reference.getPath();
 		assertEquals(tempFile.toPath(), path);
 
 		String result = message.asString();
-		assertEquals(TEST_DATA, result);
+		assertEquals(testDataEnriched, result);
 
 		reference.close();
 		assertTrue(Files.exists(path), "Reference does not own file, Path should still exist after close");
@@ -270,18 +311,18 @@ public class SerializableFileReferenceTest {
 		// Arrange
 		tempFile = FileUtils.createTempFile();
 		Path tempFilePath = tempFile.toPath();
-		MessageTest.writeContentsToFile(tempFile, TEST_DATA);
+		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 
 		// Act
 		Message message = new PathMessage(tempFilePath);
 
 		// Assert
-		assertTrue(message.asObject() instanceof SerializableFileReference, "Message request should be instance of SerializableFileReference");
+		assertTrue(message.isRequestOfType(SerializableFileReference.class), "Message request should be instance of SerializableFileReference");
 		assertTrue(message.isBinary(), "Should be binary");
 		String result = message.asString();
-		assertEquals(TEST_DATA, result);
+		assertEquals(testDataEnriched, result);
 
-		reference = (SerializableFileReference)message.asObject();
+		reference = (SerializableFileReference) message.asObject();
 		assertTrue(reference.isBinary(), "Should be binary");
 		Path path = reference.getPath();
 		assertEquals(tempFilePath, path);
@@ -295,7 +336,7 @@ public class SerializableFileReferenceTest {
 		// NB: This test logs a serialization-wire that can be added to the array `referenceWires` when there are change to the class structure, to protect a version against breakage by future changes.
 
 		// Arrange
-		reference = SerializableFileReference.of(TEST_DATA, StandardCharsets.UTF_8.name());
+		reference = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
 
 		SerializationTester<SerializableFileReference> serializationTester = new SerializationTester<>();
 
@@ -308,14 +349,14 @@ public class SerializableFileReferenceTest {
 		BufferedReader reader = reference2.getReader();
 		String result = reader.readLine();
 
-		assertEquals(TEST_DATA, result);
+		assertEquals(testDataEnriched, result);
 	}
 
 	@Test
 	public void testSerializationWithMessage() throws Exception {
 		// Arrange
 		tempFile = FileUtils.createTempFile();
-		MessageTest.writeContentsToFile(tempFile, TEST_DATA);
+		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 		Message message = new FileMessage(tempFile, "UTF-8");
 
 		SerializationTester<Message> serializationTester = new SerializationTester<>();
@@ -325,7 +366,9 @@ public class SerializableFileReferenceTest {
 
 		// Assert
 		String result = message2.asString();
-		assertEquals(TEST_DATA, result);
+		assertEquals(testDataEnriched, result);
+		message2.close();
+		message.close();
 	}
 
 	@Test
@@ -334,7 +377,7 @@ public class SerializableFileReferenceTest {
 
 		// Arrange
 		tempFile = FileUtils.createTempFile();
-		MessageTest.writeContentsToFile(tempFile, TEST_DATA);
+		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 		Message message = new FileMessage(tempFile);
 		message.getContext().withCharset("UTF-8");
 
@@ -348,7 +391,7 @@ public class SerializableFileReferenceTest {
 		// Assert
 		assertTrue(message2.isBinary());
 		String result = message2.asString();
-		assertEquals(TEST_DATA, result);
+		assertEquals(testDataEnriched, result);
 	}
 
 	@Test

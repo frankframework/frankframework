@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2023 WeAreFrank!
+   Copyright 2017-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,11 +36,6 @@ import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.CanUseSharedResource;
@@ -66,6 +61,9 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
  *
@@ -88,14 +86,14 @@ import org.frankframework.util.XmlUtils;
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<CloseableHttpClient> {
+public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<HttpSession> {
 
 	private static final String CONTEXT_KEY_STATUS_CODE = "Http.StatusCode";
 	private static final String CONTEXT_KEY_REASON_PHRASE = "Http.ReasonPhrase";
 	public static final String MESSAGE_ID_HEADER = "Message-Id";
 	public static final String CORRELATION_ID_HEADER = "Correlation-Id";
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private final @Getter String domain = "Http";
 
 	private @Setter String sharedResourceRef;
 
@@ -151,7 +149,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	@Override
 	public void configure() throws ConfigurationException {
 		if(StringUtils.isBlank(sharedResourceRef)) {
-			log.info("configuring local HttpSession");
+			log.debug("configuring local HttpSession");
 			super.configure();
 		}
 
@@ -235,16 +233,19 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	}
 
 	@Override
-	public Class<CloseableHttpClient> getObjectType() {
-		return CloseableHttpClient.class;
+	public Class<HttpSession> getObjectType() {
+		return HttpSession.class;
 	}
 
 	@Override
 	public void start() {
 		if(StringUtils.isNotBlank(sharedResourceRef)) {
-			setHttpClient(getSharedResource(sharedResourceRef));
+			HttpSession session = getSharedResource(sharedResourceRef);
+			setHttpClient(session.getHttpClient());
+			setHttpContext(session.getDefaultHttpClientContext());
 		} else {
-			buildHttpClient();
+			log.debug("starting local HttpSession");
+			super.start();
 		}
 	}
 
@@ -388,8 +389,6 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
 			}
 
-			preAuthenticate();
-
 			log.info("configured httpclient for host [{}]", targetUri::getHost);
 
 		} catch (Exception e) {
@@ -411,14 +410,14 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		};
 		try {
 			log.debug("executing method [{}]", httpRequestBase::getRequestLine);
-			HttpResponse httpResponse = execute(targetUri, httpRequestBase);
+			HttpResponse httpResponse = execute(targetUri, httpRequestBase, session);
 			log.debug("executed method");
 
 			HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
 			StatusLine statusline = httpResponse.getStatusLine();
 			statusCode = statusline.getStatusCode();
 			success = validateResponseCode(statusCode);
-			reasonPhrase =  statusline.getReasonPhrase();
+			reasonPhrase = StringUtils.isNotEmpty(statusline.getReasonPhrase()) ? statusline.getReasonPhrase() : "HTTP status-code ["+statusCode+"]";
 
 			if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
 				session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
@@ -472,7 +471,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			if (transformerPool != null && xhtml != null) {
 				log.debug("transforming result [{}]", xhtml);
 				try {
-					xhtml = transformerPool.transform(Message.asSource(xhtml));
+					xhtml = transformerPool.transform(XmlUtils.stringToSourceForSingleUse(xhtml));
 				} catch (Exception e) {
 					throw new SenderException("Exception on transforming input", e);
 				}

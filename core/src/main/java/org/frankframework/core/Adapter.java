@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.frankframework.cache.ICache;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -40,10 +39,8 @@ import org.frankframework.jmx.JmxAttribute;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.receivers.Receiver;
-import org.frankframework.statistics.CounterStatistic;
-import org.frankframework.statistics.HasStatistics;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
+import org.frankframework.statistics.FrankMeterType;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -59,6 +56,7 @@ import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -115,13 +113,15 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private int numOfMessagesInProcess = 0;
 
-	private final CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
-	private final CounterStatistic numOfMessagesInError = new CounterStatistic(0);
+	private @Setter MetricsInitializer configurationMetrics;
+	private io.micrometer.core.instrument.Counter numOfMessagesProcessed;
+	private io.micrometer.core.instrument.Counter numOfMessagesInError;
 
 	private int hourOfLastMessageProcessed=-1;
 	private final long[] numOfMessagesStartProcessingByHour = new long[24];
 
-	private StatisticsKeeper statsMessageProcessingDuration = null;
+	private DistributionSummary statsMessageProcessingDuration = null;
+	private Object statisticsLock = new Object();
 
 	private long statsUpSince = System.currentTimeMillis();
 	private IErrorMessageFormatter errorMessageFormatter;
@@ -145,6 +145,11 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
+	@Override
+	public Adapter getAdapter() {
+		return this;
+	}
+
 	/*
 	 * This function is called by Configuration.registerAdapter,
 	 * to make configuration information available to the Adapter. <br/><br/>
@@ -162,7 +167,11 @@ public class Adapter implements IAdapter, NamedBean {
 			throw new ConfigurationException("It is not allowed to have '/' in adapter name ["+getName()+"]");
 		}
 
-		statsMessageProcessingDuration = new StatisticsKeeper(getName());
+		numOfMessagesProcessed = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_PROCESSED);
+		numOfMessagesInError = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_IN_ERROR);
+		configurationMetrics.createGauge(this, FrankMeterType.PIPELINE_IN_PROCESS, () -> numOfMessagesInProcess);
+		statsMessageProcessingDuration = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_DURATION);
+
 		if (pipeline == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
@@ -261,8 +270,8 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Increase the number of messages in process
 	 */
 	private void incNumOfMessagesInProcess(long startTime) {
-		log.trace("Increase nr messages in processing, synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
-		synchronized (statsMessageProcessingDuration) {
+		log.trace("Increase nr messages in processing, using synchronized statisticsLock [{}]", statisticsLock);
+		synchronized (statisticsLock) {
 			numOfMessagesInProcess++;
 			lastMessageDate = startTime;
 			Calendar cal = Calendar.getInstance();
@@ -287,39 +296,40 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			numOfMessagesStartProcessingByHour[hour]++;
 		}
-		log.trace("Messages in processing increased, lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		log.trace("Messages in processing increased, statisticsLock [{}] has been released", statisticsLock);
 	}
+
 	/**
 	 * Decrease the number of messages in process
 	 */
 	private void decNumOfMessagesInProcess(long duration, boolean processingSuccess) {
-		log.trace("Decrease nr messages in processing, synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
-		synchronized (statsMessageProcessingDuration) {
+		log.trace("Decrease nr messages in processing, using synchronized statisticsLock [{}]", statisticsLock);
+		synchronized (statisticsLock) {
 			numOfMessagesInProcess--;
 			log.trace("Increase nr messages processed, synchronize (lock) on numOfMessagesInProcess[{}]", numOfMessagesProcessed);
-			numOfMessagesProcessed.increase();
+			numOfMessagesProcessed.increment();
 			log.trace("Nr messages processed increased, lock released on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
-			statsMessageProcessingDuration.addValue(duration);
+			statsMessageProcessingDuration.record(duration);
 			if (processingSuccess) {
 				lastMessageProcessingState = PROCESS_STATE_OK;
 			} else {
 				lastMessageProcessingState = PROCESS_STATE_ERROR;
 			}
-			statsMessageProcessingDuration.notifyAll();
+			statisticsLock.notifyAll();
 		}
-		log.trace("Messages in processing decreased, lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		log.trace("Messages in processing decreased, statisticsLock [{}] has been released", statisticsLock);
 	}
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
 	private void incNumOfMessagesInError() {
-		log.trace("Increase nr messages in error, synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
-		synchronized (statsMessageProcessingDuration) {
+		log.trace("Increase nr messages in error, using synchronized statisticsLock [{}]", statisticsLock);
+		synchronized (statisticsLock) {
 			log.trace("(nested) Increase nr messages in error, synchronize (lock) on numOfMessagesInError[{}]", numOfMessagesInError);
-			numOfMessagesInError.increase();
+			numOfMessagesInError.increment();
 			log.trace("(nested) Messages in error increased, lock released on numOfMessagesInError[{}]", numOfMessagesInError);
 		}
-		log.trace("Messages in error increased, lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		log.trace("Messages in error increased, statisticsLock [{}] has been released", statisticsLock);
 	}
 
 	public void setLastExitState(String pipeName, long lastExitStateDate, String lastExitState) {
@@ -341,7 +351,7 @@ public class Adapter implements IAdapter, NamedBean {
 				return 0;
 			}
 		} finally {
-			log.trace("Got Last exit state, lock released on sendersLastExitState[{}]", sendersLastExitState);
+			log.trace("Got last exit state, lock released on sendersLastExitState[{}]", sendersLastExitState);
 		}
 	}
 
@@ -392,110 +402,40 @@ public class Adapter implements IAdapter, NamedBean {
 		return messageKeeper;
 	}
 
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		Object adapterData=hski.openGroup(data,getName(),"adapter");
-		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
-		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
-
-		if (action!=Action.FULL &&
-			action!=Action.SUMMARY) {
-			log.trace("Iterating over statistics with lock - synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
-			synchronized (statsMessageProcessingDuration) {
-				iterateOverStatisticsBody(hski,adapterData,action);
-			}
-			log.trace("Iterated over statistics - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
-		} else {
-			iterateOverStatisticsBody(hski,adapterData,action);
-		}
-		hski.closeGroup(adapterData);
-	}
-
-	private void iterateOverStatisticsBody(StatisticsKeeperIterationHandler hski, Object adapterData, Action action) throws SenderException {
-		Object pipelineData=hski.openGroup(adapterData,null,"pipeline");
-		hski.handleScalar(pipelineData,"messagesInProcess", getNumOfMessagesInProcess());
-		hski.handleScalar(pipelineData,"messagesProcessed", numOfMessagesProcessed);
-		hski.handleScalar(pipelineData,"messagesInError", numOfMessagesInError);
-		log.trace("Get Adapter messagesProcessedThisInterval, synchronize (lock) on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
-		hski.handleScalar(pipelineData,"messagesProcessedThisInterval", numOfMessagesProcessed.getIntervalValue());
-		log.trace("Got Adapter messagesProcessedThisInterval, lock released on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
-
-		log.trace("Get Adapter messagesInErrorThisInterval, synchronize (lock) on numOfMessagesInError[{}]", numOfMessagesInError);
-		hski.handleScalar(pipelineData,"messagesInErrorThisInterval", numOfMessagesInError.getIntervalValue());
-		log.trace("Got Adapter messagesInErrorThisInterval, lock released on numOfMessagesInError[{}]", numOfMessagesInError);
-
-		Object durationStatsData = hski.openGroup(pipelineData, null, "duration");
-		hski.handleStatisticsKeeper(durationStatsData, statsMessageProcessingDuration);
-		hski.closeGroup(durationStatsData);
-		statsMessageProcessingDuration.performAction(action);
-
-		Object hourData=hski.openGroup(pipelineData,getName(),"processing by hour");
-		for (int i=0; i<getNumOfMessagesStartProcessingByHour().length; i++) {
-			String startTime;
-			if (i<10) {
-				startTime = "0" + i + ":00";
-			} else {
-				startTime = i + ":00";
-			}
-			hski.handleScalar(hourData, startTime, getNumOfMessagesStartProcessingByHour()[i]);
-		}
-		hski.closeGroup(hourData);
-
-		hski.closeGroup(pipelineData);
-
-		if (action == Action.FULL || action == Action.MARK_FULL) {
-			Object recsData=hski.openGroup(adapterData,null,"receiver");
-			for (Receiver<?> receiver: receivers) {
-				receiver.iterateOverStatistics(hski,recsData,action);
-			}
-			hski.closeGroup(recsData);
-
-			ICache<String,String> cache=pipeline.getCache();
-			if (cache instanceof HasStatistics) {
-				((HasStatistics) cache).iterateOverStatistics(hski, recsData, action);
-			}
-
-			Object pipeData=hski.openGroup(adapterData,null,"pipe");
-			getPipeLine().iterateOverStatistics(hski, pipeData, action);
-			hski.closeGroup(pipeData);
-		}
-	}
-
-
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
 	@JmxAttribute(description = "# Messages in Error")
-	public long getNumOfMessagesInError() {
-		log.trace("Get Adapter num messages in error - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+	public double getNumOfMessagesInError() {
+		log.trace("Get Adapter num messages in error, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
-			synchronized (statsMessageProcessingDuration) {
-				return numOfMessagesInError.getValue();
+			synchronized (statisticsLock) {
+				return numOfMessagesInError.count();
 			}
 		} finally {
-			log.trace("Got Adapter num messages in error - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+			log.trace("Got Adapter num messages in error, statisticsLock [{}] has been released", statisticsLock);
 		}
 	}
 	@JmxAttribute(description = "# Messages in process")
 	public int getNumOfMessagesInProcess() {
-		log.trace("Get Adapter num messages in process - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		log.trace("Get Adapter num messages in process, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
-			synchronized (statsMessageProcessingDuration) {
+			synchronized (statisticsLock) {
 				return numOfMessagesInProcess;
 			}
 		} finally {
-			log.trace("Got Adapter num messages in process - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+			log.trace("Got Adapter num messages in process, statisticsLock [{}] has been released", statisticsLock);
 		}
 	}
 
 	public long[] getNumOfMessagesStartProcessingByHour() {
-		log.trace("Get Adapter num messages in start processing by hour - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		log.trace("Get Adapter hourly statistics, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
-			synchronized (statsMessageProcessingDuration) {
+			synchronized (statisticsLock) { //help, why is this synchronizedm
 				return numOfMessagesStartProcessingByHour;
 			}
 		} finally {
-			log.trace("Got Adapter num messages in start processing by hour - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+			log.trace("Got Adapter hourly statistics, statisticsLock [{}] has been released", statisticsLock);
 		}
 	}
 	/**
@@ -503,14 +443,14 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @return long total messages processed
 	 */
 	@JmxAttribute(description = "# Messages Processed")
-	public long getNumOfMessagesProcessed() {
-		log.trace("Get Adapter num messages processed - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+	public double getNumOfMessagesProcessed() {
+		log.trace("Get Adapter number of processed messages, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
-			synchronized (statsMessageProcessingDuration) {
-				return numOfMessagesProcessed.getValue();
+			synchronized (statisticsLock) {
+				return numOfMessagesProcessed.count();
 			}
 		} finally {
-			log.trace("Got Adapter num messages processed - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+			log.trace("Got Adapter number of processed messages, statisticsLock [{}] has been released", statisticsLock);
 		}
 	}
 
@@ -518,18 +458,6 @@ public class Adapter implements IAdapter, NamedBean {
 	public Receiver<?> getReceiverByName(String receiverName) {
 		for (Receiver<?> receiver: receivers) {
 			if (receiver.getName().equalsIgnoreCase(receiverName)) {
-				return receiver;
-			}
-		}
-		return null;
-	}
-
-	public Receiver<?> getReceiverByNameAndListener(String receiverName, Class<?> listenerClass) {
-		if (listenerClass == null) {
-			return getReceiverByName(receiverName);
-		}
-		for (Receiver<?> receiver: receivers) {
-			if (receiver.getName().equalsIgnoreCase(receiverName) && listenerClass.equals(receiver.getListener().getClass())) {
 				return receiver;
 			}
 		}
@@ -553,14 +481,6 @@ public class Adapter implements IAdapter, NamedBean {
 		return getRunState().toString();
 	}
 
-	/**
-	 * Return the total processing duration as a StatisticsKeeper
-	 * @see StatisticsKeeper
-	 * @return org.frankframework.statistics.StatisticsKeeper
-	 */
-	public StatisticsKeeper getStatsMessageProcessingDuration() {
-		return statsMessageProcessingDuration;
-	}
 	/**
 	 * return the date and time since active
 	 * Creation date: (19-02-2003 12:16:53)
@@ -735,7 +655,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @ff.mandatory
 	 */
 	@Override
-	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
+	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
@@ -961,9 +881,9 @@ public class Adapter implements IAdapter, NamedBean {
 
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		log.trace("Wait until no messages in process - synchronize (lock) on statsMessageProcessingDuration {}", statsMessageProcessingDuration);
-		synchronized (statsMessageProcessingDuration) {
+		synchronized (statisticsLock) {
 			while (getNumOfMessagesInProcess() > 0) {
-				statsMessageProcessingDuration.wait(); // waits for notification from decNumOfMessagesInProcess()
+				statisticsLock.wait(); // waits for notification from decNumOfMessagesInProcess()
 			}
 		}
 		log.trace("No more messages in process - lock released on statsMessageProcessingDuration {}", statsMessageProcessingDuration);

@@ -24,10 +24,12 @@ import java.nio.file.Files;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.core.IAdapter;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.FileUtils;
-import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlUtils;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -40,10 +42,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
 import lombok.Setter;
-import org.frankframework.configuration.Configuration;
-import org.frankframework.core.IAdapter;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.SpringUtils;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Utility class to generate the flow diagram for an adapter or a configuration.
@@ -51,9 +50,8 @@ import org.frankframework.util.SpringUtils;
  * @author Niels Meijer
  * @version 2.0
  */
-
+@Log4j2
 public class FlowDiagramManager implements ApplicationContextAware, InitializingBean, DisposableBean {
-	private static final Logger log = LogUtil.getLogger(FlowDiagramManager.class);
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private final File adapterFlowDir = new File(APP_CONSTANTS.getProperty("flow.adapter.dir"));
@@ -85,7 +83,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	 * able to generate dot files and return the `noImageAvailable` image.
 	 */
 	protected IFlowGenerator createFlowGenerator(String generatorBeanClass) {
-		if(log.isDebugEnabled()) log.debug("trying to initialize FlowGenerator ["+generatorBeanClass+"]");
+		log.debug("trying to initialize FlowGenerator [{}]", generatorBeanClass);
 		try {
 			Class<?> clazz = ClassUtils.loadClass(generatorBeanClass);
 			if(clazz.isAssignableFrom(IFlowGenerator.class)) {
@@ -93,7 +91,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			}
 			return (IFlowGenerator) SpringUtils.createBean(applicationContext, clazz);
 		} catch (ClassNotFoundException e) {
-			log.warn("FlowGenerator class ["+generatorBeanClass+"] not found", e);
+			log.warn("FlowGenerator class [{}] not found", generatorBeanClass, e);
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			log.warn("failed to initalize FlowGenerator", e);
 		}
@@ -219,7 +217,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 
 		String name = FileUtils.encodeFileName(fileName) + "." + flowGenerator.getFileExtension();
-		log.debug("retrieve flow file for name[{}] in folder[{}]", fileName, parent.getPath());
+		log.trace("retrieve flow file for name[{}] in folder[{}]", ()->fileName, parent::getPath);
 
 		return new File(parent, name);
 	}
@@ -227,17 +225,17 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	// Don't call this when no generator is set!
 	private void generateFlowDiagram(String name, String xml, File destination) throws IOException {
 		if(flowGenerator == null || StringUtils.isEmpty(xml)) { //fail fast check to see if an IFlowGenerator is available.
-			log.debug("cannot generate flow diagram for {}", name);
+			log.debug("cannot generate flow diagram for [{}]", name);
 			return;
 		}
 
-		log.debug("generating flow diagram for {}", name);
+		log.debug("generating flow diagram for [{}]", name);
 		long start = System.currentTimeMillis();
 
 		try (FileOutputStream outputStream = new FileOutputStream(destination)) {
 			flowGenerator.generateFlow(xml, outputStream);
 		} catch (FlowGenerationException e) {
-			if(log.isDebugEnabled()) log.debug("error generating flow diagram for ["+name+"]", e);
+			log.debug("error generating flow diagram for [{}]", name, e);
 
 			if(destination.exists()) {
 				Files.delete(destination.toPath());
@@ -246,7 +244,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			throw new IOException("error generating flow diagram for ["+name+"]", e);
 		}
 
-		log.debug("finished generating flow diagram for ["+ name +"] in ["+ (System.currentTimeMillis()-start) +"] ms");
+		log.debug("finished generating flow diagram for [{}] in [{}] ms", () -> name, () -> System.currentTimeMillis() - start);
 	}
 
 	@Override

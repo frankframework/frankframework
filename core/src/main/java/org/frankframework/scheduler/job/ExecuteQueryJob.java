@@ -21,9 +21,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.stream.Message;
@@ -48,16 +50,16 @@ public class ExecuteQueryJob extends JobDef {
 		} else {
 			qs.setDatasourceName(getDatasourceName());
 		}
-		qs.setQueryType("other");
+		qs.setQueryType(JdbcQuerySenderBase.QueryType.OTHER);
 		qs.setTimeout(getQueryTimeout());
 		qs.configure();
 	}
 
 	@Override
 	public void execute() throws JobExecutionException, TimeoutException {
-		try {
+		try(PipeLineSession session = new PipeLineSession()) {
 			qs.open();
-			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
 				log.info("result [{}]", result);
 			}
 		}

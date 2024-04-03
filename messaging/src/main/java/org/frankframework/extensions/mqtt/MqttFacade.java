@@ -35,9 +35,9 @@ import org.frankframework.util.CredentialFactory;
 
 @Log4j2
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
-	private final @Getter(onMethod = @__(@Override)) String domain = "MQTT";
-	private @Getter(onMethod = @__(@Override)) ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter(onMethod = @__(@Override)) @Setter ApplicationContext applicationContext;
+	private final @Getter String domain = "MQTT";
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
 	private @Getter int timeout = 3000;

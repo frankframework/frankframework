@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,6 @@ import java.nio.file.Files;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
@@ -48,8 +44,10 @@ import org.frankframework.util.Dir2Xml;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
-import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Category("NN-Special")
 public class WsdlGeneratorPipe extends FixedForwardPipe {
@@ -205,10 +203,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		inputValidator = createValidator(xsdFile, null, null, 1, 1, pipeLine);
 		pipeLine.setInputValidator(inputValidator);
 
-		String countRoot = null;
+		String countRoot;
 		try {
 			String countRootXPath = "count(*/*[local-name()='element'])";
-			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath, OutputType.TEXT));
+			TransformerPool tp = TransformerPool.getXPathTransformerPool(countRootXPath, XmlUtils.DEFAULT_XSLT_VERSION);
 			Resource xsdResource = Resource.getResource(xsdFile.getPath());
 			countRoot = tp.transform(xsdResource.asSource());
 			if (StringUtils.isNotEmpty(countRoot)) {
@@ -235,9 +233,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 			Resource xsdResource = Resource.getResource(xsdFile.getPath());
 			if (StringUtils.isEmpty(namespace)) {
-				String xsdTargetNamespace = null;
+				String xsdTargetNamespace;
 				try {
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace", OutputType.TEXT));
+					TransformerPool tp = TransformerPool.getXPathTransformerPool("*/@targetNamespace", XmlUtils.DEFAULT_XSLT_VERSION);
 					xsdTargetNamespace = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
 						log.debug("found target namespace [" + xsdTargetNamespace + "] in xsd file [" + xsdFile.getName() + "]");
@@ -264,10 +262,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			}
 
 			if (StringUtils.isEmpty(root)) {
-				String xsdRoot = null;
+				String xsdRoot;
 				try {
 					String rootXPath = "*/*[local-name()='element'][" + rootPosition + "]/@name";
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath, OutputType.TEXT));
+					TransformerPool tp = TransformerPool.getXPathTransformerPool(rootXPath, XmlUtils.DEFAULT_XSLT_VERSION);
 					xsdRoot = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdRoot)) {
 						log.debug("found root element [" + xsdRoot + "] in xsd file [" + xsdFile.getName() + "]");

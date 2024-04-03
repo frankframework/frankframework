@@ -1,5 +1,5 @@
 /*
-Copyright 2021 WeAreFrank!
+Copyright 2021, 2024 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,5 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FrankDocGroup {
-	String name();
-	int order() default Integer.MAX_VALUE;
+	FrankDocGroupValue value();
 }

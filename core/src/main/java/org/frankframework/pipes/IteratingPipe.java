@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,16 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.task.TaskExecutor;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.IDataIterator;
@@ -46,11 +43,9 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.senders.ParallelSenderExecutor;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
+import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.Guard;
 import org.frankframework.util.Semaphore;
@@ -58,6 +53,12 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
+import org.springframework.core.task.TaskExecutor;
+import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
@@ -119,9 +120,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private @Getter @Setter TaskExecutor taskExecutor;
 	protected TransformerPool msgTransformerPool;
 	private TransformerPool stopConditionTp=null;
-	private StatisticsKeeper preprocessingStatisticsKeeper;
-	private StatisticsKeeper senderStatisticsKeeper;
-	private StatisticsKeeper stopConditionStatisticsKeeper;
+
+	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 
 	private Semaphore childThreadSemaphore=null;
 
@@ -141,13 +141,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		msgTransformerPool = TransformerPool.configureTransformer(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
-		if (msgTransformerPool!=null) {
-			preprocessingStatisticsKeeper =  new StatisticsKeeper("-> message preprocessing");
-		}
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
-				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),OutputType.XML,false));
-				stopConditionStatisticsKeeper =  new StatisticsKeeper("-> stop condition determination");
+				stopConditionTp=TransformerPool.getXPathTransformerPool(null,getStopConditionXPathExpression(),OutputType.XML);
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("Cannot compile stylesheet from stopConditionXPathExpression ["+getStopConditionXPathExpression()+"]", e);
@@ -170,7 +166,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException, IOException {
-		IDataIterator<I> it=null;
+		IDataIterator<I> it;
 		StopReason stopReason = null;
 		if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
 			session.put(getItemNoSessionKey(),"0"); // prefill session variable, to have a value if iterator is empty
@@ -292,7 +288,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					message=new Message(transformedMsg);
 					long preprocessingEndTime = System.currentTimeMillis();
 					long preprocessingDuration = preprocessingEndTime - preprocessingStartTime;
-					preprocessingStatisticsKeeper.addValue(preprocessingDuration);
+					getStatisticsKeeper("message preprocessing").record(preprocessingDuration);
 				} catch (Exception e) {
 					throw new SenderException("cannot transform item",e);
 				}
@@ -308,11 +304,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 			try {
 				try {
+					DistributionSummary senderStatistics = getStatisticsKeeper(sender.getName());
 					if (isParallel()) {
 						if (isCollectResults()) {
 							guard.addResource();
 						}
-						ParallelSenderExecutor pse= new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatisticsKeeper);
+						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatistics);
 						if (isCollectResults()) {
 							executorList.add(pse);
 						}
@@ -332,15 +329,13 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						} else {
 							itemResult = sender.sendMessageOrThrow(message, session).asString();
 						}
-						long senderEndTime = System.currentTimeMillis();
-						long senderDuration = senderEndTime - senderStartTime;
-						senderStatisticsKeeper.addValue(senderDuration);
+						senderStatistics.record((double) System.currentTimeMillis() - senderStartTime);
 						if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {
 							endBlock();
 						}
 					}
-					if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
-						throw new TimeoutException("timeOutOnResult ["+getTimeOutOnResult()+"]");
+					if (StringUtils.isNotEmpty(getTimeoutOnResult()) && getTimeoutOnResult().equals(itemResult)) {
+						throw new TimeoutException("timeoutOnResult ["+ getTimeoutOnResult()+"]");
 					}
 					if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(itemResult)) {
 						throw new SenderException("exceptionOnResult ["+getExceptionOnResult()+"]");
@@ -373,7 +368,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						String stopConditionResult = getStopConditionTp().transform(itemResult,null);
 						long stopConditionEndTime = System.currentTimeMillis();
 						long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
-						stopConditionStatisticsKeeper.addValue(stopConditionDuration);
+						getStatisticsKeeper("stop condition determination").record(stopConditionDuration);
 						if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
 							log.debug("itemResult [{}] stopcondition result [{}], stopping loop", itemResult, stopConditionResult);
 							return StopReason.STOP_CONDITION_MET;
@@ -479,22 +474,13 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return it.next();
 	}
 
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		super.iterateOverStatistics(hski, data, action);
-		if (preprocessingStatisticsKeeper!=null) {
-			hski.handleStatisticsKeeper(data, preprocessingStatisticsKeeper);
-		}
-		hski.handleStatisticsKeeper(data, senderStatisticsKeeper);
-		if (stopConditionStatisticsKeeper!=null) {
-			hski.handleStatisticsKeeper(data, stopConditionStatisticsKeeper);
-		}
+	protected @Nonnull DistributionSummary getStatisticsKeeper(String name) {
+		return statisticsMap.computeIfAbsent(name, ignored -> configurationMetrics.createSubDistributionSummary(this, name, FrankMeterType.PIPE_DURATION));
 	}
 
 	@Override
 	public void setSender(ISender sender) {
 		super.setSender(sender);
-		senderStatisticsKeeper =  new StatisticsKeeper("-> "+(StringUtils.isNotEmpty(sender.getName())?sender.getName():ClassUtils.nameOf(sender)));
 	}
 
 	protected TransformerPool getStopConditionTp() {

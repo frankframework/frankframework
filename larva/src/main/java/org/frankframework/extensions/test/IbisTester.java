@@ -35,9 +35,9 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.Adapter;
+import org.frankframework.larva.LarvaTool;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.TestTool;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
@@ -91,7 +91,7 @@ public class IbisTester {
 				request.setParameter("scenariosrootdirectory", scenariosRootDir);
 			}
 			Writer writer = new StringWriter();
-			TestTool.runScenarios(ibisContext, request, writer, silent, webAppPath);
+			LarvaTool.runScenarios(ibisContext, request, writer, silent, webAppPath);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
 				return XmlUtils.toXhtml(Message.asMessage(htmlString));
@@ -162,9 +162,6 @@ public class IbisTester {
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
 		webAppPath = getWebContentDirectory();
-		String projectBaseDir = Misc.getProjectBaseDir();
-		appConstants.put("project.basedir", projectBaseDir);
-		debug("***set property with name [project.basedir] and value [" + projectBaseDir + "]***");
 
 		System.setProperty("jdbc.migrator.active", "true");
 		// appConstants.put("validators.disabled", "true");
@@ -200,6 +197,7 @@ public class IbisTester {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
+						Thread.currentThread().interrupt();
 					}
 					runState = adapter.getRunState();
 					if ((RunState.STARTED) != runState) {

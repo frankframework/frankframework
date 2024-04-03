@@ -10,15 +10,21 @@ import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.util.AppConstants;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestUpdateLogSettings extends BusTestBase {
 
 	@Test
+	@WithMockUser(roles = { "IbisTester" })
 	public void getLogSettings() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_CONFIGURATION, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
@@ -31,6 +37,7 @@ public class TestUpdateLogSettings extends BusTestBase {
 	}
 
 	@Test
+	@WithMockUser(roles = { "IbisTester" })
 	public void updateLogDefinitionsNoHeader() {
 		assertEquals(-1, IbisMaskingLayout.getMaxLength(), "maxLength should default to -1 (off)");
 		boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);

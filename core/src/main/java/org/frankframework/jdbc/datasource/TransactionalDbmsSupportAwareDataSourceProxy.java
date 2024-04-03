@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -103,6 +103,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	public String getInfo() {
 		StringBuilder info = new StringBuilder();
+
 		if (metadata != null) {
 			info.append("user [").append(metadata.get("user")).append(CLOSE);
 			info.append("url [").append(metadata.get("url")).append(CLOSE);
@@ -111,17 +112,8 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 			info.append("driver [").append(metadata.get("driver")).append(CLOSE);
 			info.append("driver version [").append(metadata.get("driver-version")).append(CLOSE);
 		}
+		info.append("targetDataSource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 
-		if (getTargetDataSource() instanceof OpenManagedDataSource) {
-			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) getTargetDataSource();
-			targetDataSource.addPoolMetadata(info);
-		} else if (getTargetDataSource() instanceof org.apache.commons.dbcp2.PoolingDataSource) {
-			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) getTargetDataSource();
-			dataSource.addPoolMetadata(info);
-		}
-
-		info.append(" datasource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 		return info.toString();
 	}
-
 }

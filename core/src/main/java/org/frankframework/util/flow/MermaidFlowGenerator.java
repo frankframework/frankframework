@@ -31,8 +31,6 @@ import org.frankframework.core.IConfigurable;
 import org.frankframework.core.Resource;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.Protected;
-import org.frankframework.filesystem.FileSystemListener;
-import org.frankframework.filesystem.FileSystemSender;
 import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.util.StringUtil;
@@ -67,6 +65,8 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 	private static final String ADAPTER2MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
 	private static final String CONFIGURATION2MERMAID_XSLT = "/xml/xsl/configuration2mermaid.xsl";
+	// List that contains all class patterns that extend FileSystemListener or FileSystemSender
+	private static final List<String> extendsFileSystem = List.of("FileSystem", "Directory", "Samba", "Ftp", "Imap", "Sftp", "S3", "Exchange", "Mail");
 
 	private final List<String> resourceMethods;
 	private Document frankElements;
@@ -78,7 +78,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		resourceMethods = List.of(
 				"setAction", "setWsdl", "setSchema", "setSchemaLocation", "setDirection", "setOutputFormat",
 				"setResponseRoot", "setXpathExpression", "setStyleSheetName", "setStyleSheetNameSessionKey"
-			);
+		);
 	}
 
 	@Override
@@ -93,29 +93,46 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceConfig, 2);
 	}
 
-	private String compileFrankElementList() throws SAXException, ClassNotFoundException {
+	private String compileFrankElementList() throws SAXException {
 		try (SaxDocumentBuilder builder = new SaxDocumentBuilder("root")) {
 			List<String> classNames = findAllFrankElements();
-			for(String className : classNames) {
-				Class<?> clazz = Class.forName(className);
-				ElementType type = AnnotationUtils.findAnnotation(clazz, ElementType.class);
-				if(type != null) {
-					try (SaxElementBuilder classElement = builder.startElement(className)) {
-						try (SaxElementBuilder typeElement = classElement.startElement("type")) {
-							typeElement.addValue(type.value().name().toLowerCase());
-						}
-						try (SaxElementBuilder modifierElement = classElement.startElement("modifier")) {
-							modifierElement.addValue(""+deduceModifier(clazz));
-						}
-						addResourceMethods(classElement, clazz.getMethods());
-					}
-				}
-				else {
-					log.debug("skipping class [{}]", clazz);
-				}
+			for (String className : classNames) {
+				addClassInfo(className, builder);
 			}
 			builder.endElement();
 			return builder.toString();
+		}
+	}
+
+	private void addClassInfo(String className, SaxDocumentBuilder builder) throws SAXException {
+		Class<?> clazz;
+		ElementType type;
+		Method[] methods;
+		int modifier;
+		// Try first to extract all information from the class before adding it to the XML, so we add all or nothing about it.
+		try {
+			clazz = Class.forName(className);
+			type = AnnotationUtils.findAnnotation(clazz, ElementType.class);
+			if (type == null) {
+				log.debug("Skipping class [{}]", clazz);
+				return;
+			}
+			methods = clazz.getMethods();
+			modifier = deduceModifier(clazz);
+		} catch (ExceptionInInitializerError | NoClassDefFoundError | ClassNotFoundException e) {
+			log.debug("Skipping class [{}] which cannot be loaded due to: {}[{}]", className, e.getClass().getSimpleName(), e.getMessage());
+			return;
+		}
+
+		// "try-with-resources" construct used here just to open/close XML elements
+		try (SaxElementBuilder classElement = builder.startElement(className)) {
+			try (SaxElementBuilder typeElement = classElement.startElement("type")) {
+				typeElement.addValue(type.value().name().toLowerCase());
+			}
+			try (SaxElementBuilder modifierElement = classElement.startElement("modifier")) {
+				modifierElement.addValue("" + modifier);
+			}
+			addResourceMethods(classElement, methods);
 		}
 	}
 
@@ -124,26 +141,27 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	 */
 	private int deduceModifier(Class<?> clazz) {
 		String packageName = clazz.getPackageName();
-		if(packageName.contains(".http")) {
+		String className = clazz.getSimpleName();
+		if (packageName.contains(".http")) {
 			return 0;
-		} else if(packageName.contains(".jms") || packageName.contains(".esb")) {
+		} else if (packageName.contains(".jms") || packageName.contains(".esb")) {
 			return 1;
-		} else if(packageName.contains(".jdbc")) {
+		} else if (packageName.contains(".jdbc")) {
 			return 2;
-		} else if(FileSystemListener.class.isAssignableFrom(clazz) || FileSystemSender.class.isAssignableFrom(clazz)) {
+		} else if (extendsFileSystem.stream().anyMatch(className::contains)) {
 			return 3;
-		} else if(IbisJavaSender.class.isAssignableFrom(clazz) || IbisLocalSender.class.isAssignableFrom(clazz)) {
+		} else if (IbisJavaSender.class.isAssignableFrom(clazz) || IbisLocalSender.class.isAssignableFrom(clazz)) {
 			return 4;
-		} else if(packageName.contains(".sap")) {
+		} else if (packageName.contains(".sap")) {
 			return 5;
 		}
 		return 7;
 	}
 
 	private void addResourceMethods(SaxElementBuilder element, Method[] methods) throws SAXException {
-		for(Method method : methods) {
+		for (Method method : methods) {
 			String methodName = method.getName();
-			if(method.getParameterTypes().length == 1 && resourceMethods.contains(methodName)) {
+			if (method.getParameterTypes().length == 1 && resourceMethods.contains(methodName)) {
 				String attributeName = StringUtil.lcFirst(methodName.substring(3));
 				addAttribute(element, attributeName);
 			}
@@ -163,8 +181,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AssignableTypeFilter(IConfigurable.class));
 		scanner.addIncludeFilter(new AnnotationTypeFilter(ElementType.class));
-		scanner.addExcludeFilter(this::matchesTestClassPath); //Exclude test classpath
-		scanner.addExcludeFilter((i,e) -> i.getClassMetadata().getClassName().contains("$")); //Exclude inner classes
+		scanner.addExcludeFilter((i, e) -> i.getClassMetadata().getClassName().contains("$")); //Exclude inner classes
 		scanner.addExcludeFilter(new AnnotationTypeFilter(Protected.class)); //Exclude protected FrankElements
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
@@ -203,7 +220,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		try {
 			Map<String, Object> xsltParams = new HashMap<>(1);//frankElements
 			xsltParams.put("frankElements", frankElements);
-			if(xml.startsWith("<adapter")) {
+			if (xml.startsWith("<adapter")) {
 				return transformerPoolAdapter.transform(xml, xsltParams);
 			} else {
 				return transformerPoolConfig.transform(xml, xsltParams);
@@ -225,11 +242,11 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void destroy() {
-		if(transformerPoolAdapter != null) {
+		if (transformerPoolAdapter != null) {
 			transformerPoolAdapter.close();
 		}
 
-		if(transformerPoolConfig != null) {
+		if (transformerPoolConfig != null) {
 			transformerPoolConfig.close();
 		}
 		frankElements = null;

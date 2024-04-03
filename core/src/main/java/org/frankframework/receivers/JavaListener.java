@@ -65,7 +65,7 @@ import nl.nn.adapterframework.dispatcher.RequestProcessor;
 @Category("Basic")
 public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
+	private final @Getter String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -133,7 +133,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			HashMap<String, Object> processContext = context != null ? context : new HashMap<>();
 			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			try (Message message = Message.asMessage(rawMessage);
-				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext);) {
+				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext)) {
 					return result.asString();
 			}
 		} catch (IOException e) {

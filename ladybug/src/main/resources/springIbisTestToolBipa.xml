@@ -23,7 +23,6 @@
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
 			<list>
-				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
 				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
 					<property name="name" value="contractNr"/>
 					<property name="label" value="Contract Nr"/>

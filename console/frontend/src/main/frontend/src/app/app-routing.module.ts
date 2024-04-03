@@ -44,12 +44,12 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
-    title: 'Login'
+    title: 'Login',
   },
   {
     path: 'logout',
     component: LogoutComponent,
-    title: 'Logout'
+    title: 'Logout',
   },
   {
     path: 'status',
@@ -60,11 +60,11 @@ const routes: Routes = [
     },
   },
   {
-    path: ":configuration/adapter/:name/statistics",
+    path: ':configuration/adapter/:name/statistics',
     component: AdapterstatisticsComponent,
     title: 'Adapter Statistics',
     data: {
-      breadcrumbs: 'Adapter > Statistics'
+      breadcrumbs: 'Adapter > Statistics',
     },
   },
   {
@@ -72,7 +72,7 @@ const routes: Routes = [
     component: StorageComponent,
     title: '',
     data: {
-      breadcrumbs: ''
+      breadcrumbs: '',
     },
     children: [
       {
@@ -82,15 +82,15 @@ const routes: Routes = [
       {
         path: 'stores/:processState/messages/:messageId',
         component: StorageViewComponent,
-      }
-    ]
+      },
+    ],
   },
   {
     path: 'notifications',
     component: NotificationsComponent,
     title: 'Notifications',
     data: {
-      breadcrumbs: 'Notifications'
+      breadcrumbs: 'Notifications',
     },
   },
   {
@@ -107,7 +107,7 @@ const routes: Routes = [
     title: 'Manage Configurations',
     data: {
       breadcrumbs: 'Configurations > Upload',
-    }
+    },
   },
   {
     path: 'configurations/manage',
@@ -115,7 +115,7 @@ const routes: Routes = [
     title: 'Manage Configurations',
     data: {
       breadcrumbs: 'Configurations > Manage',
-    }
+    },
   },
   {
     path: 'configurations/manage/:name',
@@ -130,7 +130,7 @@ const routes: Routes = [
     component: LoggingComponent,
     title: 'Logging',
     data: {
-      breadcrumbs: 'Logging > Log Files'
+      breadcrumbs: 'Logging > Log Files',
     },
   },
   {
@@ -138,7 +138,7 @@ const routes: Routes = [
     component: LoggingManageComponent,
     title: 'Logging',
     data: {
-      breadcrumbs: 'Logging > Log Settings'
+      breadcrumbs: 'Logging > Log Settings',
     },
   },
   {
@@ -146,55 +146,55 @@ const routes: Routes = [
     component: JmsSendMessageComponent,
     title: 'Send JMS Message',
     data: {
-      breadcrumbs: 'JMS > Send Message'
-    }
+      breadcrumbs: 'JMS > Send Message',
+    },
   },
   {
     path: 'jms/browse-queue',
     component: JmsBrowseQueueComponent,
     title: 'Browse JMS Queue',
     data: {
-      breadcrumbs: 'JMS > Browse Queue'
-    }
+      breadcrumbs: 'JMS > Browse Queue',
+    },
   },
   {
-    path: "test-pipeline",
+    path: 'test-pipeline',
     component: TestPipelineComponent,
     title: 'Test a PipeLine',
     data: {
-      breadcrumbs: 'Testing > Test a PipeLine'
-    }
+      breadcrumbs: 'Testing > Test a PipeLine',
+    },
   },
   {
     path: 'test-service-listener',
     component: TestServiceListenerComponent,
     title: 'Test a ServiceListener',
     data: {
-      breadcrumbs: 'Testing > Test a ServiceListener'
-    }
+      breadcrumbs: 'Testing > Test a ServiceListener',
+    },
   },
   {
     path: 'webservices',
     component: WebservicesComponent,
     title: 'Webservices',
     data: {
-      breadcrumbs: 'Webservices'
-    }
+      breadcrumbs: 'Webservices',
+    },
   },
   {
     path: 'scheduler',
     component: SchedulerComponent,
     title: 'Scheduler',
     data: {
-      breadcrumbs: 'Scheduler'
-    }
+      breadcrumbs: 'Scheduler',
+    },
   },
   {
     path: 'scheduler/new',
     component: SchedulerAddComponent,
     title: 'Add Schedule',
     data: {
-      breadcrumbs: 'Scheduler > Add Schedule'
+      breadcrumbs: 'Scheduler > Add Schedule',
     },
   },
   {
@@ -202,7 +202,7 @@ const routes: Routes = [
     component: SchedulerEditComponent,
     title: 'Edit Schedule',
     data: {
-      breadcrumbs: 'Scheduler > Edit Schedule'
+      breadcrumbs: 'Scheduler > Edit Schedule',
     },
   },
   {
@@ -210,63 +210,63 @@ const routes: Routes = [
     component: EnvironmentVariablesComponent,
     title: 'Environment Variables',
     data: {
-      breadcrumbs: 'Environment Variables'
-    }
+      breadcrumbs: 'Environment Variables',
+    },
   },
   {
     path: 'jdbc/execute-query',
     component: JdbcExecuteQueryComponent,
     title: 'Execute JDBC Query',
     data: {
-      breadcrumbs: 'JDBC > Execute Query'
-    }
+      breadcrumbs: 'JDBC > Execute Query',
+    },
   },
   {
     path: 'jdbc/browse-tables',
     component: JdbcBrowseTablesComponent,
     title: 'Browse JDBC Tables',
     data: {
-      breadcrumbs: 'JDBC > Browse Tables'
-    }
+      breadcrumbs: 'JDBC > Browse Tables',
+    },
   },
   {
     path: 'security-items',
     component: SecurityItemsComponent,
     data: {
       pageTitle: 'Security Items',
-      breadcrumbs: 'Security Items'
-    }
+      breadcrumbs: 'Security Items',
+    },
   },
   {
     path: 'connections',
     component: ConnectionsComponent,
     title: 'Connection Overview',
     data: {
-      breadcrumbs: 'Connection Overview'
-    }
+      breadcrumbs: 'Connection Overview',
+    },
   },
   {
     path: 'inlinestores/overview',
     component: InlinestoreComponent,
     title: 'InlineStore Overview',
     data: {
-      breadcrumbs: 'InlineStore Overview'
-    }
+      breadcrumbs: 'InlineStore Overview',
+    },
   },
   {
     path: 'monitors',
     component: MonitorsComponent,
     title: 'Monitors',
     data: {
-      breadcrumbs: 'Monitors'
-    }
+      breadcrumbs: 'Monitors',
+    },
   },
   {
     path: 'monitors/:monitor/triggers/:trigger',
     component: MonitorsAddEditComponent,
     title: 'Edit Trigger',
     data: {
-      breadcrumbs: 'Monitors > Triggers > Edit'
+      breadcrumbs: 'Monitors > Triggers > Edit',
     },
   },
   {
@@ -274,7 +274,7 @@ const routes: Routes = [
     component: MonitorsAddEditComponent,
     title: 'Add Trigger',
     data: {
-      breadcrumbs: 'Monitors > Triggers > Add'
+      breadcrumbs: 'Monitors > Triggers > Add',
     },
   },
   {
@@ -282,24 +282,24 @@ const routes: Routes = [
     component: IbisstoreSummaryComponent,
     title: 'Ibisstore Summary',
     data: {
-      breadcrumbs: 'JDBC > Ibisstore Summary'
-    }
+      breadcrumbs: 'JDBC > Ibisstore Summary',
+    },
   },
   {
     path: 'liquibase',
     component: LiquibaseComponent,
     title: 'Liquibase Script',
     data: {
-      breadcrumbs: 'JDBC > Liquibase Script'
-    }
+      breadcrumbs: 'JDBC > Liquibase Script',
+    },
   },
   {
     path: 'customView/:name',
     component: IframeCustomViewComponent,
-    title: "Custom View",
+    title: 'Custom View',
     data: {
       breadcrumbs: 'Custom View',
-      iframe: true
+      iframe: true,
     },
   },
   {
@@ -308,7 +308,7 @@ const routes: Routes = [
     title: 'Larva',
     data: {
       breadcrumbs: 'Testing > Larva',
-      iframe: true
+      iframe: true,
     },
   },
   {
@@ -317,7 +317,7 @@ const routes: Routes = [
     title: 'Ladybug',
     data: {
       breadcrumbs: 'Testing > Ladybug',
-      iframe: true
+      iframe: true,
     },
   },
   {
@@ -326,7 +326,7 @@ const routes: Routes = [
     title: 'Ladybug (beta)',
     data: {
       breadcrumbs: 'Testing > Ladybug (beta)',
-      iframe: true
+      iframe: true,
     },
   },
   /* {
@@ -339,7 +339,7 @@ const routes: Routes = [
     component: IafUpdateComponent,
     title: 'FF Update',
     data: {
-      breadcrumbs: 'FF Update'
+      breadcrumbs: 'FF Update',
     },
   },
   {
@@ -347,32 +347,34 @@ const routes: Routes = [
     pathMatch: 'full',
     component: LoadingComponent,
     data: {
-      breadcrumbs: 'Loading'
-    }
+      breadcrumbs: 'Loading',
+    },
   },
   {
     path: 'error',
     component: ErrorComponent,
     title: 'Error',
     data: {
-      breadcrumbs: 'Error'
+      breadcrumbs: 'Error',
     },
   },
   {
     path: '**',
     redirectTo: 'status',
     data: {
-      breadcrumbs: 'Loading'
-    }
-  }
+      breadcrumbs: 'Loading',
+    },
+  },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, {
-    useHash: true,
-    enableTracing: true,
-    paramsInheritanceStrategy: 'always'
-  })],
-  exports: [RouterModule]
+  imports: [
+    RouterModule.forRoot(routes, {
+      useHash: true,
+      enableTracing: true,
+      paramsInheritanceStrategy: 'always',
+    }),
+  ],
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

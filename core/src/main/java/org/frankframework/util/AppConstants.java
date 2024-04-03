@@ -26,6 +26,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
 
 /**
  * Singleton class that has the constant values for this application. <br/>
@@ -43,8 +44,8 @@ public final class AppConstants extends PropertyLoader {
 
 	private static final String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private static final String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
-	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
-	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
+	public static final String APPLICATION_SERVER_TYPE_PROPERTY = ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY;
+	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY;
 	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX";
 
 	private static final Properties additionalProperties = new Properties();

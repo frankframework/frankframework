@@ -1,5 +1,5 @@
-ARG TOMCAT_TAG=9.0.85-jre11
-FROM tomcat:${TOMCAT_TAG}
+ARG TOMCAT_VERSION=9.0.87-jre17
+FROM tomcat:${TOMCAT_VERSION}
 ARG GID=1000
 ARG UID=1000
 
@@ -29,7 +29,7 @@ RUN cat /scripts/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalin
 COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
 
 # Copy webapp war
-COPY --chown=tomcat target/dependencies/war /usr/local/tomcat/webapps/ROOT
+COPY --chown=tomcat target/dependencies/war/ /usr/local/tomcat/webapps/ROOT/
 
 # Ensure the container is healty
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 CMD curl --fail --silent http://localhost:8080/iaf/api || exit 1

@@ -1,0 +1,85 @@
+<module>
+	<SharedResources>
+		<HttpSession
+			name="SharedApiListenerHttpSession1"
+			allowSelfSignedCertificates="true"
+			verifyHostname="false"
+			timeout="1000"
+			authAlias="${framework.api.user.alias}"
+			proxyHost="${proxy.host}"
+			proxyPort="${proxy.port}"
+			proxyUsername="${proxy.username}"
+			proxyPassword="${proxy.password}" 
+		/>
+	</SharedResources>
+
+	<SharedResources>
+		<HttpSession
+			name="SharedApiListenerHttpSession2"
+			allowSelfSignedCertificates="true"
+			verifyHostname="false"
+			timeout="1000"
+			authAlias="${framework.api.user.alias}"
+			proxyHost="${proxy.host}"
+			proxyPort="${proxy.port}"
+			proxyUsername="${proxy.username}"
+			proxyPassword="${proxy.password}" 
+		/>
+	</SharedResources>
+
+	<Adapter name="SharedHTTPResource">
+		<Receiver>
+			<JavaListener name="SharedHTTPResource-Local" serviceName="ibis4test-CallEndpointUsingSharedResource" />
+		</Receiver>
+
+		<Pipeline firstPipe="forEachElement">
+			<ForEachChildElementPipe name="forEachElement" elementXPathExpression="/requests/request">
+				<ParallelSendersSender name="testje" maxConcurrentThreads="1"><!-- not the best solution but saves from having to configure a sub-adapter -->
+					<HttpSender name="myFirstHttpSender" sharedResourceRef="SharedApiListenerHttpSession1" urlParam="url_param">
+						<param name="url_param" xpathExpression="concat($uri, '?nr=1')"> <!-- nr=1 using session=1 -->
+							<param name="uri" xpathExpression="*/@uri" />
+						</param>
+					</HttpSender>
+					<HttpSender name="mySecondHttpSender" sharedResourceRef="SharedApiListenerHttpSession2" urlParam="url_param">
+						<param name="url_param" xpathExpression="concat($uri, '?nr=2')"> <!-- nr=2 using session=2 -->
+							<param name="uri" xpathExpression="*/@uri" />
+						</param>
+					</HttpSender>
+					<HttpSender name="myThirdHttpSender" sharedResourceRef="SharedApiListenerHttpSession1" urlParam="url_param">
+						<param name="url_param" xpathExpression="concat($uri, '?nr=3')"> <!-- nr=3 using session=1 -->
+							<param name="uri" xpathExpression="*/@uri" />
+						</param>
+					</HttpSender>
+					<HttpSender name="myFourthHttpSender" sharedResourceRef="SharedApiListenerHttpSession2" urlParam="url_param">
+						<param name="url_param" xpathExpression="concat($uri, '?nr=4')"> <!-- nr=4 using session=2 -->
+							<param name="uri" xpathExpression="*/@uri" />
+						</param>
+					</HttpSender>
+					<HttpSender name="myFifthHttpSender" sharedResourceRef="SharedApiListenerHttpSession1" urlParam="url_param">
+						<param name="url_param" xpathExpression="concat($uri, '?nr=5')"> <!-- nr=5 using session=1 -->
+							<param name="uri" xpathExpression="*/@uri" />
+						</param>
+					</HttpSender>
+				</ParallelSendersSender>
+			</ForEachChildElementPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ConcurrentSharedHTTPResource" description="calls the SharedHTTPResource adapter 5 times">
+		<Receiver>
+			<JavaListener name="ConcurrentSharedHTTPResource-Local" serviceName="ibis4test-CallConcurrentSharedHTTPResource" />
+		</Receiver>
+		<Pipeline>
+			<SenderPipe name="IbisLocalSender">
+				<ParallelSendersSender>
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="SharedHTTPResource-Local" />
+				</ParallelSendersSender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+</module>

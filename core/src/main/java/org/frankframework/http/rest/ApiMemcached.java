@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import net.spy.memcached.AddrUtil;
@@ -34,6 +35,7 @@ import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.auth.AuthDescriptor;
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 
 public class ApiMemcached implements IApiCache {
@@ -63,6 +65,8 @@ public class ApiMemcached implements IApiCache {
 		String address = ac.getProperty("etag.cache.server", "localhost:11211");
 		String username = ac.getProperty("etag.cache.username", "");
 		String password = ac.getProperty("etag.cache.password", "");
+		String alias = ac.getProperty("etag.cache.authAlias", "");
+		CredentialFactory credentialFactory = new CredentialFactory(alias, username, password);
 		int timeout = ac.getInt("etag.cache.timeout", DEFAULT_OPERATION_TIMEOUT);
 
 		List<InetSocketAddress> addresses = AddrUtil.getAddresses(address);
@@ -77,8 +81,9 @@ public class ApiMemcached implements IApiCache {
 		else
 			connectionFactoryBuilder.setFailureMode(FailureMode.Retry);
 
-		if(!username.isEmpty())
-			connectionFactoryBuilder.setAuthDescriptor(AuthDescriptor.typical(username, password));
+		if(StringUtils.isNotEmpty(credentialFactory.getUsername())) {
+			connectionFactoryBuilder.setAuthDescriptor(AuthDescriptor.typical(credentialFactory.getUsername(), credentialFactory.getPassword()));
+		}
 
 		ConnectionFactory cf = connectionFactoryBuilder.build();
 

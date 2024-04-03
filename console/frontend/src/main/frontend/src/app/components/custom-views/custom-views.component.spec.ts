@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { CustomViewsComponent } from './custom-views.component';
 
@@ -8,9 +9,9 @@ describe('CustomViewsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CustomViewsComponent ]
-    })
-    .compileComponents();
+      imports: [HttpClientTestingModule],
+      declarations: [CustomViewsComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CustomViewsComponent);
     component = fixture.componentInstance;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@ package org.frankframework.scheduler.job;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -30,6 +27,9 @@ import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.UUIDUtil;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class SendMessageJob extends JobDef {
 	private @Setter IbisLocalSender localSender = null;
@@ -44,7 +44,7 @@ public class SendMessageJob extends JobDef {
 
 		super.configure();
 
-		localSender = SpringUtils.createBean(getApplicationContext(), IbisLocalSender.class);
+		localSender = SpringUtils.createBean(getApplicationContext(), SendMessageJobSender.class);
 		localSender.setJavaListener(getJavaListener());
 		localSender.setIsolated(false);
 		localSender.setName("Job " + getName());
@@ -87,5 +87,16 @@ public class SendMessageJob extends JobDef {
 		if(StringUtils.isNotEmpty(message)) {
 			this.message = message;
 		}
+	}
+
+	/**
+	 * The sole purpose of this calls is to prevent AOP wrapping around the sendMessage / sendMessageOrThrow methods.
+	 * This pollutes the Ladybug with 'unwanted' reports about jobs being fired, without any useful information in the report.
+	 * See org.frankframework.ibistesttool.IbisDebuggerAdvice for the exclusion
+	 * 
+	 * @author Niels Meijer
+	 */
+	public static class SendMessageJobSender extends IbisLocalSender {
+		// empty
 	}
 }

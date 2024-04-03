@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletResponse;
 
 import org.frankframework.dbms.IDbmsSupport;
@@ -43,6 +44,7 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.jdbc.DirectQuerySender;
+import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
@@ -56,6 +58,7 @@ import org.frankframework.receivers.Receiver;
 public class IbisstoreSummary extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.IBISSTORE_SUMMARY)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public StringResponseMessage showIbisStoreSummary(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String query = BusMessageUtils.getHeader(message, "query");
@@ -69,15 +72,15 @@ public class IbisstoreSummary extends BusEndpointBase {
 			IbisstoreSummaryQuerySender qs;
 			qs = createBean(IbisstoreSummaryQuerySender.class);
 			qs.setSlotmap(getSlotmap());
-			try {
+			try(PipeLineSession session = new PipeLineSession()) {
 				qs.setName("QuerySender");
 				qs.setDatasourceName(datasource);
-				qs.setQueryType("select");
+				qs.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
 				qs.setBlobSmartGet(true);
 				qs.setAvoidLocking(true);
 				qs.configure(true);
 				qs.open();
-				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query != null ? query : this.getIbisStoreSummaryQuery(qs.getDbmsSupport())), null)) {
+				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query != null ? query : this.getIbisStoreSummaryQuery(qs.getDbmsSupport())), session)) {
 					result = message.asString();
 				}
 			} catch (Throwable t) {
@@ -102,7 +105,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 				if (errorStorage!=null) {
 					String slotId=errorStorage.getSlotId();
 					if (StringUtils.isNotEmpty(slotId)) {
-						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+						SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),receiver.getName(),null);
 						String type = errorStorage.getType();
 						slotmap.put(type+"/"+slotId,sir);
 					}
@@ -111,7 +114,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 				if (messageLog!=null) {
 					String slotId=messageLog.getSlotId();
 					if (StringUtils.isNotEmpty(slotId)) {
-						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+						SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),receiver.getName(),null);
 						String type = messageLog.getType();
 						slotmap.put(type+"/"+slotId,sir);
 					}
@@ -127,7 +130,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 						if (messageLog!=null) {
 							String slotId=messageLog.getSlotId();
 							if (StringUtils.isNotEmpty(slotId)) {
-								SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+								SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),null,msp.getName());
 								String type = messageLog.getType();
 								slotmap.put(type+"/"+slotId,sir);
 								slotmap.put(slotId,sir);
@@ -138,7 +141,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 								ITransactionalStorage transactionalStorage = (ITransactionalStorage) sender;
 								String slotId=transactionalStorage.getSlotId();
 								if (StringUtils.isNotEmpty(slotId)) {
-									SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+									SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),null,msp.getName());
 									String type = transactionalStorage.getType();
 									slotmap.put(type+"/"+slotId,sir);
 									slotmap.put(slotId,sir);
@@ -237,6 +240,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 					SlotIdRecord sir=slotmap.get(type+"/"+slotid);
 					if (sir!=null) {
 						slotBuilder.add("adapter",sir.adapterName);
+						slotBuilder.add("configuration",sir.configurationName);
 						if (StringUtils.isNotEmpty(sir.receiverName) ) {
 							slotBuilder.add("receiver",sir.receiverName);
 						}
@@ -277,15 +281,15 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 }
 
 class SlotIdRecord {
+	public String configurationName;
 	public String adapterName;
 	public String receiverName;
 	public String pipeName;
 
-	SlotIdRecord(String adapterName, String receiverName, String pipeName) {
-		super();
-		this.adapterName=adapterName;
-		this.receiverName=receiverName;
-		this.pipeName=pipeName;
+	SlotIdRecord(String configurationName, String adapterName, String receiverName, String pipeName){
+		this.configurationName = configurationName;
+		this.adapterName = adapterName;
+		this.receiverName = receiverName;
+		this.pipeName = pipeName;
 	}
 }
-

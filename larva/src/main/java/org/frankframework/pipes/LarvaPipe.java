@@ -26,10 +26,9 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
-import org.frankframework.testtool.TestTool;
+import org.frankframework.larva.LarvaTool;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 
@@ -55,7 +54,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	private @Getter String execute;
 	private @Getter String logLevel=DEFAULT_LOG_LEVEL;
 	private @Getter String waitBeforeCleanup="100";
-	private @Getter int timeout=10000;
+	private @Getter int timeout = 10_000;
 
 	private PipeForward failureForward;
 
@@ -66,7 +65,7 @@ public class LarvaPipe extends FixedForwardPipe {
 			log.warn("no log level specified, setting to default ["+DEFAULT_LOG_LEVEL+"]");
 			setLogLevel(DEFAULT_LOG_LEVEL);
 		} else {
-			List<String> logLevels = StringUtil.split(TestTool.LOG_LEVEL_ORDER);
+			List<String> logLevels = StringUtil.split(LarvaTool.LOG_LEVEL_ORDER);
 			if (!logLevels.contains("["+getLogLevel()+"]")) {
 				throw new ConfigurationException("illegal log level ["+getLogLevel()+"]");
 			}
@@ -81,17 +80,17 @@ public class LarvaPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 		String realPath = AppConstants.getInstance().getProperty("webapp.realpath") + "iaf/";
 		List<String> scenariosRootDirectories = new ArrayList<>();
 		List<String> scenariosRootDescriptions = new ArrayList<>();
-		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
+		LarvaTool larvaTool = new LarvaTool();
+		String currentScenariosRootDirectory = larvaTool.initScenariosRootDirectories(
 				realPath,
 				null, scenariosRootDirectories,
-				scenariosRootDescriptions, null);
-		String paramScenariosRootDirectory = currentScenariosRootDirectory;
-		String paramExecute = currentScenariosRootDirectory;
+				scenariosRootDescriptions);
+    	String paramExecute = currentScenariosRootDirectory;
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();
 		}
@@ -100,12 +99,9 @@ public class LarvaPipe extends FixedForwardPipe {
 		String paramWaitBeforeCleanUp = getWaitBeforeCleanup();
 		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
 		boolean silent = true;
-		TestTool.setTimeout(getTimeout());
-		int numScenariosFailed=TestTool.runScenarios(ibisContext, paramLogLevel,
-								paramAutoScroll, paramExecute,
-								paramWaitBeforeCleanUp, getTimeout(), realPath,
-								paramScenariosRootDirectory,
-								out, silent);
+		LarvaTool.setTimeout(getTimeout());
+		int numScenariosFailed = larvaTool.runScenarios(ibisContext, paramLogLevel, paramAutoScroll, paramExecute, paramWaitBeforeCleanUp,
+				getTimeout(), realPath, currentScenariosRootDirectory, out, silent);
 		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, out.toString());
 	}
@@ -144,7 +140,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.waitBeforeCleanup = waitBeforeCleanup;
 	}
 
-	 /** the larva timeout
+	 /** the larva timeout in milliseconds
 	 * @ff.default 10000
 	 */
 	public void setTimeout(int timeout) {
@@ -155,8 +151,8 @@ public class LarvaPipe extends FixedForwardPipe {
 @AllArgsConstructor
 class LogWriter extends StringWriter {
 	private Logger log;
-	private boolean writeToLog = false;
-	private boolean writeToSystemOut = false;
+	private boolean writeToLog;
+	private boolean writeToSystemOut;
 
 	@Override
 	public void write(String str) {

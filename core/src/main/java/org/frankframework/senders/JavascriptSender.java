@@ -21,15 +21,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-
 import org.frankframework.core.ISender;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Optional;
 import org.frankframework.javascript.J2V8;
 import org.frankframework.javascript.JavascriptEngine;
 import org.frankframework.javascript.JavascriptException;
@@ -40,17 +38,24 @@ import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 
+import lombok.Getter;
+
 /**
  * Sender used to run JavaScript code using J2V8
- *
+ * <p>
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
  * The sender doesn't accept nor uses the given input, instead for each argument for the {@link #jsFunctionName} method,
  * you will need to create a parameter on the sender.
- * It is recommended to have the result of the javascript function be of type String, as the output of the sender will be
- * of type String.
+ * </p>
+ * <p>
+ * The result of the javascript function should be of type String, or directly convertible to String from a primitive type
+ * or an array of primitive types / strings, as the output of the sender will be of type String.
+ * </p>
+ * <p>
+ * Failure to ensure the output is a string may mean the result will look like {@code [Object object]}.
+ * </p>
  *
- * @author Jarno Huibers
  * @since 7.4
  */
 
@@ -118,7 +123,6 @@ public class JavascriptSender extends SenderSeries {
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 
-		Object jsResult = "";
 		int numberOfParameters = 0;
 		JavascriptEngine<?> jsInstance = engine.create();
 		try {
@@ -156,10 +160,12 @@ public class JavascriptSender extends SenderSeries {
 			jsInstance.registerCallback(sender, session);
 		}
 
+		String result;
 		try {
 			//Compile the given Javascript and execute the given Javascript function
 			jsInstance.executeScript(adaptES6Literals(fileInput));
-			jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
+			Object jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
+			result = String.valueOf(jsResult);
 		} catch (JavascriptException e) {
 			throw new SenderException("unable to execute script/function", e);
 		} finally {
@@ -168,11 +174,16 @@ public class JavascriptSender extends SenderSeries {
 
 		// Pass jsResult, the result of the Javascript function.
 		// It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender
-		String result = String.valueOf(jsResult);
 		if (StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
 			return new SenderResult(Message.nullMessage());
 		}
 		return new SenderResult(result);
+	}
+
+	@Optional
+	@Override
+	public void registerSender(ISender sender) {
+		super.registerSender(sender);
 	}
 
 	/**

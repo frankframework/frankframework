@@ -5,9 +5,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.Parameter;
@@ -21,7 +20,8 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.Arguments;
 
 public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
@@ -34,15 +34,13 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		expectExtraParamWarning=false;
 	}
 
-	@Parameters(name = "{index}: {0}: provide [{2}] stream out [{3}]")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-				 { "classic", 			false, false, false },
-				 { "new, no stream", 	 true, false, false },
-				 { "output to stream", 	 true, false, true  }  // no stream providing, cannot be done in parallel
-		});
+	public static Stream<Arguments> data() {
+		return Stream.of(
+				Arguments.of("classic", false, false, false),
+				Arguments.of("new, no stream", true, false, false),
+				Arguments.of("output to stream", true, false, true)  // no stream providing, cannot be done in parallel
+		);
 	}
-
 
 	protected SenderSeries createSenderContainer() {
 		SenderSeries senders=new ParallelSenders();
@@ -109,11 +107,6 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 					).append("</result>");
 		}
 		combinedExpected.append("</results>");
-//		super.assertResultsAreCorrect(
-//				combinedExpected.replaceAll("\\r\\n","\n").replaceAll("  ","").replaceAll("\\n ","\n"),
-//						  actual.replaceAll("\\r\\n","\n").replaceAll("  ","").replaceAll("\\n ","\n"), session);
-
-//		super.assertResultsAreCorrect(combinedExpected, actual, session);
 
 		/* Parallel sender uses toXml method which escapes the new line char. In the comparison we need unescaped char.*/
 		actual = actual.replace("&#xA;", "&#10;").replace("WindowsPath", "IGNORE").replace("UnixPath", "IGNORE");
@@ -131,44 +124,58 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	@Override
+	@Test
 	@Disabled("test fails in parallel, ParallelSenders does not propagate exception")
-	public void documentIncludedInSourceNotFoundXslt2() throws Exception {
+	public void documentIncludedInSourceNotFoundXslt2() {
 		// test is ignored
 	}
 
 	@Override
+	@Test
 	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
-	public void anyXmlBasic() throws Exception {
+	public void anyXmlBasic() {
 		// test is ignored
 	}
+
 	@Override
+	@Test
 	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
-	public void anyXmlNoMethodConfigured() throws Exception {
+	public void anyXmlNoMethodConfigured() {
 		// test is ignored
 	}
+
 	@Override
+	@Test
 	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
-	public void anyXmlIndent() throws Exception {
+	public void anyXmlIndent() {
 		// test is ignored
 	}
+
 	@Override
+	@Test
 	@Disabled("test fails in parallel, results get escaped")
-	public void anyXmlAsText() throws Exception {
+	public void anyXmlAsText() {
 		// test is ignored
 	}
+
 	@Override
+	@Test
 	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
-	public void skipEmptyTagsXslt1() throws Exception {
+	public void skipEmptyTagsXslt1() {
 		// test is ignored
 	}
+
 	@Override
+	@Test
 	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
-	public void skipEmptyTagsXslt2() throws Exception {
+	public void skipEmptyTagsXslt2() {
 		// test is ignored
 	}
+
+	@Test
 	@Override
 	@Disabled("test fails in parallel, parameters are not passed to the individual parallel senders")
-	public void xPathFromParameter() throws Exception {
+	public void xPathFromParameter() {
 		// test is ignored
 	}
 
@@ -177,18 +184,20 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		return NUM_SENDERS;
 	}
 
+	@Test
 	@Override
 	public void duplicateImportErrorAlertsXslt1() throws Exception {
 		expectExtraParamWarning=true;
 		super.duplicateImportErrorAlertsXslt1();
 	}
+
+	@Test
 	@Override
 	public void duplicateImportErrorAlertsXslt2() throws Exception {
 		assumeFalse(TestAssertions.isTestRunningOnGitHub()); // test fails on GitHub, with two extra alerts in logging. So be it.
 		expectExtraParamWarning=true;
 		super.duplicateImportErrorAlertsXslt2();
 	}
-
 
 	@Override
 	protected void setStyleSheetName(String styleSheetName) {

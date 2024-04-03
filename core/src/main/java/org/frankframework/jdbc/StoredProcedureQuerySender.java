@@ -159,19 +159,19 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		if (StringUtils.isNotBlank(getColumnsReturned())) {
 			throw new ConfigurationException("Cannot use 'columnsReturned' with StoredProcedureSender, use 'outputParameters' instead.");
 		}
-		if (getQueryTypeEnum() != QueryType.SELECT && getQueryTypeEnum() != QueryType.OTHER) {
+		if (getQueryType() != QueryType.SELECT && getQueryType() != QueryType.OTHER) {
 			throw new ConfigurationException("For StoredProcedureSender, queryType can only be 'SELECT' or 'OTHER'");
 		}
 
-		if (getQueryTypeEnum() == QueryType.OTHER && getOutputFormat() != null) {
-			ConfigurationWarnings.add(this, log, "When querytype is OTHER, the setting for outputFormat is currently ignored.", SuppressKeys.CONFIGURATION_VALIDATION);
+		if (getQueryType() == QueryType.OTHER && getOutputFormat() != null) {
+			ConfigurationWarnings.add(this, log, "When queryType is OTHER, the setting for outputFormat is currently ignored.", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 
 		super.configure();
 
 		// Have to check this after "super.configure()" b/c otherwise the datasource-name is not set
-		// and cannot check DMBS support features.
-		if (getQueryTypeEnum() == QueryType.SELECT && !getDbmsSupport().isStoredProcedureResultSetSupported()) {
+		// and cannot check DBMS support features.
+		if (getQueryType() == QueryType.SELECT && !getDbmsSupport().isStoredProcedureResultSetSupported()) {
 			throw new ConfigurationException("QueryType SELECT for Stored Procedures is not supported for database " + getDbmsSupport().getDbmsName());
 		}
 
@@ -179,7 +179,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		if (isScalar() && outputParameters.size() > 1) {
 			ConfigurationWarnings.add(this, log, "When result should be scalar, only the first output parameter is used. Others are ignored.", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
-		if (getQueryTypeEnum() == QueryType.SELECT && !outputParameters.isEmpty()) {
+		if (getQueryType() == QueryType.SELECT && !outputParameters.isEmpty()) {
 			ConfigurationWarnings.add(this, log, "OUT parameters are ignored when QueryType = SELECT", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 
@@ -256,6 +256,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		try {
 			CallableStatement callableStatement = (CallableStatement) statement;
+			callableStatement.setQueryTimeout(getTimeout());
 			boolean alsoGetResultSets = callableStatement.execute();
 			return getResult(callableStatement, alsoGetResultSets, resultQuery, resStmt);
 		} catch (JdbcException | JMSException | IOException | SQLException e) {
@@ -300,7 +301,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	 * @param queryType The queryType.
 	 */
 	@Override
-	public void setQueryType(final String queryType) {
+	public void setQueryType(final QueryType queryType) {
 		super.setQueryType(queryType);
 	}
 

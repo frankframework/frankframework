@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -61,6 +62,7 @@ import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
@@ -74,6 +76,7 @@ import lombok.Getter;
 import lombok.Lombok;
 
 public class Message implements Serializable, Closeable {
+	private static final Cleaner cleaner = CleanerProvider.getCleaner(); // Get the Cleaner thread, to log a message when resource becomes phantom reachable and was not closed properly.
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 512L * 1024L;
 	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
@@ -81,6 +84,8 @@ public class Message implements Serializable, Closeable {
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
 	private static final long serialVersionUID = 437863352486501445L;
+	private final transient Cleaner.Cleanable cleanable;
+	private final transient MessageNotClosedAction messageNotClosedAction;
 
 	private @Nullable Object request;
 	private @Getter @Nonnull String requestClass;
@@ -100,6 +105,9 @@ public class Message implements Serializable, Closeable {
 		}
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
+
+		messageNotClosedAction = new MessageNotClosedAction(this.toString());
+		cleanable = cleaner.register(this, messageNotClosedAction);
 	}
 
 	private Message(@Nonnull MessageContext context, Object request) {
@@ -185,6 +193,22 @@ public class Message implements Serializable, Closeable {
 	@Nonnull
 	public MessageContext copyContext() {
 		return new MessageContext(getContext());
+	}
+
+	private static class MessageNotClosedAction implements Runnable {
+		private boolean calledByClose = false;
+		private final String content;
+
+		private MessageNotClosedAction(String content) {
+			this.content = StringUtils.substring(content, 0, 80);
+		}
+
+		@Override
+		public void run() {
+			if (!calledByClose) {
+				LOG.info("Leak detection: Message was not closed properly! Content: [{}]", content);
+			}
+		}
 	}
 
 	/**
@@ -355,6 +379,10 @@ public class Message implements Serializable, Closeable {
 
 	@Override
 	public void close() throws IOException {
+		if (messageNotClosedAction != null) {
+			messageNotClosedAction.calledByClose = true;
+			cleanable.clean();
+		}
 		try {
 			if (request instanceof AutoCloseable) {
 				try {
@@ -637,7 +665,7 @@ public class Message implements Serializable, Closeable {
 			return new InputSource(new StringReader((String) request));
 		}
 		LOG.debug("returning {} as InputSource", this::getObjectId);
-		if (isBinary()) {
+		if (isBinary() && getCharset() == null) { //When a charset is present it should be used.
 			return new InputSource(asInputStream());
 		}
 		return new InputSource(asReader());
@@ -729,7 +757,14 @@ public class Message implements Serializable, Closeable {
 		// save the generated String as the request before returning it
 		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
 		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
-		if(!isBinary() || !isRepeatable()) {
+		if (!(request instanceof SerializableFileReference) && (!isBinary() || !isRepeatable())) {
+			if (request instanceof AutoCloseable) {
+				try {
+					((AutoCloseable) request).close();
+				} catch (Exception e) {
+					LOG.info("could not close request of type [{}], inside message {}. Message: {}", requestClass, this, e.getMessage());
+				}
+			}
 			request = result;
 		}
 		return result;
@@ -737,6 +772,14 @@ public class Message implements Serializable, Closeable {
 
 	public boolean isNull() {
 		return request == null;
+	}
+
+	/** @return true if the request is or extends of the specified type at parameter clazz */
+	public boolean isRequestOfType(Class<?> clazz) {
+		if (request == null) {
+			return false;
+		}
+		return clazz.equals(request.getClass()) || clazz.isAssignableFrom(request.getClass());
 	}
 
 	/**
@@ -820,52 +863,51 @@ public class Message implements Serializable, Closeable {
 		return new Message(new MessageContext(), object);
 	}
 
-	public static InputSource asInputSource(Object object) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof InputSource) {
-			return (InputSource) object;
-		}
-		return Message.asMessage(object).asInputSource();
-	}
-
-	public static Source asSource(Object object) throws IOException, SAXException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof Source) {
-			return (Source) object;
-		}
-		return Message.asMessage(object).asSource();
-	}
-
+	/**
+	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
+	 */
 	public static String asString(Object object) throws IOException {
-		return asString(object, null);
-	}
-
-	public static String asString(Object object, String defaultCharset) throws IOException {
 		if (object == null) {
 			return null;
 		}
 		if (object instanceof String) {
 			return (String) object;
 		}
-		return Message.asMessage(object).asString(defaultCharset);
+		if (object instanceof Message) {
+			return ((Message) object).asString();
+		}
+		if (object instanceof MessageWrapper) {
+			return ((MessageWrapper<?>) object).getMessage().asString();
+		}
+		// In other cases, message can be closed directly after converting to String.
+		try (Message message = Message.asMessage(object)) {
+			return message.asString();
+		}
 	}
 
+	/**
+	 * Convert an object to a byte array. Does not close object when it is of type Message or MessageWrapper.
+	 */
 	public static byte[] asByteArray(Object object) throws IOException {
-		return asByteArray(object, null);
-	}
-
-	public static byte[] asByteArray(Object object, String defaultCharset) throws IOException {
 		if (object == null) {
 			return null;
 		}
 		if (object instanceof byte[]) {
 			return (byte[]) object;
 		}
-		return Message.asMessage(object).asByteArray(defaultCharset);
+		if (object instanceof String) {
+			return ((String) object).getBytes();
+		}
+		if (object instanceof Message) {
+			return ((Message) object).asByteArray();
+		}
+		if (object instanceof MessageWrapper) {
+			return ((MessageWrapper<?>) object).getMessage().asByteArray();
+		}
+		// In other cases, message can be closed directly after converting to byte array.
+		try (Message message = Message.asMessage(object)) {
+			return message.asByteArray();
+		}
 	}
 
 	/**
@@ -928,6 +970,7 @@ public class Message implements Serializable, Closeable {
 		stream.writeObject(getCharset());
 		stream.writeObject(request);
 		stream.writeObject(requestClass);
+		stream.writeObject(context);
 	}
 
 	/*
@@ -937,22 +980,32 @@ public class Message implements Serializable, Closeable {
 		String charset = (String) stream.readObject();
 		request = stream.readObject();
 		try {
-			Object requestClass = stream.readObject();
-			if (requestClass != null) {
-				if (requestClass instanceof Class<?>) {
-					this.requestClass = ((Class<?>) requestClass).getTypeName();
+			Object requestClassFromStream = stream.readObject();
+			if (requestClassFromStream != null) {
+				if (requestClassFromStream instanceof Class<?>) {
+					this.requestClass = ((Class<?>) requestClassFromStream).getTypeName();
 				} else {
-					this.requestClass = requestClass.toString();
+					this.requestClass = requestClassFromStream.toString();
 				}
 			} else {
 				this.requestClass = ClassUtils.nameOf(request);
 			}
 		} catch (Exception e) {
 			requestClass = ClassUtils.nameOf(request);
-			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [" + requestClass + "], (" + ClassUtils.nameOf(e) + "): " + e.getMessage());
+			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", ()->requestClass, ()->ClassUtils.nameOf(e),  e::getMessage);
 		}
-
-		context = new MessageContext().withCharset(charset);
+		MessageContext contextFromStream;
+		try {
+			contextFromStream = (MessageContext) stream.readObject();
+		} catch (Exception e) {
+			// Old version of object, does not yet have the MessageContext stored?
+			LOG.debug("Could not read MessageContext of message {}, old format message? Exception: {}", requestClass, e.getMessage());
+			contextFromStream = null;
+		}
+		if (contextFromStream == null) {
+			contextFromStream = new MessageContext().withCharset(charset);
+		}
+		context = contextFromStream;
 	}
 
 	/**

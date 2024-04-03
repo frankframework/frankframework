@@ -68,7 +68,7 @@ public class MtomFilter implements Filter, InitializingBean, ServletContextAware
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		FilterRegistration.Dynamic filter = servletContext.addFilter("CmisMtomFilter", this);
 		EnumSet<DispatcherType> dispatcherTypes = EnumSet.of(DispatcherType.REQUEST);
 		filter.addMappingForServletNames(dispatcherTypes, true, "WebServices10", "WebServices11");

@@ -2,11 +2,11 @@ package org.frankframework.util;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,84 +16,65 @@ import java.util.TimerTask;
 
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.TransactionAttribute;
+import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
-import org.frankframework.jdbc.TransactionManagerTestBase;
 import org.frankframework.jdbc.dbms.ConcurrentManagedTransactionTester;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.task.TimeoutGuard;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.frankframework.testutil.JdbcTestUtil;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.TxManagerTest;
+import org.frankframework.testutil.junit.WithLiquibase;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
-public class LockerTest extends TransactionManagerTestBase {
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
+@WithLiquibase(file = "Migrator/CreateLockTable.xml", tableName = LockerTest.TABLENAME)
+public class LockerTest {
+
+	static final String TABLENAME = "IBISLOCK";
 	private Locker locker;
-	private boolean tableCreated = false;
 
-	@Override
-	@Before
-	public void setup() throws Exception {
-		super.setup();
-
-		createDbTableIfNotExists(); //cannot run migrator as the ibislock table name is not configurable
-
-		locker = new Locker();
-		autowire(locker);
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) throws Exception {
+		locker = env.createBean(Locker.class);
 		locker.setFirstDelay(0);
-	}
 
-	private void createDbTableIfNotExists() throws Exception {
-		if (!isTablePresent("IBISLOCK")) {
-			JdbcUtil.executeStatement(connection,
-				"CREATE TABLE IBISLOCK(" +
-				"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " +
-				"TYPE "+dbmsSupport.getTextFieldType()+"(1) NULL, " +
-				"HOST "+dbmsSupport.getTextFieldType()+"(100) NULL, " +
-				"CREATIONDATE "+dbmsSupport.getTimestampFieldType()+" NULL, " +
-				"EXPIRYDATE "+dbmsSupport.getTimestampFieldType()+" NULL)");
-			tableCreated = true;
+
+		try(Connection conn = env.getConnection()) {
+			if (env.getDbmsSupport().isTablePresent(conn, TABLENAME)) {
+				JdbcTestUtil.executeStatement(conn, "DELETE FROM "+TABLENAME);
+			}
 		}
 	}
 
-	@After
-	@Override
-	public void teardown() throws Exception {
-		if (tableCreated) {
-			dropTableIfPresent("IBISLOCK");// drop the table if it was created, to avoid interference with Liquibase
-		}
-		super.teardown();
-	}
-
-	@Test
-	public void testBasicLockNoTransactionManager() throws Exception {
-		cleanupLocks();
+	@TxManagerTest
+	public void testBasicLockNoTransactionManager(DatabaseTestEnvironment env) throws Exception {
 		String objectId = null;
 		locker.setObjectId("myLocker");
 		locker.configure();
 		objectId = locker.acquire();
 
 		assertNotNull(objectId);
-		assertEquals(1, getRowCount());
+		assertEquals(1, getRowCount(env));
 	}
 
-	@Test
-	public void testBasicLockNoTransactionManagerSecondFails() throws Exception {
-		cleanupLocks();
-		String objectId = null;
+	@TxManagerTest
+	public void testBasicLockNoTransactionManagerSecondFails(DatabaseTestEnvironment env) throws Exception {
 		locker.setObjectId("myLocker");
 		locker.configure();
-		objectId = locker.acquire();
+		String objectId = locker.acquire();
 
 		assertNotNull(objectId);
-		assertEquals(1, getRowCount());
+		assertEquals(1, getRowCount(env));
 
 		MessageKeeper messageKeeper = new MessageKeeper();
 
 		objectId = locker.acquire(messageKeeper);
-		assertNull("Should not be possible to obtain the lock a second time", objectId);
+		assertNull(objectId, "Should not be possible to obtain the lock a second time");
 
 		String message = messageKeeper.get(0).getMessageText();
 		assertThat(message, containsString("objectId [myLocker]"));
@@ -101,40 +82,31 @@ public class LockerTest extends TransactionManagerTestBase {
 		assertThat(message, containsString("with expiry date"));
 	}
 
-	@Test
-	public void testBasicLockWithTransactionManager() throws Exception {
-		cleanupLocks();
-		String objectId = null;
-		locker.setTxManager(txManager);
+	@TxManagerTest
+	public void testBasicLockWithTransactionManager(DatabaseTestEnvironment env) throws Exception {
 		locker.setObjectId("myLocker");
 		locker.configure();
-		objectId = locker.acquire();
 
-		assertNotNull(objectId);
-		assertEquals(1, getRowCount());
+		assertNotNull(locker.acquire());
+		assertEquals(1, getRowCount(env));
 	}
 
-	@Test
-	public void testBasicLockWithTransactionManagerSecondFails() throws Exception {
-		cleanupLocks();
-		String objectId = null;
-		locker.setTxManager(txManager);
+	@TxManagerTest
+	public void testBasicLockWithTransactionManagerSecondFails(DatabaseTestEnvironment env) throws Exception {
 		locker.setObjectId("myLocker");
 		locker.configure();
-		objectId = locker.acquire();
+		String objectId = locker.acquire();
 
 		assertNotNull(objectId);
-		assertEquals(1, getRowCount());
+		assertEquals(1, getRowCount(env));
 
 		objectId = locker.acquire();
-		assertNull("Should not be possible to obtain the lock a second time", objectId);
+		assertNull(objectId, "Should not be possible to obtain the lock a second time");
 	}
 
 
-	@Test
-	public void testTakeLockBeforeExecutingInsertInOtherThread() throws Exception {
-		cleanupLocks();
-		locker.setTxManager(txManager);
+	@TxManagerTest
+	public void testTakeLockBeforeExecutingInsertInOtherThread(DatabaseTestEnvironment env) throws Exception {
 		locker.setObjectId("myLocker");
 		locker.configure();
 
@@ -143,7 +115,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			Semaphore otherReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
 			Semaphore otherFinished = new Semaphore();
-			LockerTester lockerTester = new LockerTester(txManager);
+			LockerTester lockerTester = new LockerTester(env);
 
 			lockerTester.setInitActionDone(otherReady);
 			lockerTester.setWaitBeforeAction(otherContinue);
@@ -165,10 +137,8 @@ public class LockerTest extends TransactionManagerTestBase {
 		}
 	}
 
-	@Test
-	public void testTakeLockFailsAfterExecutingInsertInOtherThread() throws Exception {
-		cleanupLocks();
-		locker.setTxManager(txManager);
+	@TxManagerTest
+	public void testTakeLockFailsAfterExecutingInsertInOtherThread(DatabaseTestEnvironment env) throws Exception {
 		locker.setObjectId("myLocker");
 		locker.configure();
 
@@ -177,7 +147,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			Semaphore otherReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
 			Semaphore otherFinished = new Semaphore();
-			LockerTester lockerTester = new LockerTester(txManager);
+			LockerTester lockerTester = new LockerTester(env);
 
 			lockerTester.setActionDone(otherReady);
 			lockerTester.setWaitAfterAction(otherContinue);
@@ -205,11 +175,9 @@ public class LockerTest extends TransactionManagerTestBase {
 		}
 	}
 
-	@Test
-	public void testLockWaitTimeout() throws Exception {
-		assumeFalse("works on Oracle, but causes '(SQLRecoverableException) SQLState [08003], errorCode [17008]: Gesloten verbinding' on subsequent tests", productKey.equals("Oracle"));
-		cleanupLocks();
-		locker.setTxManager(txManager);
+	@TxManagerTest
+	public void testLockWaitTimeout(DatabaseTestEnvironment env) throws Exception {
+		assumeFalse(env.getDbmsSupport().getDbms() == Dbms.ORACLE, "works on Oracle, but causes '(SQLRecoverableException) SQLState [08003], errorCode [17008]: Gesloten verbinding' on subsequent tests");
 		locker.setObjectId("myLocker");
 		locker.setLockWaitTimeout(1);
 		locker.configure();
@@ -223,7 +191,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			Semaphore otherContinue = new Semaphore();
 			Semaphore otherFinished = new Semaphore();
 			log.debug("Preparing LockerTester");
-			LockerTester lockerTester = new LockerTester(txManager);
+			LockerTester lockerTester = new LockerTester(env);
 
 			lockerTester.setActionDone(otherInsertReady);
 			lockerTester.setWaitAfterAction(otherContinue);
@@ -279,10 +247,8 @@ public class LockerTest extends TransactionManagerTestBase {
 	/*
 	 * Test the mechanism of the locker.
 	 */
-	@Test
-	public void testNoInsertAfterInsert() throws Exception {
-		cleanupLocks();
-		locker.setTxManager(txManager);
+	@TxManagerTest
+	public void testNoInsertAfterInsert(DatabaseTestEnvironment env) throws Exception {
 		locker.setObjectId("myLocker");
 		locker.configure();
 
@@ -291,7 +257,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			Semaphore waitBeforeInsert = new Semaphore();
 			Semaphore insertDone = new Semaphore();
 			Semaphore waitBeforeCommit = new Semaphore();
-			LockerTester other = new LockerTester(txManager);
+			LockerTester other = new LockerTester(env);
 
 			other.setWaitBeforeAction(waitBeforeInsert);
 			other.setActionDone(insertDone);
@@ -300,13 +266,11 @@ public class LockerTest extends TransactionManagerTestBase {
 			other.start();
 
 			IbisTransaction mainItx = null;
-			if (txManager!=null) {
-				TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
+			PlatformTransactionManager txManager = env.getConfiguration().getBean("txManager", PlatformTransactionManager.class);
+			TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
+			mainItx = new IbisTransaction(txManager, txdef, "locker ");
 
-				mainItx = new IbisTransaction(txManager, txdef, "locker ");
-			}
-
-			try (Connection conn = getConnection()) {
+			try (Connection conn = env.getConnection()) {
 				waitBeforeInsert.release(); // now this thread has started its transaction, let the other thread do its insert
 				insertDone.acquire();		// and wait that to be finished
 
@@ -349,12 +313,10 @@ public class LockerTest extends TransactionManagerTestBase {
 	}
 
 
-	@Test
-	public void testLockerUnlock() throws Exception {
-		cleanupLocks();
+	@TxManagerTest
+	public void testLockerUnlock(DatabaseTestEnvironment env) throws Exception {
 		String lockObjectId = null;
 
-		locker.setTxManager(txManager);
 		locker.setTransactionAttribute(TransactionAttribute.REQUIRED);
 		locker.setObjectId("myLocker");
 		locker.configure();
@@ -362,43 +324,43 @@ public class LockerTest extends TransactionManagerTestBase {
 		lockObjectId = locker.acquire();
 
 		assertNotNull(lockObjectId);
-		assertEquals(1, getRowCount());
+		assertEquals(1, getRowCount(env));
 
 		locker.release(lockObjectId);
-		assertEquals(0, getRowCount());
+		assertEquals(0, getRowCount(env));
 
 		lockObjectId = locker.acquire();
 
 		assertNotNull(lockObjectId);
-		assertEquals(1, getRowCount());
+		assertEquals(1, getRowCount(env));
 
 	}
 
-	public void cleanupLocks() throws Exception {
-		JdbcUtil.executeStatement(connection, "DELETE FROM IBISLOCK");
-	}
-
-	public int getRowCount() throws Exception {
-		return DbmsUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
+	public int getRowCount(DatabaseTestEnvironment env) throws Exception {
+		try(Connection connection = env.getConnection()) {
+			return JdbcTestUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
+		}
 	}
 
 	private class LockerTester extends ConcurrentManagedTransactionTester {
 
+		private DatabaseTestEnvironment env;
 		private Connection conn;
 
-		public LockerTester(PlatformTransactionManager txManager) {
-			super(txManager);
+		public LockerTester(DatabaseTestEnvironment testEnv) {
+			super(testEnv.getConfiguration().getBean("txManager", PlatformTransactionManager.class));
+			env = testEnv;
 		}
 
 		@Override
 		public void initAction() throws SQLException {
 			super.initAction();
-			conn = getConnection();
+			conn = env.getConnection();
 		}
 
 		@Override
 		public void action() throws SQLException, JdbcException {
-			executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", QueryType.OTHER);
+			JdbcTestUtil.executeStatement(conn, "INSERT INTO "+LockerTest.TABLENAME+" (OBJECTID) VALUES('myLocker')");
 		}
 
 		@Override

@@ -1,0 +1,13 @@
+tr.hasErrorsSummary {
+  color: #ed5565;
+
+  & > td + td {
+    text-decoration: underline;
+    font-weight: bold;
+  }
+}
+
+tr.hasErrors {
+  color: #ed5565;
+  font-weight: bold;
+}

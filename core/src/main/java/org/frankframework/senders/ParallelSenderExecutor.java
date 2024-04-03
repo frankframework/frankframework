@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 package org.frankframework.senders;
 
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.RequestReplyExecutor;
-import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Guard;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Semaphore;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
 
 public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Logger log = LogUtil.getLogger(this);
@@ -33,20 +33,21 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 	@Getter private PipeLineSession session;
 	private Semaphore semaphore; // supports to limit the number of threads processing in parallel, may be null
 	private Guard guard;         // supports to wait for all threads to have ended
-	private StatisticsKeeper sk;
+	private DistributionSummary summary;
+	private @Getter long duration;
 
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, StatisticsKeeper sk) {
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, DistributionSummary sk) {
 		this(sender, message, session, null, guard, sk);
 	}
 
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Guard guard, StatisticsKeeper sk) {
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Guard guard, DistributionSummary sk) {
 		super();
 		this.sender=sender;
 		request=message;
 		this.session=session;
 		this.guard=guard;
 		this.semaphore=semaphore;
-		this.sk=sk;
+		this.summary=sk;
 	}
 
 	@Override
@@ -61,7 +62,8 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 				log.warn("SenderExecutor caught exception",tr);
 			}
 			long t2 = System.currentTimeMillis();
-			sk.addValue(t2-t1);
+			duration = t2-t1;
+			summary.record(duration);
 		} finally {
 			if (semaphore!=null) {
 				semaphore.release();

@@ -40,7 +40,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.StringUtil;
 
 
@@ -466,17 +465,16 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	protected boolean doHasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns, String indexTableName, String indexColumnTableName, String tableOwnerColumnName, String tableNameColumnName, String indexNameColumnName, String columnNameColumnName, String columPositionColumnName) {
 		StringBuilder query = new StringBuilder("select count(*) from " + indexTableName + " ai");
 		for (int i = 1; i <= columns.size(); i++) {
-			query.append(", " + indexColumnTableName + " aic" + i);
+			query.append(", ").append(indexColumnTableName).append(" aic").append(i);
 		}
-		query.append(" where ai." + tableNameColumnName + "='" + tableName + "'");
+		query.append(" where ai.").append(tableNameColumnName).append("='").append(tableName).append("'");
 		if (tableOwnerColumnName != null) {
-			query.append(" and ai." + tableOwnerColumnName + "='" + schemaOwner + "'");
+			query.append(" and ai.").append(tableOwnerColumnName).append("='").append(schemaOwner).append("'");
 		}
 		for (int i = 1; i <= columns.size(); i++) {
-//			query.append(" and ai."+indexOwnerColumnName+"=aic"+i+"."+indexOwnerColumnName);
-			query.append(" and ai." + indexNameColumnName + "=aic" + i + "." + indexNameColumnName);
-			query.append(" and aic" + i + "." + columnNameColumnName + "='" + columns.get(i - 1) + "'");
-			query.append(" and aic" + i + "." + columPositionColumnName + "=" + i);
+			query.append(" and ai.").append(indexNameColumnName).append("=aic").append(i).append(".").append(indexNameColumnName);
+			query.append(" and aic").append(i).append(".").append(columnNameColumnName).append("='").append(columns.get(i - 1)).append("'");
+			query.append(" and aic").append(i).append(".").append(columPositionColumnName).append("=").append(i);
 		}
 		try {
 			return DbmsUtil.executeIntQuery(conn, query.toString()) >= 1;
@@ -623,7 +621,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		for (String singleQuery : multipleQueries) {
 			String convertedQuery = translator.translate(singleQuery);
 			if (convertedQuery != null) {
-				if (convertedQueries.length() > 0) {
+				if (!convertedQueries.isEmpty()) {
 					convertedQueries.append("\n");
 				}
 				convertedQueries.append(convertedQuery);

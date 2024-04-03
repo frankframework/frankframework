@@ -1,35 +1,24 @@
 package org.frankframework.jta;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.hasItems;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
-import java.util.Collection;
-
-import javax.naming.NamingException;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.DirectQuerySender;
-import org.frankframework.jdbc.TransactionManagerTestBase;
 import org.frankframework.jta.xa.XaDatasourceCommitStopper;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ConcurrentActionTester;
 import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.testutil.URLDataSourceFactory;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.TxManagerTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
@@ -37,94 +26,72 @@ import com.arjuna.ats.arjuna.common.arjPropertyManager;
 
 import lombok.Getter;
 
-@RunWith(Parameterized.class)
-public class StatusRecordingTransactionManagerImplementationTest<S extends StatusRecordingTransactionManager> extends StatusRecordingTransactionManagerTestBase<S> {
+public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManager> {
 
 	private static final String SECONDARY_PRODUCT = "H2";
 
 	protected SpringTxManagerProxy txManager;
 	protected StatusRecordingTransactionManager txManagerReal;
 	private @Getter TestConfiguration configuration;
+	protected DatabaseTestEnvironment env;
 
 	private String tableName;
 
-	@Parameterized.Parameter(0)
-	public @Getter TransactionManagerType transactionManagerType;
-	@Parameterized.Parameter(1)
-	public String productKey;
-
-
-	@Parameters(name= "{0}: {1}")
-	public static Collection data() throws NamingException {
-		return TransactionManagerTestBase.data();
-	}
-
-
-	@BeforeClass
-	public static void init() {
-		assumeThat(URLDataSourceFactory.getAvailableDataSources(), hasItems(SECONDARY_PRODUCT));
-		TransactionManagerType.closeAllConfigurationContexts();
-	}
-
-	@Override
-	public void setup() throws IOException {
-		assumeFalse(transactionManagerType==TransactionManagerType.DATASOURCE);
-		assumeThat(productKey, not(equalTo(SECONDARY_PRODUCT)));
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) throws IOException {
+		assumeFalse("DATASOURCE".equals(env.getName()));
+		assumeFalse("H2".equals(env.getDataSourceName()));
 
 		// Release any hanging commits that might be from previous tests
 		XaDatasourceCommitStopper.stop(false);
 
 		super.setup();
+		this.env = env;
 	}
 
 	@Override
-	protected S createTransactionManager() {
-		configuration = transactionManagerType.getConfigurationContext(productKey);
-		txManager = configuration.getBean(SpringTxManagerProxy.class, "txManager");
+	protected StatusRecordingTransactionManager createTransactionManager() {
+		configuration = env.getConfiguration();
+		txManager = (SpringTxManagerProxy) env.getTxManager();
 		txManagerReal = configuration.getBean(StatusRecordingTransactionManager.class, "txReal");
 		statusFile = txManagerReal.getStatusFile();
 		tmUidFile = txManagerReal.getUidFile();
 		log.debug("statusFile [{}], tmUidFile [{}]", statusFile, tmUidFile);
-		tableName = "tmp_"+transactionManagerType;
-		return (S)txManagerReal;
+		tableName = "tmp_"+env.getName();
+		return txManagerReal;
 	}
 
-	@After
+	@AfterEach
 	public void teardown() {
 		log.debug("teardown");
 		XaDatasourceCommitStopper.stop(false);
-		try {
-			transactionManagerType.closeConfigurationContext();
-		} catch (Exception e) {
-			log.warn("Exception in teardown", e);
-		}
 	}
 
 	protected String getTMUID() {
-		switch (transactionManagerType) {
-		case DATASOURCE:
+		switch (env.getName()) {
+		case "DATASOURCE":
 			return null;
-		case NARAYANA:
+		case "NARAYANA":
 			return arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
 		default:
-			throw new NotImplementedException("Unknown transaction manager type ["+transactionManagerType+"]");
+			throw new NotImplementedException("Unknown transaction manager type ["+env.getName()+"]");
 		}
 	}
 
-
-
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testSetup() {
 		setupTransactionManager();
 		assertStatus("ACTIVE", txManagerReal.getUid());
-		assertEquals(txManagerReal.getUid(),getTMUID());
+		assertEquals(txManagerReal.getUid(), getTMUID());
 	}
 
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testShutdown() {
 		setupTransactionManager();
 		assertStatus("ACTIVE", txManagerReal.getUid());
-		assertEquals(txManagerReal.getUid(),getTMUID());
+		assertEquals(txManagerReal.getUid(), getTMUID());
 		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester();
 		xaTester.start(); // same thread
 		txManagerReal.destroy();
@@ -132,7 +99,8 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 	}
 
-	@Test
+	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@TxManagerTest
 	public void testShutdownPending() {
 		setupTransactionManager();
 		String uid = txManagerReal.getUid();
@@ -185,7 +153,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 		@Override
 		public void initAction() throws ConfigurationException, SenderException, TimeoutException {
-			prepareTable(productKey);
+			prepareTable(env.getDataSourceName());
 			prepareTable(SECONDARY_PRODUCT);
 		}
 
@@ -194,7 +162,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 			DirectQuerySender fs1 = new DirectQuerySender();
 			configuration.autowireByName(fs1);
 			fs1.setName("fs1");
-			fs1.setDatasourceName(productKey);
+			fs1.setDatasourceName(env.getDataSourceName());
 			fs1.configure();
 
 			DirectQuerySender fs2 = new DirectQuerySender();
@@ -206,7 +174,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 			fs1.open();
 			fs2.open();
 
-			TransactionDefinition txDef = txManager.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 10);
+			TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 10);
 			TransactionStatus txStatus = txManager.getTransaction(txDef);
 			try {
 

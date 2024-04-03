@@ -4,10 +4,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+@SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@WithMockUser(roles = { "IbisTester" })
 public class TestEnvironmentVariables extends BusTestBase {
 
 	@Test

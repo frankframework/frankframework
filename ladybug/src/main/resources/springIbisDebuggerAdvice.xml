@@ -10,6 +10,8 @@
 		"
 	>
 
+	<bean name="ibisDebugger" class="org.frankframework.ibistesttool.Debugger" autowire="byName"/>
+
 	<bean
 		name="ibisDebuggerAdvice,threadLifeCycleEventListener,xmlDebugger"
 		class="org.frankframework.ibistesttool.IbisDebuggerAdvice"
@@ -95,6 +97,22 @@
 					execution(
 						*
 						org.frankframework.core.ISender.sendMessage(
+							org.frankframework.stream.Message,
+							org.frankframework.core.PipeLineSession
+						)
+					)
+					and
+					args(message, session)
+					"
+				method="debugSenderWithForwardInputOutputAbort"
+				arg-names="message, session"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						org.frankframework.core.ISender.sendMessageOrThrow(
 							org.frankframework.stream.Message,
 							org.frankframework.core.PipeLineSession
 						)

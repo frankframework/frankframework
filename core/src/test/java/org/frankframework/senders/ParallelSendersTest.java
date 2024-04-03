@@ -1,5 +1,6 @@
 package org.frankframework.senders;
 
+import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,7 +14,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
-import org.frankframework.testutil.TestAssertions;
+import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +55,29 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 		Message message = new Message("<dummy/>");
 		String result = sender.sendMessageOrThrow(message, session).asString();
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		assertEqualsIgnoreCRLF(expected, result);
+
+		long duration = System.currentTimeMillis() - startTime;
+		int maxDuration = DELAY + 1000;
+		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
+	}
+
+	@Test
+	public void test10SubSendersNonRepeatableMessage() throws Exception {
+		long startTime = System.currentTimeMillis();
+		for (int i = 0; i < 10; i++) {
+			sender.registerSender(new TestSender("Sender"+i));
+		}
+
+		sender.configure();
+		sender.open();
+
+		String expected = getExpectedTestFile("test10SubSendersNonRepeatableMessage.txt");
+		assertNotNull("cannot find expected result file", expected);
+
+		Message message = MessageTestUtils.getNonRepeatableMessage(MessageTestUtils.MessageType.CHARACTER_UTF8);
+		String result = sender.sendMessageOrThrow(message, session).asString();
+		assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
 		int maxDuration = DELAY + 1000;
@@ -67,7 +90,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 		int amountOfDelaySendersInWrapper = 5;
 		for (int i = 0; i < 10; i++) {
-			SenderSeries wrapper = new SenderSeries();
+			SenderSeries wrapper = getConfiguration().createBean(SenderSeries.class);
 			wrapper.setName("Wrapper"+i);
 			for (int j = 0; j < amountOfDelaySendersInWrapper; j++) {
 				wrapper.registerSender(new TestSender("Wrapper"+i+"-Sender"+j));
@@ -83,7 +106,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 		Message message = new Message("<dummy/>");
 		String result = sender.sendMessageOrThrow(message, session).asString();
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
 		int maxDuration = (DELAY * amountOfDelaySendersInWrapper) + 1000;

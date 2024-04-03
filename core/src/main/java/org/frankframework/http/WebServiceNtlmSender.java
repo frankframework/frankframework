@@ -70,7 +70,7 @@ import org.frankframework.util.StreamUtil;
  */
 public class WebServiceNtlmSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private final @Getter String domain = "Http";
 	private String contentType = "text/xml; charset="+ StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private String url;
 	private int timeout = 10000;

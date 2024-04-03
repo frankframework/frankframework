@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.URL;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebAppClassLoader> {
@@ -15,18 +16,24 @@ public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebA
 	}
 
 	@Override
+	@Test
+	@Disabled
 	public void configurationFileDefaultLocation() {
-		//Stub this method as the WebAppClassloader always asks it's parent for resources, which it does not have.
+		//Stub this method as the WebAppClassloader always asks its parent for resources, which it does not have.
 	}
 
 	@Override
-	public void configurationFileCustomLocation() throws Exception {
-		//Stub this method as the WebAppClassloader always asks it's parent for resources, which it does not have.
+	@Test
+	@Disabled
+	public void configurationFileCustomLocation() {
+		//Stub this method as the WebAppClassloader always asks its parent for resources, which it does not have.
 	}
 
 	@Override
-	public void configurationFileCustomLocationAndBasePath() throws Exception {
-		//Stub this method as the WebAppClassloader always asks it's parent for resources, which it does not have.
+	@Test
+	@Disabled
+	public void configurationFileCustomLocationAndBasePath() {
+		//Stub this method as the WebAppClassloader always asks its parent for resources, which it does not have.
 	}
 
 	private String getAbsoluteFilePath(String name) { //For testing purposes the JAR_FILE archive isn't used, we're just using the path

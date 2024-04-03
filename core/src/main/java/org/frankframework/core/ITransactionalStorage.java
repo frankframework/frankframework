@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Date;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
@@ -31,7 +32,7 @@ import org.frankframework.receivers.Receiver;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
-@FrankDocGroup(order = 55, name = "TransactionalStorages")
+@FrankDocGroup(FrankDocGroupValue.TRANSACTIONAL_STORAGE)
 public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
 	int MAXCOMMENTLEN = 1000;

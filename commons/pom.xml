@@ -33,7 +33,6 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
-			<version>${log4j2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -80,8 +79,8 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

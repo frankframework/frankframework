@@ -37,7 +37,7 @@ import org.frankframework.receivers.ServiceDispatcher;
 @Deprecated
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
-	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private final @Getter String domain = "Http";
 	private @Getter String serviceName;
 
 	@Override

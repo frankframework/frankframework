@@ -31,11 +31,14 @@ import org.frankframework.management.bus.JsonResponseMessage;
 
 import org.frankframework.util.ClassUtils;
 
+import javax.annotation.security.RolesAllowed;
+
 @BusAware("frank-management-bus")
 public class DebugInformation extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.DEBUG)
 	@ActionSelector(BusAction.GET)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getClassInfo(Message<?> message) {
 		String baseClassName = BusMessageUtils.getHeader(message, "baseClassName");
 		String className = BusMessageUtils.getHeader(message, "className");

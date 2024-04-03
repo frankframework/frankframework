@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.ConfigurableLifecyleBase;
 import org.frankframework.monitoring.events.Event;
 import org.frankframework.monitoring.events.RegisterMonitorEvent;
@@ -47,7 +48,7 @@ import org.frankframework.util.XmlBuilder;
  * @author Niels Meijer
  * @version 2.0
  */
-@FrankDocGroup(name = "Monitoring")
+@FrankDocGroup(FrankDocGroupValue.MONITORING)
 public class MonitorManager extends ConfigurableLifecyleBase implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
 
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -94,7 +95,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		String eventCode = event.getEventCode();
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
+			log.debug(getLogPrefix()+" registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
 		}
 
 		registerEvent(thrower, eventCode);

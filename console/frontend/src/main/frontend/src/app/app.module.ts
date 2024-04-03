@@ -40,7 +40,7 @@ import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
 import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
-import { VariablesFilterPipe } from './pipes/variablesFilter.pipe';
+import { VariablesFilterPipe } from './pipes/variables-filter.pipe';
 import { TimeSinceDirective } from './components/time-since.directive';
 import { FlowComponent } from './views/status/flow/flow.component';
 import { StorageComponent } from './views/storage/storage.component';
@@ -52,7 +52,6 @@ import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistic
 import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
 import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
-import { FitHeightDirective } from './views/iframe/fit-height.directive';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { WebservicesComponent } from './views/webservices/webservices.component';
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
@@ -71,7 +70,7 @@ import { FormatCodeDirective } from './views/configurations/configurations-show/
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
-import { NgMermaidComponent } from './views/status/flow/flow-modal/ng-mermaid.component';
+import { NgMermaidComponent } from './components/ng-mermaid/ng-mermaid.component';
 import { LoggingComponent } from './views/logging/logging.component';
 import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 import { ConnectionsComponent } from './views/connections/connections.component';
@@ -86,11 +85,12 @@ import { LoginComponent } from './views/login/login.component';
 import { httpInterceptorProviders } from './http-interceptors';
 import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
 import { ThSortableDirective } from './components/th-sortable.directive';
+import { FileViewerComponent } from './components/file-viewer/file-viewer.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
-  useValue: window
-}
+  useValue: window,
+};
 
 @NgModule({
   declarations: [
@@ -169,9 +169,9 @@ const windowProvider: ValueProvider = {
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
-    FitHeightDirective,
     SideNavigationDirective,
     ThSortableDirective,
+    FileViewerComponent,
   ],
   imports: [
     BrowserModule,
@@ -183,13 +183,13 @@ const windowProvider: ValueProvider = {
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
     DataTablesModule,
-    NgMermaidComponent
+    NgMermaidComponent,
   ],
   providers: [
     windowProvider,
     { provide: TitleStrategy, useClass: PagesTitleStrategy },
-    httpInterceptorProviders
+    httpInterceptorProviders,
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {}

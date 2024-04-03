@@ -59,7 +59,7 @@
 			 active="${active.jms}">
 		<receiver name="JmsRRListener for BytesMessage">
 			<listener className="org.frankframework.jms.JmsListener" messageClass="BYTES"
-					  destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+					  destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 					  forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF_bytes1'">
 			</listener>
 		</receiver>

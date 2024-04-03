@@ -59,7 +59,8 @@ public class ServletManagerTest {
 				return dynamic.get(servletName);
 			}
 		};
-		manager = new ServletManager(context);
+		manager = new ServletManager();
+		manager.setServletContext(context);
 
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
 		MockEnvironment environment = new MockEnvironment();

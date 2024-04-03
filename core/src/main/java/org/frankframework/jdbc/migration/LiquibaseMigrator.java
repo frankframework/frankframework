@@ -22,11 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.classloaders.ClassLoaderBase;
+import org.frankframework.core.Resource;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.Scope;
+import liquibase.UpdateSummaryOutputEnum;
 import liquibase.change.CheckSum;
 import liquibase.changelog.ChangeLogHistoryService;
 import liquibase.changelog.ChangeLogHistoryServiceFactory;
@@ -43,13 +50,6 @@ import liquibase.executor.ExecutorService;
 import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
-import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.classloaders.ClassLoaderBase;
-import org.frankframework.core.Resource;
-
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 /**
  * LiquiBase implementation for IAF
@@ -171,6 +171,8 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	public void update() {
 		List<String> changes = new ArrayList<>();
 		try (Liquibase liquibase = createMigrator()) {
+			// Don't show "UPDATE SUMMARY" in System.out
+			liquibase.setShowSummaryOutput(UpdateSummaryOutputEnum.LOG);
 			List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts, labelExpression);
 			for (ChangeSet changeSet : changeSets) {
 				changes.add("LiquiBase applying change ["+changeSet.getId()+":"+changeSet.getAuthor()+"] description ["+changeSet.getDescription()+"]");

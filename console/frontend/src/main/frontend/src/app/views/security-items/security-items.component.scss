@@ -1,0 +1,33 @@
+.lists-container {
+  display: flex;
+}
+
+ul.protocols-list,
+ul.cyphers-list {
+  display: inline-block;
+  flex: 1 1 0;
+  padding: 0 40px 0 0;
+  list-style-type: none;
+  vertical-align: top;
+
+  li {
+    min-width: 200px;
+    padding: 0.5rem;
+
+    &+li {
+      border-top: 1px solid #ddd;
+    }
+  }
+}
+
+.roles-overview {
+  td {
+    text-transform: capitalize;
+
+    &:has(i) {
+      text-align: center;
+      width: 0;
+      min-width: fit-content;
+    }
+  }
+}

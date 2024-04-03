@@ -23,5 +23,7 @@
 
 	<bean primary="true" name="eventPublisher" class="org.frankframework.testutil.mock.EventPublisherMock" />
 
+	<bean primary="true" name="meterRegistry" class="org.frankframework.metrics.LocalStatisticsRegistry" autowire="byName" />
+
 	<bean id="ConfigurationMessageListener" class="org.frankframework.testutil.ConfigurationMessageEventListener" />
 </beans>

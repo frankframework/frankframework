@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,15 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.util.Guard;
-import org.frankframework.util.XmlUtils;
-import org.frankframework.xml.SaxDocumentBuilder;
-import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -39,15 +34,22 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.Guard;
+import org.frankframework.util.XmlUtils;
+import org.frankframework.xml.SaxDocumentBuilder;
+import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 /**
  * Collection of Senders, that are executed all at the same time. Once the results are processed, all results will be sent to the resultSender,
  * while the original sender will return it's result to the pipeline.
  *
  * <p>Multiple sub-senders can be configured within the ShadowSender, the minimum amount of senders is 2 (originalSender + resultSender)</p>
-
- * @author  Niels Meijer
- * @since   7.0
+ *
+ * @author Niels Meijer
+ * @since 7.0
  */
 public class ShadowSender extends ParallelSenders {
 
@@ -65,14 +67,14 @@ public class ShadowSender extends ParallelSenders {
 			throw new ConfigurationException("ShadowSender should contain at least 2 Senders, none found");
 		}
 		ISender sender = senderIt.next();
-		if(StringUtils.isEmpty(originalSenderName)) {
+		if (StringUtils.isEmpty(originalSenderName)) {
 			originalSenderName = sender.getName();
 		}
 		if (!senderIt.hasNext()) {
 			throw new ConfigurationException("ShadowSender should contain at least 2 Senders, only one found");
 		}
-		if(StringUtils.isEmpty(resultSenderName)) {
-			while(senderIt.hasNext()) {
+		if (StringUtils.isEmpty(resultSenderName)) {
+			while (senderIt.hasNext()) {
 				sender = senderIt.next();
 			}
 			resultSenderName = sender.getName();
@@ -80,9 +82,9 @@ public class ShadowSender extends ParallelSenders {
 
 		secondarySenders = validateExecutableSenders();
 
-		if(originalSender == null)
+		if (originalSender == null)
 			throw new ConfigurationException("no originalSender found");
-		if(resultSender == null)
+		if (resultSender == null)
 			throw new ConfigurationException("no resultSender found");
 
 		super.configure();
@@ -90,20 +92,18 @@ public class ShadowSender extends ParallelSenders {
 
 	public List<ISender> validateExecutableSenders() throws ConfigurationException {
 		List<ISender> secondarySenderList = new ArrayList<>();
-		for (ISender sender: getSenders()) {
-			if(originalSenderName.equalsIgnoreCase(sender.getName())) {
-				if(originalSender != null) {
+		for (ISender sender : getSenders()) {
+			if (originalSenderName.equalsIgnoreCase(sender.getName())) {
+				if (originalSender != null) {
 					throw new ConfigurationException("originalSender can only be defined once");
 				}
 				originalSender = sender;
-			}
-			else if(resultSenderName.equalsIgnoreCase(sender.getName())) {
-				if(resultSender != null) {
+			} else if (resultSenderName.equalsIgnoreCase(sender.getName())) {
+				if (resultSender != null) {
 					throw new ConfigurationException("resultSender can only be defined once");
 				}
 				resultSender = sender;
-			}
-			else { // ShadowSender
+			} else { // ShadowSender
 				secondarySenderList.add(sender);
 			}
 		}
@@ -111,21 +111,35 @@ public class ShadowSender extends ParallelSenders {
 		return secondarySenderList;
 	}
 
-	protected void executeGuarded(ISender sender, Message message, PipeLineSession session, Guard guard, Map<ISender, ParallelSenderExecutor> executorMap) {
+	protected void executeGuarded(ISender sender, Message message, PipeLineSession session, Guard guard, Map<ISender, ParallelSenderExecutor> executorMap) throws SenderException {
+		Message messageToSend;
+		try {
+			messageToSend = isWaitForShadowsToFinish() ? message : message.copyMessage();
+		} catch (IOException e) {
+			throw new SenderException("Cannot create copy of message", e);
+		}
 		guard.addResource();
-		ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
+		ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, messageToSend, session, guard, getStatisticsKeeper(sender));
 		executorMap.put(sender, pse);
 		getExecutor().execute(pse);
-
 	}
+
 	/**
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(@Nonnull Message message, @Nullable PipeLineSession session) throws SenderException, TimeoutException {
 		Guard primaryGuard = new Guard();
 		Guard shadowGuard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
+
+		try {
+			if (!message.isRepeatable()) {
+				message.preserve();
+			}
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + " could not preserve input message", e);
+		}
 
 		executeGuarded(originalSender, message, session, primaryGuard, executorMap);
 		// Loop through all senders and execute the message.
@@ -137,7 +151,7 @@ public class ShadowSender extends ParallelSenders {
 		try {
 			primaryGuard.waitForAllResources();
 		} catch (InterruptedException e) {
-			throw new SenderException(getLogPrefix()+"was interupted", e);
+			throw new SenderException(getLogPrefix() + "was interrupted", e);
 		}
 
 		/*
@@ -145,21 +159,29 @@ public class ShadowSender extends ParallelSenders {
 		 * - wait for remaining senders to have replied
 		 * - collect the results of all senders
 		 */
+		Message originalMessage;
+		try {
+			originalMessage = isWaitForShadowsToFinish() ? message : message.copyMessage();
+		} catch (IOException e) {
+			throw new SenderException("Cannot copy input message", e);
+		}
+		String correlationId = session == null ? null : session.getCorrelationId();
 		Runnable collectResults = () -> {
 			// Wait till every sender has replied.
 			try {
 				shadowGuard.waitForAllResources();
-				// Collect the results of the (Shadow)Sender and send them to the resultSender.
-				try {
-					Message result = collectResults(executorMap, message, session);
-					resultSender.sendMessageOrThrow(result, session); // Can not close() the message, since results are used later.
-				} catch (IOException | SAXException e) {
-					log.error("unable to compose result message", e);
-				} catch (TimeoutException | SenderException se) {
-					log.error("failed to send ShadowSender result to [{}]", resultSender::getName);
-				}
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				log.warn("{} result collection thread was interrupted", getLogPrefix(), e);
+			}
+			// Collect the results of the (Shadow)Sender and send them to the resultSender.
+			try {
+				Message result = collectResults(executorMap, originalMessage, correlationId);
+				resultSender.sendMessageOrThrow(result, session); // Can not close() the message, since results are used later.
+			} catch (IOException | SAXException e) {
+				log.error("unable to compose result message", e);
+			} catch (TimeoutException | SenderException se) {
+				log.error("failed to send ShadowSender result to [{}]", resultSender::getName);
 			}
 		};
 
@@ -170,7 +192,7 @@ public class ShadowSender extends ParallelSenders {
 		}
 
 		ParallelSenderExecutor originalSenderExecutor = executorMap.get(originalSender);
-		if(originalSenderExecutor == null) {
+		if (originalSenderExecutor == null) {
 			throw new IllegalStateException("unable to find originalSenderExecutor");
 		}
 		// If the originalSender contains any exceptions these should be thrown and
@@ -181,14 +203,11 @@ public class ShadowSender extends ParallelSenders {
 		return originalSenderExecutor.getReply();
 	}
 
-	private Message collectResults(Map<ISender, ParallelSenderExecutor> executorMap, Message message, PipeLineSession session) throws SAXException, IOException {
+	private Message collectResults(Map<ISender, ParallelSenderExecutor> executorMap, Message originalMessage, String correlationID) throws SAXException, IOException {
 		SaxDocumentBuilder builder = new SaxDocumentBuilder("results");
 
-		String correlationID = session==null ? null : session.getCorrelationId();
 		builder.addAttribute("correlationID", correlationID);
-
-		builder.addElement("originalMessage", XmlUtils.skipXmlDeclaration(message.asString()));
-
+		builder.addElement("originalMessage", XmlUtils.skipXmlDeclaration(originalMessage.asString()));
 		addResult(builder, originalSender, executorMap, "originalResult");
 
 		for (ISender sender : getSecondarySenders()) {
@@ -196,7 +215,6 @@ public class ShadowSender extends ParallelSenders {
 		}
 
 		builder.close();
-
 		return Message.asMessage(builder.toString());
 	}
 
@@ -204,16 +222,15 @@ public class ShadowSender extends ParallelSenders {
 		try (SaxElementBuilder resultXml = builder.startElement(tagName)) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 
-			StatisticsKeeper sk = getStatisticsKeeper(sender);
-			resultXml.addAttribute("duration", ""+sk.getLast());
+			resultXml.addAttribute("duration", ""+pse.getDuration());
 
 			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
-			if (throwable==null) {
+			if (throwable == null) {
 				SenderResult senderResult = pse.getReply();
 				resultXml.addAttribute("success", Boolean.toString(senderResult.isSuccess()));
-				if (senderResult.getForwardName()!=null) {
+				if (senderResult.getForwardName() != null) {
 					resultXml.addAttribute("forwardName", senderResult.getForwardName());
 				}
 				Message result = senderResult.getResult();
@@ -227,6 +244,7 @@ public class ShadowSender extends ParallelSenders {
 
 	/**
 	 * Name of the sender that is considered that is considered to be the golden standard, i.e. the source of truth.
+	 *
 	 * @ff.default the first sender specified
 	 */
 	public void setOriginalSender(String senderName) {
@@ -235,6 +253,7 @@ public class ShadowSender extends ParallelSenders {
 
 	/**
 	 * The sender name which will process the results
+	 *
 	 * @ff.default the last sender specified
 	 */
 	public void setResultSender(String senderName) {
@@ -243,6 +262,7 @@ public class ShadowSender extends ParallelSenders {
 
 	/**
 	 * If set <code>true</code> the sender will wait for all shadows to have finished. Otherwise the collection of results will happen in a background thread.
+	 *
 	 * @ff.default false
 	 */
 	public void setWaitForShadowsToFinish(boolean waitForShadowsToFinish) {

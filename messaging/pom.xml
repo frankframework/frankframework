@@ -20,8 +20,8 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.paho</groupId>
@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>com.ibm.mq</groupId>
 			<artifactId>com.ibm.mq.allclient</artifactId>
-			<version>9.3.4.1</version>
+			<version>9.3.5.0</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -79,6 +79,11 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

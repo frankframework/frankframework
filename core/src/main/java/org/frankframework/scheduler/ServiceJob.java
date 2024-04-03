@@ -18,7 +18,7 @@ package org.frankframework.scheduler;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 
@@ -42,12 +42,11 @@ public class ServiceJob extends BaseJob {
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
-		try {
-			log.info("executing {}", () -> getLogPrefix(context));
-			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			String serviceName = dataMap.getString(JAVALISTENER_KEY);
-			Message message = new Message(dataMap.getString(MESSAGE_KEY));
+		log.info("executing {}", () -> getLogPrefix(context));
+		JobDataMap dataMap = context.getJobDetail().getJobDataMap();
+		String serviceName = dataMap.getString(JAVALISTENER_KEY);
 
+		try (Message message = new Message(dataMap.getString(MESSAGE_KEY))) {
 			// send job
 			IbisLocalSender localSender = new IbisLocalSender();
 			localSender.setJavaListener(serviceName);
@@ -56,8 +55,8 @@ public class ServiceJob extends BaseJob {
 			localSender.configure();
 
 			localSender.open();
-			try {
-				localSender.sendMessageOrThrow(message, null).close();
+			try(PipeLineSession session = new PipeLineSession()) {
+				localSender.sendMessageOrThrow(message, session).close();
 			} finally {
 				localSender.close();
 			}

@@ -7,24 +7,7 @@ We want you working on things you're excited about, there are however plenty of 
 
 ## Running the Frank!Framework
 
-If you want to experiment with the Frank!Framework, you can use the [Frank!Runner](https://github.com/wearefrank/frank-runner). If you want to stick with Maven, you can follow the instructions of this section.
-
-Initial:
-
-- git clone https://github.com/frankframework/frankframework
-- cd iaf
-- mvn
-- cd example
-- mvn jetty:run
-- [http://localhost:8080/iaf](http://localhost:8080/iaf)
-
-
-After modifying a project file:
-
-- ctrl-c
-- cd .. ; mvn clean install ; cd example ; mvn jetty:run
-
-The jetty-maven-plugin requires Maven 3 and Java 1.8. We tested these instructions with Maven 3.6.3.
+If you want to experiment with the Frank!Framework, you can use the [Frank!Runner](https://github.com/wearefrank/frank-runner) or follow the instructions for running the Frank!Framework inside your IDE (See [Developing with Eclipse](#developing-with-eclipse) or [Developing with IntelliJ](#developing-with-intellij)).
 
 ## Submitting changes
 
@@ -108,8 +91,6 @@ See our [Additional Coding Guidelines](AdditionalCodingGuidelines.md) for code e
 
 Before creating a pull request with your changes, please run the iaf-test module's test scenarios. If all tests pass, the chance of Frank developers running into unexpected errors will be reduced to a minimum. Instructions on how to run the iaf-test scenarios can be found [here](TESTING_WITH_IAF-TEST.md).
 
-We have yet to test the compatibility of the iaf-test module with Jetty. Until then, the only verified way to run the module is on a Tomcat server in Eclipse. However, feel free to try and run it on Jetty yourself! If it works for you, we'd love to hear about it. :)
-
 ### Checking differences within Larva
 
 The iaf-test module runs Larva tests, see https://frank-manual.readthedocs.io/en/latest/gettingStarted/testPipelines.html. Larva tests
@@ -120,7 +101,7 @@ it works better to use a third-party tool like WinMerge.
 
 If you are developing under Windows, you can do the following to set this up:
 
-- Follow the instructions of section "Developing with Eclipse", see below.
+- Follow the instructions of section [Developing with Eclipse](#developing-with-eclipse) or [Developing with IntelliJ](#developing-with-intellij), see below.
 - Download the WinMerge installer from https://winmerge.org/. After accepting cookies, you may have to refresh your browser before the download starts.
 - Run the installer you downloaded. Make sure that WinMerge is added to the system path.
 - Lookup the path to the WinMerge executable. You may do this by viewing the system path.
@@ -132,7 +113,7 @@ If you are developing under Windows, you can do the following to set this up:
 
 ## Developing with Eclipse
 
-You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/frankframework/frank-runner). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
+You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/wearefrank/frank-runner). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
 
 ### Install Eclipse
 

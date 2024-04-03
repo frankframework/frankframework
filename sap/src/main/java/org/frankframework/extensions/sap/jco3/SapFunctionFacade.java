@@ -49,7 +49,7 @@ import org.frankframework.util.XmlUtils;
  * @since   5.0
  */
 public abstract class SapFunctionFacade implements ISapFunctionFacade {
-	private final @Getter(onMethod = @__(@Override)) String domain = "SAP";
+	private final @Getter String domain = "SAP";
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

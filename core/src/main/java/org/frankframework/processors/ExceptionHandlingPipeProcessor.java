@@ -18,6 +18,10 @@ package org.frankframework.processors;
 import java.time.Instant;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
@@ -32,7 +36,7 @@ import org.frankframework.stream.Message;
 public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		try {
 			return chain.apply(message);
 		} catch (Exception e) {
@@ -45,8 +49,16 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 					tsReceivedLong = tsReceivedDate.toEpochMilli();
 				}
 
+				final Message errorMessage;
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();
-				Message errorMessage = emf.format(e.getMessage(), e.getCause(), pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+
+				if(e instanceof PipeRunException) {
+					INamedObject location = ((PipeRunException) e).getPipeInError();
+					errorMessage = emf.format(null, e.getCause(), location, message, pipeLineSession.getMessageId(), tsReceivedLong);
+				} else {
+					errorMessage = emf.format(null, e, pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+				}
+
 				log.info("exception occured, forwarding to exception-forward [{}], exception:\n", PipeForward.EXCEPTION_FORWARD_NAME, e);
 				return new PipeRunResult(pipe.getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), errorMessage);
 			}

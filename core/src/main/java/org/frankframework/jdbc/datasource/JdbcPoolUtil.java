@@ -1,0 +1,80 @@
+/*
+   Copyright 2024 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package org.frankframework.jdbc.datasource;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.sql.DataSource;
+
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.springframework.jdbc.datasource.DelegatingDataSource;
+
+import bitronix.tm.resource.jdbc.PoolingDataSource;
+
+public class JdbcPoolUtil {
+
+	private static final String CLOSE = "], ";
+
+	/** Returns pool info or NULL when it's not able to do so. */
+	public static @Nullable String getConnectionPoolInfo(@Nullable DataSource datasource) {
+		StringBuilder info = new StringBuilder();
+
+		if (datasource instanceof OpenManagedDataSource) {
+			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) datasource;
+			addPoolMetadata(targetDataSource.getPool(), info);
+		} else if (datasource instanceof org.apache.commons.dbcp2.PoolingDataSource) {
+			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) datasource;
+			addPoolMetadata(dataSource.getPool(), info);
+		} else if (datasource instanceof PoolingDataSource) { // BTM instance
+			addBTMDatasourceInfo(datasource, info);
+		} else if (datasource instanceof DelegatingDataSource) { //Perhaps it's wrapped?
+			return getConnectionPoolInfo(((DelegatingDataSource) datasource).getTargetDataSource());
+		} else {
+			return null;
+		}
+
+		return info.toString();
+	}
+
+	private static void addBTMDatasourceInfo(DataSource datasource, StringBuilder info) {
+		PoolingDataSource dataSource = (PoolingDataSource) datasource;
+		info.append("BTM Pool Info: ");
+		if (dataSource == null) {
+			return;
+		}
+		info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
+		info.append("minIdle [").append(dataSource.getMinPoolSize()).append(CLOSE);
+		info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
+		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append("]");
+	}
+
+
+	static void addPoolMetadata(@Nonnull GenericObjectPool<?> pool, @Nonnull StringBuilder info) {
+		info.append("DBCP2 Pool Info: ");
+		info.append("maxIdle [").append(pool.getMaxIdle()).append(CLOSE);
+		info.append("minIdle [").append(pool.getMinIdle()).append(CLOSE);
+		info.append("maxTotal [").append(pool.getMaxTotal()).append(CLOSE);
+		info.append("numActive [").append(pool.getNumActive()).append(CLOSE);
+		info.append("numIdle [").append(pool.getNumIdle()).append(CLOSE);
+		info.append("testOnBorrow [").append(pool.getTestOnBorrow()).append(CLOSE);
+		info.append("testOnCreate [").append(pool.getTestOnCreate()).append(CLOSE);
+		info.append("testOnReturn [").append(pool.getTestOnReturn()).append(CLOSE);
+		info.append("testWhileIdle [").append(pool.getTestWhileIdle()).append(CLOSE);
+		info.append("removeAbandonedOnBorrow [").append(pool.getRemoveAbandonedOnBorrow()).append(CLOSE);
+		info.append("removeAbandonedOnMaintenance [").append(pool.getRemoveAbandonedOnMaintenance()).append(CLOSE);
+		info.append("removeAbandonedTimeoutDuration [").append(pool.getRemoveAbandonedTimeoutDuration()).append("]"); //TODO decide if we should make this human readable
+	}
+}

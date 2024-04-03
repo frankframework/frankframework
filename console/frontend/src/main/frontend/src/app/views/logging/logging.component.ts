@@ -1,26 +1,29 @@
-import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { LoggingService, LoggingFile } from './logging.service';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { SortEvent, ThSortableDirective, basicTableSort } from 'src/app/components/th-sortable.directive';
+import {
+  SortEvent,
+  ThSortableDirective,
+  basicTableSort,
+} from 'src/app/components/th-sortable.directive';
+import { copyToClipboard } from 'src/app/utils';
 
 @Component({
   selector: 'app-logging',
   templateUrl: './logging.component.html',
-  styleUrls: ['./logging.component.scss']
+  styleUrls: ['./logging.component.scss'],
 })
 export class LoggingComponent implements OnInit {
-  viewFile: boolean | SafeResourceUrl = false;
+  viewFile: null | string = null;
   alert: boolean | string = false;
-  directory: string = "";
-  path: string = "";
-  fileName: string = "";
+  directory: string = '';
+  path: string = '';
+  fileName: string = '';
   originalList: LoggingFile[] = [];
   sortedlist: LoggingFile[] = [];
 
-  @ViewChild('iframe') iframeRef!: ElementRef<HTMLIFrameElement>;
   @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
 
   constructor(
@@ -29,64 +32,56 @@ export class LoggingComponent implements OnInit {
     private appService: AppService,
     private miscService: MiscService,
     private loggingService: LoggingService,
-    private sanitizer: DomSanitizer,
-  ) { };
+  ) {}
 
-  ngOnInit() {
-    this.route.queryParamMap.subscribe(params => {
-      const directoryParam = params.get('directory') ?? ""
-      const fileParam = params.get('file') ?? ""
+  ngOnInit(): void {
+    this.route.queryParamMap.subscribe((parameters) => {
+      const directoryParameter = parameters.get('directory') ?? '';
+      const fileParameter = parameters.get('file') ?? '';
 
       //This is only "" when the user opens the logging page
-      let directory = (directoryParam && directoryParam.length > 0) ? directoryParam : "";
+      const directory =
+        directoryParameter && directoryParameter.length > 0
+          ? directoryParameter
+          : '';
       //The file param is only set when the user copy pastes an url in their browser
-      if (fileParam && fileParam.length > 0) {
-        let file = fileParam;
+      if (fileParameter && fileParameter.length > 0) {
+        const file = fileParameter;
         this.directory = directory;
-        this.path = directory + "/" + file;
-        this.openFile({ path: directory + "/" + file, name: file });
-      }
-      else {
+        this.path = `${directory}/${file}`;
+        this.viewFile = this.path;
+      } else {
         this.openDirectory(directory);
       }
     });
-  };
-
-  closeFile() {
-    this.viewFile = false;
-    this.router.navigate(['/logging'], { queryParams: { directory: this.directory } });
-  };
-
-  download(file: LoggingFile) {
-    let url = this.appService.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + this.miscService.escapeURL(file.path);
-    window.open(url, "_blank");
-  };
-
-  open(file: LoggingFile) {
-    if (file.type == "directory") {
-      this.router.navigate(['/logging'], { queryParams: { directory: file.path } });
-    } else {
-      this.router.navigate(['/logging'], { queryParams: { directory: this.directory, file: file.name } });
-    };
   }
 
-  openFile(file: { name: string, path: string }) {
-    const URL = this.appService.getServerPath() + "FileViewerServlet?resultType=html&fileName=" + this.miscService.escapeURL(file.path);
-    this.viewFile = this.sanitizer.bypassSecurityTrustResourceUrl(URL);
-
-    setTimeout(() => {
-      let iframe = this.iframeRef.nativeElement;
-
-      if (iframe) {
-        iframe.onload = () => {
-          let iframeBody = $(iframe.contentWindow!.document.body);
-          $(iframe).css({ "height": iframeBody.height()! + 50 });
-        };
-      }
+  closeFile(): void {
+    this.viewFile = null;
+    this.router.navigate(['/logging'], {
+      queryParams: { directory: this.directory },
     });
-  };
+  }
 
-  openDirectory(directory: string) {
+  download(file: LoggingFile): void {
+    const contentType = 'application/octet-stream'; // always download instead of possibly display in new tab
+    const url = `${this.appService.absoluteApiPath}file-viewer?file=${this.miscService.escapeURL(file.path)}&accept=${contentType}`;
+    window.open(url, '_blank');
+  }
+
+  open(file: LoggingFile): void {
+    if (file.type == 'directory') {
+      this.router.navigate(['/logging'], {
+        queryParams: { directory: file.path },
+      });
+    } else {
+      this.router.navigate(['/logging'], {
+        queryParams: { directory: this.directory, file: file.name },
+      });
+    }
+  }
+
+  openDirectory(directory: string): void {
     this.loggingService.getLogging(directory).subscribe({
       next: (data) => {
         this.alert = false;
@@ -97,18 +92,19 @@ export class LoggingComponent implements OnInit {
         if (data.count > data.list.length) {
           this.alert = `Total number of items [${data.count}] exceeded maximum number, only showing first [${data.list.length - 1}] items!`;
         }
-      }, error: (data) => {
-        this.alert = data.error?.error || "An unknown error occured!";
-      }
+      },
+      error: (data) => {
+        this.alert = data.error?.error || 'An unknown error occured!';
+      },
     });
-  };
+  }
 
-  copyToClipboard(path: string) {
+  copyAndTrimToClipboard(path: string): void {
     const textToCopy = path.trim();
-    this.appService.copyToClipboard(textToCopy);
-  };
+    copyToClipboard(textToCopy);
+  }
 
-  onSort(event: SortEvent) {
+  onSort(event: SortEvent): void {
     this.sortedlist = basicTableSort(this.originalList, this.headers, event);
   }
 }

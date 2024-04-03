@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,11 +23,12 @@ import org.springframework.beans.factory.DisposableBean;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.LazyLoadingEventListener;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.util.XmlBuilder;
 
-@FrankDocGroup(name = "Monitoring", order = 80)
+@FrankDocGroup(FrankDocGroupValue.MONITORING)
 public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
 	public enum TriggerType {
 		ALARM,

@@ -122,9 +122,9 @@
 								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>org.commonjava.maven.plugins</groupId>
+										<groupId>com.github.hazendaz.maven</groupId>
 										<artifactId>directory-maven-plugin</artifactId>
-										<versionRange>[1.0,)</versionRange>
+										<versionRange>[1,)</versionRange>
 										<goals>
 											<goal>directory-of</goal>
 										</goals>
@@ -142,7 +142,7 @@
 					<artifactId>frontend-maven-plugin</artifactId>
 					<version>1.15.0</version>
 					<configuration>
-						<nodeVersion>v16.20.0</nodeVersion>
+						<nodeVersion>v20.11.1</nodeVersion>
 						<workingDirectory>${frontend.source.location}</workingDirectory><!-- frontend resources -->
 						<installDirectory>${project.build.directory}</installDirectory><!-- npm + npx install folder -->
 					</configuration>
@@ -214,8 +214,8 @@
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
-			<name>Matt Booman</name>
-			<email>matt@frankframework.org</email>
+			<name>Vivy Booman</name>
+			<email>vivy@frankframework.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
@@ -242,7 +242,7 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<version>3.1.1</version>
+						<version>3.2.0</version>
 						<configuration>
 							<workingDirectory>${frontend.source.location}</workingDirectory>
 						</configuration>

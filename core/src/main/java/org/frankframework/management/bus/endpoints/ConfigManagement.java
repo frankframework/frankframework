@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
@@ -62,6 +63,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 * @return Configuration XML
 	 */
 	@ActionSelector(BusAction.GET)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getXMLConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		boolean loadedConfiguration = BusMessageUtils.getBooleanHeader(message, "loaded", false);
@@ -85,6 +87,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 * @return If the configuration is of type DatabaseClassLoader, the metadata of the configurations found in the database.
 	 */
 	@ActionSelector(BusAction.FIND)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getConfigurationDetailsByName(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		if(StringUtils.isNotEmpty(configurationName)) {
@@ -121,6 +124,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 * @return Manages a configuration, either activates the config directly or sets the autoreload flag in the database
 	 */
 	@ActionSelector(BusAction.MANAGE)
+	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	public Message<String> manageConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
@@ -147,6 +151,7 @@ public class ConfigManagement extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
+	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	public Message<String> uploadConfiguration(Message<InputStream> message) {
 		boolean multipleConfigs = BusMessageUtils.getBooleanHeader(message, "multiple_configs", false);
 		boolean activateConfig = BusMessageUtils.getBooleanHeader(message, "activate_config", true);
@@ -179,6 +184,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 * header datasourceName The name of the datasource where the configurations are located.
 	 */
 	@ActionSelector(BusAction.DOWNLOAD)
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public BinaryResponseMessage downloadConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
@@ -204,6 +210,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 * header datasourceName The name of the datasource where the configurations are located.
 	 */
 	@ActionSelector(BusAction.DELETE)
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void deleteConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists

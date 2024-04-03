@@ -3,26 +3,36 @@ package org.frankframework.senders;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAppender;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class LogSenderTest extends SenderTestBase<LogSender> {
+class LogSenderTest extends SenderTestBase<LogSender> {
+
+	private static final String input = "Message2Log";
+	private static final Message message = new Message(input);
 
 	@Override
 	public LogSender createSender() {
 		return new LogSender();
 	}
 
+	@AfterAll
+	static void cleanup() throws IOException {
+		message.close();
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = {"DEBUG", "INFO", "WARN", "ERROR"})
-	public void defaultLogSettings(String level) throws Exception {
+	void defaultLogSettings(String level) throws Exception {
 		sender.setLogLevel(level);
 		sender.configure();
 		sender.open();
@@ -31,8 +41,6 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 		TestAppender.addToRootLogger(appender);
 
 		try {
-			String input = "Message2Log";
-			Message message = new Message(input);
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);
@@ -45,14 +53,14 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 	}
 
 	@Test
-	public void faultyLogLevel() {
+	void faultyLogLevel() {
 		sender.setLogLevel("appelflap");
 		assertThrows(IllegalArgumentException.class, sender::configure);
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = {"INFO", "WARN", "ERROR"})
-	public void dynamicParameter(String level) throws Exception {
+	void dynamicParameter(String level) throws Exception {
 		sender.addParameter(ParameterBuilder.create("logLevel", level));
 		sender.configure();
 		sender.open();
@@ -61,8 +69,6 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 		TestAppender.addToRootLogger(appender);
 
 		try {
-			String input = "Message2Log";
-			Message message = new Message(input);
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);
@@ -75,7 +81,7 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 	}
 
 	@Test
-	public void faultyDynamicParameterShouldFallBackToAttribute() throws Exception {
+	void faultyDynamicParameterShouldFallBackToAttribute() throws Exception {
 		sender.addParameter(ParameterBuilder.create("logLevel", "perensap"));
 		sender.setLogLevel("WARN");
 		sender.configure();
@@ -85,8 +91,6 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 		TestAppender.addToRootLogger(appender);
 
 		try {
-			String input = "Message2Log";
-			Message message = new Message(input);
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);
@@ -99,7 +103,7 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 	}
 
 	@Test
-	public void emptyLogLevelAttributeWithFaultyParameterShouldUseDEBUG() throws Exception {
+	void emptyLogLevelAttributeWithFaultyParameterShouldUseDEBUG() throws Exception {
 		sender.addParameter(ParameterBuilder.create("logLevel", "perensap"));
 		sender.setLogLevel("");
 		sender.configure();
@@ -109,8 +113,6 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 		TestAppender.addToRootLogger(appender);
 
 		try {
-			String input = "Message2Log";
-			Message message = new Message(input);
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);
@@ -125,7 +127,7 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 	}
 
 	@Test
-	public void withParameters() throws Exception {
+	void withParameters() throws Exception {
 		sender.setLogLevel("INFO");
 		sender.addParameter(ParameterBuilder.create("logLevel", "")); // should be ignored
 		sender.addParameter(ParameterBuilder.create("param 1", "appelflap"));
@@ -137,8 +139,6 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 		TestAppender.addToRootLogger(appender);
 
 		try {
-			String input = "Message2Log";
-			Message message = new Message(input);
 			String result = sender.sendMessageOrThrow(message, session).asString();
 
 			assertEquals(input, result);

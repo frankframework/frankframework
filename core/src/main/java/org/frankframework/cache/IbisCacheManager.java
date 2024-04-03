@@ -17,6 +17,8 @@ package org.frankframework.cache;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -24,13 +26,6 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.Configuration;
 import net.sf.ehcache.config.DiskStoreConfiguration;
-import net.sf.ehcache.statistics.StatisticsGateway;
-import org.frankframework.core.SenderException;
-import org.frankframework.statistics.HasStatistics.Action;
-import org.frankframework.statistics.MetricsInitializer;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 /**
  * Common manager for caching.
@@ -90,29 +85,6 @@ public class IbisCacheManager {
 
 	public Cache getCache(String cacheName) {
 		return cacheManager.getCache(cacheName);
-	}
-
-	public static <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException {
-		if (self==null) {
-			return;
-		}
-		String[] cacheNames = self.cacheManager.getCacheNames();
-		for (int i=0;i<cacheNames.length;i++) {
-			D subdata=hski.openGroup(data, cacheNames[i], "cache");
-			Ehcache cache=self.cacheManager.getEhcache(cacheNames[i]);
-			if (hski instanceof MetricsInitializer) {
-				((MetricsInitializer)hski).configureCache(cache);
-			} else {
-				StatisticsGateway stats = cache.getStatistics();
-				hski.handleScalar(subdata, "CacheHits", stats.cacheHitCount());
-				hski.handleScalar(subdata, "CacheMisses", stats.cacheMissCount());
-				hski.handleScalar(subdata, "EvictionCount", stats.cacheEvictedCount());
-				hski.handleScalar(subdata, "InMemoryHits", stats.localHeapHitCount());
-				hski.handleScalar(subdata, "ObjectCount", cache.getSize());
-				hski.handleScalar(subdata, "OnDiskHits", stats.localDiskHitCount());
-				hski.closeGroup(subdata);
-			}
-		}
 	}
 
 }

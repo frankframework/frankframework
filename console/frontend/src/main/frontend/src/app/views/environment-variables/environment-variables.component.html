@@ -5,12 +5,16 @@
   <div class="row">
     <div class="col-lg-12 tabs-container">
       <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
-        <li [ngClass]="{active : selectedConfiguration == 'All'}">
+        <li [ngClass]="{ active: selectedConfiguration === 'All' }">
           <a (click)="changeConfiguration('All')">Global</a>
         </li>
         <ng-container *ngFor="let configuration of this.configurations">
-          <li [ngClass]="{active : selectedConfiguration == configuration.name}">
-            <a (click)="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+          <li
+            [ngClass]="{ active: selectedConfiguration === configuration.name }"
+          >
+            <a (click)="changeConfiguration(configuration.name)">{{
+              configuration.name
+            }}</a>
           </li>
         </ng-container>
       </ul>
@@ -23,18 +27,34 @@
         <div class="ibox-content">
           <div class="col-md-12 m-b-lg">
             <div class="input-group" id="searchbar">
-              <input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)"
-                [(ngModel)]="searchFilter" name="search" />
-              <i class="fa fa-times input-group-closeSearch" *ngIf="searchFilter.length" (click)="searchFilter = ''"
-                aria-hidden="true"></i>
+              <input
+                [(ngModel)]="searchFilter"
+                class="form-control"
+                name="search"
+                placeholder="Search ... (Ctrl + Shift + F)"
+                type="text"
+              />
+              <i
+                (click)="searchFilter = ''"
+                *ngIf="searchFilter.length"
+                aria-hidden="true"
+                class="fa fa-times input-group-closeSearch"
+              ></i>
               <span class="input-group-addon">
-                <i class="fa fa-search" aria-hidden="true"></i>
+                <i aria-hidden="true" class="fa fa-search"></i>
               </span>
             </div>
           </div>
           <div>
-            <h2>Application Constants <small class="m-l-sm">&nbsp;({{(configProperties | variablesFilter :
-                this.searchFilter).length}})</small></h2>
+            <h2>
+              Application Constants
+              <small class="m-l-sm"
+                >&nbsp;({{
+                  (configProperties | variablesFilter: this.searchFilter)
+                    .length
+                }})</small
+              >
+            </h2>
             <table class="table">
               <thead>
                 <tr>
@@ -43,19 +63,39 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let vari of configProperties | variablesFilter : this.searchFilter | orderby: 'key'">
-                  <td class="col-lg-3">{{vari.key}}</td>
-                  <td class="col-lg-9">{{vari.value}}</td>
+                <tr
+                  *ngFor="
+                    let vari of configProperties
+                      | variablesFilter: this.searchFilter
+                      | orderby: 'key'
+                  "
+                >
+                  <td class="col-lg-3">{{ vari.key }}</td>
+                  <td class="col-lg-9">{{ vari.value }}</td>
                 </tr>
-                <tr *ngIf="(configProperties | variablesFilter : this.searchFilter).length == 0">
-                  <td colspan="2">No variables found matching '{{searchFilter}}'</td>
+                <tr
+                  *ngIf="
+                    (configProperties | variablesFilter: this.searchFilter)
+                      .length === 0
+                  "
+                >
+                  <td colspan="2">
+                    No variables found matching '{{ searchFilter }}'
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <div>
-            <h2>Environment Variables <small class="m-l-sm">&nbsp;({{(environmentProperties | variablesFilter :
-                this.searchFilter).length}})</small></h2>
+            <h2>
+              Environment Variables
+              <small class="m-l-sm"
+                >&nbsp;({{
+                  (environmentProperties | variablesFilter: this.searchFilter)
+                    .length
+                }})</small
+              >
+            </h2>
             <table class="table">
               <thead>
                 <tr>
@@ -64,19 +104,39 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let vari of environmentProperties | variablesFilter : this.searchFilter | orderby: 'key'">
-                  <td class="col-lg-3">{{vari.key}}</td>
-                  <td class="col-lg-9">{{vari.value}}</td>
+                <tr
+                  *ngFor="
+                    let vari of environmentProperties
+                      | variablesFilter: this.searchFilter
+                      | orderby: 'key'
+                  "
+                >
+                  <td class="col-lg-3">{{ vari.key }}</td>
+                  <td class="col-lg-9">{{ vari.value }}</td>
                 </tr>
-                <tr *ngIf="(environmentProperties | variablesFilter : this.searchFilter).length == 0">
-                  <td colspan="2">No variables found matching '{{searchFilter}}'</td>
+                <tr
+                  *ngIf="
+                    (environmentProperties | variablesFilter: this.searchFilter)
+                      .length === 0
+                  "
+                >
+                  <td colspan="2">
+                    No variables found matching '{{ searchFilter }}'
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <div>
-            <h2>System Properties <small class="m-l-sm">&nbsp;({{(systemProperties | variablesFilter :
-                this.searchFilter).length}})</small></h2>
+            <h2>
+              System Properties
+              <small class="m-l-sm"
+                >&nbsp;({{
+                  (systemProperties | variablesFilter: this.searchFilter)
+                    .length
+                }})</small
+              >
+            </h2>
             <table class="table">
               <thead>
                 <tr>
@@ -85,12 +145,25 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let vari of systemProperties | variablesFilter : this.searchFilter | orderby: 'key'">
-                  <td class=" col-lg-3">{{vari.key}}</td>
-                  <td class="col-lg-9">{{vari.value}}</td>
+                <tr
+                  *ngFor="
+                    let vari of systemProperties
+                      | variablesFilter: this.searchFilter
+                      | orderby: 'key'
+                  "
+                >
+                  <td class="col-lg-3">{{ vari.key }}</td>
+                  <td class="col-lg-9">{{ vari.value }}</td>
                 </tr>
-                <tr *ngIf="(systemProperties | variablesFilter : this.searchFilter).length == 0">
-                  <td colspan="2">No variables found matching '{{searchFilter}}'</td>
+                <tr
+                  *ngIf="
+                    (systemProperties | variablesFilter: this.searchFilter)
+                      .length === 0
+                  "
+                >
+                  <td colspan="2">
+                    No variables found matching '{{ searchFilter }}'
+                  </td>
                 </tr>
               </tbody>
             </table>

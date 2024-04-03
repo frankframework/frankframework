@@ -20,9 +20,8 @@
 	<dependencies>
 		<!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
-			<scope>provided</scope>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 
 		<!-- This dependency is here because of the IbisMetricsPipe -->
@@ -40,9 +39,35 @@
 			<type>war</type>
 		</dependency>
 		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- provided dependencies will be added to the executable (Spring) WAR -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-loader</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -217,26 +242,19 @@
 	</reporting>
 
 	<profiles>
-		<!--
-		Copy dependencies from iaf-webapp/pom.xml to make m2e add dependent-module
-		elements to org.eclipse.wst.common.component. Maven doesn't need this copy
-		to add the jar files to the war file. Might be a bug in m2e:
-		https://bugs.eclipse.org/bugs/show_bug.cgi?id=398138
-		Note: Maven will copy the jar files from the war in the local repository
-		which might be an old snapshot.
-
-		In older versions of Eclipse (Kepler - 20140224-0627) the larva and ladybug modules are not automatically added to the (correct) classpath.
-		Because of this the example module will throw a FileNotFoundException on springIbisTestTool.xml which prevents the Frank!Framework from starting up.
-		In newer versions of Eclipse (at least version 20181214-0600 onwards) this seems to have been resolved.
-		-->
 		<profile>
-			<id>m2e</id>
+			<id>spring-boot</id>
 			<activation>
-				<property>
-					<name>m2e.version</name>
+				<property><!-- IntelliJ could use ${idea.version} but Maven limitations don't allow us to check multiple properties -->
+					<name>m2e.version</name><!-- automatically enables it on Eclipse -->
 				</property>
 			</activation>
 			<dependencies>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-filesystem</artifactId>
+					<scope>runtime</scope>
+				</dependency>
 				<dependency>
 					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-larva</artifactId>
@@ -245,6 +263,40 @@
 				<dependency>
 					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-ladybug</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-console-frontend</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-console-backend</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-akamai</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-cmis</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-aws</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-messaging</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.frankframework</groupId>
+					<artifactId>frankframework-batch</artifactId>
 					<scope>runtime</scope>
 				</dependency>
 			</dependencies>
@@ -304,11 +356,6 @@
 					<artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
 					<version>${geronimo.j2ee.spec.version}</version>
 					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jms_1.1_spec</artifactId>
-					<scope>compile</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.geronimo.specs</groupId>

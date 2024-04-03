@@ -26,16 +26,14 @@ public class TransformerPoolTest {
 
 	@Test
 	public void plainXPath() throws Exception {
-		String xpathEvaluatorSource = XmlUtils.createXPathEvaluatorSource(xpath);
-		TransformerPool transformerPool = TransformerPool.getInstance(xpathEvaluatorSource);
+		TransformerPool transformerPool = TransformerPool.getXPathTransformerPool(xpath, XmlUtils.DEFAULT_XSLT_VERSION);
 		String result = transformerPool.transform(xml, null);
 		assertEquals(expectedXpath, result);
 	}
 
 	@Test
 	public void plainXPathUsingMultiUseSource() throws Exception {
-		String xpathEvaluatorSource = XmlUtils.createXPathEvaluatorSource(xpath);
-		TransformerPool transformerPool = TransformerPool.getInstance(xpathEvaluatorSource);
+		TransformerPool transformerPool = TransformerPool.getXPathTransformerPool(xpath, XmlUtils.DEFAULT_XSLT_VERSION);
 		Source source = XmlUtils.stringToSource(xml);
 		String result = transformerPool.transform(source);
 		assertEquals(expectedXpath, result);

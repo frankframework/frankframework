@@ -1,0 +1,156 @@
+{
+    "durationPerPipe": [
+    ],
+    "sizePerPipe": [
+        {
+            "name": "PipeLine of [myAdapter]",
+            "count": 0,
+            "min": 0,
+            "max": 0.0,
+            "avg": 0.0,
+            "stdDev": 0.0,
+            "sum": 0.0,
+            "first": -1,
+            "last": 0
+        }
+    ],
+    "waitTimePerPipe": [
+        {
+            "name": "PipeLine of [myAdapter]",
+            "count": 0,
+            "min": 0,
+            "max": 0.0,
+            "avg": 0.0,
+            "stdDev": 0.0,
+            "sum": 0.0,
+            "first": -1,
+            "last": 0
+        }
+    ],
+    "pipeline": {
+        "inError": 0.0,
+        "processed": 0.0,
+        "inProcess": 0.0
+    },
+    "receivers": [
+        {
+            "name": "myReceiver",
+            "messagesReceived": 0.0,
+            "messagesRejected": 0.0,
+            "messagesRetried": 0.0,
+            "processing": [
+            ],
+            "idle": [
+            ]
+        }
+    ],
+    "hourly": [
+        {
+            "time": "00:00",
+            "count": 0
+        },
+        {
+            "time": "01:00",
+            "count": 0
+        },
+        {
+            "time": "02:00",
+            "count": 0
+        },
+        {
+            "time": "03:00",
+            "count": 0
+        },
+        {
+            "time": "04:00",
+            "count": 0
+        },
+        {
+            "time": "05:00",
+            "count": 0
+        },
+        {
+            "time": "06:00",
+            "count": 0
+        },
+        {
+            "time": "07:00",
+            "count": 0
+        },
+        {
+            "time": "08:00",
+            "count": 0
+        },
+        {
+            "time": "09:00",
+            "count": 0
+        },
+        {
+            "time": "10:00",
+            "count": 0
+        },
+        {
+            "time": "11:00",
+            "count": 0
+        },
+        {
+            "time": "12:00",
+            "count": 0
+        },
+        {
+            "time": "13:00",
+            "count": 0
+        },
+        {
+            "time": "14:00",
+            "count": 0
+        },
+        {
+            "time": "15:00",
+            "count": 0
+        },
+        {
+            "time": "16:00",
+            "count": 0
+        },
+        {
+            "time": "17:00",
+            "count": 0
+        },
+        {
+            "time": "18:00",
+            "count": 0
+        },
+        {
+            "time": "19:00",
+            "count": 0
+        },
+        {
+            "time": "20:00",
+            "count": 0
+        },
+        {
+            "time": "21:00",
+            "count": 0
+        },
+        {
+            "time": "22:00",
+            "count": 0
+        },
+        {
+            "time": "23:00",
+            "count": 0
+        }
+    ],
+    "totalMessageProccessingTime": {
+        "name": "myAdapter",
+        "count": 0,
+        "min": 0,
+        "max": 0.0,
+        "avg": 0.0,
+        "stdDev": 0.0,
+        "sum": 0.0,
+        "first": -1,
+        "last": 0
+    }
+}

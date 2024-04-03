@@ -17,12 +17,31 @@ package org.frankframework.configuration;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.extensions.SapSystems;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.doc.Protected;
+import org.frankframework.jdbc.migration.DatabaseMigratorBase;
+import org.frankframework.jms.JmsRealm;
+import org.frankframework.jms.JmsRealmFactory;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.LazyLoadingEventListener;
+import org.frankframework.lifecycle.SpringContextScope;
+import org.frankframework.monitoring.MonitorManager;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.JobDef;
+import org.frankframework.scheduler.job.IJob;
+import org.frankframework.scheduler.job.Job;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
+import org.frankframework.util.RunState;
+import org.frankframework.util.flow.FlowDiagramManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
@@ -38,31 +57,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.cache.IbisCacheManager;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
-import org.frankframework.configuration.extensions.SapSystems;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.core.SenderException;
-import org.frankframework.doc.Protected;
-import org.frankframework.jdbc.migration.DatabaseMigratorBase;
-import org.frankframework.jms.JmsRealm;
-import org.frankframework.jms.JmsRealmFactory;
-import org.frankframework.lifecycle.ConfigurableLifecycle;
-import org.frankframework.lifecycle.LazyLoadingEventListener;
-import org.frankframework.lifecycle.SpringContextScope;
-import org.frankframework.monitoring.MonitorManager;
-import org.frankframework.receivers.Receiver;
-import org.frankframework.scheduler.job.IJob;
-import org.frankframework.scheduler.job.Job;
-import org.frankframework.statistics.HasStatistics.Action;
-import org.frankframework.statistics.MetricsInitializer;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-import org.frankframework.util.RunState;
-import org.frankframework.util.flow.FlowDiagramManager;
 
 /**
  * Container of {@link Adapter Adapters} that belong together.
@@ -98,36 +92,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	private @Getter ConfigurationException configurationException = null;
 
-	private final Date statisticsMarkDateMain = new Date();
-	private final Date statisticsMarkDateDetails = statisticsMarkDateMain;
-
 	public Configuration() {
 		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
-	}
-
-	private void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action, String rootName, String rootType) throws SenderException {
-		Object root = hski.start(now,mainMark,detailMark);
-		try {
-			Object groupData= hski.openGroup(root, rootName, rootType);
-			for (Adapter adapter : adapterManager.getAdapterList()) {
-				if (adapter.isConfigurationSucceeded()) {
-					adapter.iterateOverStatistics(hski,groupData,action);
-				}
-			}
-			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
-			hski.closeGroup(groupData);
-		} finally {
-			hski.end(root);
-		}
-	}
-
-	public void initMetrics() throws ConfigurationException {
-		StatisticsKeeperIterationHandler metricsInitializer = getBean(MetricsInitializer.class);
-		try {
-			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.FULL, getName(), "configuration");
-		} catch (SenderException e) {
-			throw new ConfigurationException("Cannot initialize metrics", e);
-		}
 	}
 
 	@Override
@@ -156,6 +122,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			log.info("unable to determine [configuration.version] for configuration [{}]", this::getName);
 		} else {
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", this::getName, this::getVersion);
+		}
+
+		if(StringUtils.isNotEmpty(AppConstants.getInstance().getProperty("frankframework-ladybug.version"))) {
+			this.getEnvironment().addActiveProfile("aop"); //Makes this configurable depending on if the ladybug is present on the classpath.
 		}
 
 		super.afterPropertiesSet(); //Triggers a context refresh
@@ -245,7 +215,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
 			throw e;
 		}
-		initMetrics();
 		configured = true;
 
 		String msg;

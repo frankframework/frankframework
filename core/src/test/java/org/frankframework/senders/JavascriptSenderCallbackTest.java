@@ -1,8 +1,8 @@
 package org.frankframework.senders;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -16,11 +16,9 @@ import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 import lombok.Getter;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 
 	private final JavaScriptEngines engine = JavaScriptEngines.J2V8;
@@ -87,7 +85,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		Message senderResult = sender.sendMessageOrThrow(dummyInput, session);
 		assertTrue(Message.isEmpty(senderResult));
 		Message promiseResult = promise.getPromiseResult();
-		assertFalse("promise not called", Message.isEmpty(promiseResult));
+		assertFalse(Message.isEmpty(promiseResult), "promise not called");
 		assertEquals("success", promiseResult.asString());
 	}
 

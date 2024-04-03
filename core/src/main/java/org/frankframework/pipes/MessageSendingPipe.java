@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerException;
@@ -28,20 +29,13 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.jdbc.MessageStoreSender;
-import org.frankframework.receivers.MessageWrapper;
-import org.frankframework.senders.IbisLocalSender;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.AdapterAware;
 import org.frankframework.core.DestinationValidator;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.HasSender;
@@ -67,14 +61,16 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.jdbc.DirectQuerySender;
+import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.processors.ListenerProcessor;
 import org.frankframework.processors.PipeProcessor;
-
+import org.frankframework.receivers.MessageWrapper;
+import org.frankframework.senders.IbisLocalSender;
+import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.HasStatistics;
-import org.frankframework.statistics.StatisticsKeeper;
-import org.frankframework.statistics.StatisticsKeeperIterationHandler;
+import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
@@ -85,6 +81,12 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
+import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
@@ -148,7 +150,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private @Getter int presumedTimeOutInterval=0;
 
 	private @Getter String stubFilename;
-	private @Getter String timeOutOnResult;
+	private @Getter String timeoutOnResult;
 	private @Getter String exceptionOnResult;
 
 	private @Getter ISender sender = null;
@@ -184,6 +186,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ListenerProcessor listenerProcessor;
+
+	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
+	protected @Setter @Getter MetricsInitializer configurationMetrics;
 
 	public enum LinkMethod {
 		MESSAGEID, CORRELATIONID
@@ -224,6 +229,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 
 			try {
+				if(sender instanceof AdapterAware) {
+					((AdapterAware) sender).setAdapter(getAdapter());
+				}
+				if(StringUtils.isEmpty(sender.getName())) {
+					sender.setName(ClassUtils.nameOf(sender));
+				}
 				//In order to be able to suppress 'xxxSender may cause potential SQL injections!' config warnings
 				if(sender instanceof DirectQuerySender) {
 					((DirectQuerySender) getSender()).configure(getAdapter());
@@ -255,8 +266,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					throw new ConfigurationException("has no forward with name [illegalResult]");
 			}
 			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
-				if (StringUtils.isNotEmpty(getTimeOutOnResult())) {
-					throw new ConfigurationException("timeOutOnResult only allowed in stub mode");
+				if (StringUtils.isNotEmpty(getTimeoutOnResult())) {
+					throw new ConfigurationException("timeoutOnResult only allowed in stub mode");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult())) {
 					throw new ConfigurationException("exceptionOnResult only allowed in stub mode");
@@ -612,8 +623,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 		long messageLogEndTime = System.currentTimeMillis();
 		long messageLogDuration = messageLogEndTime - messageLogStartTime;
-		StatisticsKeeper sk = getPipeLine().getPipeStatistics(messageLog);
-		sk.addValue(messageLogDuration);
+		getPipeSubStatistics("MessageLog").record(messageLogDuration);
 		return correlationID;
 	}
 
@@ -657,6 +667,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	private PipeRunResult preProcessInput(Message input, PipeLineSession session) throws PipeRunException {
+		long preProcessInputStartTime = System.currentTimeMillis();
 		if (inputWrapper != null) {
 			log.debug("wrapping input");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, input, session);
@@ -670,6 +681,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (messageLog != null) {
 				preserve(input);
 			}
+
 			log.debug("input after wrapping [{}]", input);
 		}
 
@@ -683,12 +695,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (!validationResult.isSuccessful()) {
 				return validationResult;
 			}
+
 			input = validationResult.getResult();
+		}
+		if (inputWrapper != null && inputValidator != null) {
+			getPipeSubStatistics("PreProcessing").record((double) System.currentTimeMillis() - preProcessInputStartTime);
 		}
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), input);
 	}
 
 	private PipeRunResult postProcessOutput(Message output, PipeLineSession session) throws PipeRunException {
+		long postProcessInputStartTime = System.currentTimeMillis();
 		if (outputValidator != null) {
 			log.debug("validating response");
 			PipeRunResult validationResult;
@@ -702,7 +719,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			log.debug("response after validating ({}) [{}]", () -> ClassUtils.nameOf(validationResult.getResult()), validationResult::getResult);
 		}
 
-		if (outputWrapper!=null) {
+		if (outputWrapper != null) {
 			log.debug("wrapping response");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, output, session);
 			if (wrapResult == null) {
@@ -712,7 +729,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				return wrapResult;
 			}
 			output = wrapResult.getResult();
+
 			log.debug("response after wrapping ({}) [{}]", () -> ClassUtils.nameOf(wrapResult.getResult()), wrapResult::getResult);
+		}
+
+		if (outputValidator != null && outputWrapper != null) {
+			getPipeSubStatistics("PostProcessing").record((double) System.currentTimeMillis() - postProcessInputStartTime);
 		}
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), output);
 	}
@@ -752,11 +774,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				throw new InterruptedException();
 			}
 			Message sendResultMessage = sendResult.getResult();
-			if (sendResultMessage.asObject() instanceof String) {
-				String result = (String)sendResultMessage.asObject();
-				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(result)) {
+			if (sendResultMessage.isRequestOfType(String.class)) {
+				String result = sendResultMessage.asString();
+				if (StringUtils.isNotEmpty(getTimeoutOnResult()) && getTimeoutOnResult().equals(result)) {
 					exitState = TIMEOUT_FORWARD;
-					throw new TimeoutException("timeOutOnResult ["+getTimeOutOnResult()+"]");
+					throw new TimeoutException("timeoutOnResult ["+ getTimeoutOnResult()+"]");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(result)) {
 					exitState = PipeForward.EXCEPTION_FORWARD_NAME;
@@ -932,18 +954,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		if (sender instanceof HasStatistics) {
-			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
-		}
-	}
-
-	@Override
-	public boolean hasSizeStatistics() {
-		if (!super.hasSizeStatistics()) {
+	public boolean sizeStatisticsEnabled() {
+		if (!super.sizeStatisticsEnabled()) {
 			return getSender().isSynchronous();
 		}
-		return super.hasSizeStatistics();
+		return super.sizeStatisticsEnabled();
+	}
+
+	private @Nonnull DistributionSummary getPipeSubStatistics(String name) {
+		return statisticsMap.computeIfAbsent(name, ignored -> configurationMetrics.createSubDistributionSummary(this, name, FrankMeterType.PIPE_DURATION));
 	}
 
 	@Override
@@ -1125,8 +1144,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 
 
-
-
 	/**
 	 * The message (e.g. 'receiver timed out') that is returned when the time listening for a reply message
 	 * exceeds the timeout, or in other situations no reply message is received.
@@ -1183,8 +1200,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	/** If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only) */
+	public void setTimeoutOnResult(String string) {
+		timeoutOnResult = string;
+	}
+
+	/** If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only)
+	 * @deprecated use {@link #setTimeoutOnResult(String)} instead
+	 */
+	@Deprecated(since = "8.1")
+	@ConfigurationWarning("Use attribute timeoutOnResult instead")
 	public void setTimeOutOnResult(String string) {
-		timeOutOnResult = string;
+		timeoutOnResult = string;
 	}
 
 	/** If not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only) */

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package org.frankframework.extensions.fxf;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang3.StringUtils;
+import javax.xml.transform.TransformerConfigurationException;
 
-import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -35,6 +35,8 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlBuilder;
+
+import lombok.Getter;
 
 /**
  * FxF wrapper to be used with FxF3. When receiving files (direction=unwrap)
@@ -126,9 +128,17 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if(!new File(fxfDir).isDirectory()) {
 				throw new ConfigurationException("fxf.dir [" + fxfDir + "] doesn't exist or is not a directory");
 			}
-			transferFlowIdTp = TransformerPool.getXPathTransformerPool(null, TRANSFORMER_FLOW_ID_XPATH, OutputType.TEXT, false, getParameterList());
+			try {
+				transferFlowIdTp = TransformerPool.getXPathTransformerPool(null, TRANSFORMER_FLOW_ID_XPATH, OutputType.TEXT, false, getParameterList());
+			} catch (TransformerConfigurationException e) {
+				throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+TRANSFORMER_FLOW_ID_XPATH+"]", e);
+			}
 			String xpathFilename = isUseServerFilename() ? SERVER_FILENAME_XPATH : CLIENT_FILENAME_XPATH;
-			clientFilenameTp = TransformerPool.getXPathTransformerPool(null, xpathFilename, OutputType.TEXT, false, getParameterList());
+			try {
+				clientFilenameTp = TransformerPool.getXPathTransformerPool(null, xpathFilename, OutputType.TEXT, false, getParameterList());
+			} catch (TransformerConfigurationException e) {
+				throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xpathFilename+"]", e);
+			}
 		}
 		if (StringUtils.isNotEmpty(getFlowOutFolder()) && !getFlowOutFolder().endsWith("/")) {
 			setFlowOutFolder(getFlowOutFolder()+"/");

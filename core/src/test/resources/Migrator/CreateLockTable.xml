@@ -1,0 +1,18 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+	<changeSet id="IAF_Util:1:${tableName}" author="Niels Meijer">
+		<comment>Add ${tableName} Table</comment>
+		<createTable tableName="${tableName}">
+			<column name="OBJECTID" type="java.sql.Types.VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISLOCK"/>
+			</column>
+			<column name="TYPE" type="java.sql.Types.CHAR(1)"/>
+			<column name="HOST" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="CREATIONDATE" type="DATETIME"/>
+			<column name="EXPIRYDATE" type="DATETIME"/>
+		</createTable>
+	</changeSet>
+</databaseChangeLog>

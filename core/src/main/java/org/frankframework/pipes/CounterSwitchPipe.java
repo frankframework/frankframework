@@ -23,8 +23,9 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Default;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
-import org.frankframework.statistics.StatisticsKeeper;
 import org.frankframework.stream.Message;
+
+import io.micrometer.core.instrument.DistributionSummary;
 
 /**
  * Selects an exitState, based on the number of received messages by this pipe.
@@ -60,9 +61,9 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 		String forward = "";
 		PipeForward pipeForward = null;
 
-		StatisticsKeeper sk = getPipeLine().getPipeStatistics(this);
-		if (sk != null) {
-			long count = sk.getCount();
+		DistributionSummary summary = getPipeLine().getPipeStatistics(this);
+		if (summary != null) {
+			long count = summary.count();
 			forward = "" + (getDivisor() - (count % getDivisor()));
 		}
 

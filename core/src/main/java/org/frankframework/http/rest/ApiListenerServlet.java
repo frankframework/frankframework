@@ -32,7 +32,18 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.nimbusds.jose.util.JSONObjectUtils;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.frankframework.core.PipeLineSession;
@@ -57,17 +68,6 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
-
-import com.nimbusds.jose.util.JSONObjectUtils;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
 
 /**
  *
@@ -147,7 +147,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		String uri = request.getPathInfo();
 		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : ""));
 
-		if (uri==null) {
+		if (uri == null) {
 			response.setStatus(400);
 			LOG.warn("{} empty uri", () -> createAbortMessage(remoteUser, 400));
 			return;
@@ -161,39 +161,16 @@ public class ApiListenerServlet extends HttpServletBase {
 			 * Generate OpenApi specification
 			 */
 			if(uri.equalsIgnoreCase("/openapi.json")) {
-				String endpoint = createEndpointUrlFromRequest(request);
-				String specUri = request.getParameter("uri");
-				JsonObject jsonSchema = null;
-				if(specUri != null) {
-					ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
-					if(apiConfig != null) {
-						jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
-					}
-				} else {
-					jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
-				}
-				if(jsonSchema != null) {
-					returnJson(response, 200, jsonSchema);
-					return;
-				}
-				response.sendError(404, "OpenApi specification not found");
+				generateOpenApiSpec(request, response);
 				return;
 			}
 
 			/*
 			 * Generate an OpenApi json file for a set of ApiDispatchConfigs
-			 * @Deprecated This is here to support old url's
+			 * @Deprecated This is here to support old urls
 			 */
 			if(uri.endsWith("openapi.json")) {
-				String endpoint = createEndpointUrlFromRequest(request);
-				uri = uri.substring(0, uri.lastIndexOf("/"));
-				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
-				if(apiConfig != null) {
-					JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
-					returnJson(response, 200, jsonSchema);
-					return;
-				}
-				response.sendError(404, "OpenApi specification not found");
+				generatePartialOpenApiSpec(uri, request, response);
 				return;
 			}
 
@@ -203,8 +180,89 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 	}
 
+	private void generatePartialOpenApiSpec(String uri, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String endpoint = createEndpointUrlFromRequest(request);
+		final String cleanedUri = uri.substring(0, uri.lastIndexOf("/"));
+		ApiDispatchConfig apiConfig = dispatcher.findExactMatchingConfigForUri(cleanedUri);
+		if (apiConfig == null) {
+			response.sendError(404, "OpenApi specification not found");
+			return;
+		}
+		JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+		returnJson(response, 200, jsonSchema);
+	}
+
+	private void generateOpenApiSpec(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String endpoint = createEndpointUrlFromRequest(request);
+		String specUri = request.getParameter("uri");
+		JsonObject jsonSchema;
+		if(specUri != null) {
+			ApiDispatchConfig apiConfig = dispatcher.findExactMatchingConfigForUri(specUri);
+			if(apiConfig != null) {
+				jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+			} else {
+				jsonSchema = null;
+			}
+		} else {
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
+		}
+		if (jsonSchema == null) {
+			response.sendError(404, "OpenApi specification not found");
+			return;
+		}
+		returnJson(response, 200, jsonSchema);
+	}
+
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response, ApiListener.HttpMethod method, String uri) {
 		String remoteUser = request.getRemoteUser();
+
+		ApiDispatchConfig config = dispatcher.findConfigForRequest(method, uri);
+		if(config == null) {
+			response.setStatus(404);
+			LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
+			return;
+		}
+
+		/*
+		 * Handle Cross-Origin Resource Sharing
+		 * TODO make this work behind loadbalancers/reverse proxies
+		 * TODO check if request ip/origin header matches allowOrigin property
+		 */
+		String origin = request.getHeader("Origin");
+		if (method == ApiListener.HttpMethod.OPTIONS || origin != null) {
+			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
+			String headers = request.getHeader("Access-Control-Request-Headers");
+			if (headers != null) {
+				// Strip CR & LF characters from the headers as they come from request and Codacy warns
+				// this could result in a security issue.
+				response.setHeader("Access-Control-Allow-Headers", StringEscapeUtils.escapeJava(headers));
+			}
+			response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
+
+			String methods = config.getMethods().stream()
+					.map(ApiListener.HttpMethod::name)
+					.collect(Collectors.joining(", "));
+			response.setHeader("Access-Control-Allow-Methods", methods);
+
+			//Only cut off OPTIONS (aka preflight) requests
+			if (method == ApiListener.HttpMethod.OPTIONS) {
+				response.setStatus(200);
+				LOG.trace("Aborting preflight request with status [200], method [{}]", method);
+				return;
+			}
+		}
+
+		/*
+		 * Get serviceClient
+		 */
+		ApiListener listener = config.getApiListener(method);
+		if(listener == null) {
+			response.setStatus(405);
+			LOG.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
+			return;
+		}
+
+		LOG.trace("ApiListenerServlet calling service [{}]", listener::getName);
 
 		/*
 		 * Initiate and populate messageContext
@@ -216,51 +274,6 @@ public class ApiListenerServlet extends HttpServletBase {
 			pipelineSession.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
 			pipelineSession.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
-				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
-				if(config == null) {
-					response.setStatus(404);
-					LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
-					return;
-				}
-
-				/*
-				 * Handle Cross-Origin Resource Sharing
-				 * TODO make this work behind loadbalancers/reverse proxies
-				 * TODO check if request ip/origin header matches allowOrigin property
-				 */
-				String origin = request.getHeader("Origin");
-				if (method == ApiListener.HttpMethod.OPTIONS || origin != null) {
-					response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
-					String headers = request.getHeader("Access-Control-Request-Headers");
-					if (headers != null)
-						response.setHeader("Access-Control-Allow-Headers", headers);
-					response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
-
-					String methods = config.getMethods().stream()
-						.map(ApiListener.HttpMethod::name)
-						.collect(Collectors.joining(", "));
-					response.setHeader("Access-Control-Allow-Methods", methods);
-
-					//Only cut off OPTIONS (aka preflight) requests
-					if (method == ApiListener.HttpMethod.OPTIONS) {
-						response.setStatus(200);
-						if(LOG.isTraceEnabled()) LOG.trace("Aborting preflight request with status [200], method [{}]", method);
-						return;
-					}
-				}
-
-				/*
-				 * Get serviceClient
-				 */
-				ApiListener listener = config.getApiListener(method);
-				if(listener == null) {
-					response.setStatus(405);
-					LOG.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
-					return;
-				}
-
-				if(LOG.isTraceEnabled()) LOG.trace("ApiListenerServlet calling service [{}]", listener.getName());
-
 				/*
 				 * Check authentication
 				 */
@@ -640,12 +653,17 @@ public class ApiListenerServlet extends HttpServletBase {
 			String[] paramList = request.getParameterValues(paramName);
 			if(paramList.length > 1) { // contains multiple items
 				List<String> valueList = List.of(paramList);
-				if(LOG.isTraceEnabled()) LOG.trace("setting queryParameter [{}] to {}", paramName, valueList);
+				if (LOG.isTraceEnabled()) {
+					List<String> logValueList = valueList.stream()
+							.map(StringEscapeUtils::escapeJava)
+							.collect(Collectors.toList());
+					LOG.trace("setting queryParameter [{}] to {}", paramName, logValueList);
+				}
 				params.put(paramName, valueList);
 			}
 			else {
 				String paramValue = request.getParameter(paramName);
-				if(LOG.isTraceEnabled()) LOG.trace("setting queryParameter [{}] to [{}]", paramName, paramValue);
+				LOG.trace("setting queryParameter [{}] to [{}]", ()->paramName, ()->StringEscapeUtils.escapeJava(paramValue));
 				params.put(paramName, paramValue);
 			}
 		}

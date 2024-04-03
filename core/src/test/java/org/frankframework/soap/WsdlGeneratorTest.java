@@ -27,7 +27,7 @@ public class WsdlGeneratorTest {
 		EchoPipe pipe = new EchoPipe();
 		pipe.registerForward(new PipeForward("success",null));
 		pipe.setName(pipe.getClass().getSimpleName().concat("4WsdlGeneratorTest"));
-		PipeLine pipeline = new PipeLine();
+		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
 
 		PipeLineExit exit = new PipeLineExit();
@@ -35,7 +35,7 @@ public class WsdlGeneratorTest {
 		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 
-		Adapter adapter = new Adapter();
+		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName(pipe.getClass().getSimpleName().concat("4WsdlGeneratorTest"));
 		adapter.setPipeLine(pipeline);
 		pipeline.setAdapter(adapter);

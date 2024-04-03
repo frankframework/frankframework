@@ -5,9 +5,16 @@
   <div class="row">
     <div class="col-lg-12 tabs-container">
       <ul class="nav nav-tabs" role="menu">
-        <li [ngClass]="{active : selectedConfiguration == 'All'}"><a (click)="changeConfiguration('All')">All</a></li>
-        <li [ngClass]="{active : selectedConfiguration == configuration.name}" *ngFor="let configuration of configurations">
-          <a (click)="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+        <li [ngClass]="{ active: selectedConfiguration === 'All' }">
+          <a (click)="changeConfiguration('All')">All</a>
+        </li>
+        <li
+          *ngFor="let configuration of configurations"
+          [ngClass]="{ active: selectedConfiguration === configuration.name }"
+        >
+          <a (click)="changeConfiguration(configuration.name)">{{
+            configuration.name
+          }}</a>
         </li>
       </ul>
     </div>
@@ -18,23 +25,34 @@
             Show:
             <div class="btn-group">
               <button
-                class="btn btn-sm btn-default"
-                [ngClass]="{ active: this.loadedConfiguration }"
                 (click)="update(true)"
-              >Loaded Configuration</button>
-              <button
+                [ngClass]="{ active: this.loadedConfiguration }"
                 class="btn btn-sm btn-default"
-                [ngClass]="{ active: !this.loadedConfiguration }"
+              >
+                Loaded Configuration
+              </button>
+              <button
                 (click)="update(false)"
-              >Original Configuration</button>
+                [ngClass]="{ active: !this.loadedConfiguration }"
+                class="btn btn-sm btn-default"
+              >
+                Original Configuration
+              </button>
             </div>
           </div>
           <br />
           <div class="pull-right">
-            <button title="Copy Configuration" (click)="clipboard()" class="btn btn-default btn-xs" type="button">Copy <i class="fa fa-clipboard"></i></button>
+            <button
+              (click)="clipboard()"
+              class="btn btn-default btn-xs"
+              title="Copy Configuration"
+              type="button"
+            >
+              Copy <i class="fa fa-clipboard"></i>
+            </button>
           </div>
           <div class="clearfix"></div>
-          <pre appFormatCode [text]="configuration"></pre>
+          <pre [text]="configuration" appFormatCode></pre>
         </div>
       </div>
     </div>

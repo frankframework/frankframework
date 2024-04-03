@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,14 @@
 */
 package org.frankframework.core;
 
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.stream.Message;
 
 /**
@@ -27,7 +31,7 @@ import org.frankframework.stream.Message;
  *
  * @author  Gerrit van Brakel
  */
-@FrankDocGroup(order = 20, name = "Senders")
+@FrankDocGroup(FrankDocGroupValue.SENDER)
 @ElementType(ElementTypes.ENDPOINT)
 public interface ISender extends IConfigurable {
 
@@ -75,11 +79,12 @@ public interface ISender extends IConfigurable {
 	 */
 	SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
-	default Message sendMessageOrThrow(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	default @Nonnull Message sendMessageOrThrow(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult senderResult = sendMessage(message, session);
 		Message result = senderResult.getResult();
 		if (!senderResult.isSuccess()) {
-			SenderException se = new SenderException(senderResult.getErrorMessage());
+			String reason = StringUtils.isNotEmpty(senderResult.getErrorMessage()) ? senderResult.getErrorMessage() : "sender finished processing using undefined error forward";
+			SenderException se = new SenderException(reason);
 			try {
 				result.close();
 			} catch (Exception e) {

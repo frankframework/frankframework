@@ -130,7 +130,7 @@
 		</receiver>
 		<receiver name="JmsRRListener using isReplyTo, ignore inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1c'">
 			</listener>
 		</receiver>
@@ -142,7 +142,7 @@
 		</receiver>
 		<receiver name="JmsRRListener using dynamic reply queue, ignore inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1e'">
 			</listener>
 		</receiver>
@@ -169,7 +169,7 @@
 		</receiver>
 		<receiver name="JmsRRListener using isReplyTo, use inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1h'">
 			</listener>
 		</receiver>
@@ -181,7 +181,7 @@
 		</receiver>
 		<receiver name="JmsRRListener using dynamic reply queue, use inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1j'">
 			</listener>
 		</receiver>
@@ -268,8 +268,7 @@
 				className="org.frankframework.pipes.SenderPipe"
 				getInputFromSessionKey="originalMessage">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)"
-					queryType="insert">
+					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('LASTNAME',?,NULL,NULL)">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 			</pipe>
@@ -279,8 +278,7 @@
 				className="org.frankframework.pipes.SenderPipe"
 				getInputFromSessionKey="originalMessage" transactionAttribute="NotSupported">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)"
-					queryType="insert">
+					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 				<forward name="success" path="exception" />
@@ -343,7 +341,7 @@
 	<adapter name="JmsFFListener" description="Test the functioning of the JmsListener (FF)"
 		active="${active.jms}">
 		<receiver name="JmsFFListener" transactionAttribute="Required"
-			elementToMoveChain="Location" removeCompactMsgNamespaces="false"
+			elementToMove="location" removeCompactMsgNamespaces="false"
 			maxRetries="0" hideRegex="(?&lt;=&lt;value&gt;).*?(?=&lt;/value&gt;)"
 			hideMethod="firstHalf">
 			<listener className="org.frankframework.jms.JmsListener"
@@ -370,7 +368,11 @@
 				getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="listenerException" className="org.frankframework.pipes.ExceptionPipe"
+
+			<!-- when the incoming message is 'listenerException' validates the elementToMove has done it's job -->
+			<pipe name="listenerException" className="nl.nn.adapterframework.pipes.XmlSwitch"
+				forwardNameSessionKey="ref_location" notFoundForwardName="EXIT" />
+			<pipe name="move-me" className="nl.nn.adapterframework.pipes.ExceptionPipe"
 				getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>

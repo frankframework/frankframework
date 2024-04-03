@@ -15,8 +15,10 @@
 */
 package org.frankframework.processors;
 
-import org.apache.logging.log4j.Logger;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
+import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
@@ -27,6 +29,8 @@ import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
+import lombok.Setter;
+
 /**
  * Baseclass for PipeProcessors.
  *
@@ -36,21 +40,17 @@ import org.frankframework.util.LogUtil;
 public abstract class PipeProcessorBase implements PipeProcessor {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private PipeProcessor pipeProcessor;
+	@Setter private PipeProcessor pipeProcessor;
 
-	public void setPipeProcessor(PipeProcessor pipeProcessor) {
-		this.pipeProcessor = pipeProcessor;
-	}
-
-	protected abstract PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException;
+	protected abstract PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException;
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
 		return processPipe(pipeLine, pipe, message, pipeLineSession, m -> pipeProcessor.processPipe(pipeLine, pipe, m, pipeLineSession));
 	}
 
 	@Override
-	public PipeRunResult validate(PipeLine pipeLine, IValidator validator, Message message, PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+	public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
 		return processPipe(pipeLine, validator, message, pipeLineSession, m -> pipeProcessor.validate(pipeLine, validator, m, pipeLineSession, messageRoot));
 	}
 

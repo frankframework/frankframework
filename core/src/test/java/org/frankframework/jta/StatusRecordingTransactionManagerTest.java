@@ -1,15 +1,12 @@
 package org.frankframework.jta;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.transaction.TransactionManager;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.transaction.TransactionSystemException;
 
 import lombok.Setter;
@@ -50,16 +47,7 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 	}
 
 	@Override
-	@Before
-	public void setup() throws IOException {
-		TemporaryFolder tmpFolder = new TemporaryFolder();
-		tmpFolder.create();
-		folder = tmpFolder.getRoot().toString();
-		super.setup();
-		delete(tmUidFile);
-	}
-
-	@Override
+	@AfterEach
 	public void tearDown() {
 		if (tm != null) {
 			tm.destroy();

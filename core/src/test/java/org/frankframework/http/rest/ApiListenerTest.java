@@ -39,6 +39,8 @@ import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class ApiListenerTest {
 
@@ -228,10 +230,10 @@ public class ApiListenerTest {
 
 	@Test
 	public void testGetPhysicalDestinationNameWith1Endpoint() throws Exception {
-		ServletManager manager = spy(new ServletManager(null));
+		ServletManager manager = spy(new ServletManager());
 		Servlet servlet = mock(Servlet.class);
 		when(servlet.getName()).thenReturn(ApiListenerServlet.class.getSimpleName());
-		when(servlet.getUrlMapping()).thenReturn("aapje");
+		when(servlet.getUrlMapping()).thenReturn("aapje/*");
 		ServletConfiguration servletConfig = spy(new ServletConfiguration());
 		doNothing().when(servletConfig).loadProperties();
 		servletConfig.fromServlet(servlet);
@@ -246,10 +248,10 @@ public class ApiListenerTest {
 
 	@Test
 	public void testGetPhysicalDestinationNameWith2Endpoints() throws Exception {
-		ServletManager manager = spy(new ServletManager(null));
+		ServletManager manager = spy(new ServletManager());
 		Servlet servlet = mock(Servlet.class);
 		when(servlet.getName()).thenReturn(ApiListenerServlet.class.getSimpleName());
-		when(servlet.getUrlMapping()).thenReturn("aap,noot");
+		when(servlet.getUrlMapping()).thenReturn("aap/*,/noot/*");
 		ServletConfiguration servletConfig = spy(new ServletConfiguration());
 		doNothing().when(servletConfig).loadProperties();
 		servletConfig.fromServlet(servlet);
@@ -269,6 +271,29 @@ public class ApiListenerTest {
 
 		// Expect/When
 		assertThrows(ConfigurationException.class, listener::configure, "uriPattern cannot be empty");
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"/good/pat/*, true",
+			"/good/pat/**, true",
+			"/good/pat/*/friet, true",
+			"/bad/pat/a*, false",
+			"/bad/pat/a**, false",
+			"/bad/pat/***, false",
+			"/bad/pat/a*/friet, false",
+			"/bad/pat/*t, false",
+			"/bad/pat/*t/friet, false",
+			"/bad/pat/**/friet, false",
+			"/bad/pat/**/friet/**, false",
+	})
+	public void testUriPatternValidation(String uriPattern, boolean expected) {
+		// Act
+		boolean isValid = ApiListener.isValidUriPattern(uriPattern);
+
+		// Assert
+		assertEquals(expected, isValid, "URI Pattern [" + uriPattern + "] should have been " + (expected ? "" : "in")
+				+ "valid but was matched as " + (isValid ? "" : "in") + "valid.");
 	}
 
 	@Test

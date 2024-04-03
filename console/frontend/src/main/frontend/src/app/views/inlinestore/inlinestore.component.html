@@ -14,7 +14,9 @@
               <thead>
                 <tr>
                   <th>ProcessState</th>
-                  <th title="total number of messages for this ProcessState">#</th>
+                  <th title="total number of messages for this ProcessState">
+                    #
+                  </th>
                   <th>Adapter</th>
                   <th>Receiver</th>
                   <th title="number of messages">#</th>
@@ -23,20 +25,43 @@
               <tbody>
                 <ng-template ngFor let-item [ngForOf]="result | keyvalue">
                   <ng-template [ngIf]="item.value.items.length > 0">
-                    <tr *ngFor="let stateItem of item.value.items; let innerIndex = index">
-                      <td *ngIf="innerIndex===0" rowspan="0">{{item.key}}</td>
-                      <td *ngIf="innerIndex===0" rowspan="0">{{stateItem.messageCount}}</td>
-                      <td>{{stateItem.adapterName}}</td>
-                      <td>{{stateItem.receiverName}}</td>
+                    <tr
+                      *ngFor="
+                        let stateItem of item.value.items;
+                        let innerIndex = index
+                      "
+                    >
+                      <td *ngIf="innerIndex === 0" rowspan="0">
+                        {{ item.key }}
+                      </td>
+                      <td *ngIf="innerIndex === 0" rowspan="0">
+                        {{ stateItem.messageCount }}
+                      </td>
+                      <td>{{ stateItem.adapterName }}</td>
+                      <td>{{ stateItem.receiverName }}</td>
                       <td>
-                        <span class="text-{{getProcessStateIconColor}}" title="Browse messages with ProcessState: {{item.key}}">
+                        <span
+                          class="text-{{ getProcessStateIconColorFn }}"
+                          title="Browse messages with ProcessState: {{
+                            item.key
+                          }}"
+                        >
                           <button
-                            [routerLink]="['', stateItem.configurationName, 'adapters', stateItem.adapterName, 'receivers', stateItem.receiverName, 'stores', item.key]"
+                            [routerLink]="[
+                              '',
+                              stateItem.configurationName,
+                              'adapters',
+                              stateItem.adapterName,
+                              'receivers',
+                              stateItem.receiverName,
+                              'stores',
+                              item.key
+                            ]"
                             class="btn btn-xs btn-default m-l-xs"
                             type="button"
                           >
-                            <i class="fa {{getProcessStateIcon}}"></i>
-                            ({{stateItem.messageCount}})
+                            <i class="fa {{ getProcessStateIconFn }}"></i>
+                            ({{ stateItem.messageCount }})
                           </button>
                         </span>
                       </td>

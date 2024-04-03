@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,13 +26,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -66,6 +59,13 @@ import org.frankframework.xml.NodeSetFilter;
 import org.frankframework.xml.SaxException;
 import org.frankframework.xml.TransformerFilter;
 import org.frankframework.xml.XmlWriter;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -106,7 +106,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				if (streamingXslt && getXsltVersion() != DEFAULT_XSLT_VERSION) {
 					ConfigurationWarnings.add(this, log, "XsltProcessor xsltVersion ["+getXsltVersion()+"] currently does not support streaming XSLT, might lead to memory problems for large messages", SuppressKeys.XSLT_STREAMING_SUPRESS_KEY);
 				}
-				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()));
+				extractElementsTp=TransformerPool.getInstance(makeEncapsulatingXslt("root",getElementXPathExpression(), getXsltVersion(), getNamespaceDefs()), getXsltVersion(), this);
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("elementXPathExpression ["+getElementXPathExpression()+"]",e);
@@ -140,10 +140,10 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	protected String makeEncapsulatingXslt(String rootElementname, String xpathExpression, int xsltVersion, String namespaceDefs) {
-		String paramsString = "";
+		StringBuilder paramsString = new StringBuilder();
 		if (getParameterList() != null) {
 			for (Parameter param: getParameterList()) {
-				paramsString = paramsString + "<xsl:param name=\"" + param.getName() + "\"/>";
+				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 			}
 		}
 		String namespaceClause = XmlUtils.getNamespaceClause(namespaceDefs);

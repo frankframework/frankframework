@@ -1,7 +1,7 @@
 package org.frankframework.util;
 
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -12,38 +12,35 @@ import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.dbms.Dbms;
+import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
-import org.frankframework.jdbc.TransactionManagerTestBase;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
-import org.junit.Before;
-import org.junit.Test;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.TxManagerTest;
+import org.frankframework.testutil.junit.WithLiquibase;
+import org.junit.jupiter.api.BeforeEach;
 
-public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
+@WithLiquibase(tableName = MessageBrowsingFilterTest.tableName)
+public class MessageBrowsingFilterTest {
 
 	private MessageBrowsingFilter filter;
 	private JdbcTransactionalStorage storage = null;
 	private IListener<?> listener = null;
-	private final String tableName = "MESSAGEBROWSINGFILTERTEST";
+	static final String tableName = "MESSAGEBROWSINGFILTERTEST";
 
-	@Override
-	@Before
-	public void setup() throws Exception {
-		super.setup();
-		filter = new MessageBrowsingFilter();
-		storage = new JdbcTransactionalStorage();
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment env) throws Exception {
+		filter = env.createBean(MessageBrowsingFilter.class);
+		storage = env.createBean(JdbcTransactionalStorage.class);
 		storage.setSlotId("MessageBrowsingFilter");
 		storage.setTableName(tableName);
 		storage.setSequenceName("SEQ_"+tableName);
-		autowire(storage);
-		System.setProperty("tableName", tableName);
-		runMigrator(TEST_CHANGESET_PATH);
-
 		listener = new JavaListener();
 	}
 
-	@Test
+	@TxManagerTest
 	public void testMessageFilter() throws Exception {
 		String messageRoot = "message";
 		filter.setMessageMask(messageRoot, storage);
@@ -63,7 +60,9 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		assertEquals(1, count);
 	}
 
-	private void fillTable() throws Exception {
+	private void fillTable(DatabaseTestEnvironment env) throws Exception {
+		IDbmsSupport dbmsSupport = env.getDbmsSupport();
+
 		StringBuilder sb = new StringBuilder("INSERT INTO "+tableName+" (" +
 				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
 				+ storage.getTypeField() + ","
@@ -95,19 +94,19 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "6," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label')");
 		}
 
-		try(Connection connection = getConnection()) {
+		try(Connection connection = env.getConnection()) {
 			try(PreparedStatement stmt = connection.prepareStatement(sb.toString())) {
 				stmt.execute();
 			}
 		}
 	}
 
-	@Test
-	public void testTypeFilter() throws Exception {
+	@TxManagerTest
+	public void testTypeFilter(DatabaseTestEnvironment env) throws Exception {
 		filter.setTypeMask("L");
 		storage.configure();
 
-		fillTable();
+		fillTable(env);
 
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
@@ -121,13 +120,13 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		assertEquals(2, count);
 	}
 
-	@Test
-	public void testDateFilter() throws Exception {
+	@TxManagerTest
+	public void testDateFilter(DatabaseTestEnvironment env) throws Exception {
 		filter.setStartDateMask("2021-07-13 11:03:19.860");
 		filter.setEndDateMask("2021-07-13 11:07:19.860");
 		storage.configure();
 
-		fillTable();
+		fillTable(env);
 
 		int count = 0;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
@@ -140,19 +139,19 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		assertEquals(3,count);
 	}
 
-	@Test
+	@TxManagerTest
 	public void testMessageFilterWithMessageWrapper() throws Exception {
 		MessageWrapper messageInFilter = new MessageWrapper(new Message("message"), "firstMessageID", null);
 		MessageWrapper messageOutOfFilter = new MessageWrapper(new Message("out filter"), "id", null);
 		testMessageFilterWithJavaListenerHelper(messageInFilter, messageOutOfFilter);
 	}
 
-	@Test
+	@TxManagerTest
 	public void testMessageFilterWithMessage() throws Exception {
 		testMessageFilterWithJavaListenerHelper("message", "out filter");
 	}
 
-	@Test
+	@TxManagerTest
 	public void testMessageFilterWithString() throws Exception {
 		testMessageFilterWithJavaListenerHelper("message", "out filter");
 	}
