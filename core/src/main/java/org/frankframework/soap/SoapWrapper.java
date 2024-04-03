@@ -285,11 +285,13 @@ public class SoapWrapper {
 			log.debug("namespaceClause [{}]", namespaceClause);
 		}
 		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
+
 		// XmlUtils.skipXmlDeclaration call below removes the xml declaration from the message, so adding it back if required
-		String xmlHeader = createXmlHeader(message, includeXmlDeclaration);
+		String messageContent = message.asString();
+		String xmlHeader = createXmlHeader(message.getCharset(), includeXmlDeclaration);
 		Message result = new Message(xmlHeader +
 				"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
-				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message.asString())
+				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(messageContent)
 				+ "</soapenv:Body>" + "</soapenv:Envelope>");
 		if (wsscf != null) {
 			result = signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
@@ -297,13 +299,12 @@ public class SoapWrapper {
 		return result;
 	}
 
-	private static String createXmlHeader(final Message message, boolean includeXmlDeclaration) {
+	private static String createXmlHeader(String charSet, boolean includeXmlDeclaration) {
 		if (!includeXmlDeclaration) return "";
-		String charset = message.getCharset();
-		if (charset == null) {
-			charset = StandardCharsets.UTF_8.name();
+		if (charSet == null) {
+			charSet = StandardCharsets.UTF_8.name();
 		}
-		return "<?xml version=\"1.0\" encoding=\"" + charset + "\"?>";
+		return "<?xml version=\"1.0\" encoding=\"" + charSet + "\"?>";
 	}
 
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {
