@@ -169,17 +169,30 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		if (diskShare != null) {
 			try {
 				diskShare.close();
-			} catch (IOException e) {
-				log.warn("error closing diskShare: {}", diskShare, e);
+			} catch (IOException e) { //Also catches TransportException which inherits from IOException
+				log.info("error closing diskShare [{}] message: {}", diskShare, e.getMessage()); // Attempts to send a 'close' request to the server which is not always possible (connection might be gone).
+			}
+		}
+		if(connection != null) {
+			try {
+				connection.close(true); //Cannot throw InterruptException
+			} catch (Exception e) {
+				log.info("error closing connection [{}] message: {}", diskShare, e.getMessage());
 			}
 		}
 		if (client != null) {
-			client.close();
+			try {
+				client.close(); //Can throw InterruptException
+			} catch (Exception e) {
+				log.info("error closing client [{}] message: {}", diskShare, e.getMessage());
+			}
 		}
+
 		diskShare = null;
 		session = null;
 		connection = null;
 		client = null;
+
 		super.close();
 		log.debug("closed connection to [{}] for Samba2FS", hostname);
 	}
