@@ -32,7 +32,6 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
-
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -77,7 +76,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 			fileSystem.open();
 			actor.open();
 		} catch (FileSystemException e) {
-			throw new PipeStartException("Cannot open fileSystem",e);
+			throw new PipeStartException("Pipe [" + getName() + "]: Cannot open fileSystem",e);
 		}
 	}
 

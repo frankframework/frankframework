@@ -8,15 +8,20 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="cleanup dir" className="org.frankframework.pipes.CleanupOldFilesPipe"
-				filePattern="${testdata.dir}/mfp" subdirectories="true" lastModifiedDelta="-1">
-				<forward name="success" path="cleanup dir2" />
-			</pipe>
-
-			<pipe name="cleanup dir2" className="org.frankframework.pipes.CleanupOldFilesPipe"
-				filePattern="${testdata.dir}/mfp2" subdirectories="true" lastModifiedDelta="-1">
-				<forward name="success" path="write file" />
-			</pipe>
+			<LocalFileSystemPipe
+				name="cleanup dir"
+				action="rmdir"
+				removeNonEmptyFolder="true"
+				createFolder="true"
+				inputFolder="${testdata.dir}/mfp/"
+			/>
+			<LocalFileSystemPipe
+				name="cleanup dir2"
+				action="rmdir"
+				removeNonEmptyFolder="true"
+				createFolder="true"
+				inputFolder="${testdata.dir}/mfp2/"
+			/>
 
 			<!-- Write file -->
 			<pipe

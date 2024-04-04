@@ -13,6 +13,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -24,9 +28,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.StreamUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -558,10 +559,11 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	public void fileSystemPipeTestForFolderExistenceWithNonExistingFolder() throws Exception {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.setInputFolder("NonExistentFolder");
+		fileSystemPipe.setName("FSP");
 		fileSystemPipe.configure();
 
 		PipeStartException e = assertThrows(PipeStartException.class, fileSystemPipe::start);
-		assertThat(e.getMessage(), startsWith("Cannot open fileSystem"));
+		assertThat(e.getMessage(), startsWith("Pipe [FSP]: Cannot open fileSystem"));
 	}
 
 	@Test

@@ -2603,12 +2603,12 @@
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Username for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
+        <xs:documentation>Username for authentication to mail server.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Password for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
+        <xs:documentation>Password for authentication to mail server.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
@@ -6597,12 +6597,12 @@
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Username for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
+        <xs:documentation>Username for authentication to mail server.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Password for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
+        <xs:documentation>Password for authentication to mail server.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
@@ -10922,15 +10922,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="CleanupOldFilesPipe">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="CleanupOldFilesPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="ClobLineIteratingPipe">
         <xs:complexType>
           <xs:complexContent>
@@ -11372,6 +11363,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="ObfuscatePipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ObfuscatePipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="PGPPipe">
         <xs:complexType>
           <xs:complexContent>
@@ -11664,15 +11664,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="UnzipPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="UploadFilePipe">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="UploadFilePipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -12543,61 +12534,6 @@
     <xs:attributeGroup ref="ChecksumPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="CleanupOldFilesPipeType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractPipeDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="CleanupOldFilesPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CleanupOldFilesPipe" />
-  </xs:complexType>
-  <xs:attributeGroup name="CleanupOldFilesPipeDeclaredAttributeGroup">
-    <xs:attribute name="filePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>files that match this pattern will be deleted. parameters of the pipe are applied to this pattern. if this attribute is not set, the input of the pipe is interpreted as the file to be removed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="filePatternSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>session key that contains the pattern of files to be deleted, only used if filePattern is not set</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="lastModifiedDelta" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>time in milliseconds after last modification that must have passed at least before a file will be deleted (set to negative value to disable) Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="subdirectories" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, files  in subdirectories will be deleted, too Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="deleteEmptySubdirectories" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, empty subdirectories will be deleted, too Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="wildcard" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>filter of files to delete. if not set and a directory is specified, all files in the directory are interpreted to be deleted</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="excludeWildcard" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>filter of files to be excluded for deletion</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="minStableTime" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Minimal age of file &lt;i&gt;in milliseconds&lt;/i&gt;, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 to disable) Default: 1000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="CleanupOldFilesPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="CleanupOldFilesPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="ClobLineIteratingPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -12902,7 +12838,7 @@
     </xs:attribute>
     <xs:attribute name="direction">
       <xs:simpleType>
-        <xs:union memberTypes="DirectionAttributeValuesType_6 variableRef" />
+        <xs:union memberTypes="DirectionAttributeValuesType_7 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="encodeSubstring" type="frankBoolean">
@@ -13448,7 +13384,7 @@
         <xs:documentation>Direction of the transformation. Default: JSON2XML</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="DirectionAttributeValuesType_7 variableRef" />
+        <xs:union memberTypes="DirectionAttributeValuesType_8 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="version" type="xs:string" />
@@ -14188,6 +14124,29 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="MoveFilePipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="MoveFilePipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="ObfuscatePipeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="ObfuscatePipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.tibco.pipes.ObfuscatePipe" />
+  </xs:complexType>
+  <xs:attributeGroup name="ObfuscatePipeDeclaredAttributeGroup">
+    <xs:attribute name="direction">
+      <xs:annotation>
+        <xs:documentation>Default: OBFUSCATE</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DirectionAttributeValuesType_6 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ObfuscatePipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="ObfuscatePipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PGPPipeType">
@@ -15333,36 +15292,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="UnzipPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="UnzipPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="UploadFilePipeType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractPipeDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="UploadFilePipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.UploadFilePipe" />
-  </xs:complexType>
-  <xs:attributeGroup name="UploadFilePipeDeclaredAttributeGroup">
-    <xs:attribute name="directory" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>base directory where files are unzipped to</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="directorySessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the session key that contains the base directory where files are unzipped to Default: destination</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of the key in the &lt;code&gt;pipelinesession&lt;/code&gt; which contains the inputstream Default: file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="UploadFilePipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="UploadFilePipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="WsdlGeneratorPipeType">
@@ -16736,7 +16665,7 @@
       <xs:pattern value="[uU][pP][pP][eE][rR][cC][aA][sS][eE]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="DirectionAttributeValuesType_6">
+  <xs:simpleType name="DirectionAttributeValuesType_7">
     <xs:restriction base="xs:string">
       <xs:pattern value="[eE][nN][cC][oO][dD][eE]" />
       <xs:pattern value="[dD][eE][cC][oO][dD][eE]" />
@@ -16768,10 +16697,16 @@
       <xs:pattern value="[hH][eE][xX]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="DirectionAttributeValuesType_7">
+  <xs:simpleType name="DirectionAttributeValuesType_8">
     <xs:restriction base="xs:string">
       <xs:pattern value="[jJ][sS][oO][nN][22][xX][mM][lL]" />
       <xs:pattern value="[xX][mM][lL][22][jJ][sS][oO][nN]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DirectionAttributeValuesType_6">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[oO][bB][fF][uU][sS][cC][aA][tT][eE]" />
+      <xs:pattern value="[dD][eE][oO][bB][fF][uU][sS][cC][aA][tT][eE]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ActionAttributeValuesType_4">
