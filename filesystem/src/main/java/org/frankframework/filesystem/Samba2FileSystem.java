@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
@@ -139,7 +140,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 			List<Factory.Named<Authenticator>> authenticators = new ArrayList<>();
 			authenticators.add(new SpnegoAuthenticator.Factory());
 			authenticators.add(new NtlmAuthenticator.Factory());
-			SmbConfig config = SmbConfig.builder().withAuthenticators(authenticators).build();
+			SmbConfig config = SmbConfig.builder().withAuthenticators(authenticators).withTimeout(30, TimeUnit.SECONDS).build();
 			client = new SMBClient(config);
 
 			connection = client.connect(hostname, port);
@@ -169,17 +170,20 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		if (diskShare != null) {
 			try {
 				diskShare.close();
-			} catch (IOException e) {
-				log.warn("error closing diskShare: {}", diskShare, e);
+			} catch (IOException e) { //Also catches TransportException which inherits from IOException
+				//SMBJ natively logs errors (see log4j4ibis.xml)
+				log.info("error closing diskShare [{}] message: {}", diskShare, e.getMessage()); // Attempts to send a 'close' request to the server which is not always possible (connection might be gone).
 			}
 		}
 		if (client != null) {
 			client.close();
 		}
+
 		diskShare = null;
 		session = null;
 		connection = null;
 		client = null;
+
 		super.close();
 		log.debug("closed connection to [{}] for Samba2FS", hostname);
 	}
