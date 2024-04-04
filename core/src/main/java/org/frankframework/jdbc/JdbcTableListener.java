@@ -168,8 +168,16 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		tableAlias = string;
 	}
 
+	
 	/**
-	 * Field containing the status of the message. For optimal performance, and index should exist that starts with this field, contains all fields that are used with a fixed value in the select condition, and end with the orderField.
+	 * Field containing the <code>messageId</code>.
+	 * <b>NB: If this column is not set the default (primary key) {@link #setKeyField(String) keyField} will be used as messageId!</b>
+	 * @ff.default <i>same as keyField</i>
+	 */
+	
+	/**
+	 * Field containing the status of the message. 
+  	 * <b>NB: For optimal performance, an index should exist that starts with this field, followed by all fields that are used with a fixed value in the select condition, and end with the orderField.
 	 * @ff.mandatory
 	 */
 	public void setStatusField(String fieldname) {
