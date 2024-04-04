@@ -18,6 +18,7 @@ package nl.nn.adapterframework.processors;
 import java.util.Date;
 import java.util.Map;
 
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
@@ -45,8 +46,16 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 					tsReceivedLong = tsReceivedDate.getTime();
 				}
 
+				Message errorMessage;
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();
-				Message errorMessage = emf.format(e.getMessage(), e.getCause(), pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+
+				if(e instanceof PipeRunException) {
+					INamedObject location = ((PipeRunException) e).getPipeInError();
+					errorMessage = emf.format(null, e.getCause(), location, message, pipeLineSession.getMessageId(), tsReceivedLong);
+				} else {
+					errorMessage = emf.format(null, e, pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+				}
+
 				log.info("exception occurred, forwarding to exception-forward [{}], exception:\n", PipeForward.EXCEPTION_FORWARD_NAME, e);
 				return new PipeRunResult(pipe.getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), errorMessage);
 			}

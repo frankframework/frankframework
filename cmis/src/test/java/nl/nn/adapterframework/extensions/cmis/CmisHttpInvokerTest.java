@@ -1,5 +1,8 @@
 package nl.nn.adapterframework.extensions.cmis;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -9,6 +12,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -40,7 +44,7 @@ public class CmisHttpInvokerTest {
 		when(session.get(eq(SessionParameter.USER_AGENT), anyString())).thenReturn("Mockito mock-agent");
 	}
 
-	private CmisHttpInvoker createInvoker() {
+	private CmisHttpInvoker createInvoker(int statusCode) {
 		return new CmisHttpInvoker() {
 			@Override
 			protected CmisHttpSender createSender() {
@@ -50,7 +54,7 @@ public class CmisHttpInvokerTest {
 					CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
 
 					//Mock all requests
-					when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenAnswer(new HttpResponseMock());
+					when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenAnswer(new HttpResponseMock(statusCode));
 					when(sender.getHttpClient()).thenReturn(httpClient);
 
 					return sender;
@@ -75,8 +79,10 @@ public class CmisHttpInvokerTest {
 		};
 	}
 
-	private void assertResponse(String string, Response response) throws IOException {
-		String result = StreamUtil.streamToString(response.getStream());
+	private void assertResponse(String string, InputStream response) throws IOException {
+		assertResponse(string, StreamUtil.streamToString(response));
+	}
+	private void assertResponse(String string, String result) throws IOException {
 		String expected = TestFileUtils.getTestFile(string);
 		assertNotNull("cannot find test file", expected);
 
@@ -85,26 +91,32 @@ public class CmisHttpInvokerTest {
 
 	@Test
 	public void testGet() throws Exception {
-		CmisHttpInvoker invoker = createInvoker();
+		CmisHttpInvoker invoker = createInvoker(200);
 		UrlBuilder url = new UrlBuilder("https://dummy.url.com");
 		Response response = invoker.invokeGET(url, session);
 
-		assertResponse("/HttpInvokerResponse/simpleGet.txt", response);
+		assertNull(response.getErrorContent());
+		assertNotNull(response.getStream());
+		assertEquals(200, response.getResponseCode());
+		assertResponse("/HttpInvokerResponse/simpleGet.txt", response.getStream());
 	}
 
 	@Test
 	public void testPost() throws Exception {
-		CmisHttpInvoker invoker = createInvoker();
+		CmisHttpInvoker invoker = createInvoker(200);
 		UrlBuilder url = new UrlBuilder("https://dummy.url.com");
 		Output writer = createOutputFromFile("/HttpInvokerRequest/postMessage.txt");
 		Response response = invoker.invokePOST(url, "text/plain", writer, session);
 
-		assertResponse("/HttpInvokerResponse/simplePost.txt", response);
+		assertNull(response.getErrorContent());
+		assertNotNull(response.getStream());
+		assertEquals(200, response.getResponseCode());
+		assertResponse("/HttpInvokerResponse/simplePost.txt", response.getStream());
 	}
 
 	@Test
 	public void testPut() throws Exception {
-		CmisHttpInvoker invoker = createInvoker();
+		CmisHttpInvoker invoker = createInvoker(200);
 		UrlBuilder url = new UrlBuilder("https://dummy.url.com");
 		Output writer = createOutputFromFile("/HttpInvokerRequest/putMessage.txt");
 		Map<String, String> headers = new HashMap<>();
@@ -112,15 +124,33 @@ public class CmisHttpInvokerTest {
 
 		Response response = invoker.invokePUT(url, "text/plain", headers, writer, session);
 
-		assertResponse("/HttpInvokerResponse/simplePut.txt", response);
+		assertNull(response.getErrorContent());
+		assertNotNull(response.getStream());
+		assertEquals(200, response.getResponseCode());
+		assertResponse("/HttpInvokerResponse/simplePut.txt", response.getStream());
 	}
 
 	@Test
 	public void testDelete() throws Exception {
-		CmisHttpInvoker invoker = createInvoker();
+		CmisHttpInvoker invoker = createInvoker(200);
 		UrlBuilder url = new UrlBuilder("https://dummy.url.com");
 		Response response = invoker.invokeDELETE(url, session);
 
-		assertResponse("/HttpInvokerResponse/simpleDelete.txt", response);
+		assertNull(response.getErrorContent());
+		assertNotNull(response.getStream());
+		assertEquals(200, response.getResponseCode());
+		assertResponse("/HttpInvokerResponse/simpleDelete.txt", response.getStream());
+	}
+
+	@Test
+	public void testException() throws Exception {
+		CmisHttpInvoker invoker = createInvoker(400);
+		UrlBuilder url = new UrlBuilder("https://dummy.url.com");
+		Response response = invoker.invokeGET(url, session);
+		assertNotNull(response.getErrorContent());
+		assertNull(response.getStream());
+		assertEquals(400, response.getResponseCode());
+		assertTrue(response.getErrorContent().contains("HOST dummy.url.com"));
+		assertResponse("/HttpInvokerResponse/simpleGet.txt", response.getErrorContent());
 	}
 }

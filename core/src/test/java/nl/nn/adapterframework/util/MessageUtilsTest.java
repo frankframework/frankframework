@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,10 +10,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.net.URL;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.MimeType;
 
@@ -203,5 +207,67 @@ public class MessageUtilsTest {
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
 		assertEquals("application/json", mimeType.toString()); //mime-type can be determined
+	}
+
+	private String getMessageHeaders(Message message) {
+		return message.getContext()
+				.entrySet()
+				.stream()
+				.map(Map.Entry::getKey)
+				.filter(e -> e.startsWith(MessageContext.HEADER_PREFIX))
+				.collect(Collectors.toList())
+				.toString();
+	}
+
+	@Test
+	public void testParseGETContent() throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/test");
+		request.addHeader("User-Agent", "double-o-seven");
+		Message message = MessageUtils.parseContentAsMessage(request);
+
+		assertTrue(Message.isEmpty(message));
+		assertTrue(Message.isNull(message));
+		assertEquals(0L, message.size());
+		assertEquals("[Header.User-Agent]", getMessageHeaders(message));
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	public void testParseNullPOSTContent(String content) throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/test");
+		request.addHeader("User-Agent", "double-o-seven");
+		request.setContent(content != null ? content.getBytes() : null);
+		Message message = MessageUtils.parseContentAsMessage(request);
+
+		assertTrue(Message.isEmpty(message));
+		assertTrue(Message.isNull(message));
+		assertEquals(0L, message.size());
+		assertEquals("[Header.User-Agent]", getMessageHeaders(message));
+	}
+
+	@Test
+	public void testParsePostWithContent() throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/test");
+		request.setContent("data".getBytes());
+		request.addHeader("User-Agent", "double-o-seven");
+		Message message = MessageUtils.parseContentAsMessage(request);
+
+		assertFalse(Message.isEmpty(message));
+		assertEquals("data", message.asString());
+		assertEquals(4L, message.size());
+		assertEquals("[Header.User-Agent]", getMessageHeaders(message));
+	}
+
+	@Test
+	public void testParsePostWithTransferEncoding() throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/test");
+		request.addHeader("Transfer-Encoding", "chunked");
+		request.addHeader("User-Agent", "double-o-seven");
+		Message message = MessageUtils.parseContentAsMessage(request);
+
+		assertFalse(Message.isEmpty(message));
+		assertEquals("", message.asString());
+		assertEquals(0L, message.size());
+		assertEquals("[Header.Transfer-Encoding, Header.User-Agent]", getMessageHeaders(message));
 	}
 }

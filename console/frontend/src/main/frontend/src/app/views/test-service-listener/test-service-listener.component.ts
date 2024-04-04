@@ -76,7 +76,7 @@ export class TestServiceListenerComponent implements OnInit {
     }
 
     this.processingMessage = true;
-    this.http.post<ServiceListenerResult>("test-servicelistener", fd).subscribe({ next: (returnData) => {
+    this.http.post<ServiceListenerResult>(`${this.appService.absoluteApiPath}test-servicelistener`, fd).subscribe({ next: (returnData) => {
       var warnLevel = "success";
       if (returnData.state == "ERROR") warnLevel = "danger";
       this.addNote(warnLevel, returnData.state);

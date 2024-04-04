@@ -78,30 +78,35 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	 */
 	public boolean skipPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (isSkipOnEmptyInput() && Message.isEmpty(input)) {
+			log.debug("skip pipe processing: empty input");
 			return true;
 		}
 		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
 			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
 			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
-				log.debug("onlyIfSessionKey [{}] value [{}]: not found or not equal to value [{}]", getOnlyIfSessionKey(), onlyIfActualValue, getOnlyIfValue());
+				log.debug("skip pipe processing: onlyIfSessionKey [{}] value [{}] not found or not equal to value [{}]", getOnlyIfSessionKey(), onlyIfActualValue, getOnlyIfValue());
 				return true;
 			}
 		}
 		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
 			Object unlessActualValue = session.get(getUnlessSessionKey());
 			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
-				log.debug("unlessSessionKey [{}] value [{}]: not found or equal to value [{}]", getUnlessSessionKey(), unlessActualValue, getUnlessValue());
+				log.debug("skip pipe processing: unlessSessionKey [{}] value [{}] not found or equal to value [{}]", getUnlessSessionKey(), unlessActualValue, getUnlessValue());
 				return true;
 			}
 		}
 		try {
 			if (ifParameter!=null) {
 				Object paramValue = ifParameter.getValue(null, input, session, true);
-				String ifValue = getIfValue();
 				if (ifValue == null) {
-					return paramValue!=null;
+					boolean paramValueIsNotNull = paramValue != null;
+					log.debug("skip pipe processing: ifValue not set and ifParameter value [{}] not null", paramValue);
+					return paramValueIsNotNull;
 				}
-				return !ifValue.equalsIgnoreCase(Message.asString(paramValue));
+
+				boolean ifValueNotEqualToIfParam = !ifValue.equalsIgnoreCase(Message.asString(paramValue));
+				log.debug("skip pipe processing: ifValue value [{}] not equal to ifParameter value [{}]", ifValue, paramValue);
+				return ifValueNotEqualToIfParam;
 			}
 		} catch (ParameterException | IOException e) {
 			throw new PipeRunException(this, "Cannot evaluate ifParam", e);
