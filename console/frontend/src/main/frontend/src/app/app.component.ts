@@ -205,7 +205,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeFrankConsole(): void {
-    if (this.consoleState.init ===  appInitState.UN_INIT) {
+    if (this.consoleState.init === appInitState.UN_INIT) {
       this.consoleState.init = appInitState.PRE_INIT;
       this.debugService.log('Initializing Frank!Console');
     } else if (this.consoleState.init === appInitState.PRE_INIT) {
@@ -213,10 +213,7 @@ export class AppComponent implements OnInit, OnDestroy {
       Pace.stop();
       return;
     } else {
-      this.debugService.info(
-        'Loading Frank!Console',
-        this.consoleState.init,
-      );
+      this.debugService.info('Loading Frank!Console', this.consoleState.init);
     }
 
     if (this.consoleState.init === appInitState.PRE_INIT) {
@@ -249,8 +246,7 @@ export class AppComponent implements OnInit, OnDestroy {
           const updateTime = (): void => {
             const serverDate = new Date();
             serverDate.setTime(
-              serverDate.getTime() -
-                this.consoleState.timeOffset,
+              serverDate.getTime() - this.consoleState.timeOffset,
             );
             this.serverTime = formatDate(
               serverDate,
@@ -286,7 +282,8 @@ export class AppComponent implements OnInit, OnDestroy {
           this.initializeWarnings();
         },
         error: (error: HttpErrorResponse) => {
-          if (error.status.toString().startsWith('5')) { // HTTP 5xx error
+          // HTTP 5xx error
+          if (error.status.toString().startsWith('5')) {
             this.router.navigate(['error']);
           }
         },
@@ -371,6 +368,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeWarnings(): void {
+    const startupErrorSubscription = this.appService.startupError$.subscribe(
+      () => {
+        this.startupError = this.appService.startupError;
+      },
+    );
+    this._subscriptions.add(startupErrorSubscription);
+
     this.pollerService.add(
       'server/warnings',
       (data) => {
@@ -415,12 +419,6 @@ export class AppComponent implements OnInit, OnDestroy {
         }
 
         this.appService.updateMessageLog(configurations);
-
-        const startupErrorSubscription =
-          this.appService.startupError$.subscribe(() => {
-            this.startupError = this.appService.startupError;
-          });
-        this._subscriptions.add(startupErrorSubscription);
       },
       true,
       60_000,
@@ -510,8 +508,7 @@ export class AppComponent implements OnInit, OnDestroy {
         if (!reloadedAdapters)
           reloadedAdapters = this.hasAdapterReloaded(adapter);
 
-        updatedAdapters[`${adapter.configuration}/${adapter.name}`] =
-          adapter;
+        updatedAdapters[`${adapter.configuration}/${adapter.name}`] = adapter;
 
         const selectedConfiguration =
           this.routeQueryParams.get('configuration');
@@ -523,12 +520,12 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     }
 
-    const oldAdapters = {...this.appService.adapters};
+    const oldAdapters = { ...this.appService.adapters };
     for (const index of deletedAdapters) {
       delete oldAdapters[index];
     }
 
-    this.appService.updateAdapters({ ...oldAdapters, ...updatedAdapters});
+    this.appService.updateAdapters({ ...oldAdapters, ...updatedAdapters });
 
     if (reloadedAdapters)
       this.toastService.success(
