@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.dto.MonitorDTO;
 import org.frankframework.management.bus.dto.TriggerDTO;
-import org.frankframework.management.bus.message.EmptyResponseMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.context.ApplicationContext;
@@ -135,7 +135,7 @@ public class Monitoring extends BusEndpointBase {
 			throw new BusException("unable to (re)configure Monitor", e);
 		}
 
-		return EmptyResponseMessage.created();
+		return EmptyMessage.created();
 	}
 
 	@ActionSelector(BusAction.DELETE)
@@ -157,7 +157,7 @@ public class Monitoring extends BusEndpointBase {
 			mm.removeMonitor(monitor);
 		}
 
-		return EmptyResponseMessage.accepted();
+		return EmptyMessage.accepted();
 	}
 
 	@ActionSelector(BusAction.MANAGE)
@@ -182,7 +182,7 @@ public class Monitoring extends BusEndpointBase {
 			}
 		}
 
-		return EmptyResponseMessage.accepted();
+		return EmptyMessage.accepted();
 	}
 
 	private void updateTrigger(ITrigger trigger, Message<?> message) {

@@ -21,7 +21,7 @@ import java.io.InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.EmptyResponseMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.springframework.messaging.Message;
 
 import lombok.Setter;
@@ -48,7 +48,7 @@ public class ConfigFlow extends BusEndpointBase {
 			return new BinaryMessage(flow, flowDiagramManager.getMediaType());
 		}
 
-		return EmptyResponseMessage.noContent(); //No flow file present
+		return EmptyMessage.noContent(); //No flow file present
 	}
 
 	private InputStream getFlow(Message<?> message) throws IOException {

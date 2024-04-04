@@ -47,7 +47,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.dto.ConfigurationDTO;
 import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.EmptyResponseMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.StringMessage;
 
@@ -136,11 +136,11 @@ public class ConfigManagement extends BusEndpointBase {
 		try {
 			if(activate != null) {
 				if(ConfigurationUtils.activateConfig(getApplicationContext(), configurationName, version, datasourceName)) {
-					return EmptyResponseMessage.accepted();
+					return EmptyMessage.accepted();
 				}
 			}
 			else if(autoreload != null && ConfigurationUtils.autoReloadConfig(getApplicationContext(), configurationName, version, autoreload, datasourceName)) {
-				return EmptyResponseMessage.accepted();
+				return EmptyMessage.accepted();
 			}
 		} catch(Exception e) {
 			throw new BusException("unable to update configuration settings in database", e);

@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.ByteArrayInputStream;
 
 import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.EmptyResponseMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.management.bus.message.StringMessage;
@@ -97,11 +97,11 @@ public class BusResponseTypesTest {
 
 	@Test
 	public void testEmptyResponseMessage() {
-		EmptyResponseMessage created = EmptyResponseMessage.created();
+		EmptyMessage created = EmptyMessage.created();
 		assertEquals(201, BusMessageUtils.getIntHeader(created, MessageBase.STATUS_KEY, 0));
-		EmptyResponseMessage accepted = EmptyResponseMessage.accepted();
+		EmptyMessage accepted = EmptyMessage.accepted();
 		assertEquals(202, BusMessageUtils.getIntHeader(accepted, MessageBase.STATUS_KEY, 0));
-		EmptyResponseMessage noContent = EmptyResponseMessage.noContent();
+		EmptyMessage noContent = EmptyMessage.noContent();
 		assertEquals(204, BusMessageUtils.getIntHeader(noContent, MessageBase.STATUS_KEY, 0));
 	}
 }

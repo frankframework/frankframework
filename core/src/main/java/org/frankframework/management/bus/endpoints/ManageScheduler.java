@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.EmptyResponseMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
@@ -132,7 +132,7 @@ public class ManageScheduler extends BusEndpointBase {
 			throw new BusException("unable to run action ["+action+"]", e);
 		}
 
-		return EmptyResponseMessage.accepted();
+		return EmptyMessage.accepted();
 	}
 
 	public Message<String> handleJob(JobAction action, JobKey jobKey, String issuedBy) {
@@ -171,7 +171,7 @@ public class ManageScheduler extends BusEndpointBase {
 			throw new BusException("unable to run action ["+action+"]", e);
 		}
 
-		return EmptyResponseMessage.accepted();
+		return EmptyMessage.accepted();
 	}
 
 	private IbisJobDetail getJobDetail(Scheduler scheduler, JobKey jobKey) {
@@ -238,6 +238,6 @@ public class ManageScheduler extends BusEndpointBase {
 			throw new BusException("failed to delete job", e);
 		}
 
-		return EmptyResponseMessage.accepted();
+		return EmptyMessage.accepted();
 	}
 }

@@ -38,7 +38,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.EmptyResponseMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.LogUtil;
 import org.springframework.messaging.Message;
@@ -137,16 +137,16 @@ public class UpdateLogDefinitions {
 				LoggerContext logContext = LoggerContext.getContext(false);
 				logContext.reconfigure();
 				log2SecurityLog("reconfigured logdefinitions");
-				return EmptyResponseMessage.accepted();
+				return EmptyMessage.accepted();
 			}
 
-			return EmptyResponseMessage.noContent();
+			return EmptyMessage.noContent();
 		}
 
 		if(StringUtils.isNotEmpty(logPackage) && level != null) {
 			Configurator.setLevel(logPackage, level);
 			log2SecurityLog("changed logdefinition ["+logPackage+"] to level ["+level.getStandardLevel().name()+"]");
-			return EmptyResponseMessage.accepted();
+			return EmptyMessage.accepted();
 		}
 		throw new BusException("neither [reconfigure], [logPackage] or [level] provided");
 	}

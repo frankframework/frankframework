@@ -25,7 +25,7 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.EmptyResponseMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.metrics.LocalStatisticsRegistry;
 import org.springframework.messaging.Message;
@@ -61,6 +61,6 @@ public class AdapterStatistics extends BusEndpointBase {
 		if(localRegistry != null) {
 			return new JsonMessage(localRegistry.scrape(configurationName, adapter));
 		}
-		return new EmptyResponseMessage(404);
+		return new EmptyMessage(404);
 	}
 }
