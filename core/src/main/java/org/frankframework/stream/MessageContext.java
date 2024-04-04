@@ -105,6 +105,11 @@ public class MessageContext implements Serializable {
 		return data.entrySet();
 	}
 
+	/**
+	 * Adds supplied charset to the message context.
+	 * @param charset to add
+	 * @return MessageContext with charset added
+	 */
 	public MessageContext withCharset(String charset) {
 		if (StringUtils.isNotEmpty(charset)) {
 			put(METADATA_CHARSET, charset);

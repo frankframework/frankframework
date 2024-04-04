@@ -82,6 +82,7 @@ public class SoapWrapper {
 	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP11 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
 	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP12 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/soapenv:Reason";
 	public static final String SOAP_VERSION_SESSION_KEY = "SoapWrapper.SoapVersion";
+	public static final String DEFAULT_XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 	private static SoapWrapper self = null;
 	private @Setter WsuIdAllocator idAllocator = null; //Only used for testing purposes
@@ -252,10 +253,10 @@ public class SoapWrapper {
 	}
 
 	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace, String soapHeader, String namespaceDefs) throws IOException {
-		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null, null, false);
+		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null, null, false, false);
 	}
 
-	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace, String soapHeaderInitial, String namespaceDefs, String soapNamespace, CredentialFactory wsscf, boolean passwordDigest) throws IOException {
+	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace, String soapHeaderInitial, String namespaceDefs, String soapNamespace, CredentialFactory wsscf, boolean passwordDigest, boolean includeXmlDeclaration) throws IOException {
 		String soapHeader = "";
 		String encodingStyle = "";
 		String targetObjectNamespaceClause = "";
@@ -278,14 +279,19 @@ public class SoapWrapper {
 				if (separatorPos < 1) {
 					namespaceClause.append(" xmlns=\"").append(namespaceDef).append("\"");
 				} else {
-					namespaceClause.append(" xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"");
+					namespaceClause.append(" xmlns:").append(namespaceDef, 0, separatorPos).append("=\"").append(namespaceDef.substring(separatorPos + 1)).append("\"");
 				}
 			}
 			log.debug("namespaceClause [{}]", namespaceClause);
 		}
 		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
-		Message result = new Message("<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
-				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message.asString())
+
+		// XmlUtils.skipXmlDeclaration call below removes the xml declaration from the message, so adding it back if required
+		String messageContent = message.asString();
+		String xmlHeader = includeXmlDeclaration ? DEFAULT_XML_HEADER : "";
+		Message result = new Message(xmlHeader +
+				"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
+				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(messageContent)
 				+ "</soapenv:Body>" + "</soapenv:Envelope>");
 		if (wsscf != null) {
 			result = signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
