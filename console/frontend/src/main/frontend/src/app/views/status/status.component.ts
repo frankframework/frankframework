@@ -77,6 +77,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   getProcessStateIconColorFn = getProcessStateIconColor;
 
   private _subscriptions = new Subscription();
+  private hasExpendedAdaptersLoaded = false;
 
   constructor(
     private Poller: PollerService,
@@ -169,10 +170,18 @@ export class StatusComponent implements OnInit, OnDestroy {
 
     const adaptersSubscription = this.appService.adapters$.subscribe(() => {
       this.adapters = { ...this.appService.adapters };
-      this.updateAdapterShownContent();
+
+      if (this.hasExpendedAdaptersLoaded) {
+        this.updateAdapterShownContent();
+      } else {
+        const adaptersList = Object.values(this.adapters);
+        if (adaptersList.length > 0 && 'messages' in adaptersList[0]) {
+          this.hasExpendedAdaptersLoaded = true;
+          this.updateAdapterShownContent();
+        }
+      }
     });
     this._subscriptions.add(adaptersSubscription);
-
     this.updateAdapterShownContent();
   }
 
@@ -433,7 +442,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   private updateAdapterShownContent(): void {
     for (const adapter in this.adapters) {
-      if (!this.adapterShowContent.hasOwnProperty(adapter)){
+      if (!this.adapterShowContent.hasOwnProperty(adapter)) {
         this.adapterShowContent[adapter] = this.determineShowContent(
           this.adapters[adapter],
         );
@@ -441,7 +450,7 @@ export class StatusComponent implements OnInit, OnDestroy {
         if (this.adapterName === this.adapters[adapter].name) {
           setTimeout(() => {
             document.querySelector(`#${this.adapterName}`)?.scrollIntoView();
-          })
+          });
         }
       }
     }
