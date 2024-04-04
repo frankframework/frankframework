@@ -5,9 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.xml.soap.SOAPConstants;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IWrapperPipe.Direction;
@@ -23,8 +31,8 @@ import org.frankframework.soap.SoapVersion;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.soap.SoapWrapperPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestAssertions;
-import org.junit.jupiter.api.Test;
 
 public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase<P> {
 
@@ -298,6 +306,31 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 
 		// Assert 2: XML header is added only once
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual2);
+	}
+
+	static Stream<Arguments> testReadMessageAsInputSourceWithUnspecifiedISO_8859_1_Charset() throws IOException, URISyntaxException {
+		return MessageTestUtils.readFileInDifferentWays("/Util/MessageUtils/iso-8859-1_without_xml_declaration.xml");
+	}
+	@ParameterizedTest
+	@MethodSource
+	void testReadMessageAsInputSourceWithUnspecifiedISO_8859_1_Charset(Message message) throws Exception {
+		// Arrange
+		pipe.setOutputNamespace(TARGET_NAMESPACE);
+		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
+		pipe.setOmitXmlDeclaration(false);
+		pipeline.addPipe(pipe);
+		configureAndStartPipe();
+
+//		log.debug("Testing message with content type: {}", message.getRequestClass());
+		message.getContext().withCharset("ISO-8859-1");
+
+		PipeRunResult prr1 = doPipe(pipe, message, new PipeLineSession()); // XML header is added afterward
+		String actual1 = prr1.getResult().asString();
+//		System.out.println("Output:\n" + actual1);
+
+		// Assert
+		assertTrue(actual1.contains("håndværkere"));
+		assertTrue(actual1.contains("værgeløn"));
 	}
 
 	@Test
