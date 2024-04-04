@@ -24,12 +24,12 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Environment;
@@ -67,7 +67,7 @@ public class EnvironmentVariables extends BusEndpointBase {
 			log.warn("caught Throwable while getting EnvironmentVariables", t);
 		}
 
-		return new JsonResponseMessage(envVars);
+		return new JsonMessage(envVars);
 	}
 
 	private Map<String, Object> convertPropertiesToMap(Properties props) {

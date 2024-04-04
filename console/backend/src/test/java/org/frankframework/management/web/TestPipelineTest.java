@@ -18,10 +18,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.GenericMessage;
-
-import org.frankframework.management.bus.BinaryResponseMessage;
-import org.frankframework.management.bus.JsonResponseMessage;
-import org.frankframework.management.bus.ResponseMessageBase;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.MessageBase;
 
 public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 
@@ -30,12 +29,12 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 		return new TestPipeline();
 	}
 
-	private static class DefaultSuccessAnswer implements Answer<JsonResponseMessage> {
+	private static class DefaultSuccessAnswer implements Answer<JsonMessage> {
 		@Override
-		public JsonResponseMessage answer(InvocationOnMock invocation) {
+		public JsonMessage answer(InvocationOnMock invocation) {
 			Object input = invocation.getArguments()[0];
-			JsonResponseMessage response = new JsonResponseMessage(input);
-			response.setHeader(ResponseMessageBase.STATE_KEY, "SUCCESS");
+			JsonMessage response = new JsonMessage(input);
+			response.setHeader(MessageBase.STATE_KEY, "SUCCESS");
 			return response;
 		}
 
@@ -106,7 +105,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline> {
 
 	@Test
 	public void testPipelineBinaryResponse() {
-		doAnswer((e) -> new BinaryResponseMessage("dummy data".getBytes())).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
+		doAnswer((e) -> new BinaryMessage("dummy data".getBytes())).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));

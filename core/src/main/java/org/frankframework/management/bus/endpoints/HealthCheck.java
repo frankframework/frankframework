@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
@@ -36,7 +37,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.RunState;
 
@@ -94,7 +94,7 @@ public class HealthCheck extends BusEndpointBase {
 			response.put("errors", errors);
 		response.put("status", status);
 
-		JsonResponseMessage responseMessage = new JsonResponseMessage(response);
+		JsonMessage responseMessage = new JsonMessage(response);
 		responseMessage.setStatus(status.getStatusCode());
 		return responseMessage;
 	}
@@ -153,7 +153,7 @@ public class HealthCheck extends BusEndpointBase {
 		}
 		response.put("status", status);
 
-		JsonResponseMessage responseMessage = new JsonResponseMessage(response);
+		JsonMessage responseMessage = new JsonMessage(response);
 		responseMessage.setStatus(status.getStatusCode());
 		return responseMessage;
 	}
@@ -206,7 +206,7 @@ public class HealthCheck extends BusEndpointBase {
 			response.put("errors", errors);
 		response.put("status", status);
 
-		JsonResponseMessage responseMessage = new JsonResponseMessage(response);
+		JsonMessage responseMessage = new JsonMessage(response);
 		responseMessage.setStatus(status.getStatusCode());
 		return responseMessage;
 	}

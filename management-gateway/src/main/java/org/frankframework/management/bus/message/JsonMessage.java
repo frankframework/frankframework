@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.bus;
+package org.frankframework.management.bus.message;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -29,7 +29,7 @@ import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 
-public class JsonResponseMessage extends StringResponseMessage {
+public class JsonMessage extends StringMessage {
 	private static final JsonWriterFactory WRITER_FACTORY;
 
 	static {
@@ -38,11 +38,11 @@ public class JsonResponseMessage extends StringResponseMessage {
 		WRITER_FACTORY = Json.createWriterFactory(config);
 	}
 
-	public JsonResponseMessage(Object payload) {
+	public JsonMessage(Object payload) {
 		super(JacksonUtils.convertToJson(payload), MediaType.APPLICATION_JSON);
 	}
 
-	public JsonResponseMessage(JsonStructure payload) {
+	public JsonMessage(JsonStructure payload) {
 		super(jsonStructureToString(payload), MediaType.APPLICATION_JSON);
 	}
 

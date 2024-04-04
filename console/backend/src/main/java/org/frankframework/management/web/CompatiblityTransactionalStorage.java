@@ -44,8 +44,7 @@ import org.springframework.messaging.Message;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.ResponseMessageBase;
-
+import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.RequestUtils;
 
@@ -154,7 +153,7 @@ public class CompatiblityTransactionalStorage extends FrankApiBase {
 
 						builder.addHeader("messageId", messageId);
 						Message<?> message = sendSyncMessage(builder);
-						String mimeType = BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY);
+						String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY);
 
 						String filenameExtension = ".txt";
 						if(MediaType.APPLICATION_JSON.equals(mimeType)) {

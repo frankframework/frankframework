@@ -22,6 +22,7 @@ import javax.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.endpoints.FileViewer;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
@@ -33,7 +34,6 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.management.bus.MessageDispatcher;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Dir2Map;
@@ -87,6 +87,6 @@ public class ShowLogDirectory {
 		returnMap.put("directory", dir.getDirectory());
 		returnMap.put("wildcard", wildcard);
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 }

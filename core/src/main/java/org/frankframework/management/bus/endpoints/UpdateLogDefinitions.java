@@ -37,9 +37,9 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.EmptyResponseMessage;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.EmptyResponseMessage;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.LogUtil;
 import org.springframework.messaging.Message;
 
@@ -91,7 +91,7 @@ public class UpdateLogDefinitions {
 		}
 		result.put("loggers", registeredLoggers);
 
-		return new JsonResponseMessage(result);
+		return new JsonMessage(result);
 	}
 
 	public List<LogDefinitionDAO> getLogDefinitions(LoggerContext logContext) {

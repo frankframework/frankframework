@@ -6,15 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.frankframework.management.bus.message.JsonMessage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class BusMessageUtilsTest {
-	private static JsonResponseMessage TEST_MESSAGE;
+	private static JsonMessage TEST_MESSAGE;
 
 	@BeforeAll
 	public static void setup() {
-		JsonResponseMessage response = new JsonResponseMessage("payload");
+		JsonMessage response = new JsonMessage("payload");
 		response.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, "one");
 		response.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, "two");
 		response.setHeader("emptyHeader", "");

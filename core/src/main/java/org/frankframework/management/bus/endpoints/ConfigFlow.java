@@ -20,18 +20,18 @@ import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.EmptyResponseMessage;
 import org.springframework.messaging.Message;
 
 import lombok.Setter;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
-import org.frankframework.management.bus.BinaryResponseMessage;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.EmptyResponseMessage;
 import org.frankframework.util.flow.FlowDiagramManager;
 
 import javax.annotation.security.RolesAllowed;
@@ -45,7 +45,7 @@ public class ConfigFlow extends BusEndpointBase {
 	public Message<?> getFlowDiagram(Message<?> message) throws IOException {
 		InputStream flow = getFlow(message);
 		if(flow != null) {
-			return new BinaryResponseMessage(flow, flowDiagramManager.getMediaType());
+			return new BinaryMessage(flow, flowDiagramManager.getMediaType());
 		}
 
 		return EmptyResponseMessage.noContent(); //No flow file present

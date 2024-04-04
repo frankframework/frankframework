@@ -49,12 +49,11 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
-import org.frankframework.management.bus.StringResponseMessage;
-
 import org.frankframework.management.bus.dto.ProcessStateDTO;
 import org.frankframework.management.bus.dto.StorageItemDTO;
 import org.frankframework.management.bus.dto.StorageItemsDTO;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
@@ -98,12 +97,12 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 			throw new BusException("no StorageSource provided");
 		}
 
-		return new JsonResponseMessage(storageItem);
+		return new JsonMessage(storageItem);
 	}
 
 	@ActionSelector(BusAction.DOWNLOAD)
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public StringResponseMessage downloadMessageById(Message<?> message) {
+	public StringMessage downloadMessageById(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
@@ -128,7 +127,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		MediaType mediaType = getMediaType(storageItem);
 		String filename = getFilename(mediaType, messageId);
 
-		StringResponseMessage response = new StringResponseMessage(storageItem, mediaType);
+		StringMessage response = new StringMessage(storageItem, mediaType);
 		response.setFilename(filename);
 		return response;
 	}
@@ -192,7 +191,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 			dto.setTargetStates(targetPSInfo);
 		}
 
-		return new JsonResponseMessage(dto);
+		return new JsonMessage(dto);
 	}
 
 	@ActionSelector(BusAction.STATUS)

@@ -7,6 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.EmptyResponseMessage;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.util.StreamUtil;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -18,46 +23,46 @@ public class BusResponseTypesTest {
 
 	@Test
 	public void testBytes() throws Exception {
-		BinaryResponseMessage message = new BinaryResponseMessage("binary".getBytes());
+		BinaryMessage message = new BinaryMessage("binary".getBytes());
 		message.setStatus(300);
 		String result = StreamUtil.streamToString(message.getPayload());
 		assertEquals("binary", result);
-		assertEquals("application/octet-stream", BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY));
-		assertEquals(300, BusMessageUtils.getIntHeader(message, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals("application/octet-stream", BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY));
+		assertEquals(300, BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 0));
 	}
 
 	@Test
 	public void testInputStream() throws Exception {
 		ByteArrayInputStream stream = new ByteArrayInputStream("binary".getBytes());
-		BinaryResponseMessage message = new BinaryResponseMessage(stream);
+		BinaryMessage message = new BinaryMessage(stream);
 		message.setStatus(503);
 		String result = StreamUtil.streamToString(message.getPayload());
 		assertEquals("binary", result);
-		assertEquals("application/octet-stream", BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY));
-		assertEquals(503, BusMessageUtils.getIntHeader(message, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals("application/octet-stream", BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY));
+		assertEquals(503, BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 0));
 	}
 
 	@Test
 	public void testString() {
-		StringResponseMessage message = new StringResponseMessage("json");
+		StringMessage message = new StringMessage("json");
 		assertEquals("json", message.getPayload());
-		assertEquals("text/plain", BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY));
-		assertEquals(200, BusMessageUtils.getIntHeader(message, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals("text/plain", BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY));
+		assertEquals(200, BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 0));
 	}
 
 	@Test
 	public void testJson() {
-		JsonResponseMessage message = new JsonResponseMessage("json");
+		JsonMessage message = new JsonMessage("json");
 		assertEquals("\"json\"", message.getPayload());
-		assertEquals("application/json", BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY));
-		assertEquals(200, BusMessageUtils.getIntHeader(message, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals("application/json", BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY));
+		assertEquals(200, BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 0));
 	}
 
 	@Test
 	public void testUnableToConvertPayloadToJson() {
 		ByteArrayInputStream stream = new ByteArrayInputStream("binary".getBytes());
 
-		BusException e = assertThrows(BusException.class, () -> new JsonResponseMessage(stream));
+		BusException e = assertThrows(BusException.class, () -> new JsonMessage(stream));
 		assertThat(e.getMessage(), Matchers.startsWith("unable to convert response to JSON: (InvalidDefinitionException) No serializer found for class java.io.ByteArrayInputStream"));
 	}
 
@@ -65,16 +70,16 @@ public class BusResponseTypesTest {
 	public void testJsonStructure() {
 		JsonObjectBuilder json = Json.createObjectBuilder();
 		json.add("key", "value");
-		JsonResponseMessage message = new JsonResponseMessage(json.build());
+		JsonMessage message = new JsonMessage(json.build());
 
 		assertEquals("{\"key\":\"value\"}", message.getPayload().replaceAll("\s", "").replaceAll("\n", ""));
-		assertEquals("application/json", BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY));
-		assertEquals(200, BusMessageUtils.getIntHeader(message, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals("application/json", BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY));
+		assertEquals(200, BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 0));
 	}
 
 	@Test
 	public void testInvalidStatusCode() {
-		StringResponseMessage message = new StringResponseMessage("dummy input");
+		StringMessage message = new StringMessage("dummy input");
 		assertAll(
 			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(600)),
 			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(100))
@@ -83,20 +88,20 @@ public class BusResponseTypesTest {
 
 	@Test
 	public void testContentDisposition() {
-		StringResponseMessage message = new StringResponseMessage("dummy input");
+		StringMessage message = new StringMessage("dummy input");
 		message.setFilename("testnaam");
 		message.setHeader("test123", "dummy");
 		assertEquals("dummy", BusMessageUtils.getHeader(message, "test123"));
-		assertEquals("attachment; filename=\"testnaam\"", BusMessageUtils.getHeader(message, ResponseMessageBase.CONTENT_DISPOSITION_KEY));
+		assertEquals("attachment; filename=\"testnaam\"", BusMessageUtils.getHeader(message, MessageBase.CONTENT_DISPOSITION_KEY));
 	}
 
 	@Test
 	public void testEmptyResponseMessage() {
 		EmptyResponseMessage created = EmptyResponseMessage.created();
-		assertEquals(201, BusMessageUtils.getIntHeader(created, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals(201, BusMessageUtils.getIntHeader(created, MessageBase.STATUS_KEY, 0));
 		EmptyResponseMessage accepted = EmptyResponseMessage.accepted();
-		assertEquals(202, BusMessageUtils.getIntHeader(accepted, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals(202, BusMessageUtils.getIntHeader(accepted, MessageBase.STATUS_KEY, 0));
 		EmptyResponseMessage noContent = EmptyResponseMessage.noContent();
-		assertEquals(204, BusMessageUtils.getIntHeader(noContent, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals(204, BusMessageUtils.getIntHeader(noContent, MessageBase.STATUS_KEY, 0));
 	}
 }

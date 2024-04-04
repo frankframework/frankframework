@@ -25,6 +25,7 @@ import javax.annotation.security.PermitAll;
 import javax.servlet.ServletContext;
 
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.web.context.WebApplicationContext;
@@ -41,7 +42,6 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -98,7 +98,7 @@ public class ServerStatistics extends BusEndpointBase {
 			LogUtil.getLogger(this).info("unable to determine application uptime", e);
 		}
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.WARNINGS)
@@ -180,7 +180,7 @@ public class ServerStatistics extends BusEndpointBase {
 			returnMap.put("messages", messages);
 		}
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 
 	private List<Object> mapMessageKeeperMessages(MessageKeeper messageKeeper) {
