@@ -16,7 +16,6 @@
 package org.frankframework.soap;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.StringTokenizer;
 
 import javax.xml.soap.MessageFactory;
@@ -83,6 +82,7 @@ public class SoapWrapper {
 	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP11 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
 	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP12 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/soapenv:Reason";
 	public static final String SOAP_VERSION_SESSION_KEY = "SoapWrapper.SoapVersion";
+	public static final String DEFAULT_XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 	private static SoapWrapper self = null;
 	private @Setter WsuIdAllocator idAllocator = null; //Only used for testing purposes
@@ -288,7 +288,7 @@ public class SoapWrapper {
 
 		// XmlUtils.skipXmlDeclaration call below removes the xml declaration from the message, so adding it back if required
 		String messageContent = message.asString();
-		String xmlHeader = createXmlHeader(message.getCharset(), includeXmlDeclaration);
+		String xmlHeader = includeXmlDeclaration ? DEFAULT_XML_HEADER : "";
 		Message result = new Message(xmlHeader +
 				"<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
 				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(messageContent)
@@ -297,14 +297,6 @@ public class SoapWrapper {
 			result = signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
 		}
 		return result;
-	}
-
-	private static String createXmlHeader(String charSet, boolean includeXmlDeclaration) {
-		if (!includeXmlDeclaration) return "";
-		if (charSet == null) {
-			charSet = StandardCharsets.UTF_8.name();
-		}
-		return "<?xml version=\"1.0\" encoding=\"" + charSet + "\"?>";
 	}
 
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {
