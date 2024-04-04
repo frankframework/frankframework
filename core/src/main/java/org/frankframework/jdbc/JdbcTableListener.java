@@ -167,13 +167,6 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	public void setTableAlias(String string) {
 		tableAlias = string;
 	}
-
-	
-	/**
-	 * Field containing the <code>messageId</code>.
-	 * <b>NB: If this column is not set the default (primary key) {@link #setKeyField(String) keyField} will be used as messageId!</b>
-	 * @ff.default <i>same as keyField</i>
-	 */
 	
 	/**
 	 * Field containing the status of the message. 
