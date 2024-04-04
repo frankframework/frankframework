@@ -22,6 +22,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
@@ -40,7 +41,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.EmptyResponseMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.scheduler.job.DatabaseJob;
@@ -194,7 +194,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 				throw new BusException("An error occurred while storing the job in the database");
 		}
 
-		return EmptyResponseMessage.created();
+		return EmptyMessage.created();
 	}
 
 	private IAdapter getAdapter(String configurationName, String adapterName) {

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.messaging.Message;
 
 import lombok.AllArgsConstructor;
@@ -37,7 +38,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.receivers.Receiver;
 
 import javax.annotation.security.RolesAllowed;
@@ -76,7 +76,7 @@ public class InlineStorage extends BusEndpointBase {
 			}
 		}
 
-		return new JsonResponseMessage(storeItemsGroupedByProcessState);
+		return new JsonMessage(storeItemsGroupedByProcessState);
 	}
 
 	private static class InlineStoreStateItem {

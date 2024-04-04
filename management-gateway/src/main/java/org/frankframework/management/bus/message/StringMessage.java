@@ -13,18 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.bus;
+package org.frankframework.management.bus.message;
 
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
-public class StringResponseMessage extends ResponseMessageBase<String> {
+public class StringMessage extends MessageBase<String> {
 
-	public StringResponseMessage(String payload) {
+	public StringMessage(String payload) {
 		this(payload, MediaType.TEXT_PLAIN);
 	}
 
-	public StringResponseMessage(String payload, MimeType defaultMediaType) {
+	public StringMessage(String payload, MimeType defaultMediaType) {
 		super(payload, defaultMediaType);
 	}
 }

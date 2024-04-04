@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -46,7 +47,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 
 import javax.annotation.security.RolesAllowed;
 
@@ -67,7 +67,7 @@ public class BrowseQueue extends BusEndpointBase {
 		if (connectionFactories.isEmpty()) connectionFactories.add("no connection factories found");
 		returnMap.put("connectionFactories", connectionFactories);
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.FIND)
@@ -114,7 +114,7 @@ public class BrowseQueue extends BusEndpointBase {
 				returnMap.put("messages", messages);
 			}
 
-			return new JsonResponseMessage(returnMap);
+			return new JsonMessage(returnMap);
 		}
 		catch (Exception e) {
 			throw new BusException("Error occurred browsing messages", e);

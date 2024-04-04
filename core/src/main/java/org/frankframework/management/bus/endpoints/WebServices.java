@@ -52,15 +52,15 @@ import org.frankframework.http.rest.ApiListener;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.http.rest.ApiServiceDispatcher;
 import org.frankframework.management.bus.ActionSelector;
-import org.frankframework.management.bus.BinaryResponseMessage;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
-import org.frankframework.management.bus.StringResponseMessage;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.soap.WsdlGenerator;
 import org.frankframework.soap.WsdlGeneratorUtils;
@@ -84,7 +84,7 @@ public class WebServices extends BusEndpointBase {
 		returnMap.put("wsdls", getWsdls());
 		returnMap.put("apiListeners", getApiListeners());
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.DOWNLOAD)
@@ -98,7 +98,7 @@ public class WebServices extends BusEndpointBase {
 		}
 	}
 
-	public StringResponseMessage getOpenApiSpec(Message<?> message) {
+	public StringMessage getOpenApiSpec(Message<?> message) {
 		String uri = BusMessageUtils.getHeader(message, "uri", null);
 		JsonObject jsonSchema;
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
@@ -120,10 +120,10 @@ public class WebServices extends BusEndpointBase {
 			jsonWriter.write(jsonSchema);
 		}
 
-		return new StringResponseMessage(writer.toString(), MediaType.APPLICATION_JSON);
+		return new StringMessage(writer.toString(), MediaType.APPLICATION_JSON);
 	}
 
-	public BinaryResponseMessage getWSDL(Message<?> message) {
+	public BinaryMessage getWSDL(Message<?> message) {
 		boolean indent = BusMessageUtils.getBooleanHeader(message, "indent", true);
 		boolean useIncludes = BusMessageUtils.getBooleanHeader(message, "useIncludes", false);
 		boolean zip = BusMessageUtils.getBooleanHeader(message, "zip", false);
@@ -149,14 +149,14 @@ public class WebServices extends BusEndpointBase {
 			if (zip) {
 				wsdl.zip(boas, servletName);
 
-				BinaryResponseMessage response = new BinaryResponseMessage(boas.toByteArray(), MediaType.APPLICATION_OCTET_STREAM);
+				BinaryMessage response = new BinaryMessage(boas.toByteArray(), MediaType.APPLICATION_OCTET_STREAM);
 				response.setFilename(adapterName+".zip");
 				return response;
 
 			} else {
 				wsdl.wsdl(boas, servletName);
 
-				return new BinaryResponseMessage(boas.toByteArray(), MediaType.APPLICATION_XML);
+				return new BinaryMessage(boas.toByteArray(), MediaType.APPLICATION_XML);
 			}
 		} catch (IOException | ConfigurationException | XMLStreamException e) {
 			throw new BusException("unable to generate WSDL", e);
