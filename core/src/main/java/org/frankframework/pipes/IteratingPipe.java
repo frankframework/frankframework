@@ -24,11 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IBlockEnabledSender;
@@ -48,17 +52,12 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.Guard;
-import org.frankframework.util.Semaphore;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
@@ -123,7 +122,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 
-	private Semaphore childThreadSemaphore=null;
+	private Semaphore childThreadSemaphore = null;
 
 	protected enum StopReason {
 		MAX_ITEMS_REACHED(MAX_ITEMS_REACHED_FORWARD),
@@ -149,7 +148,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			throw new ConfigurationException("Cannot compile stylesheet from stopConditionXPathExpression ["+getStopConditionXPathExpression()+"]", e);
 		}
 		if (getMaxChildThreads()>0) {
-			childThreadSemaphore=new Semaphore(getMaxChildThreads());
+			childThreadSemaphore = new Semaphore(getMaxChildThreads());
 		}
 	}
 
@@ -201,14 +200,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	protected class ItemCallback {
-		private PipeLineSession session;
-		private ISender sender;
-		private Writer results;
+		private final PipeLineSession session;
+		private final ISender sender;
+		private final Writer results;
 		private int itemsInBlock=0;
 		private int totalItems=0;
 		private boolean blockOpen=false;
 		private Object blockHandle;
-		private Vector<I> inputItems = new Vector<>();
+		private final Vector<I> inputItems = new Vector<>();
 		private Guard guard;
 		private List<ParallelSenderExecutor> executorList;
 
@@ -239,7 +238,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				waitForResults();
 				results.append("</results>");
 			} else {
-				results.append("<results count=\""+getCount()+"\"/>");
+				results.append("<results count=\"").append(String.valueOf(getCount())).append("\"/>");
 			}
 		}
 		public void startBlock() throws SenderException, TimeoutException {
@@ -261,11 +260,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 
 		/**
-		 * @return a non null StopReason when stop is required
+		 * @return a non-null StopReason when stop is required
 		 */
 		public StopReason handleItem(I item) throws SenderException, TimeoutException, IOException {
 			if (isRemoveDuplicates()) {
-				if (inputItems.indexOf(item)>=0) {
+				if (inputItems.contains(item)) {
 					log.debug("duplicate item [{}] will not be processed", item);
 					return null;
 				}
@@ -295,11 +294,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
-			if (childThreadSemaphore!=null) {
+			if (childThreadSemaphore != null) {
 				try {
 					childThreadSemaphore.acquire();
 				} catch (InterruptedException e) {
-					throw new SenderException("interrupted waiting for thread",e);
+					Thread.currentThread().interrupt();
+					throw new SenderException("interrupted waiting for thread", e);
 				}
 			}
 			try {
@@ -408,6 +408,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					guard.waitForAllResources();
 					collectResultsOrThrowExceptions();
 				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 					throw new SenderException("was interrupted",e);
 				}
 			}

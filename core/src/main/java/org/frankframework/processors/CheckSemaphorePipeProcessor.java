@@ -17,10 +17,12 @@ package org.frankframework.processors;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
@@ -29,9 +31,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.stream.Message;
-import org.frankframework.util.Semaphore;
-
-import io.micrometer.core.instrument.DistributionSummary;
 
 /**
  * @author Jaco de Groot
@@ -55,6 +54,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 				summary.record(waitingDuration);
 				pipeRunResult = chain.apply(message);
 			} catch(InterruptedException e) {
+				Thread.currentThread().interrupt();
 				throw new PipeRunException(pipe, "Interrupted acquiring semaphore", e);
 			} finally {
 				s.release();

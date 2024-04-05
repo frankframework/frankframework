@@ -13,7 +13,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Semaphore;
 
+import org.junit.jupiter.api.BeforeEach;
+
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.dbms.Dbms;
@@ -25,11 +29,8 @@ import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/CreateLockTable.xml", tableName = LockerTest.TABLENAME)
@@ -112,9 +113,9 @@ public class LockerTest {
 
 		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
 		try {
-			Semaphore otherReady = new Semaphore();
-			Semaphore otherContinue = new Semaphore();
-			Semaphore otherFinished = new Semaphore();
+			Semaphore otherReady = new Semaphore(0);
+			Semaphore otherContinue = new Semaphore(0);
+			Semaphore otherFinished = new Semaphore(0);
 			LockerTester lockerTester = new LockerTester(env);
 
 			lockerTester.setInitActionDone(otherReady);
@@ -144,9 +145,9 @@ public class LockerTest {
 
 		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
 		try {
-			Semaphore otherReady = new Semaphore();
-			Semaphore otherContinue = new Semaphore();
-			Semaphore otherFinished = new Semaphore();
+			Semaphore otherReady = new Semaphore(0);
+			Semaphore otherContinue = new Semaphore(0);
+			Semaphore otherFinished = new Semaphore(0);
 			LockerTester lockerTester = new LockerTester(env);
 
 			lockerTester.setActionDone(otherReady);
@@ -187,9 +188,9 @@ public class LockerTest {
 		log.debug("Creating Timeout Guard");
 		TimeoutGuard testTimeout = new TimeoutGuard(20,"Testtimeout");
 		try {
-			Semaphore otherInsertReady = new Semaphore();
-			Semaphore otherContinue = new Semaphore();
-			Semaphore otherFinished = new Semaphore();
+			Semaphore otherInsertReady = new Semaphore(0);
+			Semaphore otherContinue = new Semaphore(0);
+			Semaphore otherFinished = new Semaphore(0);
 			log.debug("Preparing LockerTester");
 			LockerTester lockerTester = new LockerTester(env);
 
@@ -254,9 +255,9 @@ public class LockerTest {
 
 		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
 		try {
-			Semaphore waitBeforeInsert = new Semaphore();
-			Semaphore insertDone = new Semaphore();
-			Semaphore waitBeforeCommit = new Semaphore();
+			Semaphore waitBeforeInsert = new Semaphore(0);
+			Semaphore insertDone = new Semaphore(0);
+			Semaphore waitBeforeCommit = new Semaphore(0);
 			LockerTester other = new LockerTester(env);
 
 			other.setWaitBeforeAction(waitBeforeInsert);
@@ -265,7 +266,7 @@ public class LockerTest {
 
 			other.start();
 
-			IbisTransaction mainItx = null;
+			IbisTransaction mainItx;
 			PlatformTransactionManager txManager = env.getConfiguration().getBean("txManager", PlatformTransactionManager.class);
 			TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
 			mainItx = new IbisTransaction(txManager, txdef, "locker ");

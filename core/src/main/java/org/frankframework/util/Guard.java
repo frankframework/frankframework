@@ -18,7 +18,7 @@ package org.frankframework.util;
 import org.frankframework.core.TimeoutException;
 
 /**
- * A Guard is the counterpart of the {@link Semaphore} that waits till all resources have been released.
+ * A Guard is the counterpart of the {@link java.util.concurrent.Semaphore} that waits till all resources have been released.
  *
  * @author  Gerrit van Brakel
  * @since   4.9

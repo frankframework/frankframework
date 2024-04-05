@@ -15,6 +15,10 @@
 */
 package org.frankframework.senders;
 
+import java.util.concurrent.Semaphore;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -22,18 +26,14 @@ import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Guard;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.Semaphore;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
 
 public class ParallelSenderExecutor extends RequestReplyExecutor {
-	private Logger log = LogUtil.getLogger(this);
-	private ISender sender;
-	@Getter private PipeLineSession session;
-	private Semaphore semaphore; // supports to limit the number of threads processing in parallel, may be null
-	private Guard guard;         // supports to wait for all threads to have ended
-	private DistributionSummary summary;
+	private final Logger log = LogUtil.getLogger(this);
+	private final ISender sender;
+	@Getter private final PipeLineSession session;
+	private final Semaphore semaphore; // support limiting the number of threads processing in parallel, may be null
+	private final Guard guard;         // support waiting for all threads to end
+	private final DistributionSummary summary;
 	private @Getter long duration;
 
 	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, DistributionSummary sk) {

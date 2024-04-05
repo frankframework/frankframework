@@ -18,19 +18,14 @@ package org.frankframework.receivers;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.SchedulingAwareRunnable;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.INamedObject;
 import org.frankframework.core.IPeekableListener;
@@ -43,9 +38,15 @@ import org.frankframework.core.TransactionAttribute;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Counter;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.ReducableSemaphore;
 import org.frankframework.util.RunState;
-import org.frankframework.util.Semaphore;
 import org.frankframework.util.StringUtil;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.SchedulingAwareRunnable;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 
 /**
@@ -63,7 +64,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	private @Getter @Setter PlatformTransactionManager txManager;
 	private final Counter threadsRunning = new Counter(0);
 	private final Counter tasksStarted = new Counter(0);
-	private Semaphore processToken = null; // guard against to many messages being processed at the same time
+	private ReducableSemaphore processToken = null; // guard against to many messages being processed at the same time
 	private Semaphore pollToken = null; // guard against to many threads polling at the same time
 	private boolean idle = false; // true if the last messages received was null, will cause wait loop
 	private int retryInterval = 1;
@@ -83,7 +84,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			pollToken = new Semaphore(receiver.getNumThreadsPolling());
 		}
 
-		processToken = new Semaphore(receiver.getNumThreads());
+		processToken = new ReducableSemaphore(receiver.getNumThreads());
 		maxThreadCount = receiver.getNumThreads();
 		if (receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
 			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionAttribute.REQUIRESNEW.getTransactionAttributeNum());
@@ -140,7 +141,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		if (maxThreadCount>1) {
 			maxThreadCount--;
 			log.trace("PullingListenerContainer - decreaseThreadCount - tighten processToken - synchronize (lock) on processToken[{}]", pollToken);
-			processToken.tighten();
+			processToken.reducePermits(1);
 			log.trace("PullingListenerContainer - decreaseThreadCount - tightened processToken - lock on processToken[{}] released", pollToken);
 		}
 	}
@@ -463,8 +464,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		while (receiver.isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
 				Thread.sleep(1000);
-			} catch (Exception e2) {
-				receiver.error("sleep interupted", e2);
+			} catch (InterruptedException e2) {
+				Thread.currentThread().interrupt();
+				receiver.error("sleep interrupted", e2);
 				receiver.stopRunning();
 			}
 		}

@@ -17,16 +17,15 @@ package org.frankframework.processors;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.stream.Message;
-import org.frankframework.util.Semaphore;
-
-import io.micrometer.core.instrument.DistributionSummary;
 
 /**
  * @author Gerrit van Brakel
@@ -37,29 +36,26 @@ public class CheckSemaphorePipeLineProcessor extends PipeLineProcessorBase {
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-		PipeLineResult pipeLineResult;
-		Semaphore s = getSemaphore(pipeLine);
-		if (s != null) {
-			long waitingDuration = 0;
-			IPipe pipe = pipeLine.getPipe(firstPipe);
-			try {
-				// keep waiting statistics for thread-limited pipes
-				long startWaiting = System.currentTimeMillis();
-				s.acquire();
-				waitingDuration = System.currentTimeMillis() - startWaiting;
-				DistributionSummary summary = pipeLine.getPipelineWaitStatistics();
-				summary.record(waitingDuration);
-
-				pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
-			} catch(InterruptedException e) {
-				throw new PipeRunException(pipe, "Interrupted acquiring PipeLine semaphore", e);
-			} finally {
-				s.release();
-			}
-		} else { //no restrictions on the maximum number of threads (s==null)
-			pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+		Semaphore semaphore = getSemaphore(pipeLine);
+		if (semaphore == null) { // no restrictions on the maximum number of threads
+			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
-		return pipeLineResult;
+		IPipe pipe = pipeLine.getPipe(firstPipe);
+		try {
+			// keep waiting statistics for thread-limited pipes
+			long startWaiting = System.currentTimeMillis();
+			semaphore.acquire();
+			long waitingDuration = System.currentTimeMillis() - startWaiting;
+			DistributionSummary summary = pipeLine.getPipelineWaitStatistics();
+			summary.record(waitingDuration);
+
+			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+		} catch(InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new PipeRunException(pipe, "Interrupted acquiring PipeLine semaphore", e);
+		} finally {
+			semaphore.release();
+		}
 	}
 
 	private Semaphore getSemaphore(PipeLine pipeLine) {
