@@ -38,7 +38,6 @@ import org.frankframework.core.TransactionAttribute;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Counter;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.ReducableSemaphore;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
 import org.springframework.core.task.TaskExecutor;

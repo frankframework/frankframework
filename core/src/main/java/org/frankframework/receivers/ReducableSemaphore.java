@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.util;
+package org.frankframework.receivers;
 
 /**
  * See {@link java.util.concurrent.Semaphore} for generic details.
