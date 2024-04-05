@@ -86,8 +86,8 @@ jobs:
       run: |
         echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
-    - name: FrankDoc only on Java 11
-      if: ${{ matrix.java == '11' }}
+    - name: FrankDoc only on Java 17
+      if: ${{ matrix.java == '17' }}
       run: |
         echo "PROFILES=${{ env.PROFILES }},attachFrankDoc" >> $GITHUB_ENV
 
