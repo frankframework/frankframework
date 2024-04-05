@@ -275,34 +275,30 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   startPollingForConfigurationStateChanges(callback?: () => void): void {
-    this.Poller.add(
-      'server/configurations',
-      (data) => {
-        const configurations = data as Configuration[];
-        this.appService.updateConfigurations(configurations);
+    this.Poller.add('server/configurations', (data) => {
+      const configurations = data as Configuration[];
+      this.appService.updateConfigurations(configurations);
 
-        let ready = true;
-        for (const index in configurations) {
-          const config = configurations[index];
-          //When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
-          if (
-            config.state != 'STARTED' &&
-            !(config.state == 'STOPPED' && config.exception != null)
-          ) {
-            ready = false;
-            break;
-          }
+      let ready = true;
+      for (const index in configurations) {
+        const config = configurations[index];
+        //When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
+        if (
+          config.state != 'STARTED' &&
+          !(config.state == 'STOPPED' && config.exception != null)
+        ) {
+          ready = false;
+          break;
         }
-        if (ready) {
-          //Remove poller once all states are STARTED
-          window.setTimeout(() => {
-            this.Poller.remove('server/configurations');
-            if (callback != null && typeof callback == 'function') callback();
-          });
-        }
-      },
-      true,
-    );
+      }
+      if (ready) {
+        //Remove poller once all states are STARTED
+        window.setTimeout(() => {
+          this.Poller.remove('server/configurations');
+          if (callback != null && typeof callback == 'function') callback();
+        });
+      }
+    });
   }
 
   showReferences(): void {

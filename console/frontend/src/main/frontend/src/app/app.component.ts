@@ -420,7 +420,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
         this.appService.updateMessageLog(configurations);
       },
-      true,
       60_000,
     );
 
@@ -547,7 +546,7 @@ export class AppComponent implements OnInit, OnDestroy {
         (data: unknown) => {
           this.pollerCallback(data as Record<string, Adapter>);
         },
-        true,
+        undefined,
       );
     });
   }

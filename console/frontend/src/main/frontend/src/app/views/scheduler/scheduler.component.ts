@@ -95,7 +95,6 @@ export class SchedulerComponent implements OnInit, OnDestroy {
           this.initialized = true;
         }
       },
-      true,
       5000,
     );
 
