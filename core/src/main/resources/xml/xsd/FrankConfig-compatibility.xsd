@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.0-RC1">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -6211,7 +6211,7 @@
     </xs:attribute>
     <xs:attribute name="consumes">
       <xs:annotation>
-        <xs:documentation>The required contentType on requests, if it doesn't match the request will fail Default: ANY</xs:documentation>
+        <xs:documentation>The required contentType on requests, if it doesn't match a 415 Unsupported Media Type is replied Default: ANY</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MediaTypesAttributeValuesType_2 variableRef" />
@@ -9806,6 +9806,11 @@
     <xs:attribute name="wssPasswordDigest" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If true, the password is sent digested; Otherwise it is sent in clear text Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="omitXmlDeclaration" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>For direction=&lt;code&gt;wrap&lt;/code&gt; only: When false, adds an XML declaration to the output message. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string">

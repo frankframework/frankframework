@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.1.0-RC1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -1637,7 +1637,7 @@
     </xs:attribute>
     <xs:attribute name="consumes">
       <xs:annotation>
-        <xs:documentation>The required contentType on requests, if it doesn't match the request will fail Default: ANY</xs:documentation>
+        <xs:documentation>The required contentType on requests, if it doesn't match a 415 Unsupported Media Type is replied Default: ANY</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="MediaTypesAttributeValuesType_2 variableRef" />
@@ -4526,18 +4526,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="StoredProcedureQuerySenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="WebServiceNtlmSender">
-        <xs:annotation>
-          <xs:documentation>Sender that sends a message via a WebService based on NTLM authentication.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="WebServiceNtlmSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -7851,64 +7839,6 @@
     </xs:attribute>
     <xs:attributeGroup ref="JdbcSenderBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="WebServiceNtlmSenderType">
-    <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
-    <xs:attributeGroup ref="WebServiceNtlmSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.WebServiceNtlmSender" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="WebServiceNtlmSenderDeclaredAttributeGroup">
-    <xs:attribute name="contentType" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>content-type of the request Default: text/html; charset=utf-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="url" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>url or base of url to be used</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="timeout" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>timeout in ms of obtaining a connection/result. 0 means no timeout Default: 10000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxConnections" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>the maximum number of concurrent connections Default: 10</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="username" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>username used in authentication to host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="password" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>password used to authenticate with the host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authDomain" type="xs:string" />
-    <xs:attribute name="proxyHost" type="xs:string" />
-    <xs:attribute name="proxyPort" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Default: 80</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="soapAction" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>the soapactionuri to be set in the requestheader</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="WebServiceNtlmSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="WebServiceNtlmSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="WebServiceSenderType">
     <xs:group ref="HttpSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="WebServiceSenderCumulativeAttributeGroup" />
@@ -9348,18 +9278,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="StoredProcedureQuerySenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="WebServiceNtlmErrorSender">
-        <xs:annotation>
-          <xs:documentation>Sender that sends a message via a WebService based on NTLM authentication.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="WebServiceNtlmSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -11288,6 +11206,11 @@
     <xs:attribute name="wssPasswordDigest" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If true, the password is sent digested; Otherwise it is sent in clear text Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="omitXmlDeclaration" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>For direction=&lt;code&gt;wrap&lt;/code&gt; only: When false, adds an XML declaration to the output message. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string">
