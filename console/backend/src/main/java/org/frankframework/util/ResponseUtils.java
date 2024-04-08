@@ -29,13 +29,13 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.DigestUtils;
 
 import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.ResponseMessageBase;
+import org.frankframework.management.bus.message.MessageBase;
 
 public class ResponseUtils {
 
 	public static ResponseBuilder convertToJaxRsResponse(Message<?> response) {
-		int status = BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 200);
-		String mimeType = BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY, null);
+		int status = BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 200);
+		String mimeType = BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY, null);
 		ResponseBuilder builder = Response.status(status);
 
 		if(mimeType != null) {
@@ -46,7 +46,7 @@ public class ResponseUtils {
 			builder.entity(response.getPayload());
 		}
 
-		String contentDisposition = BusMessageUtils.getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY, null);
 		if(contentDisposition != null) {
 			builder.header("Content-Disposition", contentDisposition);
 		}
@@ -55,8 +55,8 @@ public class ResponseUtils {
 	}
 
 	public static ResponseBuilder convertToJaxRsStreamingResponse(Message<?> message, StreamingOutput response){
-		int status = BusMessageUtils.getIntHeader(message, ResponseMessageBase.STATUS_KEY, 200);
-		String mimeType = BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY, null);
+		int status = BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 200);
+		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
 		ResponseBuilder builder = Response.status(status);
 
 		if(mimeType != null) {
@@ -67,7 +67,7 @@ public class ResponseUtils {
 			builder.entity(response);
 		}
 
-		String contentDisposition = BusMessageUtils.getHeader(message, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(message, MessageBase.CONTENT_DISPOSITION_KEY, null);
 		if(contentDisposition != null) {
 			builder.header("Content-Disposition", contentDisposition);
 		}
@@ -78,7 +78,7 @@ public class ResponseUtils {
 	/** Shallow eTag generation, saves bandwidth but not computing power */
 	public static EntityTag generateETagHeaderValue(Message<?> response) {
 		MessageHeaders headers = response.getHeaders();
-		String mime = headers.get(ResponseMessageBase.MIMETYPE_KEY, String.class);
+		String mime = headers.get(MessageBase.MIMETYPE_KEY, String.class);
 		if(MediaType.APPLICATION_JSON_VALUE.equals(mime)) {
 			return generateETagHeaderValue(response.getPayload(), true);
 		}

@@ -14,6 +14,13 @@ import microsoft.exchange.webservices.data.core.EwsServiceMultiResponseXmlReader
 import microsoft.exchange.webservices.data.core.EwsXmlReader;
 import microsoft.exchange.webservices.data.security.XmlNodeType;
 
+/**
+ * Tests if XML 1.1 has been enabled, to avoid errors like:
+ * Illegal character entity: expansion character (code 0x3 at [row,col {unknown-source}]: [1,53]
+ * 
+ * Required for MS Exchange.
+ * See {@link StaxParserFactory}.
+ */
 public class StaxParserTest {
 
 	private final String validDocument   = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>testContent</test>";

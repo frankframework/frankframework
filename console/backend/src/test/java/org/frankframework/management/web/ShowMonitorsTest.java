@@ -30,8 +30,7 @@ import jakarta.json.stream.JsonGenerator;
 
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
-
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.StreamUtil;
 
 public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
@@ -48,7 +47,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 			Object input = invocation.getArguments()[0];
 			RequestMessageBuilder request = (RequestMessageBuilder)input;
 			assertEquals(BusTopic.MONITORING, request.getTopic());
-			return new JsonResponseMessage(request);
+			return new JsonMessage(request);
 		}
 
 	}

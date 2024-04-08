@@ -13,16 +13,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.bus;
+package org.frankframework.management.bus.message;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.frankframework.management.bus.BusMessageUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.MimeType;
 
-public abstract class ResponseMessageBase<T> implements Message<T> {
+public abstract class MessageBase<T> implements Message<T> {
 	public static final String STATUS_KEY = "status";
 	public static final String MIMETYPE_KEY = "type";
 	public static final String CONTENT_DISPOSITION_KEY = "contentdisposition";
@@ -32,7 +33,7 @@ public abstract class ResponseMessageBase<T> implements Message<T> {
 	private final Map<String, Object> headers = new HashMap<>();
 	private MessageHeaders messageHeaders;
 
-	protected ResponseMessageBase(T payload, MimeType defaultMimeType) {
+	protected MessageBase(T payload, MimeType defaultMimeType) {
 		this.payload = payload;
 		setStatus(200);
 		setMimeType(defaultMimeType);

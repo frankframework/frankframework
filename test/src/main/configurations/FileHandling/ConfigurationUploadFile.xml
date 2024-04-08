@@ -19,22 +19,6 @@
 				<exit state="error" path="ERROR" code="500"/>
 			</exits>
 
-			<pipe name="switchCleanFilesystem"
-				className="org.frankframework.pipes.XmlSwitch"
-				sessionKey="cleanFilesystem"
-				notFoundForwardName="uploadFiles">
-				<forward name="clean" path="deleteFilesystem" />
-			</pipe>
-
-			<pipe name="deleteFilesystem"
-				className="org.frankframework.pipes.CleanupOldFilesPipe"
-				filePatternSessionKey="destination"
-				subdirectories="true"
-				deleteEmptySubdirectories="true"
-				lastModifiedDelta="-1">
-				<forward name="success" path="uploadFiles" />
-			</pipe>
-
 			<pipe name="uploadFiles"
 				className="org.frankframework.pipes.ForEachChildElementPipe"
 				getInputFromSessionKey="multipartAttachments"

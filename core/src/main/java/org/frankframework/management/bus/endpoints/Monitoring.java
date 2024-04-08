@@ -25,6 +25,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.dto.MonitorDTO;
 import org.frankframework.management.bus.dto.TriggerDTO;
+import org.frankframework.management.bus.message.EmptyMessage;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -36,9 +39,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.EmptyResponseMessage;
-import org.frankframework.management.bus.JsonResponseMessage;
-import org.frankframework.management.bus.StringResponseMessage;
 import org.frankframework.monitoring.AdapterFilter;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.monitoring.EventType;
@@ -135,7 +135,7 @@ public class Monitoring extends BusEndpointBase {
 			throw new BusException("unable to (re)configure Monitor", e);
 		}
 
-		return EmptyResponseMessage.created();
+		return EmptyMessage.created();
 	}
 
 	@ActionSelector(BusAction.DELETE)
@@ -157,7 +157,7 @@ public class Monitoring extends BusEndpointBase {
 			mm.removeMonitor(monitor);
 		}
 
-		return EmptyResponseMessage.accepted();
+		return EmptyMessage.accepted();
 	}
 
 	@ActionSelector(BusAction.MANAGE)
@@ -182,7 +182,7 @@ public class Monitoring extends BusEndpointBase {
 			}
 		}
 
-		return EmptyResponseMessage.accepted();
+		return EmptyMessage.accepted();
 	}
 
 	private void updateTrigger(ITrigger trigger, Message<?> message) {
@@ -252,7 +252,7 @@ public class Monitoring extends BusEndpointBase {
 	private Message<String> getMonitors(MonitorManager mm, boolean showConfigAsXml) {
 		if(showConfigAsXml) {
 			String xml = mm.toXml().toXML();
-			return new StringResponseMessage(xml, MediaType.APPLICATION_XML);
+			return new StringMessage(xml, MediaType.APPLICATION_XML);
 		}
 
 		List<Map<String, Object>> monitors = new ArrayList<>();
@@ -267,7 +267,7 @@ public class Monitoring extends BusEndpointBase {
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 
 	private Message<String> getTrigger(MonitorManager manager, ITrigger trigger) {
@@ -276,13 +276,13 @@ public class Monitoring extends BusEndpointBase {
 		returnMap.put("severities", EnumUtils.getEnumList(Severity.class));
 		returnMap.put("events", manager.getEvents());
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 
 	private Message<String> getMonitor(MonitorManager manager, Monitor monitor, boolean showConfigAsXml) {
 		if(showConfigAsXml) {
 			String xml = monitor.toXml().toXML();
-			return new StringResponseMessage(xml, MediaType.APPLICATION_XML);
+			return new StringMessage(xml, MediaType.APPLICATION_XML);
 		}
 
 		Map<String, Object> monitorInfo = mapMonitor(monitor);
@@ -290,7 +290,7 @@ public class Monitoring extends BusEndpointBase {
 		monitorInfo.put("severities", EnumUtils.getEnumList(Severity.class));
 		monitorInfo.put("events", manager.getEvents());
 
-		return new JsonResponseMessage(monitorInfo);
+		return new JsonMessage(monitorInfo);
 	}
 
 	private Map<String, Object> mapMonitor(Monitor monitor) {

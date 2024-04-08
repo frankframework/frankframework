@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -44,7 +45,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.scheduler.ConfiguredJob;
 import org.frankframework.scheduler.IbisJobDetail;
 import org.frankframework.scheduler.SchedulerHelper;
@@ -81,7 +81,7 @@ public class GetSchedules extends BusEndpointBase {
 			throw new BusException("Failed to parse schedules", e);
 		}
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.FIND)
@@ -99,7 +99,7 @@ public class GetSchedules extends BusEndpointBase {
 			throw new BusException("unable to retrieve jobdata", e);
 		}
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 
 	private Map<String, Object> getSchedulerMetaData(Scheduler scheduler) {

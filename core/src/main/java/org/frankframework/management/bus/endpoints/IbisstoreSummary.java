@@ -27,6 +27,7 @@ import org.frankframework.dbms.IDbmsSupport;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
@@ -50,7 +51,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.StringResponseMessage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 
@@ -59,14 +59,14 @@ public class IbisstoreSummary extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.IBISSTORE_SUMMARY)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public StringResponseMessage showIbisStoreSummary(Message<?> message) {
+	public StringMessage showIbisStoreSummary(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String query = BusMessageUtils.getHeader(message, "query");
 
 		return execute(datasource, query);
 	}
 
-	private StringResponseMessage execute(String datasource, String query) {
+	private StringMessage execute(String datasource, String query) {
 		String result = "";
 		try {
 			IbisstoreSummaryQuerySender qs;
@@ -93,7 +93,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 		}
 
 		String resultObject = "{ \"result\":"+result+"}";
-		return new StringResponseMessage(resultObject, MediaType.APPLICATION_JSON);
+		return new StringMessage(resultObject, MediaType.APPLICATION_JSON);
 	}
 
 	private Map<String, SlotIdRecord> getSlotmap() {

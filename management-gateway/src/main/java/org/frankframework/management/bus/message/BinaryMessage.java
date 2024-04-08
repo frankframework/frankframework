@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.bus;
+package org.frankframework.management.bus.message;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -21,21 +21,21 @@ import java.io.InputStream;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
-public class BinaryResponseMessage extends ResponseMessageBase<InputStream> {
+public class BinaryMessage extends MessageBase<InputStream> {
 
-	public BinaryResponseMessage(byte[] payload) {
+	public BinaryMessage(byte[] payload) {
 		this(new ByteArrayInputStream(payload));
 	}
 
-	public BinaryResponseMessage(InputStream payload) {
+	public BinaryMessage(InputStream payload) {
 		this(payload, MediaType.APPLICATION_OCTET_STREAM);
 	}
 
-	public BinaryResponseMessage(byte[] payload, MimeType defaultMimeType) {
+	public BinaryMessage(byte[] payload, MimeType defaultMimeType) {
 		this(new ByteArrayInputStream(payload), defaultMimeType);
 	}
 
-	public BinaryResponseMessage(InputStream payload, MimeType defaultMimeType) {
+	public BinaryMessage(InputStream payload, MimeType defaultMimeType) {
 		super(payload, defaultMimeType);
 	}
 }

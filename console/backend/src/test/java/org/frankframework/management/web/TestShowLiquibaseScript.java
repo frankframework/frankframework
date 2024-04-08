@@ -17,7 +17,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
 import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.ResponseMessageBase;
+import org.frankframework.management.bus.message.MessageBase;
 
 public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScript>{
 
@@ -30,7 +30,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	public void downloadSingleScript() {
 		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
@@ -47,7 +47,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	public void downloadAllScripts() {
 		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
@@ -64,7 +64,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	public void downloadAllScriptsWithConfig() {
 		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
@@ -85,7 +85,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));

@@ -23,9 +23,13 @@ import java.io.FilterReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.params.provider.Arguments;
 
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.StreamUtil;
 
 @SuppressWarnings("resource")
@@ -87,5 +91,15 @@ public class MessageTestUtils {
 			return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {}, message.getContext());
 		}
 		return message;
+	}
+
+	public static Stream<Arguments> readFileInDifferentWays(String resource) throws IOException, URISyntaxException {
+		URL testFileURL = TestFileUtils.getTestFileURL(resource);
+		return Stream.of(
+				Arguments.of(MessageTestUtils.getBinaryMessage(resource, false)), //InputStream
+				Arguments.of(MessageTestUtils.getCharacterMessage(resource, false)), //Reader
+				Arguments.of(new UrlMessage(testFileURL)), //Supplier
+				Arguments.of(new FileMessage(new File(testFileURL.toURI()))) //SerializableFileReference
+		);
 	}
 }

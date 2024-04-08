@@ -11,11 +11,10 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.frankframework.management.bus.message.MessageBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
-
-import org.frankframework.management.bus.ResponseMessageBase;
 
 public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListener>{
 
@@ -54,7 +53,7 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 
 		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("SERVICE_LISTENER", headers.get("topic"));
@@ -74,7 +73,7 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 
 		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("SERVICE_LISTENER", headers.get("topic"));

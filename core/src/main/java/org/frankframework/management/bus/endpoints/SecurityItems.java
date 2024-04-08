@@ -36,6 +36,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
@@ -57,8 +58,6 @@ import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
-
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.XmlUtils;
@@ -79,7 +78,7 @@ public class SecurityItems extends BusEndpointBase {
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 		returnMap.put("supportedConnectionOptions", getSupportedProtocolsAndCyphers());
 
-		return new JsonResponseMessage(returnMap);
+		return new JsonMessage(returnMap);
 	}
 
 	@Override

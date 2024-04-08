@@ -28,6 +28,8 @@ import javax.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
@@ -39,14 +41,11 @@ import org.frankframework.core.Resource;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.migration.DatabaseMigratorBase;
 import org.frankframework.management.bus.ActionSelector;
-import org.frankframework.management.bus.BinaryResponseMessage;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.StringResponseMessage;
-
 import org.frankframework.util.StreamUtil;
 
 @BusAware("frank-management-bus")
@@ -55,7 +54,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 	@ActionSelector(BusAction.DOWNLOAD)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public BinaryResponseMessage downloadMigrationScript(Message<?> message) throws IOException {
+	public BinaryMessage downloadMigrationScript(Message<?> message) throws IOException {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -75,7 +74,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 			} catch (IOException e) {
 				throw new BusException("unable to create ZIP archive", e);
 			}
-			BinaryResponseMessage response = new BinaryResponseMessage(out.toByteArray());
+			BinaryMessage response = new BinaryMessage(out.toByteArray());
 			response.setFilename("DatabaseChangelog.zip");
 			return response;
 		}
@@ -86,7 +85,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
 		}
 
-		return new BinaryResponseMessage(changelog.openStream(), getMediaTypeFromName(changelog.getName()));
+		return new BinaryMessage(changelog.openStream(), getMediaTypeFromName(changelog.getName()));
 	}
 
 	@Nonnull
@@ -113,7 +112,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 	@ActionSelector(BusAction.UPLOAD)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public StringResponseMessage getMigrationChanges(Message<?> message) {
+	public StringMessage getMigrationChanges(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		Configuration configuration = getConfigurationByName(configurationName);
 
@@ -147,6 +146,6 @@ public class DatabaseMigrator extends BusEndpointBase {
 		} catch (JdbcException e) {
 			throw new BusException("unable to generate database changes", e);
 		}
-		return new StringResponseMessage(writer.toString());
+		return new StringMessage(writer.toString());
 	}
 }
