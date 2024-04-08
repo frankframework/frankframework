@@ -32,7 +32,6 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
@@ -273,7 +272,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 
 			// If any Header params exist, use RuntimeSessions
-			if(getParameterList().stream().anyMatch(param -> param.getName().startsWith(HEADER_PARAM_PREFIX))) {
+			if(!runtimeSession && getParameterList().stream().anyMatch(param -> param.getName().startsWith(HEADER_PARAM_PREFIX))) {
 				runtimeSession = true;
 			}
 		}
@@ -296,18 +295,15 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		CredentialFactory cf = new CredentialFactory(cfAuthAlias, cfUsername, cdPassword);
 		try {
-			SessionParameterMap map = getSessionBuilder().build(cf.getUsername(), cf.getPassword());
+			Map<String, String> headers = new HashMap<>();
 			if(pvl != null) {
 				for(Entry<String, Object> entry : pvl.getValueMap().entrySet()) {
 					if(entry.getKey().startsWith(HEADER_PARAM_PREFIX)) {
-						map.put(entry.getKey(), parseAsString(entry));
+						headers.put(entry.getKey(), parseAsString(entry));
 					}
 				}
 			}
-			CloseableCmisSession session = new CloseableCmisSession(map);
-			session.connect();
-
-			return session;
+			return getSessionBuilder().build(cf.getUsername(), cf.getPassword(), headers);
 		}
 		catch (CmisSessionException e) {
 			throw new SenderException(e);
@@ -331,9 +327,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		// If we don't need to create the session at JVM runtime, create to test the connection
 		if (!runtimeSession) {
 			try {
-				SessionParameterMap map = getSessionBuilder().build();
-				globalSession = new CloseableCmisSession(map);
-				globalSession.connect();
+				globalSession = getSessionBuilder().build();
 			}
 			catch (CmisSessionException e) {
 				throw new SenderException("unable to create cmis session", e);

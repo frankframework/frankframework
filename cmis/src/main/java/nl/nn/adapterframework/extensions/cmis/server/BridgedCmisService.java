@@ -17,7 +17,7 @@ package nl.nn.adapterframework.extensions.cmis.server;
 
 import java.lang.reflect.Method;
 
-import org.apache.chemistry.opencmis.client.SessionParameterMap;
+import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.AclService;
@@ -32,7 +32,6 @@ import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.apache.chemistry.opencmis.commons.spi.VersioningService;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.extensions.cmis.CloseableCmisSession;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionException;
 import nl.nn.adapterframework.extensions.cmis.server.impl.IbisDiscoveryService;
@@ -99,9 +98,7 @@ public class BridgedCmisService extends FilterCmisService {
 		}
 
 		try {
-			SessionParameterMap map = sessionBuilder.build();
-			CloseableCmisSession session = new CloseableCmisSession(map);
-			session.connect();
+			Session session = sessionBuilder.build();
 			return session.getBinding();
 		}
 		catch (CmisSessionException e) {
