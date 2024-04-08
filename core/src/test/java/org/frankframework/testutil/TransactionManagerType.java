@@ -19,13 +19,11 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
-import bitronix.tm.TransactionManagerServices;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public enum TransactionManagerType {
 	DATASOURCE(URLDataSourceFactory.class, "springTOMCAT.xml"),
-	BTM(BTMXADataSourceFactory.class, "springTOMCATBTM.xml"),
 	NARAYANA(NarayanaXADataSourceFactory.class, "springTOMCATNARAYANA.xml");
 
 	private static final Map<TransactionManagerType, TestConfiguration> transactionManagerConfigurations = new WeakHashMap<>();
@@ -122,9 +120,6 @@ public enum TransactionManagerType {
 			TestConfiguration ac = transactionManagerConfigurations.remove(this);
 			if(ac != null) {
 				ac.close();
-			}
-			if (this == BTM && TransactionManagerServices.isTransactionManagerRunning()) {
-				TransactionManagerServices.getTransactionManager().shutdown();
 			}
 			if (ac != null) {
 				removePreviousTxLogFiles(ac);

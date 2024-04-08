@@ -22,8 +22,6 @@ import javax.sql.DataSource;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
-import bitronix.tm.resource.jdbc.PoolingDataSource;
-
 public class JdbcPoolUtil {
 
 	private static final String CLOSE = "], ";
@@ -38,8 +36,6 @@ public class JdbcPoolUtil {
 		} else if (datasource instanceof org.apache.commons.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) datasource;
 			addPoolMetadata(dataSource.getPool(), info);
-		} else if (datasource instanceof PoolingDataSource) { // BTM instance
-			addBTMDatasourceInfo(datasource, info);
 		} else if (datasource instanceof DelegatingDataSource) { //Perhaps it's wrapped?
 			return getConnectionPoolInfo(((DelegatingDataSource) datasource).getTargetDataSource());
 		} else {
@@ -48,19 +44,6 @@ public class JdbcPoolUtil {
 
 		return info.toString();
 	}
-
-	private static void addBTMDatasourceInfo(DataSource datasource, StringBuilder info) {
-		PoolingDataSource dataSource = (PoolingDataSource) datasource;
-		info.append("BTM Pool Info: ");
-		if (dataSource == null) {
-			return;
-		}
-		info.append("maxPoolSize [").append(dataSource.getMaxPoolSize()).append(CLOSE);
-		info.append("minIdle [").append(dataSource.getMinPoolSize()).append(CLOSE);
-		info.append("totalPoolSize [").append(dataSource.getTotalPoolSize()).append(CLOSE);
-		info.append("inPoolSize [").append(dataSource.getInPoolSize()).append("]");
-	}
-
 
 	static void addPoolMetadata(@Nonnull GenericObjectPool<?> pool, @Nonnull StringBuilder info) {
 		info.append("DBCP2 Pool Info: ");
