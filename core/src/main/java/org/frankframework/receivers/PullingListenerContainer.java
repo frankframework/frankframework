@@ -63,11 +63,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	private @Getter @Setter PlatformTransactionManager txManager;
 	private final AtomicInteger threadsRunning = new AtomicInteger();
 	private final AtomicInteger tasksStarted = new AtomicInteger();
-	private ReducableSemaphore processToken = null; // guard against to many messages being processed at the same time
+	private ResourceLimiter processToken = null; // guard against to many messages being processed at the same time
 	private Semaphore pollToken = null; // guard against to many threads polling at the same time
 	private final AtomicBoolean idle = new AtomicBoolean(false); // true if the last messages received was null, will cause wait loop
 	private int retryInterval = 1;
-	private int maxThreadCount = 1;
 
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
@@ -83,8 +82,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			pollToken = new Semaphore(receiver.getNumThreadsPolling());
 		}
 
-		processToken = new ReducableSemaphore(receiver.getNumThreads());
-		maxThreadCount = receiver.getNumThreads();
+		processToken = new ResourceLimiter(receiver.getNumThreads(), receiver.getNumThreads());
 		if (receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
 			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionAttribute.REQUIRESNEW.getTransactionAttributeNum());
 			if (receiver.getTransactionTimeout() > 0) {
@@ -119,20 +117,18 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	@Override
 	public int getMaxThreadCount() {
-		return maxThreadCount;
+		return processToken.getMaxResourceCount();
 	}
 
 	@Override
 	public void increaseThreadCount() {
-		maxThreadCount++;
-		processToken.release();
+		processToken.increaseMaxResourceCount(1);
 	}
 
 	@Override
 	public void decreaseThreadCount() {
-		if (maxThreadCount>1) {
-			maxThreadCount--;
-			processToken.reducePermits(1);
+		if (processToken.getMaxResourceCount() > 1) {
+			processToken.reduceMaxResourceCount(1);
 		}
 	}
 
