@@ -768,6 +768,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcutil-jdk18on</artifactId>
+			<version>1.78</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpg-jdk18on</artifactId>
 			<version>1.78</version>
 		</dependency>
