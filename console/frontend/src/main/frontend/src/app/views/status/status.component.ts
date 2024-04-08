@@ -1,4 +1,3 @@
-import { ViewportScroller } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -81,7 +80,6 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   constructor(
     private Poller: PollerService,
-    private viewportScroller: ViewportScroller,
     private route: ActivatedRoute,
     private router: Router,
     private statusService: StatusService,
@@ -89,26 +87,17 @@ export class StatusComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.route.fragment.subscribe((fragment) => {
+      if (fragment && fragment != '' && this.adapterName == '') {
+        //If the adapter param hasn't explicitly been set
+        this.adapterName = fragment;
+      }
+    });
     this.route.queryParamMap.subscribe((parameters) => {
-      this.route.fragment.subscribe((fragment) => {
-        const hash = fragment; // let hash = this.$location.hash();
-        this.adapterName = parameters.get('adapter') ?? '';
-        if (this.adapterName == '' && hash && hash != '') {
-          //If the adapter param hasn't explicitly been set
-          this.adapterName = hash;
-        } else if (this.adapterName != '') {
-          /* let routeQueryParams = null;
-          if (filterParam && filterParam != "") {
-            let routeQueryParams = filterParam.length > 16 ? null // if everything is selected then filter doesnt need to be in the url
-              : { filter: filterParam };
-            this.router.navigate([], { relativeTo: this.route, queryParams: routeQueryParams, fragment: hash ?? undefined }); // this.$location.hash(this.adapterName);
-          } */
-          this.router.navigate([], {
-            relativeTo: this.route,
-            fragment: this.adapterName,
-          });
-        }
-      });
+      const adapterName = parameters.get('adapter');
+      if (adapterName && adapterName != '' && this.adapterName == '') {
+        this.adapterName = adapterName;
+      }
 
       const filterParameter = parameters.get('filter');
       if (filterParameter && filterParameter != '') {
@@ -216,10 +205,12 @@ export class StatusComponent implements OnInit, OnDestroy {
     if (this.searchText.length > 0)
       transitionObject['search'] = this.searchText;
 
+    const fragment = this.adapterName === '' ? undefined : this.adapterName;
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: transitionObject,
-      preserveFragment: true,
+      fragment,
     });
   }
 
