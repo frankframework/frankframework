@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>8.1.0-SNAPSHOT</revision>
+		<revision>8.2.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -29,7 +29,7 @@
 		<micrometer.version>1.12.4</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>3.1-SNAPSHOT</frankdoc.version>
+		<frankdoc.version>3.1</frankdoc.version>
 		<javadoc-plugin.version>3.6.3</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
@@ -769,7 +769,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.3.1</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
