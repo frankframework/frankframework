@@ -163,7 +163,7 @@ public class Init extends FrankApiBase {
 			pathToUse.append("/");
 		}
 		pathToUse.append(basePath);
-		pathToUse.append( basePath.endsWith("/") && path.startsWith("/") ? path.substring(1) : path);
+		pathToUse.append((basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
 		return pathToUse.toString();
 	}
 }
