@@ -60,13 +60,6 @@ class FtpFileSystemActorTest extends FileSystemActorTest<FTPFileRef, FtpFileSyst
 	@Override
 	@Test
 	@Disabled("Line-endings differences breaking the test. Test is gone in 8.0 anyway")
-	public void fileSystemActorWriteActionTestWithOutputStream() throws Exception {
-		super.fileSystemActorWriteActionTestWithOutputStream();
-	}
-
-	@Override
-	@Test
-	@Disabled("Line-endings differences breaking the test. Test is gone in 8.0 anyway")
 	public void fileSystemActorWriteActionBase64Encode() throws Exception {
 		fileSystemActorWriteActionBase64Encode(false, true);
 	}

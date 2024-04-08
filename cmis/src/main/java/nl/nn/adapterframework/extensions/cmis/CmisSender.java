@@ -300,7 +300,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			if(pvl != null) {
 				for(Entry<String, Object> entry : pvl.getValueMap().entrySet()) {
 					if(entry.getKey().startsWith(HEADER_PARAM_PREFIX)) {
-						map.put(entry.getKey(), entry.getValue()+"");
+						map.put(entry.getKey(), parseAsString(entry));
 					}
 				}
 			}
@@ -311,6 +311,14 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 		catch (CmisSessionException e) {
 			throw new SenderException(e);
+		}
+	}
+
+	private String parseAsString(Entry<String, Object> entry) throws SenderException {
+		try {
+			return Message.asString(entry.getValue());
+		} catch (IOException e) {
+			throw new SenderException("unable to convert parameter ["+entry.getKey()+"] value to String", e);
 		}
 	}
 

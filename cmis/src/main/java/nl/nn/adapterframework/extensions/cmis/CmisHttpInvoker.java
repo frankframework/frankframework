@@ -273,7 +273,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 					String name = StringUtils.substring(key, HEADER_PARAM_PREFIX_LENGTH);
 					Object value = session.get(key);
 					if(value != null) {
-						headers.put(name, value.toString());
+						headers.put(name, String.valueOf(value)); //Session values are always stored as String
 					}
 				}
 			}
