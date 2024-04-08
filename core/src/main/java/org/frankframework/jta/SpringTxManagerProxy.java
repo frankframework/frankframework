@@ -65,10 +65,12 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 
 	@Override
 	public void commit(TransactionStatus txStatus) throws TransactionException {
-		if (txStatus.isRollbackOnly()) {
-			Exception e = new Exception("<TX> Rollback from commit");
-			log.info("<TX> Executing rollback from tx.commit! TransactionStatus: [{}], Stacktrace:", txStatus, e);
-		} else if (trace && log.isDebugEnabled()) log.debug("committing transaction [{}]", txStatus);
+		if (trace && log.isDebugEnabled()) {
+			if (txStatus.isRollbackOnly())
+				log.debug("<TX> Executing rollback from tx.commit. TransactionStatus: [{}], Stacktrace:", txStatus, new Exception("<TX> Rollback from commit"));
+			else
+				log.debug("committing transaction [{}]", txStatus);
+		}
 		getRealTxManager().commit(txStatus);
 	}
 
