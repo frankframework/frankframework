@@ -76,7 +76,6 @@ import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
-import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
@@ -291,44 +290,18 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	 * Creates a session during JMV runtime, tries to retrieve parameters and falls back on the defaults when they can't be found
 	 */
 	public CloseableCmisSession createCmisSession(ParameterValueList pvl) throws SenderException {
-		String authAlias_work = null;
-		String username_work = null;
-		String password_work = null;
+		String cfAuthAlias = getParameterOverriddenAttributeValue(pvl, "authAlias", getAuthAlias());
+		String cfUsername = getParameterOverriddenAttributeValue(pvl, "username", getUsername());
+		String cdPassword = getParameterOverriddenAttributeValue(pvl, "password", getPassword());
 
-		if (pvl != null) {
-			ParameterValue pv = pvl.get("authAlias");
-			if (pv != null) {
-				authAlias_work = pv.asStringValue();
-			}
-			pv = pvl.get("username");
-			if (pv == null) {
-				pv = pvl.get("userName");
-			}
-			if (pv != null) {
-				username_work = pv.asStringValue();
-			}
-			pv = pvl.get("password");
-			if (pv != null) {
-				password_work = pv.asStringValue();
-			}
-		}
-
-		if (authAlias_work == null) {
-			authAlias_work = getAuthAlias();
-		}
-		if (username_work == null) {
-			username_work = getUsername();
-		}
-		if (password_work == null) {
-			password_work = getPassword();
-		}
-
-		CredentialFactory cf = new CredentialFactory(authAlias_work, username_work, password_work);
+		CredentialFactory cf = new CredentialFactory(cfAuthAlias, cfUsername, cdPassword);
 		try {
 			SessionParameterMap map = getSessionBuilder().build(cf.getUsername(), cf.getPassword());
-			for(Entry<String, Object> entry : pvl.getValueMap().entrySet()) {
-				if(entry.getKey().startsWith(HEADER_PARAM_PREFIX)) {
-					map.put(entry.getKey(), entry.getValue()+"");
+			if(pvl != null) {
+				for(Entry<String, Object> entry : pvl.getValueMap().entrySet()) {
+					if(entry.getKey().startsWith(HEADER_PARAM_PREFIX)) {
+						map.put(entry.getKey(), entry.getValue()+"");
+					}
 				}
 			}
 			CloseableCmisSession session = new CloseableCmisSession(map);

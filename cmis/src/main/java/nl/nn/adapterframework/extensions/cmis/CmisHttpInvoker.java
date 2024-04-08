@@ -47,6 +47,8 @@ import nl.nn.adapterframework.util.StreamUtil;
 @Log4j2
 public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
+	private static final int HEADER_PARAM_PREFIX_LENGTH = CmisSender.HEADER_PARAM_PREFIX.length();
+
 	private CmisHttpSender sender = null;
 
 	//To stub during testing
@@ -268,7 +270,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 			for(String key : session.getKeys()) {
 				if(key.startsWith(CmisSender.HEADER_PARAM_PREFIX)) {
-					String name = StringUtils.substring(key, 7);
+					String name = StringUtils.substring(key, HEADER_PARAM_PREFIX_LENGTH);
 					Object value = session.get(key);
 					if(value != null) {
 						headers.put(name, value.toString());
