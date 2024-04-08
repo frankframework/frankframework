@@ -33,6 +33,7 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -45,6 +46,8 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 @Log4j2
 public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
+
+	private static final int HEADER_PARAM_PREFIX_LENGTH = CmisSender.HEADER_PARAM_PREFIX.length();
 
 	private CmisHttpSender sender = null;
 
@@ -261,6 +264,16 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 								}
 							}
 						}
+					}
+				}
+			}
+
+			for(String key : session.getKeys()) {
+				if(key.startsWith(CmisSender.HEADER_PARAM_PREFIX)) {
+					String name = StringUtils.substring(key, HEADER_PARAM_PREFIX_LENGTH);
+					Object value = session.get(key);
+					if(value != null) {
+						headers.put(name, String.valueOf(value)); //Session values are always stored as String
 					}
 				}
 			}
