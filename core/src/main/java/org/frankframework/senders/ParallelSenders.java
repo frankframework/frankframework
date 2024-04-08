@@ -18,6 +18,7 @@ package org.frankframework.senders;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.Phaser;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,12 +28,11 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.Guard;
+import org.frankframework.util.ConcurrencyUtil;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
@@ -68,8 +68,8 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		Guard guard = new Guard();
+	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException {
+		Phaser guard = new Phaser();
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 		boolean success = true;
 		String errorMessage = null;
@@ -82,7 +82,7 @@ public class ParallelSenders extends SenderSeries {
 			throw new SenderException(getLogPrefix() + " could not preserve input message", e);
 		}
 		for (ISender sender : getSenders()) {
-			guard.addResource();
+			guard.register();
 			// Create a new ParameterResolutionContext to be thread safe, see
 			// documentation on constructor of ParameterResolutionContext
 			// (parameter singleThreadOnly).
@@ -101,7 +101,7 @@ public class ParallelSenders extends SenderSeries {
 			executor.execute(pse);
 		}
 		try {
-			guard.waitForAllResources();
+			ConcurrencyUtil.waitForZeroPhasesLeft(guard);
 		} catch (InterruptedException e) {
 			throw new SenderException(getLogPrefix() + "was interrupted", e);
 		}
@@ -181,7 +181,7 @@ public class ParallelSenders extends SenderSeries {
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if (maxThreads < 1)
 			maxThreads = 0;
-
 		this.maxConcurrentThreads = maxThreads;
 	}
+
 }

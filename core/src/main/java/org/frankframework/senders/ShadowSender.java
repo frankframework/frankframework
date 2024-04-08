@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Phaser;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,7 +35,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.Guard;
+import org.frankframework.util.ConcurrencyUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
@@ -111,14 +112,14 @@ public class ShadowSender extends ParallelSenders {
 		return secondarySenderList;
 	}
 
-	protected void executeGuarded(ISender sender, Message message, PipeLineSession session, Guard guard, Map<ISender, ParallelSenderExecutor> executorMap) throws SenderException {
+	protected void executeGuarded(ISender sender, Message message, PipeLineSession session, Phaser guard, Map<ISender, ParallelSenderExecutor> executorMap) throws SenderException {
 		Message messageToSend;
 		try {
 			messageToSend = isWaitForShadowsToFinish() ? message : message.copyMessage();
 		} catch (IOException e) {
 			throw new SenderException("Cannot create copy of message", e);
 		}
-		guard.addResource();
+		guard.register();
 		ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, messageToSend, session, guard, getStatisticsKeeper(sender));
 		executorMap.put(sender, pse);
 		getExecutor().execute(pse);
@@ -129,8 +130,8 @@ public class ShadowSender extends ParallelSenders {
 	 */
 	@Override
 	public SenderResult sendMessage(@Nonnull Message message, @Nullable PipeLineSession session) throws SenderException, TimeoutException {
-		Guard primaryGuard = new Guard();
-		Guard shadowGuard = new Guard();
+		Phaser primaryGuard = new Phaser();
+		Phaser shadowGuard = new Phaser();
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
 
 		try {
@@ -149,7 +150,7 @@ public class ShadowSender extends ParallelSenders {
 
 		// Wait till primary sender has replied.
 		try {
-			primaryGuard.waitForAllResources();
+			ConcurrencyUtil.waitForZeroPhasesLeft(primaryGuard);
 		} catch (InterruptedException e) {
 			throw new SenderException(getLogPrefix() + "was interrupted", e);
 		}
@@ -169,9 +170,8 @@ public class ShadowSender extends ParallelSenders {
 		Runnable collectResults = () -> {
 			// Wait till every sender has replied.
 			try {
-				shadowGuard.waitForAllResources();
+				ConcurrencyUtil.waitForZeroPhasesLeft(shadowGuard);
 			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
 				log.warn("{} result collection thread was interrupted", getLogPrefix(), e);
 			}
 			// Collect the results of the (Shadow)Sender and send them to the resultSender.

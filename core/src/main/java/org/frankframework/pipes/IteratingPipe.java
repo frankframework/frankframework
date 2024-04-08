@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.Semaphore;
 
 import javax.annotation.Nonnull;
@@ -50,8 +51,8 @@ import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
+import org.frankframework.util.ConcurrencyUtil;
 import org.frankframework.util.FileUtils;
-import org.frankframework.util.Guard;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
@@ -208,7 +209,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private boolean blockOpen=false;
 		private Object blockHandle;
 		private final Vector<I> inputItems = new Vector<>();
-		private Guard guard;
+		private Phaser guard;
 		private List<ParallelSenderExecutor> executorList;
 
 		public ItemCallback(PipeLineSession session, ISender sender, Writer out) {
@@ -216,7 +217,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.sender=sender;
 			this.results=out;
 			if (isParallel() && isCollectResults()) {
-				guard = new Guard();
+				guard = new Phaser();
 				executorList = new ArrayList<>();
 			}
 		}
@@ -307,7 +308,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					DistributionSummary senderStatistics = getStatisticsKeeper(sender.getName());
 					if (isParallel()) {
 						if (isCollectResults()) {
-							guard.addResource();
+							guard.register();
 						}
 						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatistics);
 						if (isCollectResults()) {
@@ -405,7 +406,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		public void waitForResults() throws SenderException, IOException {
 			if (isParallel()) {
 				try {
-					guard.waitForAllResources();
+					ConcurrencyUtil.waitForZeroPhasesLeft(guard);
 					collectResultsOrThrowExceptions();
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();

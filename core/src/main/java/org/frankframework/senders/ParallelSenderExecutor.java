@@ -15,6 +15,7 @@
 */
 package org.frankframework.senders;
 
+import java.util.concurrent.Phaser;
 import java.util.concurrent.Semaphore;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -24,7 +25,6 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.stream.Message;
-import org.frankframework.util.Guard;
 import org.frankframework.util.LogUtil;
 
 public class ParallelSenderExecutor extends RequestReplyExecutor {
@@ -32,15 +32,15 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private final ISender sender;
 	@Getter private final PipeLineSession session;
 	private final Semaphore semaphore; // support limiting the number of threads processing in parallel, may be null
-	private final Guard guard;         // support waiting for all threads to end
+	private final Phaser guard;        // support waiting for all threads to end
 	private final DistributionSummary summary;
 	private @Getter long duration;
 
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, DistributionSummary sk) {
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Phaser guard, DistributionSummary sk) {
 		this(sender, message, session, null, guard, sk);
 	}
 
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Guard guard, DistributionSummary sk) {
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Phaser guard, DistributionSummary sk) {
 		super();
 		this.sender=sender;
 		request=message;
@@ -69,7 +69,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 				semaphore.release();
 			}
 			if(guard != null) {
-				guard.releaseResource();
+				guard.arriveAndDeregister();
 			}
 		}
 	}
