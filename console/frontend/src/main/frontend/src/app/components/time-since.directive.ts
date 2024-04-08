@@ -6,7 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { AppConstants, AppService, ConsoleState } from '../app.service';
+import { AppService, ConsoleState } from '../app.service';
 
 @Directive({
   selector: '[appTimeSince]',
@@ -38,8 +38,7 @@ export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
   updateTime(): string {
     if (!this.time) return '';
     let seconds = Math.round(
-      (Date.now() - this.time + this.consoleState.timeOffset) /
-        1000,
+      (Date.now() - this.time + this.consoleState.timeOffset) / 1000,
     );
 
     let minutes = seconds / 60;

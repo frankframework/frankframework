@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Base64Service } from './base64.service';
-import { AppConstants, AppService, ConsoleState } from '../app.service';
+import { AppService, ConsoleState } from '../app.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
