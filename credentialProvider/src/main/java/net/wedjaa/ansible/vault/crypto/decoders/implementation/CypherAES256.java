@@ -136,7 +136,7 @@ public class CypherAES256 implements CypherInterface
             	logger.debug(String.format("Padding to block size: %d", blockSize));
             }
             
-            int padding_length = (blockSize - (cleartext.length % blockSize));
+            int padding_length = blockSize - (cleartext.length % blockSize);
             if (padding_length == 0)
             {
                 padding_length = blockSize;

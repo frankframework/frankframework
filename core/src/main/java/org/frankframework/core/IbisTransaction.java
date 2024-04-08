@@ -102,7 +102,7 @@ public class IbisTransaction {
 	}
 
 	public static boolean isDistributedTransactionsSupported(PlatformTransactionManager txManager) {
-		if((txManager instanceof SpringTxManagerProxy)) {
+		if(txManager instanceof SpringTxManagerProxy) {
 			return isDistributedTransactionsSupported(((SpringTxManagerProxy)txManager).getRealTxManager());
 		}
 		return txManager instanceof JtaTransactionManager;

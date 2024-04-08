@@ -84,10 +84,10 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	private String findName(INamedObject namedObject) {
-		return (StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject));
+		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
 	}
 	private String findName(IConfigurationAware namedObject) {
-		return (StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject));
+		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
 	}
 
 	/** This DistributionSummary is suffixed under a pipe */

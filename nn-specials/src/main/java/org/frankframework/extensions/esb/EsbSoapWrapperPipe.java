@@ -320,7 +320,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			stripDestination();
 			if (isAddOutputNamespace()) {
 				String ons = getOutputNamespaceBaseUri();
-				if (getMessagingLayer().equals("P2P") || (StringUtils.isNotEmpty(p2pAlias) && getMessagingLayer().equalsIgnoreCase(p2pAlias))) {
+				if ("P2P".equals(getMessagingLayer()) || (StringUtils.isNotEmpty(p2pAlias) && getMessagingLayer().equalsIgnoreCase(p2pAlias))) {
 					ons = ons +
 					"/" + getBusinessDomain() +
 					"/" + getApplicationName() +
@@ -436,7 +436,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 					switch (count) {
 						case 1:
-							if (str.equals("P2P")
+							if ("P2P".equals(str)
 									|| (StringUtils.isNotEmpty(p2pAlias) && str.equalsIgnoreCase(p2pAlias))
 							) {
 								p2p = true;
@@ -593,7 +593,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 			p = parameterList.findParameter(PARADIGM_PARAMETER_NAME);
 			if (p!=null) {
 				paradigm = p.getValue();
-				if (paradigm!=null && paradigm.equals("Response")) {
+				if ("Response".equals(paradigm)) {
 					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 					p.setName(CORRELATIONID_PARAMETER_NAME);
 					p.setSessionKey(getSoapHeaderSessionKey());
@@ -692,7 +692,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 				if (pos > 0 && pos < physicalDestination.length()) {
 					String pds = physicalDestination.substring(0, pos);
 					String paradigm = physicalDestination.substring(pos);
-					if (paradigm.equals("Request") || paradigm.equals("Solicit")) {
+					if ("Request".equals(paradigm) || "Solicit".equals(paradigm)) {
 						physicalDestination = pds + "Response";
 					} else {
 						physicalDestination = pds + "?";

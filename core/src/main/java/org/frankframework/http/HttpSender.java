@@ -325,7 +325,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	private FormBodyPart createStringBodypart(Message message) {
-		MimeType mimeType = (postType == PostType.MTOM) ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
+		MimeType mimeType = postType == PostType.MTOM ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
 		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(getFirstBodyPartName(), new MessageContentBody(message, mimeType));
 
 		// Should only be set when request is MTOM and it's the first BodyPart

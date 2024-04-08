@@ -72,7 +72,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	public void configureClassloader(String type, String configurationName) {
-		if(type == null || type.equals("DummyClassLoader"))
+		if(type == null || "DummyClassLoader".equals(type))
 			skip = true;
 		else if(type.isEmpty()) //If empty string, it's a WebAppClassLoader
 			type = "WebAppClassLoader";

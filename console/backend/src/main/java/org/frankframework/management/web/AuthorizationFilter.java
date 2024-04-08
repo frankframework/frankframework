@@ -52,7 +52,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		if(requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
+		if("OPTIONS".equalsIgnoreCase(requestContext.getMethod())) {
 			//Preflight in here should not be possible?
 			return;
 		}

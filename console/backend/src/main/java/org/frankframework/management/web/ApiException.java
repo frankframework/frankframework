@@ -82,7 +82,7 @@ public class ApiException extends WebApplicationException implements Serializabl
 	private ApiException(String msg, Throwable t, Status status) {
 		super(msg, t);
 
-		this.status = (status!=null) ? status: Status.INTERNAL_SERVER_ERROR;
+		this.status = status != null ? status : Status.INTERNAL_SERVER_ERROR;
 		if(msg == null && t == null) {
 			this.expandedMessage = null;
 		} else {

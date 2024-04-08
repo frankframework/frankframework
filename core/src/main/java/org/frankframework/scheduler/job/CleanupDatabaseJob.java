@@ -302,9 +302,9 @@ public class CleanupDatabaseJob extends JobDef {
 						+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " LIMIT " + maxRows : "");
 			default:
 				if (log.isDebugEnabled()) log.warn("Not sure how to clean up for dialect: " + dbmsName + " just trying something");
-				return ("DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
+				return "DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
 						+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-						+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " FETCH FIRST " + maxRows + " ROWS ONLY" : "") + ")");
+						+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " FETCH FIRST " + maxRows + " ROWS ONLY" : "") + ")";
 		}
 	}
 }

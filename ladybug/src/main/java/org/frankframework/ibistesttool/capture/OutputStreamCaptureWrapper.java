@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OutputStreamCaptureWrapper extends OutputStream {
-	private AtomicBoolean hasDataWritten = new AtomicBoolean(false);
+	private final AtomicBoolean hasDataWritten = new AtomicBoolean(false);
 	private static final byte[] NO_DATA_WRITTEN = ">> Captured stream was closed without being read.".getBytes(StandardCharsets.UTF_8);
 	private final OutputStream delegate;
 

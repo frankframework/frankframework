@@ -48,7 +48,7 @@ public class SapSystemFactory {
 		if (self == null) {
 			self = new SapSystemFactory();
 		}
-		return (self);
+		return self;
 	}
 
 	public String getSapSystemInfo(String sapSystemName) {

@@ -45,7 +45,7 @@ public class XmlEncodingUtilsTest {
 		byte[] bytes = StreamUtil.streamToBytes(url.openStream());
 
 		// Act
-		final String charset = (defaultCharset != null) ? defaultCharset.name() : null;
+		final String charset = defaultCharset != null ? defaultCharset.name() : null;
 		String xmlContent = XmlEncodingUtils.readXml(bytes, charset);
 
 		// Assert
@@ -59,7 +59,7 @@ public class XmlEncodingUtilsTest {
 		URL url = XmlEncodingUtilsTest.class.getResource("/XmlEncodingUtils/"+resource);
 
 		// Act
-		final String charset = (defaultCharset != null) ? defaultCharset.name() : null;
+		final String charset = defaultCharset != null ? defaultCharset.name() : null;
 		String xmlContent = XmlEncodingUtils.readXml(url.openStream(), charset);
 
 		// Assert

@@ -94,7 +94,7 @@ public class JmsRealm {
 			while (iterator.hasNext()) {
 				String key = iterator.next();
 				Object value = thisBeanMap.get(key);
-				if (value != null && !key.equals("class") && destinationBeanMap.containsKey(key)) {
+				if (value != null && !"class".equals(key) && destinationBeanMap.containsKey(key)) {
 					PropertyUtils.setProperty(destination, key, value);
 				}
 			}

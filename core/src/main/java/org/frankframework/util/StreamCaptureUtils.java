@@ -43,7 +43,7 @@ public class StreamCaptureUtils {
 	public static final int DEFAULT_STREAM_CAPTURE_LIMIT=10000;
 
 	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
-		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; });
+		return watch(stream, onClose, e -> { if (onException!=null) onException.run(); return e; });
 	}
 
 	public static InputStream watch(InputStream stream, Runnable onClose, Function<IOException,IOException> onException) {

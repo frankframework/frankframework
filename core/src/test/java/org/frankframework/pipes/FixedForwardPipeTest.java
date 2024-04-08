@@ -48,7 +48,7 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 		pipe.setOnlyIfValue(onlyIfValue);
 		configureAndStartPipe();
 		if (sessionKeyValue!=null) {
-			if (sessionKeyValue.equals("null")) {
+			if ("null".equals(sessionKeyValue)) {
 				sessionKeyValue=null;
 			}
 			session.put("onlyIfSessionKey", sessionKeyValue);
@@ -97,7 +97,7 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 		pipe.setUnlessValue(unlessValue);
 		configureAndStartPipe();
 		if (sessionKeyValue!=null) {
-			if (sessionKeyValue.equals("null")) {
+			if ("null".equals(sessionKeyValue)) {
 				sessionKeyValue=null;
 			}
 			session.put("unlessSessionKey", sessionKeyValue);

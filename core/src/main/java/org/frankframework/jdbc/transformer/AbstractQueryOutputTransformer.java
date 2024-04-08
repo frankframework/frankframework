@@ -59,7 +59,7 @@ public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (localName.equalsIgnoreCase("field")) {
+		if ("field".equalsIgnoreCase(localName)) {
 			if (parsingDefinitions) {
 				addFieldDefinition(atts);
 			} else if ("true".equalsIgnoreCase(atts.getValue("null"))) {
@@ -68,11 +68,11 @@ public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 				currentBuilder = new StringBuilder();
 				currentField = atts.getValue("name");
 			}
-		} else if (localName.equalsIgnoreCase("fielddefinition")) {
+		} else if ("fielddefinition".equalsIgnoreCase(localName)) {
 			startDefinitions();
-		} else if (localName.equalsIgnoreCase("row")) {
+		} else if ("row".equalsIgnoreCase(localName)) {
 			startRow();
-		} else if (localName.equalsIgnoreCase("rowset")) {
+		} else if ("rowset".equalsIgnoreCase(localName)) {
 			startRowSet();
 		}
 		super.startElement(uri, localName, qName, atts);
@@ -80,16 +80,16 @@ public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (localName.equalsIgnoreCase("field")) {
+		if ("field".equalsIgnoreCase(localName)) {
 			if (currentBuilder != null)
 				addField(currentField, XmlEncodingUtils.decodeChars(currentBuilder.toString()));
 			currentBuilder = null;
 			currentField = null;
-		} else if (localName.equalsIgnoreCase("fielddefinition")) {
+		} else if ("fielddefinition".equalsIgnoreCase(localName)) {
 			endDefinitions();
-		} else if (localName.equalsIgnoreCase("row")) {
+		} else if ("row".equalsIgnoreCase(localName)) {
 			endRow();
-		} else if (localName.equalsIgnoreCase("rowset")) {
+		} else if ("rowset".equalsIgnoreCase(localName)) {
 			endRowSet();
 		}
 		super.endElement(uri, localName, qName);

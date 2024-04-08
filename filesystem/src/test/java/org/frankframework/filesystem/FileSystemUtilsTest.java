@@ -48,7 +48,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		createFile(folder, filename,contents+"0");
 
 		assertFileExistsWithContents(folder, filename, contents.trim()+"0");
-		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
+		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+numOfFilesPresentAtStart);
 
 		F file = fileSystem.toFile(folder, filename);
 
@@ -96,7 +96,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 
 		// assert that nothing has changed yet, because the file is smaller than the rotate size.
 		assertFileExistsWithContents(folder, filename, contents.trim()+"0");
-		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
+		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+numOfFilesPresentAtStart);
 
 
 		// create a bigger file
@@ -104,7 +104,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		createFile(folder, filename,contents+contents+"0");
 
 		for (int i=1;i<=numOfBackups;i++) {
-			assertFileExistsWithContents(folder, filename+"."+i, contents.trim()+(i));
+			assertFileExistsWithContents(folder, filename+"."+i, contents.trim()+i);
 		}
 
 		// test rollover for bigger file
@@ -158,7 +158,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		F file = fileSystem.toFile(srcFolder, filename);
 
 		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"0");
-		assertFileExistsWithContents(dstFolder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
+		assertFileExistsWithContents(dstFolder, filename+"."+numOfFilesPresentAtStart, contents.trim()+numOfFilesPresentAtStart);
 
 		// execute move
 		FileSystemUtils.moveFile(fileSystem, file, dstFolder, false, numOfBackups, false, false);
@@ -200,7 +200,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		F file = fileSystem.toFile(srcFolder, filename);
 
 		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"0");
-		assertFileExistsWithContents(dstFolder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
+		assertFileExistsWithContents(dstFolder, filename+"."+numOfFilesPresentAtStart, contents.trim()+numOfFilesPresentAtStart);
 
 		// execute move
 		FileSystemUtils.copyFile(fileSystem, file, dstFolder, false, numOfBackups, false, false);
@@ -243,7 +243,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		F file = fileSystem.toFile(srcFolder, filename);
 
 		assertFileExistsWithContents(dstFolder, filename, contents.trim()+"0");
-		assertFileExistsWithContents(dstFolder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
+		assertFileExistsWithContents(dstFolder, filename+"."+numOfFilesPresentAtStart, contents.trim()+numOfFilesPresentAtStart);
 
 		// execute move
 		FileSystemUtils.moveFile(fileSystem, file, dstFolder, true, numOfBackups, false, false);

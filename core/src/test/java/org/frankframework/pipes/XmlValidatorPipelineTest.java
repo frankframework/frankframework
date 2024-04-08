@@ -130,7 +130,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		try {
 			PipeRunResult result=validator.doPipe(new Message(testXml), session);
 			PipeForward forward=result.getPipeForward();
-			ValidationResult validationResult = forward.getName().equals("success") ? ValidationResult.VALID : ValidationResult.INVALID;
+			ValidationResult validationResult = "success".equals(forward.getName()) ? ValidationResult.VALID : ValidationResult.INVALID;
 			evaluateResult(validationResult, session, null, expectedFailureReasons);
 		} catch (Exception e) {
 			evaluateResult(ValidationResult.INVALID, session, e, expectedFailureReasons);

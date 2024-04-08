@@ -76,7 +76,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	}
 
 	protected final void log2SecurityLog(String message, String issuedBy) {
-		String logMessage = (StringUtils.isEmpty(issuedBy)) ? message : message+" issued by "+issuedBy;
+		String logMessage = StringUtils.isEmpty(issuedBy) ? message : message+" issued by "+issuedBy;
 		log.info(logMessage);
 		secLog.info(logMessage);
 	}

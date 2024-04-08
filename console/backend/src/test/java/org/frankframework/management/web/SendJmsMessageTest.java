@@ -60,7 +60,7 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 		attachments.add(new StringAttachment("synchronous", "true"));
 		attachments.add(new StringAttachment("message", "inputMessage"));
 
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
@@ -83,7 +83,7 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 		attachments.add(new StringAttachment("synchronous", "true"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
 
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();

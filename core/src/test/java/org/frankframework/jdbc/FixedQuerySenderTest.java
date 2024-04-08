@@ -200,7 +200,7 @@ public class FixedQuerySenderTest {
 
 	@TxManagerTest
 	public void testMultipleColumnsReturnedWithSpaceBetween() throws Exception {
-		assumeTrue(dataSourceName.equals("H2") || dataSourceName.equals("Oracle"));
+		assumeTrue("H2".equals(dataSourceName) || "Oracle".equals(dataSourceName));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -215,7 +215,7 @@ public class FixedQuerySenderTest {
 
 	@TxManagerTest
 	public void testMultipleColumnsReturnedWithDoubleSpace() throws Exception {
-		assumeTrue(dataSourceName.equals("H2") || dataSourceName.equals("Oracle"));
+		assumeTrue("H2".equals(dataSourceName) || "Oracle".equals(dataSourceName));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -230,7 +230,7 @@ public class FixedQuerySenderTest {
 
 	@TxManagerTest
 	public void testMultipleColumnsReturned() throws Exception {
-		assumeTrue(dataSourceName.equals("H2") || dataSourceName.equals("Oracle"));
+		assumeTrue("H2".equals(dataSourceName) || "Oracle".equals(dataSourceName));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -256,7 +256,7 @@ public class FixedQuerySenderTest {
 
 
 	public void testOutputFormat(DocumentFormat outputFormat, boolean includeFieldDefinition, ThrowingConsumer<String, Exception> asserter) throws Exception {
-		assumeTrue(dataSourceName.equals("H2"));
+		assumeTrue("H2".equals(dataSourceName));
 		fixedQuerySender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM, null as NULLCOL FROM " + TABLE_NAME + " WHERE 1=0");
 		fixedQuerySender.setOutputFormat(outputFormat);
 		fixedQuerySender.setIncludeFieldDefinition(includeFieldDefinition);

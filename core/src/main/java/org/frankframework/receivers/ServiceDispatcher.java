@@ -55,7 +55,7 @@ public class ServiceDispatcher  {
 		if (self == null) {
 			self = new ServiceDispatcher();
 		}
-		return (self);
+		return self;
 	}
 
 	/**

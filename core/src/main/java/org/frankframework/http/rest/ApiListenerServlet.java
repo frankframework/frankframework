@@ -160,7 +160,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			/*
 			 * Generate OpenApi specification
 			 */
-			if(uri.equalsIgnoreCase("/openapi.json")) {
+			if("/openapi.json".equalsIgnoreCase(uri)) {
 				generateOpenApiSpec(request, response);
 				return;
 			}

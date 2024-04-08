@@ -251,19 +251,19 @@ public class XmlQuerySender extends DirectQuerySender {
 			where = XmlUtils.getChildTagAsString(queryElement, "where");
 			order = XmlUtils.getChildTagAsString(queryElement, "order");
 
-			if (root.equalsIgnoreCase("select")) {
+			if ("select".equalsIgnoreCase(root)) {
 				result = selectQuery(connection, tableName, columns, where, order, session, next);
-			} else if (root.equalsIgnoreCase("insert")) {
+			} else if ("insert".equalsIgnoreCase(root)) {
 				result = new PipeRunResult(null, insertQuery(connection, tableName, columns));
-			} else if (root.equalsIgnoreCase("delete")) {
+			} else if ("delete".equalsIgnoreCase(root)) {
 				result = new PipeRunResult(null, deleteQuery(connection, tableName, where));
-			} else if (root.equalsIgnoreCase("update")) {
+			} else if ("update".equalsIgnoreCase(root)) {
 				result = new PipeRunResult(null, updateQuery(connection, tableName, columns, where));
-			} else if (root.equalsIgnoreCase("alter")) {
+			} else if ("alter".equalsIgnoreCase(root)) {
 				String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
 				int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
 				result = new PipeRunResult(null, alterQuery(connection, sequenceName, startWith));
-			} else if (root.equalsIgnoreCase("sql")) {
+			} else if ("sql".equalsIgnoreCase(root)) {
 				String type = XmlUtils.getChildTagAsString(queryElement, "type");
 				String query = XmlUtils.getChildTagAsString(queryElement, "query");
 				result = new PipeRunResult(null, sql(connection, query, type));
@@ -360,9 +360,9 @@ public class XmlQuerySender extends DirectQuerySender {
 		try {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			setBlobSmartGet(true);
-			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
+			if (StringUtils.isNotEmpty(type) && "select".equalsIgnoreCase(type)) {
 				return executeSelectQuery(statement,null,null, null, null).getResult();
-			} else if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("ddl")) {
+			} else if (StringUtils.isNotEmpty(type) && "ddl".equalsIgnoreCase(type)) {
 				//TODO: Strip SQL comments, everything between -- and newline
 				StringBuilder result = new StringBuilder();
 				for (String q : StringUtil.split(query, ";")) {

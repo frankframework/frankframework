@@ -282,7 +282,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<F> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		log.debug("After Message Processed - begin");
 		FS fileSystem=getFileSystem();
-		if ((rawMessage instanceof MessageWrapper)) {
+		if (rawMessage instanceof MessageWrapper) {
 			// if it is a MessageWrapper, it comes from an errorStorage, and then the state cannot be managed using folders by the listener itself.
 			MessageWrapper<?> wrapper = (MessageWrapper<?>) rawMessage;
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {

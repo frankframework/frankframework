@@ -39,7 +39,7 @@ class BusExceptionTest {
 			String[] event = logMessage.split(" - ");
 			String level = event[0];
 			String message = event[1];
-			String exception = (event.length == 3) ? event[2] : null;
+			String exception = event.length == 3 ? event[2] : null;
 
 			//Check log level
 			assertEquals(expectedLogLevel.name(), level, "["+level+"] did not match the expected log level ["+expectedLogLevel+"]");

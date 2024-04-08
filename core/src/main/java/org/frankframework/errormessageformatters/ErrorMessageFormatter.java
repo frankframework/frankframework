@@ -93,7 +93,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			errorXml.addSubElement(locationXml);
 		}
 
-		if (details != null && !details.equals("")) {
+		if (details != null && !"".equals(details)) {
 			XmlBuilder detailsXml = new XmlBuilder("details");
 			// detailsXml.setCdataValue(details);
 			detailsXml.setValue(XmlEncodingUtils.replaceNonValidXmlCharacters(details), true);
@@ -119,7 +119,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 
 	protected String getErrorMessage(String message, Throwable t) {
 		if (t != null) {
-			if (message == null || message.equals("")) {
+			if (message == null || "".equals(message)) {
 				message = t.getMessage();
 			} else {
 				message += ": "+t.getMessage();

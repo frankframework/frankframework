@@ -87,7 +87,7 @@ public class JwtValidator<C extends SecurityContext> {
 
 	protected JWKSource<C> getKeySource(URL jwksURL) throws IOException, ParseException {
 		JWKSource<C> keySource = null;
-		if(jwksURL.getProtocol().equals("file") || jwksURL.getProtocol().equals("jar")) {
+		if("file".equals(jwksURL.getProtocol()) || "jar".equals(jwksURL.getProtocol())) {
 			JWKSet set = JWKSet.load(jwksURL.openStream());
 			keySource = new ImmutableJWKSet<>(set);
 			return keySource;

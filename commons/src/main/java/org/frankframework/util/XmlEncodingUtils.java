@@ -144,15 +144,15 @@ public class XmlEncodingUtils {
 	}
 
 	private static char unEscapeString(String str) {
-		if (str.equalsIgnoreCase("&lt;"))
+		if ("&lt;".equalsIgnoreCase(str))
 			return '<';
-		else if (str.equalsIgnoreCase("&gt;"))
+		else if ("&gt;".equalsIgnoreCase(str))
 			return '>';
-		else if (str.equalsIgnoreCase("&amp;"))
+		else if ("&amp;".equalsIgnoreCase(str))
 			return '&';
-		else if (str.equalsIgnoreCase("&quot;"))
+		else if ("&quot;".equalsIgnoreCase(str))
 			return '\"';
-		else if (str.equalsIgnoreCase("&apos;") || str.equalsIgnoreCase("&#39;"))
+		else if ("&apos;".equalsIgnoreCase(str) || "&#39;".equalsIgnoreCase(str))
 			return '\'';
 		else
 			return 0x0;

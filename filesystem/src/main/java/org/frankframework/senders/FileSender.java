@@ -41,7 +41,7 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (!outputType.equalsIgnoreCase("string") && !outputType.equalsIgnoreCase("base64")) {
+		if (!"string".equalsIgnoreCase(outputType) && !"base64".equalsIgnoreCase(outputType)) {
 			throw new ConfigurationException(getLogPrefix(null) + "sender doesn't support outputType [" + outputType + "], use file pipe instead");
 		}
 		if (paramList!=null) {

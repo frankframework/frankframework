@@ -250,7 +250,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 					for (Map.Entry<String, List<String>> header : httpHeaders.entrySet()) {
 						if (header.getKey() != null && !header.getValue().isEmpty()) {
 							String key = header.getKey();
-							if (key.equalsIgnoreCase("user-agent")) {
+							if ("user-agent".equalsIgnoreCase(key)) {
 								headers.put("User-Agent", header.getValue().get(0));
 							}
 							else {

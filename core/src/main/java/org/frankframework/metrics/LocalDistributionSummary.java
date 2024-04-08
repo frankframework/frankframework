@@ -77,7 +77,7 @@ public class LocalDistributionSummary extends CumulativeDistributionSummary {
 	}
 	private double calculateVariance(long count, long sum, long sumOfSquares) {
 		if (count > 1) {
-			long sumSQ = (sumOfSquares-((sum*sum)/count));
+			long sumSQ = sumOfSquares-((sum*sum)/count);
 			return (double) sumSQ / (count-1);
 		} else {
 			return Double.NaN;

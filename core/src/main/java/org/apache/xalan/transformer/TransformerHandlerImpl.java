@@ -130,7 +130,7 @@ public class TransformerHandlerImpl
         System.err.println("In clearCoRoutine...");
       try
       {
-        SAX2DTM sax2dtm = ((SAX2DTM)m_dtm);          
+        SAX2DTM sax2dtm = (SAX2DTM)m_dtm;          
         if(null != m_contentHandler 
            && m_contentHandler instanceof IncrementalSAXSource_Filter)
         {

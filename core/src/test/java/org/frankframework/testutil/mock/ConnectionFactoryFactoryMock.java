@@ -156,7 +156,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 
 		@Override
 		public Message receive(long timeout) throws JMSException {
-			return (payload == null) ? TextMessageMock.newInstance() : payload;
+			return payload == null ? TextMessageMock.newInstance() : payload;
 		}
 	}
 

@@ -68,7 +68,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 				fail("unable to retreive alias from PFX file");
 			}
 		}
-		assertNotNull(privateKey, (aliases != null) ? ("found aliases "+Arrays.asList(aliases)+" in PFX file") : "no aliases found in PFX file");
+		assertNotNull(privateKey, aliases != null ? ("found aliases "+Arrays.asList(aliases)+" in PFX file") : "no aliases found in PFX file");
 
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword(pfxPassword);

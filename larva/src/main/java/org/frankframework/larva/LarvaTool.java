@@ -906,11 +906,11 @@ public class LarvaTool {
 				if (properties != null && properties.get("scenario.description") != null) {
 					String active = properties.getProperty("scenario.active", "true");
 					String unstable = properties.getProperty("adapter.unstable", "false");
-					if (active.equalsIgnoreCase("true") && unstable.equalsIgnoreCase("false")) {
+					if ("true".equalsIgnoreCase(active) && "false".equalsIgnoreCase(unstable)) {
 						scenarioFiles.add(file);
 					}
 				}
-			} else if (file.isDirectory() && (!file.getName().equals("CVS"))) {
+			} else if (file.isDirectory() && (!"CVS".equals(file.getName()))) {
 				scenarioFiles.addAll(readScenarioFiles(appConstants, file.getAbsolutePath()));
 			}
 		}
@@ -1023,7 +1023,7 @@ public class LarvaTool {
 		Iterator<?> iterator = properties.keySet().iterator();
 		while (iterator.hasNext()) {
 			String property = (String)iterator.next();
-			if(property.equalsIgnoreCase("configurations.directory"))
+			if("configurations.directory".equalsIgnoreCase(property))
 				continue;
 
 			if (property.endsWith(".read") || property.endsWith(".write")
@@ -1518,7 +1518,7 @@ public class LarvaTool {
 				} else {
 					String resolveProperties = properties.getProperty("scenario.resolveProperties");
 
-					if( resolveProperties == null || !resolveProperties.equalsIgnoreCase("false") ){
+					if( resolveProperties == null || !"false".equalsIgnoreCase(resolveProperties) ){
 						AppConstants appConstants = AppConstants.getInstance();
 						fileContent = StringResolver.substVars(fileContent, appConstants);
 					}
@@ -1682,7 +1682,7 @@ public class LarvaTool {
 		String printableExpectedResult;
 		String printableActualResult;
 		String diffType = properties.getProperty(step + ".diffType");
-		if ((diffType != null && diffType.equals(".json")) || (diffType == null && fileName.endsWith(".json"))) {
+		if ((".json".equals(diffType)) || (diffType == null && fileName.endsWith(".json"))) {
 			try {
 				printableExpectedResult = Misc.jsonPretty(expectedResult);
 			} catch (JsonException e) {
@@ -1707,7 +1707,7 @@ public class LarvaTool {
 		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap);
 
 
-		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
+		if ((diffType != null && (".xml".equals(diffType) || ".wsdl".equals(diffType)))
 				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
 			// xml diff
 			Diff diff = null;
@@ -2048,7 +2048,7 @@ public class LarvaTool {
 
 	public String canonicaliseFilePathContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;
-		if (key1.equals("*") && key2.equals("*")) {
+		if ("*".equals(key1) && "*".equals(key2)) {
 			File file = new File(result);
 			try {
 				result = file.getCanonicalPath();
