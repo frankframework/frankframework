@@ -66,6 +66,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	private @Getter String root = null;
 	private @Getter boolean ignoreSoapFault = false;
 	private @Getter boolean allowPlainXml = false;
+	private @Getter boolean omitXmlDeclaration = true;
 
 	private @Getter String wssAuthAlias;
 	private @Getter String wssUserName;
@@ -106,6 +107,9 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		if (getDirection() == Direction.WRAP && PipeLine.INPUT_WRAPPER_NAME.equals(getName()) && soapVersion == SoapVersion.AUTO) {
 			ConfigurationWarnings.add(this, log, "SoapWrapperPipe should NOT be used to wrap a message in an InputWrapper, without a " +
 					"specified SoapVersion. Add [soapVersion] attribute to the configuration. Now defaults to v1.1 without guarantees. ", SuppressKeys.CONFIGURATION_VALIDATION);
+		}
+		if (getDirection() == Direction.UNWRAP && !isOmitXmlDeclaration()) {
+			ConfigurationWarnings.add(this, log, "SoapWrapperPipe does always omit the XML declaration while UNWRAPPING. Please remove the attribute", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 		if (getSoapVersion() == null) {
 			soapVersion = SoapVersion.AUTO;
@@ -284,7 +288,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		if (soapNamespace == null) {
 			return message;
 		}
-		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, soapNamespace, wssCredentialFactory, isWssPasswordDigest());
+		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, soapNamespace, wssCredentialFactory, isWssPasswordDigest(), !isOmitXmlDeclaration());
 	}
 
 	@Default("wrap")
@@ -413,5 +417,13 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	 */
 	public void setWssPasswordDigest(boolean b) {
 		wssPasswordDigest = b;
+	}
+
+	/**
+	 * For direction=<code>wrap</code> only: When false, adds an XML declaration to the output message.
+	 * @ff.default true
+	 */
+	public void setOmitXmlDeclaration(boolean b) {
+		omitXmlDeclaration = b;
 	}
 }

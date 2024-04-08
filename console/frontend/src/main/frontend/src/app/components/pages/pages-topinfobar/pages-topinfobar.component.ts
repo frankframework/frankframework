@@ -26,7 +26,9 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
         const childRoute = this.route.children.pop()!;
-        this.breadcrumbs = childRoute.snapshot.data['breadcrumbs'] ?? 'Error';
+        if (!childRoute.snapshot.data['breadcrumbIsCustom']) {
+          this.breadcrumbs = childRoute.snapshot.data['breadcrumbs'] ?? 'Error';
+        }
         this.popoutUrl = null;
       });
     const loadingSubscription = this.appService.loading$.subscribe(

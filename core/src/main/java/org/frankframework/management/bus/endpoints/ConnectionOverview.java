@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
@@ -33,7 +34,6 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 
@@ -82,7 +82,7 @@ public class ConnectionOverview extends BusEndpointBase {
 		Map<String, List<Object>> allConnections = new LinkedHashMap<>();
 		allConnections.put("data", connectionsIncoming);
 
-		return new JsonResponseMessage(allConnections);
+		return new JsonMessage(allConnections);
 	}
 
 	private Map<String, Object> addToMap(String adapterName, String destination, String name, String direction, String domain) {

@@ -485,11 +485,6 @@
     <ClassName>org.frankframework.pipes.ChecksumPipe</ClassName>
   </Element>
   <Element>
-    <Name>CleanupOldFilesPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>org.frankframework.pipes.CleanupOldFilesPipe</ClassName>
-  </Element>
-  <Element>
     <Name>ClobLineIteratingPipe</Name>
     <Type>pipe</Type>
     <ClassName>org.frankframework.jdbc.ClobLineIteratingPipe</ClassName>
@@ -883,11 +878,6 @@
     <Name>UnzipPipe</Name>
     <Type>pipe</Type>
     <ClassName>org.frankframework.pipes.UnzipPipe</ClassName>
-  </Element>
-  <Element>
-    <Name>UploadFilePipe</Name>
-    <Type>pipe</Type>
-    <ClassName>org.frankframework.pipes.UploadFilePipe</ClassName>
   </Element>
   <Element>
     <Name>WsdlGeneratorPipe</Name>

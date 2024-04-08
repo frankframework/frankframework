@@ -28,6 +28,8 @@ import javax.xml.transform.Transformer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.MessageBase;
 import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,13 +40,11 @@ import org.frankframework.core.IAdapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.management.bus.ActionSelector;
-import org.frankframework.management.bus.BinaryResponseMessage;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.ResponseMessageBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.UUIDUtil;
@@ -68,7 +68,7 @@ public class TestPipeline extends BusEndpointBase {
 
 	@ActionSelector(BusAction.UPLOAD)
 	@RolesAllowed("IbisTester")
-	public BinaryResponseMessage runTestPipeline(Message<?> message) {
+	public BinaryMessage runTestPipeline(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		IAdapter adapter = getAdapterByName(configurationName, adapterName);
@@ -93,7 +93,7 @@ public class TestPipeline extends BusEndpointBase {
 	}
 
 	//Does not support async requests because receiver requests are synchronous
-	private BinaryResponseMessage processMessage(IAdapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
+	private BinaryMessage processMessage(IAdapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
 		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
@@ -113,8 +113,8 @@ public class TestPipeline extends BusEndpointBase {
 				}
 
 				plr.getResult().unscheduleFromCloseOnExitOf(pls);
-				BinaryResponseMessage response = new BinaryResponseMessage(plr.getResult().asInputStream());
-				response.setHeader(ResponseMessageBase.STATE_KEY, plr.getState().name());
+				BinaryMessage response = new BinaryMessage(plr.getResult().asInputStream());
+				response.setHeader(MessageBase.STATE_KEY, plr.getState().name());
 				return response;
 			} catch (Exception e) {
 				throw new BusException("an exception occurred while processing the message", e);

@@ -40,17 +40,16 @@ import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.management.bus.ActionSelector;
-import org.frankframework.management.bus.BinaryResponseMessage;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.EmptyResponseMessage;
-import org.frankframework.management.bus.JsonResponseMessage;
-import org.frankframework.management.bus.StringResponseMessage;
-
 import org.frankframework.management.bus.dto.ConfigurationDTO;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.CONFIGURATION)
@@ -78,7 +77,7 @@ public class ConfigManagement extends BusEndpointBase {
 			}
 		}
 
-		return new StringResponseMessage(result.toString(), MediaType.APPLICATION_XML);
+		return new StringMessage(result.toString(), MediaType.APPLICATION_XML);
 	}
 
 	/**
@@ -101,10 +100,10 @@ public class ConfigManagement extends BusEndpointBase {
 					config.setLoaded(config.getVersion().equals(configuration.getVersion()));
 				}
 
-				return new JsonResponseMessage(configs);
+				return new JsonMessage(configs);
 			}
 
-			return new JsonResponseMessage(Collections.singletonList(new ConfigurationDTO(configuration)));
+			return new JsonMessage(Collections.singletonList(new ConfigurationDTO(configuration)));
 		}
 
 		List<ConfigurationDTO> configs = new LinkedList<>();
@@ -112,7 +111,7 @@ public class ConfigManagement extends BusEndpointBase {
 			configs.add(new ConfigurationDTO(configuration));
 		}
 		configs.sort(new ConfigurationDTO.NameComparator());
-		return new JsonResponseMessage(configs);
+		return new JsonMessage(configs);
 	}
 
 	/**
@@ -137,11 +136,11 @@ public class ConfigManagement extends BusEndpointBase {
 		try {
 			if(activate != null) {
 				if(ConfigurationUtils.activateConfig(getApplicationContext(), configurationName, version, datasourceName)) {
-					return EmptyResponseMessage.accepted();
+					return EmptyMessage.accepted();
 				}
 			}
 			else if(autoreload != null && ConfigurationUtils.autoReloadConfig(getApplicationContext(), configurationName, version, autoreload, datasourceName)) {
-				return EmptyResponseMessage.accepted();
+				return EmptyMessage.accepted();
 			}
 		} catch(Exception e) {
 			throw new BusException("unable to update configuration settings in database", e);
@@ -172,7 +171,7 @@ public class ConfigManagement extends BusEndpointBase {
 				}
 			}
 
-			return new JsonResponseMessage(result);
+			return new JsonMessage(result);
 		} catch (Exception e) {
 			throw new BusException("failed to upload Configuration", e);
 		}
@@ -185,7 +184,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 */
 	@ActionSelector(BusAction.DOWNLOAD)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public BinaryResponseMessage downloadConfiguration(Message<?> message) {
+	public BinaryMessage downloadConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
@@ -199,7 +198,7 @@ public class ConfigManagement extends BusEndpointBase {
 		}
 		byte[] config = (byte[]) configuration.get("CONFIG");
 
-		BinaryResponseMessage response = new BinaryResponseMessage(config);
+		BinaryMessage response = new BinaryMessage(config);
 		response.setFilename(""+configuration.get("FILENAME"));
 		return response;
 	}

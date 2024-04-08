@@ -558,10 +558,11 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	public void fileSystemPipeTestForFolderExistenceWithNonExistingFolder() throws Exception {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.setInputFolder("NonExistentFolder");
+		fileSystemPipe.setName("FSP");
 		fileSystemPipe.configure();
 
 		PipeStartException e = assertThrows(PipeStartException.class, fileSystemPipe::start);
-		assertThat(e.getMessage(), startsWith("Cannot open fileSystem"));
+		assertThat(e.getMessage(), startsWith("Pipe [FSP]: Cannot open fileSystem"));
 	}
 
 	@Test

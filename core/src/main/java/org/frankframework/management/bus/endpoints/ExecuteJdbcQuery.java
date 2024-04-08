@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.util.MimeType;
@@ -39,8 +41,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
-import org.frankframework.management.bus.StringResponseMessage;
 import org.frankframework.util.LogUtil;
 
 import javax.annotation.security.RolesAllowed;
@@ -76,12 +76,12 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		queryTypes.add(QueryType.OTHER.toString());
 		result.put("queryTypes", queryTypes);
 
-		return new JsonResponseMessage(result);
+		return new JsonMessage(result);
 	}
 
 	@ActionSelector(BusAction.MANAGE)
 	@RolesAllowed({"IbisTester"})
-	public StringResponseMessage executeJdbcQuery(Message<?> message) {
+	public StringMessage executeJdbcQuery(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		QueryType queryType = BusMessageUtils.getEnumHeader(message, "queryType", QueryType.class, QueryType.SELECT);
 		String query = BusMessageUtils.getHeader(message, "query");
@@ -92,7 +92,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		return doExecute(datasource, queryType, query, trimSpaces, avoidLocking, resultType);
 	}
 
-	private StringResponseMessage doExecute(String datasource, QueryType queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
+	private StringMessage doExecute(String datasource, QueryType queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
 		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
 		DirectQuerySender qs = createBean(DirectQuerySender.class);
@@ -134,6 +134,6 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			qs.close();
 		}
 
-		return new StringResponseMessage(result, mimetype);
+		return new StringMessage(result, mimetype);
 	}
 }

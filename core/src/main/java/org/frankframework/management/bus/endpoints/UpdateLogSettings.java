@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.Message;
 
@@ -35,7 +36,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
@@ -64,7 +64,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 
 		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean(TESTTOOL_ENABLED_PROPERTY, true));
 
-		return new JsonResponseMessage(logSettings);
+		return new JsonMessage(logSettings);
 	}
 
 	@ActionSelector(BusAction.MANAGE)

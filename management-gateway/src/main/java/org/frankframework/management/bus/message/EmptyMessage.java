@@ -13,30 +13,30 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.bus;
+package org.frankframework.management.bus.message;
 
-public class EmptyResponseMessage extends StringResponseMessage {
+public class EmptyMessage extends StringMessage {
 
 	private static final String EMPTY_RESPONSE = "no-content";
 
-	public EmptyResponseMessage(int statuscode) {
+	public EmptyMessage(int statuscode) {
 		super(EMPTY_RESPONSE);
 		setStatus(statuscode);
 	}
 
-	private static EmptyResponseMessage createNoContentResponse(int statuscode) {
-		return new EmptyResponseMessage(statuscode);
+	private static EmptyMessage createNoContentResponse(int statuscode) {
+		return new EmptyMessage(statuscode);
 	}
 
-	public static EmptyResponseMessage created() {
+	public static EmptyMessage created() {
 		return createNoContentResponse(201);
 	}
 
-	public static EmptyResponseMessage accepted() {
+	public static EmptyMessage accepted() {
 		return createNoContentResponse(202);
 	}
 
-	public static EmptyResponseMessage noContent() {
+	public static EmptyMessage noContent() {
 		return createNoContentResponse(204);
 	}
 }

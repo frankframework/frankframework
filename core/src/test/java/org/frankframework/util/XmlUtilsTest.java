@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
@@ -25,9 +24,16 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Resource;
-import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
@@ -36,18 +42,10 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.xml.StringBuilderContentHandler;
 import org.frankframework.xml.XmlWriter;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
@@ -55,30 +53,29 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	private static final TimeZone CI_TZ = Calendar.getInstance().getTimeZone();
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("UTC");
 
-	public void testGetRootNamespace(String input, String expected) throws SAXException, TransformerException, IOException, ConfigurationException {
+	void testGetRootNamespace(String input, String expected) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testTransformerPool(XmlUtils.getGetRootNamespaceTransformerPool(), input, expected);
 	}
 
-	public void testAddRootNamespace(String namespace, String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
+	void testAddRootNamespace(String namespace, String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testTransformerPool(XmlUtils.getAddRootNamespaceTransformerPool(namespace, omitXmlDeclaration, indent), input, expected);
 	}
 
-	public void testChangeRoot(String root, String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
+	void testChangeRoot(String root, String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testTransformerPool(XmlUtils.getChangeRootTransformerPool(root, omitXmlDeclaration, indent), input, expected);
 	}
 
-	public void testRemoveUnusedNamespaces(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
+	void testRemoveUnusedNamespaces(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testTransformerPool(XmlUtils.getRemoveUnusedNamespacesTransformerPool(omitXmlDeclaration, indent), input, expected);
 	}
 
 	// TODO: Why is this test not executed anymore?
-	public void testRemoveUnusedNamespacesXslt2(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
+	void testRemoveUnusedNamespacesXslt2(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testTransformerPool(XmlUtils.getRemoveUnusedNamespacesXslt2TransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
 
-
 	@Test
-	public void testGetRootNamespace() throws SAXException, TransformerException, IOException, ConfigurationException {
+	void testGetRootNamespace() throws SAXException, TransformerException, IOException, ConfigurationException {
 		testGetRootNamespace("<root><a>a</a><b></b><c/></root>", "");
 		testGetRootNamespace("<root xmlns=\"xyz\"><a>a</a><b></b><c/></root>", "xyz");
 		testGetRootNamespace("<root xmlns:xx=\"xyz\"><a xmlns=\"xyz\">a</a><b></b><c/></root>", "");
@@ -86,7 +83,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testAddRootNamespace() throws SAXException, TransformerException, IOException, ConfigurationException {
+	void testAddRootNamespace() throws SAXException, TransformerException, IOException, ConfigurationException {
 		String lineSeparator = System.getProperty("line.separator");
 		testAddRootNamespace("xyz", "<root><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xyz\"><a>a</a><b/><c/></root>", false, false);
 		testAddRootNamespace("xyz", "<root><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root xmlns=\"xyz\">" + lineSeparator + "<a>a</a>" + lineSeparator + "<b/>" + lineSeparator + "<c/>" + lineSeparator + "</root>", false, true);
@@ -95,7 +92,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testChangeRoot() throws SAXException, TransformerException, IOException, ConfigurationException {
+	void testChangeRoot() throws SAXException, TransformerException, IOException, ConfigurationException {
 		String lineSeparator = System.getProperty("line.separator");
 		testChangeRoot("switch", "<root><a>a</a></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><switch><a>a</a></switch>", false, false);
 		testChangeRoot("switch", "<root><a>a</a></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><switch>" + lineSeparator + "<a>a</a>" + lineSeparator + "</switch>", false, true);
@@ -104,7 +101,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test()
-	public void testRemoveUnusedNamespaces() throws SAXException, TransformerException, IOException, ConfigurationException {
+	void testRemoveUnusedNamespaces() throws SAXException, TransformerException, IOException, ConfigurationException {
 		String lineSeparator = System.getProperty("line.separator");
 		testRemoveUnusedNamespaces("<root><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>", false, false);
 		testRemoveUnusedNamespaces("<root><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>" + lineSeparator + "<a>a</a>" + lineSeparator + "<b/>" + lineSeparator + "<c/>" + lineSeparator + "</root>", false, true);
@@ -129,7 +126,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testIdentityTransformWithDefaultEntityResolver() throws Exception { //External EntityResolving is still possible with the XMLEntityResolver
+	void testIdentityTransformWithDefaultEntityResolver() throws Exception { //External EntityResolving is still possible with the XMLEntityResolver
 		Resource resource = Resource.getResource(new TestScopeProvider(), "XmlUtils/EntityResolution/in-file-entity-c-temp.xml");
 		SAXException thrown = assertThrows(SAXException.class, () -> {
 			XmlUtils.parseXml(resource, new XmlWriter());
@@ -141,7 +138,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 	@Test
 	@Disabled("Saxon 9.6 does not return parameters, transformer.getParameter() is nowhere used in framework code")
-	public void testSettingTransformerParameters() throws IOException, TransformerConfigurationException {
+	void testSettingTransformerParameters() throws IOException, TransformerConfigurationException {
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("stringParamKey", "stringParamValue");
 		parameters.put("byteArrayParamKey", "byteArrayParamValue".getBytes());
@@ -155,18 +152,18 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		Transformer transformer = TransformerFactory.newInstance().newTransformer();
 		XmlUtils.setTransformerParameters(transformer, parameters);
 
-		assertTrue(transformer.getParameter("stringParamKey") instanceof String);
-		assertTrue(transformer.getParameter("byteArrayParamKey") instanceof String);
-		assertTrue(transformer.getParameter("baisParamKey") instanceof String);
-		assertTrue(transformer.getParameter("readerParamKey") instanceof String);
-		assertTrue(transformer.getParameter("messageParamKey") instanceof String);
+		assertInstanceOf(String.class, transformer.getParameter("stringParamKey"));
+		assertInstanceOf(String.class, transformer.getParameter("byteArrayParamKey"));
+		assertInstanceOf(String.class, transformer.getParameter("baisParamKey"));
+		assertInstanceOf(String.class, transformer.getParameter("readerParamKey"));
+		assertInstanceOf(String.class, transformer.getParameter("messageParamKey"));
 
-		assertTrue(transformer.getParameter("integerParamKey") instanceof Integer);
-		assertTrue(transformer.getParameter("booleanParamKey") instanceof Boolean);
+		assertInstanceOf(Integer.class, transformer.getParameter("integerParamKey"));
+		assertInstanceOf(Boolean.class, transformer.getParameter("booleanParamKey"));
 	}
 
 	@Test
-	public void testCanonicalizeWithNewLinesAndSpaces() throws Exception {
+	void testCanonicalizeWithNewLinesAndSpaces() throws Exception {
 		String newLinesAndSpaces = XmlUtils.canonicalize("<test>\n<a>9</a>\n  <b>2</b>  \n<c>7</c>\n</test>\n");
 		assertEquals("<test>\n" +
 				"	<a>9</a>\n" +
@@ -176,13 +173,13 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testCanonicalizeWithAttributes() throws Exception {
+	void testCanonicalizeWithAttributes() throws Exception {
 		String attributes = XmlUtils.canonicalize("<test><a a=\"1\"   c=\"3\"	b=\"2\">9</a></test>");
 		assertEquals("<test>\n	<a a=\"1\" b=\"2\" c=\"3\">9</a>\n</test>", attributes);
 	}
 
 	@Test
-	public void testParseXml() throws IOException, SAXException {
+	void testParseXml() throws IOException, SAXException {
 		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
 		String expected = "startDocument\n"
 				+ "startElement root\n"
@@ -202,7 +199,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testParseNodeSet() throws IOException, SAXException {
+	void testParseNodeSet() throws IOException, SAXException {
 		String source = "<elem_a>val_a</elem_a><elem_b>val_b</elem_b>";
 		String expected = "startElement elem_a\n"
 				+ "characters [val_a]\n"
@@ -218,7 +215,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void htmlToXhtml() throws Exception {
+	void htmlToXhtml() throws Exception {
 		URL url = TestFileUtils.getTestFileURL("/HtmlCleaner/html.input.html");
 		Message message = new UrlMessage(url);
 
@@ -228,7 +225,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void xhtmlToXhtml() throws Exception {
+	void xhtmlToXhtml() throws Exception {
 		URL url = TestFileUtils.getTestFileURL("/HtmlCleaner/xhtml.input.xhtml");
 		Message message = new UrlMessage(url);
 
@@ -238,7 +235,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void noDoctypeToXhtml() throws Exception {
+	void noDoctypeToXhtml() throws Exception {
 		URL url = TestFileUtils.getTestFileURL("/HtmlCleaner/html.without-doctype.input.html");
 		Message message = new UrlMessage(url);
 
@@ -248,7 +245,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void noHtmlToXhtml() throws Exception {
+	void noHtmlToXhtml() throws Exception {
 		Message message = new Message("<xml>tralalal</xml>");
 
 		String actual = XmlUtils.toXhtml(message);
@@ -256,7 +253,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void nullToXhtml() throws Exception {
+	void nullToXhtml() throws Exception {
 		Message message = Message.nullMessage();
 
 		String actual = XmlUtils.toXhtml(message);
@@ -264,7 +261,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void emptyToXhtml() throws Exception {
+	void emptyToXhtml() throws Exception {
 		Message message = new Message("");
 
 		String actual = XmlUtils.toXhtml(message);
@@ -272,30 +269,30 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	public void testConvertEndOfLines() {
+	void testConvertEndOfLines() {
 		String input = "a\nb\rc\r\nd\r\re\n\nf\r\n\r\ng";
 		String expected = "a\nb\nc\nd\n\ne\n\nf\n\ng";
 
 		assertEquals(expected, XmlUtils.convertEndOfLines(input));
-		assertEquals(null, XmlUtils.convertEndOfLines(null));
+		assertNull(XmlUtils.convertEndOfLines(null));
 	}
 
 	@Test
-	public void testNormalizeWhitespace() {
+	void testNormalizeWhitespace() {
 		String input = "a b  c\td\re\nf\r\n\t\ng";
 		String expected = "a b  c d e f    g";
 
 		assertEquals(expected, XmlUtils.normalizeWhitespace(input));
-		assertEquals(null, XmlUtils.normalizeWhitespace(null));
+		assertNull(XmlUtils.normalizeWhitespace(null));
 	}
 
 	@Test
-	public void testnormalizeAttributeValue() {
+	void testNormalizeAttributeValue() {
 		String input = "a b  c\td\re\nf\r\n\t\ng";
 		String expected = "a b  c d e f   g";
 
 		assertEquals(expected, XmlUtils.normalizeAttributeValue(input));
-		assertEquals(null, XmlUtils.normalizeAttributeValue(null));
+		assertNull(XmlUtils.normalizeAttributeValue(null));
 	}
 
 	private static Date getCorrectedDate(Date date) {
@@ -330,41 +327,29 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 	@ParameterizedTest
 	@MethodSource("xmlDateTimeData")
-	public void testParseXmlDateTime(String s, long l) {
+	void testParseXmlDateTime(String s, long l) {
 		Date date = XmlUtils.parseXmlDateTime(s);
 		assertEquals(getCorrectedDate(l), date.getTime());
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = {"2002-05-30T09:30:10-06:00", "2002-05-30T09:30:10+06:00", "2002-05-30T09:30:10.5", "2002-05-30T09:00:00"})
-	public void shouldReturnDateObjectWhenStringWithDateIsProvided(String s) {
+	void shouldReturnDateObjectWhenStringWithDateIsProvided(String s) {
 		assertInstanceOf(Date.class, XmlUtils.parseXmlDateTime(s));
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = {"2023-13-09T24:08:05", "2023-13-09T18:60:05", "2023-13-09T18:08:60", "2023-13-09T18:08:05", "2023-11-31T18:08:05", "2100-02-29T18:08:05", "2013-12-10 12:41:43"})
-	public void shouldThrowErrorWhenStringWithHoursOutOfBoundsIsProvided(String s) {
+	void shouldThrowErrorWhenStringWithHoursOutOfBoundsIsProvided(String s) {
 		assertThrows(IllegalArgumentException.class, () -> XmlUtils.parseXmlDateTime(s));
 	}
 
-
-	static Stream<Arguments> readFileInDifferentWays(String resource) throws IOException, URISyntaxException {
-		URL testFileURL = TestFileUtils.getTestFileURL(resource);
-
-		return Stream.of(
-				Arguments.of(MessageTestUtils.getBinaryMessage(resource, false)), //InputStream
-				Arguments.of(MessageTestUtils.getCharacterMessage(resource, false)), //Reader
-				Arguments.of(new UrlMessage(testFileURL)), //Supplier
-				Arguments.of(new FileMessage(new File(testFileURL.toURI()))) //SerializableFileReference
-			);
-	}
-
 	static Stream<Arguments> testReadMessageAsInputSourceWithUnspecifiedNonDefaultCharset() throws IOException, URISyntaxException {
-		return readFileInDifferentWays("/Util/MessageUtils/iso-8859-1_without_xml_declaration.xml");
+		return MessageTestUtils.readFileInDifferentWays("/Util/MessageUtils/iso-8859-1_without_xml_declaration.xml");
 	}
 	@ParameterizedTest
 	@MethodSource
-	public void testReadMessageAsInputSourceWithUnspecifiedNonDefaultCharset(Message message) throws Exception {
+	void testReadMessageAsInputSourceWithUnspecifiedNonDefaultCharset(Message message) throws Exception {
 		// Arrange
 		message.getContext().withCharset("ISO-8859-1");
 
@@ -381,11 +366,11 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	static Stream<Arguments> testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
-		return readFileInDifferentWays("/Util/MessageUtils/utf8-with-bom.xml");
+		return MessageTestUtils.readFileInDifferentWays("/Util/MessageUtils/utf8-with-bom.xml");
 	}
 	@ParameterizedTest
 	@MethodSource
-	public void testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
+	void testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
 		// Arrange
 		message.getContext().withCharset("ISO-8859-1");
 		assertEquals("ISO-8859-1", message.getCharset());
@@ -402,11 +387,11 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	static Stream<Arguments> testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally() throws IOException, URISyntaxException {
-		return readFileInDifferentWays("/Util/MessageUtils/utf8-without-bom.xml");
+		return MessageTestUtils.readFileInDifferentWays("/Util/MessageUtils/utf8-without-bom.xml");
 	}
 	@ParameterizedTest
 	@MethodSource
-	public void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
+	void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
 		// Arrange
 		message.getContext().withCharset("ISO-8859-1");
 		assertEquals("ISO-8859-1", message.getCharset());
@@ -425,11 +410,11 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	static Stream<Arguments> testReadMessageAsInputSourceWithNonDefaultCharset() throws IOException, URISyntaxException {
-		return readFileInDifferentWays("/Util/MessageUtils/iso-8859-1.xml");
+		return MessageTestUtils.readFileInDifferentWays("/Util/MessageUtils/iso-8859-1.xml");
 	}
 	@ParameterizedTest
 	@MethodSource
-	public void testReadMessageAsInputSourceWithNonDefaultCharset(Message message) throws Exception {
+	void testReadMessageAsInputSourceWithNonDefaultCharset(Message message) throws Exception {
 		// Arrange
 		ContentHandler handler = new XmlWriter();
 		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
