@@ -16,6 +16,7 @@
 package org.frankframework.unmanaged;
 
 import java.util.Timer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -26,7 +27,6 @@ import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Supplier;
-import org.frankframework.util.Counter;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.JtaUtil;
 import org.springframework.beans.BeansException;
@@ -91,7 +91,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	private TransactionDefinition txDefinition = null;
 
-	final @Getter Counter threadsProcessing = new Counter(0);
+	final @Getter AtomicInteger threadsProcessing = new AtomicInteger();
 
 	private @Getter @Setter long lastPollFinishedTime;
 	private long pollGuardInterval;
@@ -246,8 +246,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 		final long onMessageStart= System.currentTimeMillis();
 		final long jmsTimestamp= message.getJMSTimestamp();
-		threadsProcessing.increase();
-		Thread.currentThread().setName(getReceiver().getName()+"["+threadsProcessing.getValue()+"]");
+		Thread.currentThread().setName(getReceiver().getName() + "[" + threadsProcessing.incrementAndGet() + "]");
 
 		final String logPrefix = getLogPrefix();
 		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
@@ -283,7 +282,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 					txManager.rollback(txStatus);
 				}
 			}
-			threadsProcessing.decrease();
+			threadsProcessing.decrementAndGet();
 			if (log.isInfoEnabled()) {
 				long onMessageEnd= System.currentTimeMillis();
 

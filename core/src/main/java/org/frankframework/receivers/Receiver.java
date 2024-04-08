@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
 
@@ -95,7 +96,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
-import org.frankframework.util.Counter;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
@@ -278,7 +278,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private @Getter HideMethod hideMethod = HideMethod.ALL;
 	private @Getter String hiddenInputSessionKeys=null;
 
-	private final Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
+	private final AtomicInteger numberOfExceptionsCaughtWithoutMessageBeingReceived = new AtomicInteger();
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
 	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
@@ -290,7 +290,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	protected final RunStateManager runState = new RunStateManager();
 	private PullingListenerContainer<M> listenerContainer;
 
-	private final Counter threadsProcessing = new Counter(0);
+	private final AtomicInteger threadsProcessing = new AtomicInteger();
 
 	private long lastMessageDate = 0;
 
@@ -858,26 +858,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 
 	protected void startProcessingMessage(long waitingDuration) {
-		log.trace("{} startProcessingMessage -- synchronize (lock) on Receiver threadsProcessing[{}]", this::getLogPrefix, threadsProcessing::toString);
 		synchronized (threadsProcessing) {
-			int threadCount = (int) threadsProcessing.getValue();
+			int threadCount = threadsProcessing.get();
 
 			if (waitingDuration>=0) {
 				getIdleStatistics(threadCount).record(waitingDuration);
 			}
-			threadsProcessing.increase();
+			threadsProcessing.incrementAndGet();
 		}
-		log.trace("{} startProcessingMessage -- lock on Receiver threadsProcessing[{}] released", this::getLogPrefix, threadsProcessing::toString);
 		log.debug("{} starts processing message", this::getLogPrefix);
 	}
 
 	protected void finishProcessingMessage(long processingDuration) {
-		log.trace("{} finishProcessingMessage -- synchronize (lock) on Receiver threadsProcessing[{}]", this::getLogPrefix, threadsProcessing::toString);
-		synchronized (threadsProcessing) {
-			int threadCount = (int) threadsProcessing.decrease();
-			getProcessStatistics(threadCount).record(processingDuration);
-		}
-		log.trace("{} finishProcessingMessage -- lock on Receiver threadsProcessing[{}] released", this::getLogPrefix, threadsProcessing::toString);
+		int threadCount = threadsProcessing.decrementAndGet();
+		getProcessStatistics(threadCount).record(processingDuration);
 		log.debug("{} finishes processing message", this::getLogPrefix);
 	}
 
@@ -1589,9 +1583,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	public void exceptionThrown(String errorMessage, Throwable t) {
 		switch (getOnError()) {
 			case CONTINUE:
-				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.increase() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
+				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.incrementAndGet() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
 					numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=true;
-					log.warn("numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold is reached, changing the adapter status to 'warning'");
+					log.warn("number of exceptions caught without message being received threshold is reached; changing the adapter status to 'warning'");
 				}
 				error(errorMessage+", will continue processing messages when they arrive", t);
 				break;
@@ -1925,7 +1919,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
 		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
-		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
+		numberOfExceptionsCaughtWithoutMessageBeingReceived.set(0);
 		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 	}
 
