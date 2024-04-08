@@ -55,7 +55,7 @@ public class IsolatedServiceCaller {
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, guard, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 		try {
-			guard.wait();
+			guard.await();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new ListenerException(ClassUtils.nameOf(this)+" was interrupted",e);
