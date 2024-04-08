@@ -136,7 +136,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	// If the stack contains 'Fault', sub elements of 'Fault' do not contain a namespace
 	private boolean isInSoapFault() {
-		return (elements.size() > 2 && "Fault".equals(elements.get(2)));
+		return elements.size() > 2 && "Fault".equals(elements.get(2));
 	}
 
 	@Override
@@ -172,7 +172,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
 		if (!ignoreUnknownNamespaces && validNamespaces != null && namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
 			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) {
-				if (currentInvalidNamespace == null || !(currentInvalidNamespace.equals(namespace))) { // avoid invalid namespace to be reported for each sub element
+				if (currentInvalidNamespace == null || !currentInvalidNamespace.equals(namespace)) { // avoid invalid namespace to be reported for each sub element
 					currentInvalidNamespace = namespace;
 					String message = "Unknown namespace '" + namespace + "'";
 					namespaceWarnings++;

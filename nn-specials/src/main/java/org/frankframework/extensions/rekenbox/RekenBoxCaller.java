@@ -73,9 +73,9 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getCommandLineType()) ||
-			!(getCommandLineType().equals("straight") ||
-			getCommandLineType().equals("switches") ||
-			getCommandLineType().equals("redirected"))) {
+			!("straight".equals(getCommandLineType()) ||
+			"switches".equals(getCommandLineType()) ||
+			"redirected".equals(getCommandLineType()))) {
 				throw new ConfigurationException("commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
 			}
 		inputOutputDir= new File(getInputOutputDirectory());
@@ -134,7 +134,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			rekenboxName = (rekenboxName+":").substring(0, (rekenboxName+":").indexOf(":")).trim();
 		}
 
-		if (rekenboxName.equals("")) {
+		if ("".equals(rekenboxName)) {
 			throw new PipeRunException(this, "cannot determine rekenboxName from ["+sInput+"]");
 		}
 
@@ -146,7 +146,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		String rekenboxInput = sInput.substring(i);
 
 		String exeName = runPath + rekenboxName + "." + executableExtension;
-		if(!(new File(exeName).exists())) {
+		if(!new File(exeName).exists()) {
 			throw new PipeRunException(this, "executable file [" + exeName + "] does not exist; requestmessage: [" + sInput + "]");
 		}
 
@@ -160,11 +160,11 @@ public class RekenBoxCaller extends FixedForwardPipe {
 
 		String callAndArgs;
 		String callType = getCommandLineType();
-		if((callType==null) || (callType.equals("switches")))  {
+		if((callType==null) || ("switches".equals(callType)))  {
 			callAndArgs = exeName + " /I" + inputFileName + " /U" + outputFileName + " /P" + templateDir;
-		} else if(callType.equals("straight")) {
+		} else if("straight".equals(callType)) {
 			callAndArgs = exeName + " " + inputFileName + " " + outputFileName + " " + templateDir;
-		} else if(callType.equals("redirected")) {
+		} else if("redirected".equals(callType)) {
 			callAndArgs = exeName + " " + inputFileName + " " + templateDir;
 		} else
 			throw new PipeRunException(this, "unknown commandLineType: " + callType);
@@ -185,7 +185,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			Process child = rt.exec(callAndArgs);
 			String result;
 
-			if(callType.equals("redirected")) {
+			if("redirected".equals(callType)) {
 				result = StreamUtil.streamToString(child.getInputStream(), "\n", true);
 
 			} else {

@@ -90,7 +90,7 @@ public interface ISender extends IConfigurable {
 			} catch (Exception e) {
 				se.addSuppressed(e);
 			}
-			throw (se);
+			throw se;
 		}
 		return result;
 	}

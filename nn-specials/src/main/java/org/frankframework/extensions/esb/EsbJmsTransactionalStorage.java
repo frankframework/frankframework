@@ -140,7 +140,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 		try {
 			Map<String,Object> parameterValues = createParameterValues(messageId, correlationId, receivedDate, comments, message);
 			String logRequest;
-			if (getType().equalsIgnoreCase("E")) {
+			if ("E".equalsIgnoreCase(getType())) {
 				log.debug(getLogPrefix() + "creating exceptionLog request");
 				logRequest = exceptionLogTp.transform("<dummy/>", parameterValues, true);
 			} else {
@@ -169,10 +169,10 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 		parameterValues.put("msgCorrelationId", correlationId);
 		parameterValues.put("msgTimestamp", 	DateFormatUtils.format( receivedDate));
 		parameterValues.put("slotId", 			getSlotId());
-		if (getType().equalsIgnoreCase("E")) {
+		if ("E".equalsIgnoreCase(getType())) {
 			parameterValues.put("errorText", comments);
 		} else {
-			if (getType().equalsIgnoreCase("L")) {
+			if ("L".equalsIgnoreCase(getType())) {
 				parameterValues.put("msgType", "sent");
 			} else {
 				parameterValues.put("msgType", "received");

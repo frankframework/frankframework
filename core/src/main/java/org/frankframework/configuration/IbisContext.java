@@ -130,7 +130,7 @@ public class IbisContext extends IbisApplicationContext {
 
 			load();
 
-			long startupTime = (System.currentTimeMillis() - start);
+			long startupTime = System.currentTimeMillis() - start;
 			log("startup in " + startupTime + " ms");
 			APPLICATION_LOG.info("Application [{}] startup in {} ms", this::getApplicationName, ()-> startupTime);
 		}
@@ -170,7 +170,7 @@ public class IbisContext extends IbisApplicationContext {
 			classLoaderManager.shutdown();
 		}
 
-		long shutdownTime = (System.currentTimeMillis() - start);
+		long shutdownTime = System.currentTimeMillis() - start;
 		log("shutdown in " + shutdownTime + " ms"); //Should log this before the actual Context is destroyed
 		super.close();
 		APPLICATION_LOG.info("Application [{}] shutdown in {} ms", this::getApplicationName, ()-> shutdownTime);
@@ -276,7 +276,7 @@ public class IbisContext extends IbisApplicationContext {
 		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
 		for (Entry<String, Class<? extends IConfigurationClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
-			String classLoaderType = (currentConfigNameItem.getValue() == null) ? null : currentConfigNameItem.getValue().getCanonicalName();
+			String classLoaderType = currentConfigNameItem.getValue() == null ? null : currentConfigNameItem.getValue().getCanonicalName();
 
 			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
 				LOG.info("loading configuration ["+currentConfigurationName+"]");

@@ -64,7 +64,7 @@ class ServletAuthenticatorTest {
 		config.setSecurityRoles(new String[] {"IbisTester"});
 		authenticator.registerServlet(config);
 
-		ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<Object>() {
+		ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<>() {
 			@Override
 			public <O> O postProcess(O object) {
 				return object;

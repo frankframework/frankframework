@@ -47,7 +47,7 @@ public enum SoapVersion implements DocumentedEnum {
 		if (StringUtils.isEmpty(s)) {
 			return SOAP11;
 		}
-		if (s.equals("any")) {
+		if ("any".equals(s)) {
 			return AUTO;
 		}
 		if (s.startsWith("1")) {

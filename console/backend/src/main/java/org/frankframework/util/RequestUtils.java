@@ -51,7 +51,7 @@ public abstract class RequestUtils {
 	public static String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {
 		Attachment msg = inputDataMap.getAttachment(key);
 		if(msg != null) {
-			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 			if(msg.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
 				String charset = msg.getContentType().getParameters().get("charset");
 				if(StringUtils.isNotEmpty(charset)) {

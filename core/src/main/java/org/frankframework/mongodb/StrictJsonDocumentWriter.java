@@ -61,7 +61,7 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 				final String indentChars) {
 			this.parentContext = parentContext;
 			this.contextType = contextType;
-			this.indentation = (parentContext == null) ? indentChars : parentContext.indentation + indentChars;
+			this.indentation = parentContext == null ? indentChars : parentContext.indentation + indentChars;
 		}
 	}
 
@@ -105,7 +105,7 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		}
 		try {
 			INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.peek();
-			stack.push((nodeBuilder).startObject());
+			stack.push(nodeBuilder.startObject());
 		} catch (SAXException e) {
 			throwBSONException(e);
 		}

@@ -170,7 +170,7 @@ public class ApiEhcache implements IApiCache {
 
 	@Override
 	public boolean containsKey(String key) {
-		return (this.get(key) != null);
+		return this.get(key) != null;
 	}
 
 	public void flush() {

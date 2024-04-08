@@ -214,7 +214,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			return index;
 		}
 		try {
-			return (1+params.getListMetaData().indexOf(name));
+			return 1+params.getListMetaData().indexOf(name);
 		} catch (Exception e) {
 			log.warn("["+getName()+"] exception finding FieldIndex for name ["+name+"]", e);
 			return 0;

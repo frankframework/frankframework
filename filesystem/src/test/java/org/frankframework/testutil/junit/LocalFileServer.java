@@ -122,7 +122,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 		}
 		String fileDir = file.getPath();
 		if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-			throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"]");
+			throw new IllegalStateException("unknown or invalid path ["+(StringUtils.isEmpty(fileDir)?"NULL":fileDir)+"]");
 		}
 		return file.toPath();
 	}

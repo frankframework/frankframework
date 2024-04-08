@@ -84,7 +84,7 @@ public abstract class FileHandlerTestBase {
 
 		String expectedContents = TestFileUtils.getTestFile(BASEDIR + compareFile, charset);
 		assertNotNull(expectedContents);
-		if(outputType == null || outputType.equalsIgnoreCase("string")) {
+		if(outputType == null || "string".equalsIgnoreCase(outputType)) {
 			String actualContents = (String) handler.handle(null, session, null);
 			assertEquals(removeNewlines(expectedContents), removeNewlines(actualContents), "file contents");
 		} else {

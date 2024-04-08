@@ -527,13 +527,13 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 				if (setPropertyAsNull) {
 					props.put(nameAttr, null);
-				} else if (StringUtils.isEmpty(typeAttr) || typeAttr.equalsIgnoreCase("string")) {
+				} else if (StringUtils.isEmpty(typeAttr) || "string".equalsIgnoreCase(typeAttr)) {
 					props.put(nameAttr, property);
-				} else if (typeAttr.equalsIgnoreCase("integer")) {
+				} else if ("integer".equalsIgnoreCase(typeAttr)) {
 					props.put(nameAttr, new BigInteger(property));
-				} else if (typeAttr.equalsIgnoreCase("boolean")) {
+				} else if ("boolean".equalsIgnoreCase(typeAttr)) {
 					props.put(nameAttr, Boolean.parseBoolean(property));
-				} else if (typeAttr.equalsIgnoreCase("datetime")) {
+				} else if ("datetime".equalsIgnoreCase(typeAttr)) {
 					String formatStringAttr = propertyElement.getAttribute("formatString");
 					if (StringUtils.isEmpty(formatStringAttr)) {
 						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;

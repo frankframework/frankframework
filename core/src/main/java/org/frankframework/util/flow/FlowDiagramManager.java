@@ -75,7 +75,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	public MimeType getMediaType() {
-		return (flowGenerator != null) ? flowGenerator.getMediaType() : MediaType.TEXT_PLAIN;
+		return flowGenerator != null ? flowGenerator.getMediaType() : MediaType.TEXT_PLAIN;
 	}
 
 	/**

@@ -133,7 +133,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		if (authAlias_work == null) {
 			authAlias_work = getAuthAlias();
 		}
-		userName_work = (pvl.contains("username")) ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
+		userName_work = pvl.contains("username") ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
 		if (userName_work == null) {
 			userName_work = getUsername();
 		}

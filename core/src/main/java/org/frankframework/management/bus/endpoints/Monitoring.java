@@ -228,7 +228,7 @@ public class Monitoring extends BusEndpointBase {
 
 	private void changeMonitorState(Monitor monitor, boolean raiseMonitor) {
 		try {
-			log.info("{} monitor [{}]", ()->((raiseMonitor)?"raising":"clearing"), monitor::getName);
+			log.info("{} monitor [{}]", ()->(raiseMonitor?"raising":"clearing"), monitor::getName);
 			String userPrincipalName = BusMessageUtils.getUserPrincipalName();
 			monitor.changeState(raiseMonitor, Severity.WARNING, new ConsoleMonitorEvent(userPrincipalName));
 		} catch (MonitorException e) {

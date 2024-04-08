@@ -33,7 +33,7 @@ public abstract class MultipartUtils {
 	public static boolean isMultipart(HttpServletRequest request) {
 		String httpMethod = request.getMethod().toUpperCase();
 		if("POST".equals(httpMethod) || "PUT".equals(httpMethod) || "PATCH".equals(httpMethod)) {
-			return (request.getContentType() != null && request.getContentType().startsWith(MULTIPART));
+			return request.getContentType() != null && request.getContentType().startsWith(MULTIPART);
 		}
 		return false;
 	}
@@ -90,7 +90,7 @@ public abstract class MultipartUtils {
 			String[] cte = part.getHeader("Content-Transfer-Encoding");
 			if(cte != null) {
 				String cteFields = cte[0]; //Content-Transfer-Encoding - binary || 8bit
-				if(cteFields != null && cteFields.equalsIgnoreCase("binary")) {
+				if("binary".equalsIgnoreCase(cteFields)) {
 					return true;
 				}
 			}

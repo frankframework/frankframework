@@ -50,7 +50,7 @@ public class WebAppClassLoader extends ClassLoaderBase {
 			}
 		}
 
-		return getParent().getResource((getBasePath()==null)?name:getBasePath()+name);
+		return getParent().getResource(getBasePath()==null?name:getBasePath()+name);
 	}
 
 	@Override

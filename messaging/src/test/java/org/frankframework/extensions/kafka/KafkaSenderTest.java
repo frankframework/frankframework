@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.stream.Stream;
 
 import org.apache.kafka.clients.producer.MockProducer;
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -46,7 +45,7 @@ public class KafkaSenderTest {
 		sender.setClientId("test");
 		sender.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
 		sender.configure();
-		sender.setProducer((Producer<String, byte[]>) mockProducer);
+		sender.setProducer(mockProducer);
 	}
 
 	@Test

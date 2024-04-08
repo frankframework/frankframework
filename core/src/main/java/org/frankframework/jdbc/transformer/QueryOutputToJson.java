@@ -76,7 +76,7 @@ public class QueryOutputToJson extends AbstractQueryOutputTransformer {
 	protected void endRowSet() {
 		// Delete last comma
 		if (rowsExist)
-			output.deleteCharAt(output.length() - (2));
+			output.deleteCharAt(output.length() - 2);
 		output.append("\t]\n");
 	}
 

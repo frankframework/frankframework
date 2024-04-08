@@ -122,7 +122,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		int eTag = 0;
 
 		//Check if contentType is not overwritten which disabled auto-converting and mediatype headers
-		if(contentType == null || StringUtils.isEmpty(contentType) || contentType.equalsIgnoreCase("*/*")) {
+		if(contentType == null || StringUtils.isEmpty(contentType) || "*/*".equalsIgnoreCase(contentType)) {
 			switch(getProduces()) {
 				case XML:
 					session.put("contentType", "application/xml");

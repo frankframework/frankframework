@@ -100,7 +100,7 @@ public class ApiWsdlXmlValidatorMixedModeTest {
 		} else {
 			responseValidator=outputValidator;
 		}
-		if ((responseValidator !=null)) {
+		if (responseValidator != null) {
 			validate(responseValidator,msg,failureReason);
 		}
 	}

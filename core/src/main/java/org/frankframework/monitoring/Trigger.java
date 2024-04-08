@@ -110,7 +110,7 @@ public class Trigger implements ITrigger {
 
 	protected boolean evaluateAdapterFilters(EventThrowing source) {
 		Adapter adapter = source.getAdapter();
-		return (getAdapterFilters().isEmpty() || (adapter != null && getAdapterFilters().containsKey(adapter.getName())));
+		return getAdapterFilters().isEmpty() || (adapter != null && getAdapterFilters().containsKey(adapter.getName()));
 	}
 
 	protected void changeState(FireMonitorEvent event) throws MonitorException {

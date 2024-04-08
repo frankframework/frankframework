@@ -76,14 +76,14 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		if(getAction().equals("get")) {
+		if("get".equals(getAction())) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
 				throw new PipeRunException(this, "unable to locate ApiPrincipal");
 
 			return new PipeRunResult(getSuccessForward(), userPrincipal.getData());
 		}
-		if(getAction().equals("set")) {
+		if("set".equals(getAction())) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
 				throw new PipeRunException(this, "unable to locate ApiPrincipal");
@@ -93,7 +93,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 			return new PipeRunResult(getSuccessForward(), "");
 		}
-		if(getAction().equals("create")) {
+		if("create".equals(getAction())) {
 			//TODO type of token? (jwt, saml)
 			String uidString = (new UID()).toString();
 			SecureRandom random = new SecureRandom();
@@ -102,7 +102,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			ApiPrincipal userPrincipal = new ApiPrincipal(authTTL);
 			userPrincipal.setData(input);
 			userPrincipal.setToken(token);
-			if(getAuthenticationMethod().equals("cookie")) {
+			if("cookie".equals(getAuthenticationMethod())) {
 				Cookie cookie = new Cookie(ApiListenerServlet.AUTHENTICATION_COOKIE_NAME, token);
 				cookie.setPath("/");
 				cookie.setMaxAge(authTTL);
@@ -119,7 +119,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 			return new PipeRunResult(getSuccessForward(), token);
 		}
-		if(getAction().equals("remove")) {
+		if("remove".equals(getAction())) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
 				throw new PipeRunException(this, "unable to locate ApiPrincipal");
@@ -140,10 +140,10 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	}
 
 	public void setAuthenticationMethod(String method) throws ConfigurationException {
-		if(method.equalsIgnoreCase("header")) {
+		if("header".equalsIgnoreCase(method)) {
 			this.authenticationMethod = "header";
 		}
-		else if(method.equalsIgnoreCase("cookie")) {
+		else if("cookie".equalsIgnoreCase(method)) {
 			this.authenticationMethod = "cookie";
 		}
 		else

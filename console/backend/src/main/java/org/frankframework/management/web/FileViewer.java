@@ -52,7 +52,7 @@ public class FileViewer extends FrankApiBase {
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", wantedType);
 
-		if (wantedType.equalsIgnoreCase("html")) {
+		if ("html".equalsIgnoreCase(wantedType)) {
 			return processHtmlMessage(builder);
 		}
 		return callSyncGateway(builder);

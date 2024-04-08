@@ -917,7 +917,7 @@ public class Message implements Serializable, Closeable {
 	 * @return Returns {@code true} if the message is {@code null}, otherwise the result of {@link Message#isEmpty()}.
 	 */
 	public static boolean isEmpty(Message message) {
-		return (message == null || message.isEmpty());
+		return message == null || message.isEmpty();
 	}
 
 	/**
@@ -951,7 +951,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public static boolean isNull(Message message) {
-		return (message == null || message.isNull());
+		return message == null || message.isNull();
 	}
 
 	/*

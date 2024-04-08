@@ -80,7 +80,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					boolean throwOnMissingSessionKey;
 					if (pipe instanceof FixedForwardPipe) {
 						FixedForwardPipe ffp = (FixedForwardPipe) pipe;
-						throwOnMissingSessionKey = !(ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey()));
+						throwOnMissingSessionKey = !ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey());
 					} else {
 						throwOnMissingSessionKey = true;
 					}

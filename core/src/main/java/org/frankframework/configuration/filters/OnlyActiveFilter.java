@@ -60,7 +60,7 @@ public class OnlyActiveFilter extends FullXmlFilter {
 		}
 
 		//If an active property is present but EMPTY, assume false.
-		if (active != null && !(active.equalsIgnoreCase("true") || active.equalsIgnoreCase("!false"))) {
+		if (active != null && !("true".equalsIgnoreCase(active) || "!false".equalsIgnoreCase(active))) {
 			suppressLevel = 1;
 			return;
 		}

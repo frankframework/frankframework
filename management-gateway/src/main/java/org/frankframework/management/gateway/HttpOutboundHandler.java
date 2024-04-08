@@ -134,7 +134,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 		if(response instanceof MessageBuilder) {
 			return ((MessageBuilder) response).build();
 		}
-		throw new BusException("unknown response type ["+((response != null) ? response.getClass().getCanonicalName() : "null")+"]");
+		throw new BusException("unknown response type ["+(response != null ? response.getClass().getCanonicalName() : "null")+"]");
 	}
 
 	@Override

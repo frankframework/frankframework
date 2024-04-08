@@ -787,7 +787,7 @@ public class XmlUtils {
 				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 			}
 		}
-		int version = (xsltVersion == 0) ? DEFAULT_XSLT_VERSION : xsltVersion;
+		int version = xsltVersion == 0 ? DEFAULT_XSLT_VERSION : xsltVersion;
 
 		//xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt: xslt1 'Can not convert #RTREEFRAG to a NodeList'
 		if(version == 1 && ignoreNamespaces) {
@@ -1106,9 +1106,9 @@ public class XmlUtils {
 		if (str == null) {
 			return defaultValue;
 		}
-		return str.equalsIgnoreCase("true")
-				|| str.equalsIgnoreCase("yes")
-				|| str.equalsIgnoreCase("on");
+		return "true".equalsIgnoreCase(str)
+				|| "yes".equalsIgnoreCase(str)
+				|| "on".equalsIgnoreCase(str);
 	}
 	/**
 	 * Method getChildTagAsLong.
@@ -1193,7 +1193,7 @@ public class XmlUtils {
 		if (tmpEl != null) {
 			str = getStringValue(tmpEl, true);
 		}
-		return (str.isEmpty()) ? (defaultValue) : (str);
+		return str.isEmpty() ? defaultValue : str;
 	}
 	/**
 	 * Method getChildTags. Get all direct children of given element which
@@ -1335,7 +1335,7 @@ public class XmlUtils {
 		transformXml(t,s,out);
 		out.close();
 
-		return (out.getBuffer().toString());
+		return out.getBuffer().toString();
 
 	}
 

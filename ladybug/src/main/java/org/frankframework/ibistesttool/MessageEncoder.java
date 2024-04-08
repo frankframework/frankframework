@@ -38,7 +38,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 	@Override
 	public ToStringResult toString(Object message, String charset) {
 		if (message instanceof Message) {
-			Message m = ((Message)message);
+			Message m = (Message)message;
 			if (charset==null) {
 				charset = m.getCharset();
 			}

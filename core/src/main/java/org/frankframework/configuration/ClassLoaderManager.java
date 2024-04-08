@@ -259,7 +259,7 @@ public class ClassLoaderManager {
 	}
 
 	public boolean contains(String currentConfigurationName) {
-		return (classLoaders.containsKey(currentConfigurationName));
+		return classLoaders.containsKey(currentConfigurationName);
 	}
 
 	/**

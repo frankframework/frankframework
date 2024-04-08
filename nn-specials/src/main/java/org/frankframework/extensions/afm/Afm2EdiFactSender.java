@@ -102,7 +102,7 @@ public class Afm2EdiFactSender implements ISender {
 	private boolean bevatWaarde(Node aNode) {
 		String lWaarde = getWaardeForNode(aNode);
 		boolean lRes = false;
-		if ((lWaarde != null) && (!lWaarde.equalsIgnoreCase(""))) {
+		if ((lWaarde != null) && (!"".equalsIgnoreCase(lWaarde))) {
 			lRes = true;
 		}
 		if (!lRes) {
@@ -110,7 +110,7 @@ public class Afm2EdiFactSender implements ISender {
 			for (int i = 0; i <= lList.getLength() - 1; i++) {
 				Node aSubNode = lList.item(i);
 				lWaarde = getWaardeForNode(aNode);
-				if ((lWaarde != null) && (!lWaarde.equalsIgnoreCase(""))) {
+				if ((lWaarde != null) && (!"".equalsIgnoreCase(lWaarde))) {
 					lRes = true;
 					break;
 				} else {
@@ -277,7 +277,7 @@ public class Afm2EdiFactSender implements ISender {
 								}
 								String lWaarde = this.getWaardeForNode(aNode);
 								if ((lWaarde != null)
-									&& (!lWaarde.equalsIgnoreCase(""))) {
+									&& (!"".equalsIgnoreCase(lWaarde))) {
 									lHlp = lHlp + lWaarde;
 									this.appendString(lHlp, aRes);
 									regelTeller++;

@@ -119,13 +119,13 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	private void removeDirectoryContent(String folder) throws SftpException {
-		Vector<LsEntry> files = ftpClient.ls((folder==null) ? "*" : folder);
+		Vector<LsEntry> files = ftpClient.ls(folder==null ? "*" : folder);
 		for (LsEntry ftpFile : files) {
 			String fileName = ftpFile.getFilename();
-			if (fileName.equals(".") || fileName.equals("..")) {
+			if (".".equals(fileName) || "..".equals(fileName)) {
 				continue;
 			}
-			String recursiveName = (folder != null) ? folder + "/" + ftpFile.getFilename() : ftpFile.getFilename();
+			String recursiveName = folder != null ? folder + "/" + ftpFile.getFilename() : ftpFile.getFilename();
 			if(ftpFile.getAttrs().isDir()) {
 				removeDirectoryContent(recursiveName);
 			} else {

@@ -572,7 +572,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 
 		try {
 			String result = processResult.getResult().asString();
-			if (!result.equalsIgnoreCase("<ok/>")) {
+			if (!"<ok/>".equalsIgnoreCase(result)) {
 				throw new StorageException("Delete failed: " + result);
 			}
 		} catch (IOException e) {

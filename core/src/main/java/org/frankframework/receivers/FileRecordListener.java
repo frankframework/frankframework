@@ -181,13 +181,13 @@ public class FileRecordListener implements IPullingListener<String> {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(getInputDirectory());
 		File[] files = dir.listFiles(filter);
-		int count = (files == null ? 0 : files.length);
+		int count = files == null ? 0 : files.length;
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
 			if (file.isDirectory()) {
 				continue;
 			}
-			return (file);
+			return file;
 		}
 		return null;
 	}

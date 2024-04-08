@@ -155,7 +155,7 @@ public class SqlTranslator implements ISqlTranslator {
 			String label = it.next();
 			String source = sources.get(label).toString();
 			String target = targets.get(label);
-			if (target == null || target.equals(source) || target.equals("$0")) {
+			if (target == null || target.equals(source) || "$0".equals(target)) {
 				it.remove();
 			} else {
 				log.debug("configured translation pattern label [{}] source [{}] target [{}]", label, source, target);

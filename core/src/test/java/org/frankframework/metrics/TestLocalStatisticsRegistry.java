@@ -30,7 +30,7 @@ import jakarta.json.stream.JsonGenerator;
 public class TestLocalStatisticsRegistry {
 	private TestConfiguration configuration;
 	private LocalStatisticsRegistry registry;
-	private AtomicInteger inProcessInt = new AtomicInteger();
+	private final AtomicInteger inProcessInt = new AtomicInteger();
 
 	private Adapter adapter;
 

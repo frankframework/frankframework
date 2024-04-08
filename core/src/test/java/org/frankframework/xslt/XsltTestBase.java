@@ -367,7 +367,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		Properties prop = System.getProperties();
 		String vendor = prop.getProperty("java.vendor");
 		System.out.println("JVM Vendor : " + vendor);
-		assumeFalse(vendor.equals("IBM Corporation")); // comments are not properly processed in the IBM JDK
+		assumeFalse("IBM Corporation".equals(vendor)); // comments are not properly processed in the IBM JDK
 
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/AsText.txt");

@@ -284,7 +284,7 @@ public class FileUtils {
 			}
 			String fileDir = file.getPath();
 			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"]");
+				throw new IllegalStateException("unknown or invalid path ["+(StringUtils.isEmpty(fileDir)?"NULL":fileDir)+"]");
 			}
 			directory = file.getAbsolutePath();
 		}
@@ -369,7 +369,7 @@ public class FileUtils {
 		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
 
 		List<File> result = new ArrayList<>();
-		int count = (files == null ? 0 : files.length);
+		int count = files == null ? 0 : files.length;
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
 			if (!file.isFile()) {

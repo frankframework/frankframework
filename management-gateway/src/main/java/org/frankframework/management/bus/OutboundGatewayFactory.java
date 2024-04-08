@@ -71,7 +71,7 @@ public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationC
 	@Override
 	@SuppressWarnings("rawtypes")
 	public Class<? extends OutboundGateway> getObjectType() {
-		return (this.gateway != null ? this.gateway.getClass() : OutboundGateway.class);
+		return this.gateway != null ? this.gateway.getClass() : OutboundGateway.class;
 	}
 
 	@Override

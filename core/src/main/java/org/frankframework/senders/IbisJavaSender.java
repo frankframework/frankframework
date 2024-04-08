@@ -182,7 +182,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	 */
 	public void setDispatchType(String type) throws ConfigurationException {
 		if(StringUtils.isNotEmpty(type)) {
-			if(type.equalsIgnoreCase("DLL")) {
+			if("DLL".equalsIgnoreCase(type)) {
 				dispatchType = type;
 			} else {
 				throw new ConfigurationException(getLogPrefix()+"the attribute 'setDispatchType' only supports the value 'DLL'");
