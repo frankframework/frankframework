@@ -34,6 +34,7 @@
 	<bean id="httpFirewall" class="org.springframework.security.web.firewall.StrictHttpFirewall">
 		<property name="allowSemicolon" value="true"/>
 		<property name="allowUrlEncodedPercent" value="true"/>
+		<property name="allowUrlEncodedSlash" value="true"/>
 	</bean>
 
 	<bean id="inboundGatewayFactory" class="org.frankframework.management.bus.InboundGatewayFactory">
