@@ -23,7 +23,6 @@
 		<spring-integration.version>5.5.20</spring-integration.version>
 		<spring.boot.version>2.7.18</spring.boot.version>
 
-		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.13.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
 		<micrometer.version>1.12.4</micrometer.version>
@@ -769,7 +768,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.3.1</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>

@@ -40,7 +40,6 @@ import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
-import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -155,9 +154,6 @@ public class MessagingSource  {
 		ConnectionFactory qcf = null;
 		try {
 			qcf = getConnectionFactoryDelegate();
-			if (qcf instanceof PoolingConnectionFactory) { //BTM
-				return ((PoolingConnectionFactory)qcf).getXaConnectionFactory();
-			}
 			if (qcf instanceof JmsPoolConnectionFactory) { //Narayana with pooling
 				return ((JmsPoolConnectionFactory)qcf).getConnectionFactory();
 			}
@@ -202,14 +198,6 @@ public class MessagingSource  {
 	/** Return pooling info if present */
 	private StringBuilder getConnectionPoolInfo(ConnectionFactory qcfd) {
 		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append(CLOSE);
-		if (qcfd instanceof PoolingConnectionFactory) {
-			PoolingConnectionFactory poolcf = (PoolingConnectionFactory)qcfd;
-			result.append("idle connections [").append(poolcf.getInPoolSize()).append(CLOSE);
-			result.append("min poolsize [").append(poolcf.getMinPoolSize()).append(CLOSE);
-			result.append("max poolsize [").append(poolcf.getMaxPoolSize()).append(CLOSE);
-			result.append("max idle time [").append(poolcf.getMaxIdleTime()).append(CLOSE);
-			result.append("max life time [").append(poolcf.getMaxLifeTime()).append(CLOSE);
-		}
 		if (qcfd instanceof JmsPoolConnectionFactory) {
 			JmsPoolConnectionFactory poolcf = (JmsPoolConnectionFactory)qcfd;
 			result.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
