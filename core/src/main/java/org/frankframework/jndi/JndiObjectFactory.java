@@ -75,7 +75,7 @@ public class JndiObjectFactory<O,L> extends ObjectFactoryBase<O,L> implements Ap
 	}
 
 	private String getPrefixedJndiName(String jndiName) {
-		return (StringUtils.isNotEmpty(jndiContextPrefix)) ? jndiContextPrefix + jndiName : jndiName;
+		return StringUtils.isNotEmpty(jndiContextPrefix) ? jndiContextPrefix + jndiName : jndiName;
 	}
 
 	@Override

@@ -178,7 +178,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	private MockHttpServletRequest createRequest(String uriPattern, Methods method, String content, Map<String, String> headers) {
-		return doCreateRequest(uriPattern, method, (content==null)? "".getBytes():content.getBytes(), headers);
+		return doCreateRequest(uriPattern, method, content==null? "".getBytes():content.getBytes(), headers);
 	}
 
 	private MockHttpServletRequest doCreateRequest(String uriPattern, Methods method, byte[] content, Map<String, String> headers) {

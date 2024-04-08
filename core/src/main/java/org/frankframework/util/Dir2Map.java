@@ -64,7 +64,7 @@ public class Dir2Map {
 			Arrays.sort(files, new FileNameComparator());
 		}
 
-		this.fileListSize = (files == null ? 0 : files.length);
+		this.fileListSize = files == null ? 0 : files.length;
 		int count = fileListSize;
 
 		if (maxItems >= 0 && count > maxItems) {

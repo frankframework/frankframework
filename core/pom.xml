@@ -476,12 +476,7 @@
 			<version>9.43.4</version>
 		</dependency>
 
-		<!-- TransactionManagers: BTM + NARAYANA -->
-		<dependency>
-			<groupId>com.github.marcus-nl.btm</groupId>
-			<artifactId>btm</artifactId>
-			<version>${btm.version}</version>
-		</dependency>
+		<!-- TransactionManagers: NARAYANA -->
 		<dependency>
 			<groupId>org.jboss.narayana.jta</groupId>
 			<artifactId>narayana-jta</artifactId>
@@ -699,12 +694,17 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.77</version>
+			<version>1.78</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcutil-jdk18on</artifactId>
+			<version>1.78</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpg-jdk18on</artifactId>
-			<version>1.77</version>
+			<version>1.78</version>
 		</dependency>
 
 		<dependency>

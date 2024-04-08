@@ -44,7 +44,7 @@ public class IfMultipart extends AbstractPipe {
 		if (message == null || message.isNull()) {
 			forward = elseForwardName;
 		} else {
-			if (!(message.isRequestOfType(HttpServletRequest.class))) {
+			if (!message.isRequestOfType(HttpServletRequest.class)) {
 				throw new PipeRunException(this, "expected HttpServletRequest as input, got [" + ClassUtils.nameOf(message) + "]");
 			}
 

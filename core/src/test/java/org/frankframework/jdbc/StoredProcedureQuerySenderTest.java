@@ -80,7 +80,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testSimpleStoredProcedureNoResultNoParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
-		assumeFalse(dataSourceName.equals("H2"), "H2 driver gives incorrect results for this test case");
+		assumeFalse("H2".equals(dataSourceName), "H2 driver gives incorrect results for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -263,7 +263,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureInputAndOutputParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(dataSourceName.equalsIgnoreCase("H2"), "H2 does not support OUT parameters, skipping test case");
+		assumeFalse("H2".equalsIgnoreCase(dataSourceName), "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -297,7 +297,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureInputAndOutputParameterNullValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(dataSourceName.equalsIgnoreCase("H2"), "H2 does not support OUT parameters, skipping test case");
+		assumeFalse("H2".equalsIgnoreCase(dataSourceName), "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		long id = insertRowWithMessageValue(null, databaseTestEnvironment);
@@ -492,7 +492,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureInputAndOutputParametersXmlOutput(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(dataSourceName.equalsIgnoreCase("H2"), "H2 does not support OUT parameters, skipping test case");
+		assumeFalse("H2".equalsIgnoreCase(dataSourceName), "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -534,7 +534,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureOutputParameterConversion(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(dataSourceName.equalsIgnoreCase("H2"), "H2 does not support OUT parameters, skipping test case");
+		assumeFalse("H2".equalsIgnoreCase(dataSourceName), "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -773,7 +773,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningCursorNotSupported() throws Exception {
-		assumeTrue(dataSourceName.equals("MS_SQL"));
+		assumeTrue("MS_SQL".equals(dataSourceName));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -806,7 +806,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testCallFunction() throws Exception {
-		assumeTrue(dataSourceName.equalsIgnoreCase("Oracle"), "CALL to custom function only tested on Oracle so far");
+		assumeTrue("Oracle".equalsIgnoreCase(dataSourceName), "CALL to custom function only tested on Oracle so far");
 
 		// Arrange
 		sender.setQuery("{ ? = call add_numbers(?, ?) }");
@@ -892,7 +892,7 @@ public class StoredProcedureQuerySenderTest {
 		Connection connection = databaseTestEnvironment.getConnection();
 		try (PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{"tkey"})) {
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8));
-			statement.setBlob(1, (compressed) ? new DeflaterInputStream(inputStream) : inputStream);
+			statement.setBlob(1, compressed ? new DeflaterInputStream(inputStream) : inputStream);
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {

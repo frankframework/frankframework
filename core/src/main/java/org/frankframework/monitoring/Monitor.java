@@ -130,7 +130,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	private boolean isHit(Severity severity) {
-		return (getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<=0);
+		return getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<=0;
 	}
 
 	public void changeMonitorState(EventType eventType, Severity severity, String eventCode, MonitorEvent event) throws MonitorException {

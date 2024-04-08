@@ -141,7 +141,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 
 	public JCoDestination getDestination() {
-		return (!this.destinations.isEmpty() ? (JCoDestination) this.destinations.get(0) : null);
+		return !this.destinations.isEmpty() ? (JCoDestination) this.destinations.get(0) : null;
 	}
 
 	public String getTid(JCoDestination destination) {

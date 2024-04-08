@@ -111,7 +111,7 @@ public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory{
 			for (Enumeration<RefAddr> refAddrEnum=ref.getAll(); refAddrEnum.hasMoreElements();) {
 				RefAddr refAddr = refAddrEnum.nextElement();
 				String propertyName = refAddr.getType();
-				if (!propertyName.startsWith(DELEGATE_PREFIX) && !propertyName.equals("factory")) {
+				if (!propertyName.startsWith(DELEGATE_PREFIX) && !"factory".equals(propertyName)) {
 					Object propertyValue = refAddr.getContent();
 					//log.debug("setting result property [{}] to value [{}]", propertyName, propertyValue);"
 					if (!PropertyUtils.isWriteable(result, propertyName)) {

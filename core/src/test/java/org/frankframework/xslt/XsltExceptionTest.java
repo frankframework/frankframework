@@ -30,7 +30,7 @@ public class XsltExceptionTest {
 
 			@Override
 			public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-				if (localName.equals("error")) {
+				if ("error".equals(localName)) {
 					throw new SaxException("Found error");
 				}
 				super.startElement(uri, localName, qName, atts);

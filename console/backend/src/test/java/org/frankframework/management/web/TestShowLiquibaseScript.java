@@ -28,7 +28,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 	@Test
 	public void downloadSingleScript() {
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
@@ -45,7 +45,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 	@Test
 	public void downloadAllScripts() {
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
@@ -62,7 +62,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 	@Test
 	public void downloadAllScriptsWithConfig() {
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
@@ -83,7 +83,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("dummy".getBytes()), "script.xml"));
 
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();

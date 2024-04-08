@@ -272,7 +272,7 @@ public class SchedulerAdapter {
 
 	private String convertDate(Date date) {
 		try {
-			return (null == date ? "" : DateFormatUtils.format(date, DateFormatUtils.GENERIC_DATETIME_FORMATTER));
+			return null == date ? "" : DateFormatUtils.format(date, DateFormatUtils.GENERIC_DATETIME_FORMATTER);
 		} catch (Exception e) {
 			log.debug("cannot convert date [{}] to format [{}]", date, DateFormatUtils.FORMAT_DATETIME_GENERIC, e);
 			return "";

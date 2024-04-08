@@ -108,7 +108,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 * Based on {@link JNDIRealm#authenticate(JNDIConnection connection, String username, String credentials)}
 	 */
 	public List<String> getRoles(JNDIConnection connection, String username) throws NamingException {
-		if (username == null || username.equals("")) {
+		if (username == null || "".equals(username)) {
 			if (this.containerLog.isDebugEnabled())
 				this.containerLog.debug("username null or empty: returning null roles.");
 			return null;

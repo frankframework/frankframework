@@ -183,7 +183,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getBooleanValue(boolean value) {
-		return (value) ? "1" : "0";
+		return value ? "1" : "0";
 	}
 
 	@Override

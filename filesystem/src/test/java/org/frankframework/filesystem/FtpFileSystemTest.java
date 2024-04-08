@@ -60,7 +60,7 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFileRef, FtpFileSystem>
 	@Test
 	@Override
 	public void writableFileSystemTestTruncateFile() throws Exception {
-		assumeFalse(host.equals("localhost"));
+		assumeFalse("localhost".equals(host));
 		super.writableFileSystemTestTruncateFile();
 	}
 

@@ -110,7 +110,7 @@ public class EscapePipe extends FixedForwardPipe {
 			String content = input.substring(start + substringStart.length(), end);
 
 			String handledContent = handle(content);
-			handledContent = (handledContent == null) ? "null" : handledContent;
+			handledContent = handledContent == null ? "null" : handledContent;
 
 			result.append(handledContent);
 

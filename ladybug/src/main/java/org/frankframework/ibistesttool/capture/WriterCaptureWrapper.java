@@ -20,7 +20,7 @@ import java.io.Writer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WriterCaptureWrapper extends Writer {
-	private AtomicBoolean hasDataWritten = new AtomicBoolean(false);
+	private final AtomicBoolean hasDataWritten = new AtomicBoolean(false);
 	private static final char[] NO_DATA_WRITTEN = ">> Captured writer was closed without being read.".toCharArray();
 	private final Writer delegate;
 

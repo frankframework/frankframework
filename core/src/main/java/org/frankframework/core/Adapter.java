@@ -863,7 +863,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 		}
 		sb.append("]");
-		sb.append("[pipeLine="+ ((pipeline != null) ? pipeline.toString() : "none registered") + "][started=" + getRunState() + "]");
+		sb.append("[pipeLine="+ (pipeline != null ? pipeline.toString() : "none registered") + "][started=" + getRunState() + "]");
 
 		return sb.toString();
 	}

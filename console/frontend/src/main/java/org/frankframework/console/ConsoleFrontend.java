@@ -108,7 +108,7 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 				}
 			}
 		}
-		if(path.equals("/")) {
+		if("/".equals(path)) {
 			path += WELCOME_FILE;
 		}
 

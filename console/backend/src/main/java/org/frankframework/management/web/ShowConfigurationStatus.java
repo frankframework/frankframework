@@ -134,8 +134,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 
 		String value = RequestUtils.getValue(json, "action");
 		if(StringUtils.isNotEmpty(value)) {
-			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
-			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
+			if("stop".equals(value)) { action = IbisAction.STOPADAPTER; }
+			if("start".equals(value)) { action = IbisAction.STARTADAPTER; }
 		}
 		if(action == null) {
 			throw new ApiException("no or unknown action provided", Response.Status.BAD_REQUEST);

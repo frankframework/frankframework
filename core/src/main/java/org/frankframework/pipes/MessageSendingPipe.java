@@ -181,8 +181,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	private boolean timeoutPending=false;
 
-	private boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
-	private boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
+	private final boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
+	private final boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
 
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ListenerProcessor listenerProcessor;
@@ -507,7 +507,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				sendResult = sendMessage(input, session, getSender(), threadContext);
 				if (retryTp != null) {
 					String retry = retryTp.transform(sendResult.getResult().asString(),null);
-					if (retry.equalsIgnoreCase("true")) {
+					if ("true".equalsIgnoreCase(retry)) {
 						if (retriesLeft >= 1) {
 							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
 						}

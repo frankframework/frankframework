@@ -101,7 +101,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		} else {
 			responseValidator=outputValidator;
 		}
-		if ((responseValidator !=null)) {
+		if (responseValidator !=null) {
 			validate(responseValidator,msg,failureReason);
 		}
 	}

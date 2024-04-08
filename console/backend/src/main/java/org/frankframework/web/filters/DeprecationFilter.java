@@ -72,7 +72,7 @@ public class DeprecationFilter implements ContainerRequestFilter, EnvironmentAwa
 	// Ensure a valid path is returned.
 	private String getFullPath(Method method) {
 		Path classPath = method.getDeclaringClass().getAnnotation(Path.class);
-		final String basePath = (classPath != null) ? classPath.value() : "/";
+		final String basePath = classPath != null ? classPath.value() : "/";
 
 		StringBuilder pathToUse = new StringBuilder();
 		if(!basePath.startsWith("/")) {
@@ -83,7 +83,7 @@ public class DeprecationFilter implements ContainerRequestFilter, EnvironmentAwa
 		Path methodPath = method.getAnnotation(Path.class);
 		if(methodPath != null) {
 			final String path = methodPath.value();
-			pathToUse.append( (basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
+			pathToUse.append(basePath.endsWith("/") && path.startsWith("/") ? path.substring(1) : path);
 		}
 		return pathToUse.toString();
 	}

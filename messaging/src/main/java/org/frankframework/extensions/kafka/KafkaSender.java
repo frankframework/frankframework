@@ -75,7 +75,7 @@ public class KafkaSender extends KafkaFacade implements ISender {
 			throw new SenderException(e);
 		}
 
-		Double metric = (Double) producer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new SenderException("Failed to get response-total metric.")).metricValue();
+		Double metric = (Double) producer.metrics().values().stream().filter(item -> "response-total".equals(item.metricName().name())).findFirst().orElseThrow(() -> new SenderException("Failed to get response-total metric.")).metricValue();
 		if (metric.intValue() == 0) throw new SenderException("Didn't get a response from Kafka while connecting for Sending.");
 	}
 

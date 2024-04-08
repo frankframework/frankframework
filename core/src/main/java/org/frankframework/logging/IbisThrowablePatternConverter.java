@@ -69,7 +69,7 @@ public final class IbisThrowablePatternConverter extends ThrowablePatternConvert
 			buffer.append(Strings.LINE_SEPARATOR);
 		}
 		if (commonElementCount != 0) {
-			buffer.append("\t ... " + (commonElementCount) + " more" + Strings.LINE_SEPARATOR);
+			buffer.append("\t ... " + commonElementCount + " more" + Strings.LINE_SEPARATOR);
 		}
 		if (throwable.getCause() != null) {
 			buffer.append(CAUSED_BY);

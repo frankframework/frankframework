@@ -140,7 +140,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		for (Header header : headers) {
 			String headerName = header.getName();
 			String headerValue = header.getValue();
-			if(headerName.equals("X-Akamai-ACS-Auth-Data")) { //Ignore timestamps in request header
+			if("X-Akamai-ACS-Auth-Data".equals(headerName)) { //Ignore timestamps in request header
 				int start = StringUtils.ordinalIndexOf(headerValue, ",", 3);
 				int end = headerValue.lastIndexOf(",");
 				headerValue = headerValue.substring(0, start) + ", timestamp, timestamp" + headerValue.substring(end);

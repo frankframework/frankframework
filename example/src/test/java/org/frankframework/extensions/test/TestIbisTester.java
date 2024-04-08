@@ -27,7 +27,7 @@ public class TestIbisTester {
 
 		// Assert
 		// Test generic startup time of an ibis with 3 adapters, should take less than 30 seconds.
-		long startupTime = (System.currentTimeMillis() - start);
+		long startupTime = System.currentTimeMillis() - start;
 		assertTrue(startupTime < 30_000, "Application took ["+startupTime+"ms] to start up, longer than allowed 30s!");
 		ibisTester.testLarva();
 	}

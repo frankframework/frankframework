@@ -105,7 +105,7 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 
 		JndiContextPrefixFactory jndiContextFactory = applicationContext.getBean("jndiContextPrefixFactory", JndiContextPrefixFactory.class);
 		String jndiPrefix = jndiContextFactory.getContextPrefix();
-		String fullJndiName = (StringUtils.isNotEmpty(jndiPrefix)) ? jndiPrefix + objectStoreDatasource : objectStoreDatasource;
+		String fullJndiName = StringUtils.isNotEmpty(jndiPrefix) ? jndiPrefix + objectStoreDatasource : objectStoreDatasource;
 		try {
 			DataSource dataSource = ObjectLocator.lookup(fullJndiName, null, DataSource.class);
 			log.info("found Narayana ObjectStoreDatasource [{}]", dataSource);

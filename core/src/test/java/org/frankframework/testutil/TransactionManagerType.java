@@ -19,13 +19,11 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
-import bitronix.tm.TransactionManagerServices;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public enum TransactionManagerType {
 	DATASOURCE(URLDataSourceFactory.class, "springTOMCAT.xml"),
-	BTM(BTMXADataSourceFactory.class, "springTOMCATBTM.xml"),
 	NARAYANA(NarayanaXADataSourceFactory.class, "springTOMCATNARAYANA.xml");
 
 	private static final Map<TransactionManagerType, TestConfiguration> transactionManagerConfigurations = new WeakHashMap<>();
@@ -103,9 +101,9 @@ public enum TransactionManagerType {
 		// If we need to create a new TestConfiguration, always created it with autoStart=true
 		// because that makes it more consistent between new and cached configuration.
 		if(this == TransactionManagerType.DATASOURCE) {
-			return datasourceConfigurations.computeIfAbsent(productKey, (ignored)-> this.create(true));
+			return datasourceConfigurations.computeIfAbsent(productKey, ignored-> this.create(true));
 		}
-		return transactionManagerConfigurations.computeIfAbsent(this, (ignored) -> this.create(true));
+		return transactionManagerConfigurations.computeIfAbsent(this, ignored -> this.create(true));
 	}
 
 	public synchronized void closeConfigurationContext() {
@@ -122,9 +120,6 @@ public enum TransactionManagerType {
 			TestConfiguration ac = transactionManagerConfigurations.remove(this);
 			if(ac != null) {
 				ac.close();
-			}
-			if (this == BTM && TransactionManagerServices.isTransactionManagerRunning()) {
-				TransactionManagerServices.getTransactionManager().shutdown();
 			}
 			if (ac != null) {
 				removePreviousTxLogFiles(ac);

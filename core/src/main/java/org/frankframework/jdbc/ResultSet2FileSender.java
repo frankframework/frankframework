@@ -64,7 +64,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		}
 		String sft = getStatusFieldType();
 		if (StringUtils.isNotEmpty(sft)) {
-			if (!sft.equalsIgnoreCase("timestamp")) {
+			if (!"timestamp".equalsIgnoreCase(sft)) {
 				throw new ConfigurationException(getLogPrefix() + "illegal value for statusFieldType [" + sft + "], must be 'timestamp'");
 			}
 		}

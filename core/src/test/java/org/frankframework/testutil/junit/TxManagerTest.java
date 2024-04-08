@@ -15,11 +15,10 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 @Retention(RetentionPolicy.RUNTIME)
 @TestInstance(Lifecycle.PER_CLASS)
 
-//Only adds these two additional ArgumentSoures
+//Only adds these two additional ArgumentSources
 @Nested
 @DatabaseTest
 @NarayanaArgumentSource
-@BTMArgumentSource
 public @interface TxManagerTest {
 
 }

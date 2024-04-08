@@ -232,7 +232,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			FTPFile[] files = ftpClient.listFiles();
 			for (FTPFile ftpFile : files) {
 				String fileName=ftpFile.getName();
-				if (fileName.equals(".") || fileName.equals("..")) {
+				if (".".equals(fileName) || "..".equals(fileName)) {
 					continue;
 				}
 				if(ftpFile.isDirectory()) {

@@ -61,7 +61,7 @@ public class MessageStreamCapTest {
 			}
 			PipeRunResult result = cap.getPipeRunResult();
 
-			assertTrue(result.getResult().getRequestClass().equalsIgnoreCase("byte[]"));
+			assertTrue("byte[]".equalsIgnoreCase(result.getResult().getRequestClass()));
 			assertArrayEquals(responseMessage, result.getResult().asByteArray());
 		}
 		assertEquals(new String(responseMessage),captureWriter.toString());

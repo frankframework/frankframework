@@ -50,8 +50,8 @@ import org.w3c.dom.Element;
 
 public class SoapProviderTest {
 
-	private WebServiceContext webServiceContext = new WebServiceContextStub();
-	private SoapProviderStub SOAPProvider = new SoapProviderStub(webServiceContext);
+	private final WebServiceContext webServiceContext = new WebServiceContextStub();
+	private final SoapProviderStub SOAPProvider = new SoapProviderStub(webServiceContext);
 
 	private static final String ATTACHMENT_CONTENT = "<dummy/>";
 	private static final String ATTACHMENT_MIMETYPE = "plain/text";

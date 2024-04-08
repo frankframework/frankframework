@@ -46,7 +46,7 @@ public final class ShowAdapterStatistics extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response getAdapterStatisticsOld(@PathParam("adapter") String adapter, @QueryParam("configuration") String configuration) {
-		final String config = (StringUtils.isNotEmpty(configuration)) ? configuration : null;
+		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
 		return getAdapterStatistics(config, adapter);
 	}
 
