@@ -310,7 +310,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			ParameterType type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();
 
-			if (!isSoap() || !name.equals(getSoapHeaderParam()) && (StringUtils.isEmpty(getDestinationParam()) || !name.equals(getDestinationParam()))) {
+			if (!isSoap() || !name.equals(getSoapHeaderParam()) && !name.equals(getDestinationParam())) {
 				log.debug("{} setting [{}] property from param [{}] to value [{}]", this::getLogPrefix, () -> type, () -> name, property::getValue);
 				switch(type) {
 					case BOOLEAN:
