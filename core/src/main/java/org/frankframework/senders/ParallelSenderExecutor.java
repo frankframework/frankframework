@@ -15,11 +15,13 @@
 */
 package org.frankframework.senders;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.Semaphore;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -31,23 +33,18 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private final Logger log = LogUtil.getLogger(this);
 	private final ISender sender;
 	@Getter private final PipeLineSession session;
-	private final Semaphore semaphore; // support limiting the number of threads processing in parallel, may be null
-	private final Phaser guard;        // support waiting for all threads to end
+	@Setter private Semaphore semaphore; // support limiting the number of threads processing in parallel
+	@Setter private CountDownLatch countDownLatch; // support waiting for all threads to end
+	@Setter private Phaser phaser; // support waiting for all threads to end
 	private final DistributionSummary summary;
 	private @Getter long duration;
 
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Phaser guard, DistributionSummary sk) {
-		this(sender, message, session, null, guard, sk);
-	}
-
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Phaser guard, DistributionSummary sk) {
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, DistributionSummary sk) {
 		super();
-		this.sender=sender;
-		request=message;
-		this.session=session;
-		this.guard=guard;
-		this.semaphore=semaphore;
-		this.summary=sk;
+		this.sender = sender;
+		request = message;
+		this.session = session;
+		this.summary = sk;
 	}
 
 	@Override
@@ -65,11 +62,17 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			duration = t2-t1;
 			summary.record(duration);
 		} finally {
-			if (semaphore!=null) {
+			if (semaphore != null) {
 				semaphore.release();
+				log.debug("Released semaphore, available permits: {}", semaphore.availablePermits());
 			}
-			if(guard != null) {
-				guard.arriveAndDeregister();
+			if (countDownLatch != null) {
+				countDownLatch.countDown();
+				log.debug("Counted down latch, remaining: {}", countDownLatch.getCount());
+			}
+			if (phaser != null) {
+				phaser.arrive();
+				log.debug("Arrived at phaser, remaining: {}", phaser.getUnarrivedParties());
 			}
 		}
 	}

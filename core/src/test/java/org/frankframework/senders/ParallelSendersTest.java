@@ -9,19 +9,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
 
 public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 	private static final String BASEPATH = "/Senders/ParallelSenders/";
-	private static final int DELAY = 2000;
+	protected static final long DELAY_MILLIS = 500L;
 
 	@Override
 	public ParallelSenders createSender() throws Exception {
@@ -36,7 +36,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 	protected static class TestSender extends DelaySender {
 		public TestSender(String name) {
 			setName(name);
-			setDelayTime(DELAY);
+			setDelayTime(DELAY_MILLIS);
 		}
 	}
 
@@ -58,7 +58,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
-		int maxDuration = DELAY + 1000;
+		long maxDuration = DELAY_MILLIS + 1000;
 		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
 	}
 
@@ -80,7 +80,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
-		int maxDuration = DELAY + 1000;
+		long maxDuration = DELAY_MILLIS + 1000;
 		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
 	}
 
@@ -109,7 +109,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
-		int maxDuration = (DELAY * amountOfDelaySendersInWrapper) + 1000;
+		long maxDuration = (DELAY_MILLIS * amountOfDelaySendersInWrapper) + 1000;
 		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
 	}
 
@@ -139,9 +139,9 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		assertFalse(result.isSuccess());
 	}
 
-	private class ExceptionThrowingSender extends SenderBase {
+	private static class ExceptionThrowingSender extends SenderBase {
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 			throw new SenderException("fakeException");
 		}
 	}

@@ -217,7 +217,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.sender=sender;
 			this.results=out;
 			if (isParallel() && isCollectResults()) {
-				guard = new Phaser();
 				executorList = new ArrayList<>();
 			}
 		}
@@ -308,9 +307,13 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					DistributionSummary senderStatistics = getStatisticsKeeper(sender.getName());
 					if (isParallel()) {
 						if (isCollectResults()) {
-							guard.register();
+							if (guard != null) {
+								guard.register();
+							}
 						}
-						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatistics);
+						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, senderStatistics);
+						pse.setSemaphore(childThreadSemaphore);
+						pse.setPhaser(guard);
 						if (isCollectResults()) {
 							executorList.add(pse);
 						}
