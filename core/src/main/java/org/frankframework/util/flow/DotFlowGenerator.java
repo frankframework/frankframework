@@ -46,7 +46,7 @@ public class DotFlowGenerator implements IFlowGenerator {
 	}
 
 	@Override
-	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
+	public void generateFlow(String xml, OutputStream outputStream, String name) throws FlowGenerationException {
 		try {
 			String flow = generateDot(xml);
 

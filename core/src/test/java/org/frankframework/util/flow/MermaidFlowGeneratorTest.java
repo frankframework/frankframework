@@ -24,6 +24,8 @@ class MermaidFlowGeneratorTest {
 			"Exit0Validators1Wrappers0", "Exit0Validators1Wrappers1",
 			"Exit1Validators0Wrappers0", "Exit1Validators0Wrappers1",
 			"Exit1Validators1Wrappers0", "Exit1Validators1Wrappers1",
+			"NoExplicitExitThenImplicitSuccessExit", "OnlyExplicitErrorExitThenImplicitSuccessExit",
+			"OnlyExplicitSuccessThenNoImplicitError", "ExplicitSuccessAndErrorThenNothingImplicit"
 	})
 	void test(String directory) throws Exception {
 		String testFileDir = BASE_DIR + directory;
@@ -34,7 +36,7 @@ class MermaidFlowGeneratorTest {
 		String testFile = TestFileUtils.getTestFile(testFileDir + ORIGINAL_FILENAME);
 		assertNotNull(testFile, "unable to find test file [" + testFileDir + ORIGINAL_FILENAME + "]");
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
-		generator.generateFlow(testFile, boas);
+		generator.generateFlow(testFile, boas, "dummyName");
 
 		String expectedMermaid = TestFileUtils.getTestFile(testFileDir + EXPECTED_FILENAME);
 		TestAssertions.assertEqualsIgnoreCRLF(expectedMermaid, boas.toString(StandardCharsets.UTF_8));

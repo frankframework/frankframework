@@ -232,7 +232,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		long start = System.currentTimeMillis();
 
 		try (FileOutputStream outputStream = new FileOutputStream(destination)) {
-			flowGenerator.generateFlow(xml, outputStream);
+			flowGenerator.generateFlow(xml, outputStream, name);
 		} catch (FlowGenerationException e) {
 			log.debug("error generating flow diagram for [{}]", name, e);
 
