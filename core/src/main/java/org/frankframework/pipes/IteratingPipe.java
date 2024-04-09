@@ -217,6 +217,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.sender=sender;
 			this.results=out;
 			if (isParallel() && isCollectResults()) {
+				guard = new Phaser();
 				executorList = new ArrayList<>();
 			}
 		}

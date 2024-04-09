@@ -21,7 +21,7 @@ import org.frankframework.testutil.TestFileUtils;
 public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 	private static final String BASEPATH = "/Senders/ParallelSenders/";
-	protected static final long DELAY_MILLIS = 500L;
+	protected static final long DELAY_MILLIS = 1000L;
 
 	@Override
 	public ParallelSenders createSender() throws Exception {
