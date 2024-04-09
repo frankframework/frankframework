@@ -54,7 +54,6 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundExcept
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -250,12 +249,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 
 		if (getParameterList() != null) {
-			if (getParameterList().findParameter("userName") != null) {
-				ConfigurationWarnings.add(this, log, "parameter 'userName' has been replaced by 'username'");
-			}
-
 			// Legacy; check if the session should be created runtime (and thus for each call)
-			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null || getParameterList().findParameter("userName") != null ) {
+			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null ) {
 				runtimeSession = true;
 			}
 
@@ -957,9 +952,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/** Username used in authentication to host */
-	public void setUsername(String userName) {
-		sessionBuilder.setUsername(userName);
-		this.username = userName;
+	public void setUsername(String username) {
+		sessionBuilder.setUsername(username);
+		this.username = username;
 	}
 
 	/** Password used in authentication to host */
