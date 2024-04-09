@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -19,7 +21,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> extends PipeTestBase<P> {
@@ -71,9 +72,23 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	}
 
 	protected class ElementRenderer extends EchoSender {
-
 		@Override
 		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+			return resultCollector(message);
+		}
+	}
+
+	// Sender Class to find threading issues in parallel execution
+	protected class SlowRenderer extends EchoSender {
+		@Override
+		@SuppressWarnings("java:S2925")
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+			int random = (int) (Math.random() * 20);
+			try {
+				Thread.sleep(random);
+			} catch (InterruptedException ignored) {
+				Thread.currentThread().interrupt();
+			}
 			return resultCollector(message);
 		}
 	}
@@ -229,9 +244,10 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	@Test
 	public void testParallel() throws Exception {
-		pipe.setSender(getElementRenderer(false));
+		resultLog = new StringBuilder();
+		pipe.setSender(new SlowRenderer());
 		pipe.setParallel(true);
-		pipe.setMaxChildThreads(1);
+		pipe.setMaxChildThreads(4);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		configureAndStartPipe();
 		testTenLines();
@@ -241,9 +257,10 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	@Test
 	public void testParallelResultsWithErrors() throws Exception {
-		pipe.setSender(getElementRenderer(false));
+		resultLog = new StringBuilder();
+		pipe.setSender(new SlowRenderer());
 		pipe.setParallel(true);
-		pipe.setMaxChildThreads(1);
+		pipe.setMaxChildThreads(3);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		pipe.setCollectResults(false);
 		configureAndStartPipe();
