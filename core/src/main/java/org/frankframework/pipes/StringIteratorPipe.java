@@ -68,7 +68,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 			private int itemCounter=0;
 			private int totalItems=0;
-			private StringBuilder items = new StringBuilder();
+			private final StringBuilder items = new StringBuilder();
 			private String previousKey=null;
 			private boolean processingInBlocks=false;
 

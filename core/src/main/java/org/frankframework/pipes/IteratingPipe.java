@@ -61,7 +61,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
 
 /**
- * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
+ * Abstract base class to send a message to a Sender for each item returned by a configurable iterator.
  *
  * <br/>
  * The output of each of the processing of each of the elements is returned in XML as follows:
@@ -131,7 +131,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 		private final @Getter String forwardName;
 
-		private StopReason(String forwardName) {
+		StopReason(String forwardName) {
 			this.forwardName=forwardName;
 		}
 

@@ -25,8 +25,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 	@Override
 	public ParallelSenders createSender() throws Exception {
-		ParallelSenders ps = new ParallelSenders();
-		return ps;
+		return new ParallelSenders();
 	}
 
 	protected String getExpectedTestFile(String path) throws IOException {
