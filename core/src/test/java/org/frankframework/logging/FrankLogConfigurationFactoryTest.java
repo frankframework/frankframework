@@ -70,13 +70,13 @@ class FrankLogConfigurationFactoryTest {
 		properties.setProperty("security.log.level", "${global.log.level}");
 		properties.setProperty("global.log.level", "WARN");
 		properties.setProperty("config.log.level", "INFO");
-		properties.setProperty("log.maxFileSize", "10MB");
+		properties.setProperty("log.maxFileSize", "1MB");
 		properties.setProperty("log.dir", "c:\\temp");
 
 		Map<String, String> expected = new HashMap<>();
 		expected.put("log.dir", "c:/temp");
 		expected.put("security.log.level", "WARN");
-		expected.put("log.maxFileSize", "10MB");
+		expected.put("log.maxFileSize", "1MB");
 		List<Map.Entry<String, String>> expectedEntries = sortMapEntries(expected);
 
 		// Act
