@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.2">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -12274,18 +12274,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="CleanupOldFilesPipe">
-        <xs:annotation>
-          <xs:documentation>Pipe for deleting files.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="CleanupOldFilesPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="ClobLineIteratingPipe">
         <xs:annotation>
           <xs:documentation>Pipe that iterates over the lines in a CLOB.</xs:documentation>
@@ -14322,57 +14310,6 @@
   <xs:attributeGroup name="ChecksumPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ChecksumPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="StreamingPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="CleanupOldFilesPipeType">
-    <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="CleanupOldFilesPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.CleanupOldFilesPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="CleanupOldFilesPipeDeclaredAttributeGroup">
-    <xs:attribute name="filePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>files that match this pattern will be deleted. parameters of the pipe are applied to this pattern. if this attribute is not set, the input of the pipe is interpreted as the file to be removed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="filePatternSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>session key that contains the pattern of files to be deleted, only used if filePattern is not set</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="lastModifiedDelta" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>time in milliseconds after last modification that must have passed at least before a file will be deleted (set to negative value to disable) Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="subdirectories" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, files  in subdirectories will be deleted, too Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="deleteEmptySubdirectories" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, empty subdirectories will be deleted, too Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="wildcard" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>filter of files to delete. if not set and a directory is specified, all files in the directory are interpreted to be deleted</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="excludeWildcard" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>filter of files to be excluded for deletion</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="minStableTime" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Minimal age of file &lt;i&gt;in milliseconds&lt;/i&gt;, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 to disable) Default: 1000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="CleanupOldFilesPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="CleanupOldFilesPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ClobLineIteratingPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
