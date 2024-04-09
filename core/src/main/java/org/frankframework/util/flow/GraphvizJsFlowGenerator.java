@@ -77,7 +77,7 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 	}
 
 	@Override
-	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
+	public void generateFlow(String xml, OutputStream outputStream, String name) throws FlowGenerationException {
 		GraphvizEngine engine = getGraphvizEngine();
 		if(engine != null) {
 			String dot = generateDot(xml);

@@ -30,5 +30,5 @@ public interface IFlowGenerator extends InitializingBean, DisposableBean {
 	public String getFileExtension();
 	public MediaType getMediaType();
 
-	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException;
+	public void generateFlow(String xml, OutputStream outputStream, String name) throws FlowGenerationException;
 }

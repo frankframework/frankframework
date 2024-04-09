@@ -34,7 +34,7 @@ class MermaidFlowGeneratorTest {
 		String testFile = TestFileUtils.getTestFile(testFileDir + ORIGINAL_FILENAME);
 		assertNotNull(testFile, "unable to find test file [" + testFileDir + ORIGINAL_FILENAME + "]");
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
-		generator.generateFlow(testFile, boas);
+		generator.generateFlow(testFile, boas, "dummyName");
 
 		String expectedMermaid = TestFileUtils.getTestFile(testFileDir + EXPECTED_FILENAME);
 		TestAssertions.assertEqualsIgnoreCRLF(expectedMermaid, boas.toString(StandardCharsets.UTF_8));
