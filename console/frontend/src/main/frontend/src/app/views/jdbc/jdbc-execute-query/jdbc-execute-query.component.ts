@@ -109,7 +109,9 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
       },
       error: (errorData: HttpErrorResponse) => {
         const error =
-          errorData && errorData.error ? errorData.error : 'An error occured!';
+          errorData && errorData.error
+            ? errorData.error
+            : 'An error occured, please make sure the query is valid!';
         this.error = typeof error === 'object' ? error.error : error;
         this.result = '';
         this.processingMessage = false;
