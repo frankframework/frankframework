@@ -717,8 +717,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		keystoreAliasPassword = string;
 	}
 
-	@Override
 	/** Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
+	@Override
 	public void setTruststore(String string) {
 		truststore = string;
 	}

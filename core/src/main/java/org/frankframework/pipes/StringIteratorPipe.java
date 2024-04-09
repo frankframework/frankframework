@@ -140,11 +140,11 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 		return item.substring(getStartPosition(), getEndPosition());
 	}
 
-	@Override
 	/**
 	 * Controls multiline behaviour. If set to a value greater than 0, it specifies the number of rows send in a block to the sender.
 	 * @ff.default 0 (one line at a time, no prefix of suffix)
 	 */
+	@Override
 	public void setBlockSize(int i) {
 		stringIteratorPipeBlockSize = i;
 	}
