@@ -263,7 +263,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		if (getParameterList() != null) {
 			if (getParameterList().findParameter("userName") != null) {
-				ConfigurationWarnings.add(this, log, "parameter 'userName' is no longer used and has been replaced by 'username'");
+				throw new ConfigurationException("parameter 'userName' is no longer used and has been replaced by 'username'");
 			}
 
 			// Legacy; check if the session should be created runtime (and thus for each call)
