@@ -89,6 +89,7 @@ import lombok.Setter;
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
+@Deprecated(forRemoval = true, since = "7.8")
 public class FileHandler implements IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
