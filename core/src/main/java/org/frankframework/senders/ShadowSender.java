@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Phaser;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -110,16 +110,16 @@ public class ShadowSender extends ParallelSenders {
 		return secondarySenderList;
 	}
 
-	protected void executeGuarded(ISender sender, Message message, PipeLineSession session, CountDownLatch countDownLatch, Map<ISender, ParallelSenderExecutor> executorMap) throws SenderException {
+	protected void executeGuarded(ISender sender, Message message, PipeLineSession session, Phaser guard, Map<ISender, ParallelSenderExecutor> executorMap) throws SenderException {
 		Message messageToSend;
 		try {
 			messageToSend = isWaitForShadowsToFinish() ? message : message.copyMessage();
 		} catch (IOException e) {
-			if (countDownLatch != null) countDownLatch.countDown(); // Count down on error, to prevent deadlocks
+			if (guard != null) guard.arrive(); // Sign off the guard, to prevent deadlocks
 			throw new SenderException("Cannot create copy of message", e);
 		}
 		ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, messageToSend, session, getStatisticsKeeper(sender));
-		pse.setCountDownLatch(countDownLatch);
+		pse.setGuard(guard);
 		executorMap.put(sender, pse);
 		getExecutor().execute(pse);
 	}
@@ -137,8 +137,8 @@ public class ShadowSender extends ParallelSenders {
 			throw new SenderException(getLogPrefix() + " could not preserve input message", e);
 		}
 
-		CountDownLatch primaryGuard = new CountDownLatch(1);
-		CountDownLatch shadowGuard = new CountDownLatch(getSecondarySenders().size());
+		Phaser primaryGuard = new Phaser(2); // Itself and the added originalSender
+		Phaser shadowGuard = new Phaser(getSecondarySenders().size() + 1); // Itself and all secondary senders
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
 
 		executeGuarded(originalSender, message, session, primaryGuard, executorMap);
@@ -148,18 +148,11 @@ public class ShadowSender extends ParallelSenders {
 		}
 
 		// Wait till primary sender has replied.
-		try {
-			log.debug("waiting for primary senders to finish. Left: {}", primaryGuard::getCount);
-			primaryGuard.await();
-		} catch (InterruptedException e) {
-			throw new SenderException(getLogPrefix() + "was interrupted", e);
-		}
+		log.debug("waiting for primary senders to finish. Left: {}", primaryGuard.getUnarrivedParties() - 1);
+		primaryGuard.arriveAndAwaitAdvance();
 
-		/*
-		 * setup action to
-		 * - wait for remaining senders to have replied
-		 * - collect the results of all senders
-		 */
+
+		 // Wait for remaining senders to have replied & collect the results of all senders
 		Message originalMessage;
 		try {
 			originalMessage = isWaitForShadowsToFinish() ? message : message.copyMessage();
@@ -169,13 +162,9 @@ public class ShadowSender extends ParallelSenders {
 		String correlationId = session == null ? null : session.getCorrelationId();
 		Runnable collectResults = () -> {
 			// Wait till every sender has replied.
-			try {
-				log.debug("waiting for shadow senders to finish. Left: {}", shadowGuard::getCount);
-				shadowGuard.await();
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				log.warn("{} result collection thread was interrupted", getLogPrefix(), e);
-			}
+			log.debug("waiting for shadow senders to finish. Left: {}", shadowGuard.getUnarrivedParties() - 1);
+			shadowGuard.arriveAndAwaitAdvance();
+
 			// Collect the results of the (Shadow)Sender and send them to the resultSender.
 			try {
 				Message result = collectResults(executorMap, originalMessage, correlationId);

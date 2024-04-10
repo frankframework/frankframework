@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Phaser;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
@@ -77,7 +77,7 @@ public class ParallelSenders extends SenderSeries {
 		}
 
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
-		CountDownLatch senderCountDownLatch = new CountDownLatch(((List<ISender>) getSenders()).size());
+		Phaser senderGuard = new Phaser(((List<ISender>) getSenders()).size() + 1); // Itself and all senders
 		for (ISender sender : getSenders()) {
 			// Create a new ParameterResolutionContext to be thread safe, see
 			// documentation on constructor of ParameterResolutionContext
@@ -92,16 +92,11 @@ public class ParallelSenders extends SenderSeries {
 			// XsltSender and IbisLocalSender).
 
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, getStatisticsKeeper(sender));
-			pse.setCountDownLatch(senderCountDownLatch);
+			pse.setGuard(senderGuard);
 			executorMap.put(sender, pse);
 			executor.execute(pse);
 		}
-		try {
-			senderCountDownLatch.await();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new SenderException(getLogPrefix() + "was interrupted", e);
-		}
+		senderGuard.arriveAndAwaitAdvance();
 
 		boolean success = true;
 		String errorMessage = null;

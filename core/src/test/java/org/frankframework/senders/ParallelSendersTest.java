@@ -21,7 +21,7 @@ import org.frankframework.testutil.TestFileUtils;
 public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 	private static final String BASEPATH = "/Senders/ParallelSenders/";
-	protected static final long DELAY_MILLIS = 1000L;
+	protected static final long DELAY_MILLIS = 500L;
 
 	@Override
 	public ParallelSenders createSender() throws Exception {
@@ -50,7 +50,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.open();
 
 		String expected = getExpectedTestFile("test10SubSenders.txt");
-		assertNotNull("cannot find expected result file", expected);
+		assertNotNull(expected, "cannot find expected result file");
 
 		Message message = new Message("<dummy/>");
 		String result = sender.sendMessageOrThrow(message, session).asString();
@@ -72,7 +72,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.open();
 
 		String expected = getExpectedTestFile("test10SubSendersNonRepeatableMessage.txt");
-		assertNotNull("cannot find expected result file", expected);
+		assertNotNull(expected, "cannot find expected result file");
 
 		Message message = MessageTestUtils.getNonRepeatableMessage(MessageTestUtils.MessageType.CHARACTER_UTF8);
 		String result = sender.sendMessageOrThrow(message, session).asString();
@@ -101,7 +101,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.open();
 
 		String expected = getExpectedTestFile("test5wrappersWith10SubSenders.txt");
-		assertNotNull("cannot find expected result file", expected);
+		assertNotNull(expected, "cannot find expected result file");
 
 		Message message = new Message("<dummy/>");
 		String result = sender.sendMessageOrThrow(message, session).asString();

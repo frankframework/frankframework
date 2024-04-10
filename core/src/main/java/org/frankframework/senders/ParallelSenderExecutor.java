@@ -15,7 +15,6 @@
 */
 package org.frankframework.senders;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.Semaphore;
 
@@ -32,9 +31,8 @@ import org.frankframework.stream.Message;
 public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private final ISender sender;
 	@Getter private final PipeLineSession session;
-	@Setter private Semaphore semaphore; // support limiting the number of threads processing in parallel
-	@Setter private CountDownLatch countDownLatch; // support waiting for all threads to end
-	@Setter private Phaser phaser; // support waiting for all threads to end
+	@Setter private Semaphore limiter; // support limiting the number of threads processing in parallel
+	@Setter private Phaser guard; // support waiting for all threads to end
 	private final DistributionSummary summary;
 	private @Getter long duration;
 
@@ -61,17 +59,13 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			duration = t2-t1;
 			summary.record(duration);
 		} finally {
-			if (semaphore != null) {
-				semaphore.release();
-				log.debug("Released semaphore, available permits: {}", semaphore.availablePermits());
+			if (limiter != null) {
+				limiter.release();
+				log.debug("Released this limiter, available permits: {}", limiter.availablePermits());
 			}
-			if (countDownLatch != null) {
-				countDownLatch.countDown();
-				log.debug("Counted down latch, remaining: {}", countDownLatch.getCount());
-			}
-			if (phaser != null) {
-				phaser.arrive();
-				log.debug("Arrived at sender, remaining senders: {}", phaser.getUnarrivedParties());
+			if (guard != null) {
+				guard.arrive();
+				log.debug("Arrived sender, remaining senders: {}", guard.getUnarrivedParties());
 			}
 		}
 	}

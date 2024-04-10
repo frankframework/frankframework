@@ -17,23 +17,31 @@ package org.frankframework.receivers;
 
 /**
  * ResourceLimiter for limiting the number of resources that can be used in parallel.
- * Contains a maxResourceCount that can be increased or decreased, separate from the actual permits.
+ * Contains a maxResourceLimit that can be increased or decreased, separate from the actual permits.
  * See {@link java.util.concurrent.Semaphore} for generic details.
  */
 public class ResourceLimiter extends java.util.concurrent.Semaphore {
+	private int maxResourceLimit;
 
 	public ResourceLimiter(int permits) {
 		super(permits);
+		maxResourceLimit = permits;
 	}
 
 	public void increaseMaxResourceCount(int addition) {
 		if (addition < 0) throw new IllegalArgumentException("Only positive values are allowed.");
 		release(addition);
+		maxResourceLimit += addition;
 	}
 
 	public void reduceMaxResourceCount(int reduction) {
 		if (reduction < 0) throw new IllegalArgumentException("Only positive values are allowed.");
 		reducePermits(reduction);
+		maxResourceLimit -= reduction;
+	}
+
+	public int getMaxResourceLimit() {
+		return maxResourceLimit;
 	}
 
 }

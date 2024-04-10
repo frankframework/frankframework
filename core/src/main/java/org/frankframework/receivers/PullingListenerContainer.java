@@ -66,7 +66,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	private ResourceLimiter pollToken = null; // guard against to many threads polling at the same time
 	private final AtomicBoolean idle = new AtomicBoolean(false); // true if the last messages received was null, will cause wait loop
 	private int retryInterval = 1;
-	private int maxThreadCount = 1;
 
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
@@ -117,19 +116,17 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	@Override
 	public int getMaxThreadCount() {
-		return maxThreadCount;
+		return processToken.getMaxResourceLimit();
 	}
 
 	@Override
 	public void increaseThreadCount() {
-		maxThreadCount++;
 		processToken.increaseMaxResourceCount(1);
 	}
 
 	@Override
 	public void decreaseThreadCount() {
-		if (maxThreadCount > 1) {
-			maxThreadCount--;
+		if (processToken.getMaxResourceLimit() > 1) {
 			processToken.reduceMaxResourceCount(1);
 		}
 	}
