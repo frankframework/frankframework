@@ -552,7 +552,7 @@
 			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>
-				<version>1.5.3</version>
+				<version>1.5.4</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
