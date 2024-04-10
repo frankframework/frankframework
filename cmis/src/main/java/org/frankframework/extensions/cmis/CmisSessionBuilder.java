@@ -29,10 +29,8 @@ import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.http.HttpSender;
 import org.frankframework.http.HttpSessionBase;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
