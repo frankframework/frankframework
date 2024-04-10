@@ -342,7 +342,8 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithExceptions.txt");
 
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
-		assertTrue(e.getMessage().contains("an error occurred during parallel execution"));
+		String actual = e.getMessage();
+		assertEquals("an error occurred during parallel execution: Exception triggered", actual.substring(actual.length() - 64));
 	}
 
 	@Test
