@@ -130,7 +130,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			message.close();
 		} catch (Exception e) {
 			log.debug("error executing query", e);
-			throw new BusException("error executing query", 400);
+			throw new BusException("error executing query: "+e.getMessage(), 400);
 		} finally {
 			qs.close();
 		}
