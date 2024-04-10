@@ -7,19 +7,11 @@ import { Toast, ToastService, ToastType } from 'src/app/services/toast.service';
   styleUrls: ['./toasts-container.component.scss'],
 })
 export class ToastsContainerComponent {
-  show: boolean = true;
 
   constructor(public toastService: ToastService) {}
 
-  remove(toast: Toast | null): void {
-    if (toast) {
-      this.toastService.remove(toast);
-    } else {
-      this.show = false;
-      window.setTimeout(() => {
-        this.show = true;
-      }, 3000);
-    }
+  remove(toast: Toast): void {
+    this.toastService.remove(toast);
   }
 
   getClassByType(
