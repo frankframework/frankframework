@@ -3,13 +3,13 @@
 	"list": [
 		{
 			"name": "ClassLoaderTestFile.xml",
-			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile.xml",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile.xml",
 			"lastModified": 1712751022893,
 			"type": "file",
 			"size": 37,
 			"sizeDisplay": "1 kB"
 		}
 	],
-	"directory": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
+	"directory": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
 	"wildcard": "ClassLoader*.xml"
 }

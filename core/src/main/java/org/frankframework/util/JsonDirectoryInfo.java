@@ -55,14 +55,19 @@ public class JsonDirectoryInfo {
 
 	private JsonObjectBuilder fileInfo(File file, String displayName) {
 		JsonObjectBuilder fileInfo = Json.createObjectBuilder();
-		long fileSize = file.length();
 
 		fileInfo.add("name", displayName);
 		fileInfo.add("path", normalizePath(file));
 		fileInfo.add("lastModified", file.lastModified());
-		fileInfo.add("type", file.isDirectory() ? "directory" : "file");
-		fileInfo.add("size", fileSize);
-		fileInfo.add("sizeDisplay", Misc.toFileSize(fileSize, true));
+
+		if(file.isDirectory()) {
+			fileInfo.add("type", "directory");
+		} else {
+			fileInfo.add("type", "file");
+			long fileSize = file.length();
+			fileInfo.add("size", fileSize);
+			fileInfo.add("sizeDisplay", Misc.toFileSize(fileSize, true));
+		}
 
 		return fileInfo;
 	}

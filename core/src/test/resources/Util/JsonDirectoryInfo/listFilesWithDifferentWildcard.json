@@ -3,7 +3,7 @@
 	"list": [
 		{
 			"name": "fileOnlyOnDirectoryClassPath.txt",
-			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.txt",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.txt",
 			"lastModified": 1712751022895,
 			"type": "file",
 			"size": 39,
@@ -11,13 +11,13 @@
 		},
 		{
 			"name": "fileOnlyOnDirectoryClassPath.xml",
-			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.xml",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.xml",
 			"lastModified": 1712751022896,
 			"type": "file",
 			"size": 46,
 			"sizeDisplay": "1 kB"
 		}
 	],
-	"directory": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
+	"directory": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
 	"wildcard": "fileOnly*"
 }
