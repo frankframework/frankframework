@@ -44,8 +44,6 @@ import org.filesys.smb.server.SMBConfigSection;
 import org.filesys.smb.server.SMBServer;
 import org.filesys.smb.server.SMBSrvSession;
 import org.filesys.smb.server.disk.original.JavaFileDiskDriver;
-import org.filesys.smb.server.smbv2.config.SMBV2ConfigSection;
-import org.filesys.smb.server.smbv2.config.SMBV3ConfigSection;
 import org.frankframework.filesystem.smb.Samba2FileSystemTest;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
