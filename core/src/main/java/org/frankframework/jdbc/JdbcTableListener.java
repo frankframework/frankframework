@@ -230,7 +230,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.
+	 * Value of status field indicating is being processed. Can be left emtpy if database has <code>SKIP LOCKED</code> functionality and the <code>transactionAttribute</code> of the <code>Receiver</code> can be (and is) set to <code>Required</code> or <code>RequiresNew</code>.
 	 */
 	public void setStatusValueInProcess(String string) {
 		statusValues.put(ProcessState.INPROCESS, string);
