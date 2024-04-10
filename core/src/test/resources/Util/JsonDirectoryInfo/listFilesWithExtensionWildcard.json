@@ -1,0 +1,55 @@
+{
+	"count": 5,
+	"list": [
+		{
+			"name": "..",
+			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader",
+			"lastModified": 1712751022904,
+			"type": "directory",
+			"size": 4096,
+			"sizeDisplay": "4 kB"
+		},
+		{
+			"name": "ClassLoader",
+			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoader",
+			"lastModified": 1712751022891,
+			"type": "directory",
+			"size": 4096,
+			"sizeDisplay": "4 kB"
+		},
+		{
+			"name": "Config",
+			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Config",
+			"lastModified": 1712751022894,
+			"type": "directory",
+			"size": 0,
+			"sizeDisplay": "0 kB"
+		},
+		{
+			"name": "ClassLoaderTestFile.xml",
+			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile.xml",
+			"lastModified": 1712751022893,
+			"type": "file",
+			"size": 37,
+			"sizeDisplay": "1 kB"
+		},
+		{
+			"name": "Configuration.xml",
+			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Configuration.xml",
+			"lastModified": 1712751022895,
+			"type": "file",
+			"size": 29,
+			"sizeDisplay": "1 kB"
+		},
+		{
+			"name": "fileOnlyOnDirectoryClassPath.xml",
+			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.xml",
+			"lastModified": 1712751022896,
+			"type": "file",
+			"size": 46,
+			"sizeDisplay": "1 kB"
+		}
+	],
+	"directory": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
+	"wildcard": "*.xml"
+}

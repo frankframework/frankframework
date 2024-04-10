@@ -1,0 +1,31 @@
+{
+	"count": 2,
+	"list": [
+		{
+			"name": "..",
+			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader",
+			"lastModified": 1712751022904,
+			"type": "directory",
+			"size": 4096,
+			"sizeDisplay": "4 kB"
+		},
+		{
+			"name": "ClassLoader",
+			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoader",
+			"lastModified": 1712751022891,
+			"type": "directory",
+			"size": 4096,
+			"sizeDisplay": "4 kB"
+		},
+		{
+			"name": "Config",
+			"path": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Config",
+			"lastModified": 1712751022894,
+			"type": "directory",
+			"size": 0,
+			"sizeDisplay": "0 kB"
+		}
+	],
+	"directory": "C:/Data/Git/IAF2/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
+	"wildcard": "ik-besta-niet"
+}
