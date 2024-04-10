@@ -522,7 +522,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	/**
-	 * Timeout in ms of obtaining a connection/result. 0 means no timeout
+	 * Timeout in ms of obtaining a connection/result.
 	 * @ff.default 10000
 	 */
 	public void setTimeout(int i) {
