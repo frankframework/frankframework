@@ -17,7 +17,10 @@ package org.frankframework.jta;
 
 import javax.annotation.Nonnull;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -25,10 +28,6 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-
-import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.util.LogUtil;
 
 /**
  * proxy class for transaction manager.
@@ -66,14 +65,13 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 
 	@Override
 	public void commit(TransactionStatus txStatus) throws TransactionException {
-		if (txStatus.isRollbackOnly()) {
-			Exception e = new Exception("<TX> Warning - Silent rollback from commit");
-			log.info("<TX> Executing silent rollback without exception from tx.commit! TransactionStatus: [{}], Stacktrace:", txStatus, e);
-			rollback(txStatus);
-		} else {
-			if (trace && log.isDebugEnabled()) log.debug("committing transaction [{}]", txStatus);
-			getRealTxManager().commit(txStatus);
+		if (trace && log.isDebugEnabled()) {
+			if (txStatus.isRollbackOnly())
+				log.debug("<TX> Executing rollback from tx.commit. TransactionStatus: [{}], Stacktrace:", txStatus, new Exception("<TX> Rollback from commit"));
+			else
+				log.debug("committing transaction [{}]", txStatus);
 		}
+		getRealTxManager().commit(txStatus);
 	}
 
 	@Override
