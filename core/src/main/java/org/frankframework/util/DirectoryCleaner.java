@@ -113,7 +113,8 @@ public class DirectoryCleaner {
 	}
 
 	/**
-	 * time (with suffix 'd', 'h', 'm' or 's' in milliseconds) that must have passed at least before a file will be deleted
+	 * Minimum amount of time (with suffix 'd', 'h', 'm' or 's') that must have passed before a file will be deleted.
+	 * You may only use one suffix!
 	 * @ff.default 30d
 	 */
 	public void setRetention(String retention) {
