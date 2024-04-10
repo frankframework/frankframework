@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.net.URL;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.FilenameUtils;
 import org.frankframework.lifecycle.ShowLogDirectory;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
@@ -34,6 +35,13 @@ public class TestShowLogDirectory extends BusTestBase {
 		String json = showLogDir.getLogDirectory(request.build()).getPayload();
 
 		String showLogDirectory = TestFileUtils.getTestFile("/Management/showLogDirectory.json");
-		MatchUtils.assertJsonEquals(showLogDirectory, json);
+		MatchUtils.assertJsonEquals(showLogDirectory, applyIgnores(logDirectory, json));
+	}
+
+	private String applyIgnores(String base, String message) {
+		String normalizedPath = FilenameUtils.normalize(base, true);
+		int i = normalizedPath.indexOf("/core/target/");
+		String workDir = normalizedPath.substring(0, i);
+		return message.replaceAll(workDir, "IGNORE").replaceAll("\\d{8,}", "\"IGNORE\"");
 	}
 }

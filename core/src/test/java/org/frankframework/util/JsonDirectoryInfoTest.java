@@ -48,8 +48,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "*", false, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFiles.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFiles.json", json);
 	}
 
 	@Test
@@ -57,8 +56,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "*", true, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesAndFolders.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesAndFolders.json", json);
 	}
 
 	@Test
@@ -66,8 +64,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "*", true, 5);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesAndFoldersLimit5.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesAndFoldersLimit5.json", json);
 	}
 
 	@Test
@@ -75,8 +72,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "ClassLoader*", false, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesWithWildcard.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesWithWildcard.json", json);
 	}
 
 	@Test
@@ -84,8 +80,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "ClassLoader*", true, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesAndFoldersWithWildcard.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesAndFoldersWithWildcard.json", json);
 	}
 
 	@Test
@@ -93,8 +88,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "fileOnly*", false, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesWithDifferentWildcard.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesWithDifferentWildcard.json", json);
 	}
 
 	@Test
@@ -102,8 +96,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "ik-besta-niet", true, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesAndFoldersWithNonExistentWildcard.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesAndFoldersWithNonExistentWildcard.json", json);
 	}
 
 	@Test
@@ -111,8 +104,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "ClassLoader*.xml", false, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesWithSlashExtensionWildcard.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesWithSlashExtensionWildcard.json", json);
 	}
 
 	@Test
@@ -120,8 +112,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "ClassLoader*.xml", true, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesAndFoldersWithSlashExtensionWildcard.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesAndFoldersWithSlashExtensionWildcard.json", json);
 	}
 
 	@Test
@@ -129,8 +120,7 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "NonDefaultConfiguration.xml", true, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesAndFoldersWithWildcardInSubDirectory.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesAndFoldersWithWildcardInSubDirectory.json", json);
 	}
 
 	@Test
@@ -138,14 +128,18 @@ public class JsonDirectoryInfoTest {
 		JsonDirectoryInfo map = new JsonDirectoryInfo(basePath, "*.xml", true, 100);
 
 		String json = jsonToString(map.toJson());
-		String showLogDirectory = TestFileUtils.getTestFile("/Util/JsonDirectoryInfo/listFilesWithExtensionWildcard.json");
-		MatchUtils.assertJsonEquals(applyIgnores(showLogDirectory), applyIgnores(json));
+		assertJsonEquals("/Util/JsonDirectoryInfo/listFilesWithExtensionWildcard.json", json);
 	}
 
 	@Test
 	public void testFolderDoesNotExist() throws IOException {
 		IOException e = assertThrows(IOException.class, () -> new JsonDirectoryInfo(basePath+"ik-besta-niet", "*", true, 100));
 		assertTrue(e.getMessage().contains("DirectoryClassLoaderRootik-besta-niet] does not exist or is not a valid directory"));
+	}
+
+	private void assertJsonEquals(String expectedFile, String jsonResult) throws IOException {
+		String expected = TestFileUtils.getTestFile(expectedFile);
+		MatchUtils.assertJsonEquals(applyIgnores(expected), applyIgnores(jsonResult));
 	}
 
 	private String applyIgnores(String message) {
