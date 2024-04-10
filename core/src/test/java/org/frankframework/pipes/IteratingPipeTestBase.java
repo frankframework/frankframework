@@ -25,10 +25,9 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> extends PipeTestBase<P> {
 
-	protected StringBuilder resultLog;
+	protected StringBuilder resultLog = new StringBuilder();
 
 	protected ISender getElementRenderer(boolean blockEnabled) {
-		resultLog = new StringBuilder();
 		if (blockEnabled) {
 			return new BlockEnabledRenderer();
 		}
@@ -244,7 +243,6 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	@Test
 	public void testParallel() throws Exception {
-		resultLog = new StringBuilder();
 		pipe.setSender(new SlowRenderer());
 		pipe.setParallel(true);
 		pipe.setMaxChildThreads(4);
@@ -257,7 +255,6 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	@Test
 	public void testParallelResultsWithErrors() throws Exception {
-		resultLog = new StringBuilder();
 		pipe.setSender(new SlowRenderer());
 		pipe.setParallel(true);
 		pipe.setMaxChildThreads(3);
@@ -276,9 +273,9 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	@Test
 	public void testParallelCollectResultsWithErrors() throws Exception {
-		pipe.setSender(getElementRenderer(false));
+		pipe.setSender(new SlowRenderer());
 		pipe.setParallel(true);
-		pipe.setMaxChildThreads(1);
+		pipe.setMaxChildThreads(2);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		pipe.setCollectResults(true);
 		configureAndStartPipe();
@@ -287,7 +284,8 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithErrors.txt");
 
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
-		assertTrue(e.getMessage().contains("an error occurred during parallel execution"));
+		String message = e.getMessage();
+		assertEquals("caught exception: an error occurred during parallel execution: [key 2 error]", message.substring(message.length() - 76));
 	}
 
 	@Test
