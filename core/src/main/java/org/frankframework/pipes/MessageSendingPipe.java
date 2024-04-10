@@ -69,7 +69,6 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -106,7 +105,7 @@ import lombok.SneakyThrows;
  *
  * @author  Gerrit van Brakel
  */
-public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics {
+public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
