@@ -22,15 +22,14 @@ import java.util.concurrent.Semaphore;
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 
+@Log4j2
 public class ParallelSenderExecutor extends RequestReplyExecutor {
-	private final Logger log = LogUtil.getLogger(this);
 	private final ISender sender;
 	@Getter private final PipeLineSession session;
 	@Setter private Semaphore semaphore; // support limiting the number of threads processing in parallel
@@ -72,7 +71,7 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			}
 			if (phaser != null) {
 				phaser.arrive();
-				log.debug("Arrived at phaser, remaining: {}", phaser.getUnarrivedParties());
+				log.debug("Arrived at sender, remaining senders: {}", phaser.getUnarrivedParties());
 			}
 		}
 	}

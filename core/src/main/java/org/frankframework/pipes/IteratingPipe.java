@@ -20,12 +20,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Phaser;
-import java.util.concurrent.Semaphore;
 
 import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
@@ -47,11 +46,11 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
-import org.frankframework.util.ConcurrencyUtil;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
@@ -123,7 +122,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 
-	private Semaphore childThreadSemaphore = null;
+	private ResourceLimiter childLimiter = null;
 
 	protected enum StopReason {
 		MAX_ITEMS_REACHED(MAX_ITEMS_REACHED_FORWARD),
@@ -149,7 +148,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			throw new ConfigurationException("Cannot compile stylesheet from stopConditionXPathExpression ["+getStopConditionXPathExpression()+"]", e);
 		}
 		if (getMaxChildThreads()>0) {
-			childThreadSemaphore = new Semaphore(getMaxChildThreads());
+			childLimiter = new ResourceLimiter(getMaxChildThreads());
 		}
 	}
 
@@ -208,7 +207,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private int totalItems=0;
 		private boolean blockOpen=false;
 		private Object blockHandle;
-		private final Vector<I> inputItems = new Vector<>();
+		private final List<I> inputItems = Collections.synchronizedList(new ArrayList<>());
 		private Phaser guard;
 		private List<ParallelSenderExecutor> executorList;
 
@@ -217,7 +216,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.sender=sender;
 			this.results=out;
 			if (isParallel() && isCollectResults()) {
-				guard = new Phaser();
+				guard = new Phaser(1);
 				executorList = new ArrayList<>();
 			}
 		}
@@ -295,9 +294,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
-			if (childThreadSemaphore != null) {
+			if (childLimiter != null) {
 				try {
-					childThreadSemaphore.acquire();
+					childLimiter.acquire();
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 					throw new SenderException("interrupted waiting for thread", e);
@@ -313,7 +312,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							}
 						}
 						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, senderStatistics);
-						pse.setSemaphore(childThreadSemaphore);
+						pse.setSemaphore(childLimiter);
 						pse.setPhaser(guard);
 						if (isCollectResults()) {
 							executorList.add(pse);
@@ -387,9 +386,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					throw new SenderException("cannot serialize item",e);
 				}
 			} finally {
-				if (!isParallel() && childThreadSemaphore!=null) {
+				if (!isParallel() && childLimiter !=null) {
 					// only release the semaphore for non-parallel. For parallel, it is done in the 'finally' of ParallelSenderExecutor.run()
-					childThreadSemaphore.release();
+					childLimiter.release();
 				}
 			}
 		}
@@ -409,13 +408,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 		public void waitForResults() throws SenderException, IOException {
 			if (isParallel()) {
-				try {
-					ConcurrencyUtil.waitForZeroPhasesLeft(guard);
-					collectResultsOrThrowExceptions();
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-					throw new SenderException("was interrupted",e);
-				}
+				guard.arriveAndAwaitAdvance();
+				collectResultsOrThrowExceptions();
 			}
 		}
 

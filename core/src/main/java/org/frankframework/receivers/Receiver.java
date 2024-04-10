@@ -858,13 +858,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 
 	protected void startProcessingMessage(long waitingDuration) {
-		synchronized (threadsProcessing) {
-			int threadCount = threadsProcessing.get();
-
-			if (waitingDuration>=0) {
-				getIdleStatistics(threadCount).record(waitingDuration);
-			}
-			threadsProcessing.incrementAndGet();
+		int threadCount = threadsProcessing.getAndIncrement();
+		if (waitingDuration >= 0) {
+			getIdleStatistics(threadCount).record(waitingDuration);
 		}
 		log.debug("{} starts processing message", this::getLogPrefix);
 	}

@@ -18,7 +18,6 @@ package org.frankframework.receivers;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -64,9 +63,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	private final AtomicInteger threadsRunning = new AtomicInteger();
 	private final AtomicInteger tasksStarted = new AtomicInteger();
 	private ResourceLimiter processToken = null; // guard against to many messages being processed at the same time
-	private Semaphore pollToken = null; // guard against to many threads polling at the same time
+	private ResourceLimiter pollToken = null; // guard against to many threads polling at the same time
 	private final AtomicBoolean idle = new AtomicBoolean(false); // true if the last messages received was null, will cause wait loop
 	private int retryInterval = 1;
+	private int maxThreadCount = 1;
 
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
@@ -79,10 +79,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	public void configure() {
 		if (receiver.getNumThreadsPolling() > 0 && receiver.getNumThreadsPolling() < receiver.getNumThreads()) {
-			pollToken = new Semaphore(receiver.getNumThreadsPolling());
+			pollToken = new ResourceLimiter(receiver.getNumThreadsPolling());
 		}
 
-		processToken = new ResourceLimiter(receiver.getNumThreads(), receiver.getNumThreads());
+		processToken = new ResourceLimiter(receiver.getNumThreads());
 		if (receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
 			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionAttribute.REQUIRESNEW.getTransactionAttributeNum());
 			if (receiver.getTransactionTimeout() > 0) {
@@ -117,17 +117,19 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	@Override
 	public int getMaxThreadCount() {
-		return processToken.getMaxResourceCount();
+		return maxThreadCount;
 	}
 
 	@Override
 	public void increaseThreadCount() {
+		maxThreadCount++;
 		processToken.increaseMaxResourceCount(1);
 	}
 
 	@Override
 	public void decreaseThreadCount() {
-		if (processToken.getMaxResourceCount() > 1) {
+		if (maxThreadCount > 1) {
+			maxThreadCount--;
 			processToken.reduceMaxResourceCount(1);
 		}
 	}
@@ -284,9 +286,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							// release pollToken after message has been moved to inProcess, so it is not seen as 'available' by the next thread
 							pollTokenReleased=true;
 							if (pollToken != null) {
-								log.trace("PullingListenerContainer - ListenTask - release pollToken - synchronize (lock) on pollToken[{}]", pollToken);
 								pollToken.release();
-								log.trace("PullingListenerContainer - ListenTask - released pollToken - lock on pollToken[{}] released", pollToken);
 							}
 						}
 
@@ -420,7 +420,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				retryInterval = 3600;
 			}
 		}
-		log.trace("Reset retry interval increased - lock on receiver {} released", receiver::getLogPrefix);
 		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
 			receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);

@@ -21,27 +21,19 @@ package org.frankframework.receivers;
  * See {@link java.util.concurrent.Semaphore} for generic details.
  */
 public class ResourceLimiter extends java.util.concurrent.Semaphore {
-	private int maxResourceCount;
 
-	public ResourceLimiter(int permits, int maxResourceCount) {
+	public ResourceLimiter(int permits) {
 		super(permits);
-		this.maxResourceCount = maxResourceCount;
 	}
 
 	public void increaseMaxResourceCount(int addition) {
 		if (addition < 0) throw new IllegalArgumentException("Only positive values are allowed.");
 		release(addition);
-		maxResourceCount += addition;
 	}
 
 	public void reduceMaxResourceCount(int reduction) {
 		if (reduction < 0) throw new IllegalArgumentException("Only positive values are allowed.");
 		reducePermits(reduction);
-		maxResourceCount -= reduction;
-	}
-
-	public int getMaxResourceCount() {
-		return maxResourceCount;
 	}
 
 }
