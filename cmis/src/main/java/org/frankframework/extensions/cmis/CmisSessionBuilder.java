@@ -34,9 +34,9 @@ import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.encryption.KeystoreType;
+import org.frankframework.http.HttpSessionBase;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -243,7 +243,7 @@ public class CmisSessionBuilder {
 			parameterMap.put("maxConnections", maxConnections);
 
 		if(timeout > 0)
-			parameterMap.put(SessionParameter.CONNECT_TIMEOUT, timeout);
+			parameterMap.put(SessionParameter.READ_TIMEOUT, timeout);
 
 		// Custom CMIS HttpSender to support ssl connections and proxies
 		parameterMap.setHttpInvoker(CmisHttpInvoker.class);
@@ -451,7 +451,8 @@ public class CmisSessionBuilder {
 	}
 
 	/**
-	 * the maximum number of concurrent connections, 0 uses default
+	 * READ_TIMEOUT timeout in MS.
+	 * Defaults to 10000, inherited from {@link HttpSessionBase#setTimeout(int)}.
 	 */
 	public CmisSessionBuilder setTimeout(int i) {
 		if(i < 1)

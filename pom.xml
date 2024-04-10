@@ -25,7 +25,7 @@
 
 		<narayana.version>5.13.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
-		<micrometer.version>1.12.4</micrometer.version>
+		<micrometer.version>1.12.5</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>3.1</frankdoc.version>
@@ -324,18 +324,6 @@
 				<version>2.0.1</version>
 			</dependency>
 
-			<!-- SLF4J Log bindings -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.7.36</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-jcl</artifactId>
-				<version>1.7.36</version>
-			</dependency>
-
 			<!-- SPRING to force versions -->
 			<dependency><!-- required for CMIS and the IbisTester class -->
 				<groupId>org.springframework</groupId>
@@ -377,6 +365,12 @@
 				<version>${log4j2.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<!-- SLF4J Log binding -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>2.0.12</version>
 			</dependency>
 
 			<dependency>
@@ -480,7 +474,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.16.0</version>
+				<version>2.16.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
@@ -558,7 +552,7 @@
 			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>
-				<version>1.5.3</version>
+				<version>1.5.4</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>

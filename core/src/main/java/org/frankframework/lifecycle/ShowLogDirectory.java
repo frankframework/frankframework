@@ -45,10 +45,19 @@ import org.frankframework.util.FileUtils;
 @IbisInitializer
 public class ShowLogDirectory {
 
-	private String defaultLogDirectory = AppConstants.getInstance().getProperty("logging.path").replace("\\\\", "\\");
-	private String defaultLogWildcard = AppConstants.getInstance().getProperty("logging.wildcard");
-	private boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
-	private int maxItems = AppConstants.getInstance().getInt("logging.items.max", 500);
+	private String defaultLogDirectory;
+	private String defaultLogWildcard = AppConstants.getInstance().getProperty("log.viewer.wildcard");
+	private boolean showDirectories = AppConstants.getInstance().getBoolean("log.viewer.showdirectories", true);
+	private int maxItems = AppConstants.getInstance().getInt("log.viewer.maxitems", 500);
+
+	public ShowLogDirectory() {
+		String logdir = AppConstants.getInstance().getProperty("log.dir");
+		if(StringUtils.isEmpty(logdir)) {
+			throw new IllegalStateException("unknown log directory, property [log.dir] has not been set!");
+		}
+
+		defaultLogDirectory = logdir.replace("\\\\", "\\");
+	}
 
 	/**
 	 * This method is picked op by the IbisInitializer annotation and autowired via the SpringEnvironmentContext.

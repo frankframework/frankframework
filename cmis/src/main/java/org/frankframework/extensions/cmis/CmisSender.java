@@ -66,6 +66,7 @@ import org.frankframework.encryption.KeystoreType;
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
+import org.frankframework.http.HttpSessionBase;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
@@ -928,8 +929,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/**
-	 * The connection timeout in seconds
-	 * @ff.default 10
+	 * READ_TIMEOUT timeout in MS.
+	 * Defaults to 10000, inherited from {@link HttpSessionBase#setTimeout(int) HttpSender#setTimeout}.
+	 * @ff.default 10000
 	 */
 	public void setTimeout(int i) {
 		sessionBuilder.setTimeout(i);

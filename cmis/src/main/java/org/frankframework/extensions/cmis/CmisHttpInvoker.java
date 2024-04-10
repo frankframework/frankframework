@@ -140,9 +140,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 			sender.addParameter(urlParam);
 
 			// timeouts
-			int connectTimeout = session.get(SessionParameter.CONNECT_TIMEOUT, -1);
-			int readTimeout = session.get(SessionParameter.READ_TIMEOUT, -1);
-			int timeout = Math.max(connectTimeout, readTimeout);
+			int timeout = session.get(SessionParameter.READ_TIMEOUT, -1);
 			if (timeout >= 0) {
 				sender.setTimeout(timeout);
 			}
