@@ -40,6 +40,7 @@ import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.statistics.HasStatistics;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
@@ -82,7 +83,7 @@ import lombok.Setter;
  *
  * @see PipeLineSession
  */
-public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters {
+public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, ApplicationContextAware, IWithParameters, HasStatistics {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
