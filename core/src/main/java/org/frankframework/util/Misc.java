@@ -294,7 +294,7 @@ public class Misc {
 	}
 
 	/**
-	 * @return 'age' in MS.
+	 * @return 'age' in milliseconds.
 	 */
 	public static long parseAge(String value, long defaultValue) {
 		if (value == null)
