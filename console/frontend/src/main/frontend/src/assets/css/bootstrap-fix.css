@@ -76,10 +76,18 @@ app-toasts-container {
   margin-bottom: 1rem;
 }
 
+.toast .toast-header {
+  padding: 5px 0;
+}
+
+.toast.clickable {
+  cursor: pointer;
+}
+
 .toast .toast-body .toast-close {
   display: inline-block;
   align-self: flex-start;
-  margin: -12px -14px 0 0;
+  margin: -12px -6px 0 0;
   color: #fff;
   -webkit-appearance: none;
   background: none;
