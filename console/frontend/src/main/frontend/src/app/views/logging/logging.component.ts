@@ -9,8 +9,6 @@ import {
   basicTableSort,
 } from 'src/app/components/th-sortable.directive';
 import { copyToClipboard } from 'src/app/utils';
-import { combineLatest, concat, forkJoin, merge } from 'rxjs';
-import { zip } from 'rxjs/internal/operators/zip';
 
 @Component({
   selector: 'app-logging',
