@@ -18,6 +18,11 @@ package org.frankframework.extensions.cmis;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.Session;
@@ -107,7 +112,7 @@ public class CmisSessionBuilder {
 	 */
 	public CloseableCmisSession build() throws CmisSessionException {
 		CredentialFactory cf = new CredentialFactory(authAlias, username, password);
-		return build(cf.getUsername(), cf.getPassword());
+		return build(cf.getUsername(), cf.getPassword(), Collections.emptyMap());
 	}
 
 	/**
@@ -116,7 +121,7 @@ public class CmisSessionBuilder {
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
-	public CloseableCmisSession build(String userName, String password) throws CmisSessionException {
+	public CloseableCmisSession build(@Nullable String userName, @Nullable String password, @Nonnull Map<String, String> headers) throws CmisSessionException {
 		if (StringUtils.isEmpty(url) && overrideEntryPointWSDL == null) {
 			throw new CmisSessionException("no url configured");
 		}
@@ -258,7 +263,12 @@ public class CmisSessionBuilder {
 			parameterMap.put(SessionParameter.AUTH_HTTP_BASIC, "true");
 		}
 
-		CloseableCmisSession session = new CloseableCmisSession(parameterMap, null, null, null, null);
+		// Add a list of headers, ensure only headers (using the CmisSender HEADER_PREFIX) are added.
+		headers.entrySet().stream()
+			.filter(entry -> entry.getKey().startsWith(CmisSender.HEADER_PARAM_PREFIX))
+			.forEach(entry -> parameterMap.put(entry.getKey(), entry.getValue()));
+
+		CloseableCmisSession session = new CloseableCmisSession(parameterMap);
 		session.connect();
 		log.debug("connected with repository [{}]", ()->getRepositoryInfo(session));
 

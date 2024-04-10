@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -53,7 +54,6 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundExcept
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -67,7 +67,6 @@ import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.http.HttpSessionBase;
-import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
@@ -236,6 +235,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	private @Getter String fileSessionKey;
 
+	public static final String HEADER_PARAM_PREFIX = "Header.";
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -249,12 +250,13 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 
 		if (getParameterList() != null) {
-			if (getParameterList().findParameter("userName") != null) {
-				ConfigurationWarnings.add(this, log, "parameter 'userName' has been replaced by 'username'");
+			// Legacy; check if the session should be created runtime (and thus for each call)
+			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null ) {
+				runtimeSession = true;
 			}
 
-			// Legacy; check if the session should be created runtime (and thus for each call)
-			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null || getParameterList().findParameter("userName") != null ) {
+			// If any Header params exist, use RuntimeSessions
+			if(!runtimeSession && getParameterList().stream().anyMatch(param -> param.getName().startsWith(HEADER_PARAM_PREFIX))) {
 				runtimeSession = true;
 			}
 		}
@@ -271,45 +273,37 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	 * Creates a session during JMV runtime, tries to retrieve parameters and falls back on the defaults when they can't be found
 	 */
 	public CloseableCmisSession createCmisSession(ParameterValueList pvl) throws SenderException {
-		String authAlias_work = null;
-		String username_work = null;
-		String password_work = null;
+		String cfAuthAlias = getParameterOverriddenAttributeValue(pvl, "authAlias", getAuthAlias());
+		String cfUsername = getParameterOverriddenAttributeValue(pvl, "username", getUsername());
+		String cdPassword = getParameterOverriddenAttributeValue(pvl, "password", getPassword());
 
-		if (pvl != null) {
-			ParameterValue pv = pvl.get("authAlias");
-			if (pv != null) {
-				authAlias_work = pv.asStringValue();
-			}
-			pv = pvl.get("username");
-			if (pv == null) {
-				pv = pvl.get("userName");
-			}
-			if (pv != null) {
-				username_work = pv.asStringValue();
-			}
-			pv = pvl.get("password");
-			if (pv != null) {
-				password_work = pv.asStringValue();
-			}
-		}
-
-		if (authAlias_work == null) {
-			authAlias_work = getAuthAlias();
-		}
-		if (username_work == null) {
-			username_work = getUsername();
-		}
-		if (password_work == null) {
-			password_work = getPassword();
-		}
-
-		CredentialFactory cf = new CredentialFactory(authAlias_work, username_work, password_work);
+		CredentialFactory cf = new CredentialFactory(cfAuthAlias, cfUsername, cdPassword);
 		try {
-			return getSessionBuilder().build(cf.getUsername(), cf.getPassword());
+			Map<String, String> headers = new HashMap<>();
+			if(pvl != null) {
+				for(Entry<String, Object> entry : pvl.getValueMap().entrySet()) {
+					if(entry.getKey().startsWith(HEADER_PARAM_PREFIX)) {
+						headers.put(entry.getKey(), parseAsString(entry));
+					}
+				}
+			}
+			return getSessionBuilder().build(cf.getUsername(), cf.getPassword(), headers);
 		}
 		catch (CmisSessionException e) {
 			throw new SenderException(e);
 		}
+	}
+
+	private String parseAsString(Entry<String, Object> entry) throws SenderException {
+		try {
+			return Message.asString(entry.getValue());
+		} catch (IOException e) {
+			throw new SenderException("unable to convert parameter ["+entry.getKey()+"] value to String", e);
+		}
+	}
+
+	protected CmisSessionBuilder getSessionBuilder() {
+		return sessionBuilder;
 	}
 
 	@Override
@@ -960,9 +954,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/** Username used in authentication to host */
-	public void setUsername(String userName) {
-		sessionBuilder.setUsername(userName);
-		this.username = userName;
+	public void setUsername(String username) {
+		sessionBuilder.setUsername(username);
+		this.username = username;
 	}
 
 	/** Password used in authentication to host */
