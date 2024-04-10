@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * List the contents of a directory as XML.
+ * Used by Larva and NN-Specials module
  *
  * @author Johan Verrips IOS
  */
