@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ToastService, ToastType } from 'src/app/services/toast.service';
+import { Toast, ToastService, ToastType } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-toasts-container',
@@ -7,7 +7,20 @@ import { ToastService, ToastType } from 'src/app/services/toast.service';
   styleUrls: ['./toasts-container.component.scss'],
 })
 export class ToastsContainerComponent {
+  show: boolean = true;
+
   constructor(public toastService: ToastService) {}
+
+  remove(toast: Toast | null): void {
+    if (toast) {
+      this.toastService.remove(toast);
+    } else {
+      this.show = false;
+      window.setTimeout(() => {
+        this.show = true;
+      }, 3000);
+    }
+  }
 
   getClassByType(
     type: ToastType,

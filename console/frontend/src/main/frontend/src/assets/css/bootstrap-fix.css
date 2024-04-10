@@ -76,7 +76,19 @@ app-toasts-container {
   margin-bottom: 1rem;
 }
 
+.toast .toast-body .toast-close {
+  display: inline-block;
+  align-self: flex-start;
+  margin: -12px -14px 0 0;
+  color: #fff;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+}
+
 .toast .toast-body .title {
+  display: inline-block;
+  margin-right: auto;
   font-weight: bold;
 }
 
