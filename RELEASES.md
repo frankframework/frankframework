@@ -9,6 +9,7 @@ Upcoming (8.2)
 [Commits](https://github.com/frankframework/frankframework/compare/8.1-release...HEAD)
 
 Requires JDK 17 or later, tested on JDK 17 and 21.
+Changed default log level from DEBUG to INFO, for environments that are not configured with `dtap.stage` at value: `ACC` or `PRD`. These are by default on WARN level.
 
 ### Non backwards compatible changes
 - Transaction Manager BTM is removed. Switch over to Narayana Transaction Manager.
