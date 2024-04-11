@@ -1,8 +1,7 @@
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.ftp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.filesystem.ftp.FTPFileRef;
 import org.junit.jupiter.api.Test;
 
 public class FTPFileRefTest {

@@ -13,11 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.filesystem.ftp;
+package org.frankframework.filesystem.sftp;
 
 import org.frankframework.doc.ReferTo;
-import org.frankframework.filesystem.SftpFileSystem;
-import org.frankframework.filesystem.ftp.SftpSession.TransportType;
+import org.frankframework.filesystem.sftp.SftpSession.TransportType;
 
 public interface SftpFileSystemDelegator {
 

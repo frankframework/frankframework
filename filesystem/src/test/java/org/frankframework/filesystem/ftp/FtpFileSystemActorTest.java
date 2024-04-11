@@ -1,6 +1,7 @@
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.ftp;
 
-import org.frankframework.filesystem.ftp.FTPFileRef;
+import org.frankframework.filesystem.FileSystemActorTest;
+import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileSystemMock;
 import org.junit.jupiter.api.AfterAll;

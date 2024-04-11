@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.ftp;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -34,8 +34,9 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.filesystem.ftp.FTPFileRef;
-import org.frankframework.filesystem.ftp.FtpSession;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.LogUtil;

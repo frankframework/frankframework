@@ -16,7 +16,7 @@
 package org.frankframework.pipes;
 
 import org.frankframework.filesystem.FileSystemPipe;
-import org.frankframework.filesystem.Samba2FileSystem;
+import org.frankframework.filesystem.smb.Samba2FileSystem;
 import org.frankframework.filesystem.smb.Samba2FileSystemDelegator;
 import org.frankframework.filesystem.smb.SmbFileRef;
 

@@ -1,6 +1,8 @@
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.ftp;
 
-import org.frankframework.filesystem.ftp.FTPFileRef;
+import org.frankframework.filesystem.FileSystemSenderTest;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.filesystem.LocalFileSystemTestHelper;
 import org.frankframework.senders.FtpFileSystemSender;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;

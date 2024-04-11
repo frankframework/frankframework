@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.smb;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,6 +33,10 @@ import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.FileSystemBase;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 

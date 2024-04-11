@@ -1,4 +1,4 @@
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.ftp;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -9,7 +9,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.filesystem.ftp.FtpSession;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
+public class FtpFileSystemTestHelper implements IFileSystemTestHelper {
 
 	private final String username;
 	private final String password;

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.sftp;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,20 +28,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.filesystem.ftp.SftpFileRef;
-import org.frankframework.filesystem.ftp.SftpSession;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.SerializableFileReference;
-import org.frankframework.util.LogUtil;
-
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.IWritableFileSystem;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.SerializableFileReference;
+import org.frankframework.util.LogUtil;
 
 /**
  * Implementation of SFTP FileSystem
