@@ -1,13 +1,16 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { Toast, ToastService, ToastType } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-toasts-container',
   templateUrl: './toasts-container.component.html',
   styleUrls: ['./toasts-container.component.scss'],
+  standalone: true,
+  imports: [CommonModule, NgbModule],
 })
 export class ToastsContainerComponent {
-
   constructor(public toastService: ToastService) {}
 
   remove(toast: Toast): void {

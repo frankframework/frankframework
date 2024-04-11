@@ -113,7 +113,6 @@ const windowProvider: ValueProvider = {
     JmsBrowseQueueComponent,
     JmsSendMessageComponent,
     LiquibaseComponent,
-    LogoutComponent,
     MinimalizaSidebarComponent,
     PagesFooterComponent,
     PagesNavigationComponent,
@@ -143,7 +142,6 @@ const windowProvider: ValueProvider = {
     TestPipelineComponent,
     TestServiceListenerComponent,
     LoginComponent,
-    ToastsContainerComponent,
 
     //modals
     InformationModalComponent,
@@ -180,12 +178,14 @@ const windowProvider: ValueProvider = {
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
     DataTablesModule,
-    NgMermaidComponent,
 
     // standalone components
     CustomViewsComponent,
     FileViewerComponent,
     InputFileUploadComponent,
+    LogoutComponent,
+    NgMermaidComponent,
+    ToastsContainerComponent,
   ],
   providers: [
     windowProvider,
