@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,7 +30,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
-import org.frankframework.util.Counter;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -65,7 +65,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	private String dataFilenamePrefix ="rb";
 	private long maxRequestNumber=1000;
 	private NumberFormat formatter;
-	private static Counter requestCounter = new Counter(0);
+	private static final AtomicInteger requestCounter = new AtomicInteger();
 
 	private File inputOutputDir;
 
@@ -88,11 +88,11 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		formatter = new DecimalFormat("000000000000".substring(0,Long.toString(getMaxRequestNumber()).length()));
 		String baseFileName=getBaseFileName();
 		log.debug("first filename will be [{}]", baseFileName);
-		requestCounter.decrease();
+		requestCounter.decrementAndGet();
 	}
 
-	protected boolean inputFileExists(long requestno,String extension) {
-		return new File(inputOutputDir,makeFileName(requestno,extension)).exists();
+	protected boolean inputFileExists(long requestNumber,String extension) {
+		return new File(inputOutputDir,makeFileName(requestNumber,extension)).exists();
 	}
 
 	protected String makeFileName(long requestno, String extension) {
@@ -101,11 +101,11 @@ public class RekenBoxCaller extends FixedForwardPipe {
 
 	public String getBaseFileName() {
 		long requestno;
-		for(requestno=requestCounter.increase(); inputFileExists(requestno,".INV"); requestno=requestCounter.increase()) {
+		for(requestno=requestCounter.incrementAndGet(); inputFileExists(requestno,".INV"); requestno=requestCounter.incrementAndGet()) {
 			if (requestno>=getMaxRequestNumber()) {
 				synchronized (requestCounter){
-					if (requestCounter.getValue()>=getMaxRequestNumber())	{
-						requestCounter.decrease(getMaxRequestNumber());
+					if (requestCounter.get() >= getMaxRequestNumber()) {
+						requestCounter.addAndGet((int) -getMaxRequestNumber());
 					}
 				}
 			}

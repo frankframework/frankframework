@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -15,7 +17,6 @@ import org.frankframework.pipes.IteratingPipe.StopReason;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
 
 class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIteratorPipe> {
 
@@ -332,7 +333,6 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 	}
 
 	private ISender getElementRenderer() {
-		resultLog = new StringBuilder();
 		// returns the renderer that does not surround the input with brackets
 		return new BlockEnabledRenderer() {
 			@Override

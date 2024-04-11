@@ -445,10 +445,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		this.jobGroup = jobGroup;
 	}
 
-	@Override
 	/** Name of the job
 	 * @ff.mandatory
 	 */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

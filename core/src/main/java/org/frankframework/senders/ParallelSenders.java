@@ -17,9 +17,12 @@ package org.frankframework.senders;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Phaser;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -27,20 +30,16 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.Guard;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ConcurrencyThrottleSupport;
-
-import lombok.Getter;
 
 /**
  * Collection of Senders, that are executed all at the same time.
@@ -68,12 +67,7 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		Guard guard = new Guard();
-		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
-		boolean success = true;
-		String errorMessage = null;
-
+	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
 			if (!message.isRepeatable()) {
 				message.preserve();
@@ -81,8 +75,10 @@ public class ParallelSenders extends SenderSeries {
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix() + " could not preserve input message", e);
 		}
+
+		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
+		Phaser senderGuard = new Phaser(((List<ISender>) getSenders()).size() + 1); // Itself and all senders
 		for (ISender sender : getSenders()) {
-			guard.addResource();
 			// Create a new ParameterResolutionContext to be thread safe, see
 			// documentation on constructor of ParameterResolutionContext
 			// (parameter singleThreadOnly).
@@ -95,17 +91,15 @@ public class ParallelSenders extends SenderSeries {
 			// the message in parallel with 10 SenderWrappers (containing a
 			// XsltSender and IbisLocalSender).
 
-			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
+			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, getStatisticsKeeper(sender));
+			pse.setGuard(senderGuard);
 			executorMap.put(sender, pse);
-
 			executor.execute(pse);
 		}
-		try {
-			guard.waitForAllResources();
-		} catch (InterruptedException e) {
-			throw new SenderException(getLogPrefix() + "was interrupted", e);
-		}
+		senderGuard.arriveAndAwaitAdvance();
 
+		boolean success = true;
+		String errorMessage = null;
 		XmlBuilder resultsXml = new XmlBuilder("results");
 		for (ISender sender : getSenders()) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
@@ -181,7 +175,7 @@ public class ParallelSenders extends SenderSeries {
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if (maxThreads < 1)
 			maxThreads = 0;
-
 		this.maxConcurrentThreads = maxThreads;
 	}
+
 }

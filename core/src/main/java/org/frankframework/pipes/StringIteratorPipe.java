@@ -68,7 +68,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 			private int itemCounter=0;
 			private int totalItems=0;
-			private StringBuilder items = new StringBuilder();
+			private final StringBuilder items = new StringBuilder();
 			private String previousKey=null;
 			private boolean processingInBlocks=false;
 
@@ -140,11 +140,11 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 		return item.substring(getStartPosition(), getEndPosition());
 	}
 
-	@Override
 	/**
 	 * Controls multiline behaviour. If set to a value greater than 0, it specifies the number of rows send in a block to the sender.
 	 * @ff.default 0 (one line at a time, no prefix of suffix)
 	 */
+	@Override
 	public void setBlockSize(int i) {
 		stringIteratorPipeBlockSize = i;
 	}

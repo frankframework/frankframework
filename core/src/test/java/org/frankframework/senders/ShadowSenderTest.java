@@ -12,6 +12,13 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collection;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -21,15 +28,8 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.util.XmlUtils;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class ShadowSenderTest extends ParallelSendersTest {
 
@@ -102,7 +102,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	}
 
 	@Test
-	public void testMultipleResultSenders() throws Exception {
+	public void testMultipleResultSenders() {
 		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
 			sender.registerSender(createResultSender());
 			sender.configure();
@@ -112,7 +112,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	}
 
 	@Test
-	public void testMultipleOriginalSenders() throws Exception {
+	public void testMultipleOriginalSenders() {
 		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
 			sender.registerSender(createOriginalSender());
 			sender.configure();
@@ -122,7 +122,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	}
 
 	@Test
-	public void testNoSenders() throws Exception {
+	public void testNoSenders() {
 		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
 			ShadowSender ps = new ShadowSender();
 			ps.configure();
@@ -207,8 +207,8 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			Element shadowResult = (Element) node;
 			assertEquals(INPUT_MESSAGE, XmlUtils.getStringValue(shadowResult, true));
 			assertTrue(shadowResult.getAttribute("senderName").startsWith("shadowSenderWithDelay"));
-			int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
-			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2150))));
+			long duration = Integer.parseInt(shadowResult.getAttribute("duration"));
+			assertThat("test duration was [" + duration + "]", duration, is(both(greaterThanOrEqualTo(DELAY_MILLIS)).and(lessThan(DELAY_MILLIS + 150))));
 		}
 	}
 
@@ -261,8 +261,8 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			Element shadowResult = (Element) node;
 			assertEquals(expectedMessage, XmlUtils.getStringValue(shadowResult, true));
 			assertTrue(shadowResult.getAttribute("senderName").startsWith("shadowSenderWithDelay"));
-			int duration = Integer.parseInt(shadowResult.getAttribute("duration"));
-			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2150))));
+			long duration = Integer.parseInt(shadowResult.getAttribute("duration"));
+			assertThat("test duration was [" + duration + "]", duration, is(both(greaterThanOrEqualTo(DELAY_MILLIS)).and(lessThan(DELAY_MILLIS + 150))));
 		}
 	}
 

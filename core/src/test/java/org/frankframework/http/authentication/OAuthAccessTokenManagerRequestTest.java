@@ -20,14 +20,14 @@ import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 
 public class OAuthAccessTokenManagerRequestTest {
 
-	private String scope = "email";
-	private String clientId = "fakeClientId";
-	private String clientSecret = "fakeClientSecret";
-	private String tokenEndpoint = "http://fakeTokenEndpoint";
-	private String base64 = "Basic " + Base64.getEncoder().encodeToString((clientId+":"+clientSecret).getBytes());
+	private final String scope = "email";
+	private final String clientId = "fakeClientId";
+	private final String clientSecret = "fakeClientSecret";
+	private final String tokenEndpoint = "http://fakeTokenEndpoint";
+	private final String base64 = "Basic " + Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes());
 
-	private Credentials credentials = new UsernamePasswordCredentials("fakeCredentialUserName", "fakeCredentialPassword");
-	private CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
+	private final Credentials credentials = new UsernamePasswordCredentials("fakeCredentialUserName", "fakeCredentialPassword");
+	private final CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
 	private TestableOAuthAccessTokenManager tokenManager;
 

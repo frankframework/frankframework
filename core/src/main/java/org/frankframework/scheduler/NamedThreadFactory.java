@@ -26,7 +26,7 @@ public class NamedThreadFactory implements ThreadFactory {
 	private @Setter int threadPriority = Thread.NORM_PRIORITY;
 	private @Getter @Setter ThreadGroup threadGroup;
 
-	private final AtomicInteger threadCount = new AtomicInteger(0);
+	private final AtomicInteger threadCount = new AtomicInteger();
 
 	@Override
 	public Thread newThread(Runnable runnable) {

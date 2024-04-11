@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import io.micrometer.core.instrument.DistributionSummary;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeLine;
@@ -28,41 +29,38 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
+import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.stream.Message;
-import org.frankframework.util.Semaphore;
-
-import io.micrometer.core.instrument.DistributionSummary;
 
 /**
+ * Processor that limits the number of parallel pipe threads.
  * @author Jaco de Groot
  */
-public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
+public class LimitingParallelExecutionPipeProcessor extends PipeProcessorBase {
 
-	private final Map<IPipe, Semaphore> pipeThreadCounts = new ConcurrentHashMap<>();
+	private final Map<IPipe, ResourceLimiter> pipeThreadCounts = new ConcurrentHashMap<>();
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
-		PipeRunResult pipeRunResult;
-		Semaphore s = getSemaphore(pipe);
-		if (s != null) {
-			long waitingDuration = 0;
-			try {
-				// keep waiting statistics for thread-limited pipes
-				long startWaiting = System.currentTimeMillis();
-				s.acquire();
-				waitingDuration = System.currentTimeMillis() - startWaiting;
-				DistributionSummary summary = pipeLine.getPipeWaitStatistics(pipe);
-				summary.record(waitingDuration);
-				pipeRunResult = chain.apply(message);
-			} catch(InterruptedException e) {
-				throw new PipeRunException(pipe, "Interrupted acquiring semaphore", e);
-			} finally {
-				s.release();
-			}
-		} else { //no restrictions on the maximum number of threads (s==null)
-			pipeRunResult = chain.apply(message);
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
+		ResourceLimiter threadCountLimiter = getThreadLimiter(pipe);
+		if (threadCountLimiter == null) { // no restrictions on the maximum number of threads
+			return chain.apply(message);
 		}
-		return pipeRunResult;
+		long waitingDuration;
+		try {
+			// keep waiting statistics for thread-limited pipes
+			long startWaiting = System.currentTimeMillis();
+			threadCountLimiter.acquire();
+			waitingDuration = System.currentTimeMillis() - startWaiting;
+			DistributionSummary summary = pipeLine.getPipeWaitStatistics(pipe);
+			summary.record(waitingDuration);
+			return chain.apply(message);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new PipeRunException(pipe, "Interrupted acquiring Pipe thread count limiter", e);
+		} finally {
+			threadCountLimiter.release();
+		}
 	}
 
 	// method needs to be overridden to enable AOP for debugger
@@ -77,8 +75,8 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 		return super.validate(pipeLine, validator, message, pipeLineSession, messageRoot);
 	}
 
-	private Semaphore getSemaphore(IPipe pipe) {
-		return pipeThreadCounts.computeIfAbsent(pipe, k -> k.getMaxThreads()>0 ? new Semaphore(k.getMaxThreads()) : null);
+	private ResourceLimiter getThreadLimiter(IPipe pipe) {
+		return pipeThreadCounts.computeIfAbsent(pipe, k -> k.getMaxThreads() > 0 ? new ResourceLimiter(k.getMaxThreads()) : null);
 	}
 
 }

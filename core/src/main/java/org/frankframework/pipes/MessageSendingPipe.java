@@ -1112,8 +1112,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		useInputForExtract = b;
 	}
 
-	@Override
 	/** Next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked */
+	@Override
 	public void setHideRegex(String hideRegex) {
 		super.setHideRegex(hideRegex);
 	}

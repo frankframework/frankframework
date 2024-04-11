@@ -466,8 +466,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return new FileSystemMessageBrowser<F, FS>(getFileSystem(), getStateFolder(state), getMessageIdPropertyKey());
 	}
 
-	@Override
 	/** Name of the listener */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
