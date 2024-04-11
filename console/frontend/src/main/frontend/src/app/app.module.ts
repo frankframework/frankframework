@@ -99,7 +99,6 @@ const windowProvider: ValueProvider = {
     ConfigurationsManageDetailsComponent,
     ConfigurationsShowComponent,
     ConfigurationsUploadComponent,
-    CustomViewsComponent,
     EnvironmentVariablesComponent,
     FlowComponent,
     HamburgerComponent,
@@ -109,7 +108,6 @@ const windowProvider: ValueProvider = {
     IframeLadybugBetaComponent,
     IframeLarvaComponent,
     InlinestoreComponent,
-    InputFileUploadComponent,
     JdbcBrowseTablesComponent,
     JdbcExecuteQueryComponent,
     JmsBrowseQueueComponent,
@@ -171,7 +169,6 @@ const windowProvider: ValueProvider = {
     QuickSubmitFormDirective,
     SideNavigationDirective,
     ThSortableDirective,
-    FileViewerComponent,
   ],
   imports: [
     BrowserModule,
@@ -184,6 +181,11 @@ const windowProvider: ValueProvider = {
     NgChartsModule.forRoot(),
     DataTablesModule,
     NgMermaidComponent,
+
+    // standalone components
+    CustomViewsComponent,
+    FileViewerComponent,
+    InputFileUploadComponent,
   ],
   providers: [
     windowProvider,

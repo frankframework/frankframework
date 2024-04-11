@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   HttpClient,
   HttpDownloadProgressEvent,
@@ -14,6 +15,8 @@ import { MiscService } from 'src/app/services/misc.service';
   selector: 'app-file-viewer',
   templateUrl: './file-viewer.component.html',
   styleUrls: ['./file-viewer.component.scss'],
+  standalone: true,
+  imports: [CommonModule],
 })
 export class FileViewerComponent implements OnInit {
   @Input()
