@@ -15,28 +15,21 @@
 */
 package org.frankframework.util;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
@@ -44,8 +37,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
-
-import lombok.extern.log4j.Log4j2;
 
 
 /**
@@ -59,7 +50,7 @@ public class FileUtils {
 	/**
 	 * Construct a filename from a pattern and session variables.
 	 */
-	public static String getFilename(ParameterList definedParameters, PipeLineSession session, String originalFilename, String filenamePattern) throws ParameterException {
+	private static String getFilename(ParameterList definedParameters, PipeLineSession session, String originalFilename, String filenamePattern) throws ParameterException {
 		// no pattern defined, outputname = inputname
 		if (StringUtils.isEmpty(filenamePattern)) {
 			return originalFilename;
@@ -133,7 +124,7 @@ public class FileUtils {
 		return moveFile(orgFile, rename2File, overwrite, numBackups, 5, 500);
 	}
 
-	public static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int numberOfAttempts, long waitTime) throws InterruptedException, IOException {
+	private static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int numberOfAttempts, long waitTime) throws InterruptedException, IOException {
 		if (orgFile.exists()) {
 			if (numBackups>0) {
 				makeBackups(rename2File,numBackups);
@@ -161,14 +152,14 @@ public class FileUtils {
 			// doesn't work (for example when running on Linux and the file
 			// needs to be moved to another filesystem).
 			if (!success) {
-				log.debug("Could not move file ["+orgFile.getPath()+"] to ["+rename2File.getPath()+"], now trying alternate move (copy and delete)");
+				log.debug("Could not move file [{}] to [{}], now trying alternate move (copy and delete)", orgFile.getPath(), rename2File.getPath());
 				success = copyFile(orgFile, rename2File, false);
 				if (success) {
 					success = orgFile.delete();
 					if (!success) {
-						log.debug("Could not delete source file ["+orgFile.getPath()+"] after copying it to ["+rename2File.getPath()+"]");
+						log.debug("Could not delete source file [{}] after copying it to [{}]", orgFile.getPath(), rename2File.getPath());
 						if (!rename2FileExists) {
-							log.debug("Deleting destination file ["+rename2File.getPath()+"]: " + rename2File.delete());
+							log.debug("Deleting destination file [{}]: {}", rename2File.getPath(), rename2File.delete());
 						}
 					}
 				} else {
@@ -177,7 +168,7 @@ public class FileUtils {
 			}
 
 			if (!success) {
-				log.debug("Retries left for moving file [" + (numberOfAttempts - errCount) + "]");
+				log.debug("Retries left for moving file [{}]", numberOfAttempts - errCount);
 				if (errCount < numberOfAttempts) {
 					Thread.sleep(waitTime);
 				}
@@ -215,21 +206,6 @@ public class FileUtils {
 		} else {
 			return file;
 		}
-	}
-
-	public static String appendFile(File orgFile, File destFile, int nrRetries, long waitTime) throws InterruptedException {
-		int errCount = 0;
-
-		while (errCount++ < nrRetries) {
-			boolean success = copyFile(orgFile, destFile, true);
-
-			if (success) {
-				return destFile.getAbsolutePath();
-			}
-
-			Thread.sleep(waitTime);
-		}
-		return null;
 	}
 
 	public static boolean copyFile(File orgFile, File destFile, boolean append) {
@@ -323,7 +299,7 @@ public class FileUtils {
 		return path.toFile();
 	}
 
-	public static void makeBackups(File targetFile, int numBackups)  {
+	protected static void makeBackups(File targetFile, int numBackups)  {
 		if (numBackups<=0 || !targetFile.exists()) {
 			return;
 		}
@@ -401,62 +377,6 @@ public class FileUtils {
 		}
 		return null;
 	}
-	public static File getFirstFile(String directory, long minStability) {
-		File dir = new File(directory);
-		String[] fileNames = dir.list();
-		if (fileNames == null) {
-			return null;
-		}
-
-		long lastChangedAllowed = minStability > 0 ? System.currentTimeMillis() - minStability : 0;
-
-		for (String fileName : fileNames) {
-			File file = new File(directory, fileName);
-			if (file.isFile() && (minStability > 0 && file.lastModified() <= lastChangedAllowed)) {
-					return file;
-			}
-		}
-		return null;
-	}
-
-	public static List<String> getListFromNames(String names, char seperator) {
-		StringTokenizer st = new StringTokenizer(names, "" + seperator);
-		LinkedList<String> list = new LinkedList<>();
-		while (st.hasMoreTokens()) {
-			list.add(st.nextToken());
-		}
-		return list;
-	}
-
-	public static List<String> getListFromNames(String[] names) {
-		if (names == null) {
-			return Collections.emptyList();
-		}
-		return Arrays.asList(names);
-	}
-
-	public static String getNamesFromArray(@Nonnull String[] names, char separator) {
-		StringBuilder result = new StringBuilder();
-		for (String name : names) {
-			if (result.length() > 0)
-				result.append(separator);
-			result.append(name);
-		}
-		return result.toString();
-	}
-
-	public static String getNamesFromList(List<String> filenames, char separator) {
-		if (filenames == null)
-			return "";
-
-		StringBuilder result = new StringBuilder();
-		for (String name : filenames) {
-			if (result.length() > 0)
-				result.append(separator);
-			result.append(name);
-		}
-		return result.toString();
-	}
 
 	/*
 	 * methods to create a fixed length string from a value
@@ -513,40 +433,6 @@ public class FileUtils {
 		return fname.substring(0, idx);
 	}
 
-	public static boolean extensionEqualsIgnoreCase(String fileName, String extension) {
-		String fileNameExtension = getFileNameExtension(fileName);
-		if (fileNameExtension==null) {
-			return false;
-		}
-		return fileNameExtension.equalsIgnoreCase(extension);
-	}
-
-	public static boolean canWrite(String directory) {
-		try {
-			File file = new File(directory);
-			if (!file.exists()) {
-				file.mkdirs();
-			}
-			if (!file.isDirectory()) {
-				log.debug("Directory [" + directory + "] is not a directory");
-				return false;
-			}
-			File tmpFile = File.createTempFile("ibis", null, file);
-			try {
-				Files.delete(tmpFile.toPath());
-			} catch (Exception t) {
-				log.warn("Exception while deleting temporary file [" + tmpFile.getName() + "] in directory [" + directory + "]",t);
-			}
-			return true;
-		} catch (IOException ioe) {
-			log.debug("Exception while creating a temporary file in directory [" + directory + "]",ioe);
-			return false;
-		} catch (SecurityException se) {
-			log.debug("Exception while testing if the application is allowed to write to directory [" + directory + "]",se);
-			return false;
-		}
-	}
-
 	public static String encodeFileName(String fileName) {
 		String mark = "-_.+=";
 		StringBuilder encodedFileName = new StringBuilder();
@@ -569,40 +455,6 @@ public class FileUtils {
 		return encodedFileName.toString();
 	}
 
-	public static void unzipStream(InputStream inputStream, File dir) throws IOException {
-		try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream))) {
-			ZipEntry ze;
-			while ((ze = zis.getNextEntry()) != null) {
-				String filename = ze.getName();
-				File zipFile = new File(dir, filename);
-				if (ze.isDirectory()) {
-					if (!zipFile.exists()) {
-						log.debug("creating directory [" + zipFile.getPath() + "] for ZipEntry [" + ze.getName() + "]");
-						if (!zipFile.mkdir()) {
-							throw new IOException(zipFile.getPath() + " could not be created");
-						}
-					}
-				} else {
-					File zipParentFile = zipFile.getParentFile();
-					if (!zipParentFile.exists()) {
-						log.debug("creating directory [" + zipParentFile.getPath() + "] for ZipEntry [" + ze.getName() + "]");
-						if (!zipParentFile.mkdir()) {
-							throw new IOException(zipParentFile.getPath() + " could not be created");
-						}
-					}
-					try (FileOutputStream fos = new FileOutputStream(zipFile)) {
-						log.debug("writing ZipEntry [" + ze.getName() + "] to file [" + zipFile.getPath() + "]");
-						StreamUtil.streamToStream(StreamUtil.dontClose(zis), fos);
-					}
-				}
-			}
-		}
-	}
-
-	public static boolean readAllowed(String rules, HttpServletRequest request, String fileName) {
-		return readAllowed(rules, fileName, request::isUserInRole);
-	}
-
 	@FunctionalInterface
 	public interface Authenticator {
 		boolean isUserInRole(String role);
@@ -613,13 +465,13 @@ public class FileUtils {
 		for (String rule: rulesList) {
 			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
 			if (parts.size() != 3) {
-				log.debug("invalid rule '" + rule + "' contains " + parts.size() + " part(s): " + parts);
+				log.debug("invalid rule '{}' contains {} part(s): {}", rule, parts.size(), parts);
 			} else {
 				String canonicalFileName = null;
 				try {
 					canonicalFileName = new File(fileName).getCanonicalPath();
 				} catch(Exception e) {
-					log.error("cannot determine canonical path for file name '" + fileName + "'", e);
+					log.error("cannot determine canonical path for file name '{}'", fileName, e);
 				}
 				String canonicalPath = null;
 				if ("*".equals(parts.get(0))) {
@@ -628,13 +480,13 @@ public class FileUtils {
 					try {
 						canonicalPath = new File(parts.get(0)).getCanonicalPath();
 					} catch(Exception e) {
-						log.error("cannot determine canonical path for first part '" + parts.get(0) + "' of rule", e);
+						log.error("cannot determine canonical path for first part '{}' of rule", parts.get(0), e);
 					}
 				}
 				if (canonicalFileName != null && canonicalPath != null) {
 					String role = parts.get(1);
 					String type = parts.get(2);
-					log.trace("check allow read file '" + canonicalFileName + "' with rule path '" + canonicalPath + "', role '" + role + "' and type '" + type + "'");
+					log.trace("check allow read file '{}' with rule path '{}', role '{}' and type '{}'", canonicalFileName, canonicalPath, role, type);
 					if ("*".equals(canonicalPath) || canonicalFileName.startsWith(canonicalPath)) {
 						log.trace("path match");
 						if ("*".equals(role) || authenticator.isUserInRole(role)) {
@@ -657,42 +509,4 @@ public class FileUtils {
 		return false;
 	}
 
-	public static long getLastModifiedDelta(File file) {
-		return System.currentTimeMillis() - file.lastModified();
-	}
-
-	public static boolean isFileBinaryEqual(File first, File second)
-			throws IOException {
-
-		if ((!first.exists()) || (!second.exists()) || (!first.isFile())
-				|| (!second.isFile())) {
-			return false;
-		}
-		if (first.length() != second.length()) {
-			return false;
-		}
-		if (first.getCanonicalPath().equals(second.getCanonicalPath())) {
-			return true;
-		}
-
-		try (InputStream bufFirstInput = new BufferedInputStream(new FileInputStream(first));
-			 InputStream bufSecondInput = new BufferedInputStream(new FileInputStream(second))) {
-
-			boolean retval;
-			while (true) {
-				int firstByte = bufFirstInput.read();
-				int secondByte = bufSecondInput.read();
-				if (firstByte != secondByte) {
-					retval = false;
-					break;
-				}
-				// End of file, must be end of both files.
-				if (firstByte < 0) {
-					retval = true;
-					break;
-				}
-			}
-			return retval;
-		}
-	}
 }

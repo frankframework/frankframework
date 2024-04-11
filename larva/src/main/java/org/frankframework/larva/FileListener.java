@@ -15,6 +15,7 @@
 */
 package org.frankframework.larva;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -118,7 +119,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 		if (file != null && filename2 != null) {
 			try {
 				File file2 = new File(filename2);
-				boolean equal = FileUtils.isFileBinaryEqual(file, file2);
+				boolean equal = isFileBinaryEqual(file, file2);
 				result = Boolean.toString(equal);
 			} catch (IOException e) {
 				throw new ListenerException("Exception comparing files '"
@@ -163,6 +164,37 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			}
 		}
 		return result;
+	}
+
+	static boolean isFileBinaryEqual(File first, File second) throws IOException {
+		if ((!first.exists()) || (!second.exists()) || (!first.isFile()) || (!second.isFile())) {
+			return false;
+		}
+		if (first.length() != second.length()) {
+			return false;
+		}
+		if (first.getCanonicalPath().equals(second.getCanonicalPath())) {
+			return true;
+		}
+
+		try (InputStream bufFirstInput = new BufferedInputStream(new FileInputStream(first));
+			 InputStream bufSecondInput = new BufferedInputStream(new FileInputStream(second))) {
+			boolean retval;
+			while (true) {
+				int firstByte = bufFirstInput.read();
+				int secondByte = bufSecondInput.read();
+				if (firstByte != secondByte) {
+					retval = false;
+					break;
+				}
+				// End of file, must be end of both files.
+				if (firstByte < 0) {
+					retval = true;
+					break;
+				}
+			}
+			return retval;
+		}
 	}
 
 	/**

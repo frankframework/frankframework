@@ -15,13 +15,17 @@
  */
 package org.frankframework.extensions.esb;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
@@ -69,8 +73,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		try (InputStream inputStream = fileInSession.asInputStream()){
 			tempDirectoryBase = FileUtils.getTempDirectory("WsdlGeneratorPipe");
 			fileName = session.getString(getFilenameSessionKey());
-			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
-				FileUtils.unzipStream(inputStream, tempDirectoryBase);
+			if (extensionEqualsIgnoreCase(fileName)) {
+				unzipStream(inputStream, tempDirectoryBase);
 			} else {
 				File file = new File(tempDirectoryBase, fileName);
 				StreamUtil.streamToFile(inputStream, file);
@@ -288,4 +292,42 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		}
 		return null;
 	}
+
+	private static boolean extensionEqualsIgnoreCase(String fileName) {
+		String fileNameExtension = FileUtils.getFileNameExtension(fileName);
+		if (fileNameExtension==null) {
+			return false;
+		}
+		return fileNameExtension.equalsIgnoreCase("zip");
+	}
+
+	private void unzipStream(InputStream inputStream, File dir) throws IOException {
+		try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream))) {
+			ZipEntry ze;
+			while ((ze = zis.getNextEntry()) != null) {
+				String filename = ze.getName();
+				File zipFile = new File(dir, filename);
+				if (ze.isDirectory()) {
+					createDirectoryIfNotExists(zipFile, ze);
+				} else {
+					File zipParentFile = zipFile.getParentFile();
+					createDirectoryIfNotExists(zipParentFile, ze);
+					try (FileOutputStream fos = new FileOutputStream(zipFile)) {
+						log.debug("writing ZipEntry [{}] to file [{}]", ze.getName(), zipFile.getPath());
+						StreamUtil.streamToStream(StreamUtil.dontClose(zis), fos);
+					}
+				}
+			}
+		}
+	}
+
+	private void createDirectoryIfNotExists(File zipParentFile, ZipEntry ze) throws IOException {
+		if (!zipParentFile.exists()) {
+			log.debug("creating directory [{}] for ZipEntry [{}]", zipParentFile.getPath(), ze.getName());
+			if (!zipParentFile.mkdir()) {
+				throw new IOException(zipParentFile.getPath() + " could not be created");
+			}
+		}
+	}
+
 }

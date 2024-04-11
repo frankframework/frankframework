@@ -12,13 +12,13 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
-import java.util.List;
 
-import org.frankframework.filesystem.FileNotFoundException;
-import org.frankframework.testutil.TestAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import org.frankframework.filesystem.FileNotFoundException;
+import org.frankframework.testutil.TestAssertions;
 
 public class FileUtilsTest {
 
@@ -72,14 +72,6 @@ public class FileUtilsTest {
 		assertTrue(file.exists());
 
 		assertEquals(file.getPath(), result);
-	}
-
-	@Test
-	void testAppendFile() throws Exception {
-		File orgFile = getFile("fileToAppend.txt");
-		File destFile = getFile("destinationFile.txt");
-		String res = FileUtils.appendFile(orgFile, destFile, 5, 5000);
-		assertEquals(destFile.getAbsolutePath(), res);
 	}
 
 	@Test
@@ -156,44 +148,6 @@ public class FileUtilsTest {
 		File directory = getFile(null);
 		File file = FileUtils.getFirstFile(directory);
 		assertEquals("copyFile.txt", file.getName());
-
-		File file2 = FileUtils.getFirstFile(directory.getPath(), stabilityPeriod); //Run again with 5 second stability period
-		assertEquals("copyFrom.txt", file2.getName());
-	}
-
-	@Test
-	void testGetFirstFileDirectory() throws Exception {
-		Files.createFile(testFolder.resolve("myFile.txt"));
-		File file = FileUtils.getFirstFile(testFolder.toString(), 50000000);
-		assertNull(file);
-	}
-
-	@Test
-	void testGetListFromNamesForNames() {
-		List<String> list = FileUtils.getListFromNames("abc.txt,test.txt,jkl.txt", ',');
-		assertEquals("[abc.txt, test.txt, jkl.txt]", list.toString());
-	}
-
-	@Test
-	void testGetListFromNamesNames() {
-		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
-		List<String> list = FileUtils.getListFromNames(names);
-		assertEquals("[abc.txt, test.txt, jkl.txt]", list.toString());
-	}
-
-	@Test
-	void testGetNamesFromArray() {
-		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
-		String res = FileUtils.getNamesFromArray(names, ',');
-		assertEquals("abc.txt,test.txt,jkl.txt", res);
-	}
-
-	@Test
-	void testGetNamesFromList() {
-		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
-		List<String> list = FileUtils.getListFromNames(names);
-		String res = FileUtils.getNamesFromList(list, '*');
-		assertEquals("abc.txt*test.txt*jkl.txt", res);
 	}
 
 	@Test
@@ -249,32 +203,8 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	void testExtensionEqualsIgnoreCase() {
-		assertTrue(FileUtils.extensionEqualsIgnoreCase("a.txT", "txt"));
-		assertFalse(FileUtils.extensionEqualsIgnoreCase("b.ABT", "txt"));
-	}
-
-	@Test
-	void testCanWrite() throws Exception {
-		String file = getFile("copyFile.txt").getPath();
-		String directory = getFile(null).getPath();
-
-		assertTrue(FileUtils.canWrite(directory));
-		assertFalse(FileUtils.canWrite(file));
-	}
-
-	@Test
 	void testEncodeFileName() {
 		assertEquals("_ab__5__c.txt", FileUtils.encodeFileName(" ab&@5*(c.txt"));
-	}
-
-	@Test
-	void testIsFileBinaryEqual() throws Exception {
-		File file1 = getFile("file.txt");
-		File file2 = getFile("copyFile.txt");
-
-		assertTrue(FileUtils.isFileBinaryEqual(file1, file1));
-		assertFalse(FileUtils.isFileBinaryEqual(file1, file2));
 	}
 
 }
