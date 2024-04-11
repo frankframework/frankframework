@@ -332,7 +332,6 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 	}
 
 	private ISender getElementRenderer() {
-		resultLog = new StringBuilder();
 		// returns the renderer that does not surround the input with brackets
 		return new BlockEnabledRenderer() {
 			@Override

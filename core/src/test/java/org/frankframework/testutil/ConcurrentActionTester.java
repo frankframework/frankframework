@@ -2,6 +2,8 @@ package org.frankframework.testutil;
 
 import java.sql.SQLException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
@@ -11,10 +13,7 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Semaphore;
 
-import lombok.Getter;
-import lombok.Setter;
-
-public class ConcurrentActionTester extends Thread {
+public abstract class ConcurrentActionTester extends Thread {
 	protected static Logger log = LogUtil.getLogger(ConcurrentActionTester.class);
 
 	private @Setter Semaphore initActionDone;

@@ -98,17 +98,17 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		return rhf;
 	}
 
-	@Override
 	/** Name of the manager */
+	@Override
 	public void setName(String string) {
 		name = string;
 	}
 
-	@Override
 	/**
 	 * This manager is the initial manager, i.e. to be used for the first record
 	 * @ff.default false
 	 */
+	@Override
 	public void setInitial(boolean b) {
 		initial = b;
 	}
