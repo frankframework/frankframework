@@ -1,7 +1,8 @@
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.sftp;
 
 import org.apache.sshd.server.SshServer;
-import org.frankframework.filesystem.ftp.SftpFileRef;
+import org.frankframework.filesystem.FileSystemSenderTest;
+import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.senders.SftpFileSystemSender;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

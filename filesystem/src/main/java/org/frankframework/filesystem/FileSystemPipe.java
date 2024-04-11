@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
@@ -57,8 +58,7 @@ import org.frankframework.util.SpringUtils;
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination {
 
 	private final FileSystemActor<F, FS> actor = new FileSystemActor<>();
-	private FS fileSystem;
-	private final String FILESYSTEMACTOR = "org.frankframework.filesystem.FileSystemActor";
+	@Getter private FS fileSystem;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -129,10 +129,6 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	@Override
 	public String getDomain() {
 		return getFileSystem().getDomain();
-	}
-
-	public FS getFileSystem() {
-		return fileSystem;
 	}
 
 	protected void setFileSystem(FS fileSystem) {

@@ -1,8 +1,10 @@
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.ftp;
 
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import org.frankframework.filesystem.ftp.FTPFileRef;
+import org.frankframework.filesystem.FileSystemTest;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.filesystem.LocalFileSystemTestHelper;
 import org.frankframework.testutil.junit.LocalFileServer;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
 import org.frankframework.testutil.junit.LocalFileSystemMock;

@@ -1,11 +1,13 @@
-package org.frankframework.filesystem;
+package org.frankframework.filesystem.sftp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.sshd.server.SshServer;
-import org.frankframework.filesystem.ftp.SftpFileRef;
+import org.frankframework.filesystem.FileSystemTest;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
