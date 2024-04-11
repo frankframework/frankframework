@@ -26,10 +26,11 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * List the contents of a directory as XML.
+ * Used by Larva and NN-Specials module
  *
  * @author Johan Verrips IOS
  */
-public class Dir2Xml  {
+public class Dir2Xml {
 	protected static Logger log = LogUtil.getLogger(Dir2Xml.class);
 
 	private String path;
@@ -46,7 +47,7 @@ public class Dir2Xml  {
 	public String getDirList(boolean includeDirectories, int maxItems) {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(path);
-		File files[] = dir.listFiles(filter);
+		File[] files = dir.listFiles(filter);
 		if (files != null) {
 			Arrays.sort(files, new FileNameComparator());
 		}
@@ -88,7 +89,7 @@ public class Dir2Xml  {
 	public String getRecursiveDirList() {
 		File dir = new File(path);
 		Collection<File> filesCol = FileUtils.listFiles(dir, null, true);
-		File files[] = filesCol.toArray(new File[filesCol.size()]);
+		File[] files = filesCol.toArray(new File[filesCol.size()]);
 		if (files != null) {
 			Arrays.sort(files, new FileNameComparator());
 		}

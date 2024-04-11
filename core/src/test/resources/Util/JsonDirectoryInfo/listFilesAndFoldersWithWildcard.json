@@ -1,0 +1,49 @@
+{
+	"count": 5,
+	"list": [
+		{
+			"name": "..",
+			"path": "IGNORE/core/target/test-classes/ClassLoader",
+			"lastModified": 1712751022904,
+			"type": "directory"
+		},
+		{
+			"name": "ClassLoader",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoader",
+			"lastModified": 1712751022891,
+			"type": "directory"
+		},
+		{
+			"name": "Config",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Config",
+			"lastModified": 1712751022894,
+			"type": "directory"
+		},
+		{
+			"name": "ClassLoaderTestFile",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile",
+			"lastModified": 1712751022892,
+			"type": "file",
+			"size": 26,
+			"sizeDisplay": "1 kB"
+		},
+		{
+			"name": "ClassLoaderTestFile.txt",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile.txt",
+			"lastModified": 1712751022893,
+			"type": "file",
+			"size": 30,
+			"sizeDisplay": "1 kB"
+		},
+		{
+			"name": "ClassLoaderTestFile.xml",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile.xml",
+			"lastModified": 1712751022893,
+			"type": "file",
+			"size": 37,
+			"sizeDisplay": "1 kB"
+		}
+	],
+	"directory": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
+	"wildcard": "ClassLoader*"
+}

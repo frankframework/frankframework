@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,29 +15,27 @@
 */
 package org.frankframework.lifecycle;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import javax.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.MessageDispatcher;
 import org.frankframework.management.bus.endpoints.FileViewer;
 import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.FileUtils;
+import org.frankframework.util.JsonDirectoryInfo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.handler.ServiceActivatingHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
-
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusException;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.MessageDispatcher;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.Dir2Map;
-import org.frankframework.util.FileUtils;
 
 /**
  * Logging should work even when the application failed to start which is why it's not wired through the {@link MessageDispatcher}.
@@ -60,7 +58,7 @@ public class ShowLogDirectory {
 	}
 
 	/**
-	 * This method is picked op by the IbisInitializer annotation and autowired via the SpringEnvironmentContext.
+	 * This method is picked up by the IbisInitializer annotation and autowired via the SpringEnvironmentContext.
 	 */
 	@Bean
 	public IntegrationFlow wireLogging() {
@@ -85,17 +83,14 @@ public class ShowLogDirectory {
 		String wildcard = BusMessageUtils.getHeader(message, "wildcard", defaultLogWildcard);
 
 		if(StringUtils.isNotEmpty(directory) && !FileUtils.readAllowed(FileViewer.permissionRules, directory, BusMessageUtils::hasAnyRole)) {
-			throw new BusException("Access to path (" + directory + ") not allowed!");
+			throw new BusException("Access to path (" + directory + ") not allowed!", 403);
 		}
 
-		Map<String, Object> returnMap = new HashMap<>();
-		Dir2Map dir = new Dir2Map(directory, wildcard, showDirectories, maxItems);
-
-		returnMap.put("list", dir.getList());
-		returnMap.put("count", dir.size());
-		returnMap.put("directory", dir.getDirectory());
-		returnMap.put("wildcard", wildcard);
-
-		return new JsonMessage(returnMap);
+		try {
+			JsonDirectoryInfo info = new JsonDirectoryInfo(directory, wildcard, showDirectories, maxItems);
+			return new JsonMessage(info.toJson());
+		} catch (IOException e) {
+			throw new BusException(e.getMessage(), 400);
+		}
 	}
 }
