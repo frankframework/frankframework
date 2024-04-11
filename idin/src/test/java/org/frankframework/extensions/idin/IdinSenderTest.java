@@ -1,35 +1,29 @@
 package org.frankframework.extensions.idin;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.extensions.idin.IdinSender.Action;
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.xml.sax.SAXException;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
-import net.bankid.merchant.library.Communicator;
+import net.bankid.merchant.library.CommunicatorException;
 import net.bankid.merchant.library.Configuration;
-import net.bankid.merchant.library.DirectoryResponse;
-import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
+import net.bankid.merchant.library.IMessenger;
 
 /**
  * Initially I thought, hey lets add some unittests...
@@ -38,83 +32,60 @@ import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
  */
 public class IdinSenderTest extends Mockito {
 
-	IdinSender sender = null;
-
-	private List<Issuer> getIssuers() {
-		return getIssuers("NL");
-	}
-	private List<Issuer> getIssuers(String country) {
-		List<Issuer> issuers = new ArrayList<>();
-		for(int i = 0; i < 10; i++) {
-			Issuer issuer = mock(Issuer.class);
-			issuer.setIssuerCountry(country);
-			issuer.setIssuerID("id_"+i);
-			issuer.setIssuerName("name_"+i);
-			issuers.add(issuer);
-		}
-		return issuers;
-	}
-	private Map<String, List<Issuer>> getIssuersByCountry() {
-		Map<String, List<Issuer>> countryMap = new HashMap<>();
-		List<String> countries = Arrays.asList("NL", "BE", "GB", "DE", "ES");
-		for(String country : countries) {
-			countryMap.put(country, getIssuers(country));
-		}
-		return countryMap;
-	}
-	private XMLGregorianCalendar getDateTimestamp() {
-		GregorianCalendar c = new GregorianCalendar();
-		c.setTime(new Date(0)); //EPOCH
-		try {
-			return DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-		} catch (DatatypeConfigurationException e) {
-			return null;
-		}
-	}
+	private IdinSender sender = null;
+	private PipeLineSession session = null;
 
 	@BeforeEach
-	public void initializeIdinSender() throws ParserConfigurationException, SAXException, IOException {
-		URL expectedUrl = ClassLoaderUtils.getResourceURL("bankid-config.xml");
-		Configuration.defaultInstance().Load(expectedUrl.openStream());
-		Communicator communicator = mock(Communicator.class);
-		DirectoryResponse response = mock(DirectoryResponse.class);
-
-		when(response.getIsError()).thenReturn(false);
-//		when(response.getIssuers()).thenReturn(new ArrayList<Issuer>());
-//		when(response.getIssuersByCountry()).thenReturn(new HashMap<String, List<Issuer>>());
-		when(response.getDirectoryDateTimestamp()).thenReturn(getDateTimestamp());
-		when(communicator.getDirectory()).thenReturn(response);
-
+	public void initializeIdinSender() throws Exception {
 		sender = spy(new IdinSender());
-		when(sender.getCommunicator()).thenReturn(communicator);
+		sender.setConfigurationXML("configs/default-config.xml");
 
-		sender.setAction("DIRECTORY");
+		IMessenger messenger = new DummyMessenger();
+		when(sender.getConfiguration()).thenAnswer(new Answer<Configuration>() {
+
+			@Override
+			public Configuration answer(InvocationOnMock invocation) throws Throwable {
+				Configuration config = (Configuration) spy(invocation.callRealMethod());
+				when(config.getMessenger()).thenReturn(messenger);
+				return config;
+			}
+
+		});
+		sender.configure();
+		session = new PipeLineSession();
 	}
 
-	@Disabled
+	private class DummyMessenger implements IMessenger {
+
+		@Override
+		public String sendMessage(Configuration config, String message, URI url) throws CommunicatorException {
+			try {
+				URL response = ClassUtils.getResourceURL("/messages/StatusResponse-Sample-015.xml");
+				assertNotNull(response);
+				return StreamUtil.resourceToString(response);
+			} catch(IOException e) {
+				throw new CommunicatorException(e);
+			}
+		}
+	}
+
 	@Test
-	public void randomMessage() throws SenderException, TimeoutException, IOException {
-		String message = "<test><woop>1</woop></test>";
-		PipeLineSession session = null;
+	public void testSimpleRequestResponse() throws SenderException, TimeoutException, IOException {
+		String message = "<idin><transactionID>1111111111111111</transactionID></idin>";
+
+		sender.setAction(Action.RESPONSE);
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
-		//TODO compare
+
+		assertEquals("<result>\n" + "	<status>Success</status>\n" + "</result>", result);
 	}
 
-	@Disabled
 	@Test
-	public void normal() throws SenderException, TimeoutException, IOException {
-		String message = "<idin/>";
-		PipeLineSession session = null;
-		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
-		//TODO assertEquals("result", result);
-	}
-
-	@Disabled
-	@Test
-	public void issuersByCountry() throws SenderException, TimeoutException, IOException {
+	@Disabled //don't have dummy data yet
+	public void getIssuersByCountry() throws SenderException, TimeoutException, IOException {
 		String message = "<idin><issuersByCountry>true</issuersByCountry></idin>";
-		PipeLineSession session = null;
+
+		sender.setAction(Action.DIRECTORY);
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
-		//TODO assertEquals("result", result);
+		assertEquals("result", result);
 	}
 }
