@@ -250,5 +250,4 @@
 		<property name="dataSource" ref="defaultDataSource"/>
 	</bean>
 
-	<bean name="customReportAction" class="nl.nn.testtool.extensions.DummyReportAction"/>
 </beans>
