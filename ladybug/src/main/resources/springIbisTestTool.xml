@@ -221,6 +221,10 @@
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
 
+	<bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="defaultDataSource"/>
+	</bean>
+
 	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<property name="dataSource" ref="defaultDataSource"/>
 	</bean>
@@ -246,4 +250,5 @@
 		<property name="dataSource" ref="defaultDataSource"/>
 	</bean>
 
+	<bean name="customReportAction" class="nl.nn.testtool.extensions.DummyReportAction"/>
 </beans>
