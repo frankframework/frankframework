@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
@@ -29,10 +30,10 @@ import jakarta.json.JsonStructure;
 
 public class JsonDirectoryInfo {
 	private final File directory;
-	private String wildcard = "*.*";
-	private boolean showDirectories = false;
-	private int maxItems = -1;
-	private int fileListSize = 0;
+	private final String wildcard;
+	private final boolean showDirectories;
+	private final int maxItems;
+	private int totalFilesAndFoldersFound;
 
 	public JsonDirectoryInfo(String directory, String wildcard, boolean showDirectories, int maxItems) throws IOException {
 		this(new File(directory), wildcard, showDirectories, maxItems);
@@ -44,9 +45,9 @@ public class JsonDirectoryInfo {
 		}
 
 		this.directory = directory;
-		this.wildcard = wildcard;
+		this.wildcard = StringUtils.isEmpty(wildcard) ? "*.*" : wildcard;
 		this.showDirectories = showDirectories;
-		this.maxItems = maxItems;
+		this.maxItems = Math.max(-1, maxItems);
 	}
 
 	private JsonObjectBuilder fileInfo(File file) {
@@ -85,8 +86,8 @@ public class JsonDirectoryInfo {
 			Arrays.sort(files, new FileNameComparator());
 		}
 
-		this.fileListSize = files == null ? 0 : files.length;
-		int count = fileListSize;
+		this.totalFilesAndFoldersFound = files == null ? 0 : files.length;
+		int count = totalFilesAndFoldersFound;
 
 		if (maxItems >= 0 && count > maxItems) {
 			count = maxItems;
@@ -112,7 +113,7 @@ public class JsonDirectoryInfo {
 	public JsonStructure toJson() {
 		JsonObjectBuilder root = Json.createObjectBuilder();
 		JsonStructure list = getFileList();
-		root.add("count", fileListSize);
+		root.add("count", totalFilesAndFoldersFound);
 		root.add("list", list);
 		root.add("directory", normalizePath(directory));
 		root.add("wildcard", wildcard);
