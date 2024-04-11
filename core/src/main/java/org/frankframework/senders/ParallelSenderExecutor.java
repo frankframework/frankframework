@@ -31,7 +31,7 @@ import org.frankframework.stream.Message;
 public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private final ISender sender;
 	@Getter private final PipeLineSession session;
-	@Setter private ResourceLimiter limiter; // support limiting the number of threads processing in parallel
+	@Setter private ResourceLimiter threadLimiter; // support limiting the number of threads processing in parallel
 	@Setter private Phaser guard; // support waiting for all threads to end
 	private final DistributionSummary summary;
 	private @Getter long duration;
@@ -59,9 +59,9 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			duration = endTime - startTime;
 			summary.record(duration);
 		} finally {
-			if (limiter != null) {
-				limiter.release();
-				log.debug("Released this limiter, available permits: {}", limiter.availablePermits());
+			if (threadLimiter != null) {
+				threadLimiter.release();
+				log.debug("Released this limiter, available permits: {}", threadLimiter.availablePermits());
 			}
 			if (guard != null) {
 				guard.arrive();

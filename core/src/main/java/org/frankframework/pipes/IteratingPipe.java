@@ -312,7 +312,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							}
 						}
 						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, senderStatistics);
-						pse.setLimiter(childLimiter);
+						pse.setThreadLimiter(childLimiter);
 						pse.setGuard(guard);
 						if (isCollectResults()) {
 							executorList.add(pse);

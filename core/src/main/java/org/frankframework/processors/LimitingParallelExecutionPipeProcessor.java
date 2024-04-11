@@ -42,24 +42,24 @@ public class LimitingParallelExecutionPipeProcessor extends PipeProcessorBase {
 
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
-		ResourceLimiter limiter = getResourceLimiter(pipe);
-		if (limiter == null) { // no restrictions on the maximum number of threads
+		ResourceLimiter threadCountLimiter = getThreadLimiter(pipe);
+		if (threadCountLimiter == null) { // no restrictions on the maximum number of threads
 			return chain.apply(message);
 		}
 		long waitingDuration;
 		try {
 			// keep waiting statistics for thread-limited pipes
 			long startWaiting = System.currentTimeMillis();
-			limiter.acquire();
+			threadCountLimiter.acquire();
 			waitingDuration = System.currentTimeMillis() - startWaiting;
 			DistributionSummary summary = pipeLine.getPipeWaitStatistics(pipe);
 			summary.record(waitingDuration);
 			return chain.apply(message);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new PipeRunException(pipe, "Interrupted acquiring Pipe limiter", e);
+			throw new PipeRunException(pipe, "Interrupted acquiring Pipe thread count limiter", e);
 		} finally {
-			limiter.release();
+			threadCountLimiter.release();
 		}
 	}
 
@@ -75,7 +75,7 @@ public class LimitingParallelExecutionPipeProcessor extends PipeProcessorBase {
 		return super.validate(pipeLine, validator, message, pipeLineSession, messageRoot);
 	}
 
-	private ResourceLimiter getResourceLimiter(IPipe pipe) {
+	private ResourceLimiter getThreadLimiter(IPipe pipe) {
 		return pipeThreadCounts.computeIfAbsent(pipe, k -> k.getMaxThreads() > 0 ? new ResourceLimiter(k.getMaxThreads()) : null);
 	}
 
