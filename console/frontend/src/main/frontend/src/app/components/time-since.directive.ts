@@ -10,6 +10,7 @@ import { AppConstants, AppService } from '../app.service';
 
 @Directive({
   selector: '[appTimeSince]',
+  standalone: true,
 })
 export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
   @Input() time!: number;

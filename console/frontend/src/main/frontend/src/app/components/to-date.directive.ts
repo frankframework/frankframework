@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
 
 @Directive({
   selector: '[appToDate]',
+  standalone: true,
 })
 export class ToDateDirective implements OnChanges, OnDestroy {
   @Input() time: string | number = '';

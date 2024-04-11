@@ -144,8 +144,6 @@ const windowProvider: ValueProvider = {
     LoginComponent,
 
     //modals
-    InformationModalComponent,
-    FeedbackModalComponent,
     FlowModalComponent,
 
     // pipes
@@ -162,11 +160,7 @@ const windowProvider: ValueProvider = {
 
     // directives
     FormatCodeDirective,
-    ToDateDirective,
-    TimeSinceDirective,
     QuickSubmitFormDirective,
-    SideNavigationDirective,
-    ThSortableDirective,
   ],
   imports: [
     BrowserModule,
@@ -179,6 +173,12 @@ const windowProvider: ValueProvider = {
     NgChartsModule.forRoot(),
     DataTablesModule,
 
+    // standalone directives
+    TimeSinceDirective,
+    ToDateDirective,
+    ThSortableDirective,
+    SideNavigationDirective,
+
     // standalone components
     CustomViewsComponent,
     FileViewerComponent,
@@ -186,6 +186,8 @@ const windowProvider: ValueProvider = {
     LogoutComponent,
     NgMermaidComponent,
     ToastsContainerComponent,
+    InformationModalComponent,
+    FeedbackModalComponent,
   ],
   providers: [
     windowProvider,
