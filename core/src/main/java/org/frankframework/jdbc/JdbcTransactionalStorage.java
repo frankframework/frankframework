@@ -832,31 +832,29 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		super.setType(type);
 	}
 
-
-
-	@Override
 	/**
 	 * The name of the column slotids are stored in
 	 * @ff.default SLOTID
 	 */
+	@Override
 	public void setSlotIdField(String string) {
 		super.setSlotIdField(string);
 	}
 
-	@Override
 	/**
 	 * The name of the column types are stored in
 	 * @ff.default TYPE
 	 */
+	@Override
 	public void setTypeField(String typeField) {
 		super.setTypeField(typeField);
 	}
 
-	@Override
 	/**
 	 * The name of the column that stores the hostname of the server
 	 * @ff.default HOST
 	 */
+	@Override
 	public void setHostField(String hostField) {
 		super.setHostField(hostField);
 	}
@@ -914,10 +912,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		textFieldType = string;
 	}
 
-
-
-
-
 	/**
 	 * If set to <code>true</code>, the messages are stored compressed
 	 * @ff.default true
@@ -941,8 +935,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	public void setSchemaOwner4Check(String string) {
 		schemaOwner4Check = string;
 	}
-
-
 
 	/**
 	 * If set to <code>true</code>, the full message is stored with the log. Can be set to <code>false</code> to reduce table size, by avoiding to store the full message

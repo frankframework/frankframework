@@ -17,6 +17,8 @@ package org.frankframework.senders;
 
 import java.io.IOException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.util.Guard;
 import org.frankframework.util.LogUtil;
@@ -42,15 +44,7 @@ public class IsolatedServiceCaller {
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
-	private TaskExecutor taskExecutor;
-
-	public void setTaskExecutor(TaskExecutor executor) {
-		taskExecutor = executor;
-	}
-
-	public TaskExecutor getTaskExecutor() {
-		return taskExecutor;
-	}
+	@Setter @Getter private TaskExecutor taskExecutor;
 
 	public void callServiceAsynchronous(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws IOException {
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, null, threadLifeCycleEventListener);

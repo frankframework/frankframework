@@ -61,7 +61,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
+ * Abstract base class to send a message to a Sender for each item returned by a configurable iterator.
  *
  * <br/>
  * The output of each of the processing of each of the elements is returned in XML as follows:
@@ -131,7 +131,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 		private final @Getter String forwardName;
 
-		private StopReason(String forwardName) {
+		StopReason(String forwardName) {
 			this.forwardName=forwardName;
 		}
 
@@ -201,9 +201,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	protected class ItemCallback {
-		private PipeLineSession session;
-		private ISender sender;
-		private Writer results;
+		private final PipeLineSession session;
+		private final ISender sender;
+		private final Writer results;
 		private int itemsInBlock=0;
 		private int totalItems=0;
 		private boolean blockOpen=false;
@@ -239,7 +239,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				waitForResults();
 				results.append("</results>");
 			} else {
-				results.append("<results count=\""+getCount()+"\"/>");
+				results.append("<results count=\"").append(String.valueOf(getCount())).append("\"/>");
 			}
 		}
 		public void startBlock() throws SenderException, TimeoutException {
@@ -261,11 +261,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 
 		/**
-		 * @return a non null StopReason when stop is required
+		 * @return a non-null StopReason when stop is required
 		 */
 		public StopReason handleItem(I item) throws SenderException, TimeoutException, IOException {
 			if (isRemoveDuplicates()) {
-				if (inputItems.indexOf(item)>=0) {
+				if (inputItems.contains(item)) {
 					log.debug("duplicate item [{}] will not be processed", item);
 					return null;
 				}

@@ -381,8 +381,8 @@ public class WsdlXmlValidator extends SoapValidator {
 		this.wsdl = wsdl;
 	}
 
-	@Override
 	/** Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (WSDL generator will use the first element) (use empty value to allow an empty SOAP body, for example to allow element x and an empty SOAP body use: x,). In case the request contains SOAPAction header and the WSDL contains an element specific to that SOAPAction, it will use that element as SOAP body. */
+	@Override
 	public void setSoapBody(String soapBody) {
 		super.setSoapBody(soapBody);
 	}

@@ -296,8 +296,8 @@ public class FileRecordListener implements IPullingListener<String> {
 		return super.toString() + ts;
 	}
 
-	@Override
 	/** name of the listener as known to the adapter. */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

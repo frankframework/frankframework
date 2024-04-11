@@ -65,7 +65,7 @@ public class MessagingSource  {
 	private final Counter openConnectionCount = new Counter(0);
 	private final Counter openSessionCount = new Counter(0);
 
-	private @Getter String id;
+	private final @Getter String id;
 
 	private Context context = null;
 	private ConnectionFactory connectionFactory = null;
