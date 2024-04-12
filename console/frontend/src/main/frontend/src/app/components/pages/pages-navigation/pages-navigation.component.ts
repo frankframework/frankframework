@@ -5,6 +5,7 @@ import { ScrollToTopComponent } from './scroll-to-top.component';
 import { CommonModule } from '@angular/common';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { CustomViewsComponent } from '../../custom-views/custom-views.component';
+import { SideNavigationDirective } from '../side-navigation.directive';
 
 @Component({
   selector: 'app-pages-navigation',
@@ -17,6 +18,7 @@ import { CustomViewsComponent } from '../../custom-views/custom-views.component'
     CustomViewsComponent,
     MinimalizaSidebarComponent,
     ScrollToTopComponent,
+    SideNavigationDirective,
   ],
 })
 export class PagesNavigationComponent {

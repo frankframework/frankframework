@@ -14,12 +14,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
-import { ScrollToTopComponent } from './components/pages/pages-navigation/scroll-to-top.component';
-import { MinimalizaSidebarComponent } from './components/pages/pages-navigation/minimaliza-sidebar.component';
 import { CustomViewsComponent } from './components/custom-views/custom-views.component';
 import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pages-topinfobar.component';
 import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
-import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger.component';
 import { InputFileUploadComponent } from './components/input-file-upload/input-file-upload.component';
 import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
 import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
@@ -182,11 +179,8 @@ const windowProvider: ValueProvider = {
     InformationModalComponent,
     FeedbackModalComponent,
     PagesFooterComponent,
-    MinimalizaSidebarComponent,
-    ScrollToTopComponent,
     PagesNavigationComponent,
     PagesTopinfobarComponent,
-    HamburgerComponent,
     PagesTopnavbarComponent,
   ],
   providers: [

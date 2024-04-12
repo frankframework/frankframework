@@ -13,6 +13,7 @@ import { AppRoutingModule } from 'src/app/app-routing.module';
 import { NotificationService } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
 import { TimeSinceDirective } from '../../time-since.directive';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-pages-topnavbar',
@@ -24,6 +25,7 @@ import { TimeSinceDirective } from '../../time-since.directive';
     AppRoutingModule,
     HamburgerComponent,
     TimeSinceDirective,
+    NgbDropdownModule,
   ],
 })
 export class PagesTopnavbarComponent implements OnInit, OnDestroy {
@@ -38,9 +40,6 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy {
   @Output() shouldOpenFeedback = new EventEmitter<number>();
 
   private _subscriptions = new Subscription();
-
-  private static readonly booleanYes: number = 1;
-  private static readonly booleanNo: number = 0;
 
   constructor(
     private Notification: NotificationService,
