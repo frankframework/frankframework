@@ -47,6 +47,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.bankid.merchant.library.AssuranceLevel;
 import net.bankid.merchant.library.AuthenticationRequest;
 import net.bankid.merchant.library.AuthenticationResponse;
@@ -54,6 +55,7 @@ import net.bankid.merchant.library.Communicator;
 import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.DirectoryResponse;
 import net.bankid.merchant.library.ErrorResponse;
+import net.bankid.merchant.library.IMessenger;
 import net.bankid.merchant.library.SamlResponse;
 import net.bankid.merchant.library.ServiceId;
 import net.bankid.merchant.library.StatusRequest;
@@ -61,8 +63,8 @@ import net.bankid.merchant.library.StatusResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 
 /**
- * Requires the net.bankid.merchant.library V1.06+.
- * Compile with Java 1.7+
+ * Requires the net.bankid.merchant.library V1.2.9
+ * Compile with Java 1.8+
  *
  * @author Niels Meijer
  */
@@ -103,6 +105,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	private Configuration defaultIdinConfig = null;
+	private @Setter IMessenger messenger = null; // use the default package private one...
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -130,21 +133,8 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 //        } );
 	}
 
-	protected Configuration getConfiguration() throws ConfigurationException {
-		Configuration idinConfig = new Configuration(); //empty properties
-
-		if(StringUtils.isNotEmpty(getIDinConfigurationXML())) {
-			URL defaultIdinConfigXML = ClassLoaderUtils.getResourceURL(this, getIDinConfigurationXML());
-			if(defaultIdinConfigXML == null) {
-				throw new ConfigurationException("");
-			}
-
-			try {
-				idinConfig.Load(defaultIdinConfigXML.openStream());
-			} catch (ParserConfigurationException | SAXException | IOException e) {
-				throw new ConfigurationException("unable to read iDin configuration from XML file ["+getIDinConfigurationXML()+"]", e);
-			}
-		}
+	private Configuration getConfiguration() throws ConfigurationException {
+		Configuration idinConfig = createConfiguration();
 
 		if(StringUtils.isNotEmpty(getMerchantID()))
 			idinConfig.setMerchantID(getMerchantID());
@@ -203,7 +193,25 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 		return idinConfig;
 	}
 
+	protected Configuration createConfiguration() throws ConfigurationException {
+		final Configuration config = new Configuration();
+		if(StringUtils.isNotEmpty(getIDinConfigurationXML())) {
+			URL defaultIdinConfigXML = ClassLoaderUtils.getResourceURL(this, getIDinConfigurationXML());
+			if(defaultIdinConfigXML == null) {
+				throw new ConfigurationException("unable to find iDin configuration from XML file ["+getIDinConfigurationXML()+"]");
+			}
+
+			try {
+				config.Load(defaultIdinConfigXML.openStream());
+			} catch (ParserConfigurationException | SAXException | IOException e) {
+				throw new ConfigurationException("unable to read iDin configuration from XML file ["+getIDinConfigurationXML()+"]", e);
+			}
+		}
+		return config;
+	}
+
 	protected Communicator createCommunicator(PipeLineSession session) throws SenderException {
+		final DynamicMessengerCommunicator communicator;
 		if(StringUtils.isNotEmpty(getMerchantReturnUrlSessionKey())) {
 			String returnUrl = session.getString(getMerchantReturnUrlSessionKey());
 			if(StringUtils.isEmpty(returnUrl)) {
@@ -212,15 +220,21 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 			Configuration idinConfig = new Configuration();
 			try {
-				idinConfig.Setup(defaultIdinConfig);
+				idinConfig.Setup(defaultIdinConfig); // Vague copy method...
 			} catch (IOException e) {
 				throw new SenderException("unable to copy configuration");
 			}
 			idinConfig.setMerchantReturnUrl(returnUrl);
-			return new Communicator(idinConfig);
+			communicator = new DynamicMessengerCommunicator(idinConfig);
 		} else {
-			return new Communicator(defaultIdinConfig);
+			communicator = new DynamicMessengerCommunicator(defaultIdinConfig);
 		}
+
+		if(messenger != null) {
+			communicator.setMessenger(messenger);
+		}
+
+		return communicator;
 	}
 
 	@Override

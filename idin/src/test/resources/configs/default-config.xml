@@ -15,7 +15,7 @@
 
 		<add key="BankId.Merchant.Certificate.Alias" value="idin libraries test certificate 2020" />
 		<add key="BankId.Merchant.Certificate.Password" value="123456" />
-		<add key="BankId.Acquirer.Certificate.Alias" value="bankid qa 2020" />
+		<add key="BankId.Acquirer.Certificate.Alias" value="idin libraries test certificate 2020" />
 		<add key="BankId.Acquirer.AlternateCertificate.Alias" value="dummy_alias" />
 		<add key="BankId.SAML.Certificate.Alias" value="idin libraries test certificate 2020" />
 		<add key="BankId.SAML.Certificate.Password" value="123456" />
