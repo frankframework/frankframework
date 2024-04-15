@@ -213,12 +213,9 @@
 
 	<bean name="messageTransformer" class="org.frankframework.ibistesttool.transform.HideRegexMessageTransformer"/>
 
-	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
-
-	<bean name="dataSourceFactory" class="org.frankframework.jndi.JndiDataSourceFactory"/>
-
-	<bean name="defaultDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
-		<constructor-arg value="#{dataSourceName}"/>
+	<bean name="defaultDataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName" value="#{dataSourceName}"/>
+		<property name="resourceRef" value="true"/><!--  prefix with java:comp/env/ when needed -->
 	</bean>
 
 	<bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
