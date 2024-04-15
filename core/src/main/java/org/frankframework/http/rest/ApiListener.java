@@ -54,8 +54,26 @@ import lombok.Setter;
  * by OpenAPI specifications. The Frank!Framework generates an OpenAPI specification for each ApiListener and
  * also an OpenAPI specification for all ApiListeners in all configurations. You can
  * find them in the Frank!Console under main menu item Webservices, heading Available ApiListeners.
+ * <p>
  * The generated OpenAPI specifications have <code>servers</code> and <code>paths</code> objects and
  * therefore they document the full URLs of the provided services.
+ * <p>
+ * It is possible to automatically generate eTags over the listener result. This can be controlled by globally 
+ * setting the property <code>api.etag.enabled</code> or by setting the attribute <code>updateEtag="true"</code>.
+ * When enabled the listener will respond to the 'if-match', 'if-none-match' headers and may return status code 304.
+ * <p>
+ * In order to make eTags work across multiple nodes you must configure Memcached to store the eTags.
+ * The following properties will need to be set:
+ * <ul>
+ * <li>etag.cache.server=ip or hostname:port</li>
+ * <li>etag.cache.type=memcached</li>
+ * </ul>
+ * In case authentication, is required the following application properties can be used:
+ * <ul>
+ * <li>etag.cache.username</li>
+ * <li>etag.cache.password</li>
+ * <li>etag.cache.authalias</li>
+ * </ul>
  *
  * @author Niels Meijer
  */
@@ -292,7 +310,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * The required contentType on requests, if it doesn't match the request will fail
+	 * The required contentType on requests, if it doesn't match a 415 Unsupported Media Type is replied
 	 *
 	 * @ff.default ANY
 	 */

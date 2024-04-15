@@ -41,7 +41,7 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.processors.CacheSenderWrapperProcessor;
-import org.frankframework.processors.CheckSemaphorePipeProcessor;
+import org.frankframework.processors.LimitingParallelExecutionPipeProcessor;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.scheduler.job.SendMessageJob.SendMessageJobSender;
@@ -81,7 +81,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 	private boolean enabled = true;
 
-	private final AtomicInteger threadCounter = new AtomicInteger(0);
+	private final AtomicInteger threadCounter = new AtomicInteger();
 
 
 	@Override
@@ -162,8 +162,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
-	 * Provides advice for {@link CheckSemaphorePipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession session)}
-	 * CheckSemaphorePipeProcessor is just after InputOutputPipeProcessor, so it sees the effect of the replacements made by the latter.
+	 * Provides advice for {@link LimitingParallelExecutionPipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession session)}
+	 * LimitingParallelExecutionPipeProcessor is just after InputOutputPipeProcessor, so it sees the effect of the replacements made by the latter.
 	 */
 	public PipeRunResult debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession session) throws Throwable {
 		if (!isEnabled()) {

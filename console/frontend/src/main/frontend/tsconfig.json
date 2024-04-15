@@ -22,7 +22,7 @@
     "lib": [
       "ES2022",
       "dom",
-      "DOM.Iterable"
+      "DOM.Iterable",
     ],
   },
   "angularCompilerOptions": {

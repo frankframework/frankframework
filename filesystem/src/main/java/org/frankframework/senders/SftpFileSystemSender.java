@@ -16,9 +16,9 @@
 package org.frankframework.senders;
 
 import org.frankframework.filesystem.FileSystemSender;
-import org.frankframework.filesystem.SftpFileSystem;
-import org.frankframework.filesystem.ftp.SftpFileRef;
-import org.frankframework.filesystem.ftp.SftpFileSystemDelegator;
+import org.frankframework.filesystem.sftp.SftpFileSystem;
+import org.frankframework.filesystem.sftp.SftpFileRef;
+import org.frankframework.filesystem.sftp.SftpFileSystemDelegator;
 
 public class SftpFileSystemSender extends FileSystemSender<SftpFileRef, SftpFileSystem> implements SftpFileSystemDelegator {
 

@@ -50,7 +50,7 @@ public class MessageContentBody implements ContentBody {
 		this.message = message;
 		this.filename = filename;
 
-		MimeType type = (contentType != null) ? contentType : MessageUtils.getMimeType(message);
+		MimeType type = contentType != null ? contentType : MessageUtils.getMimeType(message);
 		if(type == null) {
 			type = message.isBinary() ? MediaType.APPLICATION_OCTET_STREAM : MediaType.TEXT_PLAIN;
 		}
@@ -96,7 +96,7 @@ public class MessageContentBody implements ContentBody {
 
 	@Override
 	public String getTransferEncoding() {
-		return (message.isBinary()) ? MIME.ENC_BINARY : MIME.ENC_8BIT;
+		return message.isBinary() ? MIME.ENC_BINARY : MIME.ENC_8BIT;
 	}
 
 	@Override
@@ -129,7 +129,7 @@ public class MessageContentBody implements ContentBody {
 			return null;
 		}
 
-		Charset charset = (mimeType.getCharset() != null) ? mimeType.getCharset() : StreamUtil.DEFAULT_CHARSET;
+		Charset charset = mimeType.getCharset() != null ? mimeType.getCharset() : StreamUtil.DEFAULT_CHARSET;
 		if(charset != null) {
 			return charset.name();
 		}

@@ -121,7 +121,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public M toFile(String folderName, String filename) throws FileSystemException {
 		checkOpen();
-		MockFolder destFolder= folderName==null || folderName.equals("MOCKFILESYSTEM")?this:getFolders().get(folderName);
+		MockFolder destFolder= folderName==null || "MOCKFILESYSTEM".equals(folderName)?this:getFolders().get(folderName);
 		if (destFolder==null) {
 			throw new FileSystemException("folder ["+folderName+"] does not exist");
 		}

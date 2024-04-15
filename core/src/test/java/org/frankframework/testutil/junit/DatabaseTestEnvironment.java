@@ -50,7 +50,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	private @Getter IDbmsSupport dbmsSupport;
 	private final TransactionManagerType type;
 	private final @Getter TestConfiguration configuration;
-	private final AtomicInteger connectionCount = new AtomicInteger(0);
+	private final AtomicInteger connectionCount = new AtomicInteger();
 
 	private @Getter final PlatformTransactionManager txManager;
 	private final List<TransactionStatus> transactionsToClose = new ArrayList<>();
@@ -76,7 +76,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		return (Connection) factory.create(new Class[0], new Object[0], new MethodHandler() {
 			@Override
 			public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
-				if(method.getName().equals("close")) {
+				if("close".equals(method.getName())) {
 					connectionCount.decrementAndGet();
 				}
 				return method.invoke(connection, args);
@@ -136,7 +136,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		for (String part : parts) {
 			String[] kvPair = part.split(" \\[");
 			String key = kvPair[0];
-			String value = (kvPair.length == 1) ? "" : kvPair[1];
+			String value = kvPair.length == 1 ? "" : kvPair[1];
 			if(!props.containsKey(key)) {
 				props.put(key, value);
 			}

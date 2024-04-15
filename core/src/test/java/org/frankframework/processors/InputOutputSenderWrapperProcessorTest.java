@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 public class InputOutputSenderWrapperProcessorTest {
 
-	private TestConfiguration configuration = new TestConfiguration();
+	private final TestConfiguration configuration = new TestConfiguration();
 	private PipeLineSession session;
 	private String secondSenderOutput;
 	private SenderSeries sender;

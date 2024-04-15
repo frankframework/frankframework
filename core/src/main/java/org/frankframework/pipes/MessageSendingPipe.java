@@ -69,7 +69,6 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -106,7 +105,7 @@ import lombok.SneakyThrows;
  *
  * @author  Gerrit van Brakel
  */
-public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics {
+public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
@@ -181,8 +180,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	private boolean timeoutPending=false;
 
-	private boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
-	private boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
+	private final boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
+	private final boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
 
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ListenerProcessor listenerProcessor;
@@ -507,7 +506,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				sendResult = sendMessage(input, session, getSender(), threadContext);
 				if (retryTp != null) {
 					String retry = retryTp.transform(sendResult.getResult().asString(),null);
-					if (retry.equalsIgnoreCase("true")) {
+					if ("true".equalsIgnoreCase(retry)) {
 						if (retriesLeft >= 1) {
 							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
 						}
@@ -1113,8 +1112,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		useInputForExtract = b;
 	}
 
-	@Override
 	/** Next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked */
+	@Override
 	public void setHideRegex(String hideRegex) {
 		super.setHideRegex(hideRegex);
 	}

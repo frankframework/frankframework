@@ -60,9 +60,8 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
-
 import org.frankframework.management.bus.dto.ProcessStateDTO;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.AppConstants;
@@ -99,7 +98,7 @@ public class AdapterStatus extends BusEndpointBase {
 			}
 		}
 
-		return new JsonResponseMessage(adapterList);
+		return new JsonMessage(adapterList);
 	}
 
 	@ActionSelector(BusAction.FIND)
@@ -112,7 +111,7 @@ public class AdapterStatus extends BusEndpointBase {
 
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
-		return new JsonResponseMessage(adapterInfo);
+		return new JsonMessage(adapterInfo);
 	}
 
 	private Map<String, Object> getAdapterInformation(Adapter adapter, Expanded expandedFilter, boolean showPendingMsgCount) {
@@ -338,7 +337,7 @@ public class AdapterStatus extends BusEndpointBase {
 					sender = ((HasSender)listener).getSender();
 				}
 
-				boolean isRestListener = (listener instanceof RestListener);
+				boolean isRestListener = listener instanceof RestListener;
 				listenerInfo.put("isRestListener", isRestListener);
 				if (isRestListener) {
 					RestListener rl = (RestListener) listener;

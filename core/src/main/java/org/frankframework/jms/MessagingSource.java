@@ -17,6 +17,7 @@ package org.frankframework.jms;
 
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -33,14 +34,13 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.Counter;
+
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
-import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -62,10 +62,10 @@ public class MessagingSource  {
 
 	private @Getter @Setter String authAlias;
 
-	private final Counter openConnectionCount = new Counter(0);
-	private final Counter openSessionCount = new Counter(0);
+	private final AtomicInteger openConnectionCount = new AtomicInteger();
+	private final AtomicInteger openSessionCount = new AtomicInteger();
 
-	private @Getter String id;
+	private final @Getter String id;
 
 	private Context context = null;
 	private ConnectionFactory connectionFactory = null;
@@ -101,13 +101,13 @@ public class MessagingSource  {
 				if (globalConnection != null) {
 					log.debug(getLogPrefix()+"closing global Connection");
 					globalConnection.close();
-					openConnectionCount.decrease();
+					openConnectionCount.decrementAndGet();
 				}
-				if (openSessionCount.getValue()!=0) {
-					log.warn(getLogPrefix()+"open session count after closing ["+openSessionCount.getValue()+"]");
+				if (openSessionCount.get()!=0) {
+					log.warn(getLogPrefix()+"open session count after closing ["+openSessionCount.get()+"]");
 				}
-				if (openConnectionCount.getValue()!=0) {
-					log.warn(getLogPrefix()+"open connection count after closing ["+openConnectionCount.getValue()+"]");
+				if (openConnectionCount.get()!=0) {
+					log.warn(getLogPrefix()+"open connection count after closing ["+openConnectionCount.get()+"]");
 				}
 				if (context != null) {
 					context.close();
@@ -155,9 +155,6 @@ public class MessagingSource  {
 		ConnectionFactory qcf = null;
 		try {
 			qcf = getConnectionFactoryDelegate();
-			if (qcf instanceof PoolingConnectionFactory) { //BTM
-				return ((PoolingConnectionFactory)qcf).getXaConnectionFactory();
-			}
 			if (qcf instanceof JmsPoolConnectionFactory) { //Narayana with pooling
 				return ((JmsPoolConnectionFactory)qcf).getConnectionFactory();
 			}
@@ -202,16 +199,8 @@ public class MessagingSource  {
 	/** Return pooling info if present */
 	private StringBuilder getConnectionPoolInfo(ConnectionFactory qcfd) {
 		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append(CLOSE);
-		if (qcfd instanceof PoolingConnectionFactory) {
-			PoolingConnectionFactory poolcf = ((PoolingConnectionFactory)qcfd);
-			result.append("idle connections [").append(poolcf.getInPoolSize()).append(CLOSE);
-			result.append("min poolsize [").append(poolcf.getMinPoolSize()).append(CLOSE);
-			result.append("max poolsize [").append(poolcf.getMaxPoolSize()).append(CLOSE);
-			result.append("max idle time [").append(poolcf.getMaxIdleTime()).append(CLOSE);
-			result.append("max life time [").append(poolcf.getMaxLifeTime()).append(CLOSE);
-		}
 		if (qcfd instanceof JmsPoolConnectionFactory) {
-			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
+			JmsPoolConnectionFactory poolcf = (JmsPoolConnectionFactory)qcfd;
 			result.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
 			result.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
 			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);
@@ -235,7 +224,7 @@ public class MessagingSource  {
 	private Connection createAndStartConnection() throws JMSException {
 		Connection connection;
 		connection = createConnection();
-		openConnectionCount.increase();
+		openConnectionCount.incrementAndGet();
 		connection.start();
 		return connection;
 	}
@@ -258,7 +247,7 @@ public class MessagingSource  {
 		if (connection != null && connectionsArePooled()) {
 			try {
 				connection.close();
-				openConnectionCount.decrease();
+				openConnectionCount.decrementAndGet();
 			} catch (JMSException e) {
 				log.error(getLogPrefix()+"Exception closing Connection", e);
 			}
@@ -275,7 +264,7 @@ public class MessagingSource  {
 		}
 		try {
 			session = connection.createSession(transacted, acknowledgeMode);
-			openSessionCount.increase();
+			openSessionCount.incrementAndGet();
 			if (connectionsArePooled()) {
 				connectionTable.put(session,connection);
 			}
@@ -294,7 +283,7 @@ public class MessagingSource  {
 			Connection connection = connectionTable.remove(session);
 			try {
 				session.close();
-				openSessionCount.decrease();
+				openSessionCount.decrementAndGet();
 			} catch (JMSException e) {
 				log.error(getLogPrefix() + "Exception closing Session", e);
 			} finally {

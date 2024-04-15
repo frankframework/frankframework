@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.messaging.Message;
 
 import org.frankframework.core.ListenerException;
@@ -33,7 +34,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.receivers.ServiceDispatcher;
 
 import javax.annotation.security.RolesAllowed;
@@ -50,7 +50,7 @@ public class ServiceListener extends BusEndpointBase {
 		Set<String> services = ServiceDispatcher.getInstance().getRegisteredListenerNames();
 		returnData.put("services", services);
 
-		return new JsonResponseMessage(returnData);
+		return new JsonMessage(returnData);
 	}
 
 	@TopicSelector(BusTopic.SERVICE_LISTENER)
@@ -82,6 +82,6 @@ public class ServiceListener extends BusEndpointBase {
 			throw new BusException("Error converting result to string: " + e.getMessage(), e);
 		}
 
-		return new JsonResponseMessage(result);
+		return new JsonMessage(result);
 	}
 }

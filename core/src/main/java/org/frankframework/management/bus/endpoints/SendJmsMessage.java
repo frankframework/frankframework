@@ -17,20 +17,21 @@ package org.frankframework.management.bus.endpoints;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.management.bus.ActionSelector;
-import org.frankframework.management.bus.BinaryResponseMessage;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.StringResponseMessage;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.util.LogUtil;
 
@@ -103,17 +104,17 @@ public class SendJmsMessage extends BusEndpointBase {
 	}
 
 	private Message<?> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
-		try {
+		try(PipeLineSession session = new PipeLineSession()) {
 			qms.open();
-			org.frankframework.stream.Message responseMessage = qms.sendMessageOrThrow(org.frankframework.stream.Message.asMessage(requestMessage), null);
+			org.frankframework.stream.Message responseMessage = qms.sendMessageOrThrow(org.frankframework.stream.Message.asMessage(requestMessage), session);
 			if(!expectsReply) {
 				return null;
 			}
 
 			if(responseMessage.isBinary()) {
-				return new BinaryResponseMessage(responseMessage.asInputStream());
+				return new BinaryMessage(responseMessage.asInputStream());
 			}
-			return new StringResponseMessage(responseMessage.asString());
+			return new StringMessage(responseMessage.asString());
 		} catch (Exception e) {
 			throw new BusException("error occurred sending message", e);
 		} finally {

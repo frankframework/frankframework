@@ -117,11 +117,11 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 			if (prr.isSuccessful()) {
 				event = ValidationResult.VALID;
 			} else {
-				if (prr.getPipeForward().getName().equals("failure")) {
+				if ("failure".equals(prr.getPipeForward().getName())) {
 					event = ValidationResult.INVALID;
-				} else if (prr.getPipeForward().getName().equals("warnings")) {
+				} else if ("warnings".equals(prr.getPipeForward().getName())) {
 					event = ValidationResult.VALID_WITH_WARNINGS;
-				} else if (prr.getPipeForward().getName().equals("parserError")) {
+				} else if ("parserError".equals(prr.getPipeForward().getName())) {
 					event = ValidationResult.PARSER_ERROR;
 				} else {
 					event = null;

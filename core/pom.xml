@@ -63,7 +63,7 @@
 		</dependency>
 		<dependency><!-- LOG4J SLF4J Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
+			<artifactId>log4j-slf4j2-impl</artifactId>
 		</dependency>
 		<dependency><!-- Apache Commons Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
@@ -445,23 +445,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>com.hierynomus</groupId>
-			<artifactId>smbj</artifactId>
-			<version>0.13.0</version>
-		</dependency>
-		<dependency>
-			<groupId>jcifs</groupId>
-			<artifactId>jcifs</artifactId>
-			<version>1.3.17</version>
-			<exclusions>
-				<!-- this should never have been added as a compile dependency! -->
-				<exclusion>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 
 		<!-- Http Components -->
 		<dependency>
@@ -493,12 +476,7 @@
 			<version>9.43.4</version>
 		</dependency>
 
-		<!-- TransactionManagers: BTM + NARAYANA -->
-		<dependency>
-			<groupId>com.github.marcus-nl.btm</groupId>
-			<artifactId>btm</artifactId>
-			<version>${btm.version}</version>
-		</dependency>
+		<!-- TransactionManagers: NARAYANA -->
 		<dependency>
 			<groupId>org.jboss.narayana.jta</groupId>
 			<artifactId>narayana-jta</artifactId>
@@ -513,16 +491,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.microsoft.ews-java-api</groupId>
-			<artifactId>ews-java-api</artifactId>
-			<version>2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.microsoft.azure</groupId>
-			<artifactId>msal4j</artifactId>
-			<version>1.15.0</version>
-		</dependency>
-		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.12.7</version>
@@ -535,7 +503,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.26.0</version>
+			<version>4.27.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.bind</groupId>
@@ -693,7 +661,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>6.6.1</version>
+			<version>6.6.2</version>
 		</dependency>
 		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>
@@ -726,12 +694,17 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.77</version>
+			<version>1.78</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcutil-jdk18on</artifactId>
+			<version>1.78</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpg-jdk18on</artifactId>
-			<version>1.77</version>
+			<version>1.78</version>
 		</dependency>
 
 		<dependency>

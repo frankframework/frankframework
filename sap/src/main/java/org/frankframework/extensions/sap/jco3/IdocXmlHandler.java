@@ -112,43 +112,43 @@ public class IdocXmlHandler extends DefaultHandler {
 				if (parsingEdiDcHeader) {
 					if (log.isDebugEnabled()) log.debug("parsed header field ["+currentField+"] value ["+value+"]");
 					try {
-						if (currentField.equals("ARCKEY")) 		{ doc.setArchiveKey(value); }
-						else if (currentField.equals("MANDT"))  { doc.setClient(value); }
-						else if (currentField.equals("CREDAT")) { doc.setCreationDate(value); }
-						else if (currentField.equals("CRETIM")) { doc.setCreationTime(value); }
-						else if (currentField.equals("DIRECT")) { doc.setDirection(value); }
-						else if (currentField.equals("REFMES")) { doc.setEDIMessage(value); }
-						else if (currentField.equals("REFGRP")) { doc.setEDIMessageGroup(value); }
-						else if (currentField.equals("STDMES")) { doc.setEDIMessageType(value); }
-						else if (currentField.equals("STD"))    { doc.setEDIStandardFlag(value); }
-						else if (currentField.equals("STDVRS")) { doc.setEDIStandardVersion(value); }
-						else if (currentField.equals("REFINT")) { doc.setEDITransmissionFile(value); }
+						if ("ARCKEY".equals(currentField)) 		{ doc.setArchiveKey(value); }
+						else if ("MANDT".equals(currentField))  { doc.setClient(value); }
+						else if ("CREDAT".equals(currentField)) { doc.setCreationDate(value); }
+						else if ("CRETIM".equals(currentField)) { doc.setCreationTime(value); }
+						else if ("DIRECT".equals(currentField)) { doc.setDirection(value); }
+						else if ("REFMES".equals(currentField)) { doc.setEDIMessage(value); }
+						else if ("REFGRP".equals(currentField)) { doc.setEDIMessageGroup(value); }
+						else if ("STDMES".equals(currentField)) { doc.setEDIMessageType(value); }
+						else if ("STD".equals(currentField))    { doc.setEDIStandardFlag(value); }
+						else if ("STDVRS".equals(currentField)) { doc.setEDIStandardVersion(value); }
+						else if ("REFINT".equals(currentField)) { doc.setEDITransmissionFile(value); }
 						// Not available anymore in JCo 3.0
 						// else if (currentField.equals("EXPRSS")) { doc.setExpressFlag(value); }
-						else if (currentField.equals("DOCTYP")) { doc.setIDocCompoundType(value); }
-						else if (currentField.equals("DOCNUM")) { doc.setIDocNumber(value); }
-						else if (currentField.equals("DOCREL")) { doc.setIDocSAPRelease(value); }
-						else if (currentField.equals("IDOCTYP")){ doc.setIDocType(value); }
-						else if (currentField.equals("CIMTYP")) { doc.setIDocTypeExtension(value); }
-						else if (currentField.equals("MESCOD")) { doc.setMessageCode(value); }
-						else if (currentField.equals("MESFCT")) { doc.setMessageFunction(value); }
-						else if (currentField.equals("MESTYP")) { doc.setMessageType(value); }
-						else if (currentField.equals("OUTMOD")) { doc.setOutputMode(value); }
-						else if (currentField.equals("RCVSAD")) { doc.setRecipientAddress(value); }
-						else if (currentField.equals("RCVLAD")) { doc.setRecipientLogicalAddress(value); }
-						else if (currentField.equals("RCVPFC")) { doc.setRecipientPartnerFunction(value); }
-						else if (currentField.equals("RCVPRN")) { doc.setRecipientPartnerNumber(value); }
-						else if (currentField.equals("RCVPRT")) { doc.setRecipientPartnerType(value); }
-						else if (currentField.equals("RCVPOR")) { doc.setRecipientPort(value); }
-						else if (currentField.equals("SNDSAD")) { doc.setSenderAddress(value); }
-						else if (currentField.equals("SNDLAD")) { doc.setSenderLogicalAddress(value); }
-						else if (currentField.equals("SNDPFC")) { doc.setSenderPartnerFunction(value); }
-						else if (currentField.equals("SNDPRN")) { doc.setSenderPartnerNumber(value); }
-						else if (currentField.equals("SNDPRT")) { doc.setSenderPartnerType(value); }
-						else if (currentField.equals("SNDPOR")) { doc.setSenderPort(value); }
-						else if (currentField.equals("SERIAL")) { doc.setSerialization(value); }
-						else if (currentField.equals("STATUS")) { doc.setStatus(value); }
-						else if (currentField.equals("TEST"))   { doc.setTestFlag(value); }
+						else if ("DOCTYP".equals(currentField)) { doc.setIDocCompoundType(value); }
+						else if ("DOCNUM".equals(currentField)) { doc.setIDocNumber(value); }
+						else if ("DOCREL".equals(currentField)) { doc.setIDocSAPRelease(value); }
+						else if ("IDOCTYP".equals(currentField)){ doc.setIDocType(value); }
+						else if ("CIMTYP".equals(currentField)) { doc.setIDocTypeExtension(value); }
+						else if ("MESCOD".equals(currentField)) { doc.setMessageCode(value); }
+						else if ("MESFCT".equals(currentField)) { doc.setMessageFunction(value); }
+						else if ("MESTYP".equals(currentField)) { doc.setMessageType(value); }
+						else if ("OUTMOD".equals(currentField)) { doc.setOutputMode(value); }
+						else if ("RCVSAD".equals(currentField)) { doc.setRecipientAddress(value); }
+						else if ("RCVLAD".equals(currentField)) { doc.setRecipientLogicalAddress(value); }
+						else if ("RCVPFC".equals(currentField)) { doc.setRecipientPartnerFunction(value); }
+						else if ("RCVPRN".equals(currentField)) { doc.setRecipientPartnerNumber(value); }
+						else if ("RCVPRT".equals(currentField)) { doc.setRecipientPartnerType(value); }
+						else if ("RCVPOR".equals(currentField)) { doc.setRecipientPort(value); }
+						else if ("SNDSAD".equals(currentField)) { doc.setSenderAddress(value); }
+						else if ("SNDLAD".equals(currentField)) { doc.setSenderLogicalAddress(value); }
+						else if ("SNDPFC".equals(currentField)) { doc.setSenderPartnerFunction(value); }
+						else if ("SNDPRN".equals(currentField)) { doc.setSenderPartnerNumber(value); }
+						else if ("SNDPRT".equals(currentField)) { doc.setSenderPartnerType(value); }
+						else if ("SNDPOR".equals(currentField)) { doc.setSenderPort(value); }
+						else if ("SERIAL".equals(currentField)) { doc.setSerialization(value); }
+						else if ("STATUS".equals(currentField)) { doc.setStatus(value); }
+						else if ("TEST".equals(currentField))   { doc.setTestFlag(value); }
 						else {
 							log.warn("header field ["+currentField+"] value ["+value+"] discarded");
 						}

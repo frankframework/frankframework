@@ -124,6 +124,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", this::getName, this::getVersion);
 		}
 
+		if(StringUtils.isNotEmpty(AppConstants.getInstance().getProperty("frankframework-ladybug.version"))) {
+			this.getEnvironment().addActiveProfile("aop"); //Makes this configurable depending on if the ladybug is present on the classpath.
+		}
+
 		super.afterPropertiesSet(); //Triggers a context refresh
 
 		if(enabledAutowiredPostProcessing) {

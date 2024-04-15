@@ -341,7 +341,7 @@
 	<adapter name="JmsFFListener" description="Test the functioning of the JmsListener (FF)"
 		active="${active.jms}">
 		<receiver name="JmsFFListener" transactionAttribute="Required"
-			elementToMoveChain="Location" removeCompactMsgNamespaces="false"
+			elementToMove="location" removeCompactMsgNamespaces="false"
 			maxRetries="0" hideRegex="(?&lt;=&lt;value&gt;).*?(?=&lt;/value&gt;)"
 			hideMethod="firstHalf">
 			<listener className="org.frankframework.jms.JmsListener"
@@ -368,7 +368,11 @@
 				getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="listenerException" className="org.frankframework.pipes.ExceptionPipe"
+
+			<!-- when the incoming message is 'listenerException' validates the elementToMove has done it's job -->
+			<pipe name="listenerException" className="nl.nn.adapterframework.pipes.XmlSwitch"
+				forwardNameSessionKey="ref_location" notFoundForwardName="EXIT" />
+			<pipe name="move-me" className="nl.nn.adapterframework.pipes.ExceptionPipe"
 				getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>

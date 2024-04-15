@@ -213,7 +213,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			if ("".equals(name)) {
 				name = attrs.getQName(i);
 			}
-			if(name != null && !name.equals("className")) {
+			if(name != null && !"className".equals(name)) {
 				String value = attrs.getValue(i);
 				map.put(name, value);
 			}

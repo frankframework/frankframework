@@ -29,6 +29,7 @@ import liquibase.integration.spring.SpringLiquibase;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
+import nl.nn.testtool.storage.database.DatabaseStorage;
 
 /**
  * @author Jaco de Groot
@@ -61,6 +62,14 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, testToolEnabled);
 			if (applicationEventPublisher != null) {
 				applicationEventPublisher.publishEvent(event);
+			}
+		}
+		if (bean instanceof DatabaseStorage) {
+			String maxStorageSize = APP_CONSTANTS.getProperty("ibistesttool.maxStorageSize");
+			if (maxStorageSize != null) {
+				DatabaseStorage databaseStorage = (DatabaseStorage)bean;
+				long maxStorageSizeLong = OptionConverter.toFileSize(maxStorageSize, databaseStorage.getMaxStorageSize());
+				databaseStorage.setMaxStorageSize(maxStorageSizeLong);
 			}
 		}
 		if (bean instanceof nl.nn.testtool.storage.file.Storage) {

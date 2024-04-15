@@ -420,7 +420,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		long endTime = System.currentTimeMillis();
 		long duration = endTime - startTime;
 		summary.record(duration);
-		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
+		getMessageKeeper().add("finished running the job in ["+duration+"] ms");
 	}
 
 	protected IbisManager getIbisManager() {
@@ -445,10 +445,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		this.jobGroup = jobGroup;
 	}
 
-	@Override
 	/** Name of the job
 	 * @ff.mandatory
 	 */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

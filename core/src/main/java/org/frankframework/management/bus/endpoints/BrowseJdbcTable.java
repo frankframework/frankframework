@@ -31,11 +31,12 @@ import javax.xml.transform.Transformer;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.messaging.Message;
 import org.xml.sax.SAXException;
 
 import org.frankframework.jdbc.DirectQuerySender;
-
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.transformer.QueryOutputToListOfMaps;
@@ -46,7 +47,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.DB2XMLWriter;
@@ -133,8 +133,10 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				Transformer t = XmlUtils.createTransformer(url);
 				query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 			}
-			try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), null)) {
-				result = message.asString();
+			try(PipeLineSession session = new PipeLineSession()) {
+				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session)) {
+					result = message.asString();
+				}
 			}
 		} catch (Exception t) {
 			throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
@@ -160,7 +162,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 		resultObject.put("fielddefinition", fieldDef);
 		resultObject.put("result", resultMap);
 
-		return new JsonResponseMessage(resultObject);
+		return new JsonMessage(resultObject);
 	}
 
 	private String browseJdbcTableExecuteREQ(Dbms dbms, String table, String where, String order, boolean numberOfRowsOnly, int minRow, int maxRow, String fieldDefinition) {

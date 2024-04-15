@@ -101,7 +101,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 
 public class ReceiverTest {
@@ -122,9 +121,6 @@ public class ReceiverTest {
 			configuration.stop();
 			configuration.close();
 			configuration = null;
-		}
-		if (TransactionManagerServices.isTransactionManagerRunning()) {
-			TransactionManagerServices.getTransactionManager().shutdown();
 		}
 		if (appender != null) {
 			TestAppender.removeAppender(appender);
@@ -233,17 +229,8 @@ public class ReceiverTest {
 
 	public static Stream<Arguments> transactionManagers() {
 		return Stream.of(
-			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration)),
-			Arguments.of(supplier(ReceiverTest::buildBtmTransactionManagerConfiguration))
+			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration))
 		);
-	}
-
-	private static TestConfiguration buildBtmTransactionManagerConfiguration() {
-		if (TransactionManagerServices.isTransactionManagerRunning()) {
-			TransactionManagerServices.getTransactionManager().shutdown();
-		}
-		TestConfiguration configuration = buildConfiguration(TransactionManagerType.BTM);
-		return configuration;
 	}
 
 	private static TestConfiguration buildNarayanaTransactionManagerConfiguration() {
@@ -959,7 +946,7 @@ public class ReceiverTest {
 
 		List<String> errors = adapter.getMessageKeeper()
 				.stream()
-				.filter((msg) -> msg != null && "ERROR".equals(msg.getMessageLevel()))
+				.filter(msg -> msg != null && "ERROR".equals(msg.getMessageLevel()))
 				.map(Object::toString)
 				.collect(Collectors.toList());
 
@@ -1022,7 +1009,7 @@ public class ReceiverTest {
 
 		List<String> warnings = adapter.getMessageKeeper()
 				.stream()
-				.filter((msg) -> msg instanceof MessageKeeperMessage && "WARN".equals(((MessageKeeperMessage)msg).getMessageLevel()))
+				.filter(msg -> msg instanceof MessageKeeperMessage && "WARN".equals(((MessageKeeperMessage)msg).getMessageLevel()))
 				.map(Object::toString)
 				.collect(Collectors.toList());
 		assertThat(warnings, everyItem(containsString("JMS poll timeout")));

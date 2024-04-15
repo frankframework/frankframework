@@ -18,7 +18,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
-	private AtomicBoolean isOpen = new AtomicBoolean(false);
+	private final AtomicBoolean isOpen = new AtomicBoolean(false);
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -49,7 +49,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	@Override
 	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> context) throws ListenerException {
 		String text = rawMessage.getRawMessage();
-		if(text.equals("extractMessageException")) {
+		if("extractMessageException".equals(text)) {
 			throw new ListenerException(text);
 		}
 		return Message.asMessage(text);

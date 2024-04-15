@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 
 /**
  * @author  Gerrit van Brakel
  * @since
  */
-@FrankDocGroup(name = "Batch")
+@FrankDocGroup(FrankDocGroupValue.BATCH)
 public interface IReaderFactory {
 
 	void configure() throws ConfigurationException;

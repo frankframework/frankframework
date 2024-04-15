@@ -185,7 +185,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		return (new ReflectionToStringBuilder(this) {
 			@Override
 			protected boolean accept(Field f) {
-				return super.accept(f) && !f.getName().equals("passwd");
+				return super.accept(f) && !"passwd".equals(f.getName());
 			}
 		}).toString();
 	}

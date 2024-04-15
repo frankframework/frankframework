@@ -170,6 +170,38 @@
             </table>
           </div>
         </div>
+        <div class="col-md-12 m-t-md table-responsive">
+          <div class="ibox-title">
+            <h4>Security Roles Overview</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table table-striped roles-overview">
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>Description</th>
+                  <th *ngFor="let rolesKV of securityRoles | keyvalue">
+                    {{ rolesKV.value.name }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let link of links">
+                  <td>{{ link.name }}</td>
+                  <td>{{ link.description }}</td>
+                  <td *ngFor="let rolesKV of securityRoles | keyvalue">
+                    <i
+                      *ngIf="
+                        !link.roles || link.roles?.includes(rolesKV.value.name)
+                      "
+                      class="fa fa-check"
+                    ></i>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         <div
           class="col-md-12 col-lg-6 m-t-md table-responsive"
           *ngIf="xmlComponents"

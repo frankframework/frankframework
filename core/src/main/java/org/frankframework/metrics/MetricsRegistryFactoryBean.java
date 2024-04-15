@@ -142,7 +142,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 
 	@Override
 	public Class<? extends MeterRegistry> getObjectType() {
-		return  (this.registry != null ? this.registry.getClass() : MeterRegistry.class);
+		return  this.registry != null ? this.registry.getClass() : MeterRegistry.class;
 	}
 
 	@Override

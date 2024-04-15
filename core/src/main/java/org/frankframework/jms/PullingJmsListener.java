@@ -277,7 +277,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			MessageConsumer mc=null;
 			try {
 				mc = getMessageConsumer(session, getDestination(), messageSelector);
-				Message result = (getTimeout()<0) ? mc.receiveNoWait() : mc.receive(getTimeout());
+				Message result = getTimeout()<0 ? mc.receiveNoWait() : mc.receive(getTimeout());
 				return new RawMessageWrapper<>(result, result.getJMSMessageID(), messageSelector);
 			} finally {
 				if (mc != null) {

@@ -13,7 +13,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.ResponseMessageBase;
+import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -111,7 +111,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		request.setHeader("reconfigure", "true");
 		Message<?> response = callSyncGateway(request);
 
-		assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0));
 	}
 
 	@Test
@@ -150,6 +150,6 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		request.setHeader("level", "debug");
 		Message<?> response = callSyncGateway(request);
 
-		assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0));
 	}
 }

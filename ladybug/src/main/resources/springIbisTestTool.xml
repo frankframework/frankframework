@@ -11,10 +11,12 @@
 		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
 		http://www.springframework.org/schema/util    http://www.springframework.org/schema/util/spring-util.xsd
 	"
+	default-lazy-init="true"
 	>
+	<!-- don't init database related beans when database storage not used / ladybug.jdbc.datasource empty -->
 
-	<!-- enables the usage of (AppConstants) properties in Spring configurations -->
-	<context:property-placeholder />
+	<!-- enable (AppConstants) properties -->
+	<context:property-placeholder/>
 
 	<!-- scan both the original and overridden configuration -->
 	<context:component-scan base-package="org.frankframework.ibistesttool"/>
@@ -74,16 +76,24 @@
 		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000"/>
 	</task:scheduled-tasks>
 
+	<bean name="dataSourceName" class="java.lang.String">
+		<constructor-arg value="${ladybug.jdbc.datasource:${jdbc.datasource.default}}"/>
+	</bean>
+
+	<bean name="debugStoragePreferred" class="java.lang.String">
+		<constructor-arg value="#{dataSourceName != '' ? 'debugStorageDatabase' : 'debugStorageFile'}"/>
+	</bean>
+
 	<bean name="debugStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
 		<property name="name" value="Debug"/>
 		<property name="destination">
-			<ref bean="debugStorageDatabase"/>
+			<ref bean="#{debugStoragePreferred}"/>
 		</property>
-		<!-- When Ladybug table not available use file storage -->
 		<property name="alternativeDestination">
-			<ref bean="debugStorageFile"/>
+			<ref bean="debugStorageFile"/><!-- When Ladybug table not available use file storage -->
 		</property>
 	</bean>
+
 	<bean
 		name="debugStorageDatabase"
 		class="nl.nn.testtool.storage.database.DatabaseStorage"
@@ -92,44 +102,46 @@
 		>
 		<property name="name" value="DatabaseDebugStorage"/>
 	</bean>
+
 	<bean name="debugStorageFile" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
 		<property name="name" value="FileDebugStorage"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
 	</bean>
 
-	<bean name="testStorageActive" class="java.lang.String">
+	<bean name="testStoragePreferred" class="java.lang.String">
 		<constructor-arg value="#{
 				'${dtap.stage}' == 'LOC' ||
 				'${dtap.stage}' == 'xxx' ||
 				'${dtap.stage}' == ''
 				?
-				'testStorageXml' : 'testStorageDatabase'
+				'testStorageXml' : (dataSourceName != '' ? 'testStorageDatabase' : 'testStorageFile')
 				}"
 		/>
 	</bean>
-	<!-- Ladybug API classes autowired by CXF Spring (see ladybug/cxf-beans.xml) expect a bean with name testStorage -->
+
 	<bean name="testStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
 		<property name="name" value="Test"/>
 		<property name="destination">
-			<!-- Switch between XML storage and Database storage depending on environment -->
-			<ref bean="#{testStorageActive}"/>
+			<ref bean="#{testStoragePreferred}"/>
 		</property>
-		<!-- When using database storage but Ladybug table not available use file storage -->
 		<property name="alternativeDestination">
-			<ref bean="testStorageFile"/>
+			<ref bean="testStorageFile"/><!-- When Ladybug table not available use file storage -->
 		</property>
 	</bean>
+
 	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
 		<property name="name" value="XmlTestStorage"/>
 		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
 		<property name="reportsFolder" value="${ibistesttool.directory}"/>
 	</bean>
+
 	<bean name="testStorageDatabase" class="nl.nn.testtool.storage.database.DatabaseTestStorage" autowire="byName"
 		depends-on="ladybugDatabaseChangelog"
 		>
 		<property name="name" value="Test"/>
 	</bean>
+
 	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
 		<property name="name" value="FileTestStorage"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
@@ -206,7 +218,7 @@
 	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.DataSourceFactory"/>
 
 	<bean name="defaultDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
-		<constructor-arg value="${ladybug.jdbc.migrator.datasource:${jdbc.datasource.default}}"/>
+		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
 
 	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
@@ -220,6 +232,14 @@
 		>
 		<property name="dataSource" ref="defaultDataSource"/>
 		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
+		<property name="uiService">
+			<!-- Show "Running Changeset: ..." in System.out -->
+			<value type="liquibase.ui.UIServiceEnum">CONSOLE</value>
+		</property>
+		<property name="showSummaryOutput">
+			<!-- Don't show "UPDATE SUMMARY" in System.out -->
+			<value type="liquibase.UpdateSummaryOutputEnum">LOG</value>
+		</property>
 	</bean>
 
 	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">

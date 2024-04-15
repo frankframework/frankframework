@@ -162,7 +162,7 @@ public class LadybugPipe extends FixedForwardPipe {
 				writeToLogOrSysOut("Path=\"" + report.getPath() + "\", "
 						+ "Name=\"" + report.getName() + "\", "
 						+ "OriginalDuration=\"" + originalDuration + "\", "
-						+ ((duration > -1) ? "Duration=\"" + duration + "\", " : "")
+						+ (duration > -1 ? "Duration=\"" + duration + "\", " : "")
 						+ "Equal=\"" + equal + "\""
 						+ (!error.isEmpty() ? ", Error=\"" + error + "\"" : ""));
 			}

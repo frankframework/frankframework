@@ -41,7 +41,7 @@ public class Result2StringWriter extends ResultWriter {
 		StringWriter writer = (StringWriter)getWriter(session,streamId,false);
 		String result=null;
 		if (writer!=null) {
-			result = (writer).getBuffer().toString();
+			result = writer.getBuffer().toString();
 		}
 		return result;
 	}

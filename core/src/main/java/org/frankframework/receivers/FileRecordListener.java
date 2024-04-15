@@ -77,8 +77,9 @@ public class FileRecordListener implements IPullingListener<String> {
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		String cid = pipeLineSession.getCorrelationId();
 		if (sender != null && processResult.isSuccessful()) {
-			try {
-				sender.sendMessageOrThrow(processResult.getResult(), null);
+			try(PipeLineSession session = new PipeLineSession()) {
+				session.put(PipeLineSession.CORRELATION_ID_KEY, cid);
+				sender.sendMessageOrThrow(processResult.getResult(), session).close();
 			} catch (Exception e) {
 				throw new ListenerException("error sending message with technical correlationId [" + cid + " msg [" + processResult.getResult() + "]", e);
 			}
@@ -180,13 +181,13 @@ public class FileRecordListener implements IPullingListener<String> {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(getInputDirectory());
 		File[] files = dir.listFiles(filter);
-		int count = (files == null ? 0 : files.length);
+		int count = files == null ? 0 : files.length;
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
 			if (file.isDirectory()) {
 				continue;
 			}
-			return (file);
+			return file;
 		}
 		return null;
 	}
@@ -295,8 +296,8 @@ public class FileRecordListener implements IPullingListener<String> {
 		return super.toString() + ts;
 	}
 
-	@Override
 	/** name of the listener as known to the adapter. */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

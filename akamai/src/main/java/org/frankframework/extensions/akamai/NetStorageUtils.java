@@ -105,13 +105,13 @@ public class NetStorageUtils {
 				c = 3;
 			}
 			if ((i + 2) < value.length) {
-				v |= (value[i + 2] & 0xff);
+				v |= value[i + 2] & 0xff;
 				c = 4;
 			}
 			result.append(BASE64_CHARS[(v >> 18) & 0x3f]);
 			result.append(BASE64_CHARS[(v >> 12) & 0x3f]);
 			result.append((c >= 3 ? BASE64_CHARS[(v >> 6) & 0x3f] : '='));
-			result.append((c == 4 ? BASE64_CHARS[(v) & 0x3f] : '='));
+			result.append((c == 4 ? BASE64_CHARS[v & 0x3f] : '='));
 		}
 		return result.toString();
 	}

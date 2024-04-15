@@ -24,6 +24,7 @@ module.exports = {
         'unicorn/no-array-reduce': 'off',
         'unicorn/prefer-ternary': 'warn',
         'unicorn/no-null': 'off',
+        'unicorn/prefer-dom-node-text-content': 'warn',
       },
     },
     {

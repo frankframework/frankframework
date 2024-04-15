@@ -1,0 +1,23 @@
+{
+	"count": 4,
+	"list": [
+		{
+			"name": "fileOnlyOnDirectoryClassPath.txt",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.txt",
+			"lastModified": 1712751022895,
+			"type": "file",
+			"size": 39,
+			"sizeDisplay": "1 kB"
+		},
+		{
+			"name": "fileOnlyOnDirectoryClassPath.xml",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.xml",
+			"lastModified": 1712751022896,
+			"type": "file",
+			"size": 46,
+			"sizeDisplay": "1 kB"
+		}
+	],
+	"directory": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
+	"wildcard": "fileOnly*"
+}

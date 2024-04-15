@@ -27,6 +27,7 @@ import org.frankframework.dbms.IDbmsSupport;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
@@ -50,7 +51,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.StringResponseMessage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 
@@ -59,20 +59,20 @@ public class IbisstoreSummary extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.IBISSTORE_SUMMARY)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public StringResponseMessage showIbisStoreSummary(Message<?> message) {
+	public StringMessage showIbisStoreSummary(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String query = BusMessageUtils.getHeader(message, "query");
 
 		return execute(datasource, query);
 	}
 
-	private StringResponseMessage execute(String datasource, String query) {
+	private StringMessage execute(String datasource, String query) {
 		String result = "";
 		try {
 			IbisstoreSummaryQuerySender qs;
 			qs = createBean(IbisstoreSummaryQuerySender.class);
 			qs.setSlotmap(getSlotmap());
-			try {
+			try(PipeLineSession session = new PipeLineSession()) {
 				qs.setName("QuerySender");
 				qs.setDatasourceName(datasource);
 				qs.setQueryType(JdbcQuerySenderBase.QueryType.SELECT);
@@ -80,7 +80,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 				qs.setAvoidLocking(true);
 				qs.configure(true);
 				qs.open();
-				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query != null ? query : this.getIbisStoreSummaryQuery(qs.getDbmsSupport())), null)) {
+				try (org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query != null ? query : this.getIbisStoreSummaryQuery(qs.getDbmsSupport())), session)) {
 					result = message.asString();
 				}
 			} catch (Throwable t) {
@@ -93,7 +93,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 		}
 
 		String resultObject = "{ \"result\":"+result+"}";
-		return new StringResponseMessage(resultObject, MediaType.APPLICATION_JSON);
+		return new StringMessage(resultObject, MediaType.APPLICATION_JSON);
 	}
 
 	private Map<String, SlotIdRecord> getSlotmap() {
@@ -216,7 +216,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 				}
 				typeBuilder = Json.createObjectBuilder();
 				typeBuilder.add("type", type);
-				if (type.equalsIgnoreCase("E")) {
+				if ("E".equalsIgnoreCase(type)) {
 					typeBuilder.add("name","errorlog");
 				} else {
 					typeBuilder.add("name","messagelog");

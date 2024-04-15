@@ -167,9 +167,10 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	public void setTableAlias(String string) {
 		tableAlias = string;
 	}
-
+	
 	/**
-	 * Field containing the status of the message. For optimal performance, and index should exist that starts with this field, contains all fields that are used with a fixed value in the select condition, and end with the orderField.
+	 * Field containing the status of the message. 
+  	 * <b>NB: For optimal performance, an index should exist that starts with this field, followed by all fields that are used with a fixed value in the select condition, and end with the <code>orderField</code>.
 	 * @ff.mandatory
 	 */
 	public void setStatusField(String fieldname) {
@@ -184,14 +185,14 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * (optional) Field used to store the date and time of the last change of the statusField
+	 * (optional) Field used to store the date and time of the last change of the <code>statusField</code>
 	 */
 	public void setTimestampField(String fieldname) {
 		timestampField = fieldname;
 	}
 
 	/**
-	 * (optional) Field used to store the reason of the last change of the statusField
+	 * (optional) Field used to store the reason of the last change of the <code>statusField</code>
 	 */
 	public void setCommentField(String commentField) {
 		this.commentField = commentField;
@@ -206,14 +207,14 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * (optional) Value of statusField indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.
+	 * (optional) Value of <code>statusField</code> indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.
 	 */
 	public void setStatusValueAvailable(String string) {
 		statusValues.put(ProcessState.AVAILABLE,string);
 	}
 
 	/**
-	 * Value of statusField indicating the processing of the row resulted in an error
+	 * Value of <code>statusField</code> indicating the processing of the row resulted in an error
 	 * @ff.mandatory
 	 */
 	public void setStatusValueError(String string) {
@@ -229,14 +230,14 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.
+	 * Value of <code>statusField</code> indicating is being processed. Can be left emtpy if database has <code>SKIP LOCKED</code> functionality and the <code>transactionAttribute</code> of the <code>Receiver</code> can be (and is) set to <code>Required</code> or <code>RequiresNew</code>.
 	 */
 	public void setStatusValueInProcess(String string) {
 		statusValues.put(ProcessState.INPROCESS, string);
 	}
 
 	/**
-	 * Value of status field indicating message is on Hold, temporarily
+	 * Value of <code>statusField</code> indicating message is on Hold, temporarily
 	 */
 	public void setStatusValueHold(String string) {
 		statusValues.put(ProcessState.HOLD, string);

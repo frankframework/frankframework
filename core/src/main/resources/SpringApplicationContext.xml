@@ -114,7 +114,7 @@
 				>
 				<property name="pipeLineProcessor">
 					<bean
-						class="org.frankframework.processors.CheckSemaphorePipeLineProcessor"
+						class="org.frankframework.processors.LimitingParallelExecutionPipeLineProcessor"
 						autowire="byName"
 						scope="prototype"
 						>
@@ -168,7 +168,7 @@
 						>
 						<property name="pipeProcessor">
 							<bean
-								class="org.frankframework.processors.CheckSemaphorePipeProcessor"
+								class="org.frankframework.processors.LimitingParallelExecutionPipeProcessor"
 								autowire="byName"
 								scope="prototype"
 								>

@@ -650,7 +650,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 
     public String checkPassword(String userDN, String password, String baseDN, String returnedAttribute) throws NamingException {
 
-    	if (userDN==null || userDN.equals("") || password==null || password.equals("")) {
+    	if (userDN==null || "".equals(userDN) || password==null || "".equals(password)) {
     		return null;
     	}
 		Hashtable<String,Object> env = new Hashtable<>();
@@ -669,11 +669,11 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     }
 
 	public String authenticate(String username, String password, String searchDN, String baseDN, String searchFilter, String returnedAttributeDN, String returnedAttributeResult) throws NamingException {
-		if (username==null|| username.equals("") || password==null|| password.equals("")) {
+		if (username==null|| "".equals(username) || password==null|| "".equals(password)) {
 			return null;
 		}
 		String userDN=searchSubtreeForSingleAttribute(searchDN,searchFilter, username, returnedAttributeDN);
-		if (userDN==null|| userDN.equals("")) {
+		if (userDN==null|| "".equals(userDN)) {
 			return null;
 		}
 		return checkPassword(userDN, password, baseDN, returnedAttributeResult);

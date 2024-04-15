@@ -48,14 +48,14 @@ public class PipeLineSessionDebugger implements MethodHandler {
 
 	@Override
 	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
-		if (method.getName().equals("put")) {
+		if ("put".equals(method.getName())) {
 			return put((String)args[0], args[1]);
 		}
-		if (method.getName().equals("putAll")) {
+		if ("putAll".equals(method.getName())) {
 			putAll((Map<String,Object>)args[0]);
 			return null;
 		}
-		if(method.getName().equals("getMessage")) {
+		if("getMessage".equals(method.getName())) {
 			return getMessage((String)args[0]);
 		}
 		return method.invoke(pipeLineSession, args);

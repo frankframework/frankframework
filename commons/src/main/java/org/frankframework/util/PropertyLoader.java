@@ -255,7 +255,7 @@ public class PropertyLoader extends Properties {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null) return dfault;
 
-		return ob.equalsIgnoreCase("true") || ob.equalsIgnoreCase("!false");
+		return "true".equalsIgnoreCase(ob) || "!false".equalsIgnoreCase(ob);
 	}
 
 	/**

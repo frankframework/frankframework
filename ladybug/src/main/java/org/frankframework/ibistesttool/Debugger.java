@@ -300,7 +300,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 										String sessionKey = checkpointName.substring("SessionKey ".length());
 										if (!sessionKey.equals(PipeLineSession.CORRELATION_ID_KEY) && !sessionKey.equals(PipeLineSession.MESSAGE_ID_KEY)
 												// messageId and id were used before 7.9
-												&& !sessionKey.equals("messageId") && !sessionKey.equals("id")
+												&& !"messageId".equals(sessionKey) && !"id".equals(sessionKey)
 												&& !sessionKey.equals(PipeLineSession.ORIGINAL_MESSAGE_KEY)) {
 											pipeLineSession.put(sessionKey, checkpoint.getMessage());
 										}

@@ -18,14 +18,14 @@ package org.frankframework.management.bus.endpoints;
 
 import org.apache.commons.io.FilenameUtils;
 import org.frankframework.management.bus.ActionSelector;
-import org.frankframework.management.bus.BinaryResponseMessage;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.ResponseMessageBase;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.springframework.http.MediaType;
@@ -48,7 +48,7 @@ public class FileViewer extends BusEndpointBase {
 	public Message<?> getFileContent(Message<?> message) {
 		String resultType = BusMessageUtils.getHeader(message, "resultType");
 		String fileName = BusMessageUtils.getHeader(message, "fileName");
-		ResponseMessageBase<?> response;
+		MessageBase<?> response;
 
 		if (fileName == null || resultType == null) {
 			throw new BusException("fileName or type not specified");
@@ -64,30 +64,30 @@ public class FileViewer extends BusEndpointBase {
 		return response;
 	}
 
-	private static BinaryResponseMessage getFileContentsByType(String filepath, String type) throws IOException {
+	private static BinaryMessage getFileContentsByType(String filepath, String type) throws IOException {
 		InputStream inputStream = new FileInputStream(filepath);
 		String filename = FilenameUtils.getName(filepath);
 
-		BinaryResponseMessage response;
+		BinaryMessage response;
 		switch (type.toLowerCase()) {
 			case "html":
-				response = new BinaryResponseMessage(inputStream, MediaType.TEXT_HTML);
+				response = new BinaryMessage(inputStream, MediaType.TEXT_HTML);
 				response.setFilename("inline", filename);
 				break;
 			case "xml":
-				response = new BinaryResponseMessage(inputStream, MediaType.APPLICATION_XML);
+				response = new BinaryMessage(inputStream, MediaType.APPLICATION_XML);
 				response.setFilename("inline", filename);
 				break;
 			case "plain":
-				response = new BinaryResponseMessage(inputStream, MediaType.TEXT_PLAIN);
+				response = new BinaryMessage(inputStream, MediaType.TEXT_PLAIN);
 				response.setFilename("inline", filename);
 				break;
 			case "zip":
-				response = new BinaryResponseMessage(inputStream, MediaType.valueOf("application/zip"));
+				response = new BinaryMessage(inputStream, MediaType.valueOf("application/zip"));
 				response.setFilename(filename);
 				break;
 			default:
-				response = new BinaryResponseMessage(inputStream, MediaType.APPLICATION_OCTET_STREAM);
+				response = new BinaryMessage(inputStream, MediaType.APPLICATION_OCTET_STREAM);
 				response.setFilename(filename);
 		}
 		return response;

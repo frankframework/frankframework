@@ -128,20 +128,20 @@ public class CompareStringPipe extends AbstractPipe {
 		if (ip != null) {
 			try {
 				Node n = XmlUtils.buildNode(ip);
-				if (n.getNodeName().equals("ignores")) {
+				if ("ignores".equals(n.getNodeName())) {
 					NodeList nList = n.getChildNodes();
 					for (int i = 0; i <= nList.getLength() - 1; i++) {
 						Node cn = nList.item(i);
-						if (cn.getNodeName().equals("ignore")) {
+						if ("ignore".equals(cn.getNodeName())) {
 							NodeList cnList = cn.getChildNodes();
 							String after = null;
 							String before = null;
 							for (int j = 0; j <= cnList.getLength() - 1; j++) {
 								Node ccn = cnList.item(j);
-								if (ccn.getNodeName().equals("after")) {
+								if ("after".equals(ccn.getNodeName())) {
 									after = ccn.getFirstChild().getNodeValue();
 								} else {
-									if (ccn.getNodeName().equals("before")) {
+									if ("before".equals(ccn.getNodeName())) {
 										before = ccn.getFirstChild().getNodeValue();
 									}
 

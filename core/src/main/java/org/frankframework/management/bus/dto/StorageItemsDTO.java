@@ -62,7 +62,7 @@ public class StorageItemsDTO {
 
 		this.totalMessages = total;
 		this.skipMessages = filter.getSkipMessages();
-		this.messageCount = (total - skipMessages);
+		this.messageCount = total - skipMessages;
 
 		Date startDate = filter.getStartDate();
 		Date endDate = filter.getEndDate();

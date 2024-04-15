@@ -21,7 +21,7 @@ public class TestCollector implements ICollector<TestCollectorPart> {
 	public TestCollectorPart createPart(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
 		try {
 			this.input.write(input.asString());
-			if (input.asString().equals("exception")) {
+			if ("exception".equals(input.asString())) {
 				throw new CollectionException("TestCollector exception");
 			}
 		} catch (IOException e) {

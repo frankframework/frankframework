@@ -47,7 +47,7 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 	@Override
 	public boolean _folderExists(String folderName) throws Exception {
 		MockFile mf = fileSystem.getFolders().get(folderName);
-		return (mf!=null && mf instanceof MockFolder);
+		return mf!=null && mf instanceof MockFolder;
 	}
 
 	@Override

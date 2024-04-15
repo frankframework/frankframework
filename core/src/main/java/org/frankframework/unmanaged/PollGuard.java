@@ -53,7 +53,7 @@ public class PollGuard extends TimerTask {
 		long currentCheck = System.currentTimeMillis();
 		if (lastPollFinishedTime < lastCheck) {												// if the last poll finished more than the pollGuardInterval seconds ago
 			if (lastPollFinishedTime != previousLastPollFinishedTime						//   and we did not earlier check for this same value
-				&& springJmsConnector.getThreadsProcessing().getValue() == 0						//   and we are not still processing a message
+				&& springJmsConnector.getThreadsProcessing().get() == 0						//   and we are not still processing a message
 				&& springJmsConnector.getReceiver().getRunState() == RunState.STARTED		//   and we are ready to pro
 				&& !springJmsConnector.getJmsContainer().isRecovering()) {					//   and we are not already in the process of recovering
 

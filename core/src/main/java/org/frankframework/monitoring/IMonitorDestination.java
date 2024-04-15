@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2023, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.monitoring;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.INamedObject;
 import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.XmlBuilder;
 
@@ -27,7 +28,7 @@ import org.frankframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-@FrankDocGroup(name = "Monitoring")
+@FrankDocGroup(FrankDocGroupValue.MONITORING)
 public interface IMonitorDestination extends INamedObject {
 
 	void configure() throws ConfigurationException;

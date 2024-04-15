@@ -107,7 +107,7 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void getBody11() {
+	void getBody11() {
 		String soapBody;
 		try {
 			soapBody = soapWrapper.getBody(new Message(soapMessageSoap11), false, null, null).asString();
@@ -118,7 +118,7 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void getBody12() {
+	void getBody12() {
 		String soapBody;
 		try {
 			soapBody = soapWrapper.getBody(new Message(soapMessageSoap12), false, null, null).asString();
@@ -238,7 +238,7 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void getBodyXmlAndStoreSoapNamespace() {
+	void getBodyXmlAndStoreSoapNamespace() {
 		String soapBody;
 		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
@@ -253,7 +253,7 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void signSoap11MessageDigestPassword() throws Exception {
+	void signSoap11MessageDigestPassword() throws Exception {
 		resetWSConfig();
 
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_passwordDigest_mock.xml");
@@ -265,7 +265,7 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void signSoap11Message() throws Exception {
+	void signSoap11Message() throws Exception {
 		resetWSConfig();
 
 		Message soapBody = soapWrapper.signMessage(new Message(soapMessageSoap11), "dummy-username", "dummy-password", false);
@@ -278,7 +278,7 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void validateSignedSoap1_1() throws Exception {
+	void validateSignedSoap1_1() throws Exception {
 		URL file = TestFileUtils.getTestFileURL("/Soap/signedSoap1_1.xml");
 		assertNotNull(file); //ensure we can find the file
 
@@ -321,7 +321,7 @@ public class SoapWrapperTest {
 	 * Test the creation of the UT token which is used to generate the ds:SignatureValue
 	 */
 	@Test
-	public void testPasswordDigest() throws Exception {
+	void testPasswordDigest() throws Exception {
 		String nonce = "4mG1rTLgRa8q40VPUrB+sQ==";
 		String timestamp = "2022-01-31T12:05:17Z";
 		String password = "dummy-password";
@@ -380,10 +380,10 @@ public class SoapWrapperTest {
 				throw new KeySelectorException("no KeyInfo supplied!");
 			}
 
-			List list = keyInfo.getContent();
+			List<XMLStructure> list = keyInfo.getContent();
 
 			for (int i = 0; i < list.size(); i++) {
-				XMLStructure xmlStructure = (XMLStructure) list.get(i);
+				XMLStructure xmlStructure = list.get(i);
 				if (xmlStructure instanceof DOMStructure && purpose.equals(KeySelector.Purpose.VERIFY)) {
 					DOMStructure dom = (DOMStructure) xmlStructure;
 					Node wsse = dom.getNode();
@@ -424,7 +424,7 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void signSoap11MessageBadFlow() {
+	void signSoap11MessageBadFlow() {
 		String soapMessage = "noSOAP";
 		String soapBody;
 		try {
@@ -456,19 +456,19 @@ public class SoapWrapperTest {
 			if (uri.equals(WSConstants.WSU_NS)) {
 				ns = Namespace.Timestamp;
 			}
-			if (uri.equals(WSConstants.WSSE_NS) && localName.equals("Nonce")) {
+			if (uri.equals(WSConstants.WSSE_NS) && "Nonce".equals(localName)) {
 				ns = Namespace.Nonce;
 			}
-			if (uri.equals(WSConstants.WSSE_NS) && localName.equals("Password")) {
+			if (uri.equals(WSConstants.WSSE_NS) && "Password".equals(localName)) {
 				ns = Namespace.Password;
 			}
-			if (uri.equals(WSConstants.SIG_NS) && localName.equals("SignatureValue")) {
+			if (uri.equals(WSConstants.SIG_NS) && "SignatureValue".equals(localName)) {
 				ns = Namespace.SignatureValue;
 			}
-			if (uri.equals(WSConstants.WSSE_NS) && localName.equals("SecurityTokenReference")) {
+			if (uri.equals(WSConstants.WSSE_NS) && "SecurityTokenReference".equals(localName)) {
 				atts = new AttributesWrapper(atts, "Id");
 			}
-			if (uri.equals(WSConstants.SIG_NS) && localName.equals("KeyInfo")) {
+			if (uri.equals(WSConstants.SIG_NS) && "KeyInfo".equals(localName)) {
 				atts = new AttributesWrapper(atts, "Id");
 			}
 
@@ -502,10 +502,10 @@ public class SoapWrapperTest {
 
 			@Override
 			public String createId(String prefix, Object o) {
-				if (prefix.equals("TS-")) {
+				if ("TS-".equals(prefix)) {
 					prefix = "Timestamp-";
 				}
-				if (prefix.equals("SIG-")) {
+				if ("SIG-".equals(prefix)) {
 					prefix = "Signature-";
 				}
 				return StringUtil.concat("", prefix, "" + i.getAndIncrement());

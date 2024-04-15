@@ -20,7 +20,6 @@ import static org.frankframework.functional.FunctionalUtil.logValue;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -734,7 +733,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		Enumeration<String> names = message.getPropertyNames();
 		while (names.hasMoreElements()) {
 			String name = names.nextElement();
-			result.put(name, (Serializable) message.getObjectProperty(name));
+			result.put(name, message.getObjectProperty(name));
 		}
 		return result;
 	}

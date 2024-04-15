@@ -394,7 +394,7 @@ public class PipeLineSessionTest {
 		// Arrange
 		javax.jms.Session jmsSession = mock(AutoCloseableJmsSession.class);
 		session.put("__JmsSession", jmsSession);
-		doAnswer((params) -> fail("Should not close JMS Session")).when(jmsSession).close();
+		doAnswer(params -> fail("Should not close JMS Session")).when(jmsSession).close();
 
 		java.sql.Connection jdbcConnection = mock(java.sql.Connection.class);
 		session.put("CloseThis", jdbcConnection);

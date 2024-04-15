@@ -16,9 +16,9 @@
 package org.frankframework.http.authentication;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,11 +33,19 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.http.HttpSessionBase;
+import org.frankframework.task.TimeoutGuard;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -56,29 +64,25 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 
-import org.frankframework.http.HttpSessionBase;
-import org.frankframework.task.TimeoutGuard;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.StreamUtil;
-import org.frankframework.util.StringUtil;
-
 public class OAuthAccessTokenManager {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private URI tokenEndpoint;
 	private final Scope scope;
 	private final CredentialFactory clientCredentialFactory;
-	private final boolean useClientCredentialsGrant;
+	private final boolean useClientCredentials;
 	private final HttpSessionBase httpSession;
 	private final int expiryMs;
-	private final boolean authenticatedTokenRequest; // if set true, clientId and clientSecret will be added as Basic Authentication header, instead of as request parameters
+	private final AuthenticationType authenticationType;
 
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
 
-	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory clientCF, boolean useClientCredentialsGrant, boolean authenticatedTokenRequest, HttpSessionBase httpSession, int expiry) throws HttpAuthenticationException {
+	public enum AuthenticationType {
+		AUTHENTICATION_HEADER, REQUEST_PARAMETER
+	}
+
+	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory clientCF, boolean useClientCredentials, AuthenticationType authType, HttpSessionBase httpSession, int expiry) throws HttpAuthenticationException {
 		try {
 			this.tokenEndpoint = new URI(tokenEndpoint);
 		} catch (URISyntaxException e) {
@@ -87,8 +91,8 @@ public class OAuthAccessTokenManager {
 
 		this.scope = StringUtils.isNotEmpty(scope) ? Scope.parse(scope) : null;
 		this.clientCredentialFactory = clientCF;
-		this.useClientCredentialsGrant = useClientCredentialsGrant;
-		this.authenticatedTokenRequest = authenticatedTokenRequest;
+		this.useClientCredentials = useClientCredentials;
+		this.authenticationType = authType;
 		this.httpSession = httpSession;
 		this.expiryMs = expiry * 1000;
 	}
@@ -124,9 +128,9 @@ public class OAuthAccessTokenManager {
 	protected TokenRequest createRequest(Credentials credentials) {
 		AuthorizationGrant grant;
 
-		if (useClientCredentialsGrant) {
+		if (useClientCredentials) { //Client authentication is required
 			grant = new ClientCredentialsGrant();
-		} else {
+		} else { //Client authentication required only for confidential clients
 			String username = credentials.getUserPrincipal().getName();
 			Secret password = new Secret(credentials.getPassword());
 			grant = new ResourceOwnerPasswordCredentialsGrant(username, password);
@@ -170,9 +174,10 @@ public class OAuthAccessTokenManager {
 	// convert the Nimbus HTTPRequest into an Apache HttpClient HttpRequest
 	protected HttpRequestBase convertToApacheHttpRequest(HTTPRequest httpRequest) throws HttpAuthenticationException {
 		HttpRequestBase apacheHttpRequest;
-		String query = httpRequest.getQuery();
-		if (!authenticatedTokenRequest) {
-			List<NameValuePair> clientInfo= new LinkedList<>();
+		String query = httpRequest.getQuery(); //This is the POST BODY, don't ask me why they called it QUERY...
+
+		if(authenticationType == AuthenticationType.REQUEST_PARAMETER) {
+			List<NameValuePair> clientInfo = new LinkedList<>();
 			clientInfo.add(new BasicNameValuePair("client_id", clientCredentialFactory.getUsername()));
 			clientInfo.add(new BasicNameValuePair("client_secret", clientCredentialFactory.getPassword()));
 			query = StringUtil.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
@@ -182,14 +187,10 @@ public class OAuthAccessTokenManager {
 				String url = StringUtil.concatStrings(httpRequest.getURL().toExternalForm(), "?", query);
 				apacheHttpRequest = new HttpGet(url);
 				break;
-			case POST:
+			case POST: //authenticationType.HEADER is always POST
 				apacheHttpRequest = new HttpPost(httpRequest.getURL().toExternalForm());
-				apacheHttpRequest.addHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-				try {
-					((HttpPost)apacheHttpRequest).setEntity(new StringEntity(query));
-				} catch (UnsupportedEncodingException e) {
-					throw new HttpAuthenticationException("Could not create TokenRequest", e);
-				}
+				ContentType contentType = ContentType.APPLICATION_FORM_URLENCODED.withCharset(StandardCharsets.UTF_8);
+				((HttpPost)apacheHttpRequest).setEntity(new StringEntity(query, contentType));
 
 				break;
 			default:

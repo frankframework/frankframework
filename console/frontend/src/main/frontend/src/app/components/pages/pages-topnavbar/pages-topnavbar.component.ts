@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -5,14 +6,27 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  Renderer2,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { AppRoutingModule } from 'src/app/app-routing.module';
 import { NotificationService } from 'src/app/services/notification.service';
+import { HamburgerComponent } from './hamburger.component';
+import { TimeSinceDirective } from '../../time-since.directive';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-pages-topnavbar',
   templateUrl: './pages-topnavbar.component.html',
   styleUrls: ['./pages-topnavbar.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    AppRoutingModule,
+    HamburgerComponent,
+    TimeSinceDirective,
+    NgbDropdownModule,
+  ],
 })
 export class PagesTopnavbarComponent implements OnInit, OnDestroy {
   notificationCount: number = this.Notification.getCount();
@@ -27,7 +41,10 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy {
 
   private _subscriptions = new Subscription();
 
-  constructor(private Notification: NotificationService) {}
+  constructor(
+    private Notification: NotificationService,
+    private renderer: Renderer2,
+  ) {}
 
   ngOnInit(): void {
     const notifCountSub = this.Notification.onCountUpdate$.subscribe(() => {
@@ -46,10 +63,20 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy {
   }
 
   hoverFeedback(rating: number): void {
-    $('.rating i').removeClass('fa-star').addClass('fa-star-o');
-    $(`.rating i:nth-child(-n+${rating + 1})`)
-      .addClass('fa-star')
-      .removeClass('fa-star-o');
+    const ratingElements = document.querySelectorAll('rating i');
+    const selectedRatingElements = document.querySelectorAll(
+      `.rating i:nth-child(-n+${rating + 1})`,
+    );
+
+    for (const element of ratingElements) {
+      this.renderer.removeClass(element, 'fa-star');
+      this.renderer.addClass(element, 'fa-star-o');
+    }
+
+    for (const element of selectedRatingElements) {
+      this.renderer.addClass(element, 'fa-star');
+      this.renderer.removeClass(element, 'fa-star-o');
+    }
   }
 
   resetNotificationCount(): void {

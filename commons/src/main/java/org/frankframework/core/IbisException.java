@@ -58,7 +58,7 @@ public class IbisException extends Exception {
 				final String parsedString=ae.getRef();
 				final String errorMessage = StringUtils.isNotEmpty(parsedString) ? "["+parsedString+"]" : null;
 				final int column = ae.getPos()+1;
-				return (column>0) ? StringUtil.concatStrings(errorMessage, " ", "at column ["+column+"]") : errorMessage;
+				return column>0 ? StringUtil.concatStrings(errorMessage, " ", "at column ["+column+"]") : errorMessage;
 			}
 
 			case "org.xml.sax.SAXParseException": {
@@ -84,7 +84,7 @@ public class IbisException extends Exception {
 			case "oracle.jdbc.xa.OracleXAException": {
 				oracle.jdbc.xa.OracleXAException oxae = (oracle.jdbc.xa.OracleXAException)t;
 				int xaError = oxae.getXAError();
-				return (xaError != 0) ? "xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]" : null;
+				return xaError != 0 ? "xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]" : null;
 			}
 
 			default:

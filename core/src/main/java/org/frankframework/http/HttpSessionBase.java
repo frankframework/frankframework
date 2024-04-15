@@ -78,6 +78,7 @@ import org.frankframework.http.authentication.HttpAuthenticationException;
 import org.frankframework.http.authentication.OAuthAccessTokenManager;
 import org.frankframework.http.authentication.OAuthAuthenticationScheme;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
+import org.frankframework.http.authentication.OAuthAccessTokenManager.AuthenticationType;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
@@ -149,11 +150,11 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	/* CONNECTION POOL */
-	private @Getter int timeout = 10000;
+	private @Getter int timeout = 10_000;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
 	private @Getter boolean staleChecking=true;
-	private @Getter int staleTimeout = 5000; // [ms]
+	private @Getter int staleTimeout = 5_000; // [ms]
 	private @Getter int connectionTimeToLive = 900; // [s]
 	private @Getter int connectionIdleTimeout = 10; // [s]
 	private final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
@@ -172,6 +173,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private @Getter String clientId;
 	private @Getter String clientSecret;
 	private @Getter String scope;
+
 	private @Getter boolean authenticatedTokenRequest;
 
 	/* PROXY */
@@ -362,7 +364,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		connectionManager.setDefaultMaxPerRoute(getMaxConnections());
 
 		if (isStaleChecking()) {
-			log.info("set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
+			log.info("set up connectionManager, setting stale checking [true]");
 			connectionManager.setValidateAfterInactivity(getStaleTimeout());
 		}
 
@@ -416,7 +418,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			requestConfigBuilder.setAuthenticationEnabled(true);
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
-				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, user_cf==null, isAuthenticatedTokenRequest(), this, getTokenExpiry());
+				AuthenticationType authType = isAuthenticatedTokenRequest() ? AuthenticationType.AUTHENTICATION_HEADER : AuthenticationType.REQUEST_PARAMETER;
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, user_cf==null, authType, this, getTokenExpiry());
 				defaultHttpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
@@ -519,7 +522,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	/**
-	 * Timeout in ms of obtaining a connection/result. 0 means no timeout
+	 * Timeout in ms of obtaining a connection/result.
 	 * @ff.default 10000
 	 */
 	public void setTimeout(int i) {
@@ -714,8 +717,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		keystoreAliasPassword = string;
 	}
 
-	@Override
 	/** Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
+	@Override
 	public void setTruststore(String string) {
 		truststore = string;
 	}

@@ -198,13 +198,13 @@ class FrankJ2V8LibraryLoader {
 
 	static String getArchSuffix() {
 		String arch = System.getProperty("os.arch");
-		if (arch.equals("i686")) {
+		if ("i686".equals(arch)) {
 			return "x86";
-		} else if (arch.equals("amd64")) {
+		} else if ("amd64".equals(arch)) {
 			return "x86_64";
-		} else if (arch.equals("nacl")) {
+		} else if ("nacl".equals(arch)) {
 			return "armv7l";
-		} else if (arch.equals("aarch64")) {
+		} else if ("aarch64".equals(arch)) {
 			return "armv7l";
 		}
 		return arch;

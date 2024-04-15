@@ -1,5 +1,7 @@
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
@@ -15,6 +17,8 @@ type FeedbackForm = {
   selector: 'app-feedback-modal',
   templateUrl: './feedback-modal.component.html',
   styleUrls: ['./feedback-modal.component.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
 })
 export class FeedbackModalComponent implements OnInit {
   @Input() rating: number = 0;

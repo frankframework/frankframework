@@ -615,7 +615,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 		@Override
 		protected boolean isEndMarker(IOutputField function) {
-			return (function instanceof EndIfCondition);
+			return function instanceof EndIfCondition;
 		}
 	}
 

@@ -4,6 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Timer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.Message;
 
@@ -14,7 +15,6 @@ import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.unmanaged.PollGuard;
 import org.frankframework.unmanaged.SpringJmsConnector;
-import org.frankframework.util.Counter;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 import lombok.Getter;
@@ -34,7 +34,7 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
 		DefaultMessageListenerContainer mockContainer = mock(DefaultMessageListenerContainer.class);
 		mockConnector = mock(SpringJmsConnector.class);
 		when(mockConnector.getLastPollFinishedTime()).thenAnswer(invocationOnMock -> System.currentTimeMillis() - mockLastPollDelayMs);
-		when(mockConnector.getThreadsProcessing()).thenReturn(new Counter(0));
+		when(mockConnector.getThreadsProcessing()).thenReturn(new AtomicInteger());
 		when(mockConnector.getReceiver()).thenReturn(receiver);
 		when(mockConnector.getListener()).thenReturn(this);
 		when(mockConnector.getJmsContainer()).thenReturn(mockContainer);

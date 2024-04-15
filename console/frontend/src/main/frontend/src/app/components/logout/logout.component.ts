@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Idle } from '@ng-idle/core';
@@ -7,6 +8,8 @@ import { PollerService } from 'src/app/services/poller.service';
 @Component({
   selector: 'app-logout',
   template: '',
+  standalone: true,
+  imports: [CommonModule],
 })
 export class LogoutComponent implements OnInit {
   constructor(

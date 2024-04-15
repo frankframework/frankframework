@@ -264,7 +264,7 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 	/**
 	 * Checks if the {@code log.level} is set in the system properties.
 	 * If not set, sets it based on {@code dtap.stage}: When system property {@code dtap.stage}
-	 * is {@code ACC} or {@code PRD} then the log level is set to {@code WARN}, otherwise to {@code DEBUG}.
+	 * is {@code ACC} or {@code PRD} then the log level is set to {@code WARN}, otherwise to {@code INFO}.
 	 */
 	private static void setLevel(Properties properties) {
 		if (properties.getProperty("log.level") == null) {
@@ -272,7 +272,7 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 			// You can set this property in the log4j4ibis.properties, or as system property.
 			// To make sure the IBIS can start up if no log.level property has been found, it has to be explicitly set
 			String stage = properties.getProperty("dtap.stage");
-			String logLevel = "DEBUG";
+			String logLevel = "INFO";
 			if("ACC".equalsIgnoreCase(stage) || "PRD".equalsIgnoreCase(stage)) {
 				logLevel = "WARN";
 			}
@@ -292,7 +292,7 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 		for(String option : logDirectoryHierarchy) {
 			int splitIndex = option.indexOf('/');
 
-			String property = System.getProperty(option.substring(0, (splitIndex == -1) ? option.length() : splitIndex));
+			String property = System.getProperty(option.substring(0, splitIndex == -1 ? option.length() : splitIndex));
 			if(property == null)
 				continue;
 

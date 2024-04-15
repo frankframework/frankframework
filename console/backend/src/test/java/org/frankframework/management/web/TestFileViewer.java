@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.FilenameUtils;
-import org.frankframework.management.bus.ResponseMessageBase;
+import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -39,7 +39,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 		String filePath = fileUrl.getPath();
 		String fileName = FilenameUtils.getName(filePath);
 
-		doAnswer((i) -> getDefaultAnswer(i, filePath)).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
+		doAnswer(i -> getDefaultAnswer(i, filePath)).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		String requestUrl = "/file-viewer?file=" + fileName;
 		Response response = dispatcher.dispatchRequest(HttpMethod.GET, requestUrl, null, IbisRole.IbisTester, Map.of("Accept", MediaType.TEXT_HTML));
@@ -57,7 +57,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 		String filePath = fileUrl.getPath();
 		String fileName = FilenameUtils.getName(filePath);
 
-		doAnswer((i) -> getDefaultAnswer(i, filePath)).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
+		doAnswer(i -> getDefaultAnswer(i, filePath)).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		String requestUrl = "/file-viewer?file=" + fileName;
 		Response response = dispatcher.dispatchRequest(HttpMethod.GET, requestUrl, null, IbisRole.IbisTester, Map.of("Accept", MediaType.TEXT_PLAIN));
@@ -74,9 +74,9 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 		String filePath = fileUrl.getPath();
 		String fileName = FilenameUtils.getName(filePath);
 
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			inputMessage.setPayload(new FileInputStream(filePath));
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
@@ -96,7 +96,7 @@ public class TestFileViewer extends FrankApiTestBase<FileViewer> {
 
 	private static Message<?> getDefaultAnswer(InvocationOnMock i, String filePath) throws FileNotFoundException {
 		RequestMessageBuilder inputMessage = i.getArgument(0);
-		inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+		inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 		inputMessage.setPayload(new FileInputStream(filePath));
 		Message<?> msg = inputMessage.build();
 		MessageHeaders headers = msg.getHeaders();

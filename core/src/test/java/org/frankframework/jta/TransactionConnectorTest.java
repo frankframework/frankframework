@@ -23,9 +23,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionObject;
 
-import bitronix.tm.BitronixTransaction;
-import bitronix.tm.internal.XAResourceManager;
-import bitronix.tm.utils.Uid;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -244,14 +241,6 @@ public class TransactionConnectorTest {
 			Object suspendedResources = ClassUtils.getDeclaredFieldValue(resources, "suspendedResources");
 			if (suspendedResources!=null) {
 				System.out.println("-> suspendedResources: "+ToStringBuilder.reflectionToString(suspendedResources, ToStringStyle.MULTI_LINE_STYLE));
-
-				if (suspendedResources instanceof BitronixTransaction) {
-					BitronixTransaction bt = (BitronixTransaction)suspendedResources;
-					XAResourceManager rm = bt.getResourceManager();
-					System.out.println("-> XAResourceManager: "+ToStringBuilder.reflectionToString(rm, ToStringStyle.MULTI_LINE_STYLE));
-					Uid gtrid = rm.getGtrid();
-					System.out.println("-> gtrid: "+gtrid);
-				}
 			}
 		}
 	}

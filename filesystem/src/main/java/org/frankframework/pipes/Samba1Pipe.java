@@ -17,7 +17,7 @@ package org.frankframework.pipes;
 
 import jcifs.smb.SmbFile;
 import org.frankframework.filesystem.FileSystemPipe;
-import org.frankframework.filesystem.Samba1FileSystem;
+import org.frankframework.filesystem.smb.Samba1FileSystem;
 import org.frankframework.filesystem.smb.Samba1FileSystemDelegator;
 
 /**

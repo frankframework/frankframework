@@ -1,14 +1,18 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { AppRoutingModule } from 'src/app/app-routing.module';
 import { AppConstants, AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-custom-views',
   templateUrl: './custom-views.component.html',
   styleUrls: ['./custom-views.component.scss'],
+  standalone: true,
+  imports: [CommonModule, AppRoutingModule],
 })
 export class CustomViewsComponent implements OnInit, OnDestroy {
-  appConstants: AppConstants;
+  appConstants: AppConstants = this.appService.APP_CONSTANTS;
   customViews: {
     view: string;
     name: string;
@@ -17,16 +21,14 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
 
   private _subscriptions = new Subscription();
 
-  constructor(private appService: AppService) {
-    this.appConstants = this.appService.APP_CONSTANTS;
-  }
+  constructor(private appService: AppService) {}
 
   ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(
       () => {
         this.appConstants = this.appService.APP_CONSTANTS;
         const customViews = this.appConstants['customViews.names'] as string;
-        if (customViews == undefined) return;
+        if (typeof customViews !== 'string') return;
 
         if (customViews.length > 0) {
           const views = customViews.split(',');

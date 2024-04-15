@@ -5,6 +5,7 @@ import {
   CertificateList,
   Datasource,
   JmsRealm,
+  Link,
   SapSystem,
   SecurityItemsService,
   SecurityRole,
@@ -28,6 +29,7 @@ export class SecurityItemsComponent implements OnInit {
     protocols: [],
     cyphers: [],
   };
+  links: Link[] = [];
 
   constructor(
     private appService: AppService,
@@ -59,6 +61,10 @@ export class SecurityItemsComponent implements OnInit {
       this.securityRoles = data.securityRoles;
       this.xmlComponents = data.xmlComponents;
       this.supportedConnectionOptions = data.supportedConnectionOptions;
+    });
+
+    this.securityItemsService.getEndpointsWithRoles().subscribe(({ links }) => {
+      this.links = links;
     });
   }
 }

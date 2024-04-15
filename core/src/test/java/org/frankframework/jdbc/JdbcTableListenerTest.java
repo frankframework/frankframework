@@ -28,7 +28,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.Semaphore;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowser.SortOrder;
 import org.frankframework.core.ListenerException;
@@ -44,13 +51,6 @@ import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
-import org.frankframework.util.Semaphore;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = JdbcTableListenerTest.TEST_TABLE)
@@ -475,10 +475,10 @@ public class JdbcTableListenerTest {
 
 		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(env::getConnection);
 		RawMessageWrapper rawMessage1;
-		Semaphore waitBeforeUpdate = new Semaphore();
-		Semaphore updateDone = new Semaphore();
-		Semaphore waitBeforeCommit = new Semaphore();
-		Semaphore commitDone = new Semaphore();
+		Semaphore waitBeforeUpdate = new Semaphore(0);
+		Semaphore updateDone = new Semaphore(0);
+		Semaphore waitBeforeCommit = new Semaphore(0);
+		Semaphore commitDone = new Semaphore(0);
 		try (Connection conn = env.getConnection()) {
 			conn.setAutoCommit(false);
 			try {

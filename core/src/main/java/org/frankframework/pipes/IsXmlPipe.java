@@ -66,7 +66,7 @@ public class IsXmlPipe extends AbstractPipe {
 				}
 			} else {
 				String firstChar = sInput.replaceAll("^\\s+", "").substring(0, 1);
-				if (firstChar.equals("<")) {
+				if ("<".equals(firstChar)) {
 					forward = thenForwardName;
 				} else {
 					forward = elseForwardName;

@@ -91,20 +91,20 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			if (c != null) {
 				for (Iterator<String> it = c.iterator(); it.hasNext();) {
 					String token = it.next();
-					if (token.equals("../")) {
+					if ("../".equals(token)) {
 						// skip reference to parent directory
-					} else if (cLevel == 0 && !token.equals("BW/")
-							&& !token.equals("SOA/")) {
+					} else if (cLevel == 0 && !"BW/".equals(token)
+							&& !"SOA/".equals(token)) {
 						skipDir(xmlStreamWriter, token);
 						// } else if (cLevel == 1 &&
 						// !token.startsWith("Customer")) {
 						// skipDir(xmlStreamWriter, token);
 					} else if (cLevel == 2
-							&& (token.equals("branches/") || token
-									.equals("tags/")) && c.contains("trunk/")) {
+							&& ("branches/".equals(token) || "tags/"
+									.equals(token)) && c.contains("trunk/")) {
 						skipDir(xmlStreamWriter, token);
-					} else if (cLevel == 3 && !token.equals("src/")
-							&& c.contains("src/") && !token.equals("release/")) {
+					} else if (cLevel == 3 && !"src/".equals(token)
+							&& c.contains("src/") && !"release/".equals(token)) {
 						skipDir(xmlStreamWriter, token);
 						// } else if (cLevel == 5 && token.endsWith("/")) {
 						// skipDir(xmlStreamWriter, token);
@@ -144,7 +144,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 									addFileContent(xmlStreamWriter, newUrl,
 											"process");
 								}
-								if (token.equals("defaultVars.substvar")) {
+								if ("defaultVars.substvar".equals(token)) {
 									addFileContent(xmlStreamWriter, newUrl,
 											"substVar");
 								}
@@ -202,7 +202,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 		if (content != null) {
 			Vector<String> warnMessage = new Vector<>();
 			try {
-				if (type.equals("jmsDest") || type.equals("jmsDestConf")) {
+				if ("jmsDest".equals(type) || "jmsDestConf".equals(type)) {
 					// AMX - receive (for jmsInboundDest)
 					Collection<String> c1 = XmlUtils.evaluateXPathNodeSet(
 							content, "namedResource/@name");
@@ -231,7 +231,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 					} else {
 						warnMessage.add("no resourceJndiName found");
 					}
-				} else if (type.equals("composite")) {
+				} else if ("composite".equals(type)) {
 					// AMX - receive
 					Collection<String> c1 = XmlUtils
 							.evaluateXPathNodeSet(
@@ -291,7 +291,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 					} else {
 						warnMessage.add("no wsdlLocation found");
 					}
-				} else if (type.equals("process")) {
+				} else if ("process".equals(type)) {
 					// BW - receive
 					Double d1 = XmlUtils
 							.evaluateXPathNumber(
@@ -344,7 +344,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 					} else {
 						warnMessage.add("no soapSendReceiveActivity found");
 					}
-				} else if (type.equals("substVar")) {
+				} else if ("substVar".equals(type)) {
 					String path = StringUtils.substringBeforeLast(StringUtils
 							.substringAfterLast(urlString, "/defaultVars/"),
 							"/");

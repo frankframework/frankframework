@@ -16,7 +16,7 @@
 package org.frankframework.receivers;
 
 import org.frankframework.filesystem.FileSystemListener;
-import org.frankframework.filesystem.FtpFileSystem;
+import org.frankframework.filesystem.ftp.FtpFileSystem;
 import org.frankframework.filesystem.ftp.FTPFileRef;
 import org.frankframework.filesystem.ftp.FtpFileSystemDelegator;
 

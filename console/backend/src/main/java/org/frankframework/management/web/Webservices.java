@@ -87,7 +87,7 @@ public final class Webservices extends FrankApiBase {
 		int dotPos=resourceName.lastIndexOf('.');
 		if (dotPos>=0) {
 			adapterName = resourceName.substring(0,dotPos);
-			boolean zip = resourceName.substring(dotPos).equals(".zip");
+			boolean zip = ".zip".equals(resourceName.substring(dotPos));
 			request.addHeader("zip", zip);
 		} else {
 			adapterName = resourceName;

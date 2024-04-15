@@ -1,13 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { AppService } from 'src/app/app.service';
+import { copyToClipboard } from '../../../utils';
+import { ToastService } from '../../../services/toast.service';
+import { CommonModule } from '@angular/common';
+import { TimeSinceDirective } from '../../time-since.directive';
+import { ToDateDirective } from '../../to-date.directive';
 
 @Component({
   selector: 'app-information-modal',
   templateUrl: './information-modal.component.html',
   styleUrls: ['./information-modal.component.scss'],
+  standalone: true,
+  imports: [CommonModule, TimeSinceDirective, ToDateDirective],
 })
 export class InformationModalComponent implements OnInit {
+  @ViewChild('environmentInformation')
+  environmentInformation!: ElementRef<HTMLParagraphElement>;
   error = false;
 
   framework: {
@@ -44,6 +53,7 @@ export class InformationModalComponent implements OnInit {
   constructor(
     private activeModal: NgbActiveModal,
     private appService: AppService,
+    private toastService: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -66,5 +76,13 @@ export class InformationModalComponent implements OnInit {
 
   close(): void {
     this.activeModal.close();
+  }
+
+  copy(): void {
+    copyToClipboard(this.environmentInformation.nativeElement.innerText); // Needs to be innerText to copy newlines.
+    this.toastService.success(
+      'Copied',
+      'Copied environment information to clipboard',
+    );
   }
 }

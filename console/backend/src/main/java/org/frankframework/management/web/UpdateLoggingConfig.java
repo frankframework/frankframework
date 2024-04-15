@@ -100,15 +100,15 @@ public class UpdateLoggingConfig extends FrankApiBase {
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("level")) {
+			if("level".equalsIgnoreCase(key)) {
 				Level level = Level.toLevel(""+value, null);
 				if(level != null) {
 					request.addHeader("level", level.name());
 				}
-			} else if(key.equalsIgnoreCase("logger")) {
+			} else if("logger".equalsIgnoreCase(key)) {
 				String logPackage = (String) value;
 				request.addHeader("logPackage", logPackage);
-			} else if(key.equalsIgnoreCase("reconfigure")) {
+			} else if("reconfigure".equalsIgnoreCase(key)) {
 				boolean reconfigure = Boolean.parseBoolean(""+value);
 				request.addHeader("reconfigure", reconfigure);
 			}

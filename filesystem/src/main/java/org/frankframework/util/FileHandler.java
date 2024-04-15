@@ -89,6 +89,7 @@ import lombok.Setter;
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
+@Deprecated(forRemoval = true, since = "7.8")
 public class FileHandler implements IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -154,10 +155,10 @@ public class FileHandler implements IScopeProvider {
 
 		if (transformers.isEmpty())
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
-		if (!outputType.equalsIgnoreCase("string")
-				&& !outputType.equalsIgnoreCase("bytes")
-				&& !outputType.equalsIgnoreCase("base64")
-				&& !outputType.equalsIgnoreCase("stream")) {
+		if (!"string".equalsIgnoreCase(outputType)
+				&& !"bytes".equalsIgnoreCase(outputType)
+				&& !"base64".equalsIgnoreCase(outputType)
+				&& !"stream".equalsIgnoreCase(outputType)) {
 			throw new ConfigurationException(getLogPrefix(null)+"illegal value for outputType ["+outputType+"], must be 'string', 'bytes' or 'stream'");
 		}
 
@@ -289,7 +290,7 @@ public class FileHandler implements IScopeProvider {
 
 	private Object getEffectiveFile(byte[] in, PipeLineSession session) {
 		String name = getEffectiveFileName(in, session);
-		if (fileSource.equals("classpath")) {
+		if ("classpath".equals(fileSource)) {
 			return ClassLoaderUtils.getResourceURL(this, name);
 		} else {
 			if (StringUtils.isNotEmpty(getDirectory())) {
@@ -440,10 +441,10 @@ public class FileHandler implements IScopeProvider {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
 				}
 			}
-			if (!fileSource.equalsIgnoreCase("filesystem") && !fileSource.equalsIgnoreCase("classpath")) {
+			if (!"filesystem".equalsIgnoreCase(fileSource) && !"classpath".equalsIgnoreCase(fileSource)) {
 				throw new ConfigurationException(getLogPrefix(null)+"illegal value for fileSource ["+outputType+"], must be 'filesystem' or 'classpath'");
 			}
-			if (deleteAfterRead && fileSource.equalsIgnoreCase("classpath")) {
+			if (deleteAfterRead && "classpath".equalsIgnoreCase(fileSource)) {
 				throw new ConfigurationException(getLogPrefix(null)+"read_delete not allowed in combination with fileSource ["+outputType+"]");
 			}
 		}
@@ -497,7 +498,7 @@ public class FileHandler implements IScopeProvider {
 					throw new ConfigurationException(directory + " is not a directory");
 				}
 			}
-			if (fileSource.equalsIgnoreCase("classpath")) {
+			if ("classpath".equalsIgnoreCase(fileSource)) {
 				throw new ConfigurationException(getLogPrefix(null)+"delete not allowed in combination with fileSource ["+outputType+"]");
 			}
 		}

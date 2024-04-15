@@ -90,7 +90,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 	}
 
 	private boolean isPasswordProtected(MediaType mediaType) {
-		return ("x-tika-ooxml-protected".equals(mediaType.getSubtype()));
+		return "x-tika-ooxml-protected".equals(mediaType.getSubtype());
 	}
 
 	/**

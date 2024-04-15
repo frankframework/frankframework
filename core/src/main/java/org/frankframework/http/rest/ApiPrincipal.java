@@ -43,7 +43,7 @@ public class ApiPrincipal implements Serializable {
 	}
 
 	public boolean isLoggedIn() {
-		return (expires - System.currentTimeMillis() >= 0);
+		return expires - System.currentTimeMillis() >= 0;
 	}
 
 	public void updateExpiry() {

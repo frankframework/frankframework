@@ -83,7 +83,7 @@ public class JsonDocumentWriter extends AbstractBsonWriter {
 	protected void doWriteStartDocument() {
 		strictJsonWriter.writeStartObject();
 
-		BsonContextType contextType = (getState() == State.SCOPE_DOCUMENT) ? BsonContextType.SCOPE_DOCUMENT
+		BsonContextType contextType = getState() == State.SCOPE_DOCUMENT ? BsonContextType.SCOPE_DOCUMENT
 				: BsonContextType.DOCUMENT;
 		setContext(new Context(getContext(), contextType));
 	}

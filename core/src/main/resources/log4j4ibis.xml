@@ -92,7 +92,6 @@
 		<Logger name="org.aspectj.weaver" level="WARN" />
 		<Logger name="bitronix.tm" level="INFO" />
 		<Logger name="com.arjuna" level="INFO" />
-		<Logger name="org.frankframework.jta.btm.BtmJtaTransactionManager" level="WARN" />
 		<Logger name="org.frankframework.jta.narayana.NarayanaJtaTransactionManager" level="WARN" />
 		<Logger name="org.frankframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
 		<Logger name="com.hierynomus" level="WARN" /> <!-- SMB2 client -->
@@ -105,7 +104,6 @@
 
 		<Logger name="liquibase.migrationLog" level="INFO">
 			<AppenderRef ref="systemout"/>
-			<AppenderRef ref="config"/>
 		</Logger>
 
 		<Logger name="MSG" additivity="false" level="INFO">

@@ -99,11 +99,11 @@ public abstract class MessageUtils {
 	/**
 	 * If content is present (POST/PUT) one of the following headers must be set:<br/>
 	 * Content-Length / Transfer-Encoding <br/>
-	 * If neither header is present a <code>nullMessage</code> will be returned.
+	 * If neither header is present, or the size is <code>0</code> a <code>nullMessage</code> will be returned.
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc7230#section-3.3">rfc7230</a>
 	 */
 	public static Message parseContentAsMessage(HttpServletRequest request) throws IOException {
-		if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
+		if(request.getContentLength() > 0 || request.getHeader("transfer-encoding") != null) {
 			return new Message(request.getInputStream(), getContext(request));
 		} else {
 			// We want the context because of the request headers
@@ -200,7 +200,7 @@ public abstract class MessageUtils {
 	public static boolean isMimeType(Message message, MimeType compareTo) {
 		MessageContext context = message.getContext();
 		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
-		return (mimeType != null && mimeType.includes(compareTo));
+		return mimeType != null && mimeType.includes(compareTo);
 	}
 
 	/**

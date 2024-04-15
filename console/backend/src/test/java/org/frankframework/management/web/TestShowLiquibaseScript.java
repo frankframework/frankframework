@@ -17,7 +17,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
 import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.ResponseMessageBase;
+import org.frankframework.management.bus.message.MessageBase;
 
 public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScript>{
 
@@ -28,9 +28,9 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 	@Test
 	public void downloadSingleScript() {
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
@@ -45,9 +45,9 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 	@Test
 	public void downloadAllScripts() {
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
@@ -62,9 +62,9 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 	@Test
 	public void downloadAllScriptsWithConfig() {
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
@@ -83,9 +83,9 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("dummy".getBytes()), "script.xml"));
 
-		doAnswer((i) -> {
+		doAnswer(i -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			inputMessage.addHeader(MessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));

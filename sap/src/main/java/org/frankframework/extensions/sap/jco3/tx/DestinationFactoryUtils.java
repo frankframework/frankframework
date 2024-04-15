@@ -48,7 +48,7 @@ public abstract class DestinationFactoryUtils {
 			return false;
 		}
 		JcoResourceHolder resourceHolder = (JcoResourceHolder) TransactionSynchronizationManager.getResource(sapSystem);
-		return (resourceHolder != null && resourceHolder.containsDestination(destination));
+		return resourceHolder != null && resourceHolder.containsDestination(destination);
 	}
 
 
@@ -77,7 +77,7 @@ public abstract class DestinationFactoryUtils {
 			}
 			@Override
 			public JCoDestination getDestination(JcoResourceHolder holder) {
-				return (existingDestination != null ? existingDestination : holder.getDestination());
+				return existingDestination != null ? existingDestination : holder.getDestination();
 			}
 			@Override
 			public JCoDestination createDestination() throws JCoException {
@@ -157,7 +157,7 @@ public abstract class DestinationFactoryUtils {
 		}
 		JCoDestination destination = resourceFactory.getDestination(resourceHolderToUse);
 		String tid = null;
-		boolean isExistingDestination = (destination != null);
+		boolean isExistingDestination = destination != null;
 		if (!isExistingDestination) {
 			destination = resourceFactory.createDestination();
 			resourceHolderToUse.addDestination(destination);

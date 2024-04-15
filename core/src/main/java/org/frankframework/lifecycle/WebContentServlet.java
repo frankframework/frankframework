@@ -112,7 +112,7 @@ public class WebContentServlet extends HttpServletBase {
 		if(path == null) {
 			resp.sendRedirect(req.getContextPath() + SERVLET_PATH);
 			return;
-		} else if(path.equals("/")) {
+		} else if("/".equals(path)) {
 			if(isDtapStageLoc) {
 				listDirectory(resp);
 				resp.flushBuffer();
@@ -149,7 +149,7 @@ public class WebContentServlet extends HttpServletBase {
 	@Override
 	protected long getLastModified(HttpServletRequest req) {
 		String path = req.getPathInfo();
-		if(StringUtils.isNotEmpty(path) && !path.equals("/") && findResource(req) != null) {
+		if(StringUtils.isNotEmpty(path) && !"/".equals(path) && findResource(req) != null) {
 			String configurationName = (String) req.getAttribute(CONFIGURATION_KEY);
 			return findConfiguration(configurationName).getStartupDate();
 		}
@@ -206,7 +206,7 @@ public class WebContentServlet extends HttpServletBase {
 		req.setAttribute(CONFIGURATION_KEY, configurationName);
 
 		String resource = normalizedPath.substring(configurationName.length());
-		if(StringUtils.isEmpty(resource) || resource.equals("/")) {
+		if(StringUtils.isEmpty(resource) || "/".equals(resource)) {
 			log.debug("unable to determine resource from path [{}] returning welcome file [{}]", normalizedPath, WELCOME_FILE);
 			resource = WELCOME_FILE;
 		}

@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
 
@@ -95,7 +96,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
-import org.frankframework.util.Counter;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
@@ -278,7 +278,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private @Getter HideMethod hideMethod = HideMethod.ALL;
 	private @Getter String hiddenInputSessionKeys=null;
 
-	private final Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
+	private final AtomicInteger numberOfExceptionsCaughtWithoutMessageBeingReceived = new AtomicInteger();
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
 	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
@@ -290,7 +290,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	protected final RunStateManager runState = new RunStateManager();
 	private PullingListenerContainer<M> listenerContainer;
 
-	private final Counter threadsProcessing = new Counter(0);
+	private final AtomicInteger threadsProcessing = new AtomicInteger();
 
 	private long lastMessageDate = 0;
 
@@ -363,7 +363,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				.append(messageId).append("] correlationId [").append(correlationId).append("]:");
 
 			session.forEach((key, value) -> {
-				String strValue = key.equals("messageText") ? "(... see elsewhere ...)" : String.valueOf(value);
+				String strValue = "messageText".equals(key) ? "(... see elsewhere ...)" : String.valueOf(value);
 				contextDump.append(" ").append(key).append("=[").append(hiddenSessionKeys.contains(key) ? StringUtil.hide(strValue) : strValue).append("]");
 			});
 			log.debug(getLogPrefix()+contextDump);
@@ -858,26 +858,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 
 	protected void startProcessingMessage(long waitingDuration) {
-		log.trace("{} startProcessingMessage -- synchronize (lock) on Receiver threadsProcessing[{}]", this::getLogPrefix, threadsProcessing::toString);
-		synchronized (threadsProcessing) {
-			int threadCount = (int) threadsProcessing.getValue();
-
-			if (waitingDuration>=0) {
-				getIdleStatistics(threadCount).record(waitingDuration);
-			}
-			threadsProcessing.increase();
+		int threadCount = threadsProcessing.getAndIncrement();
+		if (waitingDuration >= 0) {
+			getIdleStatistics(threadCount).record(waitingDuration);
 		}
-		log.trace("{} startProcessingMessage -- lock on Receiver threadsProcessing[{}] released", this::getLogPrefix, threadsProcessing::toString);
 		log.debug("{} starts processing message", this::getLogPrefix);
 	}
 
 	protected void finishProcessingMessage(long processingDuration) {
-		log.trace("{} finishProcessingMessage -- synchronize (lock) on Receiver threadsProcessing[{}]", this::getLogPrefix, threadsProcessing::toString);
-		synchronized (threadsProcessing) {
-			int threadCount = (int) threadsProcessing.decrease();
-			getProcessStatistics(threadCount).record(processingDuration);
-		}
-		log.trace("{} finishProcessingMessage -- lock on Receiver threadsProcessing[{}] released", this::getLogPrefix, threadsProcessing::toString);
+		int threadCount = threadsProcessing.decrementAndGet();
+		getProcessStatistics(threadCount).record(processingDuration);
 		log.debug("{} finishes processing message", this::getLogPrefix);
 	}
 
@@ -980,8 +970,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				message = getListener().extractMessage(rawMessageWrapper, context);
 			}
 			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, message);
-			if (errorSender!=null) {
-				errorSender.sendMessageOrThrow(message, null);
+			if (errorSender != null) {
+				try(PipeLineSession session = new PipeLineSession(); Message senderResult = errorSender.sendMessageOrThrow(message, session)) {
+					log.debug("error-sender result [{}]", senderResult);
+				}
 			}
 			if (errorStorage!=null) {
 				Serializable sobj = serializeMessageObject(rawMessageWrapper, message);
@@ -1186,15 +1178,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId());
 
 			String messageId = ensureMessageIdNotEmpty(messageWrapper.getId());
-			Message message = compactMessageIfRequired(messageWrapper.getMessage(), session);
-
 			final String businessCorrelationId = getBusinessCorrelationId(messageWrapper, messageId, session);
 			session.put(PipeLineSession.CORRELATION_ID_KEY, businessCorrelationId);
 
-			MessageWrapper<M> businessMessage = new MessageWrapper<>(messageWrapper, message, messageId, businessCorrelationId);
+			MessageWrapper<M> messageWithMessageIdAndCorrelationId = new MessageWrapper<>(messageWrapper, messageWrapper.getMessage(), messageId, businessCorrelationId);
 
-			final String label = extractLabel(message);
-			boolean exitWithoutProcessing = checkMessageHistory(businessMessage, session, manualRetry, duplicatesAlreadyChecked);
+			boolean exitWithoutProcessing = checkMessageHistory(messageWithMessageIdAndCorrelationId, session, manualRetry, duplicatesAlreadyChecked);
 			if (exitWithoutProcessing) {
 				return Message.nullMessage();
 			}
@@ -1210,12 +1199,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			Message result = null;
 			PipeLineResult pipeLineResult = null;
 			try {
+				final Message compactedMessage = compactMessageIfRequired(messageWrapper.getMessage(), session);
+
 				numReceived.increment();
 				showProcessingContext(messageId, businessCorrelationId, session);
 	//			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 				try {
-					if (getMessageLog()!=null) {
-						getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, businessMessage);
+					if (getMessageLog() != null) {
+						final String label = extractLabel(compactedMessage);
+						getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, messageWithMessageIdAndCorrelationId);
 					}
 					log.debug("{} preparing TimeoutGuard", logPrefix);
 					TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
@@ -1223,7 +1215,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						log.debug("{} activating TimeoutGuard with transactionTimeout [{}]s", logPrefix, getTransactionTimeout());
 						tg.activateGuard(getTransactionTimeout());
 
-						pipeLineResult = adapter.processMessageWithExceptions(messageId, businessMessage.getMessage(), session);
+						pipeLineResult = adapter.processMessageWithExceptions(messageId, compactedMessage, session);
 
 						setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
 						session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, String.valueOf(pipeLineResult.getExitCode()));
@@ -1269,7 +1261,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 						pipeLineResult=new PipeLineResult();
 					}
 					if (Message.isEmpty(pipeLineResult.getResult())) {
-						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp));
+						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,compactedMessage,messageId,this,startProcessingTimestamp));
 					}
 					throw wrapExceptionAsListenerException(t);
 				}
@@ -1348,6 +1340,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		if (getChompCharSize() != null || getElementToMove() != null || getElementToMoveChain() != null) {
 			log.debug("{} compact received message", getLogPrefix());
 			try {
+				message.preserve();
 				message = compactMessage(message, session);
 			} catch (Exception e) {
 				String msg="error during compacting received message to more compact format";
@@ -1549,7 +1542,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	private int getListenerDeliveryCount(RawMessageWrapper<M> rawMessageWrapper, IListener<M> origin) {
 		//noinspection unchecked
-		return (origin instanceof IKnowsDeliveryCount<?>) ? ((IKnowsDeliveryCount<M>) origin).getDeliveryCount(rawMessageWrapper) : -1;
+		return origin instanceof IKnowsDeliveryCount<?> ? ((IKnowsDeliveryCount<M>) origin).getDeliveryCount(rawMessageWrapper) : -1;
 	}
 
 	private void resetProblematicHistory(String messageId) {
@@ -1586,9 +1579,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	public void exceptionThrown(String errorMessage, Throwable t) {
 		switch (getOnError()) {
 			case CONTINUE:
-				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.increase() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
+				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.incrementAndGet() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
 					numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=true;
-					log.warn("numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold is reached, changing the adapter status to 'warning'");
+					log.warn("number of exceptions caught without message being received threshold is reached; changing the adapter status to 'warning'");
 				}
 				error(errorMessage+", will continue processing messages when they arrive", t);
 				break;
@@ -1789,11 +1782,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	private String sendResultToSender(Message result) {
 		String errorMessage = null;
-		try {
-			if (getSender() != null) {
-				log.debug("Receiver [{}] sending result to configured sender", this::getName);
-				getSender().sendMessageOrThrow(result, null); // sending correlated responses via a receiver embedded sender is not supported
-			}
+		try(PipeLineSession session = new PipeLineSession()) {
+			log.debug("Receiver [{}] sending result to configured sender [{}]", this::getName, this::getSender);
+			getSender().sendMessageOrThrow(result, null); // sending correlated responses via a receiver embedded sender is not supported
 		} catch (Exception e) {
 			String msg = "caught exception in message post processing";
 			error(msg, e);
@@ -1901,21 +1892,21 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 * get the number of messages received by this receiver.
 	 */
 	public double getMessagesReceived() {
-		return (numReceived == null) ? 0 : numReceived.count();
+		return numReceived == null ? 0 : numReceived.count();
 	}
 
 	/**
 	 * get the number of duplicate messages received this receiver.
 	 */
 	public double getMessagesRetried() {
-		return (numRetried == null) ? 0 : numRetried.count();
+		return numRetried == null ? 0 : numRetried.count();
 	}
 
 	/**
 	 * Get the number of messages rejected (discarded or put in errorStorage).
 	 */
 	public double getMessagesRejected() {
-		return (numRejected == null) ? 0 : numRejected.count();
+		return numRejected == null ? 0 : numRejected.count();
 	}
 
 	public long getLastMessageDate() {
@@ -1924,7 +1915,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
 		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
-		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
+		numberOfExceptionsCaughtWithoutMessageBeingReceived.set(0);
 		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 	}
 

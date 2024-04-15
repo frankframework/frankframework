@@ -297,7 +297,7 @@ public class XmlTypeToJsonSchemaConverter  {
 			}
 
 			if(complexTypeDefinitionName != null){
-				if (!(complexTypeDefinitionName.equals("anyType") && complexTypeDefinition.getNamespace().endsWith(XML_SCHEMA_NS))) {
+				if (!("anyType".equals(complexTypeDefinitionName) && complexTypeDefinition.getNamespace().endsWith(XML_SCHEMA_NS))) {
 					if (log.isTraceEnabled()) log.trace("handleComplexTypeDefinitionOfElementContentType creating ref!");
 					builder.add("$ref", definitionsPath+complexTypeDefinitionName);
 				}

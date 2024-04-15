@@ -16,12 +16,11 @@
 package org.frankframework.senders;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.Guard;
-import org.frankframework.util.LogUtil;
-import org.springframework.core.task.TaskExecutor;
-
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderResult;
@@ -29,6 +28,8 @@ import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.ThreadLifeCycleEventListener;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
+import org.springframework.core.task.TaskExecutor;
 
 /**
  * Helper class for {@link IbisLocalSender} that wraps around {@link ServiceClient} implementation to make calls to a local Ibis adapter in a separate thread.
@@ -42,15 +43,7 @@ public class IsolatedServiceCaller {
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
-	private TaskExecutor taskExecutor;
-
-	public void setTaskExecutor(TaskExecutor executor) {
-		taskExecutor = executor;
-	}
-
-	public TaskExecutor getTaskExecutor() {
-		return taskExecutor;
-	}
+	@Setter @Getter private TaskExecutor taskExecutor;
 
 	public void callServiceAsynchronous(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws IOException {
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, null, threadLifeCycleEventListener);
@@ -58,13 +51,13 @@ public class IsolatedServiceCaller {
 	}
 
 	public SenderResult callServiceIsolated(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws ListenerException, IOException {
-		Guard guard = new Guard();
-		guard.addResource();
+		CountDownLatch guard = new CountDownLatch(1);
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, guard, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 		try {
-			guard.waitForAllResources();
+			guard.await();
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new ListenerException(ClassUtils.nameOf(this)+" was interrupted",e);
 		}
 		if (ise.getThrowable() != null) {

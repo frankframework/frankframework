@@ -1,11 +1,17 @@
 <ngb-toast
   *ngFor="let toast of toastService.toasts"
   [class]="getClassByType(toast.type)"
+  [class.clickable]="!!toast.clickHandler"
   [autohide]="toast.timeout !== 0"
   [delay]="toast.timeout || 10000"
   (hidden)="toastService.remove(toast)"
   (click)="toast.clickHandler ? toast.clickHandler(toast, $event) : null"
 >
-  <p class="title">{{ toast.title }}</p>
+  <div class="toast-header">
+    <strong class="title">{{ toast.title }}</strong>
+    <button class="toast-close" (click)="remove(toast)">
+      <i class="fa fa-times" aria-hidden="true"></i>
+    </button>
+  </div>
   <p *ngIf="toast.body">{{ toast.body }}</p>
 </ngb-toast>

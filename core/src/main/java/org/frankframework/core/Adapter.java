@@ -431,7 +431,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public long[] getNumOfMessagesStartProcessingByHour() {
 		log.trace("Get Adapter hourly statistics, using synchronized statisticsLock [{}]", statisticsLock);
 		try {
-			synchronized (statisticsLock) { //help, why is this synchronizedm
+			synchronized (statisticsLock) { //help, why is this synchronized
 				return numOfMessagesStartProcessingByHour;
 			}
 		} finally {
@@ -863,7 +863,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 		}
 		sb.append("]");
-		sb.append("[pipeLine="+ ((pipeline != null) ? pipeline.toString() : "none registered") + "][started=" + getRunState() + "]");
+		sb.append("[pipeLine="+ (pipeline != null ? pipeline.toString() : "none registered") + "][started=" + getRunState() + "]");
 
 		return sb.toString();
 	}

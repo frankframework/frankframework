@@ -3,7 +3,6 @@ package org.frankframework.testutil.junit;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +50,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.element.GenericConfigElement;
 
 /**
  * Will create a local FS with share 'home' @ 'localhost' : 'automatically-calculated-port'.
@@ -122,7 +122,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 		}
 		String fileDir = file.getPath();
 		if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-			throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"]");
+			throw new IllegalStateException("unknown or invalid path ["+(StringUtils.isEmpty(fileDir)?"NULL":fileDir)+"]");
 		}
 		return file.toPath();
 	}
@@ -180,16 +180,16 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 		if(isSmb2) {
 			dialects.AddDialect(Dialect.SMB2_202);
 			dialects.AddDialect(Dialect.SMB2_210);
-			dialects.AddDialect(Dialect.SMB3_311);
+			dialects.AddDialect(Dialect.SMB3_300);
 			dialects.AddDialect(Dialect.SMB3_302);
-			dialects.AddDialect(Dialect.SMB3_311);
+//			dialects.AddDialect(Dialect.SMB3_311); // This seems to be broken
 		} else {
 			dialects.AddDialect(Dialect.NT);
 		}
 		cifsConfig.setEnabledDialects(dialects);
 
-		ConfigElement configParams = mock(ConfigElement.class);
-		when(configParams.getChild("useSPNEGO")).thenReturn(mock(ConfigElement.class)); //Assertions are done on the presence of the element, not the contents
+		ConfigElement configParams = new GenericConfigElement("authenticator");
+		configParams.addChild(new GenericConfigElement("useSPNEGO"));
 
 		EnterpriseSMBAuthenticator auth = new EnterpriseSMBAuthenticator();
 		auth.setAccessMode(AuthMode.SHARE);

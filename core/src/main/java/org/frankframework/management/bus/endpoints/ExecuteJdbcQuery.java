@@ -23,10 +23,12 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.util.MimeType;
-
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
@@ -39,8 +41,6 @@ import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.JsonResponseMessage;
-import org.frankframework.management.bus.StringResponseMessage;
 import org.frankframework.util.LogUtil;
 
 import javax.annotation.security.RolesAllowed;
@@ -76,12 +76,12 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		queryTypes.add(QueryType.OTHER.toString());
 		result.put("queryTypes", queryTypes);
 
-		return new JsonResponseMessage(result);
+		return new JsonMessage(result);
 	}
 
 	@ActionSelector(BusAction.MANAGE)
 	@RolesAllowed({"IbisTester"})
-	public StringResponseMessage executeJdbcQuery(Message<?> message) {
+	public StringMessage executeJdbcQuery(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		QueryType queryType = BusMessageUtils.getEnumHeader(message, "queryType", QueryType.class, QueryType.SELECT);
 		String query = BusMessageUtils.getHeader(message, "query");
@@ -92,14 +92,14 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		return doExecute(datasource, queryType, query, trimSpaces, avoidLocking, resultType);
 	}
 
-	private StringResponseMessage doExecute(String datasource, QueryType queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
+	private StringMessage doExecute(String datasource, QueryType queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
 		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
 		DirectQuerySender qs = createBean(DirectQuerySender.class);
 		String result;
 		MimeType mimetype;
 
-		try {
+		try(PipeLineSession session = new PipeLineSession()) {
 			qs.setName("ExecuteJdbc QuerySender");
 			qs.setDatasourceName(datasource);
 			qs.setQueryType(queryType);
@@ -110,7 +110,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			qs.configure(true);
 			qs.open();
 
-			org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), null);
+			org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session);
 
 			switch (resultType) {
 			case CSV:
@@ -129,11 +129,12 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 			}
 			message.close();
 		} catch (Exception e) {
-			throw new BusException("error executing query", e);
+			log.debug("error executing query", e);
+			throw new BusException("error executing query: "+e.getMessage(), 400);
 		} finally {
 			qs.close();
 		}
 
-		return new StringResponseMessage(result, mimetype);
+		return new StringMessage(result, mimetype);
 	}
 }

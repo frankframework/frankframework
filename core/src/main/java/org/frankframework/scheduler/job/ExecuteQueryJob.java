@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
@@ -56,9 +57,9 @@ public class ExecuteQueryJob extends JobDef {
 
 	@Override
 	public void execute() throws JobExecutionException, TimeoutException {
-		try {
+		try(PipeLineSession session = new PipeLineSession()) {
 			qs.open();
-			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
 				log.info("result [{}]", result);
 			}
 		}
