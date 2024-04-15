@@ -2,18 +2,25 @@ package org.frankframework.filesystem.smb;
 
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import org.frankframework.filesystem.FileSystemTest;
-import org.frankframework.filesystem.IFileSystemTestHelper;
-import org.frankframework.filesystem.LocalFileSystemTestHelper;
-import org.frankframework.filesystem.smb.Samba2FileSystem.Samba2AuthType;
-import org.frankframework.testutil.junit.LocalFileServer;
-import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
-import org.frankframework.testutil.junit.LocalFileSystemMock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
+import org.frankframework.filesystem.FileSystemTest;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.filesystem.LocalFileSystemTestHelper;
+import org.frankframework.testutil.junit.LocalFileServer;
+import org.frankframework.testutil.junit.LocalFileSystemMock;
 
+/**
+ * Test for the Samba2FileSystem. Without changes, it runs with a Java Samba implementation.
+ * <p>
+ * To run with a separate Samba 2 server on Docker, set runWithDocker to true, and start the docker container as follows:
+ * <pre>docker run -p 139:139 -p 137:137/udp -p 138:138/udp -p 445:445 private.docker.nexus.frankframework.org/ff-test/filesystems/samba2</pre>
+ * Or read the docker/README.MD and checkout the ci-images repo and proceed inside directory filesystems/samba2
+ * Note: 4 unit tests fail, and 45 passed with the Docker images.
+ */
+public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
+	private static final boolean runWithDocker = false;
 	private final String username = "frankframework";
 	private final String password = "pass_123";
 	private final String host = "localhost";
@@ -29,7 +36,7 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		if("localhost".equals(host)) {
+		if (!runWithDocker) {
 			return new LocalFileSystemTestHelper(fs.getTestDirectory());
 		}
 		return new Samba2FileSystemTestHelper(host, port, shareName, username, password, domain);
@@ -38,8 +45,8 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
-		if("localhost".equals(host)) {
-			fs.startServer(FileSystemType.SMB2);
+		if (!runWithDocker) {
+			fs.startServer(LocalFileServer.FileSystemType.SMB2);
 			port = fs.getPort();
 		}
 		super.setUp();
@@ -51,13 +58,13 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 		result.setShare(shareName);
 		result.setUsername(username);
 		result.setPassword(password);
-		if("localhost".equals(host)) { // test stub only works with NTLM
-			result.setAuthType(Samba2AuthType.NTLM);
+		result.setAuthType(Samba2FileSystem.Samba2AuthType.NTLM); // test stub and Docker image only work with NTLM
+		if (!runWithDocker) {
+			result.setKdc(kdc);
+			result.setRealm(realm);
 		}
 		result.setHostname(host);
 		result.setPort(port);
-		result.setKdc(kdc);
-		result.setRealm(realm);
 		result.setDomainName(domain);
 		return result;
 	}
