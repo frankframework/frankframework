@@ -215,7 +215,7 @@
 
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 
-	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.DataSourceFactory"/>
+	<bean name="dataSourceFactory" class="org.frankframework.jndi.JndiDataSourceFactory"/>
 
 	<bean name="defaultDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>
