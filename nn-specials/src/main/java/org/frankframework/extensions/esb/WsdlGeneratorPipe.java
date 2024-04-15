@@ -23,10 +23,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.annotation.Nullable;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -49,9 +54,6 @@ import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
-
-import lombok.Getter;
-import lombok.Setter;
 
 @Category("NN-Special")
 public class WsdlGeneratorPipe extends FixedForwardPipe {
@@ -101,7 +103,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (propertiesFile.exists()) {
 				pipeLine = createPipeLineFromPropertiesFile(propertiesFile);
 			} else {
-				File xsdFile = FileUtils.getFirstFile(tempDirectoryBase);
+				File xsdFile = getFirstFile(tempDirectoryBase);
 				pipeLine = createPipeLineFromXsdFile(xsdFile);
 			}
 		} catch (Exception e) {
@@ -131,7 +133,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			WsdlGenerator wsdl = new WsdlGenerator(pipeLine, generationInfo);
 			wsdl.setIndent(true);
 			wsdl.init();
-			File wsdlDir = FileUtils.createTempDirectory(tempDirectoryBase);
+			File wsdlDir = createTempDirectory(tempDirectoryBase);
 			// zip (with includes)
 			File zipOutFile = new File(wsdlDir, wsdl.getFilename() + ".zip");
 			File fullWsdlOutFile = new File(wsdlDir, wsdl.getFilename() + ".wsdl");
@@ -328,6 +330,33 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				throw new IOException(zipParentFile.getPath() + " could not be created");
 			}
 		}
+	}
+
+	/**
+	 * Creates a new temporary directory in the specified 'fromDirectory'.
+	 */
+	static File createTempDirectory(File fromDirectory) throws IOException {
+		if (!fromDirectory.exists() || !fromDirectory.isDirectory()) {
+			throw new IOException("base directory [" + fromDirectory.getPath() + "] must be a directory and must exist");
+		}
+
+		Path path = Files.createTempDirectory(fromDirectory.toPath(), "tmp");
+		return path.toFile();
+	}
+
+	@Nullable
+	static File getFirstFile(File directory) {
+		String[] fileNames = directory.list();
+		if (fileNames == null) {
+			return null;
+		}
+		for (String fileName : fileNames) {
+			File file = new File(directory, fileName);
+			if (file.isFile()) {
+				return file;
+			}
+		}
+		return null;
 	}
 
 }

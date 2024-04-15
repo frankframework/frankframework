@@ -19,15 +19,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -103,27 +100,6 @@ public class FileUtils {
 		return getFilename(definedParameters, session, originalFile.getName(), filenamePattern);
 	}
 
-	public static void moveFileAfterProcessing(File orgFile, String destDir, boolean delete, boolean overwrite, int numBackups) throws InterruptedException, IOException {
-		if (delete) {
-			if (orgFile.exists()) {
-				orgFile.delete();
-			}
-		} else {
-			if (StringUtils.isNotEmpty(destDir)) {
-				moveFile(orgFile, destDir, overwrite, numBackups);
-			}
-		}
-	}
-
-	protected static String moveFile(File orgFile, String destDir, boolean overwrite, int numBackups) throws InterruptedException, IOException {
-		File dstFile = new File(destDir, orgFile.getName());
-		return moveFile(orgFile, dstFile, overwrite, numBackups);
-	}
-
-	private static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups) throws InterruptedException, IOException {
-		return moveFile(orgFile, rename2File, overwrite, numBackups, 5, 500);
-	}
-
 	public static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int numberOfAttempts, long waitTime) throws InterruptedException, IOException {
 		if (orgFile.exists()) {
 			if (numBackups>0) {
@@ -180,31 +156,30 @@ public class FileUtils {
 	}
 
 	public static File getFreeFile(File file)  {
-		if (file.exists()) {
-			String extension = FileUtils.getFileNameExtension(file.getPath());
-			int count = 1;
-			while (true) {
-				String newFileName;
-				String countStr;
-				if (count < 1000) {
-					countStr = StringUtils.leftPad(("" + count), 3, "0");
-				} else {
-					countStr = "" + count;
-				}
-				if (extension!=null) {
-					newFileName = StringUtils.substringBeforeLast(file.getPath(), ".") + "_" + countStr + "." + extension;
-				} else {
-					newFileName = file.getPath() + "_" + countStr;
-				}
-				File newFile = new File(newFileName);
-				if (newFile.exists()) {
-					count++;
-				} else {
-					return newFile;
-				}
-			}
-		} else {
+		if (!file.exists()) {
 			return file;
+		}
+		String extension = FileUtils.getFileNameExtension(file.getPath());
+		int count = 1;
+		while (true) {
+			String newFileName;
+			String countStr;
+			if (count < 1000) {
+				countStr = StringUtils.leftPad(("" + count), 3, "0");
+			} else {
+				countStr = "" + count;
+			}
+			if (extension!=null) {
+				newFileName = StringUtils.substringBeforeLast(file.getPath(), ".") + "_" + countStr + "." + extension;
+			} else {
+				newFileName = file.getPath() + "_" + countStr;
+			}
+			File newFile = new File(newFileName);
+			if (newFile.exists()) {
+				count++;
+			} else {
+				return newFile;
+			}
 		}
 	}
 
@@ -287,18 +262,6 @@ public class FileUtils {
 		return newDir;
 	}
 
-	/**
-	 * Creates a new temporary directory in the specified 'fromDirectory'.
-	 */
-	public static File createTempDirectory(File fromDirectory) throws IOException {
-		if (!fromDirectory.exists() || !fromDirectory.isDirectory()) {
-			throw new IOException("base directory [" + fromDirectory.getPath() + "] must be a directory and must exist");
-		}
-
-		Path path = Files.createTempDirectory(fromDirectory.toPath(), "tmp");
-		return path.toFile();
-	}
-
 	protected static void makeBackups(File targetFile, int numBackups)  {
 		if (numBackups<=0 || !targetFile.exists()) {
 			return;
@@ -363,54 +326,6 @@ public class FileUtils {
 		return result.toArray(new File[0]);
 	}
 
-	@Nullable
-	public static File getFirstFile(File directory) {
-		String[] fileNames = directory.list();
-		if (fileNames == null) {
-			return null;
-		}
-		for (String fileName : fileNames) {
-			File file = new File(directory, fileName);
-			if (file.isFile()) {
-				return file;
-			}
-		}
-		return null;
-	}
-
-	/*
-	 * methods to create a fixed length string from a value
-	 */
-	public static String align(String val, int length, boolean leftAlign, char fillchar) {
-		StringBuilder result = new StringBuilder();
-		align(result, val, length, leftAlign, fillchar);
-		return result.toString();
-	}
-
-	public static void align(StringBuilder result, String val, int length, boolean leftAlign, char fillchar) {
-		if (val.length() > length) {
-			result.append(val, 0, length);
-		} else if (val.length() == length) {
-			result.append(val);
-		} else {
-			char[] fill = getFilledArray(length - val.length(), fillchar);
-			if (leftAlign) {
-				result.append(val).append(fill);
-			} else {
-				result.append(fill).append(val);
-			}
-		}
-	}
-
-	/**
-	 * create a filled array
-	 */
-	public static char[] getFilledArray(int length, char fillChar) {
-		char[] fill = new char[length];
-		Arrays.fill(fill, fillChar);
-		return fill;
-	}
-
 	public static String getFileNameExtension(String fileName) {
 		int idx = fileName.lastIndexOf('.');
 		if (idx<0) {
@@ -431,28 +346,6 @@ public class FileUtils {
 			return null;
 		}
 		return fname.substring(0, idx);
-	}
-
-	public static String encodeFileName(String fileName) {
-		String mark = "-_.+=";
-		StringBuilder encodedFileName = new StringBuilder();
-		int len = fileName.length();
-		for (int i = 0; i < len; i++) {
-			char c = fileName.charAt(i);
-			if ((c >= '0' && c <= '9')
-				|| (c >= 'a' && c <= 'z')
-				|| (c >= 'A' && c <= 'Z'))
-				encodedFileName.append(c);
-			else {
-				int imark = mark.indexOf(c);
-				if (imark >= 0) {
-					encodedFileName.append(c);
-				} else {
-					encodedFileName.append('_');
-				}
-			}
-		}
-		return encodedFileName.toString();
 	}
 
 	@FunctionalInterface

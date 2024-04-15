@@ -99,7 +99,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 				} else {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(getMove2file()));
 				}
-				moveFile(session, srcFile, dstFile);
+				moveFile(srcFile, dstFile);
 			} else {
 				if (StringUtils.isEmpty(getDirectory())) {
 					if (StringUtils.isEmpty(getFilename())) {
@@ -125,7 +125,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 				}
 				for (File file : srcFiles) {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(file.getName()));
-					moveFile(session, file, dstFile);
+					moveFile(file, dstFile);
 				}
 			}
 		} catch (IOException e) {
@@ -174,7 +174,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return newChild;
 	}
 
-	private void moveFile(PipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
+	private void moveFile(File srcFile, File dstFile) throws PipeRunException {
 		try {
 			if (!dstFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
