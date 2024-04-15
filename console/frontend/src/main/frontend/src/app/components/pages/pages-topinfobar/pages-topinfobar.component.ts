@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
@@ -7,6 +8,8 @@ import { AppService } from 'src/app/app.service';
   selector: 'app-pages-topinfobar',
   templateUrl: './pages-topinfobar.component.html',
   styleUrls: ['./pages-topinfobar.component.scss'],
+  standalone: true,
+  imports: [CommonModule],
 })
 export class PagesTopinfobarComponent implements OnInit, OnDestroy {
   loading: boolean = true;
@@ -31,15 +34,18 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
         }
         this.popoutUrl = null;
       });
+
     const loadingSubscription = this.appService.loading$.subscribe(
       (loading) => (this.loading = loading),
     );
     this._subscriptions.add(loadingSubscription);
+
     const customBreadcrumbsSubscription =
       this.appService.customBreadscrumb$.subscribe(
         (breadcrumbs) => (this.breadcrumbs = breadcrumbs),
       );
     this._subscriptions.add(customBreadcrumbsSubscription);
+
     const iframePopoutUrlSubscription =
       this.appService.iframePopoutUrl$.subscribe(
         (url) => (this.popoutUrl = url),

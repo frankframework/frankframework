@@ -89,11 +89,8 @@ export class ConnectionInterceptor implements HttpInterceptor {
               );
               break;
             }
-            case 500:
-            case 504: {
-              // angular dev server
+            default: {
               this.toastsService.error('Server Error', error.message);
-              break;
             }
           }
         },

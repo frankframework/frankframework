@@ -8,16 +8,18 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { formatDate } from '@angular/common';
-import { AppConstants, AppService } from '../app.service';
+import { AppConstants, AppService, ConsoleState } from '../app.service';
 import { Subscription } from 'rxjs';
 
 @Directive({
   selector: '[appToDate]',
+  standalone: true,
 })
 export class ToDateDirective implements OnChanges, OnDestroy {
   @Input() time: string | number = '';
 
   private appConstants: AppConstants;
+  private consoleState: ConsoleState;
   private _subscriptions = new Subscription();
 
   constructor(
@@ -32,6 +34,7 @@ export class ToDateDirective implements OnChanges, OnDestroy {
       },
     );
     this._subscriptions.add(appConstantsSubscription);
+    this.consoleState = this.appService.CONSOLE_STATE;
   }
 
   ngOnChanges(): void {
@@ -39,7 +42,7 @@ export class ToDateDirective implements OnChanges, OnDestroy {
       this.time = new Date(this.time).getTime();
 
     const toDate = new Date(
-      (this.time as number) - (this.appConstants['timeOffset'] as number),
+      (this.time as number) - this.consoleState.timeOffset,
     );
     this.element.nativeElement.textContent = formatDate(
       toDate,

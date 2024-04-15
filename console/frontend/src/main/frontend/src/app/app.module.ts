@@ -14,12 +14,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
-import { ScrollToTopComponent } from './components/pages/pages-navigation/scroll-to-top.component';
-import { MinimalizaSidebarComponent } from './components/pages/pages-navigation/minimaliza-sidebar.component';
 import { CustomViewsComponent } from './components/custom-views/custom-views.component';
 import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pages-topinfobar.component';
 import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
-import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger.component';
 import { InputFileUploadComponent } from './components/input-file-upload/input-file-upload.component';
 import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
 import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
@@ -99,32 +96,22 @@ const windowProvider: ValueProvider = {
     ConfigurationsManageDetailsComponent,
     ConfigurationsShowComponent,
     ConfigurationsUploadComponent,
-    CustomViewsComponent,
     EnvironmentVariablesComponent,
     FlowComponent,
-    HamburgerComponent,
     IbisstoreSummaryComponent,
     IframeCustomViewComponent,
     IframeLadybugComponent,
     IframeLadybugBetaComponent,
     IframeLarvaComponent,
     InlinestoreComponent,
-    InputFileUploadComponent,
     JdbcBrowseTablesComponent,
     JdbcExecuteQueryComponent,
     JmsBrowseQueueComponent,
     JmsSendMessageComponent,
     LiquibaseComponent,
-    LogoutComponent,
-    MinimalizaSidebarComponent,
-    PagesFooterComponent,
-    PagesNavigationComponent,
-    PagesTopinfobarComponent,
-    PagesTopnavbarComponent,
     SchedulerComponent,
     SchedulerEditComponent,
     SchedulerAddComponent,
-    ScrollToTopComponent,
     StatusComponent,
     StorageComponent,
     StorageListComponent,
@@ -145,11 +132,8 @@ const windowProvider: ValueProvider = {
     TestPipelineComponent,
     TestServiceListenerComponent,
     LoginComponent,
-    ToastsContainerComponent,
 
     //modals
-    InformationModalComponent,
-    FeedbackModalComponent,
     FlowModalComponent,
 
     // pipes
@@ -166,12 +150,7 @@ const windowProvider: ValueProvider = {
 
     // directives
     FormatCodeDirective,
-    ToDateDirective,
-    TimeSinceDirective,
     QuickSubmitFormDirective,
-    SideNavigationDirective,
-    ThSortableDirective,
-    FileViewerComponent,
   ],
   imports: [
     BrowserModule,
@@ -183,7 +162,26 @@ const windowProvider: ValueProvider = {
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
     DataTablesModule,
+
+    // standalone directives
+    TimeSinceDirective,
+    ToDateDirective,
+    ThSortableDirective,
+    SideNavigationDirective,
+
+    // standalone components
+    CustomViewsComponent,
+    FileViewerComponent,
+    InputFileUploadComponent,
+    LogoutComponent,
     NgMermaidComponent,
+    ToastsContainerComponent,
+    InformationModalComponent,
+    FeedbackModalComponent,
+    PagesFooterComponent,
+    PagesNavigationComponent,
+    PagesTopinfobarComponent,
+    PagesTopnavbarComponent,
   ],
   providers: [
     windowProvider,

@@ -14,10 +14,7 @@ import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  standalone: true,
   selector: 'ng-mermaid',
-  imports: [CommonModule],
-  // encapsulation: ViewEncapsulation.ShadowDom,
   template: ` <div class="{{ is_mermaid }}" #mermaidPre>Loading...</div> `,
   styles: [
     `
@@ -27,6 +24,8 @@ import { v4 as uuidv4 } from 'uuid';
       }
     `,
   ],
+  standalone: true,
+  imports: [CommonModule],
 })
 export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   @Input() nmModel?: string;
