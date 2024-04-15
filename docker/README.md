@@ -20,7 +20,7 @@ mvn clean package -P docker,Tomcat -DskipTests
 ## Running a test image
 
 First make sure that you can access the auxiliary images. This can be done by:
-- building them yourself, by checking out https://github.com/frankframework/ci-images/ and proceed inside directory filesystems/samba2
+- building them yourself, by checking out https://github.com/frankframework/ci-images/
 - or by using the prebuild images in the private Docker registry `private.docker.nexus.frankframework.org`. The private repository
 requires [login](https://docs.docker.com/engine/reference/commandline/login/).
 

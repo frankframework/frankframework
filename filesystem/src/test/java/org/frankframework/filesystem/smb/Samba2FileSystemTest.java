@@ -16,6 +16,7 @@ import org.frankframework.testutil.junit.LocalFileSystemMock;
  * <p>
  * To run with a real Samba server on Docker, set runWithDocker to true, and start the docker container as follows:
  * <pre>docker run -p 139:139 -p 137:137/udp -p 138:138/udp -p 445:445 private.docker.nexus.frankframework.org/ff-test/filesystems/samba2</pre>
+ * Or read the docker/README.MD and checkout the ci-images repo and proceed inside directory filesystems/samba2
  * Note: 4 unit tests fail, and 45 passed with the Docker images.
  */
 public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
