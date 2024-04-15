@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -11,6 +12,8 @@ import {
   selector: 'app-input-file-upload',
   templateUrl: './input-file-upload.component.html',
   styleUrls: ['./input-file-upload.component.scss'],
+  standalone: true,
+  imports: [CommonModule],
 })
 export class InputFileUploadComponent {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;

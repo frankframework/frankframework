@@ -20,6 +20,18 @@ function main(): void {
   platformBrowserDynamic()
     .bootstrapModule(AppModule)
     .catch((error) => console.error(error));
+
+  /* TODO: when all components are standalone, bootstrap using this
+  bootstrapApplication(AppCompponent, {
+    providers: [
+      provideRouter(...),
+      importProvidersFrom(
+        //  LibraryModule.forRoot()
+      ),
+      // other providers
+    ],
+  });
+  */
 }
 
 if (location.hostname != 'localhost') {

@@ -3,11 +3,16 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { AppService } from 'src/app/app.service';
 import { copyToClipboard } from '../../../utils';
 import { ToastService } from '../../../services/toast.service';
+import { CommonModule } from '@angular/common';
+import { TimeSinceDirective } from '../../time-since.directive';
+import { ToDateDirective } from '../../to-date.directive';
 
 @Component({
   selector: 'app-information-modal',
   templateUrl: './information-modal.component.html',
   styleUrls: ['./information-modal.component.scss'],
+  standalone: true,
+  imports: [CommonModule, TimeSinceDirective, ToDateDirective],
 })
 export class InformationModalComponent implements OnInit {
   @ViewChild('environmentInformation')

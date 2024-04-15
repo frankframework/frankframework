@@ -45,6 +45,7 @@ export function basicTableSort<T extends Record<string, string | number>>(
 
 @Directive({
   selector: 'th[sortable]',
+  standalone: true,
 })
 export class ThSortableDirective implements OnInit {
   @Input() sortable: string = '';
