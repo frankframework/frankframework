@@ -19,7 +19,7 @@ import org.frankframework.testutil.junit.LocalFileSystemMock;
  * Note: 4 unit tests fail, and 45 passed with the Docker images.
  */
 public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
-	private static final boolean runWithDocker = true;
+	private static final boolean runWithDocker = false;
 	private final String username = "frankframework";
 	private final String password = "pass_123";
 	private final String host = "localhost";
