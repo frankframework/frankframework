@@ -239,7 +239,10 @@
           <div class="pull-right">
             <button
               [routerLink]="['/status']"
-              [queryParams]="{ adapter: storageParams.adapterName }"
+              [queryParams]="{
+                configuration: storageParams.configuration,
+                adapter: storageParams.adapterName
+              }"
               class="btn btn-xs pull-right btn-info"
               type="button"
             >

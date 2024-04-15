@@ -104,7 +104,7 @@ export class ConfigurationsShowComponent implements OnInit {
         this.configuration = data;
 
         if (this.anchor) {
-          this.viewportScroller.scrollToAnchor(this.anchor);
+          document.querySelector(`#${this.anchor}`)?.scrollIntoView();
         }
       });
   }

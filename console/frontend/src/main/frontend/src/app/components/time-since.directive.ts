@@ -6,7 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { AppConstants, AppService } from '../app.service';
+import { AppService, ConsoleState } from '../app.service';
 
 @Directive({
   selector: '[appTimeSince]',
@@ -16,13 +16,13 @@ export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
   @Input() time!: number;
 
   private interval?: number;
-  private appConstants: AppConstants;
+  private consoleState: ConsoleState;
 
   constructor(
     private element: ElementRef<HTMLElement>,
     private appService: AppService,
   ) {
-    this.appConstants = this.appService.APP_CONSTANTS;
+    this.consoleState = this.appService.CONSOLE_STATE;
   }
   ngOnInit(): void {
     this.interval = window.setInterval(() => this.updateTime(), 300_000);
@@ -39,8 +39,7 @@ export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
   updateTime(): string {
     if (!this.time) return '';
     let seconds = Math.round(
-      (Date.now() - this.time + (this.appConstants['timeOffset'] as number)) /
-        1000,
+      (Date.now() - this.time + this.consoleState.timeOffset) / 1000,
     );
 
     let minutes = seconds / 60;
