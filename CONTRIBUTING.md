@@ -115,6 +115,8 @@ If you are developing under Windows, you can do the following to set this up:
 
 You can build the Frank!Framework locally and run it using https://github.com/wearefrank/frank-runner?tab=readme-ov-file#specials. Clone https://github.com/wearefrank/frank-runner as a brother of your Frank!Framework checkout and use one of the options described under **Specials**.
 
+## Developing with Eclipse
+
 ### Install Eclipse
 
 To develop with Eclipse, please do the following:
