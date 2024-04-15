@@ -111,13 +111,9 @@ If you are developing under Windows, you can do the following to set this up:
 - If you see a "Differences:" panel, you have a button "windiff" above it. Please press it to see the differences in WinMerge. NOTE: You only see a "Differences:" panel if you select a low log level. Mind the pull-down menu labeled "Log level".
 - If all your tests succeed, you do not have "Differences:" panels, and you have no "windiff" buttons. To test your WinMerge integration, you may have to temporarily edit a test scenario to make it fail. 
 
-## Developing without Eclipse
-
-You can build the Frank!Framework locally and run it using https://github.com/wearefrank/frank-runner?tab=readme-ov-file#specials. Clone https://github.com/wearefrank/frank-runner as a brother of your Frank!Framework checkout and use one of the options described under **Specials**.
-
 ## Developing with Eclipse
 
-To develop with Eclipse, please do the following:
+You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/wearefrank/frank-runner?tab=readme-ov-file#specials). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
 
 ### Install Eclipse
 
