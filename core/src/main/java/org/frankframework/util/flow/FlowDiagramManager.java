@@ -25,6 +25,7 @@ import java.util.List;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.IAdapter;
@@ -246,22 +247,15 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	static String encodeFileName(String fileName) {
-		String mark = "-_.+=";
 		StringBuilder encodedFileName = new StringBuilder();
-		int len = fileName.length();
-		for (int i = 0; i < len; i++) {
+		for (int i = 0; i < fileName.length(); i++) {
 			char c = fileName.charAt(i);
-			if ((c >= '0' && c <= '9')
-					|| (c >= 'a' && c <= 'z')
-					|| (c >= 'A' && c <= 'Z'))
+			if (CharUtils.isAsciiAlphanumeric(c)) {
 				encodedFileName.append(c);
-			else {
-				int imark = mark.indexOf(c);
-				if (imark >= 0) {
-					encodedFileName.append(c);
-				} else {
-					encodedFileName.append('_');
-				}
+			} else if ("-_.+=".indexOf(c) >= 0) {
+				encodedFileName.append(c);
+			} else {
+				encodedFileName.append('_');
 			}
 		}
 		return encodedFileName.toString();

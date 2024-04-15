@@ -667,10 +667,9 @@ public class RecordTransformer extends AbstractRecordHandler {
 	/*
 	 * methods to create a fixed length string from a value
 	 */
-	static String align(String val, int length, boolean leftAlign, char fillchar) {
-		StringBuilder result = new StringBuilder();
-		align(result, val, length, leftAlign, fillchar);
-		return result.toString();
+	static String align(String val, int length, boolean leftAlign, char padChar) {
+		String output = leftAlign ? StringUtils.rightPad(val, length, padChar) : StringUtils.leftPad(val, length, padChar);
+		return output.substring(0, length);
 	}
 
 	static void align(StringBuilder result, String val, int length, boolean leftAlign, char fillchar) {

@@ -538,17 +538,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				results.add(result);
 			}
 		}
-		return getNamesFromList(results);
-	}
-
-	private static String getNamesFromList(List<String> filenames) {
-		StringBuilder result = new StringBuilder();
-		for (String name : filenames) {
-			if (!result.isEmpty())
-				result.append(';');
-			result.append(name);
-		}
-		return result.toString();
+		return String.join(";" , results);
 	}
 
 	/**
