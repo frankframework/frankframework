@@ -124,7 +124,7 @@ public class FileUtils {
 		return moveFile(orgFile, rename2File, overwrite, numBackups, 5, 500);
 	}
 
-	private static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int numberOfAttempts, long waitTime) throws InterruptedException, IOException {
+	public static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int numberOfAttempts, long waitTime) throws InterruptedException, IOException {
 		if (orgFile.exists()) {
 			if (numBackups>0) {
 				makeBackups(rename2File,numBackups);
