@@ -24,13 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.util.HttpUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
@@ -43,7 +44,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class ServletDispatcherSpring extends DispatcherServlet implements DynamicRegistration.Servlet {
 
-	private static final long serialVersionUID = 3L;
+	private static final long serialVersionUID = 1L;
 
 	private final Logger secLog = LogManager.getLogger("SEC");
 	private final Logger log = LogManager.getLogger(this);
@@ -51,8 +52,15 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 	@Value("${iaf-api.enabled:true}")
 	private boolean isEnabled;
 
+
 	public ServletDispatcherSpring() {
-		setContextConfigLocation("FrankFrameworkApiContext2.xml");
+		setContextConfigLocation(ResourceUtils.CLASSPATH_URL_PREFIX + "/FrankFrameworkApiContext2.xml");
+		setDetectAllHandlerMappings(false); //Else it will use the parent's (EnvironmentContext) Spring Integration mapping
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		//don't wire the ApplicationContext, 
 	}
 
 	@Override
@@ -113,7 +121,7 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 
 	@Override
 	public String getUrlMapping() {
-		return "iaf/spring-api/*,!/iaf/api/server/health";
+		return "iaf/spring-api/*";
 	}
 
 }
