@@ -16,10 +16,30 @@
 			<artifactId>ibis-adapterframework-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.bankid.merchant</groupId>
-			<artifactId>library</artifactId>
-			<version>1.0.6</version>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+
+		<!-- note that this is a fat jar using javax jaxb services -->
+		<dependency>
+			<groupId>io.github.currence-online</groupId>
+			<artifactId>merchant.library</artifactId>
+			<version>1.2.9</version>
 			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Test scoped dependencies -->
