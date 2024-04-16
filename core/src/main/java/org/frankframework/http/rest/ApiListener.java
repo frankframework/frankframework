@@ -60,7 +60,7 @@ import lombok.Setter;
  * <p>
  * It is possible to automatically generate eTags over the listener result. This can be controlled by globally 
  * setting the property <code>api.etag.enabled</code> or by setting the attribute <code>updateEtag="true"</code>.
- * When enabled the listener will respond to the <code>if-match</code>, <code>if-none-match</code> headers and may return status code 304.
+ * When enabled the listener will respond to the <code>If-Match</code>, <code>if-None-Match</code> headers and may return status code 304.
  * <p>
  * In order to enable eTags for multiple nodes you must configure Memcached to store the eTags.
  * The following properties will need to be set:
