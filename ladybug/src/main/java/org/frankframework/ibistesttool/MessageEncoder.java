@@ -37,8 +37,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 
 	@Override
 	public ToStringResult toString(Object message, String charset) {
-		if (message instanceof Message) {
-			Message m = (Message)message;
+		if (message instanceof Message m) {
 			if (charset==null) {
 				charset = m.getCharset();
 			}
@@ -83,10 +82,10 @@ public class MessageEncoder extends MessageEncoderImpl {
 	@Override
 	@SneakyThrows
 	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub) {
-		if (messageToStub instanceof Message) {
+		if (messageToStub instanceof Message message) {
 			// In case a stream is stubbed the replaced stream needs to be closed as next pipe will read and close the
 			// stub which would leave the replaced stream unclosed
-			((Message)messageToStub).close();
+			message.close();
 		}
 		return (T) Message.asMessage(super.toObject(originalCheckpoint, messageToStub));
 	}

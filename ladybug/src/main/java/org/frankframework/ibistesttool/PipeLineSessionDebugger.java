@@ -69,10 +69,10 @@ public class PipeLineSessionDebugger implements MethodHandler {
 
 	private Object put(final String name, final Object originalValue) {
 		Object newValue = ibisDebugger.storeInSessionKey(pipeLineSession.getCorrelationId(), name, originalValue);
-		if (newValue != originalValue && newValue instanceof Message) {
+		if (newValue != originalValue && newValue instanceof Message message) {
 			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
 			// keep the report in progress (waiting for the stream to be read, captured and closed).
-			((Message)newValue).closeOnCloseOf(pipeLineSession, this.getClass().getTypeName());
+			message.closeOnCloseOf(pipeLineSession, this.getClass().getTypeName());
 		}
 		return pipeLineSession.put(name, newValue);
 	}

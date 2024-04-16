@@ -295,14 +295,14 @@ public class Message implements Serializable, Closeable {
 			// Should not happen but just in case.
 			return;
 		}
-		if (request instanceof Reader) {
+		if (request instanceof Reader reader) {
 			LOG.debug("preserving Reader {} as String", this::getObjectId);
-			request = StreamUtil.readerToString((Reader) request, null);
+			request = StreamUtil.readerToString(reader, null);
 			return;
 		}
-		if (request instanceof InputStream) {
+		if (request instanceof InputStream stream) {
 			LOG.debug("preserving InputStream {} as byte[]", this::getObjectId);
-			request = StreamUtil.streamToByteArray((InputStream) request, false);
+			request = StreamUtil.streamToByteArray(stream, false);
 			return;
 		}
 		// if deepPreserve=true, File and URL are also preserved as byte array
@@ -328,16 +328,16 @@ public class Message implements Serializable, Closeable {
 			// Should not happen but just in case.
 			return;
 		}
-		if (request instanceof Reader) {
+		if (request instanceof Reader reader) {
 			LOG.debug("preserving Reader {} as SerializableFileReference", this::getObjectId);
-			request = SerializableFileReference.of((Reader) request, computeDecodingCharset(getCharset()));
-		} else if (request instanceof InputStream) {
+			request = SerializableFileReference.of(reader, computeDecodingCharset(getCharset()));
+		} else if (request instanceof InputStream stream) {
 			LOG.debug("preserving InputStream {} as SerializableFileReference", this::getObjectId);
-			request = SerializableFileReference.of((InputStream) request);
-		} else if (request instanceof String) {
-			request = SerializableFileReference.of((String) request, computeDecodingCharset(getCharset()));
-		} else if (request instanceof byte[]) {
-			request = SerializableFileReference.of((byte[]) request);
+			request = SerializableFileReference.of(stream);
+		} else if (request instanceof String string) {
+			request = SerializableFileReference.of(string, computeDecodingCharset(getCharset()));
+		} else if (request instanceof byte[] bytes) {
+			request = SerializableFileReference.of(bytes);
 		} else if (deepPreserve) {
 			if (isBinary()) {
 				LOG.debug("preserving {} as SerializableFileReference", this::getObjectId);
@@ -359,8 +359,8 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public boolean isBinary() {
-		if (request instanceof SerializableFileReference) {
-			return ((SerializableFileReference) request).isBinary();
+		if (request instanceof SerializableFileReference reference) {
+			return reference.isBinary();
 		}
 
 		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof byte[];
@@ -384,9 +384,9 @@ public class Message implements Serializable, Closeable {
 			cleanable.clean();
 		}
 		try {
-			if (request instanceof AutoCloseable) {
+			if (request instanceof AutoCloseable closeable) {
 				try {
-					((AutoCloseable) request).close();
+					closeable.close();
 				} catch (Exception e) {
 					LOG.warn("Could not close request", e);
 				}
@@ -430,8 +430,8 @@ public class Message implements Serializable, Closeable {
 
 	public void unscheduleFromCloseOnExitOf(@Nonnull PipeLineSession session) {
 		session.unscheduleCloseOnSessionExit(this);
-		if (request instanceof AutoCloseable) {
-			session.unscheduleCloseOnSessionExit((AutoCloseable) request);
+		if (request instanceof AutoCloseable closeable) {
+			session.unscheduleCloseOnSessionExit(closeable);
 		}
 	}
 
@@ -456,13 +456,13 @@ public class Message implements Serializable, Closeable {
 		if (request == null) {
 			return null;
 		}
-		if (request instanceof Reader) {
+		if (request instanceof Reader reader) {
 			LOG.debug("returning Reader {} as Reader", this::getObjectId);
-			return (Reader) request;
+			return reader;
 		}
-		if (request instanceof SerializableFileReference && !((SerializableFileReference)request).isBinary()) {
+		if (request instanceof SerializableFileReference reference && !reference.isBinary()) {
 			LOG.debug("returning SerializableFileReference {} as Reader", this::getObjectId);
-			return ((SerializableFileReference)request).getReader();
+			return reference.getReader();
 		}
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
@@ -504,30 +504,30 @@ public class Message implements Serializable, Closeable {
 			if (request == null) {
 				return null;
 			}
-			if (request instanceof InputStream) {
+			if (request instanceof InputStream stream) {
 				LOG.debug("returning InputStream {} as InputStream", this::getObjectId);
-				return (InputStream) request;
+				return stream;
 			}
-			if (request instanceof SerializableFileReference) {
+			if (request instanceof SerializableFileReference reference) {
 				LOG.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
-				return ((SerializableFileReference)request).getInputStream();
+				return reference.getInputStream();
 			}
 			if (request instanceof ThrowingSupplier) {
 				LOG.debug("returning InputStream {} from supplier", this::getObjectId);
 				return ((ThrowingSupplier<InputStream, Exception>) request).get();
 			}
-			if (request instanceof byte[]) {
+			if (request instanceof byte[] bytes) {
 				LOG.debug("returning byte[] {} as InputStream", this::getObjectId);
-				return new ByteArrayInputStream((byte[]) request);
+				return new ByteArrayInputStream(bytes);
 			}
 			if (request instanceof Node) {
 				LOG.debug("returning Node {} as InputStream", this::getObjectId);
 				return new ByteArrayInputStream(asByteArray());
 			}
 			String charset = getEncodingCharset(defaultEncodingCharset);
-			if (request instanceof Reader) {
+			if (request instanceof Reader reader) {
 				LOG.debug("returning Reader {} as InputStream", this::getObjectId);
-				return new ReaderInputStream((Reader) request, charset);
+				return new ReaderInputStream(reader, charset);
 			}
 			LOG.debug("returning String {} as InputStream", this::getObjectId);
 			return new ByteArrayInputStream(request.toString().getBytes(charset));
@@ -562,8 +562,8 @@ public class Message implements Serializable, Closeable {
 		if (request instanceof InputStream) {
 			return readBytesFromInputStream(readLimit);
 		}
-		if (request instanceof byte[]) { //copy of, else we can bump into buffer overflow exceptions
-			return Arrays.copyOf((byte[]) request, readLimit);
+		if (request instanceof byte[] bytes) { //copy of, else we can bump into buffer overflow exceptions
+			return Arrays.copyOf(bytes, readLimit);
 		}
 		if (isRepeatable()) {
 			try (InputStream stream = asInputStream()) { //Message is repeatable, close the stream after it's been (partially) read.
@@ -576,11 +576,10 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
-		if (request instanceof Reader) {
-			if (!((Reader) request).markSupported()) {
-				request = new BufferedReader((Reader)request, readLimit);
+		if (request instanceof Reader reader) {
+			if (!reader.markSupported()) {
+				request = new BufferedReader(reader, readLimit);
 			}
-			Reader reader = (Reader) request;
 			reader.mark(readLimit);
 			try {
 				return readBytesFromReader(reader, readLimit);
@@ -589,11 +588,11 @@ public class Message implements Serializable, Closeable {
 			}
 		}
 
-		if (request instanceof String) {
-			if (((String) request).isEmpty()) {
+		if (request instanceof String string) {
+			if (string.isEmpty()) {
 				return new byte[0];
 			}
-			byte[] data = ((String) request).getBytes(StreamUtil.DEFAULT_CHARSET);
+			byte[] data = string.getBytes(StreamUtil.DEFAULT_CHARSET);
 			return Arrays.copyOf(data, readLimit);
 		}
 
@@ -652,17 +651,17 @@ public class Message implements Serializable, Closeable {
 		if (request == null) {
 			return null;
 		}
-		if (request instanceof InputSource) {
+		if (request instanceof InputSource source) {
 			LOG.debug("returning InputSource {} as InputSource", this::getObjectId);
-			return (InputSource) request;
+			return source;
 		}
-		if (request instanceof Reader) {
+		if (request instanceof Reader reader) {
 			LOG.debug("returning Reader {} as InputSource", this::getObjectId);
-			return new InputSource((Reader) request);
+			return new InputSource(reader);
 		}
-		if (request instanceof String) {
+		if (request instanceof String string) {
 			LOG.debug("returning String {} as InputSource", this::getObjectId);
-			return new InputSource(new StringReader((String) request));
+			return new InputSource(new StringReader(string));
 		}
 		LOG.debug("returning {} as InputSource", this::getObjectId);
 		if (isBinary() && getCharset() == null) { //When a charset is present it should be used.
@@ -679,13 +678,13 @@ public class Message implements Serializable, Closeable {
 		if (request == null) {
 			return null;
 		}
-		if (request instanceof Source) {
+		if (request instanceof Source source) {
 			LOG.debug("returning Source {} as Source", this::getObjectId);
-			return (Source) request;
+			return source;
 		}
-		if (request instanceof Node) {
+		if (request instanceof Node node) {
 			LOG.debug("returning Node {} as DOMSource", this::getObjectId);
-			return new DOMSource((Node) request);
+			return new DOMSource(node);
 		}
 		LOG.debug("returning {} as Source", this::getObjectId);
 		return XmlUtils.inputSourceToSAXSource(asInputSource());
@@ -704,20 +703,20 @@ public class Message implements Serializable, Closeable {
 		if (request == null) {
 			return null;
 		}
-		if (request instanceof byte[]) {
-			return (byte[]) request;
+		if (request instanceof byte[] bytes) {
+			return bytes;
 		}
-		if (request instanceof Node) {
+		if (request instanceof Node node) {
 			try {
 				LOG.debug("returning Node {} as byte[]", this::getObjectId);
-				return XmlUtils.nodeToByteArray((Node) request);
+				return XmlUtils.nodeToByteArray(node);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert Node " + getObjectId() + " to byte[]", e);
 			}
 		}
 		String charset = getEncodingCharset(defaultEncodingCharset);
-		if (request instanceof String) {
-			return ((String) request).getBytes(charset);
+		if (request instanceof String string) {
+			return string.getBytes(charset);
 		}
 		if (request instanceof ThrowingSupplier) { // asInputStream handles the exception and cast for us.
 			LOG.debug("returning InputStream {} from supplier", this::getObjectId);
@@ -742,13 +741,13 @@ public class Message implements Serializable, Closeable {
 		if (request == null) {
 			return null;
 		}
-		if (request instanceof String) {
-			return (String) request;
+		if (request instanceof String string) {
+			return string;
 		}
-		if (request instanceof Node) {
+		if (request instanceof Node node) {
 			try {
 				LOG.debug("returning Node {} as String", this::getObjectId);
-				return XmlUtils.nodeToString((Node) request);
+				return XmlUtils.nodeToString(node);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert type Node " + getObjectId() + " to String", e);
 			}
@@ -758,9 +757,9 @@ public class Message implements Serializable, Closeable {
 		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
 		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
 		if (!(request instanceof SerializableFileReference) && (!isBinary() || !isRepeatable())) {
-			if (request instanceof AutoCloseable) {
+			if (request instanceof AutoCloseable closeable) {
 				try {
-					((AutoCloseable) request).close();
+					closeable.close();
 				} catch (Exception e) {
 					LOG.info("could not close request of type [{}], inside message {}. Message: {}", requestClass, this, e.getMessage());
 				}
@@ -842,20 +841,20 @@ public class Message implements Serializable, Closeable {
 		if (object == null) {
 			return nullMessage();
 		}
-		if (object instanceof Message) {
-			return (Message) object;
+		if (object instanceof Message message) {
+			return message;
 		}
-		if (object instanceof URL) {
-			return new UrlMessage((URL) object);
+		if (object instanceof URL rL) {
+			return new UrlMessage(rL);
 		}
-		if (object instanceof File) {
-			return new FileMessage((File) object);
+		if (object instanceof File file) {
+			return new FileMessage(file);
 		}
-		if (object instanceof Path) {
-			return new PathMessage((Path) object);
+		if (object instanceof Path path) {
+			return new PathMessage(path);
 		}
-		if (object instanceof MessageWrapper) {
-			return ((MessageWrapper<?>)object).getMessage();
+		if (object instanceof MessageWrapper wrapper) {
+			return wrapper.getMessage();
 		}
 		if (object instanceof RawMessageWrapper) {
 			throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
@@ -870,14 +869,14 @@ public class Message implements Serializable, Closeable {
 		if (object == null) {
 			return null;
 		}
-		if (object instanceof String) {
-			return (String) object;
+		if (object instanceof String string) {
+			return string;
 		}
-		if (object instanceof Message) {
-			return ((Message) object).asString();
+		if (object instanceof Message message) {
+			return message.asString();
 		}
-		if (object instanceof MessageWrapper) {
-			return ((MessageWrapper<?>) object).getMessage().asString();
+		if (object instanceof MessageWrapper wrapper) {
+			return wrapper.getMessage().asString();
 		}
 		// In other cases, message can be closed directly after converting to String.
 		try (Message message = Message.asMessage(object)) {
@@ -892,17 +891,17 @@ public class Message implements Serializable, Closeable {
 		if (object == null) {
 			return null;
 		}
-		if (object instanceof byte[]) {
-			return (byte[]) object;
+		if (object instanceof byte[] bytes) {
+			return bytes;
 		}
-		if (object instanceof String) {
-			return ((String) object).getBytes();
+		if (object instanceof String string) {
+			return string.getBytes();
 		}
-		if (object instanceof Message) {
-			return ((Message) object).asByteArray();
+		if (object instanceof Message message) {
+			return message.asByteArray();
 		}
-		if (object instanceof MessageWrapper) {
-			return ((MessageWrapper<?>) object).getMessage().asByteArray();
+		if (object instanceof MessageWrapper wrapper) {
+			return wrapper.getMessage().asByteArray();
 		}
 		// In other cases, message can be closed directly after converting to byte array.
 		try (Message message = Message.asMessage(object)) {
@@ -982,8 +981,8 @@ public class Message implements Serializable, Closeable {
 		try {
 			Object requestClassFromStream = stream.readObject();
 			if (requestClassFromStream != null) {
-				if (requestClassFromStream instanceof Class<?>) {
-					this.requestClass = ((Class<?>) requestClassFromStream).getTypeName();
+				if (requestClassFromStream instanceof Class<?> class1) {
+					this.requestClass = class1.getTypeName();
 				} else {
 					this.requestClass = requestClassFromStream.toString();
 				}
@@ -1020,23 +1019,22 @@ public class Message implements Serializable, Closeable {
 			return (long) context.get(MessageContext.METADATA_SIZE);
 		}
 
-		if (request instanceof String) {
-			long size = ((String) request).getBytes(StreamUtil.DEFAULT_CHARSET).length;
+		if (request instanceof String string) {
+			long size = string.getBytes(StreamUtil.DEFAULT_CHARSET).length;
 			getContext().put(MessageContext.METADATA_SIZE, size);
 			return size;
 		}
 
-		if (request instanceof byte[]) {
-			return ((byte[]) request).length;
+		if (request instanceof byte[] bytes) {
+			return bytes.length;
 		}
 
-		if (request instanceof SerializableFileReference) {
-			return ((SerializableFileReference)request).getSize();
+		if (request instanceof SerializableFileReference reference) {
+			return reference.getSize();
 		}
 
-		if (request instanceof FileInputStream) {
+		if (request instanceof FileInputStream fileStream) {
 			try {
-				FileInputStream fileStream = (FileInputStream) request;
 				return fileStream.getChannel().size();
 			} catch (IOException e) {
 				LOG.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) ()->ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);

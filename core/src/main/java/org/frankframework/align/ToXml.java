@@ -186,7 +186,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		if (log.isTraceEnabled()) log.trace("node ["+name+"] search for attributeDeclaration");
 		XSTypeDefinition typeDefinition=elementDeclaration.getTypeDefinition();
 		XSObjectList attributeUses=getAttributeUses(typeDefinition);
-		XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition ? ((XSComplexTypeDefinition)typeDefinition).getAttributeWildcard():null;
+		XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition xsctd ? xsctd.getAttributeWildcard():null;
 		if ((attributeUses==null || attributeUses.getLength()==0) && wildcard==null) {
 			if (nodeAttributes!=null && nodeAttributes.size()>0) {
 				log.warn("node ["+name+"] found ["+nodeAttributes.size()+"] attributes, but no declared AttributeUses or wildcard");
@@ -466,8 +466,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		if (term==null) {
 			throw new NullPointerException("getBestMatchingElementPath particle.term is null");
 		}
-		if (term instanceof XSModelGroup) {
-			XSModelGroup modelGroup = (XSModelGroup)term;
+		if (term instanceof XSModelGroup modelGroup) {
 			short compositor = modelGroup.getCompositor();
 			XSObjectList particles = modelGroup.getParticles();
 			if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath() modelGroup particles ["+ToStringBuilder.reflectionToString(particles,ToStringStyle.MULTI_LINE_STYLE)+"]");
@@ -507,8 +506,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				throw new IllegalStateException("getBestMatchingElementPath modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
 			}
 		}
-		if (term instanceof XSElementDeclaration) {
-			XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
+		if (term instanceof XSElementDeclaration elementDeclaration) {
 			String elementName=elementDeclaration.getName();
 			if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration name ["+elementName+"]");
 			if (!hasChild(baseElementDeclaration, baseNode, elementName)) {
@@ -551,8 +549,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			path.add(particle);
 			return true;
 		}
-		if (term instanceof XSWildcard) {
-			XSWildcard wildcard=(XSWildcard)term;
+		if (term instanceof XSWildcard wildcard) {
 			String processContents;
 			switch (wildcard.getProcessContents()) {
 			case XSWildcard.PC_LAX: processContents="LAX"; break;

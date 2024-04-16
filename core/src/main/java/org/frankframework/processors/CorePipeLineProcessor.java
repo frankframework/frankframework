@@ -115,7 +115,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
 			if (XmlUtils.isWellFormed(message, null)) {
-				IPipe pipe = forwardTarget instanceof IPipe ? (IPipe)forwardTarget : null;
+				IPipe pipe = forwardTarget instanceof IPipe ip ? ip : null;
 				try {
 					Message xsltResult = XmlUtils.removeNamespaces(message);
 					pipeLineSession.put("originalMessageWithoutNamespaces", xsltResult);
@@ -133,8 +133,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		try {
 			while (!ready){
 
-				if (forwardTarget instanceof PipeLineExit) {
-					PipeLineExit plExit= (PipeLineExit)forwardTarget;
+				if (forwardTarget instanceof PipeLineExit plExit) {
 					if(!plExit.isEmptyResult()) {
 						boolean outputWrapError = false;
 						if (!plExit.isSkipWrapping()) {

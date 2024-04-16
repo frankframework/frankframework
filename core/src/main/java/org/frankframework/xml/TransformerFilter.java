@@ -40,8 +40,8 @@ public class TransformerFilter extends FullXmlFilter {
 		}
 		SAXResult transformedStream = new SAXResult();
 		transformedStream.setHandler(handler);
-		if (handler instanceof LexicalHandler) {
-			transformedStream.setLexicalHandler((LexicalHandler)handler);
+		if (handler instanceof LexicalHandler lexicalHandler) {
+			transformedStream.setLexicalHandler(lexicalHandler);
 		}
 		this.transformerHandler=transformerHandler;
 		transformerHandler.setResult(transformedStream);

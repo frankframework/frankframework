@@ -182,7 +182,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		 */
 		public String compileKey(String method, String path) {
 			String url = getPath(path);
-			return String.format("%S:%s", method, url);
+			return "%S:%s".formatted(method, url);
 		}
 
 		/**
@@ -387,7 +387,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		 */
 		private String findPathParameter(Parameter parameter, String methodPath, String url) {
 			PathParam pathParameter = parameter.getAnnotation(PathParam.class);
-			String path = String.format("{%s}", pathParameter.value());
+			String path = "{%s}".formatted(pathParameter.value());
 			log.debug("looking up path [{}]", path);
 
 			String[] pathSegments = methodPath.split("/");

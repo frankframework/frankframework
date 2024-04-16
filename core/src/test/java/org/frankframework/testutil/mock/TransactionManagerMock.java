@@ -25,8 +25,8 @@ public class TransactionManagerMock implements PlatformTransactionManager {
 
 	@Override
 	public void commit(TransactionStatus status) throws TransactionException {
-		if(status instanceof DummyTransactionStatus) {
-			((DummyTransactionStatus) status).completed = true;
+		if(status instanceof DummyTransactionStatus transactionStatus) {
+			transactionStatus.completed = true;
 		}
 	}
 

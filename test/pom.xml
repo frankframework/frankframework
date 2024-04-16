@@ -17,52 +17,58 @@
 		<maven.build.timestamp.format>dd-MM-yyyy HH:mm</maven.build.timestamp.format>
 	</properties>
 
-	<dependencies>
-		<!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
-		<dependency>
-			<groupId>jakarta.jms</groupId>
-			<artifactId>jakarta.jms-api</artifactId>
-		</dependency>
+ <dependencies>
+  <!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
+  <dependency>
+   <groupId>jakarta.jms</groupId>
+   <artifactId>jakarta.jms-api</artifactId>
+  </dependency>
 
-		<!-- This dependency is here because of the IbisMetricsPipe -->
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-nn-specials</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-webapp</artifactId>
-			<type>war</type>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-ladybug</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
+  <!-- This dependency is here because of the IbisMetricsPipe -->
+  <dependency>
+   <groupId>org.frankframework</groupId>
+   <artifactId>frankframework-core</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.frankframework</groupId>
+   <artifactId>frankframework-nn-specials</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.frankframework</groupId>
+   <artifactId>frankframework-webapp</artifactId>
+   <type>war</type>
+  </dependency>
+  <dependency>
+   <groupId>org.frankframework</groupId>
+   <artifactId>frankframework-ladybug</artifactId>
+   <scope>provided</scope>
+  </dependency>
+  <dependency>
+   <groupId>org.projectlombok</groupId>
+   <artifactId>lombok</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>javax.servlet</groupId>
+   <artifactId>javax.servlet-api</artifactId>
+   <scope>provided</scope>
+  </dependency>
 
-		<!-- provided dependencies will be added to the executable (Spring) WAR -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-		</dependency>
+  <!-- provided dependencies will be added to the executable (Spring) WAR -->
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter</artifactId>
+   <scope>provided</scope>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-tomcat</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>com.sun.xml.ws</groupId>
+   <artifactId>jaxws-rt</artifactId>
+   <version>2.3.7</version>
+   <scope>provided</scope>
+  </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-loader</artifactId>

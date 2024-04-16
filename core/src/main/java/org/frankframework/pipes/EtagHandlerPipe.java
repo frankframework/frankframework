@@ -133,8 +133,8 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 				returnCode = cache.remove(cacheKey);
 				break;
 			case FLUSH:
-				if(cache instanceof ApiEhcache) {
-					((ApiEhcache) cache).flush();
+				if(cache instanceof ApiEhcache ehcache) {
+					ehcache.flush();
 					returnCode = true;
 				}
 				break;

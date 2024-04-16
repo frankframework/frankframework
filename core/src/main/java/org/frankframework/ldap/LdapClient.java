@@ -211,8 +211,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     		return new InitialDirContext(jndiEnv);
     	} catch (NamingException ne) {
     		for (Throwable cause=ne; cause!=null; cause=cause.getCause()) {
-    			if (cause instanceof CertPathValidatorException) {
-    				CertPathValidatorException cpve = (CertPathValidatorException)cause;
+    			if (cause instanceof CertPathValidatorException cpve) {
      				log.warn("CertPathValidatorException index ["+cpve.getIndex()+"] certpath ["+cpve.getCertPath()+"]");
     			}
     		}

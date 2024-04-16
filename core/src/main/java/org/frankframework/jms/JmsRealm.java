@@ -83,8 +83,7 @@ public class JmsRealm {
 	 */
 	public void copyRealm(Object destination) {
 		String logPrefixDest=destination.getClass().getName()+" ";
-		if (destination instanceof INamedObject) {
-			INamedObject namedDestination = (INamedObject) destination;
+		if (destination instanceof INamedObject namedDestination) {
 			logPrefixDest += "["+namedDestination.getName()+"] ";
 		}
 		try {

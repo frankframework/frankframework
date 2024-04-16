@@ -187,14 +187,14 @@ public class FileHandler implements IScopeProvider {
 		for (Iterator<TransformerAction> it = transformers.iterator(); it.hasNext(); ) {
 			TransformerAction transformerAction = it.next();
 			if (!it.hasNext() && "stream".equals(outputType)) {
-				if (transformerAction instanceof TransformerActionWithOutputTypeStream) {
-					output = ((TransformerActionWithOutputTypeStream)transformerAction).go((byte[])output, session, paramList, "stream");
+				if (transformerAction instanceof TransformerActionWithOutputTypeStream stream) {
+					output = stream.go((byte[])output, session, paramList, "stream");
 				} else {
 					output = new ByteArrayInputStream(transformerAction.go((byte[])output, session, paramList));
 				}
 			} else {
-				if (output instanceof InputStream) {
-					output = ((TransformerActionWithInputTypeStream)transformerAction).go((InputStream)output, session, paramList);
+				if (output instanceof InputStream stream) {
+					output = ((TransformerActionWithInputTypeStream)transformerAction).go(stream, session, paramList);
 				} else {
 					output = transformerAction.go((byte[])output, session, paramList);
 				}
@@ -473,8 +473,8 @@ public class FileHandler implements IScopeProvider {
 			InputStream inputStream;
 			File file = null;
 			Object object = getEffectiveFile(in, session);
-			if (object instanceof File) {
-				file = (File)object;
+			if (object instanceof File file1) {
+				file = file1;
 				inputStream = new FileInputStream(file);
 			} else {
 				inputStream = ((URL)object).openStream();
@@ -594,8 +594,8 @@ public class FileHandler implements IScopeProvider {
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File file = null;
 			Object object = getEffectiveFile(in, session);
-			if (object instanceof File) {
-				file = (File)object;
+			if (object instanceof File file1) {
+				file = file1;
 			} else {
 				URL url = (URL)object;
 				String fileName = url.getFile();

@@ -97,9 +97,8 @@ public class JsonPipe extends FixedForwardPipe {
 					}
 					String root="root";
 					StringWriter writer = new StringWriter();
-					if (jValue instanceof JsonObject) { //{"d":{"convert":{"__metadata":{"type":"ZCD_API_FCC_SRV.convertcurrencys"},"amount":"0.000000000","currency":"EUR"}}}
+					if (jValue instanceof JsonObject jObj) { //{"d":{"convert":{"__metadata":{"type":"ZCD_API_FCC_SRV.convertcurrencys"},"amount":"0.000000000","currency":"EUR"}}}
 						if (!addXmlRootElement) {
-							JsonObject jObj = (JsonObject)jValue;
 							if (jObj.size()>1) {
 								throw new PipeRunException(this, "Cannot extract root element name from object with ["+jObj.size()+"] names");
 							}

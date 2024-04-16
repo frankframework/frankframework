@@ -87,25 +87,27 @@ public class DocumentUtilsTest {
 	@Test
 	public void testNestedObjectDocument() throws Exception {
 		testBuild("{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7.2},[1,2,3.9]]}}",
-				"<root>"+
-					"<items>"+
-						"<numeric>1</numeric>"+
-						"<chars>waarde</chars>"+
-						"<welles>true</welles>"+
-						"<nietes>false</nietes>"+
-						"<rij>a</rij>"+
-						"<rij>2</rij>"+
-						"<rij>true</rij>"+
-						"<rij>false</rij>"+
-						"<rij nil=\"true\"/>"+
-						"<rij><a>1</a><b>7.2</b></rij>"+
-						"<rij>"+
-							"<item>1</item>"+
-							"<item>2</item>"+
-							"<item>3.9</item>"+
-						"</rij>"+
-					"</items>"+
-				"</root>");
+				"""
+				<root>\
+				<items>\
+				<numeric>1</numeric>\
+				<chars>waarde</chars>\
+				<welles>true</welles>\
+				<nietes>false</nietes>\
+				<rij>a</rij>\
+				<rij>2</rij>\
+				<rij>true</rij>\
+				<rij>false</rij>\
+				<rij nil="true"/>\
+				<rij><a>1</a><b>7.2</b></rij>\
+				<rij>\
+				<item>1</item>\
+				<item>2</item>\
+				<item>3.9</item>\
+				</rij>\
+				</items>\
+				</root>\
+				""");
 	}
 
 	@Test

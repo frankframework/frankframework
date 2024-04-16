@@ -133,8 +133,8 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			return dbmsSupport;
 		}
 		try {
-			if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
+			if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
+				Map<String, String> md = proxy.getMetaData();
 				dbmsSupport = dbmsSupportFactory.getDbmsSupport(md.get("product"), md.get("product-version"));
 			}
 			if (dbmsSupport == null) {
@@ -202,8 +202,8 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 				return "no datasource found for datasourceName ["+getDatasourceName()+"]";
 			}
 			//Try to minimise the amount of DB connections
-			if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				return ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getDestinationName();
+			if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
+				return proxy.getDestinationName();
 			}
 
 			try (Connection connection = getConnection()) {

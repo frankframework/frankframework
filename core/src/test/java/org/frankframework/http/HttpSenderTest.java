@@ -647,9 +647,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setParamsInUrl(false);
 		sender.setFirstBodyPartName("request");
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -673,9 +675,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setPostType(PostType.FORMDATA);
 		sender.setFirstBodyPartName("request");
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -699,9 +703,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setParamsInUrl(false);
 		sender.setFirstBodyPartName("request");
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -725,9 +731,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -750,9 +758,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -776,12 +786,14 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setFirstBodyPartName("request");
 		sender.setMtomContentTransferEncoding("binary");
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/>"
-				+ "<part name=\"string.txt\" "
-				+ "sessionKey=\"stringPart\" "
-				+ "mimeType=\"text/plain\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/>\
+				<part name="string.txt" \
+				sessionKey="stringPart" \
+				mimeType="text/plain"/></parts>\
+				""";
 		session.put("multipartXml", xmlMultipart);
 		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -810,12 +822,14 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setPostType(PostType.MTOM);
 		sender.setMtomContentTransferEncoding("base64");
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/>"
-				+ "<part name=\"string.txt\" "
-				+ "sessionKey=\"stringPart\" "
-				+ "mimeType=\"text/plain\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/>\
+				<part name="string.txt" \
+				sessionKey="stringPart" \
+				mimeType="text/plain"/></parts>\
+				""";
 		session.put("multipartXml", xmlMultipart);
 		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -843,11 +857,13 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setFirstBodyPartName("request");
 		sender.setMtomContentTransferEncoding("binary");
 
-		String xmlMultipart = "<parts><part type=\"file\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/>"
-				+ "<part sessionKey=\"stringPart\" "
-				+ "mimeType=\"text/plain\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/>\
+				<part sessionKey="stringPart" \
+				mimeType="text/plain"/></parts>\
+				""";
 		session.put("multipartXml", xmlMultipart);
 		session.put("part_file", new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()), new MessageContext().withName("PartFile.xml")));
 
@@ -876,11 +892,13 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setPostType(PostType.MTOM);
 		sender.setMtomContentTransferEncoding("base64");
 
-		String xmlMultipart = "<parts><part type=\"file\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/>"
-				+ "<part sessionKey=\"stringPart\" "
-				+ "mimeType=\"text/plain\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/>\
+				<part sessionKey="stringPart" \
+				mimeType="text/plain"/></parts>\
+				""";
 		session.put("multipartXml", xmlMultipart);
 		session.put("part_file", new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()), new MessageContext().withName("PartFile.xml")));
 
@@ -910,9 +928,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setPostType(PostType.MTOM);
 		sender.setFirstBodyPartName("request");
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -937,9 +957,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setParamsInUrl(false);
 		sender.setFirstBodyPartName("request");
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -969,9 +991,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setFirstBodyPartName("request");
 		sender.setParametersToSkipWhenEmpty("empty-param");
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 

@@ -193,8 +193,10 @@ public class TestLogMessages {
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			String message = logEvents.get(0);
 
-			String expected = "DEBUG - Oh no, something went wrong! java.lang.Throwable: my exception message\n" +
-					"	at TestLogMessages.logWithStacktrace(TestLogMessages:0) ~[?:?]";
+			String expected = """
+					DEBUG - Oh no, something went wrong! java.lang.Throwable: my exception message
+						at TestLogMessages.logWithStacktrace(TestLogMessages:0) ~[?:?]\
+					""";
 			TestAssertions.assertEqualsIgnoreCRLF(expected, message);
 		}
 		finally {

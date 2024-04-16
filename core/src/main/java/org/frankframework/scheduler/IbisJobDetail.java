@@ -57,9 +57,9 @@ public class IbisJobDetail extends JobDetailImpl {
 		}
 
 		//If at this point the message is equal in both jobs, the jobs are equal!
-		if(thisJobDef instanceof SendMessageJob && otherJobDef instanceof SendMessageJob) {
-			String msg1 = ((SendMessageJob) thisJobDef).getMessage();
-			String msg2 = ((SendMessageJob) otherJobDef).getMessage();
+		if(thisJobDef instanceof SendMessageJob job1 && otherJobDef instanceof SendMessageJob job2) {
+			String msg1 = job1.getMessage();
+			String msg2 = job2.getMessage();
 			return StringUtils.equals(msg1, msg2);
 		}
 

@@ -124,8 +124,7 @@ public class TibcoUtils {
 			Enumeration enm = queueBrowser.getEnumeration();
 			if (enm.hasMoreElements()) {
 				Object o = enm.nextElement();
-				if (o instanceof Message) {
-					Message msg = (Message) o;
+				if (o instanceof Message msg) {
 					long jmsTimestamp = msg.getJMSTimestamp();
 					return currentTime - jmsTimestamp;
 				} else {

@@ -137,7 +137,7 @@ public class RequestMessageBuilder {
 		builder.append("=");
 
 		Object value = entry.getValue();
-		builder.append(value instanceof String ? sanitizeForLog((String) value) : value);
+		builder.append(value instanceof String s ? sanitizeForLog(s) : value);
 
 		return builder.toString();
 	}

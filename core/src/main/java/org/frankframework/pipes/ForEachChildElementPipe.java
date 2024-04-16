@@ -339,12 +339,12 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		result.inputHandler = new ExceptionCatchingFilter(result.inputHandler) {
 			@Override
 			protected void handleException(Exception e) throws SAXException {
-				if (e instanceof SaxTimeoutException) {
-					throw (SaxTimeoutException)e;
+				if (e instanceof SaxTimeoutException exception) {
+					throw exception;
 				}
 				if (result.itemHandler.isStopRequested()) {
-					if (e instanceof SaxAbortException) {
-						throw (SaxAbortException)e;
+					if (e instanceof SaxAbortException exception) {
+						throw exception;
 					}
 					throw new SaxAbortException(e);
 				}

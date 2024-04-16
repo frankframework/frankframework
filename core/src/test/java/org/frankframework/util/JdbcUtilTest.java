@@ -217,10 +217,12 @@ public class JdbcUtilTest {
 	}
 
 	private String getExpectedWarningXml() {
-		return "<warnings>\n"+
-				"<warning errorCode=\"111\" sqlState=\"SQLState 1\" cause=\"java.lang.NullPointerException\" message=\"warningReason1: tja\" />\n"+
-				"<warning errorCode=\"222\" sqlState=\"SQLState 2\" cause=\"java.lang.NullPointerException\" message=\"warningReason2: och\" />\n"+
-				"</warnings>";
+		return """
+				<warnings>
+				<warning errorCode="111" sqlState="SQLState 1" cause="java.lang.NullPointerException" message="warningReason1: tja" />
+				<warning errorCode="222" sqlState="SQLState 2" cause="java.lang.NullPointerException" message="warningReason2: och" />
+				</warnings>\
+				""";
 	}
 
 	private SQLWarning getWarnings() {

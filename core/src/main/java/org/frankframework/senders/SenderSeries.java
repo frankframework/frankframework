@@ -56,8 +56,8 @@ public class SenderSeries extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		for (ISender sender: getSenders()) {
-			if(sender instanceof AdapterAware) {
-				((AdapterAware) sender).setAdapter(adapter);
+			if(sender instanceof AdapterAware aware) {
+				aware.setAdapter(adapter);
 			}
 			sender.configure();
 		}

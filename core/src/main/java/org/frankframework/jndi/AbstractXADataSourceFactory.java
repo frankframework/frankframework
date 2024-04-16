@@ -23,9 +23,9 @@ public abstract class AbstractXADataSourceFactory extends PoolingJndiDataSourceF
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if (dataSource instanceof XADataSource) {
+		if (dataSource instanceof XADataSource source) {
 			log.info("DataSource [{}] is XA enabled, registering with a Transaction Manager", dataSourceName);
-			return createXADataSource((XADataSource) dataSource, dataSourceName);
+			return createXADataSource(source, dataSourceName);
 		}
 
 		if(maxPoolSize > 1) {

@@ -59,8 +59,8 @@ public class JsonXslt3XmlReader implements XMLReader {
 	public JsonXslt3XmlReader(ContentHandler handler) {
 		this();
 		setContentHandler(handler);
-		if (handler instanceof ErrorHandler) {
-			setErrorHandler((ErrorHandler)handler);
+		if (handler instanceof ErrorHandler errorHandler1) {
+			setErrorHandler(errorHandler1);
 		}
 	}
 

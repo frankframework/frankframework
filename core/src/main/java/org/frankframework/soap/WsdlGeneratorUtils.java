@@ -111,17 +111,16 @@ public abstract class WsdlGeneratorUtils {
 		boolean hasWebServiceListener = false;
 		String webServiceListenerNamespace = null;
 		for (IListener<?> listener : WsdlGeneratorUtils.getListeners(adapter)) {
-			if(listener instanceof WebServiceListener) {
+			if(listener instanceof WebServiceListener serviceListener) {
 				hasWebServiceListener = true;
-				webServiceListenerNamespace = ((WebServiceListener)listener).getServiceNamespaceURI();
+				webServiceListenerNamespace = serviceListener.getServiceNamespaceURI();
 			}
 		}
 
 		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
 		if(inputValidator instanceof SoapValidator) { //We have to check this first as the SoapValidator cannot use getSchema()
 			return true;
-		} else if(inputValidator instanceof IXmlValidator) {
-			IXmlValidator xmlValidator = (IXmlValidator)inputValidator;
+		} else if(inputValidator instanceof IXmlValidator xmlValidator) {
 			if(xmlValidator.getSchema() != null) {
 				return StringUtils.isNotEmpty(webServiceListenerNamespace);
 			}

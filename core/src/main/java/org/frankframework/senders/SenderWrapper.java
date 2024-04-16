@@ -49,8 +49,8 @@ public class SenderWrapper extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if(sender instanceof AdapterAware) {
-			((AdapterAware) sender).setAdapter(adapter);
+		if(sender instanceof AdapterAware aware) {
+			aware.setAdapter(adapter);
 		}
 		getSender().configure();
 	}

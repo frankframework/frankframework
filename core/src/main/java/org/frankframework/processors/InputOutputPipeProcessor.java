@@ -78,8 +78,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				message.closeOnCloseOf(pipeLineSession, owner);
 				if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
 					boolean throwOnMissingSessionKey;
-					if (pipe instanceof FixedForwardPipe) {
-						FixedForwardPipe ffp = (FixedForwardPipe) pipe;
+					if (pipe instanceof FixedForwardPipe ffp) {
 						throwOnMissingSessionKey = !ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey());
 					} else {
 						throwOnMissingSessionKey = true;
@@ -104,8 +103,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			}
 
 			PipeRunResult pipeRunResult = null;
-			if (pipe instanceof FixedForwardPipe) {
-				FixedForwardPipe ffPipe = (FixedForwardPipe) pipe;
+			if (pipe instanceof FixedForwardPipe ffPipe) {
 				if (ffPipe.skipPipe(message, pipeLineSession)) {
 					log.info("skipped pipe processing");
 					pipeRunResult = new PipeRunResult(ffPipe.getSuccessForward(), message);

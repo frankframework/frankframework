@@ -82,12 +82,12 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 			} catch (Throwable t) {
 				log.debug("setting RollBackOnly for pipeline after catching exception");
 				itx.setRollbackOnly();
-				if (t instanceof Error) {
-					throw (Error)t;
-				} else if (t instanceof RuntimeException) {
-					throw (RuntimeException)t;
-				} else if (t instanceof PipeRunException) {
-					throw (PipeRunException)t;
+				if (t instanceof Error error) {
+					throw error;
+				} else if (t instanceof RuntimeException exception) {
+					throw exception;
+				} else if (t instanceof PipeRunException exception) {
+					throw exception;
 				} else {
 					throw new PipeRunException(null, "Caught unknown checked exception", t);
 				}

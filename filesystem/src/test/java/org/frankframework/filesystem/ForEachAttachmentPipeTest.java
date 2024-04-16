@@ -69,16 +69,18 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		String propvalue1="propvalue1";
 		String propvalue2="propvalue2";
 
-		String expected="<results>\n"+
-							"<result item=\"1\">\n"+
-							"<attachment name=\"testAttachmentName\" filename=\"testAttachmentFileName\" contentType=\"testAttachmentContentType\" size=\"18\">\n"+
-							"	<properties>\n"+
-							"		<property name=\"propname1\">propvalue1</property>\n"+
-							"		<property name=\"propname2\">propvalue2</property>\n"+
-							"	</properties>\n"+
-							"</attachment>\n"+
-							"</result>\n"+
-						"</results>";
+		String expected="""
+							<results>
+							<result item="1">
+							<attachment name="testAttachmentName" filename="testAttachmentFileName" contentType="testAttachmentContentType" size="18">
+								<properties>
+									<property name="propname1">propvalue1</property>
+									<property name="propname2">propvalue2</property>
+								</properties>
+							</attachment>
+							</result>
+							</results>\
+							""";
 
 		pipe.configure();
 		pipe.start();

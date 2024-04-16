@@ -116,8 +116,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 
 		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
-		if(bus instanceof SpringBus) {
-			cxfBus = (SpringBus) bus;
+		if(bus instanceof SpringBus springBus) {
+			cxfBus = springBus;
 			log.debug("found CXF SpringBus id ["+bus.getId()+"]");
 		} else {
 			throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());

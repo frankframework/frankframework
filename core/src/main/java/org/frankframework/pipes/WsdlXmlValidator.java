@@ -492,8 +492,7 @@ class SchemaLocation implements Comparable<SchemaLocation> {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof SchemaLocation) {
-			SchemaLocation other = (SchemaLocation) o;
+		if (o instanceof SchemaLocation other) {
 			if (compareTo(other) == 0) {
 				return true;
 			}

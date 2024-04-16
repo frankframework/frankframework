@@ -59,8 +59,8 @@ public class HttpRequestRetryHandler extends DefaultHttpRequestRetryHandler {
 	 * See org.apache.http.impl.execchain.RequestEntityProxy#isRepeatable(HttpRequest)
 	 */
 	public boolean isRepeatable(HttpRequest request) {
-		if(request instanceof HttpEntityEnclosingRequest) {
-			final HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
+		if(request instanceof HttpEntityEnclosingRequest enclosingRequest) {
+			final HttpEntity entity = enclosingRequest.getEntity();
 			return entity.isRepeatable();
 		}
 		return true;

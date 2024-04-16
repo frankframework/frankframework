@@ -175,8 +175,7 @@ public class AdapterStatus extends BusEndpointBase {
 					ArrayList<Object> infoElem = new ArrayList<>();
 					infoElem.add(prefix + " '" + alias + "':");
 					Certificate trustedcert = keystore.getCertificate(alias);
-					if (trustedcert instanceof X509Certificate) {
-						X509Certificate cert = (X509Certificate) trustedcert;
+					if (trustedcert instanceof X509Certificate cert) {
 						infoElem.add("Subject DN: " + cert.getSubjectDN());
 						infoElem.add("Signature Algorithm: " + cert.getSigAlgName());
 						infoElem.add("Valid from: " + cert.getNotBefore());
@@ -213,24 +212,21 @@ public class AdapterStatus extends BusEndpointBase {
 
 			pipesInfo.put("name", pipename);
 			pipesInfo.put("forwards", forwards);
-			if (pipe instanceof HasKeystore) {
-				HasKeystore s = (HasKeystore) pipe;
+			if (pipe instanceof HasKeystore s) {
 				Map<String, Object> certInfo = addCertificateInfo(s);
 				if(certInfo != null)
 					pipesInfo.put("certificate", certInfo);
 			}
-			if (pipe instanceof MessageSendingPipe) {
-				MessageSendingPipe msp=(MessageSendingPipe)pipe;
+			if (pipe instanceof MessageSendingPipe msp) {
 				ISender sender = msp.getSender();
 				pipesInfo.put("sender", ClassUtils.nameOf(sender));
-				if (sender instanceof HasKeystore) {
-					HasKeystore s = (HasKeystore) sender;
+				if (sender instanceof HasKeystore s) {
 					Map<String, Object> certInfo = addCertificateInfo(s);
 					if(certInfo != null)
 						pipesInfo.put("certificate", certInfo);
 				}
-				if (sender instanceof HasPhysicalDestination) {
-					pipesInfo.put("destination",((HasPhysicalDestination)sender).getPhysicalDestinationName());
+				if (sender instanceof HasPhysicalDestination destination) {
+					pipesInfo.put("destination",destination.getPhysicalDestinationName());
 				}
 				if (sender instanceof JdbcSenderBase) {
 					pipesInfo.put("isJdbcSender", true);
@@ -239,16 +235,15 @@ public class AdapterStatus extends BusEndpointBase {
 				if (listener!=null) {
 					pipesInfo.put("listenerName", listener.getName());
 					pipesInfo.put("listenerClass", ClassUtils.nameOf(listener));
-					if (listener instanceof HasPhysicalDestination) {
-						String pd = ((HasPhysicalDestination)listener).getPhysicalDestinationName();
+					if (listener instanceof HasPhysicalDestination destination) {
+						String pd = destination.getPhysicalDestinationName();
 						pipesInfo.put("listenerDestination", pd);
 					}
 				}
 				ITransactionalStorage<?> messageLog = msp.getMessageLog();
 				if (messageLog!=null) {
 					mapPipeMessageLog(messageLog, pipesInfo, adapter.getRunState() == RunState.STARTED);
-				} else if(sender instanceof ITransactionalStorage) { // in case no message log specified
-					ITransactionalStorage<?> store = (ITransactionalStorage<?>) sender;
+				} else if(sender instanceof ITransactionalStorage store) {
 					mapPipeMessageLog(store, pipesInfo, adapter.getRunState() == RunState.STARTED);
 					pipesInfo.put("isSenderTransactionalStorage", true);
 				}
@@ -333,8 +328,8 @@ public class AdapterStatus extends BusEndpointBase {
 					String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
 					listenerInfo.put("destination", pd);
 				}
-				if (listener instanceof HasSender) {
-					sender = ((HasSender)listener).getSender();
+				if (listener instanceof HasSender hasSender) {
+					sender = hasSender.getSender();
 				}
 
 				boolean isRestListener = listener instanceof RestListener;
@@ -348,8 +343,7 @@ public class AdapterStatus extends BusEndpointBase {
 				receiverInfo.put("listener", listenerInfo);
 			}
 
-			if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
-				JmsListenerBase jlb = (JmsListenerBase) listener;
+			if ((listener instanceof JmsListenerBase jlb) && showPendingMsgCount) {
 				JmsBrowser<javax.jms.Message> jmsBrowser;
 				if (StringUtils.isEmpty(jlb.getMessageSelector())) {
 					jmsBrowser = new JmsBrowser<>();
@@ -370,8 +364,8 @@ public class AdapterStatus extends BusEndpointBase {
 			if (sender != null) {
 				receiverInfo.put("senderName", sender.getName());
 				receiverInfo.put("senderClass", ClassUtils.nameOf(sender));
-				if (sender instanceof HasPhysicalDestination) {
-					String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
+				if (sender instanceof HasPhysicalDestination destination) {
+					String pd = destination.getPhysicalDestinationName();
 					receiverInfo.put("senderDestination", pd);
 				}
 			}

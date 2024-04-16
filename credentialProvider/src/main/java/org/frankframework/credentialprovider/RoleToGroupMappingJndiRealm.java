@@ -269,18 +269,17 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 
 		Container container = getContainer();
 
-		if (container instanceof Context) {
-			Context cxt = (Context) container;
+		if (container instanceof Context cxt) {
 
 			String[] securityRoles = cxt.findSecurityRoles();
 
 			if (securityRoles != null) {
-				log.info(String.format("Security role mappings:"));
+				log.info("Security role mappings:".formatted());
 				for (String role : securityRoles) {
-					log.info(String.format("Security [role]: %s [link]: %s", role, cxt.findRoleMapping(role)));
+					log.info("Security [role]: %s [link]: %s".formatted(role, cxt.findRoleMapping(role)));
 				}
 			} else {
-				log.info(String.format("No security roles found."));
+				log.info("No security roles found.".formatted());
 			}
 		}
 
@@ -300,8 +299,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 			Container container = getContainer();
 			log.info(">>> addRoleGroupMapping container: " + container);
 
-			if (container instanceof Context) {
-				Context cxt = (Context) container;
+			if (container instanceof Context cxt) {
 
 				cxt.addRoleMapping(role, group);
 				log.info(">>> addRoleGroupMapping role: " + role + ", group: " + group);

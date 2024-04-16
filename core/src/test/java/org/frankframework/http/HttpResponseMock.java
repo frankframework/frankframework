@@ -100,18 +100,18 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		HttpContext context = (HttpContext) invocation.getArguments()[2];
 
 		InputStream response = null;
-		if(request instanceof HttpGet)
-			response = doGet(host, (HttpGet) request, context);
-		else if(request instanceof HttpPost)
-			response = doPost(host, (HttpPost) request, context);
-		else if(request instanceof HttpPut)
-			response = doPut(host, (HttpPut) request, context);
-		else if(request instanceof HttpPatch)
-			response = doPatch(host, (HttpPatch) request, context);
-		else if(request instanceof HttpDelete)
-			response = doDelete(host, (HttpDelete) request, context);
-		else if(request instanceof HttpHead)
-			response = doHead(host, (HttpHead) request, context);
+		if(request instanceof HttpGet get)
+			response = doGet(host, get, context);
+		else if(request instanceof HttpPost post)
+			response = doPost(host, post, context);
+		else if(request instanceof HttpPut put)
+			response = doPut(host, put, context);
+		else if(request instanceof HttpPatch patch)
+			response = doPatch(host, patch, context);
+		else if(request instanceof HttpDelete delete)
+			response = doDelete(host, delete, context);
+		else if(request instanceof HttpHead head)
+			response = doHead(host, head, context);
 		else
 			throw new Exception("mock method not implemented");
 
@@ -157,8 +157,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		appendHeaders(request, response);
 
 		HttpEntity entity = request.getEntity();
-		if(entity instanceof MultipartEntity) {
-			MultipartEntity multipartEntity = (MultipartEntity) entity;
+		if(entity instanceof MultipartEntity multipartEntity) {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			multipartEntity.writeTo(baos);
 			String contentType = multipartEntity.getContentType().getValue();
@@ -181,7 +180,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			String resultString = EntityUtils.toString(entity);
 			int i = resultString.indexOf("%PDF-1.");
 			if(i >= 0) {
-				resultString = String.format("%s\n...%d more characters", resultString.substring(0, i+8), (resultString.length()-i));
+				resultString = "%s\n...%d more characters".formatted(resultString.substring(0, i + 8), (resultString.length() - i));
 			}
 			response.append(resultString);
 		}

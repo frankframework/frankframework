@@ -11,15 +11,21 @@
 	<artifactId>frankframework-filesystem</artifactId>
 	<name>Frank!Framework FileSystems</name>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
+ <dependencies>
+  <dependency>
+   <groupId>org.frankframework</groupId>
+   <artifactId>frankframework-core</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.projectlombok</groupId>
+   <artifactId>lombok</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>com.sun.xml.ws</groupId>
+   <artifactId>jaxws-rt</artifactId>
+   <version>2.3.7</version>
+   <scope>provided</scope>
+  </dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>

@@ -155,8 +155,8 @@ public class MessagingSource  {
 		ConnectionFactory qcf = null;
 		try {
 			qcf = getConnectionFactoryDelegate();
-			if (qcf instanceof JmsPoolConnectionFactory) { //Narayana with pooling
-				return ((JmsPoolConnectionFactory)qcf).getConnectionFactory();
+			if (qcf instanceof JmsPoolConnectionFactory factory) { //Narayana with pooling
+				return factory.getConnectionFactory();
 			}
 			if (qcf instanceof ConnectionFactoryProxy) { // Narayana without pooling
 				return ClassUtils.getDeclaredFieldValue(qcf, ConnectionFactoryProxy.class, "xaConnectionFactory");
@@ -199,8 +199,7 @@ public class MessagingSource  {
 	/** Return pooling info if present */
 	private StringBuilder getConnectionPoolInfo(ConnectionFactory qcfd) {
 		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append(CLOSE);
-		if (qcfd instanceof JmsPoolConnectionFactory) {
-			JmsPoolConnectionFactory poolcf = (JmsPoolConnectionFactory)qcfd;
+		if (qcfd instanceof JmsPoolConnectionFactory poolcf) {
 			result.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
 			result.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
 			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);

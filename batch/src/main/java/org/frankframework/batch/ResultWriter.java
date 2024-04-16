@@ -75,8 +75,8 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	protected void writeNewLine(Writer w) throws IOException {
-		if (w instanceof BufferedWriter) {
-			((BufferedWriter)w).newLine();
+		if (w instanceof BufferedWriter writer) {
+			writer.newLine();
 		} else {
 			w.write("\n");
 		}

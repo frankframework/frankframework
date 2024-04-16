@@ -73,8 +73,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 		sb.append("Pipeline of adapter [").append(ownerName).append("] messageId [").append(pipeLineSession.getMessageId()).append("] is about to call pipe [").append(pipe.getName()).append("]");
 
 		boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
-		if (pipe instanceof AbstractPipe) {
-			AbstractPipe ap = (AbstractPipe) pipe;
+		if (pipe instanceof AbstractPipe ap) {
 			if (StringUtils.isNotEmpty(ap.getLogIntermediaryResults())) {
 				lir = Boolean.parseBoolean(ap.getLogIntermediaryResults());
 			}

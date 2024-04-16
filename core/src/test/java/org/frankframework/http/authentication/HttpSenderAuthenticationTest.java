@@ -390,9 +390,11 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 		sender.setFirstBodyPartName("request");
 
-		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-				+ "sessionKey=\"part_file\" size=\"72833\" "
-				+ "mimeType=\"application/pdf\"/></parts>";
+		String xmlMultipart = """
+				<parts><part type="file" name="document.pdf" \
+				sessionKey="part_file" size="72833" \
+				mimeType="application/pdf"/></parts>\
+				""";
 		session.put("multipartXml", xmlMultipart);
 		session.put("part_file", "<dummy xml file/>"); // as it stands, only text is repeatable
 

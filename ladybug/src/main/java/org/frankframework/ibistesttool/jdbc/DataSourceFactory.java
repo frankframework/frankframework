@@ -40,8 +40,8 @@ public class DataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if("NARAYANA".equals(txManagerType) && dataSource instanceof XADataSource) {
-			return new NarayanaDataSource((XADataSource) dataSource, dataSourceName);
+		if("NARAYANA".equals(txManagerType) && dataSource instanceof XADataSource source) {
+			return new NarayanaDataSource(source, dataSourceName);
 		}
 
 		return super.augmentDatasource(dataSource, dataSourceName);

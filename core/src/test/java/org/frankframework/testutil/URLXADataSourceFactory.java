@@ -14,9 +14,8 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 
 	@Override
 	protected DataSource createDataSource(String product, String url, String userId, String password, boolean testPeek, String implClassname) throws Exception {
-		XADataSource xaDataSource = (XADataSource)Class.forName(implClassname).newInstance();
-		if (xaDataSource instanceof DB2XADataSource) {
-			DB2XADataSource db2 = (DB2XADataSource) xaDataSource;
+		XADataSource xaDataSource = (XADataSource)Class.forName(implClassname).getDeclaredConstructor().newInstance();
+		if (xaDataSource instanceof DB2XADataSource db2) {
 			db2.setServerName("localhost");
 			db2.setPortNumber(50000);
 			db2.setDatabaseName("testiaf");

@@ -197,8 +197,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 		List<String> hrs = new ArrayList<>();
 		for (IPipe pipe : pipeline.getPipes()) {
-			if (pipe instanceof AbstractPipe) {
-				AbstractPipe aPipe = (AbstractPipe) pipe;
+			if (pipe instanceof AbstractPipe aPipe) {
 				if (StringUtils.isNotEmpty(aPipe.getHideRegex())) {
 					if (!hrs.contains(aPipe.getHideRegex())) {
 						hrs.add(aPipe.getHideRegex());
@@ -520,8 +519,7 @@ public class Adapter implements IAdapter, NamedBean {
 					INamedObject objectInError = null;
 					if (t instanceof ListenerException) {
 						Throwable cause = t.getCause();
-						if  (cause instanceof PipeRunException) {
-							PipeRunException pre = (PipeRunException) cause;
+						if  (cause instanceof PipeRunException pre) {
 							msg = "error during pipeline processing";
 							objectInError = pre.getPipeInError();
 						} else if (cause instanceof ManagedStateException) {
@@ -580,8 +578,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 		} catch (Throwable t) {
 			ListenerException e;
-			if (t instanceof ListenerException) {
-				e = (ListenerException) t;
+			if (t instanceof ListenerException exception) {
+				e = exception;
 			} else {
 				e = new ListenerException(t);
 			}

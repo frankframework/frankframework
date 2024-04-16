@@ -127,7 +127,7 @@ public abstract class ClassUtils {
 	 * @exception Exception If an instantiation error occurs
 	 */
 	public static Object newInstance(String className) throws Exception {
-		return ClassUtils.loadClass(className).newInstance();
+		return ClassUtils.loadClass(className).getDeclaredConstructor().newInstance();
 	}
 
 	/**
@@ -161,8 +161,8 @@ public abstract class ClassUtils {
 	@Nonnull
 	public static String nameOf(Object o) {
 		String tail=null;
-		if (o instanceof INamedObject) {
-			String name = ((INamedObject)o).getName();
+		if (o instanceof INamedObject object) {
+			String name = object.getName();
 			if (StringUtils.isNotEmpty(name)) {
 				tail = "["+ name +"]";
 			}
@@ -180,13 +180,13 @@ public abstract class ClassUtils {
 		}
 		Class<?> clazz;
 		if(isClassPresent("org.springframework.util.ClassUtils")) {
-			if(o instanceof Class) {
-				clazz = org.springframework.util.ClassUtils.getUserClass((Class<?>)o);
+			if(o instanceof Class class1) {
+				clazz = org.springframework.util.ClassUtils.getUserClass(class1);
 			} else {
 				clazz = org.springframework.util.ClassUtils.getUserClass(o);
 			}
 		} else {
-			clazz = o instanceof Class ? (Class<?>)o : o.getClass();
+			clazz = o instanceof Class c ? c : o.getClass();
 		}
 
 		final String simpleName = clazz.getSimpleName();

@@ -81,8 +81,7 @@ public class ClassLoaderManager {
 		LOG.debug("successfully instantiated classloader ["+ClassUtils.nameOf(classLoader)+"] with parent classloader ["+ClassUtils.nameOf(parentClassLoader)+"]");
 
 		//If the classLoader implements IClassLoader, configure it
-		if(classLoader instanceof IConfigurationClassLoader) {
-			IConfigurationClassLoader loader = (IConfigurationClassLoader) classLoader;
+		if(classLoader instanceof IConfigurationClassLoader loader) {
 
 			String parentProperty = "configurations." + configurationName + ".";
 
@@ -251,8 +250,8 @@ public class ClassLoaderManager {
 		if (classLoader == null)
 			throw new ClassLoaderException("classloader cannot be null");
 
-		if (classLoader instanceof IConfigurationClassLoader) {
-			((IConfigurationClassLoader) classLoader).reload();
+		if (classLoader instanceof IConfigurationClassLoader loader) {
+			loader.reload();
 		} else {
 			LOG.warn("classloader ["+ClassUtils.nameOf(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring reload");
 		}
@@ -271,8 +270,8 @@ public class ClassLoaderManager {
 		for (Iterator<String> iterator = classLoaders.keySet().iterator(); iterator.hasNext();) {
 			String configurationClassLoader = iterator.next();
 			ClassLoader classLoader = classLoaders.get(configurationClassLoader);
-			if(classLoader instanceof IConfigurationClassLoader) {
-				((IConfigurationClassLoader) classLoader).destroy();
+			if(classLoader instanceof IConfigurationClassLoader loader) {
+				loader.destroy();
 			} else {
 				LOG.warn("classloader ["+ClassUtils.nameOf(classLoader)+"] does not derive from IConfigurationClassLoader, ignoring destroy");
 			}

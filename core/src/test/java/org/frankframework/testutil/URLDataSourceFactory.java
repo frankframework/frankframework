@@ -93,7 +93,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		return new DelegatingDataSource(ds) {
 			@Override
 			public String toString() {
-				return String.format("%s [%s] %s [%s]", PRODUCT_KEY, name, TEST_PEEK_KEY, testPeek);
+				return "%s [%s] %s [%s]".formatted(PRODUCT_KEY, name, TEST_PEEK_KEY, testPeek);
 			}
 		};
 	}

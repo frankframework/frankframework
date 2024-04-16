@@ -50,7 +50,7 @@ class UniqueFileGenerator {
 		}
 
 		// Save to disc
-		String fileNamePdf = String.format("%s_%s_%05d%s", prefix, format.format(new Date()), count, fileType);
+		String fileNamePdf = "%s_%s_%05d%s".formatted(prefix, format.format(new Date()), count, fileType);
 		return new File(directory, fileNamePdf);
 
 	}

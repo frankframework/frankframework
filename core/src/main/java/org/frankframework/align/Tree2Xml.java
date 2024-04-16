@@ -69,8 +69,8 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	}
 	protected String getOverride(XSElementDeclaration elementDeclaration, N node) {
 		Object text = sp.getOverride(getContext());
-		if (text instanceof String) {
-			return (String)text;
+		if (text instanceof String string) {
+			return string;
 		}
 		return text.toString();
 	}
@@ -100,8 +100,8 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		String result=getNodeText(elementDeclaration, node);
 		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {
 			if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] default found ["+text+"]");
-			if (text instanceof String) {
-				result = (String)text;
+			if (text instanceof String string) {
+				result = string;
 			}
 			result = text.toString();
 		}

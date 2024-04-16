@@ -719,14 +719,12 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.13.0</version>
-					<configuration>
-						<release>${maven.compiler.target}</release>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
-						<compilerArgs>
-							<arg>-parameters</arg>
-						</compilerArgs>
-					</configuration>
+     <configuration>
+      <release>17</release>
+      <compilerArgs>
+       <arg>-parameters</arg>
+      </compilerArgs>
+     </configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

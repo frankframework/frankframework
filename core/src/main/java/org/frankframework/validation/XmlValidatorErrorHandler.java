@@ -92,8 +92,7 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 
 	protected void addReason(Throwable t, ReasonType reasonType) {
 		String location = null;
-		if (t instanceof SAXParseException) {
-			SAXParseException spe = (SAXParseException)t;
+		if (t instanceof SAXParseException spe) {
 			int lineNumber = spe.getLineNumber();
 			int columnNumber = spe.getColumnNumber();
 			if (lineNumber>=0 || columnNumber>=0) {

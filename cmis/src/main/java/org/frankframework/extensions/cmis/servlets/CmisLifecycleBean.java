@@ -78,7 +78,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 		// create a factory instance
 		Object object = null;
 		try {
-			object = ClassLoaderUtil.loadClass(className).newInstance();
+			object = ClassLoaderUtil.loadClass(className).getDeclaredConstructor().newInstance();
 		} catch (Exception e) {
 			log.warn("Could not create a services factory instance", e);
 			return null;

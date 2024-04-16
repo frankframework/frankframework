@@ -52,8 +52,8 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 				final Message errorMessage;
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();
 
-				if(e instanceof PipeRunException) {
-					INamedObject location = ((PipeRunException) e).getPipeInError();
+				if(e instanceof PipeRunException exception) {
+					INamedObject location = exception.getPipeInError();
 					errorMessage = emf.format(null, e.getCause(), location, message, pipeLineSession.getMessageId(), tsReceivedLong);
 				} else {
 					errorMessage = emf.format(null, e, pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);

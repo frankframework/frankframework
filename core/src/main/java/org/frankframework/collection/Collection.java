@@ -73,9 +73,9 @@ public class Collection<C extends ICollector<P>, P> implements AutoCloseable, IN
 		collector.close();
 
 		for(P part : parts) {
-			if(part instanceof AutoCloseable) {
+			if(part instanceof AutoCloseable closeable) {
 				try {
-					((AutoCloseable) part).close();
+					closeable.close();
 				} catch (Exception e) {
 					LogUtil.getLogger(collector).warn("unable to close collection part", e);
 				}
