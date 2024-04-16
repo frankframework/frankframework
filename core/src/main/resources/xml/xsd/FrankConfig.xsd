@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.0.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.0.1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -1145,26 +1145,8 @@
  by OpenAPI specifications. The Frank!Framework generates an OpenAPI specification for each ApiListener and
  also an OpenAPI specification for all ApiListeners in all configurations. You can
  find them in the Frank!Console under main menu item Webservices, heading Available ApiListeners.
- &lt;p&gt;
  The generated OpenAPI specifications have &lt;code&gt;servers&lt;/code&gt; and &lt;code&gt;paths&lt;/code&gt; objects and
- therefore they document the full URLs of the provided services.
- &lt;p&gt;
- It is possible to automatically generate eTags over the listener result. This can be controlled by globally 
- setting the property &lt;code&gt;api.etag.enabled&lt;/code&gt; or by setting the attribute &lt;code&gt;updateEtag="true"&lt;/code&gt;.
- When enabled the listener will respond to the 'if-match', 'if-none-match' headers and may return status code 304.
- &lt;p&gt;
- In order to make eTags work across multiple nodes you must configure Memcached to store the eTags.
- The following properties will need to be set:
- &lt;ul&gt;
- &lt;li&gt;etag.cache.server=ip or hostname:port&lt;/li&gt;
- &lt;li&gt;etag.cache.type=memcached&lt;/li&gt;
- &lt;/ul&gt;
- In case authentication, is required the following application properties can be used:
- &lt;ul&gt;
- &lt;li&gt;etag.cache.username&lt;/li&gt;
- &lt;li&gt;etag.cache.password&lt;/li&gt;
- &lt;li&gt;etag.cache.authalias&lt;/li&gt;
- &lt;/ul&gt;</xs:documentation>
+ therefore they document the full URLs of the provided services.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3161,7 +3143,7 @@
   <xs:attributeGroup name="SftpFileSystemListenerDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
       <xs:annotation>
-        <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
+        <xs:documentation>Path of the file or directory to start working. Default: Home folder of the sftp user</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="host" type="xs:string">
@@ -3897,8 +3879,8 @@
       </xs:element>
       <xs:element name="IdinSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.06+.
- Compile with Java 1.7+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
+ Compile with Java 1.8+</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4246,6 +4228,29 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ParallelSendersType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ReconnectSenderWrapperSender">
+        <xs:annotation>
+          <xs:documentation>Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
+ This prevents (long) open connections inside Senders and possible connection failures.
+
+ &lt;b&gt;Example:&lt;/b&gt;
+ &lt;pre&gt;&lt;code&gt;
+   &amp;lt;SenderPipe&amp;gt;
+     &amp;lt;ReconnectSenderWrapper&amp;gt;
+        &amp;lt;EchoSender myAttribute="myValue" /&amp;gt;
+     &amp;lt;/ReconnectSenderWrapper&amp;gt;
+   &amp;lt;/SenderPipe&amp;gt;
+ &lt;/code&gt;&lt;/pre&gt;
+ &lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ReconnectSenderWrapperType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -5175,7 +5180,7 @@
   <xs:attributeGroup name="JdbcSenderBaseDeclaredAttributeGroup">
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The number of seconds the driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited Default: 0</xs:documentation>
+        <xs:documentation>The number of seconds the JDBC driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6156,7 +6161,11 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.idin.IdinSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IdinSenderDeclaredAttributeGroup">
-    <xs:attribute name="action" type="xs:string" />
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="merchantID" type="xs:string">
       <xs:annotation>
         <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration,
@@ -6252,6 +6261,13 @@
     <xs:attribute name="serviceLogsEnabled" type="frankBoolean" />
     <xs:attribute name="serviceLogsLocation" type="xs:string" />
     <xs:attribute name="serviceLogsPattern" type="xs:string" />
+    <xs:attribute name="tls12Enabled" type="frankBoolean" />
+    <xs:attribute name="merchantReturnUrlSessionKey" type="xs:string" />
+    <xs:attribute name="configurationXML" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Load configuration from XML. Attributes may overwrite this 'default'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IdinSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="IdinSenderDeclaredAttributeGroup" />
@@ -7177,6 +7193,22 @@
     <xs:attributeGroup ref="ParallelSendersDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SenderSeriesCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="ReconnectSenderWrapperType">
+    <xs:group ref="ReconnectSenderWrapperCumulativeChildGroup" />
+    <xs:attributeGroup ref="SenderWrapperBaseCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ReconnectSenderWrapper" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="ReconnectSenderWrapperDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="ReconnectSenderWrapperCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="ReconnectSenderWrapperDeclaredChildGroup" />
+      <xs:group ref="SenderWrapperBaseCumulativeChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:complexType name="ReloadSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="ReloadSenderCumulativeAttributeGroup" />
@@ -7602,7 +7634,7 @@
   <xs:attributeGroup name="SftpFileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
       <xs:annotation>
-        <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
+        <xs:documentation>Path of the file or directory to start working. Default: Home folder of the sftp user</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="host" type="xs:string">
@@ -8658,8 +8690,8 @@
       </xs:element>
       <xs:element name="IdinErrorSender">
         <xs:annotation>
-          <xs:documentation>Requires the net.bankid.merchant.library V1.06+.
- Compile with Java 1.7+</xs:documentation>
+          <xs:documentation>Requires the net.bankid.merchant.library V1.2.9
+ Compile with Java 1.8+</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9007,6 +9039,29 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ParallelSendersType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ReconnectSenderWrapperErrorSender">
+        <xs:annotation>
+          <xs:documentation>Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
+ This prevents (long) open connections inside Senders and possible connection failures.
+
+ &lt;b&gt;Example:&lt;/b&gt;
+ &lt;pre&gt;&lt;code&gt;
+   &amp;lt;SenderPipe&amp;gt;
+     &amp;lt;ReconnectSenderWrapper&amp;gt;
+        &amp;lt;EchoSender myAttribute="myValue" /&amp;gt;
+     &amp;lt;/ReconnectSenderWrapper&amp;gt;
+   &amp;lt;/SenderPipe&amp;gt;
+ &lt;/code&gt;&lt;/pre&gt;
+ &lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ReconnectSenderWrapperType">
               <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -11875,7 +11930,7 @@
  tag found in the input XML. Every field tag should have a type attribute
  that specifies the type of conversion that needs to be done on the string
  specified by the value attribute. A value attribute also needs to be present
- for every field tag. Currently, two types of conversion are supported:
+ for every field tag. Currently two types of conversion are supported:
 
  &lt;ul&gt;
    &lt;li&gt;&lt;code&gt;GetBytesFromString&lt;/code&gt;, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)&lt;/li&gt;
@@ -11909,7 +11964,7 @@
    &lt;li&gt;The string 1234 will be translated to three bytes with the following hexadecimal representation: 01 23 4F&lt;/li&gt;
  &lt;/ul&gt;
 
- The Packed-decimal is prefixed with zeroes when the specified size is bigger
+ The Packed-decimal is prefixed with zero's when the specified size is bigger
  than the number of decimals. An exception is thrown when the specified size
  is smaller than the number of decimals.
 
@@ -12848,18 +12903,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="MailSenderPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="ObfuscatePipe">
-        <xs:annotation>
-          <xs:documentation>Pipe that performs obfuscation on a message, using the tibcrypt library.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="ObfuscatePipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -14216,7 +14259,7 @@
     </xs:attribute>
     <xs:attribute name="direction">
       <xs:simpleType>
-        <xs:union memberTypes="DirectionAttributeValuesType_7 variableRef" />
+        <xs:union memberTypes="DirectionAttributeValuesType_6 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="encodeSubstring" type="frankBoolean">
@@ -14557,7 +14600,7 @@
         <xs:documentation>Direction of the transformation. Default: JSON2XML</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="DirectionAttributeValuesType_8 variableRef" />
+        <xs:union memberTypes="DirectionAttributeValuesType_7 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="addXmlRootElement" type="frankBoolean">
@@ -14765,7 +14808,7 @@
   <xs:attributeGroup name="JwtPipeDeclaredAttributeGroup">
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Alias for the SharedSecret to be used when signing the JWT (using the HmacSHA256 algorithm)</xs:documentation>
+        <xs:documentation>Auth Alias for the SharedSecret to be used when signing the JWT (using the HmacSHA256 algorithm)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sharedSecret" type="xs:string">
@@ -15105,7 +15148,12 @@
   <xs:attributeGroup name="LogContextPipeDeclaredAttributeGroup">
     <xs:attribute name="export" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the ThreadContext parameters will be exported from the current PipeLine up in the call tree. Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; the ThreadContext parameters will be exported from the current PipeLine up in the call tree. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="continueOnError" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set {@code true} the pipe will never forward to the {@code ExceptionForward} even if an error occurred during execution. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15118,25 +15166,6 @@
     <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.MailSenderPipe" use="prohibited" />
   </xs:complexType>
-  <xs:complexType name="ObfuscatePipeType">
-    <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="ObfuscatePipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.tibco.pipes.ObfuscatePipe" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="ObfuscatePipeDeclaredAttributeGroup">
-    <xs:attribute name="direction">
-      <xs:annotation>
-        <xs:documentation>Default: OBFUSCATE</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="DirectionAttributeValuesType_6 variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="ObfuscatePipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="ObfuscatePipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="PGPPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="PGPPipeCumulativeAttributeGroup" />
@@ -15148,7 +15177,7 @@
         <xs:documentation>Action to be taken when pipe is executed.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="recipients" type="xs:string">
@@ -15841,7 +15870,7 @@
         <xs:documentation>Action to be taken when pipe is executed. Default: SIGN</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_5 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_6 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="algorithm" type="xs:string">
@@ -16335,7 +16364,7 @@
         <xs:documentation>Collectors must be opened before you can write content to them, after it's closed you can no longer write to it. Default: WRITE</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_4 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="collectionName" type="xs:string">
@@ -17459,6 +17488,13 @@
       <xs:enumeration value="REPORT" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="ActionAttributeValuesType_3">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DIRECTORY" />
+      <xs:enumeration value="RESPONSE" />
+      <xs:enumeration value="AUTHENTICATE" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="JavaScriptEnginesAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="J2V8" />
@@ -17841,7 +17877,7 @@
       <xs:enumeration value="UPPERCASE" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="DirectionAttributeValuesType_7">
+  <xs:simpleType name="DirectionAttributeValuesType_6">
     <xs:restriction base="xs:string">
       <xs:enumeration value="ENCODE" />
       <xs:enumeration value="DECODE" />
@@ -17863,19 +17899,13 @@
       <xs:enumeration value="Hex" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="DirectionAttributeValuesType_8">
+  <xs:simpleType name="DirectionAttributeValuesType_7">
     <xs:restriction base="xs:string">
       <xs:enumeration value="JSON2XML" />
       <xs:enumeration value="XML2JSON" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="DirectionAttributeValuesType_6">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="OBFUSCATE" />
-      <xs:enumeration value="DEOBFUSCATE" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_4">
+  <xs:simpleType name="ActionAttributeValuesType_5">
     <xs:restriction base="xs:string">
       <xs:enumeration value="ENCRYPT">
         <xs:annotation>
@@ -17919,7 +17949,7 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_5">
+  <xs:simpleType name="ActionAttributeValuesType_6">
     <xs:restriction base="xs:string">
       <xs:enumeration value="SIGN">
         <xs:annotation>
@@ -17947,7 +17977,7 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_3">
+  <xs:simpleType name="ActionAttributeValuesType_4">
     <xs:restriction base="xs:string">
       <xs:enumeration value="OPEN">
         <xs:annotation>
