@@ -294,7 +294,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * URI pattern to register this listener on, eq. `/my-listener/{something}/here`
+	 * URI pattern to register this listener on, eq. <code>`/my-listener/{something}/here`</code>
 	 *
 	 * @ff.mandatory
 	 */
@@ -416,7 +416,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.headerParams = headerParams;
 	}
 
-	/** Session key that provides the Content-Disposition header in the response */
+	/** Session key that provides the <code>Content-Disposition</code> header in the response */
 	public void setContentDispositionHeaderSessionKey(String key) {
 		this.contentDispositionHeaderSessionKey = key;
 	}
@@ -434,7 +434,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * Header to extract JWT from
 	 *
-	 * @ff.default Authorization
+	 * @ff.default <code>Authorization</code>
 	 */
 	public void setJwtHeader(String string) {
 		this.jwtHeader = string;
@@ -445,12 +445,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.requiredClaims = string;
 	}
 
-	/** Comma separated key value pairs to exactly match with JWT payload. e.g. "sub=UnitTest, aud=test" */
+	/** Comma separated key value pairs to exactly match with JWT payload. e.g. <code>sub=UnitTest, aud=test</code> */
 	public void setExactMatchClaims(String string) {
 		this.exactMatchClaims = string;
 	}
 
-	/** Comma separated key value pairs to one-of match with JWT payload. e.g. "appid=a,appid=b" */
+	/** Comma separated key value pairs to one-of match with JWT payload. e.g. <code>appid=a,appid=b</code> */
 	public void setAnyMatchClaims(String string) {
 		this.anyMatchClaims = string;
 	}
