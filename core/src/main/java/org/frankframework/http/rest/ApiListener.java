@@ -52,7 +52,7 @@ import lombok.Setter;
  * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
  * Prepends the configured URI pattern with <code>api/</code>. The structure of REST messages is described
  * by OpenAPI specifications. The Frank!Framework generates an OpenAPI specification for each ApiListener and
- * a specification for all ApiListeners in all configurations combined. You can
+ * for all ApiListeners in all configurations combined. You can
  * find them in the Frank!Console under main menu item Webservices, heading Available ApiListeners.
  * <p>
  * The generated OpenAPI specifications have <code>servers</code> and <code>paths</code> objects and
