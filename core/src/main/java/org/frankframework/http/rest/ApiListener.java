@@ -294,7 +294,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * URI pattern to register this listener on, eq. <code>`/my-listener/{something}/here`</code>
+	 * URI pattern to register this listener on, eq. <code>/my-listener/{something}/here</code>
 	 *
 	 * @ff.mandatory
 	 */
@@ -310,7 +310,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * The required contentType on requests, if it doesn't match a 415 Unsupported Media Type is replied
+	 * The required contentType on requests, if it doesn't match a <code>415 Unsupported Media Type</code> is replied
 	 *
 	 * @ff.default ANY
 	 */
