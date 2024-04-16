@@ -9,4 +9,6 @@
 	<context:component-scan base-package="org.frankframework.management.web">
 		<context:exclude-filter type="regex" expression="org\.frankframework\.ibistesttool\..*"/>
 	</context:component-scan>
+
+	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />
 </beans>
