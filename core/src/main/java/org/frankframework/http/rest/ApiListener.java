@@ -62,7 +62,7 @@ import lombok.Setter;
  * setting the property <code>api.etag.enabled</code> or by setting the attribute <code>updateEtag="true"</code>.
  * When enabled the listener will respond to the <code>if-match</code>, <code>if-none-match</code> headers and may return status code 304.
  * <p>
- * In order to make eTags work across multiple nodes you must configure Memcached to store the eTags.
+ * In order enable eTags across multiple nodes you must configure Memcached to store the eTags.
  * The following properties will need to be set:
  * <ul>
  * <li><code>etag.cache.server=ip or hostname:port</code></li>
