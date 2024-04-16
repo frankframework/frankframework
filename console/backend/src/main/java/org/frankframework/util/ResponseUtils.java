@@ -123,4 +123,17 @@ public class ResponseUtils {
 
 		return new EntityTag(DigestUtils.md5DigestAsHex(bytes), isWeak);
 	}
+
+	private static String generateETagHeaderValueString(Object payload) {
+		byte[] bytes;
+		if(payload instanceof String) {
+			bytes = ((String)payload).getBytes(StandardCharsets.UTF_8);
+		} else if (payload instanceof byte[]) {
+			bytes = (byte[]) payload;
+		} else {
+			throw new NotImplementedException("return type ["+payload.getClass()+"] not implemented");
+		}
+
+		return DigestUtils.md5DigestAsHex(bytes);
+	}
 }

@@ -114,6 +114,10 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 		return ResponseUtils.convertToJaxRsResponse(response).tag(eTag).build();
 	}
 
+	public ResponseEntity<?> callSyncGatewaySpring(RequestMessageBuilder input) throws ApiException {
+		return callSyncGatewaySpring(input, false);
+	}
+
 	public ResponseEntity<?> callSyncGatewaySpring(RequestMessageBuilder input, boolean evaluateEtag) throws ApiException {
 		Message<?> response = sendSyncMessage(input);
 		EntityTag eTag = null;
