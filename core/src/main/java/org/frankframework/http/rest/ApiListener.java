@@ -431,7 +431,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.jwksUrl = string;
 	}
 
-	/** Header to extract JWT from */
+	/**
+	 * Header to extract JWT from
+	 *
+	 * @ff.default Authorization
+	 */
 	public void setJwtHeader(String string) {
 		this.jwtHeader = string;
 	}
