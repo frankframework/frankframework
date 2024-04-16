@@ -35,9 +35,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
@@ -46,21 +48,28 @@ import org.frankframework.management.bus.OutboundGateway;
 
 import org.frankframework.util.ResponseUtils;
 import org.frankframework.web.filters.DeprecationFilter;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * Base class for API endpoints.
- * Contains helper methods to read JAX-RS multiparts and handle message conversions to JAX-RS Responses.
+ * Contains helper methods to read JAX-RS & Spring multiparts and handle message conversions to JAX-RS / Spring Responses.
  * @author	Niels Meijer
  */
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
 
+	/*  JAX-RS context */
 	@Context protected ServletConfig servletConfig;
 	@Context protected @Getter SecurityContext securityContext;
 	@Context protected @Getter HttpServletRequest servletRequest;
-	private @Getter ApplicationContext applicationContext;
 	@Context protected @Getter UriInfo uriInfo;
 	@Context private Request rsRequest;
+
+	/* Spring context */
+	@Autowired
+	private WebRequest wRequest;
+
+	private @Getter ApplicationContext applicationContext;
 	private @Getter Environment environment;
 
 	private JAXRSServiceFactoryBean serviceFactory = null;
@@ -103,6 +112,21 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 			}
 		}
 		return ResponseUtils.convertToJaxRsResponse(response).tag(eTag).build();
+	}
+
+	public ResponseEntity<?> callSyncGatewaySpring(RequestMessageBuilder input, boolean evaluateEtag) throws ApiException {
+		Message<?> response = sendSyncMessage(input);
+		EntityTag eTag = null;
+		if(evaluateEtag) {
+			eTag = ResponseUtils.generateETagHeaderValue(response);
+		}
+		if(eTag != null) {
+			boolean notModified = wRequest.checkNotModified(eTag.toString());
+			if(notModified) {
+				return null; // Change the status of the response to 304 (Not Modified) and return an empty body
+			}
+		}
+		return ResponseUtils.convertToSpringResponse(response).eTag(eTag.toString()).build();
 	}
 
 	public Response callAsyncGateway(RequestMessageBuilder input) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2023 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,12 +34,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.servlet.DispatcherServlet;
 
-/**
- * Main dispatcher for all API resources.
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class ServletDispatcherSpring extends DispatcherServlet implements DynamicRegistration.Servlet {
@@ -84,7 +78,6 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 
 			return;
 		}
-
 
 		/**
 		 * Log POST, PUT and DELETE requests

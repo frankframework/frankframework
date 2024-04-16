@@ -23,7 +23,10 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.DigestUtils;
@@ -52,6 +55,29 @@ public class ResponseUtils {
 		}
 
 		return builder;
+	}
+
+	public static <T> ResponseEntity.BodyBuilder convertToSpringResponse (Message<T> response) {
+		int status = BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 200);
+		String mimeType = BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY, null);
+		ResponseEntity.BodyBuilder responseEntity = ResponseEntity.status(status);
+		HttpHeaders entityHeaders = new HttpHeaders();
+
+		if(mimeType != null) {
+			entityHeaders.setContentType(MediaType.valueOf(mimeType));
+		}
+
+		if (status == 200 || status > 204) {
+			responseEntity.body(response.getPayload());
+		}
+
+		String contentDisposition = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY, null);
+		if (contentDisposition != null) {
+			entityHeaders.setContentDisposition(ContentDisposition.parse(contentDisposition));
+		}
+
+		responseEntity.headers(entityHeaders);
+		return responseEntity;
 	}
 
 	public static ResponseBuilder convertToJaxRsStreamingResponse(Message<?> message, StreamingOutput response){
