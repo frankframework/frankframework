@@ -451,12 +451,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.anyMatchClaims = string;
 	}
 
-	/** Claim name which specifies the role (maps to IsUserInRolePipe)*/
+	/** Claim name which specifies the role (maps to <code>IsUserInRolePipe</code>)*/
 	public void setRoleClaim(String roleClaim) {
 		this.roleClaim = roleClaim;
 	}
 
-	/** Claim name which specifies the principal name (maps to GetPrincipalPipe) */
+	/** Claim name which specifies the principal name (maps to <code>GetPrincipalPipe</code>) */
 	public void setPrincipalNameClaim(String principalNameClaim) {
 		this.principalNameClaim = principalNameClaim;
 	}
