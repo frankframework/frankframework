@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -10,77 +10,71 @@
 	<artifactId>frankframework-messaging</artifactId>
 	<name>Frank!Framework support for Messaging Systems</name>
 
- <dependencies>
-  <dependency>
-   <groupId>org.frankframework</groupId>
-   <artifactId>frankframework-core</artifactId>
-  </dependency>
-  <dependency>
-   <groupId>org.projectlombok</groupId>
-   <artifactId>lombok</artifactId>
-  </dependency>
-  <dependency>
-   <groupId>jakarta.jms</groupId>
-   <artifactId>jakarta.jms-api</artifactId>
-  </dependency>
-  <dependency>
-   <groupId>org.eclipse.paho</groupId>
-   <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-   <version>1.2.5</version>
-  </dependency>
-  <dependency>
-   <groupId>org.apache.kafka</groupId>
-   <artifactId>kafka-clients</artifactId>
-   <version>3.6.0</version>
-   <optional>true</optional>
-  </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.paho</groupId>
+			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+			<version>1.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			<version>3.6.0</version>
+			<optional>true</optional>
+		</dependency>
 
-  <dependency>
-   <groupId>com.ibm.mq</groupId>
-   <artifactId>com.ibm.mq.allclient</artifactId>
-   <version>9.3.5.0</version>
-   <scope>provided</scope>
-   <exclusions>
-    <exclusion>
-     <groupId>org.bouncycastle</groupId>
-     <artifactId>bcprov-jdk15to18</artifactId>
-    </exclusion>
-    <exclusion>
-     <groupId>org.bouncycastle</groupId>
-     <artifactId>bcpkix-jdk15to18</artifactId>
-    </exclusion>
-    <exclusion>
-     <groupId>org.bouncycastle</groupId>
-     <artifactId>bcutil-jdk15to18</artifactId>
-    </exclusion>
-    <exclusion>
-     <groupId>org.json</groupId>
-     <artifactId>json</artifactId>
-    </exclusion>
-    <exclusion>
-     <groupId>com.fasterxml.jackson.core</groupId>
-     <artifactId>jackson-annotations</artifactId>
-    </exclusion>
-    <exclusion>
-     <groupId>javax.jms</groupId>
-     <artifactId>javax.jms-api</artifactId>
-    </exclusion>
-    <exclusion>
-     <groupId>com.fasterxml.jackson.core</groupId>
-     <artifactId>jackson-databind</artifactId>
-    </exclusion>
-    <exclusion>
-     <groupId>com.fasterxml.jackson.core</groupId>
-     <artifactId>jackson-core</artifactId>
-    </exclusion>
-   </exclusions>
-  </dependency>
-  <dependency>
-   <groupId>com.sun.xml.ws</groupId>
-   <artifactId>jaxws-rt</artifactId>
-   <version>2.3.7</version>
-   <scope>provided</scope>
-  </dependency>
+		<dependency>
+			<groupId>com.ibm.mq</groupId>
+			<artifactId>com.ibm.mq.allclient</artifactId>
+			<version>9.3.5.0</version>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15to18</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcpkix-jdk15to18</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcutil-jdk15to18</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.json</groupId>
+					<artifactId>json</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-annotations</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.jms</groupId>
+					<artifactId>javax.jms-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>

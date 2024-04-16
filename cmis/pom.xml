@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -14,25 +14,19 @@
 		<opencmis.version>1.1.0</opencmis.version>
 	</properties>
 
- <dependencies>
-  <dependency>
-   <groupId>org.frankframework</groupId>
-   <artifactId>frankframework-core</artifactId>
-  </dependency>
-  <dependency>
-   <groupId>org.projectlombok</groupId>
-   <artifactId>lombok</artifactId>
-  </dependency>
-  <dependency>
-   <groupId>org.springframework</groupId>
-   <artifactId>spring-test</artifactId>
-  </dependency>
-  <dependency>
-   <groupId>com.sun.xml.ws</groupId>
-   <artifactId>jaxws-rt</artifactId>
-   <version>2.3.7</version>
-   <scope>provided</scope>
-  </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.chemistry.opencmis</groupId>
@@ -48,7 +42,7 @@
 					<groupId>org.apache.cxf</groupId>
 					<artifactId>cxf-rt-ws-policy</artifactId>
 				</exclusion>
-					<!-- to avoid stax1 vs stax2 incompatibility problems -->
+				<!-- to avoid stax1 vs stax2 incompatibility problems -->
 				<exclusion>
 					<groupId>org.codehaus.woodstox</groupId>
 					<artifactId>woodstox-core-asl</artifactId>
