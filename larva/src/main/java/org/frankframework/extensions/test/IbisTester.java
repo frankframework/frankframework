@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
-import org.frankframework.util.ProcessMetrics;
 import org.frankframework.util.RunState;
 import org.frankframework.util.XmlUtils;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -391,7 +390,7 @@ public class IbisTester {
 	private static String getMemoryInfo() {
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
-		return "[" + ProcessMetrics.normalizedNotation(totalMem - freeMem) + "/" + ProcessMetrics.normalizedNotation(totalMem) + "]";
+		return "[" + Misc.toFileSize(totalMem - freeMem) + "/" + Misc.toFileSize(totalMem) + "]";
 	}
 
 	private static String evaluateXPathFirst(String xhtml, String xpath) {

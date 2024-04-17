@@ -15,9 +15,6 @@
 */
 package org.frankframework.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -27,35 +24,6 @@ import java.util.Map;
  * @since 4.2
  */
 public class ProcessMetrics {
-
-	private static final long K_LIMIT=10*1024;
-	private static final long M_LIMIT=K_LIMIT*1024;
-	private static final long G_LIMIT=M_LIMIT*1024;
-	private static final long T_LIMIT=G_LIMIT*1024;
-	private static final Logger log = LoggerFactory.getLogger(ProcessMetrics.class);
-
-	public static String normalizedNotation(long value) {
-		String valueString;
-
-		if (value < K_LIMIT) {
-			valueString = Long.toString(value);
-		} else {
-			if (value < M_LIMIT) {
-				valueString = Long.toString(value/1024)+"K";
-			} else {
-				if (value < G_LIMIT) {
-					valueString = Long.toString(value/(1024*1024))+"M";
-				} else {
-					if (value < T_LIMIT) {
-						valueString = Long.toString(value/(1024*1024*1024))+"G";
-					} else {
-						valueString = Long.toString(value/(1024*1024*1024*1024))+"T";
-					}
-				}
-			}
-		}
-		return valueString;
-	}
 
 	public static void addNumberProperty(XmlBuilder list, String name, long value) {
 		addProperty(list,name,Misc.toFileSize(value));
