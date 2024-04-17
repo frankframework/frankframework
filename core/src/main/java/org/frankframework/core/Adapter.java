@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
@@ -55,10 +58,6 @@ import org.frankframework.util.StringUtil;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * An Adapter receives a specific type of messages and processes them. It has {@link Receiver Receivers}
@@ -100,7 +99,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
 	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "INFO"));
 	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
-	private @Getter String targetDesignDocument;
+	private @Setter @Getter String targetDesignDocument;
 
 	private @Getter Configuration configuration;
 
@@ -207,14 +206,14 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		StringBuilder sb = new StringBuilder();
 		for (String hr : hrs) {
-			if (sb.length() > 0) {
+			if (!sb.isEmpty()) {
 				sb.append("|");
 			}
 			sb.append("(");
 			sb.append(hr);
 			sb.append(")");
 		}
-		if (sb.length() > 0) {
+		if (!sb.isEmpty()) {
 			composedHideRegex = sb.toString();
 		}
 
@@ -542,22 +541,19 @@ public class Adapter implements IAdapter, NamedBean {
 
 	@Override
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
-
-		PipeLineResult result = null;
-
-		long startTime = System.currentTimeMillis();
 		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
 		// the receivers should implement this, but you never now....
 		RunState currentRunState = getRunState();
 		if (currentRunState!=RunState.STARTED && currentRunState!=RunState.STOPPING) {
-
 			String msgAdapterNotOpen = "Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
 			throw new ListenerException(new ManagedStateException(msgAdapterNotOpen));
 		}
 
+		long startTime = System.currentTimeMillis();
 		incNumOfMessagesInProcess(startTime);
 
+		PipeLineResult result = null;
 		try {
 			if (StringUtils.isNotEmpty(composedHideRegex)) {
 				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
@@ -575,21 +571,14 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			result = pipeline.process(messageId, message, pipeLineSession);
 			return result;
-
 		} catch (Throwable t) {
-			ListenerException e;
-			if (t instanceof ListenerException exception) {
-				e = exception;
-			} else {
-				e = new ListenerException(t);
-			}
 			processingSuccess = false;
 			incNumOfMessagesInError();
-			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
+			warn("error processing message with messageId [" + messageId + "]: " + t.getMessage());
 			result = new PipeLineResult();
 			result.setState(ExitState.ERROR);
-			result.setResult(new Message(e.getMessage()));
-			throw e;
+			result.setResult(new Message(t.getMessage()));
+			throw new ListenerException(t);
 		} finally {
 			long endTime = System.currentTimeMillis();
 			long duration = endTime - startTime;
@@ -628,10 +617,8 @@ public class Adapter implements IAdapter, NamedBean {
 		return additionalLogging;
 	}
 
-	// technically, a Receiver is not mandatory, but no useful adapter can do without it.
 	/**
-	 * Receives incoming messages. If an adapter can receive messages through multiple channels,
-	 * then add a receiver for each channel.
+	 * Receives incoming messages. If an adapter can receive messages through multiple channels, then add a receiver for each channel.
 	 * @ff.mandatory
 	 */
 	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
@@ -658,14 +645,12 @@ public class Adapter implements IAdapter, NamedBean {
 		pipeline.setAdapter(this);
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
+
 	@Override
 	public PipeLine getPipeLine() {
 		return pipeline;
 	}
 
-	/**
-	 * the configuration this adapter belongs to
-	 */
 	@Override
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
@@ -853,16 +838,15 @@ public class Adapter implements IAdapter, NamedBean {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("[name=" + name + "]");
-		sb.append("[targetDesignDocument=" + targetDesignDocument + "]");
+		sb.append("[name=").append(name).append("]");
+		sb.append("[targetDesignDocument=").append(targetDesignDocument).append("]");
 		sb.append("[receivers=");
 		for (Receiver<?> receiver: receivers) {
-			sb.append(" " + receiver.getName());
+			sb.append(" ").append(receiver.getName());
 
 		}
 		sb.append("]");
-		sb.append("[pipeLine="+ (pipeline != null ? pipeline.toString() : "none registered") + "][started=" + getRunState() + "]");
-
+		sb.append("[pipeLine=").append(pipeline != null ? pipeline.toString() : "none registered").append("][started=").append(getRunState()).append("]");
 		return sb.toString();
 	}
 
@@ -980,17 +964,12 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
-
 	/**
 	 * If set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message
 	 * @ff.default <code>false</code>
 	 */
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;
-	}
-
-	public void setTargetDesignDocument(String string) {
-		targetDesignDocument = string;
 	}
 
 }
