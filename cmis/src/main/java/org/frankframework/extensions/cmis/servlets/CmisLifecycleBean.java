@@ -38,7 +38,7 @@ import org.springframework.web.context.ServletContextAware;
 @IbisInitializer
 public class CmisLifecycleBean implements ServletContextAware, InitializingBean, DisposableBean {
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private ServletContext servletContext;
 	private CmisServiceFactory factory;
 
@@ -48,7 +48,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		if (factory != null) {
 			factory.destroy();
 		}
@@ -76,7 +76,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 		String className = "org.frankframework.extensions.cmis.server.RepositoryConnectorFactory";
 
 		// create a factory instance
-		Object object = null;
+		Object object;
 		try {
 			object = ClassUtils.loadClass(className).getDeclaredConstructor().newInstance();
 		} catch (Exception e) {

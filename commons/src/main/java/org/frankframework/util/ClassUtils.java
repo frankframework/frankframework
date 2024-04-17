@@ -131,8 +131,7 @@ public abstract class ClassUtils {
 	}
 
 	/**
-	 * Load a class given its name. BL: We wan't to use a known
-	 * ClassLoader--hopefully the hierarchy is set correctly.
+	 * Load a class given its name. We want to use a known ClassLoader.
 	 *
 	 * @param className A class name
 	 * @return The class pointed to by <code>className</code>
