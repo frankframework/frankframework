@@ -43,8 +43,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
@@ -100,32 +100,21 @@
 			<version>${micrometer.version}</version>
 		</dependency>
 
-		<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+		<dependency>
 			<groupId>jakarta.activation</groupId>
 			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
-		<dependency><!-- this dependency handles jakarta.activation.* imports -->
-			<groupId>com.sun.activation</groupId>
-			<artifactId>jakarta.activation</artifactId>
-		</dependency>
-		<dependency><!-- javax based dependency -->
+		<dependency>
 			<groupId>jakarta.xml.soap</groupId>
 			<artifactId>jakarta.xml.soap-api</artifactId>
 			<version>3.0.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- perhaps it's a good idea to put all API's at the top of the POM... -->
 		<dependency>
 			<groupId>jakarta.transaction</groupId>
 			<artifactId>jakarta.transaction-api</artifactId>
-			<version>1.3.3</version>
-			<scope>provided</scope>
+			<version>2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.jms</groupId>
@@ -134,23 +123,18 @@
 		<dependency>
 			<groupId>org.messaginghub</groupId>
 			<artifactId>pooled-jms</artifactId>
-			<version>2.0.8</version>
+			<version>3.1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
 			<version>2.12.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>jakarta.transaction</groupId>
-					<artifactId>jakarta.transaction-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>jakarta.mail</artifactId>
+			<groupId>jakarta.mail</groupId>
+			<artifactId>jakarta.mail-api</artifactId>
+			<version>2.1.3</version>
 		</dependency>
 
 		<!-- Apache Commons -->
@@ -187,6 +171,12 @@
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
+			<exclusions><!-- Use collections4 instead -->
+				<exclusion>
+					<groupId>commons-collections</groupId>
+					<artifactId>commons-collections</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -241,11 +231,6 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-xerces</artifactId>
 			<version>2.12.2-xml-schema-1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>aopalliance</groupId>
-			<artifactId>aopalliance</artifactId>
-			<version>1.0</version>
 		</dependency>
 
 		<!-- SPRING -->
@@ -310,7 +295,7 @@
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>${mongodb.driver.version}</version>
 		</dependency>
-		<dependency><!-- Needed for WsdlUtils, for cosmeticly better wsdls. Woodstox messes up attribute order, and namespace definitions -->
+		<dependency><!-- Needed for WsdlUtils, for cosmetically better wsdls. Woodstox messes up attribute order, and namespace definitions -->
 			<groupId>com.sun.xml.stream</groupId>
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>
@@ -346,10 +331,6 @@
 				<exclusion>
 					<groupId>org.apache.geronimo.javamail</groupId>
 					<artifactId>geronimo-javamail_1.4_mail</artifactId>
-				</exclusion>
-				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.bouncycastle</groupId>
@@ -559,10 +540,6 @@
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
-				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -581,18 +558,16 @@
 			</exclusions>
 		</dependency>
 
-
 		<dependency>
 			<groupId>jakarta.ws.rs</groupId>
 			<artifactId>jakarta.ws.rs-api</artifactId>
-			<version>2.1.6</version>
+			<version>3.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.annotation</groupId>
 			<artifactId>jakarta.annotation-api</artifactId>
-			<version>1.3.5</version>
+			<version>3.0.0</version>
 		</dependency>
-
 
 		<!-- Jackson dependencies -->
 		<dependency>
@@ -600,8 +575,9 @@
 			<artifactId>jackson-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+			<artifactId>jackson-jakarta-rs-json-provider</artifactId>
+			<version>2.13.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -615,43 +591,20 @@
 		<dependency>
 			<groupId>jakarta.xml.ws</groupId>
 			<artifactId>jakarta.xml.ws-api</artifactId>
-			<version>2.3.3</version>
+			<version>4.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
-			<version>2.3.3</version>
-			<exclusions>
-				<exclusion>
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>4.0.2</version>
 		</dependency>
-
-		<!-- TODO, find a new SAAJ implementation once we upgrade to Jakarta -->
 		<dependency>
-			<groupId>org.apache.servicemix.bundles</groupId>
-			<artifactId>org.apache.servicemix.bundles.saaj-impl</artifactId>
-			<version>1.5.1_1</version>
-			<exclusions>
-				<exclusion>
-					<!-- excluded because we want the stax2 api -->
-					<groupId>javax.xml.stream</groupId>
-					<artifactId>stax-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.activation</groupId>
-					<artifactId>activation</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>com.sun.xml.messaging.saaj</groupId>
+			<artifactId>saaj-impl</artifactId>
+			<version>3.0.3</version>
 		</dependency>
 
-
-
-		<!--
-				  Upgraded version of the Extended StAX API which does not depend on any StAX API.
-			  -->
+		<!-- Upgraded version of the Extended StAX API which does not depend on any StAX API. -->
 		<dependency>
 			<groupId>org.jvnet.staxex</groupId>
 			<artifactId>stax-ex</artifactId>
@@ -740,12 +693,6 @@
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -773,19 +720,9 @@
 			<artifactId>greenmail-junit5</artifactId>
 			<version>2.0.1</version>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.mockrunner</groupId>
+			<groupId>net.oneandone.mockrunner</groupId>
 			<artifactId>mockrunner-jms</artifactId>
 			<scope>test</scope>
 		</dependency>

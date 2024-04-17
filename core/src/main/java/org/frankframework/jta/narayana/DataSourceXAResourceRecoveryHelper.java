@@ -18,17 +18,18 @@ package org.frankframework.jta.narayana;
 
 import java.sql.SQLException;
 
-import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
+
+import jakarta.jms.JMSException;
+import jakarta.jms.XAConnection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.Assert;
-
-import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 /**
  * XAResourceRecoveryHelper implementation which gets XIDs, which needs to be recovered,
@@ -89,12 +90,12 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 	}
 
 	private boolean connect() {
-		if (this.delegate == null) {
+		if (delegate == null) {
 			try {
-				this.xaConnection = getXaConnection();
-				this.delegate = this.xaConnection.getXAResource();
+				xaConnection = getXaConnection();
+				delegate = xaConnection.createXASession().getXAResource();
 			}
-			catch (SQLException ex) {
+			catch (JMSException | SQLException ex) {
 				logger.warn("Failed to create connection", ex);
 				return false;
 			}
@@ -102,11 +103,11 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 		return true;
 	}
 
-	private XAConnection getXaConnection() throws SQLException {
-		if (this.user == null && this.password == null) {
-			return this.xaDataSource.getXAConnection();
+	private XAConnection getXaConnection() throws SQLException, JMSException {
+		if (user == null && password == null) {
+			return xaConnection;
 		}
-		return this.xaDataSource.getXAConnection(this.user, this.password);
+		return (XAConnection) xaDataSource.getXAConnection(user, password);
 	}
 
 	@Override
@@ -123,14 +124,13 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 
 	private void disconnect() {
 		try {
-			this.xaConnection.close();
+			xaConnection.close();
 		}
-		catch (SQLException e) {
+		catch (JMSException e) {
 			logger.warn("Failed to close connection", e);
-		}
-		finally {
-			this.xaConnection = null;
-			this.delegate = null;
+		} finally {
+			xaConnection = null;
+			delegate = null;
 		}
 	}
 
@@ -180,8 +180,8 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 	}
 
 	private XAResource getDelegate(boolean required) {
-		Assert.state(this.delegate != null || !required, "Connection has not been opened");
-		return this.delegate;
+		Assert.state(delegate != null || !required, "Connection has not been opened");
+		return delegate;
 	}
 
 }

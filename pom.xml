@@ -17,13 +17,13 @@
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
 		<jackson.version>2.17.0</jackson.version>
-		<cxf.version>3.6.3</cxf.version>
-		<spring.version>5.3.34</spring.version>
-		<spring-security.version>5.8.11</spring-security.version>
-		<spring-integration.version>5.5.20</spring-integration.version>
-		<spring.boot.version>2.7.18</spring.boot.version>
+		<cxf.version>4.0.4</cxf.version>
+		<spring.version>6.1.6</spring.version>
+		<spring-security.version>6.2.3</spring-security.version>
+		<spring-integration.version>6.2.3</spring-integration.version>
+		<spring.boot.version>3.2.4</spring.boot.version>
 
-		<narayana.version>5.13.1.Final</narayana.version>
+		<narayana.version>7.0.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
 		<micrometer.version>1.12.5</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
@@ -181,11 +181,11 @@
 				<artifactId>credentialprovider</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<dependency>
+			<!--<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-tibco</artifactId>
 				<version>${project.version}</version>
-			</dependency>
+			</dependency>-->
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-sap</artifactId>
@@ -259,11 +259,11 @@
 				<artifactId>frankframework-idin</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<dependency>
+			<!--<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-ladybug</artifactId>
 				<version>${project.version}</version>
-			</dependency>
+			</dependency>-->
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-aspose</artifactId>
@@ -313,15 +313,10 @@
 				<type>pom</type>
 			</dependency>
 
-			<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+			<dependency>
 				<groupId>jakarta.activation</groupId>
 				<artifactId>jakarta.activation-api</artifactId>
-				<version>1.2.2</version>
-			</dependency>
-			<dependency><!-- this dependency handles jakarta.activation.* imports -->
-				<groupId>com.sun.activation</groupId>
-				<artifactId>jakarta.activation</artifactId>
-				<version>2.0.1</version>
+				<version>2.1.3</version>
 			</dependency>
 
 			<!-- SPRING to force versions -->
@@ -391,12 +386,6 @@
 				<groupId>com.fasterxml.jackson.jaxrs</groupId>
 				<artifactId>jackson-jaxrs-json-provider</artifactId>
 				<version>${jackson.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>jakarta.activation</groupId>
-						<artifactId>jakarta.activation-api</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -415,15 +404,15 @@
 			</dependency>
 
 			<dependency>
-				<groupId>javax.servlet</groupId>
-				<artifactId>javax.servlet-api</artifactId>
-				<version>3.1.0</version>
+				<groupId>jakarta.servlet</groupId>
+				<artifactId>jakarta.servlet-api</artifactId>
+				<version>6.0.0</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>jakarta.jms</groupId>
 				<artifactId>jakarta.jms-api</artifactId>
-				<version>2.0.3</version>
+				<version>3.1.0</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -477,9 +466,9 @@
 				<version>2.16.1</version>
 			</dependency>
 			<dependency>
-				<groupId>com.sun.mail</groupId>
-				<artifactId>jakarta.mail</artifactId>
-				<version>2.0.1</version>
+				<groupId>jakarta.mail</groupId>
+				<artifactId>jakarta.mail-api</artifactId>
+				<version>2.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.projectlombok</groupId>
@@ -515,30 +504,11 @@
 			</dependency>
 
 			<!-- contains Tomcat for executable WAR archives -->
-			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-core</artifactId>
-				<version>9.0.87</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-el</artifactId>
-				<version>9.0.87</version>
-				<scope>provided</scope>
-			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-tomcat</artifactId>
 				<version>${spring.boot.version}</version>
 				<scope>provided</scope>
-				<exclusions>
-					<!-- contains a CVE and we don't use websockets anyways -->
-					<exclusion>
-						<groupId>org.apache.tomcat.embed</groupId>
-						<artifactId>tomcat-embed-websocket</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 
 			<!-- contains the class and application 'loaders' for executable archives -->
@@ -600,9 +570,9 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.mockrunner</groupId>
+				<groupId>net.oneandone.mockrunner</groupId>
 				<artifactId>mockrunner-jms</artifactId>
-				<version>2.0.7</version>
+				<version>3.0.1</version>
 				<scope>test</scope>
 				<exclusions>
 					<exclusion>
@@ -629,7 +599,7 @@
 				<configuration>
 					<excludedModules>
 						<excludedModule>frankframework-sap</excludedModule>
-						<excludedModule>frankframework-tibco</excludedModule>
+<!--						<excludedModule>frankframework-tibco</excludedModule>-->
 						<excludedModule>frankframework-idin</excludedModule>
 					</excludedModules>
 					<noticeMessage>{0} - using: {1}</noticeMessage>
@@ -1080,9 +1050,9 @@
 									</bannedDependencies>
 									<bannedDependencies>
 										<!-- the jms api now finally officially exists, no need to use geronimo anymore -->
-										<!-- also excludes version 3 which uses the jakarta namespaces -->
+										<!-- also excludes version 2 which uses the old javax namespaces -->
 										<excludes>
-											<exclude>jakarta.jms:jakarta.jms-api:3.*</exclude>
+											<exclude>jakarta.jms:jakarta.jms-api:2.*</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec</exclude>
 										</excludes>
@@ -1130,14 +1100,11 @@
 									<bannedDependencies>
 										<excludes>
 											<exclude>ant:ant</exclude>
-											<exclude>jakarta.jms:jakarta.jms-api:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.javamail:geronimo-javamail_1.4_mail:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jta_1.1_spec:*:jar:compile</exclude>
 											<exclude>javax.servlet:javax.servlet-api:*:jar:compile</exclude>
-											<exclude>jakarta.servlet:jakarta.servlet-api:*:jar:compile</exclude>
-											<exclude>jakarta.transaction:jakarta.transaction-api:*:jar:compile</exclude>
 										</excludes>
 										<message>These dependencies should be provided by the Application Server!</message>
 									</bannedDependencies>
@@ -1303,7 +1270,7 @@
 				<module>filesystem</module>
 				<module>console</module>
 				<module>larva</module>
-				<module>ladybug</module>
+<!--				<module>ladybug</module>-->
 				<module>dbms</module>
 				<module>bundle-minimal</module>
 
@@ -1342,7 +1309,7 @@
 			</activation>
 			<modules>
 				<module>sap</module>
-				<module>tibco</module>
+<!--				<module>tibco</module>-->
 				<module>idin</module>
 			</modules>
 			<repositories>

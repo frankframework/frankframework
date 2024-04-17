@@ -31,6 +31,11 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- Tika library -->
 		<dependency>
@@ -214,15 +219,9 @@
 			</exclusions>
 		</dependency>
 
-		<!-- Explicitly here because we want to force 'our' version and not the inherited version from DSN -->
 		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>jakarta.mail</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>dsn</artifactId>
-			<version>2.0.1</version>
+			<groupId>jakarta.mail</groupId>
+			<artifactId>jakarta.mail-api</artifactId>
 		</dependency>
 
 		<!-- LOG4J to SLF4J Bridge required for ehcache -->
@@ -275,11 +274,6 @@
 		</dependency>
 
 		<!-- test scoped dependencies -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-core</artifactId>
