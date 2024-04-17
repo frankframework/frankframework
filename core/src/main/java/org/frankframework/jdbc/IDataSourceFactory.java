@@ -21,9 +21,13 @@ import java.util.Properties;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.frankframework.util.AppConstants;
 import org.springframework.jndi.JndiLocatorSupport;
 
 public interface IDataSourceFactory {
+
+	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
 
 	/**
 	 * Look up a DataSource from the JNDI

@@ -40,10 +40,8 @@ import lombok.Setter;
  * Already created DataSources are stored in a ConcurrentHashMap.
  * Every DataSource can be augmented before it is added.
  */
-public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
+public class PoolingJndiDataSourceFactory extends DataSourceFactory {
 
-	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
-	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
 	@Getter @Setter protected int minIdle = 0;
 	@Getter @Setter protected int maxPoolSize = 20;
 	@Getter @Setter protected int maxIdle = 2;

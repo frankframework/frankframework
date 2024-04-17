@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,17 +21,17 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 
-import com.mongodb.client.MongoClient;
-
-import org.frankframework.jndi.JndiObjectFactory;
+import org.frankframework.jndi.ObjectFactoryBase;
 import org.frankframework.util.AppConstants;
+
+import com.mongodb.client.MongoClient;
 
 /**
  * MongoClientFactory that retrieves its configuration from JNDI.
  *
  * @author Gerrit van Brakel
  */
-public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoClient> implements IMongoClientFactory {
+public class JndiMongoClientFactory extends ObjectFactoryBase<MongoClient> implements IMongoClientFactory {
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "mongodb.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT = "mongodb/MongoClient";
@@ -43,7 +43,7 @@ public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoC
 
 	@Override
 	public MongoClient getMongoClient(String dataSourceName) throws NamingException {
-		return get(dataSourceName);
+		return getMongoClient(dataSourceName, null);
 	}
 
 	@Override
@@ -51,10 +51,13 @@ public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoC
 		return get(dataSourceName, jndiEnvironment);
 	}
 
+	@Override
+	protected MongoClient augment(MongoClient object, String objectName) {
+		return object;
+	}
 
 	@Override
 	public List<String> getMongoClients() {
 		return new ArrayList<>(objects.keySet());
 	}
-
 }

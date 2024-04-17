@@ -18,18 +18,18 @@ package org.frankframework.scheduler.job;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
-import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
+
+import lombok.Getter;
 
 public class ExecuteQueryJob extends JobDef {
 	private FixedQuerySender qs = null;
@@ -80,7 +80,7 @@ public class ExecuteQueryJob extends JobDef {
 
 	/**
 	 * JNDI name of datasource to be used
-	 * @ff.default {@value JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 * @ff.default {@value IDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;

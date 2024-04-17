@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,46 +15,38 @@
 */
 package org.frankframework.jndi;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.util.Properties;
 
-import javax.naming.NamingException;
-
-import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StreamUtil;
+import org.springframework.beans.factory.InitializingBean;
+import org.yaml.snakeyaml.Yaml;
 
 /**
- * Baseclass for Jndi lookups, using property files on the classpath.
- *
- * @author Gerrit van Brakel
+ * Should support both JNDI as well as resources.yaml
+ * if type="javax.sql.DataSource" --> driverClassName="org.postgresql.Driver"
+ * @author niels
  *
  */
-public class ResourceBasedObjectFactory<O, L> extends ObjectFactoryBase<O,L> {
+public class ResourceBasedObjectFactory implements IObjectLocator, InitializingBean {
 
-	protected L createObject(Properties properties, String jndiName) throws NamingException {
-		return (L)properties;
-	}
-	/**
-	 * Performs the actual lookup
-	 */
+	public static final String DEFAULT_RESOURCE_FILE = "resources.yml";
+	private FrankResources resources;
+
 	@Override
-	protected L lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
-		String propertyResource = "/"+jndiName+".properties";
-		URL url = ClassLoaderUtils.getResourceURL(propertyResource);
-		if (url == null) {
-			throw new NamingException("Could not find propertyResource ["+propertyResource+"] to lookup");
+	public void afterPropertiesSet() throws Exception {
+		URL url = ClassUtils.getResourceURL(DEFAULT_RESOURCE_FILE);
+		try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+			Yaml yaml = new Yaml();
+			resources = yaml.loadAs(reader, FrankResources.class);
 		}
-		Properties properties = new Properties();
-		try (InputStream is = url.openStream()) {
-			properties.load(is);
-		} catch (IOException e) {
-			NamingException ne = new NamingException("Cannot read properties from url ["+url+"] for resource ["+jndiName+"]");
-			ne.setRootCause(e);
-			throw ne;
-		}
-		log.debug("located properties for JNDI name [" + jndiName + "]");
-		return createObject(properties, jndiName);
 	}
 
+	@Override
+	public <O> O lookup(String name, Properties environment, Class<O> lookupClass) throws Exception {
+		return resources.lookup(name, environment, lookupClass);
+	}
 }

@@ -22,10 +22,10 @@ import javax.sql.XADataSource;
 public abstract class AbstractXADataSourceFactory extends PoolingJndiDataSourceFactory {
 
 	@Override
-	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if (dataSource instanceof XADataSource) {
+	protected final DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
+		if (dataSource instanceof XADataSource xaDataSource) {
 			log.info("DataSource [{}] is XA enabled, registering with a Transaction Manager", dataSourceName);
-			return createXADataSource((XADataSource) dataSource, dataSourceName);
+			return createXADataSource(xaDataSource, dataSourceName);
 		}
 
 		if(maxPoolSize > 1) {

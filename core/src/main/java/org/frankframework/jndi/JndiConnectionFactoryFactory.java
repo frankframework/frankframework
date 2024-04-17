@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import javax.naming.NamingException;
 
 import org.frankframework.jms.IConnectionFactoryFactory;
 
-public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFactory,ConnectionFactory> implements IConnectionFactoryFactory {
+public class JndiConnectionFactoryFactory extends ObjectFactoryBase<ConnectionFactory> implements IConnectionFactoryFactory {
 
 	public JndiConnectionFactoryFactory() {
 		super(ConnectionFactory.class);
@@ -32,12 +32,18 @@ public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFa
 
 	@Override
 	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException {
-		return get(connectionFactoryName);
+		return getConnectionFactory(connectionFactoryName, null);
 	}
 
 	@Override
 	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException {
 		return get(connectionFactoryName, jndiEnvironment);
+	}
+
+	@Override
+	@SuppressWarnings("java:S1172")
+	protected ConnectionFactory augment(ConnectionFactory cf, String objectName) {
+		return cf;
 	}
 
 	@Override

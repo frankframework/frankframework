@@ -22,6 +22,9 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -34,10 +37,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.Setter;
-import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jndi.JndiDataSourceFactory;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 /**
  * Verifies if a (valid) connection can be made.
@@ -51,7 +50,7 @@ import org.frankframework.util.LogUtil;
 public class VerifyDatabaseConnectionBean implements ApplicationContextAware, InitializingBean {
 
 	private final Logger log = LogUtil.getLogger(this);
-	private final String defaultDatasource = AppConstants.getInstance().getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
+	private final String defaultDatasource = AppConstants.getInstance().getProperty(IDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
 	private final boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
 	private @Setter ApplicationContext applicationContext;
 

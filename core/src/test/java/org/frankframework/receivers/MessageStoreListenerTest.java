@@ -28,7 +28,7 @@ import javax.sql.DataSource;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.MessageStoreListener;
-import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.jndi.DataSourceFactory;
 import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Test;
 
@@ -49,7 +49,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 		doReturn("version").when(md).getDatabaseProductVersion();
 		Connection conn = mock(Connection.class);
 		doReturn(md).when(conn).getMetaData();
-		JndiDataSourceFactory factory = new JndiDataSourceFactory() {
+		DataSourceFactory factory = new DataSourceFactory() {
 			@Override
 			protected DataSource augmentDatasource(CommonDataSource dataSource, String product) {
 				// Just cast the datasource and do not wrap it in a pool for the benefit of the tests.

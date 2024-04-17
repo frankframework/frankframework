@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,47 +20,42 @@ import java.util.Properties;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.core.JndiContextPrefixFactory;
+import org.frankframework.util.ClassUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.jndi.JndiTemplate;
 
 import lombok.Setter;
-import org.frankframework.core.JndiContextPrefixFactory;
-import org.frankframework.util.ClassUtils;
+import lombok.extern.log4j.Log4j2;
 
 /**
- * Baseclass for Jndi lookups.
+ * Baseclass for JDNI lookups.
  * Would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
  *
- * @author Gerrit van Brakel
+ * @author Niels Meijer
  *
  * @param <O> Object class used by clients
- * @param <L> Class looked up in JNDI
  */
-public class JndiObjectFactory<O,L> extends ObjectFactoryBase<O,L> implements ApplicationContextAware {
+@Log4j2
+public class JndiObjectFactory implements IObjectLocator, ApplicationContextAware {
 
-	private final Class<L> lookupClass;
 	private @Setter String jndiContextPrefix = null;
 
-	public JndiObjectFactory(Class<L> lookupClass) {
-		this.lookupClass = lookupClass;
-	}
-
-	/**
-	 * Performs the actual JNDI lookup
-	 */
 	@Override
-	protected L lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
-		L object = null;
+	public <O> O lookup(String jndiName, Properties jndiEnvironment, Class<O> lookupClass) throws NamingException {
+		O object = null;
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
+		JndiTemplate locator = new JndiTemplate(jndiEnvironment);
 		try {
-			object = ObjectLocator.lookup(prefixedJndiName, jndiEnvironment, lookupClass);
+			object = locator.lookup(prefixedJndiName, lookupClass);
 		} catch (NamingException e) { //Fallback and search again but this time without prefix
 			if (!jndiName.equals(prefixedJndiName)) { //Only if a prefix is set!
 				log.debug("prefixed JNDI name [" + prefixedJndiName + "] not found - trying original name [" + jndiName + "], exception: ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
 
 				try {
-					object = ObjectLocator.lookup(jndiName, jndiEnvironment, lookupClass);
+					object = locator.lookup(jndiName, lookupClass);
 				} catch (NamingException e2) {
 					e.addSuppressed(e2);
 					throw e;
@@ -75,7 +70,7 @@ public class JndiObjectFactory<O,L> extends ObjectFactoryBase<O,L> implements Ap
 	}
 
 	private String getPrefixedJndiName(String jndiName) {
-		return StringUtils.isNotEmpty(jndiContextPrefix) ? jndiContextPrefix + jndiName : jndiName;
+		return StringUtils.isNotEmpty(jndiContextPrefix) && jndiName.indexOf(':') == -1 ? jndiContextPrefix + jndiName : jndiName;
 	}
 
 	@Override

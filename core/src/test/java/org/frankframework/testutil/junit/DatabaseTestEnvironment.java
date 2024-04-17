@@ -20,8 +20,8 @@ import org.frankframework.jdbc.JdbcFacade;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TestDataSourceFactory;
 import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.testutil.URLDataSourceFactory;
 import org.frankframework.util.SpringUtils;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.platform.commons.JUnitException;
@@ -44,7 +44,6 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class DatabaseTestEnvironment implements Store.CloseableResource {
 
-	private String name;
 	private final @Getter String dataSourceName;
 	private final DataSource dataSource;
 	private @Getter IDbmsSupport dbmsSupport;
@@ -104,7 +103,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		Properties dataSourceInfo = parseDataSourceInfo(dsInfo);
 
 		//The datasourceName must be equal to the ProductKey to ensure we're testing the correct datasource
-		assertEquals(productKey, dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY), "DataSourceName does not match ProductKey");
+		assertEquals(productKey, dataSourceInfo.getProperty(TestDataSourceFactory.PRODUCT_KEY), "DataSourceName does not match ProductKey");
 
 		configuration = type.getConfigurationContext(productKey);
 		DbmsSupportFactory dbmsSupportFactory = config.getBean(DbmsSupportFactory.class, "dbmsSupportFactory");

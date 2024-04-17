@@ -30,7 +30,7 @@
 		</property>
 	</bean>
 
-	<bean id="dataSourceFactory" class="org.frankframework.jndi.PoolingJndiDataSourceFactory" />
+	<bean id="dataSourceFactory" class="org.frankframework.jndi.PoolingJndiDataSourceFactory" autowire="byType" />
 	<bean
 		id="defaultDataSource"
 		factory-bean="dataSourceFactory"
