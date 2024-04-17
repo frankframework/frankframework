@@ -29,6 +29,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -45,6 +47,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.frankframework.xml.XmlWriter;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -52,10 +55,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
-
-import lombok.Getter;
-import lombok.Setter;
-import org.frankframework.xml.XmlWriter;
 
 /**
  * Base class for XML Schema guided Object to XML conversion;
@@ -109,7 +108,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 * Obtain the XmlAligner as a {@link Source} that can be used as input of a {@link Transformer}.
 	 */
 	public Source asSource(C container) {
-		return new SAXSource(this,container==null?null:new XmlAlignerInputSource(container));
+		return new SAXSource(this, container == null ? null : new XmlAlignerInputSource(container));
 	}
 
 	/**

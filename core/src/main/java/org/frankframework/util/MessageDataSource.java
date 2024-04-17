@@ -27,7 +27,7 @@ import org.springframework.util.MimeTypeUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 
-public class MessageDataSource implements javax.activation.DataSource, jakarta.activation.DataSource, Closeable {
+public class MessageDataSource implements jakarta.activation.DataSource, Closeable {
 	private final Message message;
 	private final String name;
 	private String contentType;

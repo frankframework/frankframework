@@ -3,8 +3,8 @@ package org.frankframework.testutil;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPException;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;

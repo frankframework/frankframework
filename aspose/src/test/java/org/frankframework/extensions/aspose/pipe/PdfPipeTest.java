@@ -36,9 +36,8 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
-
+import jakarta.annotation.Nonnull;
 import org.apache.commons.io.FileUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;

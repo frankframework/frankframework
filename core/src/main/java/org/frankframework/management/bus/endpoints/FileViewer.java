@@ -15,7 +15,7 @@
  */
 package org.frankframework.management.bus.endpoints;
 
-
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.io.FilenameUtils;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
@@ -30,8 +30,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
-
-import javax.annotation.security.RolesAllowed;
 
 import java.io.FileInputStream;
 import java.io.IOException;

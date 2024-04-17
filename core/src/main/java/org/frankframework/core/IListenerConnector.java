@@ -15,8 +15,8 @@
 */
 package org.frankframework.core;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.util.CredentialFactory;

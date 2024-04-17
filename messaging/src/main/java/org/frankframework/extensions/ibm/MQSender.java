@@ -17,18 +17,14 @@ package org.frankframework.extensions.ibm;
 
 import java.io.IOException;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicSession;
-
-import com.ibm.mq.jms.JMSC;
-import com.ibm.mq.jms.MQDestination;
-
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueSession;
+import jakarta.jms.Session;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.stream.Message;
@@ -61,28 +57,28 @@ public class MQSender extends JmsSender {
 	}
 
 	@Override
-	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
+	public String send(Session session, Destination dest, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		setTargetClientMQ(dest);
 		return super.send(session, dest, message, ignoreInvalidDestinationException);
 	}
 
 	@Override
 	protected String sendByQueue(QueueSession session, Queue destination,
-			javax.jms.Message message) throws JMSException {
+			jakarta.jms.Message message) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.sendByQueue(session, destination, message);
 	}
 
 	@Override
 	protected String sendByTopic(TopicSession session, Topic destination,
-			javax.jms.Message message) throws JMSException {
+			jakarta.jms.Message message) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.sendByTopic(session, destination, message);
 	}
 
 	private void setTargetClientMQ(Destination destination) throws JMSException {
 		log.debug("[" + getName() + "] set target client for queue [" + destination.toString() + "] to NONJMS_MQ");
-		((MQDestination)destination).setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ);
+//		((MQDestination)destination).setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ); //TODO uncomment when IBM MQ is used
 	}
 
 }

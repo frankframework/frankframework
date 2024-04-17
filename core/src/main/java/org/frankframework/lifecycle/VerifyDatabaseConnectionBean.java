@@ -17,10 +17,10 @@ package org.frankframework.lifecycle;
 
 import java.sql.Connection;
 
-import javax.annotation.Nonnull;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;

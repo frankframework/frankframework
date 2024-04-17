@@ -18,13 +18,13 @@ package org.frankframework.management.web;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.security.PermitAll;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
+import jakarta.annotation.security.PermitAll;
 import org.springframework.messaging.MessageHandlingException;
 
 import org.frankframework.management.bus.BusAction;

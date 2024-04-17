@@ -17,7 +17,7 @@ package org.frankframework.http.cxf;
 
 import java.security.Principal;
 
-import javax.xml.ws.WebServiceContext;
+import jakarta.xml.ws.WebServiceContext;
 
 import org.frankframework.core.ISecurityHandler;
 

@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.jms.Message;
+import jakarta.jms.Message;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListenerConnector;

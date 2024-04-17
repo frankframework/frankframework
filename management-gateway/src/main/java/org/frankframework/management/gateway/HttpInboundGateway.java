@@ -18,12 +18,12 @@ package org.frankframework.management.gateway;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.Filter;
-import javax.servlet.HttpConstraintElement;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.Filter;
+import jakarta.servlet.HttpConstraintElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

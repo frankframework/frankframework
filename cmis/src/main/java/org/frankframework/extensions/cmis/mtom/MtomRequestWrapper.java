@@ -21,10 +21,10 @@ import java.io.IOException;
 
 import jakarta.mail.BodyPart;
 import jakarta.mail.internet.MimeMultipart;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;

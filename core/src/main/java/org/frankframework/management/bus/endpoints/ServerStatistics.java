@@ -21,9 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.security.PermitAll;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
+import jakarta.annotation.security.PermitAll;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.springframework.context.ApplicationContext;

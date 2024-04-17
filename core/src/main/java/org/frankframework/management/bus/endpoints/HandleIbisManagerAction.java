@@ -15,11 +15,9 @@
 */
 package org.frankframework.management.bus.endpoints;
 
-import javax.annotation.security.RolesAllowed;
-
 import org.frankframework.management.bus.TopicSelector;
 import org.springframework.messaging.Message;
-
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.management.IbisAction;
 import org.frankframework.management.bus.BusAware;

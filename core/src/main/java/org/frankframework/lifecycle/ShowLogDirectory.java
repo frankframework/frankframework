@@ -17,8 +17,7 @@ package org.frankframework.lifecycle;
 
 import java.io.IOException;
 
-import javax.annotation.security.RolesAllowed;
-
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
@@ -32,7 +31,6 @@ import org.frankframework.util.FileUtils;
 import org.frankframework.util.JsonDirectoryInfo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.handler.ServiceActivatingHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
@@ -62,7 +60,7 @@ public class ShowLogDirectory {
 	 */
 	@Bean
 	public IntegrationFlow wireLogging() {
-		return IntegrationFlows.from("frank-management-bus")
+		return IntegrationFlow.from("frank-management-bus")
 				.filter(MessageDispatcher.headerSelector(BusTopic.LOGGING, BusTopic.TOPIC_HEADER_NAME))
 				.filter(MessageDispatcher.headerSelector(BusAction.GET, BusAction.ACTION_HEADER_NAME))
 				.handle(getHandler()).get();

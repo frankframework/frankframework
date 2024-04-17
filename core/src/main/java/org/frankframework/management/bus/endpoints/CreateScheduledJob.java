@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.EmptyMessage;
@@ -48,8 +49,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
 
 import org.frankframework.util.SpringUtils;
-
-import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 public class CreateScheduledJob extends BusEndpointBase {

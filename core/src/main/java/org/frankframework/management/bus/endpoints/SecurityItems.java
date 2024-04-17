@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.security.RolesAllowed;
 import javax.naming.NamingException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.sql.DataSource;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;

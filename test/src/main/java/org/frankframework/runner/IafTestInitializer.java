@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
+import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.frankframework.ibistesttool.runner.LadybugWarInitializer;
 import org.frankframework.lifecycle.FrankApplicationInitializer;

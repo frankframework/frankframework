@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.dto.MonitorDTO;
@@ -56,8 +57,6 @@ import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JacksonUtils;
 
 import org.frankframework.util.SpringUtils;
-
-import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.MONITORING)

@@ -17,13 +17,13 @@ package org.frankframework.extensions.tibco;
 
 import java.util.Enumeration;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.QueueBrowser;
-import javax.jms.Session;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
+import jakarta.jms.Session;
 
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -64,7 +64,7 @@ public class TibcoUtils {
 		try {
 			connection = getConnection(provUrl, authAlias, userName, password);
 			jSession = connection.createSession(false,
-					javax.jms.Session.AUTO_ACKNOWLEDGE);
+					jakarta.jms.Session.AUTO_ACKNOWLEDGE);
 			return getQueueFirstMessageAge(jSession, queueName, messageSelector);
 		} finally {
 			if (connection != null) {
@@ -173,7 +173,7 @@ public class TibcoUtils {
 		try {
 			connection = getConnection(provUrl, authAlias, userName, password);
 			jSession = connection.createSession(false,
-					javax.jms.Session.AUTO_ACKNOWLEDGE);
+					jakarta.jms.Session.AUTO_ACKNOWLEDGE);
 			return getQueueMessageCount(jSession, queueName, messageSelector);
 		} finally {
 			if (connection != null) {

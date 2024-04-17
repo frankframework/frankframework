@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.EmptyMessage;
@@ -47,8 +48,6 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.scheduler.IbisJobDetail;
 import org.frankframework.scheduler.IbisJobDetail.JobType;
 import org.frankframework.scheduler.SchedulerHelper;
-
-import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)

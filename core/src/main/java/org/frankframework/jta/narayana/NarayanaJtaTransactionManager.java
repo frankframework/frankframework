@@ -17,8 +17,8 @@ package org.frankframework.jta.narayana;
 
 import java.io.IOException;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.UserTransaction;
 
 import org.springframework.transaction.TransactionSystemException;
 

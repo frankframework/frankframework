@@ -93,7 +93,7 @@ import org.frankframework.util.XmlUtils;
 public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
 	@SuppressWarnings("unchecked")
-	public JmsBrowser<javax.jms.Message> createJmsBrowser() {
+	public JmsBrowser<jakarta.jms.Message> createJmsBrowser() {
 		return createBean(JmsBrowser.class);
 	}
 
@@ -116,7 +116,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}
 
-		JmsBrowser<javax.jms.Message> jmsBrowser = createJmsBrowser();
+		JmsBrowser<jakarta.jms.Message> jmsBrowser = createJmsBrowser();
 		jmsBrowser.setName("XmlQueueBrowserSender");
 		if (jmsRealm != null) {
 			jmsBrowser.setJmsRealm(jmsRealm);

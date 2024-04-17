@@ -26,10 +26,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
 import org.frankframework.configuration.ConfigurationException;

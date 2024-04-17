@@ -19,7 +19,7 @@ package org.frankframework.http;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;

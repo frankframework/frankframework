@@ -18,10 +18,10 @@ package org.frankframework.receivers;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import lombok.Getter;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.frankframework.core.PipeLineSession;
 
 public class RawMessageWrapper<M> {

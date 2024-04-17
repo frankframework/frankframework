@@ -20,9 +20,9 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.dbms.IDbmsSupport;
 
 import org.apache.commons.lang3.StringUtils;

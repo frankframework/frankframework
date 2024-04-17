@@ -20,8 +20,7 @@ import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;

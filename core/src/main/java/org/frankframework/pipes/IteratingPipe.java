@@ -26,11 +26,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Phaser;
 
-import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
