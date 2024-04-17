@@ -572,13 +572,19 @@ public class Adapter implements IAdapter, NamedBean {
 			result = pipeline.process(messageId, message, pipeLineSession);
 			return result;
 		} catch (Throwable t) {
+			ListenerException e;
+			if (t instanceof ListenerException) {
+				e = (ListenerException) t;
+			} else {
+				e = new ListenerException(t);
+			}
 			processingSuccess = false;
 			incNumOfMessagesInError();
-			warn("error processing message with messageId [" + messageId + "]: " + t.getMessage());
+			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
 			result = new PipeLineResult();
 			result.setState(ExitState.ERROR);
-			result.setResult(new Message(t.getMessage()));
-			throw new ListenerException(t);
+			result.setResult(new Message(e.getMessage()));
+			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
 			long duration = endTime - startTime;
