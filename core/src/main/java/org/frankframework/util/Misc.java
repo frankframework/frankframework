@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -237,8 +237,7 @@ public class Misc {
 		try {
 			File systemDir = getSystemDir();
 			if (systemDir == null) return null;
-			long l = systemDir.getTotalSpace();
-			return toFileSize(l);
+			return String.valueOf(systemDir.getTotalSpace());
 		} catch ( Exception e ) {
 			log.debug("Caught Exception",e);
 			return null;
@@ -249,8 +248,7 @@ public class Misc {
 		try {
 			File systemDir = getSystemDir();
 			if (systemDir == null) return null;
-			long l = systemDir.getFreeSpace();
-			return toFileSize(l);
+			return String.valueOf(systemDir.getFreeSpace());
 		} catch ( Exception e ) {
 			log.debug("Caught Exception",e);
 			return null;

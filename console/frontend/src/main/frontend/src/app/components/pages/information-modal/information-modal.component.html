@@ -14,11 +14,20 @@
       ><br />
       Java Version: <strong>{{ javaVersion }}</strong
       ><br />
-      Heap size: <strong>{{ processMetrics.heapSize }}</strong
-      >, total JVM memory: <strong>{{ processMetrics.totalMemory }}</strong
+      Heap size:
+      <strong>{{ processMetrics.heapSize | humanFileSize: true }}</strong
+      >, total JVM memory:
+      <strong>{{ processMetrics.totalMemory | humanFileSize: true }}</strong
       ><br />
-      Free disk space: <strong>{{ fileSystem.freeSpace }}</strong
-      >, total disk space: <strong>{{ fileSystem.totalSpace }}</strong
+      Free memory:
+      <strong>{{ processMetrics.freeMemory | humanFileSize: true }}</strong
+      >, max memory:
+      <strong>{{ processMetrics.maxMemory | humanFileSize: true }}</strong
+      ><br />
+      Free disk space:
+      <strong>{{ fileSystem.freeSpace | humanFileSize: true }}</strong
+      >, total disk space:
+      <strong>{{ fileSystem.totalSpace | humanFileSize: true }}</strong
       ><br />
       Up since: <strong><span appToDate [time]="uptime"></span></strong> (<span
         appTimeSince
@@ -52,6 +61,14 @@
       (click)="copy()"
     >
       <i class="fa fa-clipboard"></i>
+    </button>
+    <button
+      type="button"
+      class="btn btn-white"
+      title="Refresh information"
+      (click)="refresh()"
+    >
+      <i class="fa fa-refresh"></i>
     </button>
     <button type="button" class="btn btn-white" (click)="close()">Close</button>
   </div>

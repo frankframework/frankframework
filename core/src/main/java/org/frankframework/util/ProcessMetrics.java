@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 */
 package org.frankframework.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -29,6 +32,7 @@ public class ProcessMetrics {
 	private static final long M_LIMIT=K_LIMIT*1024;
 	private static final long G_LIMIT=M_LIMIT*1024;
 	private static final long T_LIMIT=G_LIMIT*1024;
+	private static final Logger log = LoggerFactory.getLogger(ProcessMetrics.class);
 
 	public static String normalizedNotation(long value) {
 		String valueString;
@@ -54,7 +58,7 @@ public class ProcessMetrics {
 	}
 
 	public static void addNumberProperty(XmlBuilder list, String name, long value) {
-		addProperty(list,name,normalizedNotation(value));
+		addProperty(list,name,Misc.toFileSize(value));
 	}
 
 	public static void addProperty(XmlBuilder list, String name, String value) {
@@ -88,10 +92,10 @@ public class ProcessMetrics {
 		long totalMem = Runtime.getRuntime().totalMemory();
 		long maxMemory = Runtime.getRuntime().maxMemory();
 
-		memoryStatistics.put("freeMemory", normalizedNotation(freeMem));
-		memoryStatistics.put("totalMemory", normalizedNotation(totalMem));
-		memoryStatistics.put("heapSize", normalizedNotation(totalMem-freeMem));
-		memoryStatistics.put("maxMemory", normalizedNotation(maxMemory));
+		memoryStatistics.put("freeMemory", String.valueOf(freeMem));
+		memoryStatistics.put("totalMemory", String.valueOf(totalMem));
+		memoryStatistics.put("heapSize", String.valueOf(totalMem-freeMem));
+		memoryStatistics.put("maxMemory", String.valueOf(maxMemory));
 		return memoryStatistics;
 	}
 }
