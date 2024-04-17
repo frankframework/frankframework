@@ -33,26 +33,4 @@ public class OpenPoolingDataSource<C extends Connection> extends PoolingDataSour
 	protected GenericObjectPool<C> getPool() {
 		return (GenericObjectPool<C>) super.getPool();
 	}
-
-	public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException {
-		// TODO Auto-generated method stub
-		return iface != null && iface.isAssignableFrom(this.getClass());
-	}
-
-	public <T> T unwrap(Class<T> iface) throws java.sql.SQLException {
-		// TODO Auto-generated method stub
-		try {
-			if (iface != null && iface.isAssignableFrom(this.getClass())) {
-				return (T) this;
-			}
-			throw new java.sql.SQLException("Auto-generated unwrap failed; Revisit implementation");
-		} catch (Exception e) {
-			throw new java.sql.SQLException(e);
-		}
-	}
-
-	public java.util.logging.Logger getParentLogger() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

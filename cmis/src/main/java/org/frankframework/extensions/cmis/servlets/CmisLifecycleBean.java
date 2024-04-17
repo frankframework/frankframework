@@ -19,11 +19,11 @@ import java.util.HashMap;
 
 import javax.servlet.ServletContext;
 
-import org.apache.chemistry.opencmis.commons.impl.ClassLoaderUtil;
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.lifecycle.IbisInitializer;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -78,7 +78,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 		// create a factory instance
 		Object object = null;
 		try {
-			object = ClassLoaderUtil.loadClass(className).getDeclaredConstructor().newInstance();
+			object = ClassUtils.loadClass(className).getDeclaredConstructor().newInstance();
 		} catch (Exception e) {
 			log.warn("Could not create a services factory instance", e);
 			return null;
