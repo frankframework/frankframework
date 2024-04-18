@@ -881,9 +881,15 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<archive>
+						<addMavenDescriptor>true</addMavenDescriptor>
 						<manifest>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<mainClass>org.frankframework.cmdline.StartIbis</mainClass>
 						</manifest>
+						<manifestEntries>
+							<Add-Opens>java.base/java.lang</Add-Opens>
+						</manifestEntries>
 					</archive>
 				</configuration>
 				<executions>
