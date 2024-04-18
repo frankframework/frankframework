@@ -15,6 +15,8 @@
 */
 package org.frankframework.lifecycle.servlets;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,6 +38,8 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -155,24 +159,24 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
-			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
-			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
+			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
+			http.csrf(AbstractHttpConfigurer::disable); //Disable because the front-end doesn't support CSFR tokens (yet!)
 			RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
 			http.securityMatcher(securityRequestMatcher); //Triggers the SecurityFilterChain, also for OPTIONS requests!
-			http.formLogin().disable(); //Disable the form login filter
-			http.logout().disable(); //Disable the logout endpoint on every filter
+			http.formLogin(AbstractHttpConfigurer::disable); //Disable the form login filter
+			http.logout(AbstractHttpConfigurer::disable); //Disable the logout endpoint on every filter
 //			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Disables cookies
 
 			if(!publicEndpoints.isEmpty()) { //Enable anonymous access on public endpoints
-				http.authorizeHttpRequests().requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll();
-				http.anonymous();
+				http.authorizeHttpRequests(requests -> requests.requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll());
+				http.anonymous(withDefaults());
 			} else {
-				http.anonymous().disable(); //Disable the default anonymous filter and thus disallow all anonymous access
+				http.anonymous(AbstractHttpConfigurer::disable); //Disable the default anonymous filter and thus disallow all anonymous access
 			}
 
 			// Enables security for all servlet endpoints
 			RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
-			http.authorizeHttpRequests().requestMatchers(authorizationRequestMatcher).authenticated();
+			http.authorizeHttpRequests(requests -> requests.requestMatchers(authorizationRequestMatcher).authenticated());
 
 			return configure(http);
 		} catch (Exception e) {

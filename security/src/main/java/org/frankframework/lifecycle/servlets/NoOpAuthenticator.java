@@ -31,7 +31,7 @@ public class NoOpAuthenticator extends ServletAuthenticatorBase {
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		http.anonymous().authorities(getAuthorities());
+		http.anonymous(anonymous -> anonymous.authorities(getAuthorities()));
 		return http.build();
 	}
 

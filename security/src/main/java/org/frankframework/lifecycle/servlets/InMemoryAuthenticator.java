@@ -15,14 +15,13 @@
 */
 package org.frankframework.lifecycle.servlets;
 
+import lombok.Setter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
-import lombok.Setter;
 
 /*
 	<authentication-manager alias="inMemoryAuthManager">
@@ -41,8 +40,8 @@ public class InMemoryAuthenticator extends ServletAuthenticatorBase {
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		http.httpBasic().realmName("Frank"); //BasicAuthenticationEntryPoint
-		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		http.httpBasic(basic -> basic.realmName("Frank")); //BasicAuthenticationEntryPoint
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 		UserDetails user = User.builder()
 				.username(username)
