@@ -65,6 +65,8 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 	private static final String ADAPTER2MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
 	private static final String CONFIGURATION2MERMAID_XSLT = "/xml/xsl/configuration2mermaid.xsl";
+	private static final String PARAM_FRANK_ELEMENTS = "frankElements";
+
 	// List that contains all class patterns that extend FileSystemListener or FileSystemSender
 	private static final List<String> extendsFileSystem = List.of("FileSystem", "Directory", "Samba", "Ftp", "Imap", "Sftp", "S3", "Exchange", "Mail");
 
@@ -219,7 +221,8 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	protected String generateMermaid(String xml) throws FlowGenerationException {
 		try {
 			Map<String, Object> xsltParams = new HashMap<>(1);//frankElements
-			xsltParams.put("frankElements", frankElements);
+			xsltParams.put(PARAM_FRANK_ELEMENTS, frankElements);
+			log.info("Generating Mermaid with XSLT parameter [{}]=[{}]", PARAM_FRANK_ELEMENTS, frankElements);
 			if (xml.startsWith("<adapter")) {
 				return transformerPoolAdapter.transform(xml, xsltParams);
 			} else {
