@@ -6,30 +6,16 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.frankframework.jta.narayana.NarayanaConfigurationBean;
 import org.frankframework.jta.narayana.NarayanaDataSourceFactory;
 import org.frankframework.jta.xa.XaDatasourceCommitStopper;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
-import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
+import com.arjuna.ats.internal.arjuna.objectstore.VolatileStore;
 
 public class TestNarayanaDataSourceFactory extends NarayanaDataSourceFactory {
 
 	static {
-		NarayanaConfigurationBean narayana = new NarayanaConfigurationBean();
-		Properties properties = new Properties();
-		properties.put("JDBCEnvironmentBean.isolationLevel", "2");
-//		properties.put("ObjectStoreEnvironmentBean.objectStoreType", VolatileStore.class.getCanonicalName());
-		properties.put("ObjectStoreEnvironmentBean.objectStoreDir", "target/narayana");
-		properties.put("ObjectStoreEnvironmentBean.stateStore.objectStoreDir", "target/narayana");
-		properties.put("ObjectStoreEnvironmentBean.communicationStore.objectStoreDir", "target/narayana");
-		narayana.setProperties(properties);
-
-		try {
-			narayana.afterPropertiesSet();
-		} catch (ObjectStoreException e) {
-			throw new IllegalStateException("unable to configure Narayana", e);
-		}
+		System.setProperty("transactionmanager.narayana.objectStoreType", VolatileStore.class.getCanonicalName());
 	}
 
 	@Override

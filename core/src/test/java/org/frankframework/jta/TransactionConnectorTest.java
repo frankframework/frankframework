@@ -61,15 +61,15 @@ public class TransactionConnectorTest {
 
 	@TxManagerTest
 	public void testNewTransactionMustLock() throws Exception {
-		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
+		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (777, 1)");
 		TransactionStatus txStatus = env.startTransaction(TX_DEF);
 
 		try {
-			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
+			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=777");
 
 			TransactionStatus txStatus2 = env.startTransaction(TX_DEF);
 			try {
-				runQuery("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
+				runQuery("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=777 AND TINT=2");
 			} catch (Exception e) {
 				log.info("expected exception", e);
 			} finally {
@@ -82,9 +82,13 @@ public class TransactionConnectorTest {
 		} catch (Exception e) {
 			log.info("exception caught", e);
 		} finally {
-			txManager.commit(txStatus);
+			if (txStatus.isRollbackOnly()) {
+				fail("expected commit");
+			} else {
+				txManager.commit(txStatus);
+			}
 		}
-		assertEquals(2, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(2, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=777"));
 	}
 
 	@TxManagerTest
@@ -108,15 +112,15 @@ public class TransactionConnectorTest {
 
 	@TxManagerTest
 	public void testBasic() throws Exception {
-		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
+		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (888, 1)");
 		TransactionStatus txStatus = env.startTransaction(TX_DEF);
 
 		// do some action in main thread
 		try {
-			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
+			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=888");
 
 			try {
-				runInConnectedChildThread("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
+				runInConnectedChildThread("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=888 AND TINT=2");
 			} catch (Throwable t) {
 				t.printStackTrace();
 				fail();
@@ -124,7 +128,7 @@ public class TransactionConnectorTest {
 		} finally {
 			txManager.commit(txStatus);
 		}
-		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
+		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=888"));
 	}
 
 	@TxManagerTest
