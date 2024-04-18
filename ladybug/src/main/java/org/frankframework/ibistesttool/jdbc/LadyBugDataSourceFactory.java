@@ -20,18 +20,17 @@ import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.jndi.DataSourceFactory;
 import org.frankframework.jta.narayana.NarayanaDataSource;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class DataSourceFactory extends JndiDataSourceFactory {
+public class LadyBugDataSourceFactory extends DataSourceFactory implements ApplicationContextAware {
 	private String txManagerType;
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		super.setApplicationContext(applicationContext);
-
 		String txManager = applicationContext.getEnvironment().getProperty("application.server.type.custom");
 		if(StringUtils.isNotEmpty(txManager)) {
 			txManagerType = txManager.toUpperCase();
