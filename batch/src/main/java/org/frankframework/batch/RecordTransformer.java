@@ -19,6 +19,7 @@ import java.lang.reflect.Constructor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -356,14 +356,14 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 			if (startIndex >= val.length()) {
 				if (StringUtils.isEmpty(getOutputSeparator())) {
-					result.append(FileUtils.getFilledArray(endIndex - startIndex, ' '));
+					result.append(getFilledArray(endIndex - startIndex, ' '));
 				}
 			} else if (endIndex >= val.length()) {
 				result.append(val.substring(startIndex));
 				if (StringUtils.isEmpty(getOutputSeparator())) {
 					int fillSize = endIndex - startIndex - val.length();
 					if (fillSize > 0) {
-						result.append(FileUtils.getFilledArray(fillSize, ' '));
+						result.append(getFilledArray(fillSize, ' '));
 					}
 				}
 			}
@@ -393,7 +393,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		@Override
 		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			String val = super.toValue(inputFields).trim();
-			FileUtils.align(result, val, length, leftAlign, fillChar);
+			align(result, val, length, leftAlign, fillChar);
 			return null;
 		}
 	}
@@ -422,7 +422,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 */
 	static class FixedFillOutput extends FixedOutput {
 		FixedFillOutput(int length, char fillchar) {
-			super(new String(FileUtils.getFilledArray(length, fillchar)));
+			super(new String(getFilledArray(length, fillchar)));
 		}
 	}
 
@@ -432,7 +432,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 */
 	static class FixedAlignedOutput extends FixedOutput {
 		FixedAlignedOutput(String fixedOutput, int length, boolean leftAlign, char fillchar) {
-			super(FileUtils.align(fixedOutput, length, leftAlign, fillchar));
+			super(align(fixedOutput, length, leftAlign, fillchar));
 		}
 	}
 
@@ -662,6 +662,38 @@ public class RecordTransformer extends AbstractRecordHandler {
 			result.append(transform);
 			return null;
 		}
+	}
+
+	/*
+	 * methods to create a fixed length string from a value
+	 */
+	static String align(String val, int length, boolean leftAlign, char padChar) {
+		String output = leftAlign ? StringUtils.rightPad(val, length, padChar) : StringUtils.leftPad(val, length, padChar);
+		return output.substring(0, length);
+	}
+
+	static void align(StringBuilder result, String val, int length, boolean leftAlign, char fillchar) {
+		if (val.length() > length) {
+			result.append(val, 0, length);
+		} else if (val.length() == length) {
+			result.append(val);
+		} else {
+			char[] fill = getFilledArray(length - val.length(), fillchar);
+			if (leftAlign) {
+				result.append(val).append(fill);
+			} else {
+				result.append(fill).append(val);
+			}
+		}
+	}
+
+	/**
+	 * create a filled array
+	 */
+	static char[] getFilledArray(int length, char fillChar) {
+		char[] fill = new char[length];
+		Arrays.fill(fill, fillChar);
+		return fill;
 	}
 
 	/** optional separator to add between the fields */
