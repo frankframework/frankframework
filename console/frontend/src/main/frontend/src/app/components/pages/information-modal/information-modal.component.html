@@ -15,19 +15,19 @@
       Java Version: <strong>{{ javaVersion }}</strong
       ><br />
       Heap size:
-      <strong>{{ processMetrics.heapSize | humanFileSize: true }}</strong
+      <strong>{{ processMetrics.heapSize | humanFileSize }}</strong
       >, total JVM memory:
-      <strong>{{ processMetrics.totalMemory | humanFileSize: true }}</strong
+      <strong>{{ processMetrics.totalMemory | humanFileSize }}</strong
       ><br />
       Free memory:
-      <strong>{{ processMetrics.freeMemory | humanFileSize: true }}</strong
+      <strong>{{ processMetrics.freeMemory | humanFileSize }}</strong
       >, max memory:
-      <strong>{{ processMetrics.maxMemory | humanFileSize: true }}</strong
+      <strong>{{ processMetrics.maxMemory | humanFileSize }}</strong
       ><br />
       Free disk space:
-      <strong>{{ fileSystem.freeSpace | humanFileSize: true }}</strong
+      <strong>{{ fileSystem.freeSpace | humanFileSize }}</strong
       >, total disk space:
-      <strong>{{ fileSystem.totalSpace | humanFileSize: true }}</strong
+      <strong>{{ fileSystem.totalSpace | humanFileSize }}</strong
       ><br />
       Up since: <strong><span appToDate [time]="uptime"></span></strong> (<span
         appTimeSince
