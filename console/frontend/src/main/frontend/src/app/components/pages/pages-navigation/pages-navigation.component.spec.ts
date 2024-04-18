@@ -9,7 +9,7 @@ describe('PagesNavigationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [PagesNavigationComponent],
+      imports: [PagesNavigationComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 

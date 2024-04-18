@@ -11,8 +11,7 @@ describe('FeedbackModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, FormsModule],
-      declarations: [FeedbackModalComponent],
+      imports: [HttpClientTestingModule, FormsModule, FeedbackModalComponent],
       providers: [
         {
           provide: NgbActiveModal,
