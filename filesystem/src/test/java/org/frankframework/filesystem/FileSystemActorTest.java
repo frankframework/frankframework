@@ -661,7 +661,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents() throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
-		String expectedFSize="1 kB";
+		String expectedFSize="67 B";
 
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
@@ -734,7 +734,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorWriteActionWriteLineSeparatorMessageContents() throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
-		String expectedFSize="1 kB";
+		String expectedFSize="67 B";
 
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
