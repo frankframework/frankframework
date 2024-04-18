@@ -1052,7 +1052,7 @@
 										<!-- the jms api now finally officially exists, no need to use geronimo anymore -->
 										<!-- also excludes version 2 which uses the old javax namespaces -->
 										<excludes>
-											<exclude>jakarta.jms:jakarta.jms-api:2.*</exclude>
+											<exclude>jakarta.jms:jakarta.jms-api:[2.0.2],[2.0.3]</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec</exclude>
 										</excludes>
