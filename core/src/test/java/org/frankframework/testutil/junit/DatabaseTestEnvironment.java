@@ -50,7 +50,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	private @Getter IDbmsSupport dbmsSupport;
 	private final TransactionManagerType type;
 	private final @Getter TestConfiguration configuration;
-	private final AtomicInteger connectionCount = new AtomicInteger(0);
+	private final AtomicInteger connectionCount = new AtomicInteger();
 
 	private @Getter final PlatformTransactionManager txManager;
 	private final List<TransactionStatus> transactionsToClose = new ArrayList<>();
@@ -96,8 +96,8 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		dataSource = type.getDataSource(productKey);
 
 		String dsInfo; //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
-		if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-			dsInfo = ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getTargetDataSource().toString();
+		if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
+			dsInfo = proxy.getTargetDataSource().toString();
 		} else {
 			dsInfo = dataSource.toString();
 		}
@@ -124,8 +124,8 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	}
 
 	private DataSource getTargetDataSource(DataSource dataSource) {
-		if(dataSource instanceof DelegatingDataSource) {
-			return getTargetDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
+		if(dataSource instanceof DelegatingDataSource source) {
+			return getTargetDataSource(source.getTargetDataSource());
 		}
 		return dataSource;
 	}
@@ -147,8 +147,8 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	/** Populates all database related fields that are normally wired through Spring */
 	public void autowire(@Nonnull Object bean) {
 		configuration.autowireByName(bean);
-		if(bean instanceof JdbcFacade) {
-			((JdbcFacade) bean).setDatasourceName(getDataSourceName());
+		if(bean instanceof JdbcFacade facade) {
+			facade.setDatasourceName(getDataSourceName());
 		}
 	}
 

@@ -59,7 +59,7 @@
 					"
 					execution(
 						*
-						org.frankframework.processors.CheckSemaphorePipeProcessor.processPipe(
+						org.frankframework.processors.LimitingParallelExecutionPipeProcessor.processPipe(
 							org.frankframework.core.PipeLine,
 							org.frankframework.core.IPipe,
 							org.frankframework.stream.Message,
@@ -77,7 +77,7 @@
 					"
 					execution(
 						*
-						org.frankframework.processors.CheckSemaphorePipeProcessor.validate(
+						org.frankframework.processors.LimitingParallelExecutionPipeProcessor.validate(
 							org.frankframework.core.PipeLine,
 							org.frankframework.core.IValidator,
 							org.frankframework.stream.Message,

@@ -20,15 +20,19 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Phaser;
 
 import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IBlockEnabledSender;
@@ -42,13 +46,12 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
+import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.senders.ParallelSenderExecutor;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
 import org.frankframework.util.FileUtils;
-import org.frankframework.util.Guard;
-import org.frankframework.util.Semaphore;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
@@ -56,12 +59,8 @@ import org.frankframework.util.XmlUtils;
 import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import lombok.Getter;
-import lombok.Setter;
-
 /**
- * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
+ * Abstract base class to send a message to a Sender for each item returned by a configurable iterator.
  *
  * <br/>
  * The output of each of the processing of each of the elements is returned in XML as follows:
@@ -123,7 +122,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 
-	private Semaphore childThreadSemaphore=null;
+	private ResourceLimiter childLimiter = null;
 
 	protected enum StopReason {
 		MAX_ITEMS_REACHED(MAX_ITEMS_REACHED_FORWARD),
@@ -131,7 +130,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 		private final @Getter String forwardName;
 
-		private StopReason(String forwardName) {
+		StopReason(String forwardName) {
 			this.forwardName=forwardName;
 		}
 
@@ -149,7 +148,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			throw new ConfigurationException("Cannot compile stylesheet from stopConditionXPathExpression ["+getStopConditionXPathExpression()+"]", e);
 		}
 		if (getMaxChildThreads()>0) {
-			childThreadSemaphore=new Semaphore(getMaxChildThreads());
+			childLimiter = new ResourceLimiter(getMaxChildThreads());
 		}
 	}
 
@@ -201,15 +200,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	protected class ItemCallback {
-		private PipeLineSession session;
-		private ISender sender;
-		private Writer results;
+		private final PipeLineSession session;
+		private final ISender sender;
+		private final Writer results;
 		private int itemsInBlock=0;
 		private int totalItems=0;
 		private boolean blockOpen=false;
 		private Object blockHandle;
-		private Vector<I> inputItems = new Vector<>();
-		private Guard guard;
+		private final List<I> inputItems = Collections.synchronizedList(new ArrayList<>());
+		private Phaser guard;
 		private List<ParallelSenderExecutor> executorList;
 
 		public ItemCallback(PipeLineSession session, ISender sender, Writer out) {
@@ -217,7 +216,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.sender=sender;
 			this.results=out;
 			if (isParallel() && isCollectResults()) {
-				guard = new Guard();
+				guard = new Phaser(1);
 				executorList = new ArrayList<>();
 			}
 		}
@@ -226,8 +225,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (isCollectResults()) {
 				results.append("<results>\n");
 			}
-			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
-				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
+			if (!isParallel() && sender instanceof IBlockEnabledSender<?> enabledSender) {
+				blockHandle = enabledSender.openBlock(session);
 				blockOpen=true;
 			}
 		}
@@ -239,12 +238,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				waitForResults();
 				results.append("</results>");
 			} else {
-				results.append("<results count=\""+getCount()+"\"/>");
+				results.append("<results count=\"").append(String.valueOf(getCount())).append("\"/>");
 			}
 		}
 		public void startBlock() throws SenderException, TimeoutException {
-			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?>) {
-				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
+			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?> enabledSender) {
+				blockHandle = enabledSender.openBlock(session);
 				blockOpen=true;
 			}
 		}
@@ -261,11 +260,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 
 		/**
-		 * @return a non null StopReason when stop is required
+		 * @return a non-null StopReason when stop is required
 		 */
 		public StopReason handleItem(I item) throws SenderException, TimeoutException, IOException {
 			if (isRemoveDuplicates()) {
-				if (inputItems.indexOf(item)>=0) {
+				if (inputItems.contains(item)) {
 					log.debug("duplicate item [{}] will not be processed", item);
 					return null;
 				}
@@ -295,11 +294,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
-			if (childThreadSemaphore!=null) {
+			if (childLimiter != null) {
 				try {
-					childThreadSemaphore.acquire();
+					childLimiter.acquire();
 				} catch (InterruptedException e) {
-					throw new SenderException("interrupted waiting for thread",e);
+					Thread.currentThread().interrupt();
+					throw new SenderException("interrupted waiting for thread", e);
 				}
 			}
 			try {
@@ -307,9 +307,13 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					DistributionSummary senderStatistics = getStatisticsKeeper(sender.getName());
 					if (isParallel()) {
 						if (isCollectResults()) {
-							guard.addResource();
+							if (guard != null) {
+								guard.register();
+							}
 						}
-						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, childThreadSemaphore, guard, senderStatistics);
+						ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, senderStatistics);
+						pse.setThreadLimiter(childLimiter);
+						pse.setGuard(guard);
 						if (isCollectResults()) {
 							executorList.add(pse);
 						}
@@ -382,9 +386,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					throw new SenderException("cannot serialize item",e);
 				}
 			} finally {
-				if (!isParallel() && childThreadSemaphore!=null) {
+				if (!isParallel() && childLimiter !=null) {
 					// only release the semaphore for non-parallel. For parallel, it is done in the 'finally' of ParallelSenderExecutor.run()
-					childThreadSemaphore.release();
+					childLimiter.release();
 				}
 			}
 		}
@@ -404,12 +408,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 		public void waitForResults() throws SenderException, IOException {
 			if (isParallel()) {
-				try {
-					guard.waitForAllResources();
-					collectResultsOrThrowExceptions();
-				} catch (InterruptedException e) {
-					throw new SenderException("was interrupted",e);
-				}
+				guard.arriveAndAwaitAdvance();
+				collectResultsOrThrowExceptions();
 			}
 		}
 

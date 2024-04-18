@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
 
@@ -95,7 +96,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
-import org.frankframework.util.Counter;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
@@ -278,7 +278,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private @Getter HideMethod hideMethod = HideMethod.ALL;
 	private @Getter String hiddenInputSessionKeys=null;
 
-	private final Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
+	private final AtomicInteger numberOfExceptionsCaughtWithoutMessageBeingReceived = new AtomicInteger();
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
 	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
@@ -290,7 +290,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	protected final RunStateManager runState = new RunStateManager();
 	private PullingListenerContainer<M> listenerContainer;
 
-	private final Counter threadsProcessing = new Counter(0);
+	private final AtomicInteger threadsProcessing = new AtomicInteger();
 
 	private long lastMessageDate = 0;
 
@@ -609,8 +609,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (getListener() instanceof HasSender) {
 				// only informational
 				ISender sender = ((HasSender)getListener()).getSender();
-				if (sender instanceof HasPhysicalDestination) {
-					info("Listener has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+				if (sender instanceof HasPhysicalDestination destination) {
+					info("Listener has answer-sender on "+destination.getPhysicalDestinationName());
 				}
 			}
 			if (getListener() instanceof ITransactionRequirements) {
@@ -623,15 +623,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			ISender sender = getSender();
 			if (sender!=null) {
 				sender.configure();
-				if (sender instanceof HasPhysicalDestination) {
-					info("has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+				if (sender instanceof HasPhysicalDestination destination) {
+					info("has answer-sender on "+destination.getPhysicalDestinationName());
 				}
 			}
 
 			ISender errorSender = getErrorSender();
 			if (errorSender!=null) {
-				if (errorSender instanceof HasPhysicalDestination) {
-					info("has errorSender to "+((HasPhysicalDestination)errorSender).getPhysicalDestinationName());
+				if (errorSender instanceof HasPhysicalDestination destination) {
+					info("has errorSender to "+destination.getPhysicalDestinationName());
 				}
 				errorSender.configure();
 			}
@@ -654,8 +654,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 				messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
 				messageLog.configure();
-				if (messageLog instanceof HasPhysicalDestination) {
-					info("has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
+				if (messageLog instanceof HasPhysicalDestination destination) {
+					info("has messageLog in "+destination.getPhysicalDestinationName());
 				}
 				knownProcessStates.add(ProcessState.DONE);
 				messageBrowsers.put(ProcessState.DONE, messageLog);
@@ -674,8 +674,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 				}
 				errorStorage.setType(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
 				errorStorage.configure();
-				if (errorStorage instanceof HasPhysicalDestination) {
-					info("has errorStorage to "+((HasPhysicalDestination)errorStorage).getPhysicalDestinationName());
+				if (errorStorage instanceof HasPhysicalDestination destination) {
+					info("has errorStorage to "+destination.getPhysicalDestinationName());
 				}
 				knownProcessStates.add(ProcessState.ERROR);
 				messageBrowsers.put(ProcessState.ERROR, errorStorage);
@@ -684,8 +684,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			if (getListener() instanceof IProvidesMessageBrowsers) {
 				for (ProcessState state: knownProcessStates) {
 					IMessageBrowser<?> messageBrowser = ((IProvidesMessageBrowsers<?>)getListener()).getMessageBrowser(state);
-					if (messageBrowser instanceof IConfigurable) {
-						((IConfigurable)messageBrowser).configure();
+					if (messageBrowser instanceof IConfigurable configurable) {
+						configurable.configure();
 					}
 					messageBrowsers.put(state, messageBrowser);
 				}
@@ -712,8 +712,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 			}
 		} catch (Throwable t) {
 			ConfigurationException e = null;
-			if (t instanceof ConfigurationException) {
-				e = (ConfigurationException)t;
+			if (t instanceof ConfigurationException exception) {
+				e = exception;
 			} else {
 				e = new ConfigurationException("Exception configuring receiver ["+getName()+"]",t);
 			}
@@ -858,26 +858,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 
 	protected void startProcessingMessage(long waitingDuration) {
-		log.trace("{} startProcessingMessage -- synchronize (lock) on Receiver threadsProcessing[{}]", this::getLogPrefix, threadsProcessing::toString);
-		synchronized (threadsProcessing) {
-			int threadCount = (int) threadsProcessing.getValue();
-
-			if (waitingDuration>=0) {
-				getIdleStatistics(threadCount).record(waitingDuration);
-			}
-			threadsProcessing.increase();
+		int threadCount = threadsProcessing.getAndIncrement();
+		if (waitingDuration >= 0) {
+			getIdleStatistics(threadCount).record(waitingDuration);
 		}
-		log.trace("{} startProcessingMessage -- lock on Receiver threadsProcessing[{}] released", this::getLogPrefix, threadsProcessing::toString);
 		log.debug("{} starts processing message", this::getLogPrefix);
 	}
 
 	protected void finishProcessingMessage(long processingDuration) {
-		log.trace("{} finishProcessingMessage -- synchronize (lock) on Receiver threadsProcessing[{}]", this::getLogPrefix, threadsProcessing::toString);
-		synchronized (threadsProcessing) {
-			int threadCount = (int) threadsProcessing.decrease();
-			getProcessStatistics(threadCount).record(processingDuration);
-		}
-		log.trace("{} finishProcessingMessage -- lock on Receiver threadsProcessing[{}] released", this::getLogPrefix, threadsProcessing::toString);
+		int threadCount = threadsProcessing.decrementAndGet();
+		getProcessStatistics(threadCount).record(processingDuration);
 		log.debug("{} finishes processing message", this::getLogPrefix);
 	}
 
@@ -1005,8 +995,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	private Serializable serializeMessageObject(RawMessageWrapper<M> rawMessageWrapper, Message message) {
 		final Serializable sobj;
 
-		if (rawMessageWrapper instanceof MessageWrapper) {
-			sobj = (MessageWrapper<?>) rawMessageWrapper;
+		if (rawMessageWrapper instanceof MessageWrapper wrapper) {
+			sobj = wrapper;
 		} else {
 			sobj = new MessageWrapper<>(rawMessageWrapper, message);
 		}
@@ -1589,9 +1579,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	public void exceptionThrown(String errorMessage, Throwable t) {
 		switch (getOnError()) {
 			case CONTINUE:
-				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.increase() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
+				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.incrementAndGet() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
 					numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=true;
-					log.warn("numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold is reached, changing the adapter status to 'warning'");
+					log.warn("number of exceptions caught without message being received threshold is reached; changing the adapter status to 'warning'");
 				}
 				error(errorMessage+", will continue processing messages when they arrive", t);
 				break;
@@ -1816,8 +1806,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	private ListenerException wrapExceptionAsListenerException(Throwable t) {
 		ListenerException l;
-		if (t instanceof ListenerException) {
-			l = (ListenerException) t;
+		if (t instanceof ListenerException exception) {
+			l = exception;
 		} else {
 			l = new ListenerException(t);
 		}
@@ -1925,7 +1915,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 
 	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
 		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
-		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
+		numberOfExceptionsCaughtWithoutMessageBeingReceived.set(0);
 		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 	}
 
@@ -1953,8 +1943,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 	 */
 	public void setListener(IListener<M> newListener) {
 		listener = newListener;
-		if (listener instanceof RunStateEnquiring)  {
-			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
+		if (listener instanceof RunStateEnquiring enquiring)  {
+			enquiring.SetRunStateEnquirer(runState);
 		}
 	}
 

@@ -145,8 +145,8 @@ public class BrowseQueue extends BusEndpointBase {
 			} catch (Exception e) {
 				log.warn("Could not get insertDate", e);
 			}
-			if(showPayload && item instanceof JmsMessageBrowserIteratorItem) {
-				text = ((JmsMessageBrowserIteratorItem) item).getText();
+			if(showPayload && item instanceof JmsMessageBrowserIteratorItem iteratorItem) {
+				text = iteratorItem.getText();
 			}
 		}
 	}

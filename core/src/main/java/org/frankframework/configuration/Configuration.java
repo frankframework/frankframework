@@ -207,8 +207,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 			//Trigger a configure on all Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-			if(lifecycle instanceof ConfigurableLifecycle) {
-				((ConfigurableLifecycle) lifecycle).configure();
+			if(lifecycle instanceof ConfigurableLifecycle configurableLifecycle) {
+				configurableLifecycle.configure();
 			}
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;

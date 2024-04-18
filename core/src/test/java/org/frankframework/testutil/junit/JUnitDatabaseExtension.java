@@ -25,7 +25,7 @@ public class JUnitDatabaseExtension implements TestTemplateInvocationContextProv
 
 	@Override
 	public boolean supportsTestTemplate(ExtensionContext context) {
-		if (!context.getTestMethod().isPresent()) {
+		if (context.getTestMethod().isEmpty()) {
 			return false;
 		}
 

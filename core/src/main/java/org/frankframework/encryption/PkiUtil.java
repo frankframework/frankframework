@@ -190,8 +190,7 @@ public class PkiUtil {
 				String alias = aliases.nextElement();
 				log.info("alias [" + alias + "] for "+purpose+":");
 				Certificate trustedcert = keystore.getCertificate(alias);
-				if (trustedcert != null && trustedcert instanceof X509Certificate) {
-					X509Certificate cert = (X509Certificate)trustedcert;
+				if (trustedcert != null && trustedcert instanceof X509Certificate cert) {
 					log.info("  Subject DN: " + cert.getSubjectDN());
 					log.info("  Signature Algorithm: " + cert.getSigAlgName());
 					log.info("  Valid from: " + cert.getNotBefore() );

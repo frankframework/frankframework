@@ -533,12 +533,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 			 */
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
 				result = session.get(requestedSessionKey);
-				if (result instanceof Message && StringUtils.isNotEmpty(getContextKey())) {
-					result = ((Message)result).getContext().get(getContextKey());
+				if (result instanceof Message message1 && StringUtils.isNotEmpty(getContextKey())) {
+					result = message1.getContext().get(getContextKey());
 				}
 				if (LOG.isDebugEnabled() && (result == null ||
-						((result instanceof String) && ((String) result).isEmpty()) ||
-						((result instanceof Message) && ((Message) result).isEmpty()))) {
+						((result instanceof String string) && string.isEmpty()) ||
+						((result instanceof Message message1) && message1.isEmpty()))) {
 					LOG.debug("Parameter [{}] session variable [{}] is empty", this::getName, () -> requestedSessionKey);
 				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
@@ -562,8 +562,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 
-		if (result instanceof Message) { //we just need to check if the message is null or not!
-			Message resultMessage = (Message) result;
+		if (result instanceof Message resultMessage) {
 			if (Message.isNull(resultMessage)) {
 				result = null;
 			} else if (resultMessage.isRequestOfType(String.class)) { //Used by getMinLength and getMaxLength
@@ -614,16 +613,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 				LOG.debug("Parameter [{}] resolved to default value [{}]", this::getName, ()-> isHidden() ? hide(finalResult.toString()) : finalResult);
 			}
 		}
-		if (result instanceof String) {
+		if (result instanceof String stringResult) {
 			if (getMinLength()>=0 && getType()!=ParameterType.NUMBER) {
-				final String stringResult = (String) result;
 				if (stringResult.length() < getMinLength()) {
 					LOG.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
 					result = StringUtils.rightPad(stringResult, getMinLength());
 				}
 			}
 			if (getMaxLength()>=0) {
-				final String stringResult = (String) result;
 				if (stringResult.length() > getMaxLength()) {
 					LOG.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
 					result = stringResult.substring(0, getMaxLength());
@@ -633,12 +630,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if(result !=null && getType().requiresTypeConversion) {
 			result = getValueAsType(result, namespaceAware);
 		}
-		if (result instanceof Number) {
-			if (getMinInclusiveString()!=null && ((Number)result).floatValue() < minInclusive.floatValue()) {
+		if (result instanceof Number number) {
+			if (getMinInclusiveString()!=null && number.floatValue() < minInclusive.floatValue()) {
 				LOG.debug("Replacing parameter [{}] because value [{}] falls short of minInclusive [{}]", this::getName, logValue(result), this::getMinInclusiveString);
 				result = minInclusive;
 			}
-			if (getMaxInclusiveString()!=null && ((Number)result).floatValue() > maxInclusive.floatValue()) {
+			if (getMaxInclusiveString()!=null && number.floatValue() > maxInclusive.floatValue()) {
 				LOG.debug("Replacing parameter [{}] because value [{}] exceeds maxInclusive [{}]", this::getName, logValue(result), this::getMaxInclusiveString);
 				result = maxInclusive;
 			}
@@ -661,8 +658,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 						if (isRemoveNamespaces()) {
 							requestMessage = XmlUtils.removeNamespaces(requestMessage);
 						}
-						if(request instanceof Document) {
-							return ((Document)request).getDocumentElement();
+						if(request instanceof Document document) {
+							return document.getDocumentElement();
 						}
 						if(request instanceof Node) {
 							return request;

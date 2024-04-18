@@ -16,9 +16,9 @@
 package org.frankframework.receivers;
 
 import org.frankframework.filesystem.FileSystemListener;
-import org.frankframework.filesystem.SftpFileSystem;
-import org.frankframework.filesystem.ftp.SftpFileRef;
-import org.frankframework.filesystem.ftp.SftpFileSystemDelegator;
+import org.frankframework.filesystem.sftp.SftpFileSystem;
+import org.frankframework.filesystem.sftp.SftpFileRef;
+import org.frankframework.filesystem.sftp.SftpFileSystemDelegator;
 
 public class SftpFileSystemListener extends FileSystemListener<SftpFileRef, SftpFileSystem> implements SftpFileSystemDelegator {
 

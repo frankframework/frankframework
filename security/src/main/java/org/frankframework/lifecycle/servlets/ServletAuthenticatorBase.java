@@ -70,8 +70,8 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 			PropertySources pss = ((ConfigurableEnvironment) applicationContext.getEnvironment()).getPropertySources();
 			for(PropertySource<?> propertySource : pss) {
-				if (propertySource instanceof MapPropertySource) {
-					applicationConstants.putAll(((MapPropertySource) propertySource).getSource());
+				if (propertySource instanceof MapPropertySource source) {
+					applicationConstants.putAll(source.getSource());
 				}
 			}
 		}

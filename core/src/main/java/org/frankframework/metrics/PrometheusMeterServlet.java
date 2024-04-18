@@ -52,11 +52,10 @@ public class PrometheusMeterServlet extends HttpServletBase {
 		if(ACTIVE) {
 			Assert.notNull(registry, "metrics registry not found");
 
-			if (registry instanceof CompositeMeterRegistry) {
-				CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)registry;
+			if (registry instanceof CompositeMeterRegistry compositeMeterRegistry) {
 				for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
-					if (meterRegistry instanceof PrometheusMeterRegistry) {
-						prometheusRegistry = (PrometheusMeterRegistry)meterRegistry;
+					if (meterRegistry instanceof PrometheusMeterRegistry prometheusMeterRegistry) {
+						prometheusRegistry = prometheusMeterRegistry;
 					}
 				}
 			}

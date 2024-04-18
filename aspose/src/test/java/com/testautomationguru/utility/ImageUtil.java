@@ -50,7 +50,7 @@ public class ImageUtil {
 		int width2 = img2.getWidth();
 		int height2 = img2.getHeight();
 		if(width != width2 || height != height2) {
-			throw new IllegalArgumentException(String.format("Images must have the same dimensions: (%d,%d) vs. (%d,%d)", width, height, width2, height2));
+			throw new IllegalArgumentException("Images must have the same dimensions: (%d,%d) vs. (%d,%d)".formatted(width, height, width2, height2));
 		}
 
 		long diff = 0;

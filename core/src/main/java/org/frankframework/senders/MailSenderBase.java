@@ -276,10 +276,10 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				MailAttachmentStream attachment = null;
 				if (StringUtils.isNotEmpty(sessionKey)) {
 					Object object = session.get(sessionKey);
-					if (object instanceof InputStream) {
-						attachment = streamToMailAttachment((InputStream) object, base64, mimeType);
-					} else if (object instanceof String) {
-						attachment = stringToMailAttachment((String) object, base64, mimeType);
+					if (object instanceof InputStream stream) {
+						attachment = streamToMailAttachment(stream, base64, mimeType);
+					} else if (object instanceof String string) {
+						attachment = stringToMailAttachment(string, base64, mimeType);
 					} else {
 						throw new SenderException("MailSender ["+getName()+"] received unknown attachment type ["+object.getClass().getName()+"] in sessionkey");
 					}

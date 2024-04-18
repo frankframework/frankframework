@@ -69,7 +69,6 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.statistics.FrankMeterType;
-import org.frankframework.statistics.HasStatistics;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -106,7 +105,7 @@ import lombok.SneakyThrows;
  *
  * @author  Gerrit van Brakel
  */
-public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics {
+public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
@@ -229,8 +228,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 
 			try {
-				if(sender instanceof AdapterAware) {
-					((AdapterAware) sender).setAdapter(getAdapter());
+				if(sender instanceof AdapterAware aware) {
+					aware.setAdapter(getAdapter());
 				}
 				if(StringUtils.isEmpty(sender.getName())) {
 					sender.setName(ClassUtils.nameOf(sender));
@@ -314,8 +313,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				messageLog.setHideMethod(getHideMethod());
 			}
 			messageLog.configure();
-			if (messageLog instanceof HasPhysicalDestination) {
-				String msg = "has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName();
+			if (messageLog instanceof HasPhysicalDestination destination) {
+				String msg = "has messageLog in "+destination.getPhysicalDestinationName();
 				log.debug(msg);
 				if (getAdapter() != null)
 					getAdapter().getMessageKeeper().add(msg);
@@ -336,8 +335,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 		IValidator inputValidator = getInputValidator();
 		IValidator outputValidator = getOutputValidator();
-		if (outputValidator == null && inputValidator instanceof IDualModeValidator) {
-			outputValidator = ((IDualModeValidator) inputValidator).getResponseValidator();
+		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator) {
+			outputValidator = validator.getResponseValidator();
 			setOutputValidator(outputValidator);
 		}
 		if (inputValidator != null) {
@@ -347,8 +346,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			configureElement(outputValidator);
 		}
 		IWrapperPipe inputWrapper = getInputWrapper();
-		if (inputWrapper instanceof DestinationValidator) {
-			DestinationValidator destinationValidator = (DestinationValidator) inputWrapper;
+		if (inputWrapper instanceof DestinationValidator destinationValidator) {
 			destinationValidator.validateSenderDestination(getSender());
 		}
 		if (inputWrapper != null) {
@@ -1113,8 +1111,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		useInputForExtract = b;
 	}
 
-	@Override
 	/** Next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked */
+	@Override
 	public void setHideRegex(String hideRegex) {
 		super.setHideRegex(hideRegex);
 	}

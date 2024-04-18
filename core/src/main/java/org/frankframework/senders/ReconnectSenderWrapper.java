@@ -55,8 +55,8 @@ public class ReconnectSenderWrapper extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		sender.configure();
-		if(sender instanceof AdapterAware) {
-			((AdapterAware) sender).setAdapter(adapter);
+		if(sender instanceof AdapterAware aware) {
+			aware.setAdapter(adapter);
 		}
 
 		super.configure();

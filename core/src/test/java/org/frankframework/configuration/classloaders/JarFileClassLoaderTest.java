@@ -113,7 +113,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		classLoader.setAllowCustomClasses(true);
 		//native classloading
 		Class<?> clazz = Class.forName("org.frankframework.pipes.LargeBlockTester", true, classLoader); //With inner-class
-		clazz.newInstance();
+		clazz.getDeclaredConstructor().newInstance();
 
 		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);

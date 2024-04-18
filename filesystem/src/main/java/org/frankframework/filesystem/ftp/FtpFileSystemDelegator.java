@@ -19,7 +19,6 @@ import org.frankframework.doc.ReferTo;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.filesystem.FtpFileSystem;
 import org.frankframework.filesystem.ftp.FtpSession.FileType;
 import org.frankframework.filesystem.ftp.FtpSession.FtpType;
 import org.frankframework.filesystem.ftp.FtpSession.Prot;

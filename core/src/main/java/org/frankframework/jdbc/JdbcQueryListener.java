@@ -54,11 +54,11 @@ public class JdbcQueryListener extends JdbcListener {
 		}
 	}
 
-	@Override
 	/**
 	 * Query that returns a row to be processed. Must contain a key field and optionally a message field.
 	 * @ff.mandatory
 	 */
+	@Override
 	public void setSelectQuery(String string) {
 		super.setSelectQuery(string);
 	}

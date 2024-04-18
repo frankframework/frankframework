@@ -16,7 +16,6 @@
 package org.frankframework.filesystem.smb;
 
 import org.frankframework.doc.ReferTo;
-import org.frankframework.filesystem.Samba2FileSystem;
 
 public interface Samba2FileSystemDelegator {
 

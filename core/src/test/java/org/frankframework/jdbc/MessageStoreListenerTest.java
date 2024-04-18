@@ -232,8 +232,7 @@ public class MessageStoreListenerTest {
 		RawMessageWrapper<?> ro = browser.browseMessage(storageKey);
 		assertEquals(storageKey, ro.getId());
 		Object o = ro.getRawMessage();
-		if (o instanceof MessageWrapper) {
-			MessageWrapper mw = (MessageWrapper)o;
+		if (o instanceof MessageWrapper mw) {
 			assertEquals(message, mw.getMessage().asString());
 		} else {
 			assertEquals(message, o);

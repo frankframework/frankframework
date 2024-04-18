@@ -51,8 +51,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeline, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		TransactionDefinition txDef;
 		int txTimeout = 0;
-		if(pipe instanceof HasTransactionAttribute) {
-			HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
+		if(pipe instanceof HasTransactionAttribute taPipe) {
 			txDef = taPipe.getTxDef();
 			txTimeout = taPipe.getTransactionTimeout();
 		} else {
@@ -84,8 +83,8 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 
 	/** If the pipe implements HasSender and the sender is TX Capable, it should mark RollBackOnly! */
 	private boolean hasTxCapableSender(IPipe pipe) {
-		if(pipe instanceof HasSender) {
-			ISender sender = ((HasSender) pipe).getSender();
+		if(pipe instanceof HasSender hasSender) {
+			ISender sender = hasSender.getSender();
 			return sender instanceof JdbcFacade || sender instanceof JMSFacade;
 		}
 		return false;

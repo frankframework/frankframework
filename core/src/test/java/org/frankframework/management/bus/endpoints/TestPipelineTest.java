@@ -84,9 +84,11 @@ public class TestPipelineTest extends BusTestBase {
 	@Test
 	public void testCreateContextWithXmlDeclarationAndProcessingInstruction() {
 		TestPipeline tp = new TestPipeline();
-		String input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-				+ "<?ibiscontext key1=whitespace is allowed ?>\n"
-				+ "<test/>";
+		String input = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<?ibiscontext key1=whitespace is allowed ?>
+				<test/>\
+				""";
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);
 		assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1"));
 		assertEquals("whitespace is allowed", context.get("key1"));
@@ -95,9 +97,11 @@ public class TestPipelineTest extends BusTestBase {
 	@Test
 	public void testInvalidXml() {
 		TestPipeline tp = new TestPipeline();
-		String input = "<?ibiscontext key1=whitespace is allowed ?>\n"
-				+ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" //Declaration must be on the first line of the document
-				+ "<test/>";
+		String input = """
+				<?ibiscontext key1=whitespace is allowed ?>
+				<?xml version="1.0" encoding="UTF-8"?>
+				<test/>\
+				""";
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);
 		assertTrue(context.isEmpty());
 	}
@@ -115,10 +119,12 @@ public class TestPipelineTest extends BusTestBase {
 	@Test
 	public void testTwoProcessingInstructions() {
 		TestPipeline tp = new TestPipeline();
-		String input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-				+ "<?ibiscontext key1=whitespace is allowed ?>\n"
-				+ "<?ibiscontext key2=whitespace is allowed ?>\n"
-				+ "<test/>";
+		String input = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<?ibiscontext key1=whitespace is allowed ?>
+				<?ibiscontext key2=whitespace is allowed ?>
+				<test/>\
+				""";
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);
 		assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1", "key2"));
 		assertEquals("whitespace is allowed", context.get("key1"));
@@ -167,8 +173,8 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	private String responseToString(Object payload) throws IOException {
-		if(payload instanceof String) {
-			return (String) payload;
+		if(payload instanceof String string) {
+			return string;
 		}
 
 		return StreamUtil.streamToString((InputStream) payload);

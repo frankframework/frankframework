@@ -43,8 +43,8 @@ public class XaResourceObserver implements XAResource {
 	@Override
 	public boolean isSameRM(XAResource xares) throws XAException {
 		log.debug("isSameRM [{}]", xares);
-		if (xares instanceof XaResourceObserver) {
-			return target.isSameRM(((XaResourceObserver)xares).target);
+		if (xares instanceof XaResourceObserver observer) {
+			return target.isSameRM(observer.target);
 		}
 		return target.isSameRM(xares);
 	}

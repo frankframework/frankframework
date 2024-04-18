@@ -26,7 +26,7 @@ public class NamedThreadFactory implements ThreadFactory {
 	private @Setter int threadPriority = Thread.NORM_PRIORITY;
 	private @Getter @Setter ThreadGroup threadGroup;
 
-	private final AtomicInteger threadCount = new AtomicInteger(0);
+	private final AtomicInteger threadCount = new AtomicInteger();
 
 	@Override
 	public Thread newThread(Runnable runnable) {
@@ -39,8 +39,8 @@ public class NamedThreadFactory implements ThreadFactory {
 
 	private String getThreadName(Runnable runnable) {
 		String threadName = runnable.getClass().getSimpleName();
-		if(runnable instanceof INamedObject) {
-			threadName += "["+((INamedObject) runnable).getName()+"]";
+		if(runnable instanceof INamedObject object) {
+			threadName += "["+object.getName()+"]";
 		}
 		threadName += "-"+this.threadCount.incrementAndGet();
 

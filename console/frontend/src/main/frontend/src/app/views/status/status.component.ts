@@ -1,4 +1,3 @@
-import { ViewportScroller } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -77,10 +76,10 @@ export class StatusComponent implements OnInit, OnDestroy {
   getProcessStateIconColorFn = getProcessStateIconColor;
 
   private _subscriptions = new Subscription();
+  private hasExpendedAdaptersLoaded = false;
 
   constructor(
     private Poller: PollerService,
-    private viewportScroller: ViewportScroller,
     private route: ActivatedRoute,
     private router: Router,
     private statusService: StatusService,
@@ -88,26 +87,17 @@ export class StatusComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.route.fragment.subscribe((fragment) => {
+      if (fragment && fragment != '' && this.adapterName == '') {
+        //If the adapter param hasn't explicitly been set
+        this.adapterName = fragment;
+      }
+    });
     this.route.queryParamMap.subscribe((parameters) => {
-      this.route.fragment.subscribe((fragment) => {
-        const hash = fragment; // let hash = this.$location.hash();
-        this.adapterName = parameters.get('adapter') ?? '';
-        if (this.adapterName == '' && hash && hash != '') {
-          //If the adapter param hasn't explicitly been set
-          this.adapterName = hash;
-        } else if (this.adapterName != '') {
-          /* let routeQueryParams = null;
-          if (filterParam && filterParam != "") {
-            let routeQueryParams = filterParam.length > 16 ? null // if everything is selected then filter doesnt need to be in the url
-              : { filter: filterParam };
-            this.router.navigate([], { relativeTo: this.route, queryParams: routeQueryParams, fragment: hash ?? undefined }); // this.$location.hash(this.adapterName);
-          } */
-          this.router.navigate([], {
-            relativeTo: this.route,
-            fragment: this.adapterName,
-          });
-        }
-      });
+      const adapterName = parameters.get('adapter');
+      if (adapterName && adapterName != '' && this.adapterName == '') {
+        this.adapterName = adapterName;
+      }
 
       const filterParameter = parameters.get('filter');
       if (filterParameter && filterParameter != '') {
@@ -143,30 +133,45 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.alerts = this.appService.alerts;
     this.messageLog = this.appService.messageLog;
     this.adapters = this.appService.adapters;
+
     const configurationsSubscription =
       this.appService.configurations$.subscribe(() =>
         this.check4StubbedConfigs(),
       );
     this._subscriptions.add(configurationsSubscription);
+
     const summariesSubscription = this.appService.summaries$.subscribe(() => {
       this.adapterSummary = this.appService.adapterSummary;
       this.receiverSummary = this.appService.receiverSummary;
       this.messageSummary = this.appService.messageSummary;
     });
     this._subscriptions.add(summariesSubscription);
+
     const alertsSubscription = this.appService.alerts$.subscribe(() => {
       this.alerts = [...this.appService.alerts];
     });
     this._subscriptions.add(alertsSubscription);
+
     const messageLogSubscription = this.appService.messageLog$.subscribe(() => {
       this.messageLog = { ...this.appService.messageLog };
     });
     this._subscriptions.add(messageLogSubscription);
+
     const adaptersSubscription = this.appService.adapters$.subscribe(() => {
       this.adapters = { ...this.appService.adapters };
-      this.updateAdapterShownContent();
+
+      if (this.hasExpendedAdaptersLoaded) {
+        this.updateAdapterShownContent();
+      } else {
+        const adaptersList = Object.values(this.adapters);
+        if (adaptersList.length > 0 && 'messages' in adaptersList[0]) {
+          this.hasExpendedAdaptersLoaded = true;
+          this.updateAdapterShownContent();
+        }
+      }
     });
     this._subscriptions.add(adaptersSubscription);
+    this.updateAdapterShownContent();
   }
 
   ngOnDestroy(): void {
@@ -200,10 +205,12 @@ export class StatusComponent implements OnInit, OnDestroy {
     if (this.searchText.length > 0)
       transitionObject['search'] = this.searchText;
 
+    const fragment = this.adapterName === '' ? undefined : this.adapterName;
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: transitionObject,
-      preserveFragment: true,
+      fragment,
     });
   }
 
@@ -259,34 +266,30 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   startPollingForConfigurationStateChanges(callback?: () => void): void {
-    this.Poller.add(
-      'server/configurations',
-      (data) => {
-        const configurations = data as Configuration[];
-        this.appService.updateConfigurations(configurations);
+    this.Poller.add('server/configurations', (data) => {
+      const configurations = data as Configuration[];
+      this.appService.updateConfigurations(configurations);
 
-        let ready = true;
-        for (const index in configurations) {
-          const config = configurations[index];
-          //When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
-          if (
-            config.state != 'STARTED' &&
-            !(config.state == 'STOPPED' && config.exception != null)
-          ) {
-            ready = false;
-            break;
-          }
+      let ready = true;
+      for (const index in configurations) {
+        const config = configurations[index];
+        //When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
+        if (
+          config.state != 'STARTED' &&
+          !(config.state == 'STOPPED' && config.exception != null)
+        ) {
+          ready = false;
+          break;
         }
-        if (ready) {
-          //Remove poller once all states are STARTED
-          window.setTimeout(() => {
-            this.Poller.remove('server/configurations');
-            if (callback != null && typeof callback == 'function') callback();
-          });
-        }
-      },
-      true,
-    );
+      }
+      if (ready) {
+        //Remove poller once all states are STARTED
+        window.setTimeout(() => {
+          this.Poller.remove('server/configurations');
+          if (callback != null && typeof callback == 'function') callback();
+        });
+      }
+    });
   }
 
   showReferences(): void {
@@ -418,7 +421,6 @@ export class StatusComponent implements OnInit, OnDestroy {
     if (adapter.status == 'stopped') {
       return true;
     } else if (this.adapterName != '' && adapter.name == this.adapterName) {
-      this.viewportScroller.scrollToAnchor(this.adapterName); // this.$anchorScroll();
       return true;
     } else {
       return false;
@@ -427,10 +429,17 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   private updateAdapterShownContent(): void {
     for (const adapter in this.adapters) {
-      if (!this.adapterShowContent.hasOwnProperty(adapter))
+      if (!this.adapterShowContent.hasOwnProperty(adapter)) {
         this.adapterShowContent[adapter] = this.determineShowContent(
           this.adapters[adapter],
         );
+
+        if (this.adapterName === this.adapters[adapter].name) {
+          setTimeout(() => {
+            document.querySelector(`#${this.adapterName}`)?.scrollIntoView();
+          });
+        }
+      }
     }
   }
 }

@@ -156,8 +156,8 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), messageWrapper.getCorrelationId());
 		Object object = context.get("httpRequest"); //TODO dit moet weg
 		if (object != null) {
-			if (object instanceof HttpServletRequest) {
-				ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
+			if (object instanceof HttpServletRequest request) {
+				ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 				context.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
 			} else {
 				log.warn("No securityHandler added for httpRequest [{}]", object::getClass);

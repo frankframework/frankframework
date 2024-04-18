@@ -40,9 +40,11 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
+			String xmlMultipart = """
+					<parts><part type="file" name="document.pdf" \
+					sessionKey="part_file" size="72833" \
+					mimeType="application/pdf"/></parts>\
+					""";
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -70,9 +72,11 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
+			String xmlMultipart = """
+					<parts><part name="dummy" filename="document.pdf" \
+					sessionKey="part_file" size="72833" \
+					mimeType="application/pdf"/></parts>\
+					""";
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -100,9 +104,11 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			String xmlMultipart = "<parts><part name=\"dummy\" "
-					+ "value=\"{json:true}\" size=\"72833\" "
-					+ "mimeType=\"application/json\"/></parts>";
+			String xmlMultipart = """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""";
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -130,9 +136,11 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
+			String xmlMultipart = """
+					<parts><part type="file" name="document.pdf" \
+					sessionKey="part_file" size="72833" \
+					mimeType="application/pdf"/></parts>\
+					""";
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -161,9 +169,11 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
+			String xmlMultipart = """
+					<parts><part name="dummy" filename="document.pdf" \
+					sessionKey="part_file" size="72833" \
+					mimeType="application/pdf"/></parts>\
+					""";
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -192,9 +202,11 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			String xmlMultipart = "<parts><part name=\"dummy\" "
-					+ "value=\"{json:true}\" size=\"72833\" "
-					+ "mimeType=\"application/json\"/></parts>";
+			String xmlMultipart = """
+					<parts><part name="dummy" \
+					value="{json:true}" size="72833" \
+					mimeType="application/json"/></parts>\
+					""";
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 

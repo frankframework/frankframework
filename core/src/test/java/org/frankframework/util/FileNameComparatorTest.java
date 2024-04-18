@@ -104,8 +104,10 @@ public class FileNameComparatorTest {
 		list.add(new File("ibis_xml.log.-1"));
 		Collections.sort(list, new FileNameComparator());
 
-		assertEquals("[ibis_xml.log.1, ibis_xml.log.02, ibis_xml.log.2, ibis_xml.log.05, ibis_xml.log.007, ibis_xml.log.010, "
-				+ "ibis_xml.log.10, ibis_xml.log.12, ibis_xml.log.-01, ibis_xml.log.-1, ibis_xml.log.-10]", list.toString());
+		assertEquals("""
+				[ibis_xml.log.1, ibis_xml.log.02, ibis_xml.log.2, ibis_xml.log.05, ibis_xml.log.007, ibis_xml.log.010, \
+				ibis_xml.log.10, ibis_xml.log.12, ibis_xml.log.-01, ibis_xml.log.-1, ibis_xml.log.-10]\
+				""", list.toString());
 	}
 
 }

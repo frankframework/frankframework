@@ -135,9 +135,15 @@ public class MiscTest {
 	 * Method: parseAge(String value, long defaultValue)
 	 */
 	@Test
-	public void testParseAge() {
+	public void testParseAgeD() {
 		long res = Misc.parseAge("2D", 100);
 		assertEquals(172800000, res);
+	}
+
+	@Test
+	public void testParseAgeS() {
+		long res = Misc.parseAge("2S", 0);
+		assertEquals(2000, res);
 	}
 
 	/**

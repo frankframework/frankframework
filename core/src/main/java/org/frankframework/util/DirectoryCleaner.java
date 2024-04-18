@@ -54,11 +54,8 @@ public class DirectoryCleaner {
 						}
 					}
 				}
-			} else {
-				if (isNotExistWarn()) {
-					log.warn("directory [" + getDirectory()
-							+ "] does not exists or is not a directory");
-				}
+			} else if (isNotExistWarn()) {
+					log.warn("directory [" + getDirectory()	+ "] does not exists or is not a directory");
 			}
 		}
 	}
@@ -66,8 +63,7 @@ public class DirectoryCleaner {
 	private void cleanupFile(File file, long lastModifiedDelta) {
 		if (file.isDirectory()) {
 			if (subdirectories) {
-				log.debug("Cleanup subdirectory [" + file.getAbsolutePath()
-						+ "]");
+				log.debug("Cleanup subdirectory [" + file.getAbsolutePath()	+ "]");
 				File[] files = file.listFiles();
 				if (files != null) {
 					for (int i = 0; i < files.length; i++) {
@@ -79,17 +75,15 @@ public class DirectoryCleaner {
 			if (deleteEmptySubdirectories) {
 				if (file.list().length == 0) {
 					if (file.delete()) {
-						log.info("deleted empty subdirectory ["
-								+ file.getAbsolutePath() + "]");
+						log.info("deleted empty subdirectory [" + file.getAbsolutePath() + "]");
 					} else {
-						log.warn("could not delete empty subdirectory ["
-								+ file.getAbsolutePath() + "]");
+						log.warn("could not delete empty subdirectory [" + file.getAbsolutePath() + "]");
 					}
 				}
 			}
 		} else {
 			if (file.isFile()) {
-				if (FileUtils.getLastModifiedDelta(file) > lastModifiedDelta) {
+				if (getLastModifiedDelta(file) > lastModifiedDelta) {
 					String fileStr = "file [" + file.getAbsolutePath()
 							+ "] with age [" + Misc.getAge(file.lastModified())
 							+ "]";
@@ -103,6 +97,10 @@ public class DirectoryCleaner {
 		}
 	}
 
+	private static long getLastModifiedDelta(File file) {
+		return System.currentTimeMillis() - file.lastModified();
+	}
+
 	/** directory to be cleaned up */
 	public void setDirectory(String directory) {
 		this.directory = directory;
@@ -113,7 +111,8 @@ public class DirectoryCleaner {
 	}
 
 	/**
-	 * time (with suffix 'd', 'h', 'm' or 's' in milliseconds) that must have passed at least before a file will be deleted
+	 * Minimum amount of time (with suffix 'd', 'h', 'm' or 's') that must have passed before a file will be deleted.
+	 * You may only use one suffix!
 	 * @ff.default 30d
 	 */
 	public void setRetention(String retention) {

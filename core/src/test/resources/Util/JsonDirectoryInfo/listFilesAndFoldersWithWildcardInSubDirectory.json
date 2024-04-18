@@ -1,0 +1,25 @@
+{
+	"count": 2,
+	"list": [
+		{
+			"name": "..",
+			"path": "IGNORE/core/target/test-classes/ClassLoader",
+			"lastModified": 1712751022904,
+			"type": "directory"
+		},
+		{
+			"name": "ClassLoader",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoader",
+			"lastModified": 1712751022891,
+			"type": "directory"
+		},
+		{
+			"name": "Config",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Config",
+			"lastModified": 1712751022894,
+			"type": "directory"
+		}
+	],
+	"directory": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
+	"wildcard": "NonDefaultConfiguration.xml"
+}

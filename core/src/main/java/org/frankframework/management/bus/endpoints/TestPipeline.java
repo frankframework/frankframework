@@ -209,17 +209,19 @@ public class TestPipeline extends BusEndpointBase {
 
 	private String findProcessingInstructionsXslt() {
 		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-			+ "<xsl:output method=\"text\"/>"
-			+ "<xsl:template match=\"/\">"
-			+ "<xsl:for-each select=\"processing-instruction('ibiscontext')\">"
-			+ "<xsl:variable name=\"ic\" select=\"normalize-space(.)\"/>"
-			+ "<xsl:text>{</xsl:text>"
-			+ "<xsl:value-of select=\"string-length($ic)\"/>"
-			+ "<xsl:text>}</xsl:text>"
-			+ "<xsl:value-of select=\"$ic\"/>"
-			+ "</xsl:for-each>"
-			+ "</xsl:template>"
-			+ "</xsl:stylesheet>";
+		"""
+		<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">\
+		<xsl:output method="text"/>\
+		<xsl:template match="/">\
+		<xsl:for-each select="processing-instruction('ibiscontext')">\
+		<xsl:variable name="ic" select="normalize-space(.)"/>\
+		<xsl:text>{</xsl:text>\
+		<xsl:value-of select="string-length($ic)"/>\
+		<xsl:text>}</xsl:text>\
+		<xsl:value-of select="$ic"/>\
+		</xsl:for-each>\
+		</xsl:template>\
+		</xsl:stylesheet>\
+		""";
 	}
 }

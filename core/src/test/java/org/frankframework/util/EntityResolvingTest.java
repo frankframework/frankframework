@@ -118,7 +118,7 @@ public class EntityResolvingTest {
 //      return instance.get
 //		return result;
 
-		AbstractXmlValidator instance = impl.newInstance();
+		AbstractXmlValidator instance = impl.getDeclaredConstructor().newInstance();
 		instance.setSchemasProvider(new DummySchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
 		instance.setThrowException(true);
 		instance.setFullSchemaChecking(true);

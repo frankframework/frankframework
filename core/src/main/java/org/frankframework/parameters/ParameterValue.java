@@ -150,8 +150,7 @@ public class ParameterValue {
 	}
 
 	private String valueAsString() {
-		if (value instanceof Message) {
-			Message message = (Message)value;
+		if (value instanceof Message message) {
 			try {
 				return message.asString();
 			} catch (IOException e) {

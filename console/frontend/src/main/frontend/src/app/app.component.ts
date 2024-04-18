@@ -13,8 +13,10 @@ import {
   AdapterMessage,
   AppConstants,
   AppService,
+  ConsoleState,
   MessageLog,
   ServerInfo,
+  appInitState,
 } from './app.service';
 import {
   ActivatedRoute,
@@ -59,13 +61,15 @@ export class AppComponent implements OnInit, OnDestroy {
   serverTime = '';
   startupError: string | null = null;
   userName?: string;
-  appConstants: AppConstants;
   routeData: Data = {};
   routeQueryParams: ParamMap = convertToParamMap({});
   isLoginView: boolean = false;
 
+  private appConstants: AppConstants;
+  private consoleState: ConsoleState;
   private urlHash$!: Observable<string | null>;
   private _subscriptions = new Subscription();
+  private serializedRawAdapterData: Record<string, string> = {};
 
   constructor(
     private router: Router,
@@ -87,6 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
     @Inject(LOCALE_ID) private locale: string,
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
+    this.consoleState = this.appService.CONSOLE_STATE;
   }
 
   ngOnInit(): void {
@@ -135,15 +140,7 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
 
-    /* state controller */
     this.authService.loggedin(); //Check if the user is logged in.
-
-    $('.main').show();
-    $('.loading').remove();
-    /* state controller end */
-
-    Pace.on('done', () => this.initializeFrankConsole());
-    window.setTimeout(() => this.initializeFrankConsole(), 250);
 
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
       this.pollerService
@@ -168,13 +165,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this._subscriptions.add(idleStartSubscription);
 
     const idleWarnSubscription = this.idle.onTimeoutWarning.subscribe(
-      function (timeRemaining) {
+      (timeRemaining) => {
         let minutes = Math.floor(timeRemaining / 60);
         let seconds = Math.round(timeRemaining % 60);
         if (minutes < 10) minutes = +'0' + minutes;
         if (seconds < 10) seconds = +'0' + seconds;
-        const elm = $('.swal2-container').find('.idleTimer');
-        elm.text(`${minutes}:${seconds}`);
+        const elm = document.querySelector('.swal2-container .idleTimer');
+        if (elm) elm.textContent = `${minutes}:${seconds}`;
       },
     );
     this._subscriptions.add(idleWarnSubscription);
@@ -190,14 +187,17 @@ export class AppComponent implements OnInit, OnDestroy {
     this._subscriptions.add(idleTimeoutSubscription);
 
     const idleEndSubscription = this.idle.onIdleEnd.subscribe(() => {
-      const elm = $('.swal2-container').find('.swal2-close');
-      elm.click();
+      const element = document.querySelector<HTMLElement>(
+        '.swal2-container .swal2-close',
+      );
+      if (element) element.click();
 
       this.pollerService
         .getAll()
         .changeInterval(this.appConstants['console.pollerInterval'] as number);
     });
     this._subscriptions.add(idleEndSubscription);
+    this.initializeFrankConsole();
   }
 
   ngOnDestroy(): void {
@@ -205,33 +205,27 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeFrankConsole(): void {
-    if (this.appConstants['init'] === -1) {
-      this.appConstants['init'] = 0;
+    if (this.consoleState.init === appInitState.UN_INIT) {
+      this.consoleState.init = appInitState.PRE_INIT;
       this.debugService.log('Initializing Frank!Console');
-    } else if (this.appConstants['init'] === 0) {
+    } else if (this.consoleState.init === appInitState.PRE_INIT) {
       this.debugService.log('Cancelling 2nd initialization attempt');
       Pace.stop();
       return;
     } else {
-      this.debugService.info(
-        'Loading Frank!Console',
-        this.appConstants['init'],
-      );
+      this.debugService.info('Loading Frank!Console', this.consoleState.init);
     }
 
-    if (this.appConstants['init'] === 0) {
-      //Only continue if the init state was -1
-      this.appConstants['init'] = 1;
+    if (this.consoleState.init === appInitState.PRE_INIT) {
+      this.consoleState.init = appInitState.INIT;
       this.appService.getServerInfo().subscribe({
         next: (data) => {
           this.serverInfo = data;
 
-          this.appConstants['init'] = 2;
+          this.consoleState.init = appInitState.POST_INIT;
           if (!this.router.url.includes('login')) {
             this.idle.watch();
-            $('body').removeClass('gray-bg');
-            $('.main').show();
-            $('.loading').hide();
+            this.renderer.removeClass(document.body, 'gray-bg');
           }
 
           this.appService.dtapStage = data['dtap.stage'];
@@ -244,7 +238,7 @@ export class AppComponent implements OnInit, OnDestroy {
             new Date(data.serverTime).toUTCString(),
           );
           const localTime = Date.parse(new Date().toUTCString());
-          this.appConstants['timeOffset'] = serverTime - localTime;
+          this.consoleState.timeOffset = serverTime - localTime;
           // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
           this.appConstants['timezoneOffset'] = 0;
           //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
@@ -252,8 +246,7 @@ export class AppComponent implements OnInit, OnDestroy {
           const updateTime = (): void => {
             const serverDate = new Date();
             serverDate.setTime(
-              serverDate.getTime() -
-                (this.appConstants['timeOffset'] as number),
+              serverDate.getTime() - this.consoleState.timeOffset,
             );
             this.serverTime = formatDate(
               serverDate,
@@ -265,9 +258,12 @@ export class AppComponent implements OnInit, OnDestroy {
           updateTime();
 
           this.appService.updateInstanceName(data.instance.name);
-          $('.iaf-info').html(
-            `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`,
-          );
+
+          const iafInfoElement =
+            document.querySelector<HTMLElement>('.iaf-info');
+          if (iafInfoElement)
+            iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
+
           this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
           if (this.appService.dtapStage == 'LOC') {
@@ -286,14 +282,15 @@ export class AppComponent implements OnInit, OnDestroy {
           this.initializeWarnings();
         },
         error: (error: HttpErrorResponse) => {
-          if (error.status == 500) {
+          // HTTP 5xx error
+          if (error.status.toString().startsWith('5')) {
             this.router.navigate(['error']);
           }
         },
       });
       this.appService.getEnvironmentVariables().subscribe((data) => {
         if (data['Application Constants']) {
-          this.appConstants = $.extend(
+          this.appConstants = Object.assign(
             this.appConstants,
             data['Application Constants']['All'],
           ); //make FF!Application Constants default
@@ -371,6 +368,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeWarnings(): void {
+    const startupErrorSubscription = this.appService.startupError$.subscribe(
+      () => {
+        this.startupError = this.appService.startupError;
+      },
+    );
+    this._subscriptions.add(startupErrorSubscription);
+
     this.pollerService.add(
       'server/warnings',
       (data) => {
@@ -415,136 +419,135 @@ export class AppComponent implements OnInit, OnDestroy {
         }
 
         this.appService.updateMessageLog(configurations);
-
-        const startupErrorSubscription =
-          this.appService.startupError$.subscribe(() => {
-            this.startupError = this.appService.startupError;
-          });
-        this._subscriptions.add(startupErrorSubscription);
       },
-      true,
       60_000,
     );
 
-    const raw_adapter_data: Record<string, string> = {};
-    const pollerCallback = (allAdapters: Record<string, Adapter>): void => {
-      let reloadedAdapters = false;
+    this.initializeAdapters();
+  }
 
-      for (const index in raw_adapter_data) {
-        //Check if any old adapters should be removed
-        if (!allAdapters[index]) {
-          delete raw_adapter_data[index];
-          delete this.appService.adapters[index];
-          this.debugService.log(`removed adapter [${index}]`);
-        }
-      }
-      for (const adapterName in allAdapters) {
-        //Add new adapter information
-        const adapter = allAdapters[adapterName];
-
-        if (raw_adapter_data[adapter.name] != JSON.stringify(adapter)) {
-          raw_adapter_data[adapter.name] = JSON.stringify(adapter);
-
-          adapter.status = 'started';
-
-          for (const x in adapter.receivers) {
-            const adapterReceiver = adapter.receivers[+x];
-            if (adapterReceiver.state != 'started') adapter.status = 'warning';
-
-            if (adapterReceiver.transactionalStores) {
-              const store = adapterReceiver.transactionalStores['ERROR'];
-              if (store && store.numberOfMessages > 0) {
-                adapter.status = 'warning';
-              }
-            }
-          }
-          if (adapter.receiverReachedMaxExceptions) {
-            adapter.status = 'warning';
-          }
-          adapter.hasSender = false;
-          adapter.sendersMessageLogCount = 0;
-          adapter.senderTransactionalStorageMessageCount = 0;
-          for (const x in adapter.pipes) {
-            const pipe = adapter.pipes[+x];
-            if (pipe.sender) {
-              adapter.hasSender = true;
-              if (pipe.hasMessageLog) {
-                const count = Number.parseInt(pipe.messageLogCount ?? '');
-                if (!Number.isNaN(count)) {
-                  if (pipe.isSenderTransactionalStorage) {
-                    adapter.senderTransactionalStorageMessageCount += count;
-                  } else {
-                    adapter.sendersMessageLogCount += count;
-                  }
-                }
-              }
-            }
-          }
-          /*					//If last message is WARN or ERROR change adapter status to warning.
-                    if(adapter.messages.length > 0 && adapter.status != 'stopped') {
-                      let message = adapter.messages[adapter.messages.length -1];
-                      if(message.level != "INFO")
-                        adapter.status = 'warning';
-                    }
-          */
-          if (adapter.state != 'started') {
-            adapter.status = 'stopped';
-          }
-
-          if (!reloadedAdapters)
-            reloadedAdapters = this.hasAdapterReloaded(adapter);
-
-          this.appService.adapters[`${adapter.configuration}/${adapter.name}`] =
-            adapter;
-
-          const selectedConfiguration =
-            this.routeQueryParams.get('configuration');
-          this.appService.updateAdapterSummary(
-            selectedConfiguration ?? 'All',
-            false,
-          );
-          this.updateAdapterNotifications(adapter);
-        }
-      }
-      if (reloadedAdapters)
-        this.toastService.success(
-          'Reloaded',
-          'Adapter(s) have successfully been reloaded!',
-          { timeout: 3000 },
-        );
-      this.appService.updateAdapters(this.appService.adapters);
-    };
-
+  initializeAdapters(): void {
     //Get base information first, then update it with more details
     this.appService
       .getAdapters()
       .pipe(first())
       .subscribe((data: Record<string, Adapter>) => {
-        pollerCallback(data);
+        this.finalizeStartup(data);
       });
-    window.setTimeout(() => {
+  }
+
+  pollerCallback(allAdapters: Record<string, Adapter>): void {
+    let reloadedAdapters = false;
+    const updatedAdapters: typeof this.appService.adapters = {};
+    const deletedAdapters: string[] = [];
+
+    for (const index in this.serializedRawAdapterData) {
+      //Check if any old adapters should be removed
+      if (!allAdapters[index]) {
+        deletedAdapters.push(index);
+        delete this.serializedRawAdapterData[index];
+        this.debugService.log(`removing adapter [${index}]`);
+      }
+    }
+
+    for (const adapterName in allAdapters) {
+      //Add new adapter information
+      const adapter = allAdapters[adapterName];
+
+      const serializedAdapter = JSON.stringify(adapter);
+      if (this.serializedRawAdapterData[adapter.name] != serializedAdapter) {
+        this.serializedRawAdapterData[adapter.name] = serializedAdapter;
+
+        adapter.status = 'started';
+
+        for (const x in adapter.receivers) {
+          const adapterReceiver = adapter.receivers[+x];
+          if (adapterReceiver.state != 'started') adapter.status = 'warning';
+
+          if (adapterReceiver.transactionalStores) {
+            const store = adapterReceiver.transactionalStores['ERROR'];
+            if (store && store.numberOfMessages > 0) {
+              adapter.status = 'warning';
+            }
+          }
+        }
+        if (adapter.receiverReachedMaxExceptions) {
+          adapter.status = 'warning';
+        }
+        adapter.hasSender = false;
+        adapter.sendersMessageLogCount = 0;
+        adapter.senderTransactionalStorageMessageCount = 0;
+        for (const x in adapter.pipes) {
+          const pipe = adapter.pipes[+x];
+          if (pipe.sender) {
+            adapter.hasSender = true;
+            if (pipe.hasMessageLog) {
+              const count = Number.parseInt(pipe.messageLogCount ?? '');
+              if (!Number.isNaN(count)) {
+                if (pipe.isSenderTransactionalStorage) {
+                  adapter.senderTransactionalStorageMessageCount += count;
+                } else {
+                  adapter.sendersMessageLogCount += count;
+                }
+              }
+            }
+          }
+        }
+        /*					//If last message is WARN or ERROR change adapter status to warning.
+                  if(adapter.messages.length > 0 && adapter.status != 'stopped') {
+                    let message = adapter.messages[adapter.messages.length -1];
+                    if(message.level != "INFO")
+                      adapter.status = 'warning';
+                  }
+        */
+        if (adapter.state != 'started') {
+          adapter.status = 'stopped';
+        }
+
+        if (!reloadedAdapters)
+          reloadedAdapters = this.hasAdapterReloaded(adapter);
+
+        updatedAdapters[`${adapter.configuration}/${adapter.name}`] = adapter;
+
+        const selectedConfiguration =
+          this.routeQueryParams.get('configuration');
+        this.appService.updateAdapterSummary(
+          selectedConfiguration ?? 'All',
+          false,
+        );
+        this.updateAdapterNotifications(adapter);
+      }
+    }
+
+    const oldAdapters = { ...this.appService.adapters };
+    for (const index of deletedAdapters) {
+      delete oldAdapters[index];
+    }
+
+    this.appService.updateAdapters({ ...oldAdapters, ...updatedAdapters });
+
+    if (reloadedAdapters)
+      this.toastService.success(
+        'Reloaded',
+        'Adapter(s) have successfully been reloaded!',
+        { timeout: 3000 },
+      );
+  }
+
+  finalizeStartup(data: Record<string, Adapter>): void {
+    this.pollerCallback(data);
+
+    setTimeout(() => {
+      this.appService.updateLoading(false);
+      this.loading = false;
+
       this.pollerService.add(
         'adapters?expanded=all',
         (data: unknown) => {
-          pollerCallback(data as Record<string, Adapter>);
+          this.pollerCallback(data as Record<string, Adapter>);
         },
-        true,
+        undefined,
       );
-      this.appService.updateLoading(false);
-      this.loading = false;
-      this.scrollToAdapter();
-    }, 3000);
-  }
-
-  scrollToAdapter(): void {
-    this.urlHash$.subscribe((hash) => {
-      if (this.router.url.startsWith('/status') && hash && hash !== '') {
-        /* let el = $("#" + hash);
-        if (el && el[0]) {
-          el[0].scrollIntoView();
-        } */
-        this.viewportScroller.scrollToAnchor(hash);
-      }
     });
   }
 
@@ -591,9 +594,11 @@ export class AppComponent implements OnInit, OnDestroy {
   sendFeedback(rating?: number): void {
     if (!this.appConstants['console.feedbackURL']) return;
 
-    $('.rating i').each(function (index, element) {
-      $(element).addClass('fa-star-o').removeClass('fa-star');
-    });
+    for (const element of document.querySelectorAll('.rating i')) {
+      this.renderer.addClass(element, 'fa-star-o');
+      this.renderer.removeClass(element, 'fa-star');
+    }
+
     const modalReference = this.modalService.open(FeedbackModalComponent);
     modalReference.componentInstance.rating = rating;
   }

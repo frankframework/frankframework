@@ -191,7 +191,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		JsonArrayBuilder hourslyStatistics = Json.createArrayBuilder();
 		for (int i=0; i<numOfMessagesStartProcessingByHour.length; i++) {
 			JsonObjectBuilder item = Json.createObjectBuilder();
-			item.add("time", String.format("%02d:00", i));
+			item.add("time", "%02d:00".formatted(i));
 			item.add("count", numOfMessagesStartProcessingByHour[i]);
 			hourslyStatistics.add(item);
 		}
@@ -262,8 +262,8 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 
 		for(IPipe pipe : pipeline.getPipes()) {
 			potentialMeterNames.add(pipe.getName());
-			if(pipe instanceof MessageSendingPipe) {
-				potentialMeterNames.addAll(getSendingPipeMeters((MessageSendingPipe) pipe));
+			if(pipe instanceof MessageSendingPipe sendingPipe) {
+				potentialMeterNames.addAll(getSendingPipeMeters(sendingPipe));
 			}
 		}
 		return potentialMeterNames;

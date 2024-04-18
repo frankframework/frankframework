@@ -18,13 +18,13 @@ package org.frankframework.pipes;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -45,7 +45,6 @@ import org.frankframework.stream.SaxTimeoutException;
 import org.frankframework.stream.ThreadConnector;
 import org.frankframework.stream.ThreadLifeCycleEventListener;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerErrorListener;
 import org.frankframework.util.TransformerPool;
@@ -63,9 +62,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -343,12 +339,12 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		result.inputHandler = new ExceptionCatchingFilter(result.inputHandler) {
 			@Override
 			protected void handleException(Exception e) throws SAXException {
-				if (e instanceof SaxTimeoutException) {
-					throw (SaxTimeoutException)e;
+				if (e instanceof SaxTimeoutException exception) {
+					throw exception;
 				}
 				if (result.itemHandler.isStopRequested()) {
-					if (e instanceof SaxAbortException) {
-						throw (SaxAbortException)e;
+					if (e instanceof SaxAbortException exception) {
+						throw exception;
 					}
 					throw new SaxAbortException(e);
 				}
@@ -392,8 +388,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 		HandlerRecord handlerRecord = new HandlerRecord();
-		Map<AutoCloseable,String> closeables = new LinkedHashMap<>();
-		SenderException mainException = null;
 		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
 				createHandler(handlerRecord, threadConnector, input, session, callback);
@@ -421,23 +415,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 						log.warn("Exception in endDocument()",e2);
 					}
 				}
-			}
-		} finally {
-			for(Entry<AutoCloseable,String> entry:closeables.entrySet()) {
-				String label = entry.getValue();
-				try (AutoCloseable resource = entry.getKey()) {
-					log.debug("Closing resource {}", label);
-				} catch (Exception e) {
-					if (mainException==null) {
-						mainException = new SenderException("Could not close resource "+label, e);
-					} else {
-						log.warn("caught secondary exception closing resource "+label+": ("+ClassUtils.nameOf(e)+") "+e.getMessage());
-						mainException.addSuppressed(e);
-					}
-				}
-			}
-			if (mainException!=null) {
-				throw mainException;
 			}
 		}
 		return handlerRecord.itemHandler.stopReason;

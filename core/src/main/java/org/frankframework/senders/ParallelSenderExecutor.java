@@ -15,61 +15,57 @@
 */
 package org.frankframework.senders;
 
-import org.apache.logging.log4j.Logger;
-import org.frankframework.core.ISender;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.RequestReplyExecutor;
-import org.frankframework.stream.Message;
-import org.frankframework.util.Guard;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.Semaphore;
+import java.util.concurrent.Phaser;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import org.frankframework.core.ISender;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.RequestReplyExecutor;
+import org.frankframework.receivers.ResourceLimiter;
+import org.frankframework.stream.Message;
 
+@Log4j2
 public class ParallelSenderExecutor extends RequestReplyExecutor {
-	private Logger log = LogUtil.getLogger(this);
-	private ISender sender;
-	@Getter private PipeLineSession session;
-	private Semaphore semaphore; // supports to limit the number of threads processing in parallel, may be null
-	private Guard guard;         // supports to wait for all threads to have ended
-	private DistributionSummary summary;
+	private final ISender sender;
+	@Getter private final PipeLineSession session;
+	@Setter private ResourceLimiter threadLimiter; // support limiting the number of threads processing in parallel
+	@Setter private Phaser guard; // support waiting for all threads to end
+	private final DistributionSummary summary;
 	private @Getter long duration;
 
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, DistributionSummary sk) {
-		this(sender, message, session, null, guard, sk);
-	}
-
-	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Guard guard, DistributionSummary sk) {
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, DistributionSummary summary) {
 		super();
-		this.sender=sender;
-		request=message;
-		this.session=session;
-		this.guard=guard;
-		this.semaphore=semaphore;
-		this.summary=sk;
+		this.sender = sender;
+		request = message;
+		this.session = session;
+		this.summary = summary;
 	}
 
 	@Override
 	public void run() {
 		try {
-			long t1 = System.currentTimeMillis();
+			long startTime = System.currentTimeMillis();
 			try {
-				reply = sender.sendMessage(request,session);
+				reply = sender.sendMessage(request, session);
 				reply.getResult().preserve(); // consume the message immediately, to release any resources (like connections) associated with the sender execution
 			} catch (Throwable tr) {
 				throwable = tr;
-				log.warn("SenderExecutor caught exception",tr);
+				log.warn("SenderExecutor caught exception", tr);
 			}
-			long t2 = System.currentTimeMillis();
-			duration = t2-t1;
+			long endTime = System.currentTimeMillis();
+			duration = endTime - startTime;
 			summary.record(duration);
 		} finally {
-			if (semaphore!=null) {
-				semaphore.release();
+			if (threadLimiter != null) {
+				threadLimiter.release();
+				log.debug("Released this limiter, available permits: {}", threadLimiter.availablePermits());
 			}
-			if(guard != null) {
-				guard.releaseResource();
+			if (guard != null) {
+				guard.arrive();
+				log.debug("Arrived sender, remaining senders: {}", guard.getUnarrivedParties());
 			}
 		}
 	}

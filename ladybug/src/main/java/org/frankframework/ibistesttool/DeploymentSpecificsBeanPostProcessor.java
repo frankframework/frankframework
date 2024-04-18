@@ -64,10 +64,9 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 				applicationEventPublisher.publishEvent(event);
 			}
 		}
-		if (bean instanceof DatabaseStorage) {
+		if (bean instanceof DatabaseStorage databaseStorage) {
 			String maxStorageSize = APP_CONSTANTS.getProperty("ibistesttool.maxStorageSize");
 			if (maxStorageSize != null) {
-				DatabaseStorage databaseStorage = (DatabaseStorage)bean;
 				long maxStorageSizeLong = OptionConverter.toFileSize(maxStorageSize, databaseStorage.getMaxStorageSize());
 				databaseStorage.setMaxStorageSize(maxStorageSizeLong);
 			}
@@ -92,20 +91,18 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 				loggingStorage.setFreeSpaceMinimum(freeSpaceMinimumLong);
 			}
 		}
-		if (bean instanceof Views) {
+		if (bean instanceof Views views) {
 			String defaultView = APP_CONSTANTS.getProperty("ibistesttool.defaultView");
 			if (defaultView != null) {
-				Views views = (Views)bean;
 				View view = views.setDefaultView(defaultView);
 				if (view == null) {
 					throw new BeanCreationException("Default view '" + defaultView + "' not found");
 				}
 			}
 		}
-		if (bean instanceof SpringLiquibase) {
+		if (bean instanceof SpringLiquibase springLiquibase) {
 			boolean active = APP_CONSTANTS.getBoolean("ladybug.jdbc.migrator.active",
 					APP_CONSTANTS.getBoolean("jdbc.migrator.active", false));
-			SpringLiquibase springLiquibase = (SpringLiquibase)bean;
 			springLiquibase.setShouldRun(active);
 		}
 		return bean;

@@ -25,15 +25,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
-
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
@@ -42,7 +40,6 @@ import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -94,8 +91,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	protected BufferedReader getReader(String streamId, Message input, PipeLineSession session) throws PipeRunException {
 		try {
 			Reader reader = getReaderFactory().getReader(getInputStream(streamId, input, session), getCharset(), streamId, session);
-			if (reader instanceof BufferedReader) {
-				return (BufferedReader)reader;
+			if (reader instanceof BufferedReader bufferedReader) {
+				return bufferedReader;
 			}
 			return new BufferedReader(reader);
 		} catch (SenderException e) {
@@ -370,8 +367,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				} else {
 					if (log.isDebugEnabled()) log.debug("closing block ["+blockName+"] for resultHandler ["+handler.getName()+"] due to "+reason);
 					if (isStoreOriginalBlock()) {
-						if (handler instanceof ResultBlock2Sender) {
-							if (((ResultBlock2Sender)handler).getLevel(streamId)==1) {
+						if (handler instanceof ResultBlock2Sender sender) {
+							if (sender.getLevel(streamId)==1) {
 								session.put(originalBlockKey, blocks.remove(originalBlockKey));
 							}
 						}
@@ -541,7 +538,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				results.add(result);
 			}
 		}
-		return FileUtils.getNamesFromList(results, ';');
+		return String.join(";" , results);
 	}
 
 	/**

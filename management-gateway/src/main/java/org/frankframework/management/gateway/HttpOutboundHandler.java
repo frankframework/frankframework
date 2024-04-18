@@ -105,7 +105,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 
 		@Override
 		public HttpMethod getValue(EvaluationContext context, Object rootObject) throws EvaluationException {
-			if(rootObject instanceof Message<?> && "NONE".equals(((Message<?>) rootObject).getPayload())) {
+			if(rootObject instanceof Message<?> message && "NONE".equals(message.getPayload())) {
 				return HttpMethod.GET;
 			}
 			return super.getValue(context, rootObject);
@@ -128,11 +128,11 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	public Message handleRequestMessage(Message<?> requestMessage) {
 		Object response = super.handleRequestMessage(requestMessage);
 
-		if(response instanceof Message) {
-			return (Message) response;
+		if(response instanceof Message message) {
+			return message;
 		}
-		if(response instanceof MessageBuilder) {
-			return ((MessageBuilder) response).build();
+		if(response instanceof MessageBuilder builder) {
+			return builder.build();
 		}
 		throw new BusException("unknown response type ["+(response != null ? response.getClass().getCanonicalName() : "null")+"]");
 	}

@@ -31,10 +31,12 @@
 	  org.frankframework.processors.TransactionAttributePipeProcessor.processPipe(TransactionAttributePipeProcessor.java:59)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.processPipe(PipeProcessorBase.java:49)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.lambda$0(PipeProcessorBase.java:49)&#xD;
-	  at org.frankframework.processors.CheckSemaphorePipeProcessor.processPipe(CheckSemaphorePipeProcessor.java:59)&#xD;
+	  at
+	  org.frankframework.processors.LimitingParallelExecutionPipeProcessor.processPipe(LimitingParallelExecutionPipeProcessor.java:59)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.processPipe(PipeProcessorBase.java:49)&#xD;
-	  at org.frankframework.processors.CheckSemaphorePipeProcessor.processPipe(CheckSemaphorePipeProcessor.java:67)&#xD;
-	  at org.frankframework.processors.CheckSemaphorePipeProcessor$$FastClassBySpringCGLIB$$3159a29c.invoke(&lt;generated&gt;)&#xD;
+	  at
+	  org.frankframework.processors.LimitingParallelExecutionPipeProcessor.processPipe(LimitingParallelExecutionPipeProcessor.java:67)&#xD;
+	  at org.frankframework.processors.LimitingParallelExecutionPipeProcessor$$FastClassBySpringCGLIB$$3159a29c.invoke(&lt;generated&gt;)&#xD;
 	  at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)&#xD;
 	  at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:779)&#xD;
 	  at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)&#xD;
@@ -55,7 +57,7 @@
 	  at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186)&#xD;
 	  at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:750)&#xD;
 	  at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:692)&#xD;
-	  at org.frankframework.processors.CheckSemaphorePipeProcessor$$EnhancerBySpringCGLIB$$bbba3059.processPipe(&lt;generated&gt;)&#xD;
+	  at org.frankframework.processors.LimitingParallelExecutionPipeProcessor$$EnhancerBySpringCGLIB$$bbba3059.processPipe(&lt;generated&gt;)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.lambda$0(PipeProcessorBase.java:49)&#xD;
 	  at org.frankframework.processors.InputOutputPipeProcessor.processPipe(InputOutputPipeProcessor.java:89)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.processPipe(PipeProcessorBase.java:49)&#xD;
@@ -117,7 +119,7 @@
 	  at
 	  org.frankframework.processors.TransactionAttributePipeLineProcessor.processPipeLine(TransactionAttributePipeLineProcessor.java:47)&#xD;
 	  at
-	  org.frankframework.processors.CheckSemaphorePipeLineProcessor.processPipeLine(CheckSemaphorePipeLineProcessor.java:58)&#xD;
+	  org.frankframework.processors.LimitingParallelExecutionPipeLineProcessor.processPipeLine(LimitingParallelExecutionPipeLineProcessor.java:58)&#xD;
 	  at org.frankframework.processors.CachePipeLineProcessor.processPipeLine(CachePipeLineProcessor.java:39)&#xD;
 	  at
 	  org.frankframework.processors.InputOutputPipeLineProcessor.processPipeLine(InputOutputPipeLineProcessor.java:44)&#xD;
@@ -255,10 +257,12 @@
 	  org.frankframework.processors.TransactionAttributePipeProcessor.processPipe(TransactionAttributePipeProcessor.java:59)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.processPipe(PipeProcessorBase.java:49)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.lambda$0(PipeProcessorBase.java:49)&#xD;
-	  at org.frankframework.processors.CheckSemaphorePipeProcessor.processPipe(CheckSemaphorePipeProcessor.java:59)&#xD;
+	  at
+	  org.frankframework.processors.LimitingParallelExecutionPipeProcessor.processPipe(LimitingParallelExecutionPipeProcessor.java:59)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.processPipe(PipeProcessorBase.java:49)&#xD;
-	  at org.frankframework.processors.CheckSemaphorePipeProcessor.processPipe(CheckSemaphorePipeProcessor.java:67)&#xD;
-	  at org.frankframework.processors.CheckSemaphorePipeProcessor$$FastClassBySpringCGLIB$$3159a29c.invoke(&lt;generated&gt;)&#xD;
+	  at
+	  org.frankframework.processors.LimitingParallelExecutionPipeProcessor.processPipe(LimitingParallelExecutionPipeProcessor.java:67)&#xD;
+	  at org.frankframework.processors.LimitingParallelExecutionPipeProcessor$$FastClassBySpringCGLIB$$3159a29c.invoke(&lt;generated&gt;)&#xD;
 	  at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)&#xD;
 	  at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:779)&#xD;
 	  at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)&#xD;
@@ -279,7 +283,7 @@
 	  at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186)&#xD;
 	  at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:750)&#xD;
 	  at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:692)&#xD;
-	  at org.frankframework.processors.CheckSemaphorePipeProcessor$$EnhancerBySpringCGLIB$$bbba3059.processPipe(&lt;generated&gt;)&#xD;
+	  at org.frankframework.processors.LimitingParallelExecutionPipeProcessor$$EnhancerBySpringCGLIB$$bbba3059.processPipe(&lt;generated&gt;)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.lambda$0(PipeProcessorBase.java:49)&#xD;
 	  at org.frankframework.processors.InputOutputPipeProcessor.processPipe(InputOutputPipeProcessor.java:89)&#xD;
 	  at org.frankframework.processors.PipeProcessorBase.processPipe(PipeProcessorBase.java:49)&#xD;
@@ -341,7 +345,7 @@
 	  at
 	  org.frankframework.processors.TransactionAttributePipeLineProcessor.processPipeLine(TransactionAttributePipeLineProcessor.java:47)&#xD;
 	  at
-	  org.frankframework.processors.CheckSemaphorePipeLineProcessor.processPipeLine(CheckSemaphorePipeLineProcessor.java:58)&#xD;
+	  org.frankframework.processors.LimitingParallelExecutionPipeLineProcessor.processPipeLine(LimitingParallelExecutionPipeLineProcessor.java:58)&#xD;
 	  at org.frankframework.processors.CachePipeLineProcessor.processPipeLine(CachePipeLineProcessor.java:39)&#xD;
 	  at
 	  org.frankframework.processors.InputOutputPipeLineProcessor.processPipeLine(InputOutputPipeLineProcessor.java:44)&#xD;

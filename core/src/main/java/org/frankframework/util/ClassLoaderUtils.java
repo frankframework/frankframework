@@ -151,8 +151,8 @@ public abstract class ClassLoaderUtils {
 		}
 
 		String logPrefix = ClassUtils.nameOf(classLoader) + "@" + Integer.toHexString(classLoader.hashCode());
-		if(classLoader instanceof IConfigurationClassLoader) {
-			String configurationName = ((IConfigurationClassLoader) classLoader).getConfigurationName();
+		if(classLoader instanceof IConfigurationClassLoader loader) {
+			String configurationName = loader.getConfigurationName();
 			if(StringUtils.isNotEmpty(configurationName)) {
 				logPrefix += "["+configurationName+"]";
 			}

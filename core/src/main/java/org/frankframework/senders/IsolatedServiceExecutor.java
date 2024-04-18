@@ -16,10 +16,10 @@
 package org.frankframework.senders;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.RequestReplyExecutor;
 import org.frankframework.core.SenderResult;
@@ -27,17 +27,16 @@ import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.ThreadConnector;
 import org.frankframework.stream.ThreadLifeCycleEventListener;
-import org.frankframework.util.Guard;
 import org.frankframework.util.LogUtil;
 
 public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	private final Logger log = LogUtil.getLogger(this);
 	private final ServiceClient service;
 	private final PipeLineSession session;
-	private final Guard guard;
+	private final CountDownLatch guard;
 	private final ThreadConnector<?> threadConnector;
 
-	public IsolatedServiceExecutor(ServiceClient service, Message message, PipeLineSession session, Guard guard, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) throws IOException {
+	public IsolatedServiceExecutor(ServiceClient service, Message message, PipeLineSession session, CountDownLatch guard, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) throws IOException {
 		super();
 		this.service = service;
 		this.request = message.copyMessage();
@@ -58,7 +57,7 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 		} finally {
 			ThreadContext.clearAll();
 			if (guard != null) {
-				guard.releaseResource();
+				guard.countDown();
 			}
 		}
 	}

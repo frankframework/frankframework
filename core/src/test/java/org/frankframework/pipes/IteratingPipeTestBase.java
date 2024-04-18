@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -19,15 +21,13 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> extends PipeTestBase<P> {
 
-	protected StringBuilder resultLog;
+	protected StringBuilder resultLog = new StringBuilder();
 
 	protected ISender getElementRenderer(boolean blockEnabled) {
-		resultLog = new StringBuilder();
 		if (blockEnabled) {
 			return new BlockEnabledRenderer();
 		}
@@ -71,9 +71,23 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	}
 
 	protected class ElementRenderer extends EchoSender {
-
 		@Override
 		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+			return resultCollector(message);
+		}
+	}
+
+	// Sender Class to find threading issues in parallel execution
+	protected class SlowRenderer extends EchoSender {
+		@Override
+		@SuppressWarnings("java:S2925")
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+			int random = (int) (Math.random() * 20);
+			try {
+				Thread.sleep(random);
+			} catch (InterruptedException ignored) {
+				Thread.currentThread().interrupt();
+			}
 			return resultCollector(message);
 		}
 	}
@@ -84,6 +98,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
+		prr.getResult().close();
 
 		assertEquals(expected, actual);
 	}
@@ -228,9 +243,9 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	@Test
 	public void testParallel() throws Exception {
-		pipe.setSender(getElementRenderer(false));
+		pipe.setSender(new SlowRenderer());
 		pipe.setParallel(true);
-		pipe.setMaxChildThreads(1);
+		pipe.setMaxChildThreads(4);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		configureAndStartPipe();
 		testTenLines();
@@ -240,9 +255,9 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	@Test
 	public void testParallelResultsWithErrors() throws Exception {
-		pipe.setSender(getElementRenderer(false));
+		pipe.setSender(new SlowRenderer());
 		pipe.setParallel(true);
-		pipe.setMaxChildThreads(1);
+		pipe.setMaxChildThreads(3);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		pipe.setCollectResults(false);
 		configureAndStartPipe();
@@ -258,9 +273,9 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	@Test
 	public void testParallelCollectResultsWithErrors() throws Exception {
-		pipe.setSender(getElementRenderer(false));
+		pipe.setSender(new SlowRenderer());
 		pipe.setParallel(true);
-		pipe.setMaxChildThreads(1);
+		pipe.setMaxChildThreads(2);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		pipe.setCollectResults(true);
 		configureAndStartPipe();
@@ -269,7 +284,8 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithErrors.txt");
 
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
-		assertTrue(e.getMessage().contains("an error occurred during parallel execution"));
+		String message = e.getMessage();
+		assertEquals("caught exception: an error occurred during parallel execution: [key 2 error]", message.substring(message.length() - 76));
 	}
 
 	@Test
@@ -326,7 +342,8 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithExceptions.txt");
 
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
-		assertTrue(e.getMessage().contains("an error occurred during parallel execution"));
+		String actual = e.getMessage();
+		assertEquals("an error occurred during parallel execution: Exception triggered", actual.substring(actual.length() - 64));
 	}
 
 	@Test

@@ -16,7 +16,7 @@
 package org.frankframework.senders;
 
 import org.frankframework.filesystem.FileSystemSender;
-import org.frankframework.filesystem.Samba2FileSystem;
+import org.frankframework.filesystem.smb.Samba2FileSystem;
 import org.frankframework.filesystem.smb.Samba2FileSystemDelegator;
 import org.frankframework.filesystem.smb.SmbFileRef;
 

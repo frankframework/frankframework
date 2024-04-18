@@ -298,8 +298,8 @@ public class ApiServiceDispatcher {
 		if(validator == null) {
 			validator = pipeline.getPipe(pipeline.getFirstPipe());
 		}
-		if(validator instanceof Json2XmlValidator) {
-			return (Json2XmlValidator) validator;
+		if(validator instanceof Json2XmlValidator xmlValidator) {
+			return xmlValidator;
 		}
 		return null;
 	}

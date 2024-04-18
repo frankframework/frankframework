@@ -659,8 +659,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	}
 
 	public boolean retrievePhysicalDestinationFromSender (ISender sender) {
-		if (sender instanceof EsbJmsSender) {
-			EsbJmsSender ejSender = (EsbJmsSender)sender;
+		if (sender instanceof EsbJmsSender ejSender) {
 			String physicalDestination = ejSender.getPhysicalDestinationShortName();
 			if (physicalDestination==null) {
 				physicalDestination="?";
@@ -675,8 +674,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	}
 
 	public boolean retrievePhysicalDestinationFromListener (IListener<?> listener) throws JmsException {
-		if (listener instanceof EsbJmsListener) {
-			EsbJmsListener ejListener = (EsbJmsListener) listener;
+		if (listener instanceof EsbJmsListener ejListener) {
 			if (!ejListener.isSynchronous()) {
 				return false;
 			}
@@ -779,8 +777,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	@Override
 	public void validateListenerDestinations(PipeLine pipeLine) throws ConfigurationException {
 		INamedObject owner = pipeLine.getOwner();
-		if (owner instanceof Adapter) {
-			Adapter owningAdapter = (Adapter) owner;
+		if (owner instanceof Adapter owningAdapter) {
 
 			for (Receiver<?> receiver : owningAdapter.getReceivers()) {
 				IListener<?> listener = receiver.getListener();

@@ -165,11 +165,9 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	private void extractXpathLogProperties(Message rawMessage, Map<String, Object> messageProperties) {
 		try {
 			String soapMessage;
-			if (rawMessage instanceof TextMessage) {
-				TextMessage textMessage = (TextMessage) rawMessage;
+			if (rawMessage instanceof TextMessage textMessage) {
 				soapMessage = textMessage.getText();
-			} else if (rawMessage instanceof BytesMessage) {
-				BytesMessage bytesMessage = (BytesMessage) rawMessage;
+			} else if (rawMessage instanceof BytesMessage bytesMessage) {
 				InputStream input = new BytesMessageInputStream(bytesMessage);
 				soapMessage = StreamUtil.streamToString(input);
 				bytesMessage.reset();

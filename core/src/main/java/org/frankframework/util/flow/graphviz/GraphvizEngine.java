@@ -181,14 +181,16 @@ public class GraphvizEngine {
 	}
 
 	private String getVisJsWrapper() {
-		return "var viz = new Viz();"
-				+ "function render(src, options){"
-				+ "  try {"
-				+ "    viz.renderString(src, options)"
-				+ "      .then(function(res) { result(res); })"
-				+ "      .catch(function(err) { viz = new Viz(); error(err.toString()); });"
-				+ "  } catch(e) { error(e.toString()); }"
-				+ "}";
+		return """
+				var viz = new Viz();\
+				function render(src, options){\
+				  try {\
+				    viz.renderString(src, options)\
+				      .then(function(res) { result(res); })\
+				      .catch(function(err) { viz = new Viz(); error(err.toString()); });\
+				  } catch(e) { error(e.toString()); }\
+				}\
+				""";
 	}
 
 	@Log4j2

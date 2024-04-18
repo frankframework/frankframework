@@ -257,12 +257,12 @@ public class SchedulerAdapter {
 		xbRoot.addAttribute("startTime", convertDate(trigger.getStartTime()));
 
 		xbRoot.addAttribute("misfireInstruction", Integer.toString(trigger.getMisfireInstruction()));
-		if(trigger instanceof CronTrigger) {
+		if(trigger instanceof CronTrigger cronTrigger) {
 			xbRoot.addAttribute("triggerType", "cron");
-			xbRoot.addAttribute("cronExpression", ((CronTrigger) trigger).getCronExpression());
-		} else if(trigger instanceof SimpleTrigger) {
+			xbRoot.addAttribute("cronExpression", cronTrigger.getCronExpression());
+		} else if(trigger instanceof SimpleTrigger simpleTrigger) {
 			xbRoot.addAttribute("triggerType", "simple");
-			xbRoot.addAttribute("repeatInterval", ((SimpleTrigger) trigger).getRepeatInterval());
+			xbRoot.addAttribute("repeatInterval", simpleTrigger.getRepeatInterval());
 		} else {
 			xbRoot.addAttribute("triggerType", "unknown");
 		}

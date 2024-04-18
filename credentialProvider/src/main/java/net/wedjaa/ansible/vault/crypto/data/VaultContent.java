@@ -49,32 +49,32 @@ public class VaultContent {
 
 	public String toString() {
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("Salt: %d - HMAC: %d - Data: %d - TargetLen: %d", salt.length, hmac.length,
+			logger.debug("Salt: %d - HMAC: %d - Data: %d - TargetLen: %d".formatted(salt.length, hmac.length,
 					data.length, (salt.length + hmac.length + data.length) * 2));
 		}
 
 		String saltString = Util.hexit(salt);
 
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("Salt String Length: %s", saltString.length()));
+			logger.debug("Salt String Length: %s".formatted(saltString.length()));
 		}
 
 		String hmacString = Util.hexit(hmac);
 
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("HMAC String Length: %s", hmacString.length()));
+			logger.debug("HMAC String Length: %s".formatted(hmacString.length()));
 		}
 		String dataString = Util.hexit(data, -1);
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("DATA String Length: %s", dataString.length()));
+			logger.debug("DATA String Length: %s".formatted(dataString.length()));
 		}
 		String complete = saltString + "\n" + hmacString + "\n" + dataString;
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("Complete: %d - %s", complete.length(), complete));
+			logger.debug("Complete: %d - %s".formatted(complete.length(), complete));
 		}
 		String result = Util.hexit(complete.getBytes(), 80);
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("Result: [%d] %d - %s", complete.length() * 2, result.length(), result));
+			logger.debug("Result: [%d] %d - %s".formatted(complete.length() * 2, result.length(), result));
 		}
 		return result;
 	}

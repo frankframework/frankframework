@@ -70,8 +70,7 @@ public class TestJson2Xml extends AlignTestBase {
 		LOG.debug("jsonIn [{}]", json);
 		Map<String,Object> overrideMap = new HashMap<>();
 		overrideMap.put("Key not expected", "value of unexpected key");
-		if (json instanceof JsonObject) {
-			JsonObject jo = (JsonObject)json;
+		if (json instanceof JsonObject jo) {
 			for (String key:jo.keySet()) {
 				if (overrideMap.containsKey(key)) {
 					LOG.debug("multiple occurrences in object for element [{}]", key);

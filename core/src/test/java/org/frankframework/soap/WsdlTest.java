@@ -167,11 +167,15 @@ public class WsdlTest {
 		initWsdlTest(implementation);
 		PipeLine pipe = mockPipeLine(
 			getXmlValidatorInstance("CalculationRequest", null, null,
-				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail " +
-						"WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd"),
+				"""
+				http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail \
+				WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd\
+				"""),
 			getXmlValidatorInstance("CalculationResponse", null, null,
-				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response " +
-						"WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd"),
+				"""
+				http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response \
+				WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd\
+				"""),
 			"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail", "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail");
 		WsdlGenerator wsdl = new WsdlGenerator(pipe);
 		wsdl.init();
@@ -184,8 +188,10 @@ public class WsdlTest {
 	void wubCalculateQuoteAndPolicyValuesLifeRetailMixed(Class<AbstractXmlValidator> implementation) throws Exception {
 		initWsdlTest(implementation);
 		XmlValidator inputValidator=getXmlValidatorInstance("CalculationRequest", "CalculationResponse", null,
-				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd "+
-				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response  WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd");
+				"""
+				http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd \
+				http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response  WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd\
+				""");
 		inputValidator.configure();
 		IValidator outputValidator = inputValidator.getResponseValidator();
 		PipeLine pipe = mockPipeLine(inputValidator, outputValidator,

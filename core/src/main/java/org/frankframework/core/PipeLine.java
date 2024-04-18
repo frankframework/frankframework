@@ -185,8 +185,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			IPipe pipe = getPipe(i);
 
 			log.debug("configuring Pipe [{}]", pipe::getName);
-			if (pipe instanceof FixedForwardPipe) {
-				FixedForwardPipe ffPipe = (FixedForwardPipe)pipe;
+			if (pipe instanceof FixedForwardPipe ffPipe) {
 				// getSuccessForward will return null if it has not been set. See below configure(pipe)
 				if (ffPipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
 					int i2 = i + 1;
@@ -229,8 +228,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		IValidator inputValidator = getInputValidator();
 		IValidator outputValidator = getOutputValidator();
-		if (outputValidator == null && inputValidator instanceof IDualModeValidator) {
-			outputValidator = ((IDualModeValidator) inputValidator).getResponseValidator();
+		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator) {
+			outputValidator = validator.getResponseValidator();
 			setOutputValidator(outputValidator);
 		}
 		if (inputValidator != null) {
@@ -250,8 +249,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		IWrapperPipe outputWrapper = getOutputWrapper();
 		if (outputWrapper != null) {
 			log.debug("configuring OutputWrapper");
-			if (outputWrapper instanceof DestinationValidator) {
-				((DestinationValidator) outputWrapper).validateListenerDestinations(this);
+			if (outputWrapper instanceof DestinationValidator validator) {
+				validator.validateListenerDestinations(this);
 			}
 			configurationException = configureSpecialPipe(outputWrapper, OUTPUT_WRAPPER_NAME, configurationException);
 		}

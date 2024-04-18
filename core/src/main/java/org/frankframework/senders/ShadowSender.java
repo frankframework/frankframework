@@ -21,10 +21,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Phaser;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
@@ -34,17 +36,14 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.Guard;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
-
 /**
  * Collection of Senders, that are executed all at the same time. Once the results are processed, all results will be sent to the resultSender,
- * while the original sender will return it's result to the pipeline.
+ * while the original sender will return its result to the pipeline.
  *
  * <p>Multiple sub-senders can be configured within the ShadowSender, the minimum amount of senders is 2 (originalSender + resultSender)</p>
  *
@@ -111,28 +110,25 @@ public class ShadowSender extends ParallelSenders {
 		return secondarySenderList;
 	}
 
-	protected void executeGuarded(ISender sender, Message message, PipeLineSession session, Guard guard, Map<ISender, ParallelSenderExecutor> executorMap) throws SenderException {
+	protected void executeGuarded(ISender sender, Message message, PipeLineSession session, Phaser guard, Map<ISender, ParallelSenderExecutor> executorMap) throws SenderException {
 		Message messageToSend;
 		try {
 			messageToSend = isWaitForShadowsToFinish() ? message : message.copyMessage();
 		} catch (IOException e) {
+			if (guard != null) guard.arrive(); // Sign off the guard, to prevent deadlocks
 			throw new SenderException("Cannot create copy of message", e);
 		}
-		guard.addResource();
-		ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, messageToSend, session, guard, getStatisticsKeeper(sender));
+		ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, messageToSend, session, getStatisticsKeeper(sender));
+		pse.setGuard(guard);
 		executorMap.put(sender, pse);
 		getExecutor().execute(pse);
 	}
 
 	/**
-	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
+	 * Override this from the parallel sender as it should only execute the original and shadowsenders here!
 	 */
 	@Override
 	public SenderResult sendMessage(@Nonnull Message message, @Nullable PipeLineSession session) throws SenderException, TimeoutException {
-		Guard primaryGuard = new Guard();
-		Guard shadowGuard = new Guard();
-		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
-
 		try {
 			if (!message.isRepeatable()) {
 				message.preserve();
@@ -141,6 +137,10 @@ public class ShadowSender extends ParallelSenders {
 			throw new SenderException(getLogPrefix() + " could not preserve input message", e);
 		}
 
+		Phaser primaryGuard = new Phaser(2); // Itself and the added originalSender
+		Phaser shadowGuard = new Phaser(getSecondarySenders().size() + 1); // Itself and all secondary senders
+		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
+
 		executeGuarded(originalSender, message, session, primaryGuard, executorMap);
 		// Loop through all senders and execute the message.
 		for (ISender sender : getSecondarySenders()) {
@@ -148,17 +148,11 @@ public class ShadowSender extends ParallelSenders {
 		}
 
 		// Wait till primary sender has replied.
-		try {
-			primaryGuard.waitForAllResources();
-		} catch (InterruptedException e) {
-			throw new SenderException(getLogPrefix() + "was interrupted", e);
-		}
+		log.debug("waiting for primary senders to finish. Left: {}", primaryGuard.getUnarrivedParties() - 1);
+		primaryGuard.arriveAndAwaitAdvance();
 
-		/*
-		 * setup action to
-		 * - wait for remaining senders to have replied
-		 * - collect the results of all senders
-		 */
+
+		 // Wait for remaining senders to have replied & collect the results of all senders
 		Message originalMessage;
 		try {
 			originalMessage = isWaitForShadowsToFinish() ? message : message.copyMessage();
@@ -168,12 +162,9 @@ public class ShadowSender extends ParallelSenders {
 		String correlationId = session == null ? null : session.getCorrelationId();
 		Runnable collectResults = () -> {
 			// Wait till every sender has replied.
-			try {
-				shadowGuard.waitForAllResources();
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				log.warn("{} result collection thread was interrupted", getLogPrefix(), e);
-			}
+			log.debug("waiting for shadow senders to finish. Left: {}", shadowGuard.getUnarrivedParties() - 1);
+			shadowGuard.arriveAndAwaitAdvance();
+
 			// Collect the results of the (Shadow)Sender and send them to the resultSender.
 			try {
 				Message result = collectResults(executorMap, originalMessage, correlationId);

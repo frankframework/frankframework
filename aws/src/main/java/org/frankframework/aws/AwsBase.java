@@ -53,7 +53,7 @@ public class AwsBase {
 
 	public AwsCredentialsProvider getAwsCredentialsProvider() {
 		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
-			throw new IllegalStateException("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)");
+			throw new IllegalStateException("invalid credential fields, please provide AWS credentials (accessKey and secretKey)");
 		}
 
 		CredentialFactory cf = null;
