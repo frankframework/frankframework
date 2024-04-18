@@ -225,8 +225,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (isCollectResults()) {
 				results.append("<results>\n");
 			}
-			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
-				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
+			if (!isParallel() && sender instanceof IBlockEnabledSender<?> enabledSender) {
+				blockHandle = enabledSender.openBlock(session);
 				blockOpen=true;
 			}
 		}
@@ -242,8 +242,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 		}
 		public void startBlock() throws SenderException, TimeoutException {
-			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?>) {
-				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
+			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?> enabledSender) {
+				blockHandle = enabledSender.openBlock(session);
 				blockOpen=true;
 			}
 		}

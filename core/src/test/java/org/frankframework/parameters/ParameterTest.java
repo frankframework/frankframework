@@ -1083,11 +1083,13 @@ public class ParameterTest {
 			String firstPipe = "PutInSession under test";
 			String secondPipe = "PutInSession next pipe";
 
-			String testMessage = "<Test>\n" +
-					"	<Child><name>X</name></Child>\n" +
-					"	<Child><name>Y</name></Child>\n" +
-					"	<Child><name>Z</name></Child>\n" +
-					"</Test>";
+			String testMessage = """
+					<Test>
+						<Child><name>X</name></Child>
+						<Child><name>Y</name></Child>
+						<Child><name>Z</name></Child>
+					</Test>\
+					""";
 
 			String testMessageChild1 = "<Child><name>X</name></Child>";
 

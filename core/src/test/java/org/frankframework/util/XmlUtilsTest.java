@@ -165,11 +165,13 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	@Test
 	void testCanonicalizeWithNewLinesAndSpaces() throws Exception {
 		String newLinesAndSpaces = XmlUtils.canonicalize("<test>\n<a>9</a>\n  <b>2</b>  \n<c>7</c>\n</test>\n");
-		assertEquals("<test>\n" +
-				"	<a>9</a>\n" +
-				"	<b>2</b>\n" +
-				"	<c>7</c>\n" +
-				"</test>", newLinesAndSpaces);
+		assertEquals("""
+				<test>
+					<a>9</a>
+					<b>2</b>
+					<c>7</c>
+				</test>\
+				""", newLinesAndSpaces);
 	}
 
 	@Test
@@ -181,16 +183,18 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	@Test
 	void testParseXml() throws IOException, SAXException {
 		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
-		String expected = "startDocument\n"
-				+ "startElement root\n"
-				+ "startElement elem_a\n"
-				+ "characters [val_a]\n"
-				+ "endElement elem_a\n"
-				+ "startElement elem_b\n"
-				+ "characters [val_b]\n"
-				+ "endElement elem_b\n"
-				+ "endElement root\n"
-				+ "endDocument\n";
+		String expected = """
+				startDocument
+				startElement root
+				startElement elem_a
+				characters [val_a]
+				endElement elem_a
+				startElement elem_b
+				characters [val_b]
+				endElement elem_b
+				endElement root
+				endDocument
+				""";
 		StringBuilderContentHandler handler = new StringBuilderContentHandler();
 
 		XmlUtils.parseXml(source, handler);
@@ -201,12 +205,14 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	@Test
 	void testParseNodeSet() throws IOException, SAXException {
 		String source = "<elem_a>val_a</elem_a><elem_b>val_b</elem_b>";
-		String expected = "startElement elem_a\n"
-				+ "characters [val_a]\n"
-				+ "endElement elem_a\n"
-				+ "startElement elem_b\n"
-				+ "characters [val_b]\n"
-				+ "endElement elem_b\n";
+		String expected = """
+				startElement elem_a
+				characters [val_a]
+				endElement elem_a
+				startElement elem_b
+				characters [val_b]
+				endElement elem_b
+				""";
 		StringBuilderContentHandler handler = new StringBuilderContentHandler();
 
 		XmlUtils.parseNodeSet(source, handler);

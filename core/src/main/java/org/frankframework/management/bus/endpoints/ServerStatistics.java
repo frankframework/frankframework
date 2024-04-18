@@ -206,8 +206,8 @@ public class ServerStatistics extends BusEndpointBase {
 	}
 
 	private String getApplicationServer(ApplicationContext ac) {
-		if(ac instanceof WebApplicationContext) {
-			ServletContext sc = ((WebApplicationContext) ac).getServletContext();
+		if(ac instanceof WebApplicationContext context) {
+			ServletContext sc = context.getServletContext();
 			if(sc != null) {
 				return sc.getServerInfo();
 			}

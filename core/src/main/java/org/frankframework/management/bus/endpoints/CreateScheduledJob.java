@@ -163,8 +163,10 @@ public class CreateScheduledJob extends BusEndpointBase {
 						}
 					}
 
-					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME, JOBGROUP, ADAPTER, RECEIVER, CRON, EXECUTIONINTERVAL, MESSAGE, DESCRIPTION, LOCKER, LOCK_KEY, CREATED_ON, BY_USER) "
-							+ "VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
+					String insertQuery = """
+							INSERT INTO IBISSCHEDULES (JOBNAME, JOBGROUP, ADAPTER, RECEIVER, CRON, EXECUTIONINTERVAL, MESSAGE, DESCRIPTION, LOCKER, LOCK_KEY, CREATED_ON, BY_USER) \
+							VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)\
+							""";
 					try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
 						stmt.setString(1, name);
 						stmt.setString(2, jobGroup);

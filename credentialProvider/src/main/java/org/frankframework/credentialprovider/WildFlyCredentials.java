@@ -62,8 +62,8 @@ public class WildFlyCredentials extends Credentials {
 		String key=getAlias()+suffix;
 		if (cs.exists(key, PasswordCredential.class)) {
 			Password credential = cs.retrieve(key, PasswordCredential.class).getPassword();
-			if (credential instanceof ClearPassword) {
-				String value = new String(((ClearPassword) credential).getPassword());
+			if (credential instanceof ClearPassword password) {
+				String value = new String(password.getPassword());
 				setter.accept(value);
 			}
 		} else {

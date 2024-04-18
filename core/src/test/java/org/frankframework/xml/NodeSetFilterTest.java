@@ -54,86 +54,96 @@ public class NodeSetFilterTest {
 
 	@Test
 	public void testTargetElementFilterWithRoot() throws Exception {
-		String expected="<prefix- uri=\"urn:tja\">\n" +
-							"\t<root xmlns=\"urn:tja\">\n" +
-								"\t\t<a>x</a>\n" +
-								"\t\t<a>y</a>\n" +
-								"\t\t<a>y</a>\n" +
-							"\t</root>\n" +
-						"</prefix->";
+		String expected="""
+							<prefix- uri="urn:tja">
+								<root xmlns="urn:tja">
+									<a>x</a>
+									<a>y</a>
+									<a>y</a>
+								</root>
+							</prefix->\
+							""";
 		testTargetElementFilter("a", true, document, expected);
 	}
 
 	@Test
 	public void testContainerElementFilter() throws Exception {
-		String expected="<prefix- uri=\"urn:tja\">\n" +
-							"\t<a xmlns=\"urn:tja\">y</a>\n" +
-						"</prefix->\n" +
-						"<prefix- uri=\"urn:tja\">\n" +
-							"\t<b xmlns=\"urn:tja\">y</b>\n" +
-						"</prefix->\n" +
-						"<prefix- uri=\"urn:tja\">\n" +
-							"\t<a xmlns=\"urn:tja\">y</a>\n" +
-						"</prefix->\n" +
-						"<prefix- uri=\"urn:tja\">\n" +
-							"\t<b xmlns=\"urn:tja\">y</b>\n" +
-						"</prefix->";
+		String expected="""
+							<prefix- uri="urn:tja">
+								<a xmlns="urn:tja">y</a>
+							</prefix->
+							<prefix- uri="urn:tja">
+								<b xmlns="urn:tja">y</b>
+							</prefix->
+							<prefix- uri="urn:tja">
+								<a xmlns="urn:tja">y</a>
+							</prefix->
+							<prefix- uri="urn:tja">
+								<b xmlns="urn:tja">y</b>
+							</prefix->\
+							""";
 		testContainerElementFilter("sub2", false, document, expected);
 	}
 
 	@Test
 	public void testContainerElementFilterWithRoot() throws Exception {
-		String expected="<prefix- uri=\"urn:tja\">\n" +
-							"\t<root xmlns=\"urn:tja\">\n" +
-							"\t\t<a>y</a>\n" +
-							"\t\t<b>y</b>\n" +
-							"\t\t<a>y</a>\n" +
-							"\t\t<b>y</b>\n" +
-							"\t</root>\n" +
-						"</prefix->";
+		String expected="""
+							<prefix- uri="urn:tja">
+								<root xmlns="urn:tja">
+									<a>y</a>
+									<b>y</b>
+									<a>y</a>
+									<b>y</b>
+								</root>
+							</prefix->\
+							""";
 		testContainerElementFilter("sub2",true, document, expected);
 	}
 
 	@Test
 	public void testNodeSetFilter() throws Exception {
 		NodeSetFilter targetElementFilter = new NodeSetFilter(null, null, false, false, null);
-		String expected="<prefix- uri=\"urn:tja\">\n" +
-				"\t<sub1 xmlns=\"urn:tja\">\n" +
-					"\t\t<a>x</a>\n" +
-				"\t</sub1>\n" +
-				"</prefix->\n" +
-				"<prefix- uri=\"urn:tja\">\n" +
-				"\t<x xmlns=\"urn:tja\">\n" +
-				"\t\t<sub2>\n" +
-				"\t\t\t<a>y</a>\n" +
-				"\t\t\t<b>y</b>\n" +
-				"\t\t</sub2>\n" +
-				"\t</x>\n" +
-				"</prefix->\n" +
-				"<prefix- uri=\"urn:tja\">\n" +
-				"\t<sub2 xmlns=\"urn:tja\">\n" +
-				"\t\t<a>y</a>\n" +
-				"\t\t<b>y</b>\n" +
-				"\t</sub2>\n" +
-				"</prefix->\n" +
-				"<prefix- uri=\"urn:tja\">\n" +
-				"\t<xx xmlns=\"urn:tja\"/>\n" +
-				"</prefix->";
+		String expected="""
+				<prefix- uri="urn:tja">
+					<sub1 xmlns="urn:tja">
+						<a>x</a>
+					</sub1>
+				</prefix->
+				<prefix- uri="urn:tja">
+					<x xmlns="urn:tja">
+						<sub2>
+							<a>y</a>
+							<b>y</b>
+						</sub2>
+					</x>
+				</prefix->
+				<prefix- uri="urn:tja">
+					<sub2 xmlns="urn:tja">
+						<a>y</a>
+						<b>y</b>
+					</sub2>
+				</prefix->
+				<prefix- uri="urn:tja">
+					<xx xmlns="urn:tja"/>
+				</prefix->\
+				""";
 		testNodeSetFilter(targetElementFilter, "a", false, document, expected);
 	}
 
 	@Test
 	public void testTargetElementFilterWithNamespace() throws Exception {
 		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false, null);
-		String expected="<prefix- uri=\"urn:tja\">\n" +
-				"\t<a xmlns=\"urn:tja\">x</a>\n" +
-			"</prefix->\n" +
-			"<prefix- uri=\"urn:tja\">\n" +
-				"\t<a xmlns=\"urn:tja\">y</a>\n" +
-			"</prefix->\n" +
-			"<prefix- uri=\"urn:tja\">\n" +
-				"\t<a xmlns=\"urn:tja\">y</a>\n" +
-			"</prefix->";
+		String expected="""
+				<prefix- uri="urn:tja">
+					<a xmlns="urn:tja">x</a>
+				</prefix->
+				<prefix- uri="urn:tja">
+					<a xmlns="urn:tja">y</a>
+				</prefix->
+				<prefix- uri="urn:tja">
+					<a xmlns="urn:tja">y</a>
+				</prefix->\
+				""";
 		testNodeSetFilter(targetElementFilter, "a", false, document, expected);
 	}
 
@@ -142,9 +152,11 @@ public class NodeSetFilterTest {
 		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false, null);
 
 		String document="<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
-		String expected = 	"<prefix-ns uri=\"urn:tja\">\n" +
-								"\t<ns:a xmlns:ns=\"urn:tja\">y</ns:a>\n" +
-							"</prefix-ns>";
+		String expected = 	"""
+								<prefix-ns uri="urn:tja">
+									<ns:a xmlns:ns="urn:tja">y</ns:a>
+								</prefix-ns>\
+								""";
 
 		testNodeSetFilter(targetElementFilter, "a", false, document,expected);
 	}
@@ -154,9 +166,11 @@ public class NodeSetFilterTest {
 		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("x=urn:tja"), "x:a",true,false, null);
 
 		String document="<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
-		String expected =	"<prefix-ns uri=\"urn:tja\">\n" +
-								"\t<ns:a xmlns:ns=\"urn:tja\">y</ns:a>\n" +
-							"</prefix-ns>";
+		String expected =	"""
+								<prefix-ns uri="urn:tja">
+									<ns:a xmlns:ns="urn:tja">y</ns:a>
+								</prefix-ns>\
+								""";
 
 		testNodeSetFilter(targetElementFilter, "a", false, document,expected);
 	}

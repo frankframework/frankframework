@@ -57,7 +57,7 @@ public class CypherAES256 implements CypherInterface
             int maxKeyLen = Cipher.getMaxAllowedKeyLength(CYPHER_ALGO);
             
             if( logger.isDebugEnabled() ) {
-                logger.debug(String.format("Available keylen: %d", maxKeyLen));
+                logger.debug("Available keylen: %d".formatted(maxKeyLen));
             }
             
             if (maxKeyLen >= AES_KEYLEN)
@@ -66,13 +66,13 @@ public class CypherAES256 implements CypherInterface
             }
             else
             {
-                logger.warn(String.format("JRE doesn't support %d keylength for %s. Install unrestricted policy files",
-                        AES_KEYLEN, CYPHER_KEY_ALGO));
+                logger.warn("JRE doesn't support %d keylength for %s. Install unrestricted policy files".formatted(
+						AES_KEYLEN, CYPHER_KEY_ALGO));
             }
         }
         catch (Exception ex)
         {
-            logger.warn(String.format("Failed to check for proper cypher algorithms: %s", ex.getMessage()));
+            logger.warn("Failed to check for proper cypher algorithms: %s".formatted(ex.getMessage()));
         }
         return canCrypt;
     }
@@ -107,13 +107,13 @@ public class CypherAES256 implements CypherInterface
         if (decrypted.length == 0)
         {
             if( logger.isDebugEnabled() ) {
-            	logger.debug(String.format("Empty decoded text has no padding."));
+            	logger.debug("Empty decoded text has no padding.".formatted());
             }
             return 0;
         }
 
         if( logger.isDebugEnabled() ) {
-        	logger.debug(String.format("Padding length: %s", decrypted[decrypted.length - 1]));
+        	logger.debug("Padding length: %s".formatted(decrypted[decrypted.length - 1]));
         }
         return decrypted[decrypted.length - 1];
     }
@@ -133,7 +133,7 @@ public class CypherAES256 implements CypherInterface
             int blockSize = Cipher.getInstance(CYPHER_ALGO).getBlockSize();
 
             if( logger.isDebugEnabled() ) {
-            	logger.debug(String.format("Padding to block size: %d", blockSize));
+            	logger.debug("Padding to block size: %d".formatted(blockSize));
             }
             
             int padding_length = blockSize - (cleartext.length % blockSize);
@@ -204,9 +204,9 @@ public class CypherAES256 implements CypherInterface
         byte[] cypher = vaultContent.getData();
 
         if( logger.isDebugEnabled() ) {
-	        logger.debug(String.format("Salt: %d - %s", salt.length, Util.hexit(salt, 100)));
-	        logger.debug(String.format("HMAC: %d - %s", hmac.length, Util.hexit(hmac, 100)));
-	        logger.debug(String.format("Data: %d - %s", cypher.length, Util.hexit(cypher, 100)));
+	        logger.debug("Salt: %d - %s".formatted(salt.length, Util.hexit(salt, 100)));
+	        logger.debug("HMAC: %d - %s".formatted(hmac.length, Util.hexit(hmac, 100)));
+	        logger.debug("Data: %d - %s".formatted(cypher.length, Util.hexit(cypher, 100)));
         }
         EncryptionKeychain keys = new EncryptionKeychain(salt, password, KEYLEN, IVLEN, ITERATIONS, KEYGEN_ALGO);
         keys.createKeys();
@@ -214,30 +214,30 @@ public class CypherAES256 implements CypherInterface
         byte[] cypherKey = keys.getEncryptionKey();
 
         if( logger.isDebugEnabled() ) {
-        	logger.debug(String.format("Key 1: %d - %s", cypherKey.length, Util.hexit(cypherKey, 100)));
+        	logger.debug("Key 1: %d - %s".formatted(cypherKey.length, Util.hexit(cypherKey, 100)));
         }
         
         byte[] hmacKey = keys.getHmacKey();
 
         if( logger.isDebugEnabled() ) {
-        	logger.debug(String.format("Key 2: %d - %s", hmacKey.length, Util.hexit(hmacKey, 100)));
+        	logger.debug("Key 2: %d - %s".formatted(hmacKey.length, Util.hexit(hmacKey, 100)));
         }
         
         byte[] iv = keys.getIv();
         
         if( logger.isDebugEnabled() ) {
-        	logger.debug(String.format("IV: %d - %s", iv.length, Util.hexit(iv, 100)));
+        	logger.debug("IV: %d - %s".formatted(iv.length, Util.hexit(iv, 100)));
         }
 
         if (verifyHMAC(hmac, hmacKey, cypher))
         {
             if( logger.isDebugEnabled() ) {
-            	logger.debug(String.format("Signature matches - decrypting"));
+            	logger.debug("Signature matches - decrypting".formatted());
             }
             decrypted = decryptAES(cypher, cypherKey, iv);
 
             if( logger.isDebugEnabled() ) {
-            	logger.debug(String.format("Decoded: %s", new String(decrypted, CHAR_ENCODING)));
+            	logger.debug("Decoded: %s".formatted(new String(decrypted, CHAR_ENCODING)));
             }
         }
         else
@@ -270,25 +270,25 @@ public class CypherAES256 implements CypherInterface
         byte[] cypherKey = keys.getEncryptionKey();
 
         if( logger.isDebugEnabled() ) {
-        	logger.debug(String.format("Key 1: %d - %s", cypherKey.length, Util.hexit(cypherKey, 100)));
+        	logger.debug("Key 1: %d - %s".formatted(cypherKey.length, Util.hexit(cypherKey, 100)));
         }
         
         byte[] hmacKey = keys.getHmacKey();
         
         if( logger.isDebugEnabled() ) {
-        	logger.debug(String.format("Key 2: %d - %s", hmacKey.length, Util.hexit(hmacKey, 100)));
+        	logger.debug("Key 2: %d - %s".formatted(hmacKey.length, Util.hexit(hmacKey, 100)));
         }
         
         byte[] iv = keys.getIv();
 
         if( logger.isDebugEnabled() ) {
-	        logger.debug(String.format("IV: %d - %s", iv.length, Util.hexit(iv, 100)));
-	        logger.debug(String.format("Original data length: %d", data.length));
+	        logger.debug("IV: %d - %s".formatted(iv.length, Util.hexit(iv, 100)));
+	        logger.debug("Original data length: %d".formatted(data.length));
         }
 	    data = pad(data);
         
         if( logger.isDebugEnabled() ) {
-        	logger.debug(String.format("Padded data length: %d", data.length));
+        	logger.debug("Padded data length: %d".formatted(data.length));
         }
 
         byte[] encrypted = encryptAES(data, keys.getEncryptionKey(), keys.getIv());

@@ -152,9 +152,9 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 
 	public void closeRequestStream() throws IOException {
-		if (requestStream instanceof Closeable) {
+		if (requestStream instanceof Closeable closeable) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "closing stream");
-			((Closeable) requestStream).close();
+			closeable.close();
 		}
 	}
 
@@ -232,50 +232,50 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 
 	public OutputStream asStream(String charset) throws StreamingException {
-		if (requestStream instanceof OutputStream) {
+		if (requestStream instanceof OutputStream stream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning OutputStream as OutputStream");
-			return (OutputStream) requestStream;
+			return stream;
 		}
-		if (requestStream instanceof Writer) {
+		if (requestStream instanceof Writer writer) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning Writer as OutputStream");
-			return new WriterOutputStream((Writer) requestStream, StringUtils.isNotEmpty(charset)?charset:StringUtils.isNotEmpty(conversionCharset)?conversionCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return new WriterOutputStream(writer, StringUtils.isNotEmpty(charset)?charset:StringUtils.isNotEmpty(conversionCharset)?conversionCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
-		if (requestStream instanceof ContentHandler) {
+		if (requestStream instanceof ContentHandler handler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning ContentHandler as OutputStream");
-			return new ContentHandlerOutputStream((ContentHandler) requestStream, threadConnector);
+			return new ContentHandlerOutputStream(handler, threadConnector);
 		}
-		if (requestStream instanceof JsonEventHandler) {
+		if (requestStream instanceof JsonEventHandler handler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning JsonEventHandler as OutputStream");
-			return new JsonEventHandlerOutputStream((JsonEventHandler) requestStream, threadConnector);
+			return new JsonEventHandlerOutputStream(handler, threadConnector);
 		}
 		return null;
 	}
 
 	public Writer asWriter() throws StreamingException {
-		if (requestStream instanceof Writer) {
+		if (requestStream instanceof Writer writer) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as Writer");
-			return (Writer) requestStream;
+			return writer;
 		}
-		if (requestStream instanceof OutputStream) {
+		if (requestStream instanceof OutputStream stream) {
 			try {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as Writer");
-				return new OutputStreamWriter((OutputStream) requestStream, StringUtils.isNotEmpty(conversionCharset)?conversionCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				return new OutputStreamWriter(stream, StringUtils.isNotEmpty(conversionCharset)?conversionCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
 			}
 		}
-		if (requestStream instanceof ContentHandler) {
+		if (requestStream instanceof ContentHandler handler) {
 			try {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning ContentHandler as Writer");
-				return new OutputStreamWriter(new ContentHandlerOutputStream((ContentHandler) requestStream, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				return new OutputStreamWriter(new ContentHandlerOutputStream(handler, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
 			}
 		}
-		if (requestStream instanceof JsonEventHandler) {
+		if (requestStream instanceof JsonEventHandler handler) {
 			try {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as Writer");
-				return new OutputStreamWriter(new JsonEventHandlerOutputStream((JsonEventHandler) requestStream, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				return new OutputStreamWriter(new JsonEventHandlerOutputStream(handler, threadConnector), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
 			}
@@ -284,41 +284,41 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 
 	public ContentHandler asContentHandler() throws StreamingException {
-		if (requestStream instanceof ContentHandler) {
+		if (requestStream instanceof ContentHandler handler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning ContentHandler as ContentHandler");
-			return (ContentHandler) requestStream;
+			return handler;
 		}
 		if (requestStream instanceof JsonEventHandler) {
 			throw new StreamingException("Cannot handle XML as JSON");
 		}
-		if (requestStream instanceof OutputStream) {
+		if (requestStream instanceof OutputStream stream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as ContentHandler");
-			XmlWriter xmlWriter = new XmlWriter((OutputStream) requestStream);
+			XmlWriter xmlWriter = new XmlWriter(stream);
 			xmlWriter.setIncludeXmlDeclaration(true);
 			return xmlWriter;
 		}
-		if (requestStream instanceof Writer) {
+		if (requestStream instanceof Writer writer) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as ContentHandler");
-			return new XmlWriter((Writer) requestStream);
+			return new XmlWriter(writer);
 		}
 		return null;
 	}
 
 	public JsonEventHandler asJsonEventHandler() {
-		if (requestStream instanceof JsonEventHandler) {
+		if (requestStream instanceof JsonEventHandler handler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as JsonEventHandler");
-			return (JsonEventHandler) requestStream;
+			return handler;
 		}
-		if (requestStream instanceof ContentHandler) {
-			return new Json2XmlHandler((ContentHandler) requestStream, false);
+		if (requestStream instanceof ContentHandler handler) {
+			return new Json2XmlHandler(handler, false);
 		}
-		if (requestStream instanceof OutputStream) {
+		if (requestStream instanceof OutputStream stream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonEventHandler");
-			return new JsonWriter((OutputStream) requestStream);
+			return new JsonWriter(stream);
 		}
-		if (requestStream instanceof Writer) {
+		if (requestStream instanceof Writer writer) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as JsonEventHandler");
-			return new JsonWriter((Writer) requestStream);
+			return new JsonWriter(writer);
 		}
 		return null;
 	}
@@ -335,20 +335,20 @@ public class MessageOutputStream implements AutoCloseable {
 	public void captureCharacterStream(Writer writer, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
 		closeOnClose(writer);
-		if (requestStream instanceof Writer) {
-			requestStream = StreamCaptureUtils.captureWriter((Writer)requestStream, writer, maxSize);
+		if (requestStream instanceof Writer writer1) {
+			requestStream = StreamCaptureUtils.captureWriter(writer1, writer, maxSize);
 			return;
 		}
-		if (requestStream instanceof ContentHandler) {
-			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamCaptureUtils.limitSize(writer, maxSize))));
+		if (requestStream instanceof ContentHandler handler) {
+			requestStream = new XmlTee(handler, new PrettyPrintFilter(new XmlWriter(StreamCaptureUtils.limitSize(writer, maxSize))));
 			return;
 		}
-		if (requestStream instanceof JsonEventHandler) {
-			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamCaptureUtils.limitSize(writer, maxSize)));
+		if (requestStream instanceof JsonEventHandler handler) {
+			requestStream = new JsonTee(handler, new JsonWriter(StreamCaptureUtils.limitSize(writer, maxSize)));
 			return;
 		}
-		if (requestStream instanceof OutputStream) {
-			requestStream = StreamCaptureUtils.captureOutputStream((OutputStream)requestStream, new WriterOutputStream(writer,StreamUtil.DEFAULT_CHARSET), maxSize);
+		if (requestStream instanceof OutputStream stream) {
+			requestStream = StreamCaptureUtils.captureOutputStream(stream, new WriterOutputStream(writer,StreamUtil.DEFAULT_CHARSET), maxSize);
 			return;
 		}
 		log.warn("captureCharacterStream() called before stream is installed.");
@@ -366,20 +366,20 @@ public class MessageOutputStream implements AutoCloseable {
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
 		closeOnClose(outputStream);
-		if (requestStream instanceof OutputStream) {
-			requestStream = StreamCaptureUtils.captureOutputStream((OutputStream)requestStream, outputStream, maxSize);
+		if (requestStream instanceof OutputStream stream) {
+			requestStream = StreamCaptureUtils.captureOutputStream(stream, outputStream, maxSize);
 			return;
 		}
-		if (requestStream instanceof ContentHandler) {
-			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamCaptureUtils.limitSize(outputStream, maxSize))));
+		if (requestStream instanceof ContentHandler handler) {
+			requestStream = new XmlTee(handler, new PrettyPrintFilter(new XmlWriter(StreamCaptureUtils.limitSize(outputStream, maxSize))));
 			return;
 		}
-		if (requestStream instanceof JsonEventHandler) {
-			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamCaptureUtils.limitSize(outputStream, maxSize)));
+		if (requestStream instanceof JsonEventHandler handler) {
+			requestStream = new JsonTee(handler, new JsonWriter(StreamCaptureUtils.limitSize(outputStream, maxSize)));
 			return;
 		}
-		if (requestStream instanceof Writer) {
-			requestStream = StreamCaptureUtils.captureWriter((Writer)requestStream, new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize);
+		if (requestStream instanceof Writer writer) {
+			requestStream = StreamCaptureUtils.captureWriter(writer, new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize);
 			return;
 		}
 		log.warn("captureBinaryStream() called before stream is installed.");

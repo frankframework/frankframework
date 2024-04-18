@@ -122,8 +122,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 			if (pipeline!=null) {
 				for (int i=0; i<pipeline.getPipeLineSize(); i++) {
 					IPipe pipe=pipeline.getPipe(i);
-					if (pipe instanceof MessageSendingPipe) {
-						MessageSendingPipe msp=(MessageSendingPipe)pipe;
+					if (pipe instanceof MessageSendingPipe msp) {
 						ITransactionalStorage messageLog = msp.getMessageLog();
 						if (messageLog!=null) {
 							String slotId=messageLog.getSlotId();
@@ -135,8 +134,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 							}
 						} else {
 							ISender sender = msp.getSender();
-							if(sender instanceof ITransactionalStorage) {
-								ITransactionalStorage transactionalStorage = (ITransactionalStorage) sender;
+							if(sender instanceof ITransactionalStorage transactionalStorage) {
 								String slotId=transactionalStorage.getSlotId();
 								if (StringUtils.isNotEmpty(slotId)) {
 									SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),null,msp.getName());

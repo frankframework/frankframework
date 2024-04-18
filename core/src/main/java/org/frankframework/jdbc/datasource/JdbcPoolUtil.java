@@ -30,14 +30,13 @@ public class JdbcPoolUtil {
 	public static @Nullable String getConnectionPoolInfo(@Nullable DataSource datasource) {
 		StringBuilder info = new StringBuilder();
 
-		if (datasource instanceof OpenManagedDataSource) {
-			OpenManagedDataSource targetDataSource = (OpenManagedDataSource) datasource;
+		if (datasource instanceof OpenManagedDataSource targetDataSource) {
 			addPoolMetadata(targetDataSource.getPool(), info);
 		} else if (datasource instanceof org.apache.commons.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) datasource;
 			addPoolMetadata(dataSource.getPool(), info);
-		} else if (datasource instanceof DelegatingDataSource) { //Perhaps it's wrapped?
-			return getConnectionPoolInfo(((DelegatingDataSource) datasource).getTargetDataSource());
+		} else if (datasource instanceof DelegatingDataSource source) { //Perhaps it's wrapped?
+			return getConnectionPoolInfo(source.getTargetDataSource());
 		} else {
 			return null;
 		}

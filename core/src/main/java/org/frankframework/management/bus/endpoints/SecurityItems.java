@@ -178,8 +178,8 @@ public class SecurityItems extends BusEndpointBase {
 			this.datasourceName = datasourceName;
 			this.connectionPoolProperties = JdbcPoolUtil.getConnectionPoolInfo(ds);
 
-			if(ds instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				this.info = ((TransactionalDbmsSupportAwareDataSourceProxy) ds).getInfo();
+			if(ds instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
+				this.info = proxy.getInfo();
 			} else {
 				this.info = null;
 			}

@@ -149,10 +149,10 @@ public class ManageScheduler extends BusEndpointBase {
 				List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
 				if(triggers != null) {
 					for (Trigger trigger : triggers) {
-						if(trigger instanceof CronTrigger) {
-							sh.scheduleJob(jobDetail, ((CronTrigger) trigger).getCronExpression(), -1, true);
-						} else if(trigger instanceof SimpleTrigger) {
-							sh.scheduleJob(jobDetail, null, ((SimpleTrigger) trigger).getRepeatInterval(), true);
+						if(trigger instanceof CronTrigger cronTrigger) {
+							sh.scheduleJob(jobDetail, cronTrigger.getCronExpression(), -1, true);
+						} else if(trigger instanceof SimpleTrigger simpleTrigger) {
+							sh.scheduleJob(jobDetail, null, simpleTrigger.getRepeatInterval(), true);
 						}
 					}
 				}

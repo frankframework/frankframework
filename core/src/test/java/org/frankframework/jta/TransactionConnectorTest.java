@@ -228,8 +228,8 @@ public class TransactionConnectorTest {
 		if (txManager instanceof IThreadConnectableTransactionManager) {
 			IThreadConnectableTransactionManager tctm = txManager;
 			Object transaction = tctm.getCurrentTransaction();
-			if (transaction instanceof JtaTransactionObject) {
-				UserTransaction ut =((JtaTransactionObject)transaction).getUserTransaction();
+			if (transaction instanceof JtaTransactionObject object) {
+				UserTransaction ut =object.getUserTransaction();
 				System.out.println("-> UserTransaction status: "+ut.getStatus());
 			} else {
 				return;

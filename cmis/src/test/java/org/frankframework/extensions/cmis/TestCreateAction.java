@@ -29,10 +29,12 @@ public class TestCreateAction extends CmisSenderTestBase {
 	private static final String EMPTY_INPUT = "";
 	private static final String EMPTY_RESULT = "[unknown]";
 
-	private static final String INPUT = "<cmis><objectId>random</objectId><objectTypeId>cmis:document</objectTypeId><fileName>${filename}</fileName>"
-			+ "<properties><property name=\"cmis:description\" type=\"string\">123456789</property>"
-			+ "<property name=\"cmis:lastModificationDate\" type=\"datetime\">2019-02-26T16:31:15</property>"
-			+ "<property name=\"cmis:creationDate\" type=\"boolean\">true</property></properties></cmis>";
+	private static final String INPUT = """
+			<cmis><objectId>random</objectId><objectTypeId>cmis:document</objectTypeId><fileName>${filename}</fileName>\
+			<properties><property name="cmis:description" type="string">123456789</property>\
+			<property name="cmis:lastModificationDate" type="datetime">2019-02-26T16:31:15</property>\
+			<property name="cmis:creationDate" type="boolean">true</property></properties></cmis>\
+			""";
 
 	private static final String FILE_INPUT = "/fileInput.txt";
 

@@ -69,7 +69,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 	//Run the ValidateAttributeRule, returns the beanClass to validate setters being called
 	private <T> T runRule(Class<T> beanClass, Map<String, String> attributes) throws Exception {
 		configuration = new TestConfiguration();
-		T topBean = beanClass.newInstance();
+		T topBean = beanClass.getDeclaredConstructor().newInstance();
 		ValidateAttributeRule rule = new ValidateAttributeRule() {
 			@Override
 			public Object getBean() {

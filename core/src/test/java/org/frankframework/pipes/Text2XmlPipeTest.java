@@ -28,10 +28,12 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setSplitLines(true);
 		configureAndStartPipe();
 
-		String expectedOutput = "<address>"
-					+ "<line><![CDATA[this is an example]]></line>\n"
-					+ "<line><![CDATA[im in cdata]]></line>"
-					+ "</address>";
+		String expectedOutput = """
+					<address>\
+					<line><![CDATA[this is an example]]></line>
+					<line><![CDATA[im in cdata]]></line>\
+					</address>\
+					""";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
 		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
@@ -70,10 +72,12 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
 
-		String expectedOutput = "<address>"
-					+ "<line>this is an example</line>\n"
-					+ "<line>im not in cdata</line>"
-					+ "</address>";
+		String expectedOutput = """
+					<address>\
+					<line>this is an example</line>
+					<line>im not in cdata</line>\
+					</address>\
+					""";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim not in cdata", session);
 		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());
@@ -169,8 +173,10 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setReplaceNonXmlChars(false);
 		configureAndStartPipe();
 
-		String expectedOutput = "<address><line><![CDATA[this is an example]]></line>\n"
-				+ "<line><![CDATA[im in cdata]]></line></address>";
+		String expectedOutput = """
+				<address><line><![CDATA[this is an example]]></line>
+				<line><![CDATA[im in cdata]]></line></address>\
+				""";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
 		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString());

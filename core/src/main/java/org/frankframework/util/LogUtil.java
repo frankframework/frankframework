@@ -66,7 +66,7 @@ public class LogUtil {
 			return getLogger(MESSAGE_LOGGER);
 		}
 
-		return LogManager.getLogger(String.format("%s.%S", MESSAGE_LOGGER, adapter.getName()));
+		return LogManager.getLogger("%s.%S".formatted(MESSAGE_LOGGER, adapter.getName()));
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class LogUtil {
 			return getLogger(MESSAGE_LOGGER);
 		}
 
-		return LogManager.getLogger(String.format("%s.%S.%S", MESSAGE_LOGGER, adapter.getName(), object.getName()));
+		return LogManager.getLogger("%s.%S.%S".formatted(MESSAGE_LOGGER, adapter.getName(), object.getName()));
 	}
 
 	public static CloseableThreadContext.Instance getThreadContext(IAdapter adapter, String messageId, PipeLineSession session) {

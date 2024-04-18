@@ -72,8 +72,10 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/ab.zip");
 
-		String expected = 	"<results count=\"2\">"+
-							"</results>";
+		String expected = 	"""
+							<results count="2">\
+							</results>\
+							""";
 
 		PipeRunResult prr = doPipe(new UrlMessage(zip));
 

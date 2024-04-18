@@ -78,6 +78,6 @@ public class MessageKeeperMessage {
 	@Override
 	public String toString() {
 		String date = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a").format(messageDate);
-		return String.format("%S: %s - %s", messageLevel, date, messageText);
+		return "%S: %s - %s".formatted(messageLevel, date, messageText);
 	}
 }

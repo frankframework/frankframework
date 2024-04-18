@@ -116,14 +116,14 @@ public class TestPipeline extends FrankApiBase {
 
 	private String getPayload(Message<?> response) {
 		Object payload = response.getPayload();
-		if(payload instanceof String) {
-			return (String) payload;
-		} else if(payload instanceof byte[]) {
-			return new String((byte[]) payload);
-		} else if(payload instanceof InputStream) {
+		if(payload instanceof String string) {
+			return string;
+		} else if(payload instanceof byte[] bytes) {
+			return new String(bytes);
+		} else if(payload instanceof InputStream stream) {
 			try {
 				// Convert line endings to \n to show them in the browser as real line feeds
-				return StreamUtil.streamToString((InputStream) payload,  "\n", false);
+				return StreamUtil.streamToString(stream,  "\n", false);
 			} catch (IOException e) {
 				throw new ApiException("unable to read response payload", e);
 			}

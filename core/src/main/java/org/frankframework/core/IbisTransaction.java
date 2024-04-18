@@ -82,14 +82,12 @@ public class IbisTransaction {
 
 	@Nonnull
 	private String getRealTransactionManagerName() {
-		if (txManager instanceof SpringTxManagerProxy) {
-			SpringTxManagerProxy springTxMgr = (SpringTxManagerProxy) txManager;
+		if (txManager instanceof SpringTxManagerProxy springTxMgr) {
 			PlatformTransactionManager platformTxMgr = springTxMgr.getRealTxManager();
 			if (platformTxMgr == null) {
 				return springTxMgr.getClass().getName();
 			}
-			if (platformTxMgr instanceof JtaTransactionManager) {
-				JtaTransactionManager jtaTxMgr = (JtaTransactionManager) platformTxMgr;
+			if (platformTxMgr instanceof JtaTransactionManager jtaTxMgr) {
 				TransactionManager txMgr = jtaTxMgr.getTransactionManager();
 				if (txMgr == null) {
 					return jtaTxMgr.getClass().getName();
@@ -102,8 +100,8 @@ public class IbisTransaction {
 	}
 
 	public static boolean isDistributedTransactionsSupported(PlatformTransactionManager txManager) {
-		if(txManager instanceof SpringTxManagerProxy) {
-			return isDistributedTransactionsSupported(((SpringTxManagerProxy)txManager).getRealTxManager());
+		if(txManager instanceof SpringTxManagerProxy proxy) {
+			return isDistributedTransactionsSupported(proxy.getRealTxManager());
 		}
 		return txManager instanceof JtaTransactionManager;
 	}

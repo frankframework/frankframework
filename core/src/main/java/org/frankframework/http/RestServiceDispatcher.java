@@ -165,8 +165,7 @@ public class RestServiceDispatcher {
 		String ctName = Thread.currentThread().getName();
 		try {
 			boolean writeToSecLog = false;
-			if (listener instanceof RestListener) {
-				RestListener restListener = (RestListener) listener;
+			if (listener instanceof RestListener restListener) {
 				if (restListener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
 					try {
 						InputStreamDataSource dataSource = new InputStreamDataSource(httpServletRequest.getContentType(), httpServletRequest.getInputStream()); //the entire InputStream will be read here!

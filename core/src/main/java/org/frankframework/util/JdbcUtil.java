@@ -322,11 +322,11 @@ public class JdbcUtil {
 
 	@Deprecated
 	private static Writer getWriter(Object target) throws IOException {
-		if (target instanceof HttpServletResponse) {
-			return ((HttpServletResponse) target).getWriter();
+		if (target instanceof HttpServletResponse response) {
+			return response.getWriter();
 		}
-		if (target instanceof Writer) {
-			return (Writer) target;
+		if (target instanceof Writer writer) {
+			return writer;
 		}
 
 		return null;
@@ -410,17 +410,16 @@ public class JdbcUtil {
 			String rawMessage;
 			if (objectOK) {
 				// TODO: Direct handling of JMS messages in here should be removed. I do not expect any current instances to actually store unwrapped JMS Messages?
-				if (result instanceof MessageWrapper) {
-					rawMessage = ((MessageWrapper) result).getMessage().asString();
-				} else if (result instanceof TextMessage) {
+				if (result instanceof MessageWrapper wrapper) {
+					rawMessage = wrapper.getMessage().asString();
+				} else if (result instanceof TextMessage message) {
 					try {
-						rawMessage = ((TextMessage) result).getText();
+						rawMessage = message.getText();
 					} catch (JMSException e) {
 						throw new JdbcException(e);
 					}
-				} else if (result instanceof BytesMessage) {
+				} else if (result instanceof BytesMessage bytesMessage) {
 					try {
-						BytesMessage bytesMessage = (BytesMessage) result;
 						InputStream input = new BytesMessageInputStream(bytesMessage);
 						rawMessage = StreamUtil.streamToString(input);
 					} catch (IOException e) {
@@ -719,14 +718,14 @@ public class JdbcUtil {
 
 	@Deprecated
 	private static OutputStream getOutputStream(Object target) throws IOException {
-		if (target instanceof OutputStream) {
-			return (OutputStream) target;
+		if (target instanceof OutputStream stream) {
+			return stream;
 		}
-		if (target instanceof String) {
-			return getFileOutputStream((String) target);
+		if (target instanceof String string) {
+			return getFileOutputStream(string);
 		}
-		if (target instanceof Message && ((Message) target).isRequestOfType(String.class)) {
-			return getFileOutputStream(((Message) target).asString());
+		if (target instanceof Message message && message.isRequestOfType(String.class)) {
+			return getFileOutputStream(message.asString());
 		}
 		return null;
 	}

@@ -23,12 +23,14 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
 
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.IAdapter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.FileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlUtils;
 import org.springframework.beans.BeanInstantiationException;
@@ -40,9 +42,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
-
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Utility class to generate the flow diagram for an adapter or a configuration.
@@ -79,7 +78,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	/**
-	 * Optional IFlowGenerator. If non present the FlowDiagramManager should still be
+	 * Optional IFlowGenerator. If not present, the FlowDiagramManager should still be
 	 * able to generate dot files and return the `noImageAvailable` image.
 	 */
 	protected IFlowGenerator createFlowGenerator(String generatorBeanClass) {
@@ -216,7 +215,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			throw new IllegalStateException(parent.getPath() + " does not exist and could not be created");
 		}
 
-		String name = FileUtils.encodeFileName(fileName) + "." + flowGenerator.getFileExtension();
+		String name = encodeFileName(fileName) + "." + flowGenerator.getFileExtension();
 		log.trace("retrieve flow file for name[{}] in folder[{}]", ()->fileName, parent::getPath);
 
 		return new File(parent, name);
@@ -245,6 +244,21 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 
 		log.debug("finished generating flow diagram for [{}] in [{}] ms", () -> name, () -> System.currentTimeMillis() - start);
+	}
+
+	static String encodeFileName(String fileName) {
+		StringBuilder encodedFileName = new StringBuilder();
+		for (int i = 0; i < fileName.length(); i++) {
+			char c = fileName.charAt(i);
+			if (CharUtils.isAsciiAlphanumeric(c)) {
+				encodedFileName.append(c);
+			} else if ("-_.+=".indexOf(c) >= 0) {
+				encodedFileName.append(c);
+			} else {
+				encodedFileName.append('_');
+			}
+		}
+		return encodedFileName.toString();
 	}
 
 	@Override

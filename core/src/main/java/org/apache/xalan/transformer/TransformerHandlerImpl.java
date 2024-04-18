@@ -124,18 +124,15 @@ public class TransformerHandlerImpl
     if(null != ex)
       m_transformer.setExceptionThrown(ex);
     
-    if(m_dtm instanceof SAX2DTM)
+    if(m_dtm instanceof SAX2DTM sax2dtm)
     {
       if(DEBUG)
         System.err.println("In clearCoRoutine...");
       try
-      {
-        SAX2DTM sax2dtm = (SAX2DTM)m_dtm;          
+      {          
         if(null != m_contentHandler 
-           && m_contentHandler instanceof IncrementalSAXSource_Filter)
+           && m_contentHandler instanceof IncrementalSAXSource_Filter sp)
         {
-          IncrementalSAXSource_Filter sp =
-            (IncrementalSAXSource_Filter)m_contentHandler;
           // This should now be all that's needed.
           sp.deliverMoreNodes(false);
         }
@@ -646,9 +643,9 @@ public class TransformerHandlerImpl
     // can't really be configured, so I think this is the best thing right now 
     // for error reporting.  Possibly another JAXP 1.1 hole.  -sb
     javax.xml.transform.ErrorListener errorListener = m_transformer.getErrorListener();
-    if(errorListener instanceof ErrorHandler)
+    if(errorListener instanceof ErrorHandler handler)
     {
-      ((ErrorHandler)errorListener).warning(e);
+      handler.warning(e);
     }
     else
     {
@@ -681,9 +678,9 @@ public class TransformerHandlerImpl
     // can't really be configured, so I think this is the best thing right now 
     // for error reporting.  Possibly another JAXP 1.1 hole.  -sb
     javax.xml.transform.ErrorListener errorListener = m_transformer.getErrorListener();
-    if(errorListener instanceof ErrorHandler)
+    if(errorListener instanceof ErrorHandler handler)
     {
-      ((ErrorHandler)errorListener).error(e);
+      handler.error(e);
       ErrorHandler l_errorHandler = m_errorHandler;
       if(null != l_errorHandler)
         l_errorHandler.error(e); // may not be called.
@@ -734,9 +731,9 @@ public class TransformerHandlerImpl
     // for error reporting.  Possibly another JAXP 1.1 hole.  -sb
     javax.xml.transform.ErrorListener errorListener = m_transformer.getErrorListener();
     
-    if(errorListener instanceof ErrorHandler)
+    if(errorListener instanceof ErrorHandler handler)
     {
-      ((ErrorHandler)errorListener).fatalError(e);
+      handler.fatalError(e);
       if(null != l_errorHandler)
     	  l_errorHandler.fatalError(e); // may not be called.
     }

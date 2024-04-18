@@ -92,7 +92,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 	}
 
 	private StringMessage doExecute(String datasource, QueryType queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
-		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
+		secLog.info("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]".formatted(query, datasource, queryType, avoidLocking));
 
 		DirectQuerySender qs = createBean(DirectQuerySender.class);
 		String result;
