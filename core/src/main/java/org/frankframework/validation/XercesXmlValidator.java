@@ -225,8 +225,8 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static void registerNamespaces(Grammar grammar, Set<String> namespaces, Set<Grammar> namespaceRegisteredGrammars) {
 		namespaceRegisteredGrammars.add(grammar);
 		namespaces.add(grammar.getGrammarDescription().getNamespace());
-		if (grammar instanceof SchemaGrammar) {
-			List<?> imported = ((SchemaGrammar)grammar).getImportedGrammars();
+		if (grammar instanceof SchemaGrammar schemaGrammar) {
+			List<?> imported = schemaGrammar.getImportedGrammars();
 			if (imported != null) {
 				for (Object g : imported) {
 					Grammar gr = (Grammar)g;

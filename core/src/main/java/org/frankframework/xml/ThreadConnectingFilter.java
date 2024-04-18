@@ -32,11 +32,11 @@ public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 	@Override
 	protected void handleException(Exception e) throws SAXException {
 		Throwable t = threadConnector.abortThread(e);
-		if (t instanceof SAXException) {
-			throw (SAXException) t;
+		if (t instanceof SAXException exception) {
+			throw exception;
 		}
-		if (t instanceof Exception) {
-			throw new SaxException((Exception)t);
+		if (t instanceof Exception exception) {
+			throw new SaxException(exception);
 		}
 		throw new RuntimeException(t);
 	}

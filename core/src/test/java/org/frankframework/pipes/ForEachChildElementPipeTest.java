@@ -58,10 +58,13 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		"<sub name=\"r\">R</sub>\n" +
 		"</result>\n</results>";
 
-	private final String expectedBasicNoNSFirstElement = "<results>\n" +
-		"<result item=\"1\">\n" +
-		"<sub>A &amp; B</sub>\n" +
-		"</result>\n</results>";
+	private final String expectedBasicNoNSFirstElement = """
+		<results>
+		<result item="1">
+		<sub>A &amp; B</sub>
+		</result>
+		</results>\
+		""";
 
 	private final String expectedBasicNoNSFirstTwoElements = "<results>\n" +
 		"<result item=\"1\">\n" +
@@ -135,14 +138,14 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			try {
 				if (message.asString().contains("error")) {
 					if (e!=null) {
-						if (e instanceof SenderException) {
-							throw (SenderException)e;
+						if (e instanceof SenderException exception) {
+							throw exception;
 						}
-						if (e instanceof TimeoutException) {
-							throw (TimeoutException)e;
+						if (e instanceof TimeoutException exception) {
+							throw exception;
 						}
-						if (e instanceof RuntimeException) {
-							throw (RuntimeException)e;
+						if (e instanceof RuntimeException exception) {
+							throw exception;
 						}
 					}
 					throw new SenderException("Exception triggered", e);
@@ -179,17 +182,19 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		PipeRunResult prr = doPipe(pipe, messageBasicJson, session);
 		String actual = Message.asString(prr.getResult());
 
-		String expectedBasicJsonConversion = "<results>\n"
-				+ "<result item=\"1\">\n"
-				+ "<data><children><child>1</child></children></data>\n"
-				+ "</result>\n"
-				+ "<result item=\"2\">\n"
-				+ "<data><children><child>2</child></children></data>\n"
-				+ "</result>\n"
-				+ "<result item=\"3\">\n"
-				+ "<data><children><child>3</child></children></data>\n"
-				+ "</result>\n"
-				+ "</results>";
+		String expectedBasicJsonConversion = """
+				<results>
+				<result item="1">
+				<data><children><child>1</child></children></data>
+				</result>
+				<result item="2">
+				<data><children><child>2</child></children></data>
+				</result>
+				<result item="3">
+				<data><children><child>3</child></children></data>
+				</result>
+				</results>\
+				""";
 		assertEquals(expectedBasicJsonConversion, actual);
 	}
 
@@ -418,10 +423,13 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = Message.asString(prr.getResult());
 
-		String expectedBasicOnlyR = "<results>\n" +
-				"<result item=\"1\">\n" +
-				"<sub name=\"r\">R</sub>\n" +
-				"</result>\n</results>";
+		String expectedBasicOnlyR = """
+				<results>
+				<result item="1">
+				<sub name="r">R</sub>
+				</result>
+				</results>\
+				""";
 		assertEquals(expectedBasicOnlyR, actual);
 	}
 

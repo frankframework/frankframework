@@ -66,8 +66,7 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 			return term.getNamespace();
 		}
 
-		if (term instanceof XSModelGroup) {
-			XSModelGroup modelGroup = (XSModelGroup)term;
+		if (term instanceof XSModelGroup modelGroup) {
 			XSObjectList particles = modelGroup.getParticles();
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
@@ -76,8 +75,7 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 					return namespace;
 				}
 			}
-		} else if (term instanceof XSWildcard) {
-			XSWildcard wildcard = (XSWildcard)term;
+		} else if (term instanceof XSWildcard wildcard) {
 			if (StringUtils.isNotEmpty(wildcard.getNamespace())) {
 				return wildcard.getNamespace();
 			}
@@ -103,8 +101,7 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 			elementInfo.namespaceUri = elementDeclaration.getNamespace();
 		} else {
 			XSTypeDefinition parentType = stack.peek().type;
-			if (parentType instanceof XSComplexTypeDefinition) {
-				XSComplexTypeDefinition complexType = (XSComplexTypeDefinition)parentType;
+			if (parentType instanceof XSComplexTypeDefinition complexType) {
 				XSParticle particle = complexType.getParticle();
 				elementInfo.namespaceUri = findNamespaceOfChildElement(particle, localName);
 			} else {

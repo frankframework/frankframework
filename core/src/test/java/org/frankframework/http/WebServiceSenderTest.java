@@ -86,9 +86,11 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setParamsInUrl(false);
 			sender.setFirstBodyPartName("request");
 
-			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
+			String xmlMultipart = """
+					<parts><part type="file" name="document.pdf" \
+					sessionKey="part_file" size="72833" \
+					mimeType="application/pdf"/></parts>\
+					""";
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
@@ -116,10 +118,12 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setParamsInUrl(false);
 			sender.setFirstBodyPartName("request");
 
-			String xmlMultipart = "<parts>"
-					+ "<part type=\"file\" name=\"document1.pdf\" sessionKey=\"part_file1\" mimeType=\"application/pdf\"/>"
-					+ "<part type=\"file\" name=\"document2.pdf\" sessionKey=\"part_file2\" mimeType=\"application/pdf\"/>"
-					+ "</parts>";
+			String xmlMultipart = """
+					<parts>\
+					<part type="file" name="document1.pdf" sessionKey="part_file1" mimeType="application/pdf"/>\
+					<part type="file" name="document2.pdf" sessionKey="part_file2" mimeType="application/pdf"/>\
+					</parts>\
+					""";
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file1", new ByteArrayInputStream("<dummy pdf file/>".getBytes()));
 			pls.put("part_file2", new ByteArrayInputStream("<dummy pdf file/>".getBytes()));
@@ -148,9 +152,11 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setParamsInUrl(false);
 			sender.setFirstBodyPartName("request");
 
-			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
-					+ "sessionKey=\"part_file\" size=\"72833\" "
-					+ "mimeType=\"application/pdf\"/></parts>";
+			String xmlMultipart = """
+					<parts><part type="file" name="document.pdf" \
+					sessionKey="part_file" size="72833" \
+					mimeType="application/pdf"/></parts>\
+					""";
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 

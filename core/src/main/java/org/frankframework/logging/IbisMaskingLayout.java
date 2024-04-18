@@ -87,7 +87,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 			if (maxLength > 0 && length > maxLength) {
 				int diff = length - maxLength;
 				//We trim the message because it may end with a newline or whitespace character.
-				message = message.substring(0, maxLength).trim() + " " + String.format(moreMessage, diff) + "\r\n";
+				message = message.substring(0, maxLength).trim() + " " + moreMessage.formatted(diff) + "\r\n";
 			}
 		}
 
@@ -131,8 +131,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * @see StackLocatorUtil#calcLocation(String)
 	 */
 	private LogEvent updateLogEventMessage(LogEvent event, Message message) {
-		if(event instanceof Log4jLogEvent) {
-			Log4jLogEvent.Builder builder = ((Log4jLogEvent) event).asBuilder();
+		if(event instanceof Log4jLogEvent logEvent) {
+			Log4jLogEvent.Builder builder = logEvent.asBuilder();
 			builder.setMessage(message);
 			return builder.build();
 		}

@@ -60,10 +60,12 @@ public class ApiWsdlXmlValidator extends WsdlXmlValidator {
 	@Override
 	public String getDocumentation() {
 		if (multipart) {
-			return "<br/>"
-					+ "<b>Note: </b>this service is not a SOAP service but a REST service."
-					+ " A 'multipart/form-data' request is expected of which the first part is a SOAP message and each next part is a file(stream)."
-					+ " This wsdl describes the SOAP message in the first part.";
+			return """
+					<br/>\
+					<b>Note: </b>this service is not a SOAP service but a REST service.\
+					 A 'multipart/form-data' request is expected of which the first part is a SOAP message and each next part is a file(stream).\
+					 This wsdl describes the SOAP message in the first part.\
+					""";
 		}
 		return null;
 	}

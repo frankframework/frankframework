@@ -177,12 +177,14 @@ public class XmlUtils {
 
 	private static String makeDetectXsltVersionXslt() {
 		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
-			+ "<xsl:output method=\"text\"/>"
-			+ "<xsl:template match=\"/\">"
-			+ "<xsl:value-of select=\"xsl:stylesheet/@version\"/>"
-			+ "</xsl:template>"
-			+ "</xsl:stylesheet>";
+		"""
+		<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">\
+		<xsl:output method="text"/>\
+		<xsl:template match="/">\
+		<xsl:value-of select="xsl:stylesheet/@version"/>\
+		</xsl:template>\
+		</xsl:stylesheet>\
+		""";
 	}
 
 	public static TransformerPool getDetectXsltVersionTransformerPool() throws TransformerException {
@@ -196,24 +198,26 @@ public class XmlUtils {
 
 	private static String makeGetXsltConfigXslt() {
 		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
-			+ "<xsl:output method=\"text\"/>"
-			+ 	"<xsl:template match=\"/\">"
-			+ 		"<xsl:for-each select=\"/xsl:stylesheet/@*\">"
-			+ 			"<xsl:value-of select=\"concat(name(),'=',.,';')\"/>"
-			+ 		"</xsl:for-each>"
-			+ 		"<xsl:for-each select=\"/xsl:transform/@*\">"
-			+ 			"<xsl:value-of select=\"concat(name(),'=',.,';')\"/>"
-			+ 		"</xsl:for-each>"
-			+ 		"<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
-			+ 			"<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
-			+ 		"</xsl:for-each>"
-			+ 		"disable-output-escaping=<xsl:choose>"
-			+ 				"<xsl:when test=\"//*[@disable-output-escaping='yes']\">yes</xsl:when>"
-			+ 				"<xsl:otherwise>no</xsl:otherwise>"
-			+ 			"</xsl:choose>;"
-			+ 	"</xsl:template>"
-			+ "</xsl:stylesheet>";
+		"""
+		<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">\
+		<xsl:output method="text"/>\
+		<xsl:template match="/">\
+		<xsl:for-each select="/xsl:stylesheet/@*">\
+		<xsl:value-of select="concat(name(),'=',.,';')"/>\
+		</xsl:for-each>\
+		<xsl:for-each select="/xsl:transform/@*">\
+		<xsl:value-of select="concat(name(),'=',.,';')"/>\
+		</xsl:for-each>\
+		<xsl:for-each select="/xsl:stylesheet/xsl:output/@*">\
+		<xsl:value-of select="concat('output-',name(),'=',.,';')"/>\
+		</xsl:for-each>\
+		disable-output-escaping=<xsl:choose>\
+		<xsl:when test="//*[@disable-output-escaping='yes']">yes</xsl:when>\
+		<xsl:otherwise>no</xsl:otherwise>\
+		</xsl:choose>;\
+		</xsl:template>\
+		</xsl:stylesheet>\
+		""";
 	}
 
 	public static TransformerPool getGetXsltConfigTransformerPool() throws TransformerException {
@@ -244,29 +248,33 @@ public class XmlUtils {
 	private static String makeRemoveNamespacesXsltTemplates() {
 		// TODO: Wish to get rid of this as well but it's still embedded in another XSLT.
 		return
-		"<xsl:template match=\"*\">"
-			+ "<xsl:element name=\"{local-name()}\">"
-			+ "<xsl:for-each select=\"@*\">"
-			+ "<xsl:attribute name=\"{local-name()}\"><xsl:value-of select=\".\"/></xsl:attribute>"
-			+ "</xsl:for-each>"
-			+ "<xsl:apply-templates/>"
-			+ "</xsl:element>"
-			+ "</xsl:template>"
-			+ "<xsl:template match=\"comment() | processing-instruction() | text()\">"
-			+ "<xsl:copy>"
-			+ "<xsl:apply-templates/>"
-			+ "</xsl:copy>"
-		+ "</xsl:template>";
+		"""
+		<xsl:template match="*">\
+		<xsl:element name="{local-name()}">\
+		<xsl:for-each select="@*">\
+		<xsl:attribute name="{local-name()}"><xsl:value-of select="."/></xsl:attribute>\
+		</xsl:for-each>\
+		<xsl:apply-templates/>\
+		</xsl:element>\
+		</xsl:template>\
+		<xsl:template match="comment() | processing-instruction() | text()">\
+		<xsl:copy>\
+		<xsl:apply-templates/>\
+		</xsl:copy>\
+		</xsl:template>\
+		""";
 	}
 
 	private static String makeGetRootNamespaceXslt() {
 		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
-			+ "<xsl:output method=\"text\"/>"
-			+ "<xsl:template match=\"*\">"
-			+ "<xsl:value-of select=\"namespace-uri()\"/>"
-			+ "</xsl:template>"
-			+ "</xsl:stylesheet>";
+		"""
+		<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">\
+		<xsl:output method="text"/>\
+		<xsl:template match="*">\
+		<xsl:value-of select="namespace-uri()"/>\
+		</xsl:template>\
+		</xsl:stylesheet>\
+		""";
 	}
 
 	public static TransformerPool getGetRootNamespaceTransformerPool() throws ConfigurationException {
@@ -494,8 +502,8 @@ public class XmlUtils {
 		if (handler instanceof LexicalHandler) {
 			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
 		}
-		if (handler instanceof ErrorHandler) {
-			xmlReader.setErrorHandler((ErrorHandler)handler);
+		if (handler instanceof ErrorHandler errorHandler) {
+			xmlReader.setErrorHandler(errorHandler);
 		}
 		return xmlReader;
 	}
@@ -1224,8 +1232,7 @@ public class XmlUtils {
 
 		for (int i = 0; i < len; i++) {
 			Node n = nl.item(i);
-			if (n instanceof Element) {
-				Element e = (Element) n;
+			if (n instanceof Element e) {
 				if (allChildren || e.getTagName().equals(tag)) {
 					c.add(n);
 				}
@@ -1253,8 +1260,7 @@ public class XmlUtils {
 		len = nl.getLength();
 		for (int i = 0; i < len; ++i) {
 			Node n = nl.item(i);
-			if (n instanceof Element) {
-				Element elem = (Element) n;
+			if (n instanceof Element elem) {
 				if (elem.getTagName().equals(tag)) {
 					return elem;
 				}
@@ -1424,8 +1430,8 @@ public class XmlUtils {
 			map.put("Saxon-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
-			if (xmlInputFactory instanceof WstxInputFactory) {
-				ReaderConfig woodstoxConfig = ((WstxInputFactory)xmlInputFactory).createPrivateConfig();
+			if (xmlInputFactory instanceof WstxInputFactory factory) {
+				ReaderConfig woodstoxConfig = factory.createPrivateConfig();
 				String woodstoxVersion = ReaderConfig.getImplName()+" "+ReaderConfig.getImplVersion()+"; xml1.1 "+(woodstoxConfig.isXml11()?"":"not ")+"enabled";
 				map.put("Woodstox-Version", woodstoxVersion);
 			}

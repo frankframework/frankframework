@@ -97,7 +97,7 @@ class MailConvertor extends AbstractConvertor {
 		MailMessage eml;
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			eml = MailMessage.load(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).newInstance());
+			eml = MailMessage.load(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).getDeclaredConstructor().newInstance());
 		}
 
 		AttachmentCollection attachments = eml.getAttachments();

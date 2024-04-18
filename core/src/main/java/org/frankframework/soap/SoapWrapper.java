@@ -203,9 +203,9 @@ public class SoapWrapper {
 	private SoapVersion getSoapVersionFromSession(final PipeLineSession session) {
 		if (session == null) return null;
 		Object soapVersionObject = session.getOrDefault(SoapWrapper.SOAP_VERSION_SESSION_KEY, null);
-		if (soapVersionObject instanceof SoapVersion) {
-			log.debug("Found SOAP version in session: {}", ((SoapVersion) soapVersionObject).name());
-			return (SoapVersion) soapVersionObject;
+		if (soapVersionObject instanceof SoapVersion version) {
+			log.debug("Found SOAP version in session: {}", version.name());
+			return version;
 		}
 		return null;
 	}

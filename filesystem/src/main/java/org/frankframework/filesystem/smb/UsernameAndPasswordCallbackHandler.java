@@ -36,11 +36,9 @@ public class UsernameAndPasswordCallbackHandler implements CallbackHandler {
 	@Override
 	public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 		for (Callback callback : callbacks) {
-			if (callback instanceof NameCallback) {
-				NameCallback nc = (NameCallback) callback;
+			if (callback instanceof NameCallback nc) {
 				nc.setName(user);
-			} else if (callback instanceof PasswordCallback) {
-				PasswordCallback pc = (PasswordCallback) callback;
+			} else if (callback instanceof PasswordCallback pc) {
 				pc.setPassword(password.toCharArray());
 			} else {
 				throw new UnsupportedCallbackException(callback, "Unknown Callback");

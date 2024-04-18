@@ -47,10 +47,10 @@ public class JacksonUtils {
 
 	public static <T> T convertToDTO(Object payload, Class<T> dto) {
 		try {
-			if(payload instanceof String) {
-				return MAPPER.readValue((String) payload, dto);
-			} else if(payload instanceof byte[]) {
-				return MAPPER.readValue((byte[]) payload, dto);
+			if(payload instanceof String string) {
+				return MAPPER.readValue(string, dto);
+			} else if(payload instanceof byte[] bytes) {
+				return MAPPER.readValue(bytes, dto);
 			} else {
 				throw new NotImplementedException("unhandled payload type ["+payload.getClass()+"]");
 			}

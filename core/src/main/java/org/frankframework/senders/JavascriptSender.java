@@ -150,7 +150,7 @@ public class JavascriptSender extends SenderSeries {
 			ParameterValue pv = pvl.getParameterValue(i);
 			Object value = pv.getValue();
 			try {
-				jsParameters[i] = value instanceof Message ? ((Message) value).asString() : value;
+				jsParameters[i] = value instanceof Message m ? m.asString() : value;
 			} catch (IOException e) {
 				throw new SenderException(getLogPrefix(), e);
 			}

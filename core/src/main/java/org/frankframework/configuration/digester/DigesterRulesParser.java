@@ -68,8 +68,8 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 		}
 
 		ObjectCreationFactory<Object> factory = getFactory(rule.getFactory());
-		if(factory instanceof IDigesterRuleAware) {
-			((IDigesterRuleAware)factory).setDigesterRule(rule);
+		if(factory instanceof IDigesterRuleAware aware) {
+			aware.setDigesterRule(rule);
 		}
 		if(factory != null) {
 			factory.setDigester(digester); //When using a custom factory you have to inject the digester manually... Sigh
@@ -102,8 +102,8 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			} catch (Exception e) {
 				throw new IllegalArgumentException("factory ["+factory+"] not found", e);
 			}
-			if(object instanceof ObjectCreationFactory) {
-				return (ObjectCreationFactory) object;
+			if(object instanceof ObjectCreationFactory creationFactory) {
+				return creationFactory;
 			}
 			throw new IllegalArgumentException("factory type must implement ObjectCreationFactory");
 		}

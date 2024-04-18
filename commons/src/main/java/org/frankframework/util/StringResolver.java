@@ -264,8 +264,8 @@ public class StringResolver {
 	private static Optional<String> getReplacementFromProps(String key, Map<?, ?> props) {
 		if (props == null) {
 			return Optional.empty();
-		} else if (props instanceof Properties) {
-			return Optional.ofNullable(((Properties) props).getProperty(key));
+		} else if (props instanceof Properties properties) {
+			return Optional.ofNullable(properties.getProperty(key));
 		} else {
 			Object replacementSource = props.get(key);
 			if (replacementSource != null) {

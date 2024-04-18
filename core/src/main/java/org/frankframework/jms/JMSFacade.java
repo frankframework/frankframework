@@ -280,8 +280,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 						log.debug("creating MessagingSource");
 						messagingSource = messagingSourceFactory.getMessagingSource(connectionFactoryName, getAuthAlias(), createDestination);
 					} catch (IbisException e) {
-						if (e instanceof JmsException) {
-							throw (JmsException) e;
+						if (e instanceof JmsException exception) {
+							throw exception;
 						}
 						throw new JmsException(e);
 					}
@@ -616,8 +616,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			for (Map.Entry<String, Object> entry: properties.entrySet()) {
 				String key = entry.getKey();
 				Object value = entry.getValue();
-				if (value instanceof Message) {
-					value = ((Message) value).asString();
+				if (value instanceof Message message1) {
+					value = message1.asString();
 				}
 				msg.setObjectProperty(key, value);
 			}
@@ -748,10 +748,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public Message extractMessage(javax.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException, XmlException {
 		Message message;
 
-		if (jmsMessage instanceof TextMessage) {
-			message = new Message(((TextMessage) jmsMessage).getText(), getContext(jmsMessage));
-		} else if (jmsMessage instanceof BytesMessage) {
-			BytesMessage bytesMsg = (BytesMessage) jmsMessage;
+		if (jmsMessage instanceof TextMessage textMessage) {
+			message = new Message(textMessage.getText(), getContext(jmsMessage));
+		} else if (jmsMessage instanceof BytesMessage bytesMsg) {
 			InputStream input = new BytesMessageInputStream(bytesMsg);
 			message = new Message(new BufferedInputStream(input), getContext(jmsMessage));
 		} else if (jmsMessage == null) {
@@ -768,8 +767,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		Message messageText = extractMessageBody(message, context, soapWrapper);
 		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
 			String soapHeader;
-			if (context instanceof PipeLineSession) {
-				soapHeader = soapWrapper.getHeader(message, (PipeLineSession) context);
+			if (context instanceof PipeLineSession session) {
+				soapHeader = soapWrapper.getHeader(message, session);
 			} else {
 				soapHeader = soapWrapper.getHeader(message, null);
 			}
@@ -780,8 +779,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	protected Message extractMessageBody(Message message, Map<String, Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException, XmlException {
-		if (context instanceof PipeLineSession) {
-			return soapWrapper.getBody(message, false, (PipeLineSession) context, null);
+		if (context instanceof PipeLineSession session) {
+			return soapWrapper.getBody(message, false, session, null);
 		}
 		return soapWrapper.getBody(message, false, null, null);
 	}

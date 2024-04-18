@@ -81,8 +81,8 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	public Message getResponse() {
 		if (responseBuffer==null) {
 			return null;
-		} else if (responseBuffer instanceof ByteArrayOutputStream) {
-			return new Message(((ByteArrayOutputStream)responseBuffer).toByteArray(), charset);
+		} else if (responseBuffer instanceof ByteArrayOutputStream stream) {
+			return new Message(stream.toByteArray(), charset);
 		} else {
 			return new Message(responseBuffer.toString());
 		}
@@ -96,12 +96,12 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	}
 
 	private void installCapture() {
-		if (captureStream instanceof Writer) {
-			super.captureCharacterStream((Writer)captureStream, caputureSize);
+		if (captureStream instanceof Writer writer) {
+			super.captureCharacterStream(writer, caputureSize);
 			return;
 		}
-		if (captureStream instanceof OutputStream) {
-			super.captureBinaryStream((OutputStream)captureStream, caputureSize);
+		if (captureStream instanceof OutputStream stream) {
+			super.captureBinaryStream(stream, caputureSize);
 			return;
 		}
 	}

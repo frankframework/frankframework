@@ -46,8 +46,8 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 	@Override
 	public void setContentHandler(ContentHandler handler) {
 		super.setContentHandler(handler);
-		if (handler instanceof LexicalHandler) {
-			setLexicalHandler ((LexicalHandler)handler);
+		if (handler instanceof LexicalHandler lexicalHandler1) {
+			setLexicalHandler (lexicalHandler1);
 		}
 	}
 

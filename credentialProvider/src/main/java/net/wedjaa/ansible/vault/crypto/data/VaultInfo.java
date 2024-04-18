@@ -48,7 +48,7 @@ public class VaultInfo
     public VaultInfo(String infoLine)
     {
     	if( logger.isDebugEnabled() ) {
-        	logger.debug(String.format("Ansible Vault info: %s", infoLine));
+        	logger.debug("Ansible Vault info: %s".formatted(infoLine));
     	}
 
         String [] infoParts = infoLine.split(INFO_SEPARATOR);

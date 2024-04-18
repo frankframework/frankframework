@@ -138,11 +138,11 @@ public class XmlToLabelFormat {
 		Collection c;
 
 		buf = new StringBuilder(10 * 1024);
-		if(data instanceof Document) {
-			doc = (Document) data;
+		if(data instanceof Document document) {
+			doc = document;
 			el = doc.getDocumentElement();
-		} else if(data instanceof Element) {
-			el = (Element) data;
+		} else if(data instanceof Element element) {
+			el = element;
 		} else {
 			throw new IllegalStateException("Input not of type Document or Element, but of type " + data.getClass());
 		}

@@ -87,8 +87,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 	public Object executeFunction(String name, Object... parameters) throws JavascriptException {
 		try {
 			Object result = v8.executeJSFunction(name, parameters);
-			if (result instanceof V8Value) {
-				V8Value v8Value = (V8Value) result;
+			if (result instanceof V8Value v8Value) {
 				objectsToRelease.add(v8Value);
 			}
 			return result;

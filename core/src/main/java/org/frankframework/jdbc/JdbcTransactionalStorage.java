@@ -762,8 +762,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				Object s = ois.readObject();
 				if (s instanceof MessageWrapper<?>) {
 					return (MessageWrapper<S>) s;
-				} else if (s instanceof Message) {
-					MessageWrapper<S> messageWrapper = new MessageWrapper<>((Message) s, storageKey, null);
+				} else if (s instanceof Message message) {
+					MessageWrapper<S> messageWrapper = new MessageWrapper<>(message, storageKey, null);
 					messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 					return messageWrapper;
 				} else {

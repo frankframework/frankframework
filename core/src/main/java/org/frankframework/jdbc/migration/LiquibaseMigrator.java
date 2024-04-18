@@ -70,8 +70,8 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
 		ClassLoader classLoader = getConfigurationClassLoader();
-		if (classLoader instanceof ClassLoaderBase) {
-			URL url = ((ClassLoaderBase)classLoader).getLocalResource(changeLogFile);
+		if (classLoader instanceof ClassLoaderBase base) {
+			URL url = base.getLocalResource(changeLogFile);
 			if (url==null) {
 				log.debug("database changelog file [{}] not found as local resource of classLoader [{}]", changeLogFile, classLoader);
 				return null;

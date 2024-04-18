@@ -83,40 +83,40 @@ public class XmlTee extends FullXmlFilter {
 
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).comment(ch, start, length);
+		if (handler!=null && handler instanceof LexicalHandler lexicalHandler) lexicalHandler.comment(ch, start, length);
 		super.comment(ch, start, length);
 	}
 
 	@Override
 	public void startCDATA() throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).startCDATA();
+		if (handler!=null && handler instanceof LexicalHandler lexicalHandler) lexicalHandler.startCDATA();
 		super.startCDATA();
 	}
 	@Override
 	public void endCDATA() throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).endCDATA();
+		if (handler!=null && handler instanceof LexicalHandler lexicalHandler) lexicalHandler.endCDATA();
 		super.endCDATA();
 	}
 
 	@Override
 	public void startDTD(String name, String publicId, String systemId) throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).startDTD(name, publicId, systemId);
+		if (handler!=null && handler instanceof LexicalHandler lexicalHandler) lexicalHandler.startDTD(name, publicId, systemId);
 		super.startDTD(name, publicId, systemId);
 	}
 	@Override
 	public void endDTD() throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).endDTD();
+		if (handler!=null && handler instanceof LexicalHandler lexicalHandler) lexicalHandler.endDTD();
 		super.endDTD();
 	}
 
 	@Override
 	public void startEntity(String name) throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).startEntity(name);
+		if (handler!=null && handler instanceof LexicalHandler lexicalHandler) lexicalHandler.startEntity(name);
 		super.startEntity(name);
 	}
 	@Override
 	public void endEntity(String name) throws SAXException {
-		if (handler!=null && handler instanceof LexicalHandler) ((LexicalHandler)handler).endEntity(name);
+		if (handler!=null && handler instanceof LexicalHandler lexicalHandler) lexicalHandler.endEntity(name);
 		super.endEntity(name);
 	}
 

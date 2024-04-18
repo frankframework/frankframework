@@ -312,7 +312,7 @@ public class Monitoring extends BusEndpointBase {
 			if(source != null) {
 				String name = "";
 				if(source.getAdapter() != null) {
-					name = String.format("%s / %s", source.getAdapter().getName(), source.getEventSourceName());
+					name = "%s / %s".formatted(source.getAdapter().getName(), source.getEventSourceName());
 				} else {
 					name = source.getEventSourceName();
 				}

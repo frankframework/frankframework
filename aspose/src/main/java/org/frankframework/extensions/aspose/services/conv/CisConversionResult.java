@@ -130,10 +130,10 @@ public class CisConversionResult {
 		builder.append(String.format("ConversionOption=[%s]", getConversionOption()));
 		builder.append(String.format("mediaType=[%s]", getMediaType()));
 		builder.append(String.format("documentName=[%s]", getDocumentName()));
-		builder.append(String.format("pdfResultFile=[%s]", getPdfResultFile() == null ? "null" : getPdfResultFile().getName()));
+		builder.append("pdfResultFile=[%s]".formatted(getPdfResultFile() == null ? "null" : getPdfResultFile().getName()));
 		builder.append(String.format("sessionKey=[%s]", getResultSessionKey()));
 		builder.append(String.format("failureReason=[%s]", getFailureReason()));
-		builder.append(String.format("attachments=[%s]", getAttachments()));
+		builder.append("attachments=[%s]".formatted(getAttachments()));
 
 		return builder.toString();
 	}

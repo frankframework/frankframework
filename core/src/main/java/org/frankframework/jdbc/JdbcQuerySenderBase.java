@@ -378,8 +378,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					if (param.getType() == ParameterType.INPUTSTREAM) {
 						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + param.getName() + "]");
 						try {Object object = newParameterList.getParameter(i).getValue(null, message, session, true);
-							if(object instanceof AutoCloseable) {
-								((AutoCloseable)object).close();
+							if(object instanceof AutoCloseable closeable) {
+								closeable.close();
 							}
 							else {
 								log.error("unable to auto-close parameter ["+param.getName()+"]");
@@ -664,16 +664,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			int parameterIndex = 1;
 			for (final Object o : paramArray) {
-				if (o instanceof Timestamp) {
-					pstmt.setTimestamp(parameterIndex, (Timestamp) o);
+				if (o instanceof Timestamp timestamp) {
+					pstmt.setTimestamp(parameterIndex, timestamp);
 					parameterIndex++;
 				}
-				if (o instanceof java.sql.Date) {
-					pstmt.setDate(parameterIndex, (java.sql.Date) o);
+				if (o instanceof java.sql.Date date) {
+					pstmt.setDate(parameterIndex, date);
 					parameterIndex++;
 				}
-				if (o instanceof String) {
-					pstmt.setString(parameterIndex, (String) o);
+				if (o instanceof String string) {
+					pstmt.setString(parameterIndex, string);
 					parameterIndex++;
 				}
 				if (o instanceof Integer) {

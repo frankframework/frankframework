@@ -331,12 +331,11 @@ public class XmlTypeToJsonSchemaConverter  {
 		if (term==null) {
 			throw new NullPointerException("particle.term is null");
 		}
-		if (term instanceof XSModelGroup) {
-			handleModelGroup(builder, (XSModelGroup)term, attributeUses, forProperties);
+		if (term instanceof XSModelGroup group) {
+			handleModelGroup(builder, group, attributeUses, forProperties);
 			return;
 		}
-		if (term instanceof XSElementDeclaration) {
-			XSElementDeclaration elementDeclaration = (XSElementDeclaration)term;
+		if (term instanceof XSElementDeclaration elementDeclaration) {
 			boolean multiOccurring = particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1;
 			if (elementDeclaration.getScope()==XSConstants.SCOPE_GLOBAL) {
 				String elementName = elementDeclaration.getName();
@@ -363,8 +362,8 @@ public class XmlTypeToJsonSchemaConverter  {
 			}
 			return;
 		}
-		if (term instanceof XSWildcard) {
-			handleWildcard((XSWildcard)term);
+		if (term instanceof XSWildcard wildcard) {
+			handleWildcard(wildcard);
 			return;
 		}
 		throw new IllegalStateException("handleTerm unknown Term type ["+term.getClass().getName()+"]");
@@ -527,10 +526,9 @@ public class XmlTypeToJsonSchemaConverter  {
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");
 
 				XSTerm childTerm = childParticle.getTerm();
-				if(childTerm instanceof XSModelGroup) {
-					modelGroups.add((XSModelGroup) childTerm);
-				} else if(childTerm instanceof XSElementDeclaration) {
-					XSElementDeclaration elementDeclaration = (XSElementDeclaration) childTerm;
+				if(childTerm instanceof XSModelGroup group) {
+					modelGroups.add(group);
+				} else if(childTerm instanceof XSElementDeclaration elementDeclaration) {
 					String elementName = elementDeclaration.getName();
 
 					if(elementName != null && childParticle.getMinOccurs() != 0) {
@@ -570,8 +568,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		handleParticle(refBuilder, childParticle, null);
 
 		XSTerm childTerm = childParticle.getTerm();
-		if( childTerm instanceof XSElementDeclaration ){
-			XSElementDeclaration elementDeclaration=(XSElementDeclaration) childTerm;
+		if( childTerm instanceof XSElementDeclaration elementDeclaration ){
 			XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
 			JsonStructure definition = getDefinitionWithReferences(elementTypeDefinition);
 

@@ -40,7 +40,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 	public void doPipeIntegerInput() throws Exception {
 		pipe.configure();
 		pipe.start();
-		Integer input = new Integer(1);
+		Integer input = Integer.valueOf(1);
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();

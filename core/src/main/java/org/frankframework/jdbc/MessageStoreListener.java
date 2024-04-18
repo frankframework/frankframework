@@ -160,9 +160,9 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	private static String extractStringData(@Nonnull RawMessageWrapper<?> rawMessageWrapper) throws ListenerException {
-		if (rawMessageWrapper instanceof MessageWrapper) {
+		if (rawMessageWrapper instanceof MessageWrapper wrapper) {
 			try {
-				return ((MessageWrapper<?>) rawMessageWrapper).getMessage().asString();
+				return wrapper.getMessage().asString();
 			} catch (IOException e) {
 				throw new ListenerException("Exception extracting string data from message", e);
 			}
@@ -172,8 +172,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
-		if (browser instanceof JdbcTableMessageBrowser) {
-			JdbcTableMessageBrowser<?> jtmb = (JdbcTableMessageBrowser<?>)browser;
+		if (browser instanceof JdbcTableMessageBrowser jtmb) {
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}

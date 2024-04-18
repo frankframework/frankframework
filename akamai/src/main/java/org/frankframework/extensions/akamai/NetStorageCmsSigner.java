@@ -124,10 +124,10 @@ public class NetStorageCmsSigner {
 		Date currentTime = new Date();
 		int rand = new Random().nextInt(Integer.MAX_VALUE);
 
-		return String.format(
-				"%d, 0.0.0.0, 0.0.0.0, %d, %d, %s",
+		return 
+				"%d, 0.0.0.0, 0.0.0.0, %d, %d, %s".formatted(
 				signType.getValue(),
-				currentTime.getTime()/1000,
+				currentTime.getTime() / 1000,
 				rand,
 				nonce);
 	}
@@ -142,8 +142,8 @@ public class NetStorageCmsSigner {
 	 * @return a base64 encoded return string
 	 */
 	protected String getAuthSignHeaderValue(String action, String authData) {
-		String signData = String.format(
-				"%s%s\n%s:%s\n",
+		String signData = 
+				"%s%s\n%s:%s\n".formatted(
 				authData,
 				uri.getPath(),
 				NetStorageCmsSigner.ACTION_HEADER.toLowerCase(),

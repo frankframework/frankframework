@@ -535,8 +535,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 					return condition;
 			} else {
 				// function is a subcondition within this condition
-				if (curFunction instanceof Condition) {
-					((Condition)curFunction).output = false;
+				if (curFunction instanceof Condition condition) {
+					condition.output = false;
 					return curFunction;
 				}
 			}

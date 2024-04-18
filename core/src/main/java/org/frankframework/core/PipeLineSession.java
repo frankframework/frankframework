@@ -133,8 +133,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				.map(Entry::getValue)
 				.map(AutoCloseable.class::cast)
 				.collect(Collectors.toSet());
-		if (to instanceof PipeLineSession) {
-			PipeLineSession toSession = (PipeLineSession) to;
+		if (to instanceof PipeLineSession toSession) {
 			closeablesInDestination.addAll(toSession.closeables.keySet());
 		}
 		closeables.keySet().removeAll(closeablesInDestination);
@@ -209,10 +208,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	public static Instant getTsReceived(Map<String, Object> context) {
 		Object tsReceived = context.get(PipeLineSession.TS_RECEIVED_KEY);
-		if(tsReceived instanceof Instant) {
-			return (Instant) tsReceived;
-		} else if(tsReceived instanceof String) {
-			return DateFormatUtils.parseToInstant((String) tsReceived, DateFormatUtils.FULL_GENERIC_FORMATTER);
+		if(tsReceived instanceof Instant instant) {
+			return instant;
+		} else if(tsReceived instanceof String string) {
+			return DateFormatUtils.parseToInstant(string, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		}
 		return null;
 	}
@@ -223,10 +222,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	public static Instant getTsSent(Map<String, Object> context) {
 		Object tsSent = context.get(PipeLineSession.TS_SENT_KEY);
-		if(tsSent instanceof Instant) {
-			return (Instant) tsSent;
-		} else if(tsSent instanceof String) {
-			return DateFormatUtils.parseToInstant((String) tsSent, DateFormatUtils.FULL_GENERIC_FORMATTER);
+		if(tsSent instanceof Instant instant) {
+			return instant;
+		} else if(tsSent instanceof String string) {
+			return DateFormatUtils.parseToInstant(string, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		}
 		return null;
 	}
@@ -290,13 +289,13 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object obj = get(key);
 		if (obj == null) {
 			return null;
-		} else if (obj instanceof String) {
-			return (String) obj;
+		} else if (obj instanceof String string) {
+			return string;
 		} else if (obj instanceof Number) {
 			return obj.toString();
-		} else if (obj instanceof Message) {
+		} else if (obj instanceof Message message) {
 			// Existing messages returned directly so they are not closed
-			return ((Message) obj).asString();
+			return message.asString();
 		} else {
 			// Other types are wrapped into a message, which is closed after converting to String.
 			// NB: If the sessionKey value is a stream this consumes the stream.
@@ -331,8 +330,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Boolean) {
-			return (Boolean) ob;
+		if(ob instanceof Boolean boolean1) {
+			return boolean1;
 		}
 		return "true".equalsIgnoreCase(this.getString(key));
 	}
@@ -347,8 +346,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return null;
 
-		if(ob instanceof Boolean) {
-			return (Boolean) ob;
+		if(ob instanceof Boolean boolean1) {
+			return boolean1;
 		}
 		return "true".equalsIgnoreCase(this.getString(key));
 	}
@@ -363,8 +362,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Number) {
-			return ((Number) ob).intValue();
+		if(ob instanceof Number number) {
+			return number.intValue();
 		}
 		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
 	}
@@ -379,11 +378,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return null;
 
-		if(ob instanceof Integer) {
-			return (Integer) ob;
+		if(ob instanceof Integer integer) {
+			return integer;
 		}
-		if(ob instanceof Number) {
-			return ((Number) ob).intValue();
+		if(ob instanceof Number number) {
+			return number.intValue();
 		}
 		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
 	}
@@ -398,8 +397,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Number) {
-			return ((Number) ob).longValue();
+		if(ob instanceof Number number) {
+			return number.longValue();
 		}
 		return Long.parseLong(Objects.requireNonNull(this.getString(key)));
 	}
@@ -414,8 +413,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Number) {
-			return ((Number) ob).doubleValue();
+		if(ob instanceof Number number) {
+			return number.doubleValue();
 		}
 		return Double.parseDouble(Objects.requireNonNull(this.getString(key)));
 	}

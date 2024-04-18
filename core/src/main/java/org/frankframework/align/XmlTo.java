@@ -85,7 +85,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		} else {
 			if (writeAttributes) {
 				XSObjectList attributeUses=aligner.getAttributeUses();
-				XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition ? ((XSComplexTypeDefinition)typeDefinition).getAttributeWildcard():null;
+				XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition xsctd ? xsctd.getAttributeWildcard():null;
 				if (attributeUses==null && wildcard==null) {
 					if (atts.getLength()>0) {
 						log.warn("found ["+atts.getLength()+"] attributes, but no declared AttributeUses");

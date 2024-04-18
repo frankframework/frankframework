@@ -86,10 +86,10 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 		for (Entry<String,O> entry:objects.entrySet()) {
 			String name = entry.getKey();
 			O object = entry.getValue();
-			if (object instanceof AutoCloseable) {
+			if (object instanceof AutoCloseable closeable) {
 				try {
 					log.debug("closing ["+ClassUtils.nameOf(object)+"] object ["+name+"]");
-					((AutoCloseable)object).close();
+					closeable.close();
 				} catch (Exception e) {
 					if (masterException==null) {
 						masterException = new Exception("Exception caught closing ["+ClassUtils.nameOf(object)+"] object ["+name+"] held by ("+getClass().getSimpleName()+")", e);

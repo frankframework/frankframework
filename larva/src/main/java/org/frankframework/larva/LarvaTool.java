@@ -1115,8 +1115,7 @@ public class LarvaTool {
 		debugMessage("Close autoclosables");
 		for(String queueName : queues.keySet()) {
 			Map<String, Object> value = queues.get(queueName);
-			if(value instanceof QueueWrapper) {
-				QueueWrapper queue = (QueueWrapper) value;
+			if(value instanceof QueueWrapper queue) {
 				SenderThread senderThread = queue.getSenderThread();
 				if (senderThread != null) {
 					debugMessage("Found remaining SenderThread");
@@ -2178,9 +2177,9 @@ public class LarvaTool {
 
 	private static String format(double d) {
 		if (d == (long) d)
-			return String.format("%d", (long) d);
+			return "%d".formatted((long) d);
 		else
-			return String.format("%s", d);
+			return "%s".formatted(d);
 	}
 
 	public static String ignoreContentBeforeKey(String string, String key) {

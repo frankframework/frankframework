@@ -57,7 +57,7 @@ public class Util
         int colIdx = 0;
         for (byte val: unhexed)
         {
-            result += String.format("%02x", val);
+            result += "%02x".formatted(val);
             colIdx++;
             if (lineLength > 0 && colIdx>=lineLength/2) {
                 result += LINE_BREAK;

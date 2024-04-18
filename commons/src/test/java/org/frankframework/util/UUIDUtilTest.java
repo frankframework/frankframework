@@ -59,8 +59,8 @@ class UUIDUtilTest {
 	 */
 	@Test
 	public void testUnsignedByteToInt() {
-		assertEquals(244, UUIDUtil.unsignedByteToInt(new Byte("-12")));
-		assertEquals(12, UUIDUtil.unsignedByteToInt(new Byte("12")));
+		assertEquals(244, UUIDUtil.unsignedByteToInt(Byte.valueOf("-12")));
+		assertEquals(12, UUIDUtil.unsignedByteToInt(Byte.valueOf("12")));
 
 	}
 }

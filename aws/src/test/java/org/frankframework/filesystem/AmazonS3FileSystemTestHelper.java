@@ -54,7 +54,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public void setUp() throws Exception {
+	public void setUp() {
 		if(runLocalStub) {
 			s3Mock = new S3Mock.Builder().withPort(S3_PORT).withInMemoryBackend().build();
 			s3Mock.start();
@@ -92,7 +92,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if(s3Mock != null) {
 			s3Mock.shutdown();
 		}
@@ -190,7 +190,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 			}
 
 			// If the bucket contains many objects, the listObjects() call
-			// might not return all of the objects in the first listing. Check to
+			// might not return all the objects in the first listing. Check to
 			// see whether the listing was truncated. If so, retrieve the next page of objects
 			// and delete them.
 			if (objectListing.isTruncated()) {

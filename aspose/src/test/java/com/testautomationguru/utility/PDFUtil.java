@@ -546,10 +546,10 @@ public class PDFUtil {
 				PDResources pdResources = list.get(iPage).getResources();
 				for (COSName c : pdResources.getXObjectNames()) {
 		            PDXObject o = pdResources.getXObject(c);
-		            if (o instanceof org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject) {
+		            if (o instanceof org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject object) {
 		            	bImageFound = true;
 		            	String fname = this.imageDestinationPath + "/" + fileName+ "_" + totalImages + ".png";
-		                ImageIO.write(((org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject)o).getImage(), "png", new File(fname));
+		                ImageIO.write(object.getImage(), "png", new File(fname));
 		                imgNames.add(fname);
 		                totalImages++;
 		            }

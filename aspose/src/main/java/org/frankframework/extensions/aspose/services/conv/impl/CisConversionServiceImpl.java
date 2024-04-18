@@ -69,7 +69,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 				long startTime = System.currentTimeMillis();
 				// Convertor found, convert the file
 				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, configuration.getCharset());
-				if(log.isDebugEnabled()) log.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
+				if(log.isDebugEnabled()) log.debug("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s".formatted(System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
 			}
 		}
 		return result;

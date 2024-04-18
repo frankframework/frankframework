@@ -94,8 +94,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	protected BufferedReader getReader(String streamId, Message input, PipeLineSession session) throws PipeRunException {
 		try {
 			Reader reader = getReaderFactory().getReader(getInputStream(streamId, input, session), getCharset(), streamId, session);
-			if (reader instanceof BufferedReader) {
-				return (BufferedReader)reader;
+			if (reader instanceof BufferedReader bufferedReader) {
+				return bufferedReader;
 			}
 			return new BufferedReader(reader);
 		} catch (SenderException e) {
@@ -370,8 +370,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				} else {
 					if (log.isDebugEnabled()) log.debug("closing block ["+blockName+"] for resultHandler ["+handler.getName()+"] due to "+reason);
 					if (isStoreOriginalBlock()) {
-						if (handler instanceof ResultBlock2Sender) {
-							if (((ResultBlock2Sender)handler).getLevel(streamId)==1) {
+						if (handler instanceof ResultBlock2Sender sender) {
+							if (sender.getLevel(streamId)==1) {
 								session.put(originalBlockKey, blocks.remove(originalBlockKey));
 							}
 						}

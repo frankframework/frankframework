@@ -124,14 +124,16 @@ public class IdinSenderTest {
 
 		sender.setAction(Action.DIRECTORY);
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
-		assertEquals("<result>\n"
-				+ "	<issuers>\n"
-				+ "		<country name=\"NL\">\n"
-				+ "			<issuer id=\"INGBNL2A\">TEST</issuer>\n"
-				+ "		</country>\n"
-				+ "	</issuers>\n"
-				+ "	<timestamp>2015-07-15 12:10:10.123</timestamp>\n"
-				+ "</result>", result);
+		assertEquals("""
+				<result>
+					<issuers>
+						<country name="NL">
+							<issuer id="INGBNL2A">TEST</issuer>
+						</country>
+					</issuers>
+					<timestamp>2015-07-15 12:10:10.123</timestamp>
+				</result>\
+				""", result);
 	}
 
 	@Test
@@ -141,11 +143,13 @@ public class IdinSenderTest {
 		sender.setAction(Action.AUTHENTICATE);
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
 
-		assertEquals("<result>\n"
-				+ "	<authenticationURL>http://localhost/consumerAuthenticationSim?hash=4444</authenticationURL>\n"
-				+ "	<transactionID>0050000021142024</transactionID>\n"
-				+ "	<createDateTimestamp>2015-07-15 12:10:10.123</createDateTimestamp>\n"
-				+ "</result>", result);
+		assertEquals("""
+				<result>
+					<authenticationURL>http://localhost/consumerAuthenticationSim?hash=4444</authenticationURL>
+					<transactionID>0050000021142024</transactionID>
+					<createDateTimestamp>2015-07-15 12:10:10.123</createDateTimestamp>
+				</result>\
+				""", result);
 	}
 
 	private static String addSignature(SigningKeyPair keyEntry, String xml) throws Exception {

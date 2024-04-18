@@ -76,7 +76,7 @@ public class SlidesConvertor extends AbstractConvertor {
 	}
 
 	private static LoadOptions getLoadOptions(final MediaType mediaType) throws Exception {
-		return MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).newInstance();
+		return MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).getDeclaredConstructor().newInstance();
 	}
 
 	@Override

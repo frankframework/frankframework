@@ -162,14 +162,16 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.configure();
 		val.start();
 
-		String soapFault = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
-				+ "<soapenv:Body>"
-				+ "  <soapenv:Fault>\n"
-				+ "    <faultcode>soapenv:Server</faultcode>\n"
-				+ "    <faultstring>test</faultstring>\n"
-				+ "  </soapenv:Fault>\n"
-				+ "</soapenv:Body>"
-				+ "</soapenv:Envelope>";
+		String soapFault = """
+				<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">\
+				<soapenv:Body>\
+				  <soapenv:Fault>
+				    <faultcode>soapenv:Server</faultcode>
+				    <faultstring>test</faultstring>
+				  </soapenv:Fault>
+				</soapenv:Body>\
+				</soapenv:Envelope>\
+				""";
 		val.validate(soapFault, session);
 	}
 
@@ -193,26 +195,30 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		session.put("SOAPAction", "add");
 		val.configure();
 		val.start();
-		val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
-				+ "	<s:Header/>\n"
-				+ "	<s:Body>\n"
-				+ "		<impl:add>\n"
-				+ "			<impl:numA>3.14</impl:numA>\n"
-				+ "			<impl:numB>3.14</impl:numB>\n"
-				+ "		</impl:add>\n"
-				+ "	</s:Body>\n"
-				+ "</s:Envelope>", session);
+		val.validate("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body>
+						<impl:add>
+							<impl:numA>3.14</impl:numA>
+							<impl:numB>3.14</impl:numB>
+						</impl:add>
+					</s:Body>
+				</s:Envelope>\
+				""", session);
 
 		session.put("SOAPAction", "sub");
-		val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
-				+ "	<s:Header/>\n"
-				+ "	<s:Body>\n"
-				+ "		<impl:sub>\n"
-				+ "			<impl:numA>3.14</impl:numA>\n"
-				+ "			<impl:numC>3.14</impl:numC>\n"
-				+ "		</impl:sub>\n"
-				+ "	</s:Body>\n"
-				+ "</s:Envelope>", session);
+		val.validate("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body>
+						<impl:sub>
+							<impl:numA>3.14</impl:numA>
+							<impl:numC>3.14</impl:numC>
+						</impl:sub>
+					</s:Body>
+				</s:Envelope>\
+				""", session);
 	}
 
 	@Test
@@ -224,33 +230,39 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		session.put("SOAPAction", "add");
 		val.configure();
 		val.start();
-		val.validate(Message.asMessage("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
-				+ "	<s:Header/>\n"
-				+ "	<s:Body>\n"
-				+ "		<impl:addResponse>\n"
-				+ "			<impl:addReturn>3.14</impl:addReturn>\n"
-				+ "		</impl:addResponse>\n"
-				+ "	</s:Body>\n"
-				+ "</s:Envelope>"), session, true, null);
+		val.validate(Message.asMessage("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body>
+						<impl:addResponse>
+							<impl:addReturn>3.14</impl:addReturn>
+						</impl:addResponse>
+					</s:Body>
+				</s:Envelope>\
+				"""), session, true, null);
 
 		session.put("SOAPAction", "sub");
-		val.validate(Message.asMessage("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
-				+ "	<s:Header/>\n"
-				+ "	<s:Body>\n"
-				+ "		<impl:subResponse>\n"
-				+ "			<impl:subReturn>3.14</impl:subReturn>\n"
-				+ "		</impl:subResponse>\n"
-				+ "	</s:Body>\n"
-				+ "</s:Envelope>"), session, true, null);
+		val.validate(Message.asMessage("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body>
+						<impl:subResponse>
+							<impl:subReturn>3.14</impl:subReturn>
+						</impl:subResponse>
+					</s:Body>
+				</s:Envelope>\
+				"""), session, true, null);
 
-		val.validate(Message.asMessage("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
-				+ "	<s:Header/>\n"
-				+ "	<s:Body>\n"
-				+ "		<impl:addResponse>\n"
-				+ "			<impl:addReturn>3.14</impl:addReturn>\n"
-				+ "		</impl:addResponse>\n"
-				+ "	</s:Body>\n"
-				+ "</s:Envelope>"), session, true, null);
+		val.validate(Message.asMessage("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body>
+						<impl:addResponse>
+							<impl:addReturn>3.14</impl:addReturn>
+						</impl:addResponse>
+					</s:Body>
+				</s:Envelope>\
+				"""), session, true, null);
 	}
 
 	@Test
@@ -262,15 +274,17 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.configure();
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
-				val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
-						+ "	<s:Header/>\n"
-						+ "	<s:Body>\n"
-						+ "		<impl:add>\n"
-						+ "			<impl:numA>3.14</impl:numA>\n"
-						+ "			<impl:numB>3.14</impl:numB>\n"
-						+ "		</impl:add>\n"
-						+ "	</s:Body>\n"
-						+ "</s:Envelope>", session));
+				val.validate("""
+						<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+							<s:Header/>
+							<s:Body>
+								<impl:add>
+									<impl:numA>3.14</impl:numA>
+									<impl:numB>3.14</impl:numB>
+								</impl:add>
+							</s:Body>
+						</s:Envelope>\
+						""", session));
 	}
 
 	@Test
@@ -308,33 +322,34 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"  <Header>\n" +
-				"	<MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
-				"	  <From>\n" +
-				"		<Id>Ibis4Toegang</Id>\n" +
-				"	  </From>\n" +
-				"	  <HeaderFields>\n" +
-				"		<ConversationId/>\n" +
-				"		<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>\n" +
-				"		<ExternalRefToMessageId/>\n" +
-				"		<Timestamp>2001-12-17T09:30:47</Timestamp>\n" +
-				"	  </HeaderFields>\n" +
-				"	</MessageHeader>\n" +
-				"  </Header>\n" +
-				"  <Body>\n" +
-				"	<Request xmlns=\"http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01\">\n" +
-				"	  <BankSparen xmlns=\"http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01\">\n" +
-				"		<PRD>\n" +
-				"		  <KLT>\n" +
-				"			<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>\n" +
-				"		  </KLT>\n" +
-				"		</PRD>\n" +
-				"	  </BankSparen>\n" +
-				"	</Request>\n" +
-				"  </Body>\n" +
-				"</Envelope>\n" +
-				"", session);
+		val.validate("""
+				<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+				  <Header>
+					<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
+					  <From>
+						<Id>Ibis4Toegang</Id>
+					  </From>
+					  <HeaderFields>
+						<ConversationId/>
+						<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>
+						<ExternalRefToMessageId/>
+						<Timestamp>2001-12-17T09:30:47</Timestamp>
+					  </HeaderFields>
+					</MessageHeader>
+				  </Header>
+				  <Body>
+					<Request xmlns="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01">
+					  <BankSparen xmlns="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01">
+						<PRD>
+						  <KLT>
+							<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>
+						  </KLT>
+						</PRD>
+					  </BankSparen>
+					</Request>
+				  </Body>
+				</Envelope>
+				""", session);
 	}
 
 	@Test
@@ -347,31 +362,32 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
 
-				val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"  <BodyERROR>\n" +
-				"	<MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
-				"	  <From>\n" +
-				"		<Id>Ibis4Toegang</Id>\n" +
-				"	  </From>\n" +
-				"	  <HeaderFields>\n" +
-				"		<ConversationId/>\n" +
-				"		<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>\n" +
-				"		<ExternalRefToMessageId/>\n" +
-				"		<Timestamp>2001-12-17T09:30:47</Timestamp>\n" +
-				"	  </HeaderFields>\n" +
-				"	</MessageHeader>\n" +
-				"	<Request xmlns=\"http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01\">\n" +
-				"	  <BankSparen xmlns=\"http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01\">\n" +
-				"		<PRD>\n" +
-				"		  <KLT>\n" +
-				"			<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>\n" +
-				"		  </KLT>\n" +
-				"		</PRD>\n" +
-				"	  </BankSparen>\n" +
-				"	</Request>\n" +
-				"  </BodyERROR>\n" +
-				"</Envelope>\n" +
-				"", session)
+				val.validate("""
+				<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+				  <BodyERROR>
+					<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
+					  <From>
+						<Id>Ibis4Toegang</Id>
+					  </From>
+					  <HeaderFields>
+						<ConversationId/>
+						<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>
+						<ExternalRefToMessageId/>
+						<Timestamp>2001-12-17T09:30:47</Timestamp>
+					  </HeaderFields>
+					</MessageHeader>
+					<Request xmlns="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01">
+					  <BankSparen xmlns="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01">
+						<PRD>
+						  <KLT>
+							<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>
+						  </KLT>
+						</PRD>
+					  </BankSparen>
+					</Request>
+				  </BodyERROR>
+				</Envelope>
+				""", session)
 		);
 	}
 
@@ -385,31 +401,32 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.start();
 		assertThrows(XmlValidatorException.class, () ->
 
-				val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"  <Body>\n" +
-				"	<MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
-				"	  <From>\n" +
-				"		<Id>Ibis4Toegang</Id>\n" +
-				"	  </From>\n" +
-				"	  <HeaderFields>\n" +
-				"		<ConversationId/>\n" +
-				"		<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>\n" +
-				"		<ExternalRefToMessageId/>\n" +
-				"		<Timestamp>2001-12-17T09:30:47</Timestamp>\n" +
-				"	  </HeaderFields>\n" +
-				"	</MessageHeader>\n" +
-				"	<Request xmlns=\"http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01\">\n" +
-				"	  <BankSparen xmlns=\"http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01\">\n" +
-				"		<PRD>\n" +
-				"		  <KLTERROR>\n" +
-				"			<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>\n" +
-				"		  </KLTERROR>\n" +
-				"		</PRD>\n" +
-				"	  </BankSparen>\n" +
-				"	</Request>\n" +
-				"  </Body>\n" +
-				"</Envelope>\n" +
-				"", session)
+				val.validate("""
+				<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+				  <Body>
+					<MessageHeader xmlns="http://www.ing.com/CSP/XSD/General/Message_2">
+					  <From>
+						<Id>Ibis4Toegang</Id>
+					  </From>
+					  <HeaderFields>
+						<ConversationId/>
+						<MessageId>WPNLD8921975_0a4ac029-7747a1ed_12da7d4b033_-7ff3</MessageId>
+						<ExternalRefToMessageId/>
+						<Timestamp>2001-12-17T09:30:47</Timestamp>
+					  </HeaderFields>
+					</MessageHeader>
+					<Request xmlns="http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01">
+					  <BankSparen xmlns="http://www.ing.com/bis/xsd/nl/banking/bankingcustomer_generate_01_getpartybasicdatabanking_request_01">
+						<PRD>
+						  <KLTERROR>
+							<KLT_NA_RELNUM>181373377001</KLT_NA_RELNUM>
+						  </KLTERROR>
+						</PRD>
+					  </BankSparen>
+					</Request>
+				  </Body>
+				</Envelope>
+				""", session)
 		);
 	}
 
@@ -461,8 +478,10 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
-		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl] already has a "
-				+ "default value [http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]", getConfigurationWarnings().get(0));
+		assertEquals("""
+				WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl] already has a \
+				default value [http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]\
+				""", getConfigurationWarnings().get(0));
 	}
 
 	@Test
@@ -477,8 +496,10 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
-		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [http://frankframework.org/XSD/Generic/MessageHeader/2 schema1"
-				+ " http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]", getConfigurationWarnings().get(0));
+		assertEquals("""
+				WsdlXmlValidator [WsdlXmlValidator under test] use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [http://frankframework.org/XSD/Generic/MessageHeader/2 schema1\
+				 http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]\
+				""", getConfigurationWarnings().get(0));
 	}
 
 	@Test
@@ -491,8 +512,10 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
-		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/SimpleWsdl/simple.wsdl]"
-				+ " should only be set when addNamespaceToSchema=true", getConfigurationWarnings().get(0));
+		assertEquals("""
+				WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/SimpleWsdl/simple.wsdl]\
+				 should only be set when addNamespaceToSchema=true\
+				""", getConfigurationWarnings().get(0));
 
 		pipe.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
 	}

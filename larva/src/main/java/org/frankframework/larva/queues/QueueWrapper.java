@@ -72,9 +72,9 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		queueKey = StringUtil.lcFirst(configurable.getClass().getSimpleName());
 		put(queueKey, configurable);
 
-		if(configurable instanceof IPushingListener) {
+		if(configurable instanceof IPushingListener listener) {
 			ListenerMessageHandler<?> handler = new ListenerMessageHandler<>();
-			((IPushingListener) configurable).setHandler(handler);
+			listener.setHandler(handler);
 			put(MESSAGE_HANDLER_KEY, handler);
 		}
 	}

@@ -62,8 +62,8 @@ public class YamlParser {
 
 		// Due to how the parser works, ArrayList may encapsulate a map.
 		// Key doesn't need to be updated
-		else if (value instanceof ArrayList) {
-			handleListValue(key, (ArrayList<Object>) value);
+		else if (value instanceof ArrayList list) {
+			handleListValue(key, list);
 		}
 
 		// Threat as a single value and store it in the properties.

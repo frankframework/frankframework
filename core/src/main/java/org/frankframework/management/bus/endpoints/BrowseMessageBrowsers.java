@@ -271,8 +271,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	private IMessageBrowser<?> getStorageFromPipe(Adapter adapter, String pipeName) {
 		IPipe pipe = getPipeByName(adapter, pipeName);
-		if(pipe instanceof MessageSendingPipe) {
-			return getPipeMessageLog((MessageSendingPipe) pipe);
+		if(pipe instanceof MessageSendingPipe sendingPipe) {
+			return getPipeMessageLog(sendingPipe);
 		}
 		throw new BusException("pipe does not have a MessageBrowser");
 	}
@@ -281,8 +281,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		IMessageBrowser<?> storage = pipe.getMessageLog();
 		if(storage == null) {
 			ISender sender = pipe.getSender();
-			if(sender instanceof IMessageBrowser<?>) {
-				storage = (IMessageBrowser<?>) sender;
+			if(sender instanceof IMessageBrowser<?> browser) {
+				storage = browser;
 			}
 		}
 		if(storage == null) {

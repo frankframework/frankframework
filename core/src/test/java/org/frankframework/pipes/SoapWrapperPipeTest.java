@@ -41,9 +41,11 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 			+ "</root></soapenv:Body></soapenv:Envelope>";
 	private static final String DEFAULT_XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-	private final String messageBody = "<soapenv:Body><FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\">"
-			+ "<Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\"><Status>OK</Status></Result>"
-			+ "</FindDocuments_Response></soapenv:Body></soapenv:Envelope>";
+	private final String messageBody = """
+			<soapenv:Body><FindDocuments_Response xmlns="http://api.nn.nl/FindDocuments">\
+			<Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"><Status>OK</Status></Result>\
+			</FindDocuments_Response></soapenv:Body></soapenv:Envelope>\
+			""";
 	private final String soapMessageSoap11 = "<soapenv:Envelope xmlns:soapenv=\"" + SoapVersion.SOAP11.namespace + "\">" + messageBody;
 	private final String soapMessageSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SoapVersion.SOAP12.namespace + "\">" + messageBody;
 
@@ -171,10 +173,12 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		configureAndStartPipe();
 
 		String input = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
-		String expected = "<root>\n"
-				+ "<attrib>1</attrib>\n"
-				+ "<attrib>2</attrib>\n"
-				+ "</root>";
+		String expected = """
+				<root>
+				<attrib>1</attrib>
+				<attrib>2</attrib>
+				</root>\
+				""";
 
 		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
@@ -210,10 +214,12 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		configureAndStartPipe();
 
 		String input = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
-		String expected = "<OtherRoot>"
-				+ "<attrib>1</attrib>"
-				+ "<attrib>2</attrib>"
-				+ "</OtherRoot>";
+		String expected = """
+				<OtherRoot>\
+				<attrib>1</attrib>\
+				<attrib>2</attrib>\
+				</OtherRoot>\
+				""";
 
 		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
