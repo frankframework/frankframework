@@ -15,12 +15,32 @@
 */
 package org.frankframework.management.web.spring;
 
+import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
+import org.frankframework.util.StreamUtil;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebMvc
 public class WebConfiguration implements WebMvcConfigurer {
+
+	@Override
+	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+		StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter(StreamUtil.DEFAULT_CHARSET);
+		stringHttpMessageConverter.setWriteAcceptCharset(false);
+		converters.add(stringHttpMessageConverter);
+		converters.add(new InputStreamHttpMessageConverter());
+		converters.add(new ByteArrayHttpMessageConverter());
+	}
 
 }

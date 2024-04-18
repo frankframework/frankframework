@@ -33,7 +33,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import lombok.Getter;
 
 import org.frankframework.util.SpringUtils;
-import org.springframework.web.filter.ShallowEtagHeaderFilter;
 
 /**
  * Configures all {@link Dynamic} Filters through Spring and registers them in the ServletContext.

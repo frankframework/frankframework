@@ -33,6 +33,7 @@ import org.springframework.util.DigestUtils;
 
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.message.MessageBase;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 public class ResponseUtils {
 
@@ -68,7 +69,7 @@ public class ResponseUtils {
 		return convertToSpringResponse(message, null);
 	}
 
-	public static ResponseEntity<?> convertToSpringResponse(Message<?> message, StreamingOutput response) {
+	public static ResponseEntity<?> convertToSpringResponse(Message<?> message, StreamingResponseBody response) {
 		int status = BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 200);
 		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
 		ResponseEntity.BodyBuilder responseEntity = ResponseEntity.status(status);
