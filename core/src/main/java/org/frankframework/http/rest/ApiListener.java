@@ -51,7 +51,7 @@ import lombok.Setter;
  * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
  * Prepends the configured URI pattern with <code>api/</code>. The structure of REST messages is described
  * by OpenAPI specifications. The Frank!Framework generates an OpenAPI specification for each ApiListener and
- * also an OpenAPI specification for all ApiListeners in all configurations. You can
+ * for all ApiListeners in all configurations combined. You can
  * find them in the Frank!Console under main menu item Webservices, heading Available ApiListeners.
  * <p>
  * The generated OpenAPI specifications have <code>servers</code> and <code>paths</code> objects and
@@ -59,19 +59,19 @@ import lombok.Setter;
  * <p>
  * It is possible to automatically generate eTags over the listener result. This can be controlled by globally 
  * setting the property <code>api.etag.enabled</code> or by setting the attribute <code>updateEtag="true"</code>.
- * When enabled the listener will respond to the 'if-match', 'if-none-match' headers and may return status code 304.
+ * When enabled the listener will respond to the <code>If-Match</code>, <code>If-None-Match</code> headers and may return status code 304.
  * <p>
- * In order to make eTags work across multiple nodes you must configure Memcached to store the eTags.
+ * In order to enable eTags for multiple nodes you must configure Memcached to store the eTags.
  * The following properties will need to be set:
  * <ul>
- * <li>etag.cache.server=ip or hostname:port</li>
- * <li>etag.cache.type=memcached</li>
+ * <li><code>etag.cache.server=ip or hostname:port</code></li>
+ * <li><code>etag.cache.type=memcached</code></li>
  * </ul>
  * In case authentication, is required the following application properties can be used:
  * <ul>
- * <li>etag.cache.username</li>
- * <li>etag.cache.password</li>
- * <li>etag.cache.authalias</li>
+ * <li><code>etag.cache.username</code></li>
+ * <li><code>etag.cache.password</code></li>
+ * <li><code>etag.cache.authalias</code></li>
  * </ul>
  *
  * @author Niels Meijer
@@ -293,7 +293,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * URI pattern to register this listener on, eq. `/my-listener/{something}/here`
+	 * URI pattern to register this listener on, eq. <code>/my-listener/{something}/here</code>
 	 *
 	 * @ff.mandatory
 	 */
@@ -309,7 +309,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * The required contentType on requests, if it doesn't match a 415 Unsupported Media Type is replied
+	 * The required contentType on requests, if it doesn't match a <code>415 Unsupported Media Type</code> is replied
 	 *
 	 * @ff.default ANY
 	 */
@@ -415,7 +415,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.headerParams = headerParams;
 	}
 
-	/** Session key that provides the Content-Disposition header in the response */
+	/** Session key that provides the <code>Content-Disposition</code> header in the response */
 	public void setContentDispositionHeaderSessionKey(String key) {
 		this.contentDispositionHeaderSessionKey = key;
 	}
@@ -430,7 +430,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.jwksUrl = string;
 	}
 
-	/** Header to extract JWT from */
+	/**
+	 * Header to extract JWT from
+	 *
+	 * @ff.default <code>Authorization</code>
+	 */
 	public void setJwtHeader(String string) {
 		this.jwtHeader = string;
 	}
@@ -440,22 +444,22 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.requiredClaims = string;
 	}
 
-	/** Comma separated key value pairs to exactly match with JWT payload. e.g. "sub=UnitTest, aud=test" */
+	/** Comma separated key value pairs to exactly match with JWT payload. e.g. <code>sub=UnitTest, aud=test</code> */
 	public void setExactMatchClaims(String string) {
 		this.exactMatchClaims = string;
 	}
 
-	/** Comma separated key value pairs to one-of match with JWT payload. e.g. "appid=a,appid=b" */
+	/** Comma separated key value pairs to one-of match with JWT payload. e.g. <code>appid=a,appid=b</code> */
 	public void setAnyMatchClaims(String string) {
 		this.anyMatchClaims = string;
 	}
 
-	/** Claim name which specifies the role */
+	/** Claim name which specifies the role (maps to <code>IsUserInRolePipe</code>)*/
 	public void setRoleClaim(String roleClaim) {
 		this.roleClaim = roleClaim;
 	}
 
-	/** Claim name which specifies the principal name (maps to GetPrincipalPipe) */
+	/** Claim name which specifies the principal name (maps to <code>GetPrincipalPipe</code>) */
 	public void setPrincipalNameClaim(String principalNameClaim) {
 		this.principalNameClaim = principalNameClaim;
 	}
