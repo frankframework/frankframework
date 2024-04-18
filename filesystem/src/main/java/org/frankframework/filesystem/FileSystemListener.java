@@ -261,7 +261,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	private Optional<F> findFirstStableFile(Stream<F> ds) {
+	// Can throw FileSystemException from a Lambda
+	private Optional<F> findFirstStableFile(Stream<F> ds) throws FileSystemException {
 		long stabilityLimit = getMinStableTime();
 		if (stabilityLimit <= 0L) {
 			return ds.findFirst();
@@ -272,7 +273,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				.findFirst();
 	}
 
-	@SneakyThrows
+	@SneakyThrows(FileSystemException.class) // SneakyThrows because it's used in a Lambda
 	private boolean isFileOlderThan(F file, long timeInMillis) {
 		long filemodtime=fileSystem.getModificationTime(file).getTime();
 		return filemodtime <= timeInMillis;

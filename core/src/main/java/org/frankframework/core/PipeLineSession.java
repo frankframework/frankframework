@@ -15,6 +15,7 @@
 */
 package org.frankframework.core;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -169,13 +170,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * The ladybug might stub the MessageId. The Stubbed value will be wrapped in a Message.
 	 * Ensure that a proper string is returned in those cases too.
 	 */
-	@SneakyThrows
 	@Nullable
 	public String getMessageId() {
 		return getString(MESSAGE_ID_KEY); // Allow Ladybug to wrap it in a Message
 	}
 
-	@SneakyThrows
 	@Nullable
 	public String getCorrelationId() {
 		return getString(CORRELATION_ID_KEY); // Allow Ladybug to wrap it in a Message
@@ -284,7 +283,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @return Value of the session key as String, or NULL of either the key was not present or had a NULL value.
 	 */
 	@Nullable
-	@SneakyThrows
+	@SneakyThrows(IOException.class)
 	public String getString(@Nonnull String key) {
 		Object obj = get(key);
 		if (obj == null) {

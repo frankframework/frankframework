@@ -638,7 +638,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				});
 	}
 
-	@SneakyThrows
+	@SneakyThrows({PipeRunException.class}) // SneakyThrows because it's used in a Lambda
 	private Message loadMessageFromClasspathResource(final String stubFileName) {
 		Message result;
 		try {
