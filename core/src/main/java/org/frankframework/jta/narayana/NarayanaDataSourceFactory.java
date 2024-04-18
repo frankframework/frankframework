@@ -15,25 +15,15 @@
 */
 package org.frankframework.jta.narayana;
 
-import static java.util.Objects.requireNonNull;
-
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
-
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory;
-import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
-import org.apache.commons.dbcp2.managed.XAConnectionFactory;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.frankframework.jdbc.datasource.OpenManagedDataSource;
-import org.frankframework.jndi.AbstractXADataSourceFactory;
-import org.frankframework.util.AppConstants;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import org.frankframework.jndi.AbstractXADataSourceFactory;
+import org.frankframework.util.AppConstants;
 
 @Log4j2
 public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
@@ -57,17 +47,20 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 
 		DataSource ds;
 		if(maxPoolSize > 1) {
-			XAConnectionFactory cf = new DataSourceXAConnectionFactory(requireNonNull(transactionManager.getTransactionManager()), xaDataSource);
-			PoolableConnectionFactory poolableConnectionFactory = new PoolableManagedConnectionFactory(cf, null);
+			// Library 'commons-dbcp2' is used to create a connection pool, but not switched to jakarta version yet.
+			log.warn("Could not create XA-enabled PoolingDataSource, because 'commons-dbcp2' is not yet switched to 'jakarta'.");
+//			XAConnectionFactory cf = new DataSourceXAConnectionFactory(transactionManager.getTransactionManager(), xaDataSource);
+//			PoolableConnectionFactory poolableConnectionFactory = new PoolableManagedConnectionFactory(cf, null);
 
-			GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
+//			GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
 
-			ds = new OpenManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
-			log.info("created XA-enabled PoolingDataSource [{}]", ds);
-		} else {
-			ds = new NarayanaDataSource(xaDataSource, dataSourceName);
+//			ds = new OpenManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
+//			log.info("created XA-enabled PoolingDataSource [{}]", ds);
 		}
-		log.info("registered Narayana DataSource [{}] with Transaction Manager", ds);
+//		else {
+			ds = new NarayanaDataSource(xaDataSource, dataSourceName);
+//		}
+//		log.info("registered Narayana DataSource [{}] with Transaction Manager", ds);
 		return ds;
 	}
 }
