@@ -34,18 +34,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.core.IMessageBrowser.HideMethod;
-import org.xml.sax.InputSource;
-
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.core.IMessageBrowser.HideMethod;
+import org.xml.sax.InputSource;
 
 
 /**
@@ -144,47 +143,52 @@ public class Misc {
 	 * @see #toFileSize(long, boolean, boolean)
 	 */
 	public static String toFileSize(long value, boolean format) {
-		return toFileSize(value, format, false);
+		return toFileSize(value, false, format);
 	}
 
 	/**
-	 * Converts the input value in bytes to the highest degree of file size, and formats and floors the value, if set to true.
+	 * Format bytes as human-readable text.
+	 *
 	 * <pre>
-	 *      String mb = Misc.toFileSize(15000000, true); // gives out "14 MB"
-	 *      String kb = Misc.toFileSize(150000, false, true); // gives out "146KB"
+	 *     String kbIecUnits = Misc.toFileSize(150000, false, false); 			// gives out "146KiB"
+	 * 	   String mbIecUnits = Misc.toFileSize(15000000, true); 				// gives out "14 MiB"
+	 *     String gbIecUnits = Misc.toFileSize(Long.parseLong("3221225472"));	// gives out "3GiB"
+	 *
+	 * 	   String kbSiUnits = Misc.toFileSize(150000, true, false); 						// gives out "150kB"
+	 * 	   String mbSiUnits = Misc.toFileSize(15000000, true, true); 						// gives out "15 MB"
+	 * 	   String gbSiUnits = Misc.toFileSize(Long.parseLong("3221225472"), true, false); 	// gives out "3GB"
 	 * </pre>
+	 *
+	 * @param bytes Number of bytes.
+	 * @param useSiUnits True to use metric (SI) units, aka powers of 1000. False to use
+	 *           binary (IEC), aka powers of 1024.
+	 * @param format True to insert space between value and unit.
+	 *
+	 * @return Formatted string.
 	 */
-	public static String toFileSize(long value, boolean format, boolean floor) {
-		long divider = 1024L * 1024 * 1024;
-		String suffix = null;
-		if (value >= divider) {
-			suffix = "GB";
-		} else {
-			divider = 1024L * 1024;
-			if (value >= divider) {
-				suffix = "MB";
-			} else {
-				divider = 1024;
-				if (value >= divider) {
-					if (format) {
-						suffix = "kB";
-					} else {
-						suffix = "KB";
-					}
-				}
-			}
+	public static String toFileSize(long bytes, boolean useSiUnits, boolean format) {
+		int threshold = useSiUnits ? 1000 : 1024;
+
+		if (Math.abs(bytes) < threshold) {
+			return "${bytes} B";
 		}
-		if (suffix == null) {
-			if (format) {
-				if (value > 0) {
-					return "1 kB";
-				}
-				return "0 kB";
-			}
-			return value + (floor ? "B" : "");
-		}
-		float f = (float) value / divider;
-		return Math.round(f) + (format ? " " : "") + suffix;
+
+		String[] units = useSiUnits
+			? new String[]{"kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"}
+			: new String[]{"KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+		int index = -1;
+		double roundingPrecision = 10;
+
+		do {
+			bytes /= threshold;
+			++index;
+		} while (
+			Math.round(Math.abs(bytes) * roundingPrecision) / roundingPrecision >=
+				threshold &&
+				index < units.length - 1
+		);
+
+		return bytes + (format? " " : "") + units[index];
 	}
 
 	public static synchronized long getMessageSizeWarnByDefault() {
@@ -231,39 +235,6 @@ public class Misc {
 			log.debug("adding item to "+collectionDescription+" <empty string>");
 			collection.add("");
 		}
-	}
-
-	public static String getFileSystemTotalSpace() {
-		try {
-			File systemDir = getSystemDir();
-			if (systemDir == null) return null;
-			return String.valueOf(systemDir.getTotalSpace());
-		} catch ( Exception e ) {
-			log.debug("Caught Exception",e);
-			return null;
-		}
-	}
-
-	public static String getFileSystemFreeSpace() {
-		try {
-			File systemDir = getSystemDir();
-			if (systemDir == null) return null;
-			return String.valueOf(systemDir.getFreeSpace());
-		} catch ( Exception e ) {
-			log.debug("Caught Exception",e);
-			return null;
-		}
-	}
-
-	private static File getSystemDir() {
-		String dirName = System.getProperty("APPSERVER_ROOT_DIR");
-		if (dirName==null) {
-			dirName = System.getProperty("user.dir");
-			if (dirName==null) {
-				return null;
-			}
-		}
-		return new File(dirName);
 	}
 
 	public static String getAge(long value) {

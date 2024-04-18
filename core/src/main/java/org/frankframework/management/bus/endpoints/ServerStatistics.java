@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.bus.endpoints;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,12 +25,7 @@ import java.util.Map;
 import javax.annotation.security.PermitAll;
 import javax.servlet.ServletContext;
 
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.springframework.context.ApplicationContext;
-import org.springframework.messaging.Message;
-import org.springframework.web.context.WebApplicationContext;
-
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -42,6 +38,8 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -49,12 +47,17 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessMetrics;
+import org.springframework.context.ApplicationContext;
+import org.springframework.messaging.Message;
+import org.springframework.web.context.WebApplicationContext;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.APPLICATION)
 public class ServerStatistics extends BusEndpointBase {
+	private static final Logger log = LogUtil.getLogger(Misc.class);
+
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
-	private static boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
+	private static final boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 
 	@ActionSelector(BusAction.GET)
 	@PermitAll
@@ -85,8 +88,8 @@ public class ServerStatistics extends BusEndpointBase {
 		returnMap.put("applicationServer", getApplicationServer());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
 		Map<String, Object> fileSystem = new HashMap<>(2);
-		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
-		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
+		fileSystem.put("totalSpace", getFileSystemTotalSpace());
+		fileSystem.put("freeSpace", getFileSystemFreeSpace());
 		returnMap.put("fileSystem", fileSystem);
 		returnMap.put("processMetrics", ProcessMetrics.toMap());
 		Date date = new Date();
@@ -99,6 +102,39 @@ public class ServerStatistics extends BusEndpointBase {
 		}
 
 		return new JsonMessage(returnMap);
+	}
+
+	public static Long getFileSystemTotalSpace() {
+		try {
+			File systemDir = getSystemDir();
+			if (systemDir == null) return null;
+			return systemDir.getTotalSpace();
+		} catch ( Exception e ) {
+			log.debug("Caught Exception",e);
+			return null;
+		}
+	}
+
+	public static Long getFileSystemFreeSpace() {
+		try {
+			File systemDir = getSystemDir();
+			if (systemDir == null) return null;
+			return systemDir.getFreeSpace();
+		} catch ( Exception e ) {
+			log.debug("Caught Exception",e);
+			return null;
+		}
+	}
+
+	private static File getSystemDir() {
+		String dirName = System.getProperty("APPSERVER_ROOT_DIR");
+		if (dirName==null) {
+			dirName = System.getProperty("user.dir");
+			if (dirName==null) {
+				return null;
+			}
+		}
+		return new File(dirName);
 	}
 
 	@ActionSelector(BusAction.WARNINGS)
