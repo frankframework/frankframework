@@ -65,10 +65,6 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	@Context protected @Getter UriInfo uriInfo;
 	@Context private Request rsRequest;
 
-	/* Spring context */
-	@Autowired
-	private WebRequest wRequest;
-
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Environment environment;
 
@@ -112,25 +108,6 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 			}
 		}
 		return ResponseUtils.convertToJaxRsResponse(response).tag(eTag).build();
-	}
-
-	public ResponseEntity<?> callSyncGatewaySpring(RequestMessageBuilder input) throws ApiException {
-		return callSyncGatewaySpring(input, false);
-	}
-
-	public ResponseEntity<?> callSyncGatewaySpring(RequestMessageBuilder input, boolean evaluateEtag) throws ApiException {
-		Message<?> response = sendSyncMessage(input);
-		EntityTag eTag = null;
-		if(evaluateEtag) {
-			eTag = ResponseUtils.generateETagHeaderValue(response);
-		}
-		if(eTag != null) {
-			boolean notModified = wRequest.checkNotModified(eTag.toString());
-			if(notModified) {
-				return null; // Change the status of the response to 304 (Not Modified) and return an empty body
-			}
-		}
-		return ResponseUtils.convertToSpringResponse(response).eTag(eTag.toString()).build();
 	}
 
 	public Response callAsyncGateway(RequestMessageBuilder input) {

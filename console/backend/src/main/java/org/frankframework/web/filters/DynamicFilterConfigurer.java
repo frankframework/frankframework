@@ -33,6 +33,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import lombok.Getter;
 
 import org.frankframework.util.SpringUtils;
+import org.springframework.web.filter.ShallowEtagHeaderFilter;
 
 /**
  * Configures all {@link Dynamic} Filters through Spring and registers them in the ServletContext.
@@ -44,6 +45,7 @@ public class DynamicFilterConfigurer implements ServletContextListener {
 	public enum DynamicFilters {
 		CORS_FILTER(CorsFilter.class, "/iaf/api/*"),
 		CACHE_CONTROL_FILTER(CacheControlFilter.class, "/iaf/api/*"),
+		ETAG_FILTER(WeakShallowEtagHeaderFilter.class, "/iaf/spring-api/*"),
 		CSP_FILTER(CspFilter.class, "/iaf/gui/*");
 
 		private @Getter Class<? extends Filter> filterClass;

@@ -36,69 +36,63 @@ import org.frankframework.management.bus.message.MessageBase;
 
 public class ResponseUtils {
 
-	public static ResponseBuilder convertToJaxRsResponse(Message<?> response) {
-		int status = BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 200);
-		String mimeType = BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY, null);
-		ResponseBuilder builder = Response.status(status);
-
-		if(mimeType != null) {
-			builder.type(mimeType);
-		}
-
-		if(status == 200 || status > 204) {
-			builder.entity(response.getPayload());
-		}
-
-		String contentDisposition = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY, null);
-		if(contentDisposition != null) {
-			builder.header("Content-Disposition", contentDisposition);
-		}
-
-		return builder;
+	public static ResponseBuilder convertToJaxRsResponse(Message<?> message) {
+		return convertToJaxRsResponse(message, null);
 	}
 
-	public static <T> ResponseEntity.BodyBuilder convertToSpringResponse (Message<T> response) {
-		int status = BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 200);
-		String mimeType = BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY, null);
-		ResponseEntity.BodyBuilder responseEntity = ResponseEntity.status(status);
-		HttpHeaders entityHeaders = new HttpHeaders();
-
-		if(mimeType != null) {
-			entityHeaders.setContentType(MediaType.valueOf(mimeType));
-		}
-
-		if (status == 200 || status > 204) {
-			responseEntity.body(response.getPayload());
-		}
-
-		String contentDisposition = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY, null);
-		if (contentDisposition != null) {
-			entityHeaders.setContentDisposition(ContentDisposition.parse(contentDisposition));
-		}
-
-		responseEntity.headers(entityHeaders);
-		return responseEntity;
-	}
-
-	public static ResponseBuilder convertToJaxRsStreamingResponse(Message<?> message, StreamingOutput response){
+	public static ResponseBuilder convertToJaxRsResponse(Message<?> message, StreamingOutput response) {
 		int status = BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 200);
 		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
 		ResponseBuilder builder = Response.status(status);
 
-		if(mimeType != null) {
+		if (mimeType != null) {
 			builder.type(mimeType);
 		}
 
-		if(status == 200 || status > 204) {
-			builder.entity(response);
+		if (status == 200 || status > 204) {
+			if(response != null) {
+				builder.entity(response);
+			}
+			builder.entity(message.getPayload());
 		}
 
 		String contentDisposition = BusMessageUtils.getHeader(message, MessageBase.CONTENT_DISPOSITION_KEY, null);
-		if(contentDisposition != null) {
+		if (contentDisposition != null) {
 			builder.header("Content-Disposition", contentDisposition);
 		}
 
 		return builder;
+	}
+
+	public static ResponseEntity<?> convertToSpringResponse(Message<?> message) {
+		return convertToSpringResponse(message, null);
+	}
+
+	public static ResponseEntity<?> convertToSpringResponse(Message<?> message, StreamingOutput response) {
+		int status = BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 200);
+		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
+		ResponseEntity.BodyBuilder responseEntity = ResponseEntity.status(status);
+		HttpHeaders httpHeaders = new HttpHeaders();
+
+		if(mimeType != null) {
+			httpHeaders.setContentType(MediaType.valueOf(mimeType));
+		}
+
+		String contentDisposition = BusMessageUtils.getHeader(message, MessageBase.CONTENT_DISPOSITION_KEY, null);
+		if (contentDisposition != null) {
+			httpHeaders.setContentDisposition(ContentDisposition.parse(contentDisposition));
+		}
+
+		responseEntity.headers(httpHeaders);
+
+		if (status == 200 || status > 204) {
+			if(response != null) {
+				return responseEntity.body(response);
+			}
+			return responseEntity.body(message.getPayload());
+		}
+
+		return responseEntity.build();
 	}
 
 	/** Shallow eTag generation, saves bandwidth but not computing power */
@@ -122,18 +116,5 @@ public class ResponseUtils {
 		}
 
 		return new EntityTag(DigestUtils.md5DigestAsHex(bytes), isWeak);
-	}
-
-	private static String generateETagHeaderValueString(Object payload) {
-		byte[] bytes;
-		if(payload instanceof String) {
-			bytes = ((String)payload).getBytes(StandardCharsets.UTF_8);
-		} else if (payload instanceof byte[]) {
-			bytes = (byte[]) payload;
-		} else {
-			throw new NotImplementedException("return type ["+payload.getClass()+"] not implemented");
-		}
-
-		return DigestUtils.md5DigestAsHex(bytes);
 	}
 }

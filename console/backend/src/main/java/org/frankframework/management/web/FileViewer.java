@@ -69,7 +69,7 @@ public class FileViewer extends FrankApiBase {
 			}
 			outputStream.flush();
 		};
-		return ResponseUtils.convertToJaxRsStreamingResponse(fileContentsMessage, stream).build();
+		return ResponseUtils.convertToJaxRsResponse(fileContentsMessage, stream).build();
 	}
 
 }
