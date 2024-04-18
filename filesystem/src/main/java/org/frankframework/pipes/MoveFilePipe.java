@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
@@ -100,7 +99,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 				} else {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(getMove2file()));
 				}
-				moveFile(session, srcFile, dstFile);
+				moveFile(srcFile, dstFile);
 			} else {
 				if (StringUtils.isEmpty(getDirectory())) {
 					if (StringUtils.isEmpty(getFilename())) {
@@ -126,7 +125,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 				}
 				for (File file : srcFiles) {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(file.getName()));
-					moveFile(session, file, dstFile);
+					moveFile(file, dstFile);
 				}
 			}
 		} catch (IOException e) {
@@ -175,7 +174,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return newChild;
 	}
 
-	private void moveFile(PipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
+	private void moveFile(File srcFile, File dstFile) throws PipeRunException {
 		try {
 			if (!dstFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
@@ -190,7 +189,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 			}
 
 			if (isAppend()) {
-				if (FileUtils.appendFile(srcFile,dstFile,getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
+				if (appendFile(srcFile,dstFile,getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
 					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]");
 				}
 				srcFile.delete();
@@ -210,6 +209,19 @@ public class MoveFilePipe extends FixedForwardPipe {
 		} catch(Exception e) {
 			throw new PipeRunException(this, "Error while moving file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]", e);
 		}
+	}
+
+	public static String appendFile(File orgFile, File destFile, int nrRetries, long waitTime) throws InterruptedException {
+		int errCount = 0;
+
+		while (errCount++ < nrRetries) {
+			boolean success = FileUtils.copyFile(orgFile, destFile, true);
+			if (success) {
+				return destFile.getAbsolutePath();
+			}
+			Thread.sleep(waitTime);
+		}
+		return null;
 	}
 
 	/** name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file */
