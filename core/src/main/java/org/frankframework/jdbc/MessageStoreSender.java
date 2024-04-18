@@ -112,7 +112,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	 * @param message Message to convert
 	 * @return String of the message.
 	 */
-	@SneakyThrows
+	@SneakyThrows(IOException.class)
 	private String messageAsString(Message message) {
 		return message.asString();
 	}
