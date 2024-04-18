@@ -41,10 +41,10 @@ import org.springframework.messaging.MessageHandler;
 @IbisInitializer
 public class ShowLogDirectory {
 
-	private String defaultLogDirectory;
-	private String defaultLogWildcard = AppConstants.getInstance().getProperty("log.viewer.wildcard");
-	private boolean showDirectories = AppConstants.getInstance().getBoolean("log.viewer.showdirectories", true);
-	private int maxItems = AppConstants.getInstance().getInt("log.viewer.maxitems", 500);
+	private final String defaultLogDirectory;
+	private final String defaultLogWildcard = AppConstants.getInstance().getProperty("log.viewer.wildcard");
+	private final boolean showDirectories = AppConstants.getInstance().getBoolean("log.viewer.showdirectories", true);
+	private final int maxItems = AppConstants.getInstance().getInt("log.viewer.maxitems", 500);
 
 	public ShowLogDirectory() {
 		String logdir = AppConstants.getInstance().getProperty("log.dir");
