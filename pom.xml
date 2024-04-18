@@ -518,7 +518,7 @@
 			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-core</artifactId>
-				<version>9.0.87</version>
+				<version>9.0.88</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
