@@ -170,7 +170,7 @@ public class Misc {
 		int threshold = useSiUnits ? 1000 : 1024;
 
 		if (Math.abs(bytes) < threshold) {
-			return "${bytes} B";
+			return bytes + (format? " " : "") + "B";
 		}
 
 		String[] units = useSiUnits

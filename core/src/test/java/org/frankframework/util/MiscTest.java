@@ -44,19 +44,19 @@ public class MiscTest {
 	@Test
 	public void testNegativeToFileSize() {
 		String size = Misc.toFileSize(-1);
-		assertEquals("-1", size);
+		assertEquals("-1B", size);
 	}
 
 	@Test
 	public void testToFileSize1024() {
 		String size = Misc.toFileSize(1024);
-		assertEquals("1KB", size);
+		assertEquals("1KiB", size);
 	}
 
 	@Test
 	public void testNegativeToFileSize512MB() {
 		String size = Misc.toFileSize(1024*1024*5);
-		assertEquals("5MB", size);
+		assertEquals("5MiB", size);
 	}
 
 	/**
