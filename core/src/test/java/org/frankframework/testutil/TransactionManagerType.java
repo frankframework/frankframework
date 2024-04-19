@@ -139,7 +139,7 @@ public enum TransactionManagerType {
 	}
 
 	/**
-	 * fetch the DataSource through the configured {@link JndiDataSourceFactory}.
+	 * fetch the DataSource through the configured {@link DataSourceFactory}.
 	 */
 	public DataSource getDataSource(String productKey) {
 		ApplicationContext ac = getConfigurationContext(productKey);
