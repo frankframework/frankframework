@@ -17,11 +17,13 @@ package org.frankframework.jdbc.datasource;
 
 import java.util.Properties;
 
-/**
- * 
- */
 public interface IObjectLocator {
 
+	/**
+	 * Performs the actual lookup and should return <code>null</code> if it cannot
+	 * find the requested resource so the next {@link IObjectLocator} can give it a
+	 * shot.
+	 */
 	public <O> O lookup(String name, Properties environment, Class<O> lookupClass) throws Exception;
 
 }
