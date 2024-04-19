@@ -22,6 +22,6 @@ import java.util.Properties;
  */
 public interface IObjectLocator {
 
-	public <O> O lookup(String dataSourceName, Properties jndiEnvironment, Class<O> lookupClass) throws Exception;
+	public <O> O lookup(String name, Properties environment, Class<O> lookupClass) throws Exception;
 
 }
