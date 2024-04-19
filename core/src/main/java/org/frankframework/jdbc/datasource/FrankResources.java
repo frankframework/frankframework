@@ -104,7 +104,11 @@ public class FrankResources {
 		}
 	}
 
-	private @Nullable Resource findResource(@Nonnull List<Resource> resources, @Nonnull String name) {
+	private @Nullable Resource findResource(@Nullable List<Resource> resources, @Nonnull String name) {
+		if(resources == null) {
+			return null;
+		}
+
 		Optional<Resource> optional = resources.stream().filter(e -> name.equals(e.getName())).findFirst();
 		return optional.isPresent() ? optional.get() : null;
 	}
