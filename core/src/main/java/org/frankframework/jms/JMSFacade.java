@@ -427,7 +427,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return destinations.computeIfAbsent(destinationName, this::computeDestination);
 	}
 
-	@SneakyThrows
+	@SneakyThrows({JMSException.class, JmsException.class, NamingException.class})
 	private Destination computeDestination(String destinationName) {
 		Destination result;
 		if (StringUtils.isEmpty(destinationName)) {

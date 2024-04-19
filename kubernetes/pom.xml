@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>io.fabric8</groupId>
 			<artifactId>kubernetes-client</artifactId>
-			<version>6.12.0</version>
+			<version>6.12.1</version>
 		</dependency>
 
 		<!-- Test scoped dependencies -->

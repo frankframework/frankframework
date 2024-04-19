@@ -1,5 +1,7 @@
 package org.frankframework.monitoring;
 
+import java.io.IOException;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -16,7 +18,7 @@ class MessageCapturingEchoSender extends EchoSender {
 	private @Getter String sessionOriginalMessageValue;
 
 	@Override
-	@SneakyThrows
+	@SneakyThrows(IOException.class)
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		inputMessage = message;
 		inputSession = session;
