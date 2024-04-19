@@ -661,7 +661,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorWriteActionWriteLineSeparatorSessionKeyContents() throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
-		String expectedFSize="67 B";
+		String expectedFSize="67";
 
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
@@ -688,7 +688,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		String stringResult=Message.asString(result);
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
+		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@size");
 
 		String actualContents = readFile(null, filename);
 
@@ -734,7 +734,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorWriteActionWriteLineSeparatorMessageContents() throws Exception {
 		String filename = "writeLineSeparator" + FILE1;
 		String contents = "Some text content to test write action writeLineSeparator enabled";
-		String expectedFSize="67 B";
+		String expectedFSize="67";
 
 		if (_fileExists(filename)) {
 			_deleteFile(null, filename);
@@ -757,7 +757,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		String stringResult=Message.asString(result);
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
+		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@size");
 
 		String actualContents = readFile(null, filename);
 
