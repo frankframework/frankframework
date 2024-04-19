@@ -79,51 +79,55 @@ public class Init extends FrankApiBase {
 				continue;
 			}
 
-			Map<String, Object> resource = new HashMap<>(6);
 			Set<String> paths = mappingInfo.getDirectPaths();
 			RequestMethod methodType = mappingInfo.getMethodsCondition().getMethods().toArray(new RequestMethod[0])[0];
 			RolesAllowed rolesAllowed = method.getAnnotation(RolesAllowed.class);
 			Description description = method.getAnnotation(Description.class);
 
 			String[] allowedRolesList = displayAllowedRoles && rolesAllowed != null ?
-				rolesAllowed.value() : new String[0];
+				rolesAllowed.value() : null;
 			String descriptionText = description != null ? description.value() : null;
-			String rel = !hal && method.isAnnotationPresent(Relation.class) ?
-				method.getAnnotation(Relation.class).value() : null;
+			boolean hasRelation = method.isAnnotationPresent(Relation.class);
+			String rel = !hal && hasRelation ? method.getAnnotation(Relation.class).value() : null;
 
 			for (String path : paths.toArray(new String[0])) {
+				Map<String, Object> resource = new HashMap<>(6);
 				resource.put("name", method.getName());
 				resource.put("href", requestPath + path);
 				resource.put("type", methodType.name());
-				resource.put("deprecated", deprecated);
-				resource.put("roles", allowedRolesList);
-				resource.put("description", descriptionText);
-				resource.put("rel", rel);
-			}
+				if (deprecated)
+					resource.put("deprecated", deprecated);
+				if (allowedRolesList != null)
+					resource.put("roles", allowedRolesList);
+				if (descriptionText != null)
+					resource.put("description", descriptionText);
 
-			if(hal) {
-				if(method.isAnnotationPresent(Relation.class))
-					relation = method.getAnnotation(Relation.class).value();
+				if (hal) {
+					if (hasRelation)
+						relation = method.getAnnotation(Relation.class).value();
 
-				if(relation != null) {
-					if(HALresources.containsKey(relation)) {
-						Object prevRelation = HALresources.get(relation);
-						List<Object> tmpList = null;
-						if(prevRelation instanceof List)
-							tmpList = (List) prevRelation;
-						else {
-							tmpList = new ArrayList<>();
-							tmpList.add(prevRelation);
+					if (relation != null) {
+						if(HALresources.containsKey(relation)) {
+							Object prevRelation = HALresources.get(relation);
+							List<Object> tmpList = null;
+							if(prevRelation instanceof List)
+								tmpList = (List) prevRelation;
+							else {
+								tmpList = new ArrayList<>();
+								tmpList.add(prevRelation);
+							}
+
+							tmpList.add(resource);
+							HALresources.put(relation, tmpList);
 						}
-
-						tmpList.add(resource);
-						HALresources.put(relation, tmpList);
+						else
+							HALresources.put(relation, resource);
 					}
-					else
-						HALresources.put(relation, resource);
+				} else {
+					if(hasRelation)
+						resource.put("rel", rel);
+					JSONresources.add(resource);
 				}
-			} else {
-				JSONresources.add(resource);
 			}
 		}
 
