@@ -213,10 +213,11 @@
 
 	<bean name="messageTransformer" class="org.frankframework.ibistesttool.transform.HideRegexMessageTransformer"/>
 
-	<bean name="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-		<property name="jndiName" value="#{dataSourceName}"/>
-		<property name="resourceRef" value="true"/><!--  prefix with java:comp/env/ when needed -->
-	</bean>
+	<bean name="dataSource" class="org.frankframework.ibistesttool.jdbc.AutoCommitDisabledDataSource"/>
+
+	<bean name="poolingJndiDataSourceFactory" class="org.frankframework.jndi.PoolingJndiDataSourceFactory"/>
+
+	<bean name="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 
 	<bean
 		name="ladybugDatabaseChangelog"

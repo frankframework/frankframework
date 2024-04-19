@@ -39,6 +39,8 @@ import lombok.Setter;
  *
  * Already created DataSources are stored in a ConcurrentHashMap.
  * Every DataSource can be augmented before it is added.
+ *
+ * A pool will be created only when the DataSource retrieved from JNDI is not already a pooled DataSource.
  */
 public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 
