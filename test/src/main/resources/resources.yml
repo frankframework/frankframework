@@ -69,17 +69,43 @@ jdbc:
 
     # Postgres XA does not work without Narayana, gives ClassCastException casting the XA datasource to Java datasource, so add non-XA for those cases
   - name: "ibis4test-postgres"
-    type: "javax.sql.DataSource"
+    type: "org.postgresql.Driver"
     url: "jdbc:postgresql://${jdbc.hostname:-localhost}:5432/testiaf"
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
-    properties:
-        maxTotal: "10"
-        maxWaitMillis: "5000"
 
-  - name: "mongodb/ibis4test"
+
+  - name: "ibis4test-db2"
+    type: "com.ibm.db2.jcc.DB2SimpleDataSource"
+    url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+  - name: "ibis4test-db2-xa"
+    type: "com.ibm.db2.jcc.DB2XADataSource"
+    url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+mongodb:
+  - name: "ibis4test"
     type: "com.mongodb.MongoClient"
+    url: "mongodb://${jdbc.hostname:-localhost}"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+jms:
+  - name: "qcf-activemq"
+    type: "org.apache.activemq.ActiveMQXAConnectionFactory"
+    url: "tcp://${jms.hostname:-localhost}:61616"
     properties:
-      connectionString: "mongodb://testiaf_user:testiaf_user00@${jdbc.hostname:-localhost}"
-      singleton: "true"
+      jms.xaAckMode: "1"
+
+  - name: "qcf-artemis"
+    type: "org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory"
+    url: "tcp://${jms.hostname:-localhost}:61615"
+

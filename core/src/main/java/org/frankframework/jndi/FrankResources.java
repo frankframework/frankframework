@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,12 +41,12 @@ public class FrankResources {
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	private @Setter List<JdbcResource> jdbc;
-	private @Setter List<JmsResource> mongodb;
-	private @Setter List<JmsResource> jms;
+	private @Setter List<Resource> jdbc;
+	private @Setter List<Resource> mongodb;
+	private @Setter List<Resource> jms;
 
 	@Getter @Setter
-	public static class JdbcResource {
+	public static class Resource {
 		String name;
 		String type;
 		String url;
@@ -56,66 +57,61 @@ public class FrankResources {
 
 		@Override
 		public String toString() {
-			return "JDBCResource ["+ name+"]";
+			return "Resource ["+ name+"]";
 		}
-	}
-
-	@Getter @Setter
-	public static class JmsResource {
-		String name;
-		String type;
-		String url;
-		String authalias;
-		String username;
-		String password;
-		Properties properties;
-
-		@Override
-		public String toString() {
-			return "JMSResource ["+ name+"]";
-		}
-	}
-
-	@Override
-	public String toString() {
-		System.err.println(jdbc);
-		return super.toString();
 	}
 
 	@SuppressWarnings("unchecked")
 	public <O> O lookup(@Nonnull String name, Properties environment, @Nonnull Class<O> lookupClass) throws ClassNotFoundException {
 		if(name.indexOf('/') == -1) {
-			throw new IllegalStateException("no resource prefix found");
+			throw new IllegalStateException("no resource prefix found, expected one of [jdbc/jms/mongodb]");
 		}
 
-		String prefix = name.split("/")[0];
-		if("jdbc".equals(prefix)) {
-			String jdbcName = name.split("/")[1];
-			Optional<JdbcResource> optional = jdbc.stream().filter(e -> jdbcName.equals(e.getName())).findFirst();
-			if(optional.isPresent()) {
-				JdbcResource resource = optional.get();
-
-				if(StringUtils.isEmpty(resource.getUrl())) {
-					throw new IllegalStateException("field url is required");
-				}
-
-				Properties properties = getConnectionProperties(resource, environment);
-				String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
-
-				Class<?> clazz = ClassUtils.loadClass(resource.getType());
-				if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) {
-					return (O) new DriverManagerDataSource(url, properties); // do not use createDataSource here, as it has side effects in descender classes
-				}
-				if(lookupClass.isAssignableFrom(clazz)) {
-					return (O) loadClass(clazz, url, properties);
-				}
-
-				throw new IllegalStateException("class is not of required type ["+resource.getType()+"]");
-			}
+		Resource resource = findResource(name);
+		if(resource == null) {
+			return null; //If the lookup returns null, fail-fast to allow other ResourceFactories to locate the object.
 		}
-		return null;
+		if(StringUtils.isEmpty(resource.getUrl())) {
+			throw new IllegalStateException("field url is required");
+		}
+
+		Properties properties = getConnectionProperties(resource, environment);
+		String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
+		Class<?> clazz = ClassUtils.loadClass(resource.getType());
+
+		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { //It's also possible to use the native drivers instead of the DataSources directy.
+			return (O) new DriverManagerDataSource(url, properties);
+		}
+		if(lookupClass.isAssignableFrom(clazz)) {
+			return (O) loadClass(clazz, url, properties);
+		}
+
+		throw new IllegalStateException("class is not of required type ["+resource.getType()+"]");
 	}
 
+	private @Nullable Resource findResource(@Nonnull String name) {
+		List<String> parts = StringUtil.split(name, "/");
+		String prefix = parts.remove(0);
+		String resourceName = String.join("/", parts);
+
+		switch (prefix) {
+			case "jdbc":
+				return findResource(jdbc, resourceName);
+//			case "jms":
+//				return findResource(jms, resourceName);
+			default:
+				throw new IllegalArgumentException("unexpected lookup type: " + prefix);
+		}
+	}
+
+	private @Nullable Resource findResource(@Nonnull List<Resource> resources, @Nonnull String name) {
+		Optional<Resource> optional = resources.stream().filter(e -> name.equals(e.getName())).findFirst();
+		return optional.isPresent() ? optional.get() : null;
+	}
+
+	/**
+	 * Creates the class and populates available fields
+	 */
 	private <O> O loadClass(Class<O> clazz, String url, Properties properties) {
 		try {
 			O dataSource = clazz.getDeclaredConstructor().newInstance();
@@ -136,11 +132,14 @@ public class FrankResources {
 
 			return dataSource;
 		} catch (Exception e) {
-			throw new IllegalStateException("unable to create database driver");
+			throw new IllegalStateException("unable to create database driver", e);
 		}
 	}
 
-	private Properties getConnectionProperties(JdbcResource resource, Properties environment) {
+	/**
+	 * Combines the optional (supplied) environment, provided driver properties and resolved credentials.
+	 */
+	private Properties getConnectionProperties(Resource resource, Properties environment) {
 		Properties mergedProps = new Properties();
 		if(environment != null) {
 			mergedProps.putAll(environment);
@@ -166,7 +165,10 @@ public class FrankResources {
 		return mergedProps;
 	}
 
-	private CredentialFactory getCredentials(JdbcResource resource) {
+	/**
+	 * Performs a 'safe' lookup of credentials.
+	 */
+	private CredentialFactory getCredentials(Resource resource) {
 		String alias = resource.getAuthalias();
 		if(StringUtils.isNotEmpty(alias)) {
 			alias = StringResolver.substVars(alias, APP_CONSTANTS);

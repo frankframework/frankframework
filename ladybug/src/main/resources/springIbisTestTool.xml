@@ -215,7 +215,10 @@
 
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 
-	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.LadyBugDataSourceFactory"/>
+	<!-- Find DataSources in resources.yml and JNDI -->
+	<bean id="ResourceBasedObjectFactory" class="org.frankframework.jndi.ResourceBasedObjectFactory" />
+	<bean id="JndiObjectFactory" class="org.frankframework.jndi.JndiObjectFactory" />
+	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.LadyBugDataSourceFactory" autowire="byType" />
 
 	<bean name="defaultDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>

@@ -25,20 +25,28 @@ import org.frankframework.util.StreamUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.yaml.snakeyaml.Yaml;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * Should support both JNDI as well as resources.yaml
  * if type="javax.sql.DataSource" --> driverClassName="org.postgresql.Driver"
  * @author niels
  *
  */
+@Log4j2
 public class ResourceBasedObjectFactory implements IObjectLocator, InitializingBean {
 
 	public static final String DEFAULT_RESOURCE_FILE = "resources.yml";
-	private FrankResources resources;
+	private FrankResources resources = null;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		URL url = ClassUtils.getResourceURL(DEFAULT_RESOURCE_FILE);
+		if(url == null) {
+			log.info("did not find [{}] skipping resource based object lookups", DEFAULT_RESOURCE_FILE);
+			return;
+		}
+
 		try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			Yaml yaml = new Yaml();
 			resources = yaml.loadAs(reader, FrankResources.class);
@@ -47,6 +55,10 @@ public class ResourceBasedObjectFactory implements IObjectLocator, InitializingB
 
 	@Override
 	public <O> O lookup(String name, Properties environment, Class<O> lookupClass) throws Exception {
+		if(resources == null) {
+			return null;
+		}
+
 		return resources.lookup(name, environment, lookupClass);
 	}
 }

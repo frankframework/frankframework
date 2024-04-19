@@ -84,8 +84,3 @@ jdbc:
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
-
-mongodb:
-  - name: "ibis4test"
-    type: "com.mongodb.MongoClient"
-    url: "mongodb://testiaf_user:testiaf_user00@${jdbc.hostname:-localhost}"

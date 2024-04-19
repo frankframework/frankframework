@@ -7,11 +7,10 @@ import java.util.Map;
 
 import javax.xml.ws.WebServiceContext;
 
-import lombok.Getter;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 
 public class SoapProviderStub extends SOAPProviderBase {
