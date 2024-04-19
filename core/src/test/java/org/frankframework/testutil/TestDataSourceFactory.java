@@ -7,25 +7,16 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
 import org.frankframework.jndi.DataSourceFactory;
-import org.springframework.jdbc.datasource.DelegatingDataSource;
 
+/**
+ * Solely here to prefix the names with jdbc/ (or else we must change all the tests..)
+ */
 public class TestDataSourceFactory extends DataSourceFactory {
-
-	public static final String PRODUCT_KEY = "product";
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String product) {
 		// Just cast the datasource and do not wrap it in a pool for the benefit of the tests.
-		return namedDataSource((DataSource) dataSource, product);
-	}
-
-	private DataSource namedDataSource(DataSource ds, String name) {
-		return new DelegatingDataSource(ds) {
-			@Override
-			public String toString() {
-				return String.format("%s [%s] ", PRODUCT_KEY, name.replaceAll("jdbc/", ""));
-			}
-		};
+		return (DataSource) dataSource;
 	}
 
 	@Override

@@ -6,24 +6,24 @@
 	<changeSet id="TestTable:1:${tableName}" author="Niels Meijer">
 		<comment>Add ${tableName} Table</comment>
 		<createTable tableName="${tableName}">
-			<column name="tKEY" type="BIGINT">
+			<column name="TKEY" type="BIGINT">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_${tableName}"/>
 			</column>
-			<column name="tVARCHAR" type="java.sql.Types.VARCHAR(100)"/>
-			<column name="tINT" type="java.sql.Types.INTEGER"/>
-			<column name="tNUMBER" type="java.sql.Types.NUMERIC(10, 5)"/>
-			<column name="tDATE" type="DATE"/>
-			<column name="tDATETIME" type="DATETIME"/>
-			<column name="tBOOLEAN" type="java.sql.Types.BOOLEAN"/>
-			<column name="tCLOB" type="CLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
-			<column name="tBLOB" type="LONGBLOB"/>
+			<column name="TVARCHAR" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="TINT" type="java.sql.Types.INTEGER"/>
+			<column name="TNUMBER" type="java.sql.Types.NUMERIC(10, 5)"/>
+			<column name="TDATE" type="DATE"/>
+			<column name="TDATETIME" type="DATETIME"/>
+			<column name="TBOOLEAN" type="java.sql.Types.BOOLEAN"/>
+			<column name="TCLOB" type="CLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
+			<column name="TBLOB" type="LONGBLOB"/>
 		</createTable>
 		<createIndex tableName="${tableName}" indexName="IX_${tableName}">
-			<column name="tKEY"/>
+			<column name="TKEY"/>
 		</createIndex>
 		<createIndex tableName="${tableName}" indexName="IX_${tableName}_02">
-			<column name="tINT"/>
-			<column name="tDATE"/>
+			<column name="TINT"/>
+			<column name="TDATE"/>
 		</createIndex>
 	</changeSet>
 	<changeSet id="TestTable:2:${tableName}" author="Niels Meijer" onValidationFail="MARK_RAN">

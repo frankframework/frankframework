@@ -45,9 +45,9 @@ public class FindAvailableDataSources {
 		for (String product: TEST_DATASOURCES) {
 
 			try { //Attempt to add the DataSource and skip it if it cannot be instantiated
-				CommonDataSource ds = objectLocator.lookup("jdbc/"+product, null, CommonDataSource.class); // do not use createDataSource here, as it has side effects in descender classes
+				CommonDataSource cds = objectLocator.lookup("jdbc/"+product, null, CommonDataSource.class); // do not use createDataSource here, as it has side effects in descender classes
 				// Check if we can make a connection
-				if(ds instanceof DataSource && validateConnection(product, (DataSource)ds)) {
+				if(cds instanceof DataSource ds && validateConnection(product, ds)) {
 					availableDatasources.add(product);
 					LOG.info("adding DataSource {} for testing", product);
 				}

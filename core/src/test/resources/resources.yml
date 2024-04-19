@@ -1,18 +1,18 @@
 jdbc:
   - name: "H2"
     type: "org.h2.jdbcx.JdbcDataSource"
-    url: "jdbc:h2:mem:test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;"
+    url: "jdbc:h2:mem:test;NON_KEYWORDS=VALUE;TRACE_LEVEL_FILE=0;"
 
   - name: "Oracle"
-    type: "oracle.jdbc.xa.client.OracleXADataSource"
+    type: "oracle.jdbc.datasource.impl.OracleDataSource"
     url: "jdbc:oracle:thin:@${jdbc.hostname:-localhost}:1521:XE"
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
 
-  - name: "DB2"
-    type: "com.ibm.db2.jcc.DB2XADataSource"
-    url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+  - name: "Oracle-xa"
+    type: "oracle.jdbc.xa.client.OracleXADataSource"
+    url: "jdbc:oracle:thin:@${jdbc.hostname:-localhost}:1521:XE"
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
@@ -50,7 +50,6 @@ jdbc:
       pinGlobalTxToPhysicalConnection: "true"
       socketTimeout: "5000"
 
-
   - name: "MariaDB"
     type: "org.mariadb.jdbc.MariaDbDataSource"
     url: "jdbc:mariadb://${jdbc.hostname:-localhost}:3306/testiaf"
@@ -58,9 +57,35 @@ jdbc:
     username: "testiaf_user"
     password: "testiaf_user00"
 
-  - name: "PostgreSQL"
+  - name: "PostgreSQL-xa"
     type: "org.postgresql.xa.PGXADataSource"
     url: "jdbc:postgresql://${jdbc.hostname:-localhost}:5432/testiaf"
     authalias: "${db.authalias}"
     username: "testiaf_user"
     password: "testiaf_user00"
+
+  - name: "PostgreSQL"
+    type: "org.postgresql.Driver"
+    url: "jdbc:postgresql://${jdbc.hostname:-localhost}:5432/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+  - name: "DB2"
+    type: "com.ibm.db2.jcc.DB2SimpleDataSource"
+    url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+  - name: "DB2-xa"
+    type: "com.ibm.db2.jcc.DB2XADataSource"
+    url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+mongodb:
+  - name: "ibis4test"
+    type: "com.mongodb.MongoClient"
+    url: "mongodb://testiaf_user:testiaf_user00@${jdbc.hostname:-localhost}"

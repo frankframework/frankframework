@@ -77,7 +77,7 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 					return augment(ds, jndiName);
 				}
 			} catch (Exception e) {
-				throw new IllegalStateException("unable to create resource ["+jndiName+"] found in locator [" + objectLocator + "]");
+				throw new IllegalStateException("unable to create resource ["+jndiName+"] found in locator [" + objectLocator + "]", e);
 			}
 		}
 		throw new IllegalStateException("resource ["+jndiName+"] not found in locators " + objectLocators.toString());

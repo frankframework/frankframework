@@ -16,12 +16,14 @@
 package org.frankframework.jndi;
 
 import java.lang.reflect.Method;
+import java.sql.Driver;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
+import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.util.AppConstants;
@@ -29,6 +31,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +41,7 @@ public class FrankResources {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 	private @Setter List<JdbcResource> jdbc;
+	private @Setter List<JmsResource> mongodb;
 	private @Setter List<JmsResource> jms;
 
 	@Getter @Setter
@@ -86,8 +90,8 @@ public class FrankResources {
 
 		String prefix = name.split("/")[0];
 		if("jdbc".equals(prefix)) {
-			String asdfadsfadfs = name.split("/")[1];
-			Optional<JdbcResource> optional = jdbc.stream().filter(e -> asdfadsfadfs.equals(e.getName())).findFirst();
+			String jdbcName = name.split("/")[1];
+			Optional<JdbcResource> optional = jdbc.stream().filter(e -> jdbcName.equals(e.getName())).findFirst();
 			if(optional.isPresent()) {
 				JdbcResource resource = optional.get();
 
@@ -95,56 +99,71 @@ public class FrankResources {
 					throw new IllegalStateException("field url is required");
 				}
 
+				Properties properties = getConnectionProperties(resource, environment);
+				String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
+
 				Class<?> clazz = ClassUtils.loadClass(resource.getType());
-				if(!lookupClass.isAssignableFrom(clazz)) {
-					throw new IllegalStateException("class is not of required type ["+resource.getType()+"]");
+				if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) {
+					return (O) new DriverManagerDataSource(url, properties); // do not use createDataSource here, as it has side effects in descender classes
+				}
+				if(lookupClass.isAssignableFrom(clazz)) {
+					return (O) loadClass(clazz, url, properties);
 				}
 
-				Properties mergedProps = new Properties();
-				Properties connProps = resource.getProperties();
-				if (connProps != null) {
-					for(Entry<Object, Object> entry : connProps.entrySet()) {
-						String key = String.valueOf(entry.getKey());
-						String value = String.valueOf(entry.getValue());
-						if(StringUtils.isNotEmpty(value)) {
-							mergedProps.setProperty(key, StringResolver.substVars(value, APP_CONSTANTS));
-						}
-					}
-				}
-				CredentialFactory cf = getCredentials(resource);
-				if(StringUtils.isNotEmpty(cf.getUsername())) {
-					mergedProps.setProperty("user", cf.getUsername());
-				}
-				if(StringUtils.isNotEmpty(cf.getPassword())) {
-					mergedProps.setProperty("password", cf.getPassword());
-				}
-
-
-				try {
-					O dataSource = (O) clazz.getDeclaredConstructor().newInstance();
-
-					for(Method method: clazz.getMethods()) {
-						if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
-							continue;
-
-						String fieldName = StringUtil.lcFirst(method.getName().substring(3));
-						String value = mergedProps.getProperty(fieldName);
-
-						if("url".equalsIgnoreCase(fieldName)) {
-
-							ClassUtils.invokeSetter(dataSource, method, StringResolver.substVars(resource.getUrl(), APP_CONSTANTS));
-						} else if(StringUtils.isNotEmpty(value)) {
-							ClassUtils.invokeSetter(dataSource, method, value);
-						}
-					}
-
-					return dataSource;
-				} catch (Exception e) {
-					throw new IllegalStateException("unable to create database driver");
-				}
+				throw new IllegalStateException("class is not of required type ["+resource.getType()+"]");
 			}
 		}
 		return null;
+	}
+
+	private <O> O loadClass(Class<O> clazz, String url, Properties properties) {
+		try {
+			O dataSource = clazz.getDeclaredConstructor().newInstance();
+
+			for(Method method: clazz.getMethods()) {
+				if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+					continue;
+
+				String fieldName = StringUtil.lcFirst(method.getName().substring(3));
+				String value = properties.getProperty(fieldName);
+
+				if("url".equalsIgnoreCase(fieldName)) { // Ensures the URL is always set, some drivers use upper case, others lower...
+					ClassUtils.invokeSetter(dataSource, method, url);
+				} else if(StringUtils.isNotEmpty(value)) {
+					ClassUtils.invokeSetter(dataSource, method, value);
+				}
+			}
+
+			return dataSource;
+		} catch (Exception e) {
+			throw new IllegalStateException("unable to create database driver");
+		}
+	}
+
+	private Properties getConnectionProperties(JdbcResource resource, Properties environment) {
+		Properties mergedProps = new Properties();
+		if(environment != null) {
+			mergedProps.putAll(environment);
+		}
+
+		Properties connProps = resource.getProperties();
+		if (connProps != null) {
+			for(Entry<Object, Object> entry : connProps.entrySet()) {
+				String key = String.valueOf(entry.getKey());
+				String value = String.valueOf(entry.getValue());
+				if(StringUtils.isNotEmpty(value)) {
+					mergedProps.setProperty(key, StringResolver.substVars(value, APP_CONSTANTS));
+				}
+			}
+		}
+		CredentialFactory cf = getCredentials(resource);
+		if(StringUtils.isNotEmpty(cf.getUsername())) {
+			mergedProps.setProperty("user", cf.getUsername());
+		}
+		if(StringUtils.isNotEmpty(cf.getPassword())) {
+			mergedProps.setProperty("password", cf.getPassword());
+		}
+		return mergedProps;
 	}
 
 	private CredentialFactory getCredentials(JdbcResource resource) {
