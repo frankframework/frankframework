@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jndi;
+package org.frankframework.jdbc.datasource;
 
 import java.lang.reflect.Method;
 import java.sql.Driver;
@@ -62,7 +62,7 @@ public class FrankResources {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <O> O lookup(@Nonnull String name, Properties environment, @Nonnull Class<O> lookupClass) throws ClassNotFoundException {
+	public @Nullable <O> O lookup(@Nonnull String name, @Nullable Properties environment, @Nonnull Class<O> lookupClass) throws ClassNotFoundException {
 		if(name.indexOf('/') == -1) {
 			throw new IllegalStateException("no resource prefix found, expected one of [jdbc/jms/mongodb]");
 		}
@@ -97,8 +97,8 @@ public class FrankResources {
 		switch (prefix) {
 			case "jdbc":
 				return findResource(jdbc, resourceName);
-//			case "jms":
-//				return findResource(jms, resourceName);
+			case "jms":
+				return findResource(jms, resourceName);
 			default:
 				throw new IllegalArgumentException("unexpected lookup type: " + prefix);
 		}
@@ -123,7 +123,7 @@ public class FrankResources {
 				String fieldName = StringUtil.lcFirst(method.getName().substring(3));
 				String value = properties.getProperty(fieldName);
 
-				if("url".equalsIgnoreCase(fieldName)) { // Ensures the URL is always set, some drivers use upper case, others lower...
+				if("url".equalsIgnoreCase(fieldName) || "brokerURL".equals(fieldName)) { // Ensures the URL is always set, some drivers use upper case, others lower...
 					ClassUtils.invokeSetter(dataSource, method, url);
 				} else if(StringUtils.isNotEmpty(value)) {
 					ClassUtils.invokeSetter(dataSource, method, value);

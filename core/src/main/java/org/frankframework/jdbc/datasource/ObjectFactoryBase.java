@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jndi;
+package org.frankframework.jdbc.datasource;
 
 import java.util.List;
 import java.util.Map;
@@ -33,10 +33,10 @@ import lombok.Setter;
 /**
  * Baseclass for Object lookups.
  *
- * @author Gerrit van Brakel
- *
  * @param <O> Object class used by clients
- * @param <L> Class looked up
+ *
+ * @author Gerrit van Brakel
+ * @author Niels Meijer
  */
 public abstract class ObjectFactoryBase<O> implements InitializingBean, DisposableBean {
 	protected final Logger log = LogUtil.getLogger(this);
@@ -53,34 +53,34 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 
 	protected abstract O augment(O object, String objectName);
 
-	protected O get(String jndiName, Properties jndiEnvironment) {
-		return objects.computeIfAbsent(jndiName, k -> compute(k, jndiEnvironment));
+	protected O get(String name, Properties environment) {
+		return objects.computeIfAbsent(name, k -> compute(k, environment));
 	}
 
 	/**
 	 * Add and augment an Object to this factory so it can be used without the need of a JNDI lookup.
 	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a JNDI lookup.
 	 */
-	public O add(O object, String jndiName) {
-		return objects.computeIfAbsent(jndiName, k -> compute(object, jndiName));
+	public O add(O object, String name) {
+		return objects.computeIfAbsent(name, k -> compute(object, name));
 	}
 
-	private O compute(O object, String jndiName) {
-		return augment(object, jndiName);
+	private O compute(O object, String name) {
+		return augment(object, name);
 	}
 
-	private O compute(String jndiName, Properties jndiEnvironment) {
+	private O compute(String name, Properties environment) {
 		for(IObjectLocator objectLocator : objectLocators) {
 			try {
-				O ds = objectLocator.lookup(jndiName, jndiEnvironment, lookupClass);
+				O ds = objectLocator.lookup(name, environment, lookupClass);
 				if(ds != null) {
-					return augment(ds, jndiName);
+					return augment(ds, name);
 				}
 			} catch (Exception e) {
-				throw new IllegalStateException("unable to create resource ["+jndiName+"] found in locator [" + objectLocator + "]", e);
+				throw new IllegalStateException("unable to create resource ["+name+"] found in locator [" + objectLocator + "]", e);
 			}
 		}
-		throw new IllegalStateException("resource ["+jndiName+"] not found in locators " + objectLocators.toString());
+		throw new IllegalStateException("resource ["+name+"] not found in locators " + objectLocators);
 	}
 
 	@Override

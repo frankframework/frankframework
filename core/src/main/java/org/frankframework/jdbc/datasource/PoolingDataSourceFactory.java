@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jndi;
+package org.frankframework.jdbc.datasource;
 
 import java.sql.Connection;
 import java.time.Duration;
@@ -28,7 +28,6 @@ import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.frankframework.jdbc.datasource.OpenPoolingDataSource;
 import org.frankframework.util.AppConstants;
 
 import lombok.Getter;
@@ -40,7 +39,7 @@ import lombok.Setter;
  * Already created DataSources are stored in a ConcurrentHashMap.
  * Every DataSource can be augmented before it is added.
  */
-public class PoolingJndiDataSourceFactory extends DataSourceFactory {
+public class PoolingDataSourceFactory extends DataSourceFactory {
 
 	@Getter @Setter protected int minIdle = 0;
 	@Getter @Setter protected int maxPoolSize = 20;
@@ -49,7 +48,7 @@ public class PoolingJndiDataSourceFactory extends DataSourceFactory {
 	@Getter @Setter protected int connectionCheckInterval = 300;
 	@Getter @Setter protected String testQuery = null;
 
-	public PoolingJndiDataSourceFactory() {
+	public PoolingDataSourceFactory() {
 		super();
 		AppConstants appConstants = AppConstants.getInstance();
 		minIdle = appConstants.getInt("transactionmanager.jdbc.connection.minIdle", minIdle);

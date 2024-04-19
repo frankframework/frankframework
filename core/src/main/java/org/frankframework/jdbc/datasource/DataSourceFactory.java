@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jndi;
+package org.frankframework.jdbc.datasource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,6 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 /**

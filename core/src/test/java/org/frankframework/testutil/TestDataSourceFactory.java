@@ -6,7 +6,7 @@ import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import org.frankframework.jndi.DataSourceFactory;
+import org.frankframework.jdbc.datasource.DataSourceFactory;
 
 /**
  * Solely here to prefix the names with jdbc/ (or else we must change all the tests..)

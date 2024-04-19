@@ -1,4 +1,4 @@
-package org.frankframework.jndi;
+package org.frankframework.jdbc.datasource;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

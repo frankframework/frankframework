@@ -28,7 +28,7 @@ import javax.sql.DataSource;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.MessageStoreListener;
-import org.frankframework.jndi.DataSourceFactory;
+import org.frankframework.jdbc.datasource.DataSourceFactory;
 import org.frankframework.stream.Message;
 import org.junit.jupiter.api.Test;
 

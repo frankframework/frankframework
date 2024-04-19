@@ -26,8 +26,8 @@ import org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory;
 import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.commons.dbcp2.managed.XAConnectionFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.frankframework.jdbc.datasource.AbstractXADataSourceFactory;
 import org.frankframework.jdbc.datasource.OpenManagedDataSource;
-import org.frankframework.jndi.AbstractXADataSourceFactory;
 import org.frankframework.util.AppConstants;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;

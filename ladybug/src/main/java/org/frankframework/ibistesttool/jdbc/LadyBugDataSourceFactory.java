@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.jndi.DataSourceFactory;
+import org.frankframework.jdbc.datasource.DataSourceFactory;
 import org.frankframework.jta.narayana.NarayanaDataSource;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

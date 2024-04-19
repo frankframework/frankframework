@@ -22,6 +22,7 @@ import java.util.Properties;
 import javax.jms.ConnectionFactory;
 import javax.naming.NamingException;
 
+import org.frankframework.jdbc.datasource.ObjectFactoryBase;
 import org.frankframework.jms.IConnectionFactoryFactory;
 
 public class JndiConnectionFactoryFactory extends ObjectFactoryBase<ConnectionFactory> implements IConnectionFactoryFactory {

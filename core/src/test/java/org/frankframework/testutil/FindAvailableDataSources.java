@@ -10,7 +10,7 @@ import javax.sql.DataSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.jndi.ResourceBasedObjectFactory;
+import org.frankframework.jdbc.datasource.ResourceBasedObjectFactory;
 
 public class FindAvailableDataSources {
 	private static final Logger LOG = LogManager.getLogger(FindAvailableDataSources.class);
@@ -19,7 +19,7 @@ public class FindAvailableDataSources {
 	private static List<String> availableDataSources = null;
 	private static final ResourceBasedObjectFactory objectLocator = new ResourceBasedObjectFactory();
 
-	protected enum TEST_DATASOURCES {
+	protected enum TestDatasource {
 		H2,
 		DB2,
 		Oracle,
@@ -50,7 +50,7 @@ public class FindAvailableDataSources {
 			throw new IllegalArgumentException("unable to read yaml?");
 		}
 
-		for (TEST_DATASOURCES dsName: TEST_DATASOURCES.values()) {
+		for (TestDatasource dsName: TestDatasource.values()) {
 			String product = dsName.name();
 
 			try { //Attempt to add the DataSource and skip it if it cannot be instantiated

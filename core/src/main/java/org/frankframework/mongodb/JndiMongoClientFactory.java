@@ -21,7 +21,7 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 
-import org.frankframework.jndi.ObjectFactoryBase;
+import org.frankframework.jdbc.datasource.ObjectFactoryBase;
 import org.frankframework.util.AppConstants;
 
 import com.mongodb.client.MongoClient;

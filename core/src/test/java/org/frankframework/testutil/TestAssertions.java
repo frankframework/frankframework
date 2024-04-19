@@ -169,10 +169,8 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 				return true;
 			}
 		} catch (Exception e) {
-			if(e.getMessage().contains("module java.base does not \"opens java.io\" to unnamed module")) {
-				return false;
-			}
-			return true; // pretend we were not here (suppress the exception), and let the actual test fail instead!
+			// pretend we were not here (suppress the exception), and let the actual test fail instead!
+			return !e.getMessage().contains("module java.base does not \"opens java.io\" to unnamed module");
 		}
 	}
 }

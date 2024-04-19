@@ -888,7 +888,7 @@
 							<mainClass>org.frankframework.cmdline.StartIbis</mainClass>
 						</manifest>
 						<manifestEntries>
-							<Add-Opens>java.base/java.lang</Add-Opens>
+							<Add-Opens>java.base/java.lang java.base/java.io</Add-Opens>
 						</manifestEntries>
 					</archive>
 				</configuration>

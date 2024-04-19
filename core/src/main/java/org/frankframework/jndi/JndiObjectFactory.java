@@ -21,6 +21,7 @@ import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.JndiContextPrefixFactory;
+import org.frankframework.jdbc.datasource.IObjectLocator;
 import org.frankframework.util.ClassUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

@@ -27,10 +27,10 @@
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 
 	<!-- Find DataSources in resources.yml and JNDI -->
-	<bean id="ResourceBasedObjectFactory" class="org.frankframework.jndi.ResourceBasedObjectFactory" />
+	<bean id="ResourceBasedObjectFactory" class="org.frankframework.jdbc.datasource.ResourceBasedObjectFactory" />
 	<bean id="JndiObjectFactory" class="org.frankframework.jndi.JndiObjectFactory" />
 
-	<bean id="dataSourceFactory" class="org.frankframework.jndi.DataSourceFactory" autowire="byType"/>
+	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType"/>
 	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JndiConnectionFactoryFactory" autowire="byType" />
 	<bean id="mongoClientFactory" class="org.frankframework.mongodb.JndiMongoClientFactory" autowire="byType" />
 
