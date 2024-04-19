@@ -101,7 +101,7 @@
 
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 
-	<bean id="dataSourceFactory" class="org.frankframework.jndi.DataSourceFactory" autowire="byType"/>
+	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType"/>
 
 	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory"/>
 
