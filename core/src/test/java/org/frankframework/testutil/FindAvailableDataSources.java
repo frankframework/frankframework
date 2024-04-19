@@ -19,7 +19,15 @@ public class FindAvailableDataSources {
 	private static List<String> availableDataSources = null;
 	private static final ResourceBasedObjectFactory objectLocator = new ResourceBasedObjectFactory();
 
-	private static final String[] TEST_DATASOURCES = { "H2", "DB2", "Oracle", "MS_SQL", "MySQL", "MariaDB", "PostgreSQL" };
+	protected enum TEST_DATASOURCES {
+		H2,
+		DB2,
+		Oracle,
+		MS_SQL,
+		MySQL,
+		MariaDB,
+		PostgreSQL
+	}
 
 	public FindAvailableDataSources() {
 		getAvailableDataSources();
@@ -42,7 +50,8 @@ public class FindAvailableDataSources {
 			throw new IllegalArgumentException("unable to read yaml?");
 		}
 
-		for (String product: TEST_DATASOURCES) {
+		for (TEST_DATASOURCES dsName: TEST_DATASOURCES.values()) {
+			String product = dsName.name();
 
 			try { //Attempt to add the DataSource and skip it if it cannot be instantiated
 				CommonDataSource cds = objectLocator.lookup("jdbc/"+product, null, CommonDataSource.class); // do not use createDataSource here, as it has side effects in descender classes
