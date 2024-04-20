@@ -12,7 +12,7 @@
 	<bean id="MessageEventListener" class="org.frankframework.lifecycle.MessageEventListener" scope="singleton" />
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 
-	<bean id="ResourceBasedObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
+	<bean id="ResourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
 	<bean id="JndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
 	<bean id="dataSourceFactory" class="org.frankframework.testutil.TestDataSourceFactory" autowire="byType"/>
 

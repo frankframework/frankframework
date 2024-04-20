@@ -74,8 +74,8 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 	}
 
 	/**
-	 * Add and augment an Object to this factory so it can be used without the need of a JNDI lookup.
-	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a JNDI lookup.
+	 * Add and augment an Object to this factory so it can be used without the need of a lookup.
+	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a lookup.
 	 */
 	public O add(O object, String name) {
 		return objects.computeIfAbsent(name, k -> augment(object, name));

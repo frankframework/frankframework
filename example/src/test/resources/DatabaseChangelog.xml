@@ -28,61 +28,61 @@ TagDatabase
 	<property name="now" value="now()" dbms="mysql"/>
 	<property name="now" value="now()" dbms="postgresql"/>
 
-<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('E', 'Ibis4Example/HelloUniverse_In', 1001, CURRENT_TIMESTAMP); -->
-<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('E', 'Ibis4Example/HelloUniverse_In', 1002, CURRENT_TIMESTAMP); -->
-<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('E', 'Ibis4Example/HelloUniverse_In', 1003, CURRENT_TIMESTAMP); -->
-<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2001, CURRENT_TIMESTAMP); -->
-<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2002, CURRENT_TIMESTAMP); -->
-<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2003, CURRENT_TIMESTAMP); -->
-<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2004, CURRENT_TIMESTAMP); -->
-<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Ibis4Example/HelloUniverse_Out', 2005, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('E', 'Frank2Example/HelloUniverse_In', 1001, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('E', 'Frank2Example/HelloUniverse_In', 1002, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('E', 'Frank2Example/HelloUniverse_In', 1003, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Frank2Example/HelloUniverse_Out', 2001, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Frank2Example/HelloUniverse_Out', 2002, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Frank2Example/HelloUniverse_Out', 2003, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Frank2Example/HelloUniverse_Out', 2004, CURRENT_TIMESTAMP); -->
+<!-- INSERT INTO IBISSTORE(TYPE, SLOTID, MESSAGEID, MESSAGEDATE) VALUES('L', 'Frank2Example/HelloUniverse_Out', 2005, CURRENT_TIMESTAMP); -->
 
-	<changeSet id="Ibis4Example:1" author="Niels Meijer">
+	<changeSet id="Frank2Example:1" author="Niels Meijer">
 		<insert tableName="IBISSTORE">
 			<column name="TYPE" value="E" />
-			<column name="SLOTID" value="Ibis4Example/HelloUniverse_In" />
+			<column name="SLOTID" value="Frank2Example/HelloUniverse_In" />
 			<column name="MESSAGEID" value="1001" />
 			<column name="MESSAGEDATE" value="${now}" />
 		</insert>
 		<insert tableName="IBISSTORE">
 			<column name="TYPE" value="E" />
-			<column name="SLOTID" value="Ibis4Example/HelloUniverse_In" />
+			<column name="SLOTID" value="Frank2Example/HelloUniverse_In" />
 			<column name="MESSAGEID" value="1002" />
 			<column name="MESSAGEDATE" value="${now}" />
 		</insert>
 		<insert tableName="IBISSTORE">
 			<column name="TYPE" value="E" />
-			<column name="SLOTID" value="Ibis4Example/HelloUniverse_In" />
+			<column name="SLOTID" value="Frank2Example/HelloUniverse_In" />
 			<column name="MESSAGEID" value="1003" />
 			<column name="MESSAGEDATE" value="${now}" />
 		</insert>
 		<insert tableName="IBISSTORE">
 			<column name="TYPE" value="L" />
-			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="SLOTID" value="Frank2Example/HelloUniverse_Out" />
 			<column name="MESSAGEID" value="2001" />
 			<column name="MESSAGEDATE" value="${now}" />
 		</insert>
 		<insert tableName="IBISSTORE">
 			<column name="TYPE" value="L" />
-			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="SLOTID" value="Frank2Example/HelloUniverse_Out" />
 			<column name="MESSAGEID" value="2002" />
 			<column name="MESSAGEDATE" value="${now}" />
 		</insert>
 		<insert tableName="IBISSTORE">
 			<column name="TYPE" value="L" />
-			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="SLOTID" value="Frank2Example/HelloUniverse_Out" />
 			<column name="MESSAGEID" value="2003" />
 			<column name="MESSAGEDATE" value="${now}" />
 		</insert>
 		<insert tableName="IBISSTORE">
 			<column name="TYPE" value="L" />
-			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="SLOTID" value="Frank2Example/HelloUniverse_Out" />
 			<column name="MESSAGEID" value="2004" />
 			<column name="MESSAGEDATE" value="${now}" />
 		</insert>
 		<insert tableName="IBISSTORE">
 			<column name="TYPE" value="L" />
-			<column name="SLOTID" value="Ibis4Example/HelloUniverse_Out" />
+			<column name="SLOTID" value="Frank2Example/HelloUniverse_Out" />
 			<column name="MESSAGEID" value="2005" />
 			<column name="MESSAGEDATE" value="${now}" />
 		</insert>
