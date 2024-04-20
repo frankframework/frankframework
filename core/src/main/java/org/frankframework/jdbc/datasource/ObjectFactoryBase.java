@@ -34,8 +34,10 @@ import lombok.Setter;
 
 /**
  * Baseclass for Object lookups.
+ * 
+ * Already created Objects are stored in a ConcurrentHashMap.
  * Objects will be searched in all available {@link IObjectLocator IObjectLocators}. If it cannot find the object in the first locator, it will attempt to do so in the next available one.
- * Objects will only be looked up once, after which they will be cached.
+ * Every Objects can be augmented before it is added.
  *
  * @param <O> Object class used by clients
  *
@@ -84,13 +86,14 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 			try {
 				O ds = objectLocator.lookup(name, environment, lookupClass);
 				if(ds != null) {
+					log.debug("located Object [{}] in objectLocator [{}]", name, objectLocator);
 					return augment(ds, name);
 				}
-			} catch (Exception e) {
+			} catch (Exception e) { // If an exception occurred, assume we were able to find the Object but unable to create it.
 				throw new IllegalStateException("unable to create resource ["+name+"] found in locator [" + objectLocator + "]", e);
 			}
 		}
-		throw new IllegalStateException("resource ["+name+"] not found in locators " + objectLocators);
+		throw new IllegalStateException("unable to find resource ["+name+"] using locators " + objectLocators);
 	}
 
 	@Override
@@ -109,10 +112,10 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 	public void destroy() throws Exception {
 		Exception masterException=null;
 		for (Entry<String,O> entry:objects.entrySet()) {
-			String name = entry.getKey();
+			final String name = entry.getKey();
 			if (entry.getValue() instanceof AutoCloseable closable) {
 				try {
-					log.debug("closing [{}] object [{}]", ClassUtils.nameOf(closable), name);
+					log.debug("closing [{}] object [{}]", () -> ClassUtils.nameOf(closable), () -> name);
 					closable.close();
 				} catch (Exception e) {
 					if (masterException==null) {

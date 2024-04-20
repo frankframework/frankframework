@@ -13,7 +13,7 @@ public class DataSourceFactoryTest {
 	@Test
 	public void testCanFindH2() throws Exception {
 		DataSourceFactory factory = new DataSourceFactory();
-		ResourceBasedObjectFactory rbof = new ResourceBasedObjectFactory();
+		ResourceObjectLocator rbof = new ResourceObjectLocator();
 		rbof.afterPropertiesSet();
 		factory.setObjectLocators(List.of(rbof));
 		DataSource ds = factory.getDataSource("jdbc/H2");

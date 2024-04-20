@@ -10,14 +10,14 @@ import javax.sql.DataSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.jdbc.datasource.ResourceBasedObjectFactory;
+import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 
 public class FindAvailableDataSources {
 	private static final Logger LOG = LogManager.getLogger(FindAvailableDataSources.class);
 
 	private static final int DB_LOGIN_TIMEOUT = 1;
 	private static List<String> availableDataSources = null;
-	private static final ResourceBasedObjectFactory objectLocator = new ResourceBasedObjectFactory();
+	private static final ResourceObjectLocator objectLocator = new ResourceObjectLocator();
 
 	protected enum TestDatasource {
 		H2,

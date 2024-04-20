@@ -29,9 +29,8 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 /**
  * Factory through which (TX-enabled) DataSources can be retrieved.
+ * Default implementation, does not use pooling, wraps the DataSource in a TransactionAwareDataSourceProxy.
  *
- * Already created DataSources are stored in a ConcurrentHashMap.
- * Every DataSource can be augmented before it is added.
  */
 public class DataSourceFactory extends ObjectFactoryBase<CommonDataSource> implements IDataSourceFactory {
 

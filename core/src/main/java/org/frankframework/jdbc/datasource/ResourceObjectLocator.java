@@ -34,7 +34,7 @@ import lombok.extern.log4j.Log4j2;
  *
  */
 @Log4j2
-public class ResourceBasedObjectFactory implements IObjectLocator, InitializingBean {
+public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 
 	public static final String DEFAULT_RESOURCE_FILE = "resources.yml";
 	private FrankResources resources = null;

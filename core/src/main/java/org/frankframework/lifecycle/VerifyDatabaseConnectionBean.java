@@ -55,14 +55,17 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 	private @Setter ApplicationContext applicationContext;
 
 	@Override
+	@SuppressWarnings("java:S2589") // Status CAN be null, ignore Sonar's dumbfound suggestion it's never null
 	public void afterPropertiesSet() throws Exception {
 		if(requiresDatabase) {
-			PlatformTransactionManager transactionManager = getTransactionManager();
+			DataSource dataSource = getDefaultDataSource(); //Defined before getTransactionManager to verify we at least have a 'working' DataSource.
 
 			//Try to create a new transaction to check if there is a connection to the database
+			PlatformTransactionManager transactionManager = getTransactionManager();
 			TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
-			try (Connection connection = getDefaultDataSource().getConnection()) {
+			//We have a DataSource and a TransactionManager, now lets see if we can use them :)
+			try (Connection connection = dataSource.getConnection()) {
 				if(!connection.isValid(5)) {
 					throw new CannotGetJdbcConnectionException("Database was unable to validate the connection within 5 seconds");
 				}

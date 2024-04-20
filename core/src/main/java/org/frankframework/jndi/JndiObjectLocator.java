@@ -17,6 +17,7 @@ package org.frankframework.jndi;
 
 import java.util.Properties;
 
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,34 +41,30 @@ import lombok.extern.log4j.Log4j2;
  * @param <O> Object class used by clients
  */
 @Log4j2
-public class JndiObjectFactory implements IObjectLocator, ApplicationContextAware {
+public class JndiObjectLocator implements IObjectLocator, ApplicationContextAware {
 
 	private @Setter String jndiContextPrefix = null;
 
+	/**
+	 * Attempt to lookup the Object in the JNDI. If it cannot find the object, attempt to try again (without a JNDI-prefix).
+	 */
 	@Override
 	public <O> O lookup(String jndiName, Properties jndiEnvironment, Class<O> lookupClass) throws NamingException {
-		O object = null;
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
 		JndiTemplate locator = new JndiTemplate(jndiEnvironment);
 		try {
-			object = locator.lookup(prefixedJndiName, lookupClass);
-		} catch (NamingException e) { //Fallback and search again but this time without prefix
-			if (!jndiName.equals(prefixedJndiName)) { //Only if a prefix is set!
-				log.debug("prefixed JNDI name [" + prefixedJndiName + "] not found - trying original name [" + jndiName + "], exception: ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
-
+			return locator.lookup(prefixedJndiName, lookupClass);
+		} catch (NameNotFoundException e) { //Fallback and search again but this time without prefix
+			if (!jndiName.equals(prefixedJndiName)) { //But only if a prefix was used during the first lookup.
+				log.debug("prefixed JNDI name [{}] not found - trying original name [{}], exception: ({}): {}", ()->prefixedJndiName, ()->jndiName, ()->ClassUtils.nameOf(e), e::getMessage);
 				try {
-					object = locator.lookup(jndiName, lookupClass);
-				} catch (NamingException e2) {
-					e.addSuppressed(e2);
-					throw e;
+					return locator.lookup(jndiName, lookupClass);
+				} catch (NameNotFoundException e2) {
+					log.debug("non-prefixed JNDI name [{}] not found, exception: ({}): {}", ()->jndiName, ()->ClassUtils.nameOf(e2), e2::getMessage);
 				}
-			} else { //Either the fallback lookup should throw the NamingException or this one if no Object is found!
-				throw e;
 			}
+			return null; //Neither lookup returned an (unexpected) exception, assume the object cannot be found in this IObjectLocator.
 		}
-
-		log.debug("located Object with JNDI name [{}]", prefixedJndiName); //No exceptions during lookup means we found something!
-		return object;
 	}
 
 	private String getPrefixedJndiName(String jndiName) {
