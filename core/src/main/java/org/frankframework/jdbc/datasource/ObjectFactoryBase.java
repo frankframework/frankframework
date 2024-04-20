@@ -15,6 +15,8 @@
 */
 package org.frankframework.jdbc.datasource;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +34,8 @@ import lombok.Setter;
 
 /**
  * Baseclass for Object lookups.
+ * Objects will be searched in all available {@link IObjectLocator IObjectLocators}. If it cannot find the object in the first locator, it will attempt to do so in the next available one.
+ * Objects will only be looked up once, after which they will be cached.
  *
  * @param <O> Object class used by clients
  *
@@ -42,7 +46,7 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 	protected final Logger log = LogUtil.getLogger(this);
 	private final Class<O> lookupClass;
 
-	protected Map<String,O> objects = new ConcurrentHashMap<>();
+	private Map<String, O> objects = new ConcurrentHashMap<>();
 
 	@Autowired @Setter
 	private List<? extends IObjectLocator> objectLocators;
@@ -51,9 +55,19 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 		this.lookupClass = lookupClass;
 	}
 
-	protected abstract O augment(O object, String objectName);
+	/**
+	 * Allow implementing classes to augment the looked up object class 'O'.
+	 */
+	@SuppressWarnings("java:S1172")
+	protected O augment(O object, String objectName) {
+		return object;
+	}
 
-	protected O get(String name, Properties environment) {
+	/**
+	 * Returns the object matching the name and return type.
+	 * If not cached yet, attempts to traverse all {@link IObjectLocator IObjectLocators} to do so.
+	 */
+	protected final O get(String name, Properties environment) {
 		return objects.computeIfAbsent(name, k -> compute(k, environment));
 	}
 
@@ -62,11 +76,7 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a JNDI lookup.
 	 */
 	public O add(O object, String name) {
-		return objects.computeIfAbsent(name, k -> compute(object, name));
-	}
-
-	private O compute(O object, String name) {
-		return augment(object, name);
+		return objects.computeIfAbsent(name, k -> augment(object, name));
 	}
 
 	private O compute(String name, Properties environment) {
@@ -90,6 +100,11 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 		}
 	}
 
+	protected List<String> getObjectNames() {
+		List<String> names = new ArrayList<>(objects.keySet());
+		return Collections.unmodifiableList(names);
+	}
+
 	@Override
 	public void destroy() throws Exception {
 		Exception masterException=null;
@@ -97,7 +112,7 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 			String name = entry.getKey();
 			if (entry.getValue() instanceof AutoCloseable closable) {
 				try {
-					log.debug("closing ["+ClassUtils.nameOf(closable)+"] object ["+name+"]");
+					log.debug("closing [{}] object [{}]", ClassUtils.nameOf(closable), name);
 					closable.close();
 				} catch (Exception e) {
 					if (masterException==null) {

@@ -15,7 +15,6 @@
 */
 package org.frankframework.jdbc.datasource;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -40,6 +39,11 @@ public class DataSourceFactory extends ObjectFactoryBase<CommonDataSource> imple
 		super(CommonDataSource.class);
 	}
 
+	/**
+	 * Allow implementing classes to augment the DataSource.
+	 * See {@link #augment(CommonDataSource, String)}.
+	 */
+	@SuppressWarnings("java:S1172")
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		return (DataSource) dataSource;
 	}
@@ -65,6 +69,6 @@ public class DataSourceFactory extends ObjectFactoryBase<CommonDataSource> imple
 
 	@Override
 	public List<String> getDataSourceNames() {
-		return new ArrayList<>(objects.keySet());
+		return getObjectNames();
 	}
 }

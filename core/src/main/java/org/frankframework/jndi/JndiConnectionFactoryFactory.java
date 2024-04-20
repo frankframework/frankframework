@@ -15,7 +15,6 @@
 */
 package org.frankframework.jndi;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -37,19 +36,13 @@ public class JndiConnectionFactoryFactory extends ObjectFactoryBase<ConnectionFa
 	}
 
 	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException {
-		return get(connectionFactoryName, jndiEnvironment);
-	}
-
-	@Override
-	@SuppressWarnings("java:S1172")
-	protected ConnectionFactory augment(ConnectionFactory cf, String objectName) {
-		return cf;
+	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties environment) throws NamingException {
+		return get(connectionFactoryName, environment);
 	}
 
 	@Override
 	public List<String> getConnectionFactoryNames() {
-		return new ArrayList<>(objects.keySet());
+		return getObjectNames();
 	}
 
 }

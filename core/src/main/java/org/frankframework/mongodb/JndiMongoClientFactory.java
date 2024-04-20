@@ -15,7 +15,6 @@
 */
 package org.frankframework.mongodb;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -42,22 +41,17 @@ public class JndiMongoClientFactory extends ObjectFactoryBase<MongoClient> imple
 	}
 
 	@Override
-	public MongoClient getMongoClient(String dataSourceName) throws NamingException {
-		return getMongoClient(dataSourceName, null);
+	public MongoClient getMongoClient(String name) throws NamingException {
+		return getMongoClient(name, null);
 	}
 
 	@Override
-	public MongoClient getMongoClient(String dataSourceName, Properties jndiEnvironment) throws NamingException {
-		return get(dataSourceName, jndiEnvironment);
-	}
-
-	@Override
-	protected MongoClient augment(MongoClient object, String objectName) {
-		return object;
+	public MongoClient getMongoClient(String dataSourceName, Properties environment) throws NamingException {
+		return get(dataSourceName, environment);
 	}
 
 	@Override
 	public List<String> getMongoClients() {
-		return new ArrayList<>(objects.keySet());
+		return getObjectNames();
 	}
 }
