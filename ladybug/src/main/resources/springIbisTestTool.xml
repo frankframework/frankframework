@@ -13,7 +13,10 @@
 	"
 	default-lazy-init="true"
 	>
-	<!-- don't init database related beans when database storage not used / ladybug.jdbc.datasource empty -->
+	<!--
+	default-lazy-init="true" will prevent init of database related beans when ladybug.jdbc.datasource is empty (in which
+	case file storage will be used instead of database storage)
+	-->
 
 	<!-- enable (AppConstants) properties -->
 	<context:property-placeholder/>

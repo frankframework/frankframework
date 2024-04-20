@@ -25,6 +25,7 @@ import javax.annotation.PostConstruct;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.jndi.PoolingJndiDataSourceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,7 +66,13 @@ public class AutoCommitDisabledDataSource implements DataSource {
 
 	@PostConstruct
 	public void init() throws NamingException {
-		dataSource = poolingJndiDataSourceFactory.getDataSource(dataSourceName);
+		// File storage will be used instead of database storage when dataSourceName is empty (see
+		// springIbisTestTool.xml) but Spring will still wire bean dataSource (this class) to bean scheduler (which will
+		// ignore it, see SchedulerFactoryBean.setDataSource()). Prevent poolingJndiDataSourceFactory from throwing an
+		// exception when dataSourceName is empty
+		if (StringUtils.isNotEmpty(dataSourceName)) {
+			dataSource = poolingJndiDataSourceFactory.getDataSource(dataSourceName);
+		}
 	}
 
 	@Override
