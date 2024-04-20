@@ -33,6 +33,7 @@ import com.aspose.pdf.XpsLoadOptions;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 
 /**
  * Converts the files which are required and supported by the Aspose pdf library.
@@ -72,8 +73,8 @@ public class PdfConvertor extends AbstractConvertor {
 	}
 
 	@Nonnull
-	private static LoadOptions getLoadOptions(final MediaType mediaType) throws InstantiationException, IllegalAccessException {
-		return MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).newInstance();
+	private static LoadOptions getLoadOptions(final MediaType mediaType) throws ReflectiveOperationException, SecurityException {
+		return ClassUtils.newInstance(MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 	}
 
 	@Override

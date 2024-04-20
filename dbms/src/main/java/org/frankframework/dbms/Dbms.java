@@ -15,6 +15,8 @@
 */
 package org.frankframework.dbms;
 
+import org.frankframework.util.ClassUtils;
+
 import lombok.Getter;
 
 import lombok.extern.log4j.Log4j2;
@@ -60,10 +62,10 @@ public enum Dbms {
 				log.debug("Setting databasetype to [{}]", dbms);
 				IDbmsSupport result;
 				try {
-					result = dbms.dbmsSupportClass.newInstance();
+					result = dbms.getDbmsSupport();
 					log.debug("Returning built-in DBMS [{}] found for product [{}]", dbms, product);
 					return result;
-				} catch (IllegalAccessException | InstantiationException e) {
+				} catch (ReflectiveOperationException | SecurityException e) {
 					log.warn("Could not instantiate DbmsSupport for DBMS [{}] found for product [{}]",dbms, product, e);
 				}
 			}
@@ -72,10 +74,10 @@ public enum Dbms {
 		return new GenericDbmsSupport();
 	}
 
-	public IDbmsSupport getDbmsSupport() throws IllegalAccessException, InstantiationException {
+	public IDbmsSupport getDbmsSupport() throws ReflectiveOperationException, SecurityException {
 		if (dbmsSupportClass == null) {
 			return null;
 		}
-		return dbmsSupportClass.newInstance();
+		return ClassUtils.newInstance(dbmsSupportClass);
 	}
 }

@@ -55,6 +55,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 
 @Log4j2
 class MailConvertor extends AbstractConvertor {
@@ -97,7 +98,7 @@ class MailConvertor extends AbstractConvertor {
 		MailMessage eml;
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			eml = MailMessage.load(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).getDeclaredConstructor().newInstance());
+			eml = MailMessage.load(inputStream, ClassUtils.newInstance(MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType)));
 		}
 
 		AttachmentCollection attachments = eml.getAttachments();
