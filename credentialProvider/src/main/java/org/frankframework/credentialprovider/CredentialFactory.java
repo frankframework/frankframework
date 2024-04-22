@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.credentialprovider.util.CredentialConstants;
+import org.frankframework.util.ClassUtils;
 
 public class CredentialFactory {
 	protected static final Logger log = Logger.getLogger(CredentialFactory.class.getName());
@@ -91,8 +92,7 @@ public class CredentialFactory {
 	private void tryFactory(String factoryClassName) {
 		try {
 			log.info("trying to configure CredentialFactory [" + factoryClassName + "]");
-			Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>) Class.forName(factoryClassName);
-			ICredentialFactory delegate = factoryClass.getDeclaredConstructor().newInstance();
+			ICredentialFactory delegate = ClassUtils.newInstance(factoryClassName, ICredentialFactory.class);
 			delegate.initialize();
 			log.info("installed CredentialFactory [" + factoryClassName + "]");
 			delegates.add(delegate);

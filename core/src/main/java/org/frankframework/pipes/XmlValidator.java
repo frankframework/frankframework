@@ -49,6 +49,7 @@ import org.frankframework.soap.SoapValidator;
 import org.frankframework.soap.SoapVersion;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TransformerPool;
@@ -808,8 +809,8 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return null;
 	}
 
-	public void setImplementation(Class<? extends AbstractXmlValidator> clazz) throws IllegalAccessException, InstantiationException {
-		validator = clazz.newInstance();
+	public void setImplementation(Class<? extends AbstractXmlValidator> clazz) throws ReflectiveOperationException, SecurityException {
+		validator = ClassUtils.newInstance(clazz);
 	}
 
 	/**
