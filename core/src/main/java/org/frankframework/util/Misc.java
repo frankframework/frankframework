@@ -173,7 +173,7 @@ public class Misc {
 		int threshold = useSiUnits ? 1000 : 1024;
 
 		if (Math.abs(bytes) < threshold) {
-			return bytes + (format? " " : "") + "B";
+			return bytes + (format ? " " : "") + "B";
 		}
 
 		String[] units = useSiUnits ? siByteUnits : iecByteUnits;
@@ -191,7 +191,7 @@ public class Misc {
 				index < units.length - 1
 		);
 
-		return dividedBytes + (format? " " : "") + units[index];
+		return dividedBytes + (format ? " " : "") + units[index];
 	}
 
 	public static synchronized long getMessageSizeWarnByDefault() {
