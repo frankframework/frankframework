@@ -3,7 +3,7 @@ import { SideNavigationDirective } from './side-navigation.directive';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
-  // standalone: true,
+  standalone: true,
   template: `
     <ul>
       <li>
@@ -32,8 +32,7 @@ describe('SideNavigationDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [],
-      declarations: [TestComponent, SideNavigationDirective],
+      imports: [TestComponent, SideNavigationDirective],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding
