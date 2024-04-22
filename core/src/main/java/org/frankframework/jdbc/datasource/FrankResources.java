@@ -42,7 +42,6 @@ public class FrankResources {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 	private @Setter List<Resource> jdbc;
-	private @Setter List<Resource> mongodb;
 	private @Setter List<Resource> jms;
 
 	@Getter @Setter
@@ -83,7 +82,7 @@ public class FrankResources {
 			return (O) new DriverManagerDataSource(url, properties);
 		}
 		if(lookupClass.isAssignableFrom(clazz)) {
-			return (O) loadClass(clazz, url, properties);
+			return (O) createInstance(clazz, url, properties);
 		}
 
 		throw new IllegalStateException("class is not of required type ["+resource.getType()+"]");
@@ -116,7 +115,7 @@ public class FrankResources {
 	/**
 	 * Creates the class and populates available fields
 	 */
-	private <O> O loadClass(Class<O> clazz, String url, Properties properties) {
+	private <O> O createInstance(Class<O> clazz, String url, Properties properties) {
 		try {
 			O dataSource = clazz.getDeclaredConstructor().newInstance();
 

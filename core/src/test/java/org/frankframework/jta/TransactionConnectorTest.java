@@ -77,7 +77,6 @@ public class TransactionConnectorTest {
 					txManager.rollback(txStatus2);
 				} else {
 					txManager.commit(txStatus2);
-					//I would expect a rollback?
 				}
 			}
 		} catch (Exception e) {

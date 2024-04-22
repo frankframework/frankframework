@@ -27,12 +27,6 @@ import org.yaml.snakeyaml.Yaml;
 
 import lombok.extern.log4j.Log4j2;
 
-/**
- * Should support both JNDI as well as resources.yaml
- * if type="javax.sql.DataSource" --> driverClassName="org.postgresql.Driver"
- * @author niels
- *
- */
 @Log4j2
 public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 
