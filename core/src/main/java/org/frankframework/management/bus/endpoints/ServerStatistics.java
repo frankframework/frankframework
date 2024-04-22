@@ -125,7 +125,7 @@ public class ServerStatistics extends BusEndpointBase {
 	}
 
 	private static File getSystemDir() {
-		String dirName = System.getProperty("log.dir");
+		String dirName = AppConstants.getInstance().getProperty("log.dir");
 		return new File(dirName);
 	}
 
