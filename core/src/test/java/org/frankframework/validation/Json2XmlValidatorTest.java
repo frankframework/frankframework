@@ -22,6 +22,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -56,10 +57,8 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		jsonPipe.setDirection(Direction.XML2JSON);
 		jsonPipe.configure();
 		try {
-			validator = implementation.newInstance();
-		} catch (IllegalAccessException e) {
-			throw new ConfigurationException(e);
-		} catch (InstantiationException e) {
+			validator = ClassUtils.newInstance(implementation);
+		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}
 		validator.setThrowException(true);

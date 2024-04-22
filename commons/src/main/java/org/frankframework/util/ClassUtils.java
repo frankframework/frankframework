@@ -124,10 +124,24 @@ public abstract class ClassUtils {
 	 *
 	 * @param className A class name
 	 * @return A new instance
-	 * @exception Exception If an instantiation error occurs
+	 * @exception ReflectiveOperationException If an instantiation error occurs
+	 * @exception SecurityException If a security violation occurs
 	 */
-	public static Object newInstance(String className) throws Exception {
-		return ClassUtils.loadClass(className).getDeclaredConstructor().newInstance();
+	public static Object newInstance(String className) throws ReflectiveOperationException, SecurityException {
+		return newInstance(loadClass(className));
+	}
+
+	@SuppressWarnings("unchecked") // because we checked it...
+	public static <T> T newInstance(String className, Class<T> expectedType) throws ReflectiveOperationException, SecurityException {
+		Class<?> clazz = loadClass(className);
+		if(expectedType.isAssignableFrom(clazz)) {
+			return (T) newInstance(clazz);
+		}
+		throw new InstantiationException("created class ["+className+"] is not of required type ["+expectedType.getSimpleName()+"]");
+	}
+
+	public static <T> T newInstance(Class<T> clazz) throws ReflectiveOperationException, SecurityException {
+		return clazz.getDeclaredConstructor().newInstance();
 	}
 
 	/**

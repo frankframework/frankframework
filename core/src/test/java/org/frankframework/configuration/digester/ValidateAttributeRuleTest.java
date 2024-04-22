@@ -27,6 +27,7 @@ import org.frankframework.core.INamedObject;
 import org.frankframework.doc.Protected;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -69,7 +70,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 	//Run the ValidateAttributeRule, returns the beanClass to validate setters being called
 	private <T> T runRule(Class<T> beanClass, Map<String, String> attributes) throws Exception {
 		configuration = new TestConfiguration();
-		T topBean = beanClass.getDeclaredConstructor().newInstance();
+		T topBean = ClassUtils.newInstance(beanClass);
 		ValidateAttributeRule rule = new ValidateAttributeRule() {
 			@Override
 			public Object getBean() {

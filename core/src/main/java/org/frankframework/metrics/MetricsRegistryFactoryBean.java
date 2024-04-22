@@ -88,7 +88,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 
 		log.debug("using class [{}] to configure MeterRegistry [{}]", configuratorClassName, product);
 		try {
-			return (MetricsRegistryConfiguratorBase<?>) ClassUtils.newInstance(configuratorClassName);
+			return ClassUtils.newInstance(configuratorClassName, MetricsRegistryConfiguratorBase.class);
 		} catch (Exception e) {
 			log.warn("cannot configure MeterRegistry [{}]", product, e);
 		}

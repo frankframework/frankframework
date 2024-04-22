@@ -26,6 +26,7 @@ import java.util.jar.JarFile;
 
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.TestAppender;
+import org.frankframework.util.ClassUtils;
 import org.junit.jupiter.api.Test;
 
 public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
@@ -105,7 +106,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	}
 
 	@Test
-	public void loadCustomClass() throws Exception {
+	public void loadCustomClassUsingForName() throws Exception {
 		ClassLoaderBase classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
 		classLoader.configure(ibisContext, "myConfig");
@@ -113,7 +114,25 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		classLoader.setAllowCustomClasses(true);
 		//native classloading
 		Class<?> clazz = Class.forName("org.frankframework.pipes.LargeBlockTester", true, classLoader); //With inner-class
-		clazz.getDeclaredConstructor().newInstance();
+		ClassUtils.newInstance(clazz);
+
+		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
+		loadedClassesField.setAccessible(true);
+		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
+		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
+		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
+	}
+
+	@Test
+	public void loadCustomClassUsingLoadClass() throws Exception {
+		ClassLoaderBase classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
+		classLoader.setBasePath(".");
+		classLoader.configure(ibisContext, "myConfig");
+
+		classLoader.setAllowCustomClasses(true);
+		//native classloading
+		Class<?> clazz = classLoader.loadClass("org.frankframework.pipes.LargeBlockTester"); //With inner-class
+		ClassUtils.newInstance(clazz);
 
 		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
