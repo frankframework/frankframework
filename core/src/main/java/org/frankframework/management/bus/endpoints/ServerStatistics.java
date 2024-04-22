@@ -104,36 +104,28 @@ public class ServerStatistics extends BusEndpointBase {
 		return new JsonMessage(returnMap);
 	}
 
-	public static Long getFileSystemTotalSpace() {
+	static Long getFileSystemTotalSpace() {
 		try {
 			File systemDir = getSystemDir();
-			if (systemDir == null) return null;
 			return systemDir.getTotalSpace();
-		} catch ( Exception e ) {
+		} catch ( SecurityException e ) {
 			log.debug("Caught Exception",e);
 			return null;
 		}
 	}
 
-	public static Long getFileSystemFreeSpace() {
+	static Long getFileSystemFreeSpace() {
 		try {
 			File systemDir = getSystemDir();
-			if (systemDir == null) return null;
 			return systemDir.getFreeSpace();
-		} catch ( Exception e ) {
+		} catch ( SecurityException e ) {
 			log.debug("Caught Exception",e);
 			return null;
 		}
 	}
 
 	private static File getSystemDir() {
-		String dirName = System.getProperty("APPSERVER_ROOT_DIR");
-		if (dirName==null) {
-			dirName = System.getProperty("user.dir");
-			if (dirName==null) {
-				return null;
-			}
-		}
+		String dirName = System.getProperty("log.dir");
 		return new File(dirName);
 	}
 

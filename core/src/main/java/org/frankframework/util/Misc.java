@@ -58,6 +58,9 @@ public class Misc {
 	private static Long messageSizeWarnByDefault = null;
 	public static final String LINE_SEPARATOR = System.lineSeparator();
 
+	private static final String[] siByteUnits = new String[]{"kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+	private static final String[] iecByteUnits = new String[]{"KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+
 	public static String insertAuthorityInUrlString(String url, String authAlias, String username, String password) {
 		if (StringUtils.isNotEmpty(authAlias) || StringUtils.isNotEmpty(username) || StringUtils.isNotEmpty(password)) {
 			CredentialFactory cf = new CredentialFactory(authAlias, username, password);
@@ -135,15 +138,15 @@ public class Misc {
 	/**
 	 * @see #toFileSize(long, boolean)
 	 */
-	public static String toFileSize(long value) {
-		return toFileSize(value, false);
+	public static String toFileSize(long bytes) {
+		return toFileSize(bytes, false);
 	}
 
 	/**
 	 * @see #toFileSize(long, boolean, boolean)
 	 */
-	public static String toFileSize(long value, boolean format) {
-		return toFileSize(value, false, format);
+	public static String toFileSize(long bytes, boolean format) {
+		return toFileSize(bytes, false, format);
 	}
 
 	/**
@@ -160,27 +163,27 @@ public class Misc {
 	 * </pre>
 	 *
 	 * @param bytes Number of bytes.
+	 * @param format True to insert space between value and unit.
 	 * @param useSiUnits True to use metric (SI) units, aka powers of 1000. False to use
 	 *           binary (IEC), aka powers of 1024.
-	 * @param format True to insert space between value and unit.
 	 *
 	 * @return Formatted string.
 	 */
-	public static String toFileSize(long bytes, boolean useSiUnits, boolean format) {
+	public static String toFileSize(long bytes, boolean format, boolean useSiUnits) {
 		int threshold = useSiUnits ? 1000 : 1024;
 
 		if (Math.abs(bytes) < threshold) {
 			return bytes + (format? " " : "") + "B";
 		}
 
-		String[] units = useSiUnits
-			? new String[]{"kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"}
-			: new String[]{"KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+		String[] units = useSiUnits ? siByteUnits : iecByteUnits;
 		int index = -1;
 		double roundingPrecision = 10;
 
+		long dividedBytes = bytes;
+
 		do {
-			bytes /= threshold;
+			dividedBytes /= threshold;
 			++index;
 		} while (
 			Math.round(Math.abs(bytes) * roundingPrecision) / roundingPrecision >=
@@ -188,7 +191,7 @@ public class Misc {
 				index < units.length - 1
 		);
 
-		return bytes + (format? " " : "") + units[index];
+		return dividedBytes + (format? " " : "") + units[index];
 	}
 
 	public static synchronized long getMessageSizeWarnByDefault() {
