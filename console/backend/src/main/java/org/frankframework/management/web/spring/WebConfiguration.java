@@ -16,15 +16,14 @@
 package org.frankframework.management.web.spring;
 
 import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
-import org.frankframework.util.StreamUtil;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
+import java.util.Optional;
 
 @Configuration
 @EnableWebMvc
@@ -32,11 +31,13 @@ public class WebConfiguration implements WebMvcConfigurer {
 
 	@Override
 	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-		StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter(StreamUtil.DEFAULT_CHARSET);
-		stringHttpMessageConverter.setWriteAcceptCharset(false);
-		converters.add(stringHttpMessageConverter);
+		Optional<HttpMessageConverter<?>> converterFound = converters.stream().filter(c -> c instanceof AbstractJackson2HttpMessageConverter).findFirst();
+		if(converterFound.isPresent()) {
+			AbstractJackson2HttpMessageConverter converter = (AbstractJackson2HttpMessageConverter) converterFound.get();
+			converter.setPrettyPrint(true);
+		}
+
 		converters.add(new InputStreamHttpMessageConverter());
-		converters.add(new ByteArrayHttpMessageConverter());
 	}
 
 }

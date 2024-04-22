@@ -1,0 +1,30 @@
+package org.frankframework.management.web.spring;
+
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.web.Description;
+import org.frankframework.management.web.Relation;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.security.RolesAllowed;
+
+@RestController
+public class ClassInfo extends FrankApiBase {
+
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@GetMapping(value = "/classinfo/{className}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Relation("debug")
+	@Description("view a specific class introspection")
+	public ResponseEntity<?> getClassInfo(@PathVariable("className") String className, @RequestParam(value = "base", required = false) String baseClassName) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.DEBUG, BusAction.GET);
+		builder.addHeader("className", className);
+		builder.addHeader("baseClassName", baseClassName);
+		return callSyncGateway(builder);
+	}
+
+}
