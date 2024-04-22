@@ -26,6 +26,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import org.hamcrest.Matchers;
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.frankframework.configuration.ClassLoaderException;
@@ -39,11 +45,6 @@ import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.StreamUtil;
-import org.hamcrest.Matchers;
-import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -93,14 +94,14 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		doReturn(StreamUtil.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 
-		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass);
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
 		IbisManager ibisManager = mock(IbisManager.class);
 		doReturn(ibisManager).when(ibisContext).getIbisManager();
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
 		doReturn(applicationContext).when(ibisManager).getApplicationContext();
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
-		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class);
 
 		@SuppressWarnings("rawtypes") //IbisContext.log is a void method
 		Answer answer = new Answer() {

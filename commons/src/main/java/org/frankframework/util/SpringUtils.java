@@ -15,15 +15,18 @@
 */
 package org.frankframework.util;
 
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class SpringUtils {
 
-	@SuppressWarnings("unchecked")
 	public static <T> T createBean(ApplicationContext applicationContext, Class<T> beanClass) {
-		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		T bean = applicationContext.getAutowireCapableBeanFactory().createBean(beanClass);
+		autowireByName(applicationContext, bean);
+		return bean;
 	}
 
 	public static void autowireByType(ApplicationContext applicationContext, Object existingBean) {
