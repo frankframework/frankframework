@@ -68,9 +68,9 @@ public class MiscTest {
 		String mbIecUnits = Misc.toFileSize(15000000, true);
 		String gbIecUnits = Misc.toFileSize(Long.parseLong("3221225472"));
 
-		String kbSiUnits = Misc.toFileSize(150000, true, false);
+		String kbSiUnits = Misc.toFileSize(150000, false, true);
 		String mbSiUnits = Misc.toFileSize(15000000, true, true);
-		String gbSiUnits = Misc.toFileSize(Long.parseLong("3221225472"), true, false);
+		String gbSiUnits = Misc.toFileSize(Long.parseLong("3221225472"), false, true);
 
 		assertEquals("146KiB", kbIecUnits);
 		assertEquals("14 MiB", mbIecUnits);

@@ -146,7 +146,7 @@ public class Misc {
 	 * @see #toFileSize(long, boolean, boolean)
 	 */
 	public static String toFileSize(long bytes, boolean format) {
-		return toFileSize(bytes, false, format);
+		return toFileSize(bytes, format, false);
 	}
 
 	/**
@@ -186,7 +186,7 @@ public class Misc {
 			dividedBytes /= threshold;
 			++index;
 		} while (
-			Math.round(Math.abs(bytes) * roundingPrecision) / roundingPrecision >=
+			Math.round(Math.abs(dividedBytes) * roundingPrecision) / roundingPrecision >=
 				threshold &&
 				index < units.length - 1
 		);
