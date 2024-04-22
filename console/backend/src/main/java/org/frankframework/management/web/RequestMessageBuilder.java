@@ -16,6 +16,8 @@
 package org.frankframework.management.web;
 
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -122,6 +124,7 @@ public class RequestMessageBuilder {
 		if(action != null) {
 			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
+		builder.setHeader(BusMessageUtils.HEADER_HOSTNAME_KEY, getHostname());
 
 
 		for(Entry<String, Object> customHeader : customHeaders.entrySet()) {
@@ -130,6 +133,15 @@ public class RequestMessageBuilder {
 		}
 
 		return builder.build();
+	}
+
+	public static String getHostname() {
+		try {
+			InetAddress localMachine = InetAddress.getLocalHost();
+			return localMachine.getHostName();
+		} catch(UnknownHostException uhe) {
+			return null;
+		}
 	}
 
 	private String mapHeaderForLog(Entry<String, Object> entry) {

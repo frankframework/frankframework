@@ -30,7 +30,7 @@ import org.frankframework.util.Misc;
  * @author Jaco de Groot
  */
 public class HostnamePropertySourcePostProcessor extends CustomPropertySourcePostProcessor {
-	private static final String HOSTNAME_PROPERTY = "hostname";
+	public static final String HOSTNAME_PROPERTY = "hostname";
 
 	@Override
 	protected void convertProperties(Properties props) {
