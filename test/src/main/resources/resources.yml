@@ -89,15 +89,17 @@ jdbc:
 #    username: "testiaf_user"
 #    password: "testiaf_user00"
 
-mongodb:
-  - name: "ibis4test"
-    type: "com.mongodb.MongoClient"
-    url: "mongodb://${jdbc.hostname:-localhost}"
-    authalias: "${db.authalias}"
-    username: "testiaf_user"
-    password: "testiaf_user00"
+# Mockup for future implementation
+#mongodb:
+#  - name: "ibis4test"
+#    type: "com.mongodb.MongoClient"
+#    url: "mongodb://${jdbc.hostname:-localhost}"
+#    authalias: "${db.authalias}"
+#    username: "testiaf_user"
+#    password: "testiaf_user00"
 
-jms:
+# Disabled here because in iaf-test we want to test our resources via the JBOSS TX Manager.
+#jms:
 #  - name: "qcf-activemq"
 #    type: "org.apache.activemq.ActiveMQXAConnectionFactory"
 #    url: "tcp://${jms.hostname:-localhost}:61616"
