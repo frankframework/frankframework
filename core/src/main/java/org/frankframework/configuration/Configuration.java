@@ -177,12 +177,27 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void start() {
+		log.info("starting configuration [{}]", this::getName);
 		if(!isConfigured()) {
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
 
 		super.start();
 		state = RunState.STARTED;
+	}
+
+	/**
+	 * Opposed to close you do not need to reconfigure the configuration
+	 */
+	@Override
+	public void stop() {
+		log.info("stopping configuration [{}]", this::getName);
+		state = RunState.STOPPING;
+		try {
+			super.stop();
+		} finally {
+			state = RunState.STOPPED;
+		}
 	}
 
 	/**
