@@ -38,8 +38,7 @@ In order to find all modules:
 		<exports />
 		<module-alias name="deployment.iaf" />
 		<dependencies>
-			<module name="javax.jws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: javax/jws/WebService -->
-			<module name="javax.jms.api" export="true"/>
+			<module name="jakarta.jms-api" export="true"/>
 			<module name="module.frank-framework" />
 			<module name="org.jboss.as.server"/> <!-- for WildFlyCredentialFactory -->
 		</dependencies>

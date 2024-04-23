@@ -227,7 +227,7 @@ public class TibcoUtils {
 				// The next line of code has been reported to throw the
 				// following exception:
 				//   com.tibco.tibjms.admin.TibjmsAdminException: Unable to connect to server. Root cause:
-				//   javax.jms.ResourceAllocationException: too many open connections
+				//   jakarta.jms.ResourceAllocationException: too many open connections
 				admin = new TibjmsAdmin(uw, cf.getUsername(), cf.getPassword());
 				// The next line of code has been reported to throw the
 				// following exception:

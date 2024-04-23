@@ -267,7 +267,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				if (count == queueItem) {
 					qNameXml.addAttribute("item", count);
 					Object o = enm.nextElement();
-					if (o instanceof javax.jms.Message msg) {
+					if (o instanceof jakarta.jms.Message msg) {
 						XmlBuilder qMessageId = new XmlBuilder("qMessageId");
 						qMessageId.setCdataValue(msg.getJMSMessageID());
 						qMessageXml.addSubElement(qMessageId);
