@@ -176,7 +176,7 @@ public class Misc {
 			return bytes + (format ? " " : "") + "B";
 		}
 
-		String[] units = useSiUnits ? siByteUnits : iecByteUnits;
+		String[] units = useSiUnits ? BYTE_UNITS_SI : BYTE_UNITS_IEC;
 		int index = -1;
 		double roundingPrecision = 10;
 
