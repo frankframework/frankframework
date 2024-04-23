@@ -16,28 +16,24 @@
 package org.frankframework.management.web;
 
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.util.HttpUtils;
+import org.frankframework.util.JacksonUtils;
 import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
-
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-
-import org.frankframework.util.HttpUtils;
-
-import org.frankframework.util.JacksonUtils;
 
 public class RequestMessageBuilder {
 	private Map<String, Object> customHeaders = new HashMap<>();
@@ -124,7 +120,12 @@ public class RequestMessageBuilder {
 		if(action != null) {
 			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
-		builder.setHeader(BusMessageUtils.HEADER_HOSTNAME_KEY, getHostname());
+
+		// Optional target query param, to target a specific backend node.
+		String targetHost = base.getServletRequest().getParameter("target");
+		if(StringUtils.isNotEmpty(targetHost)) {
+			builder.setHeader(BusMessageUtils.HEADER_HOSTNAME_KEY, targetHost);
+		}
 
 
 		for(Entry<String, Object> customHeader : customHeaders.entrySet()) {
@@ -133,15 +134,6 @@ public class RequestMessageBuilder {
 		}
 
 		return builder.build();
-	}
-
-	public static String getHostname() {
-		try {
-			InetAddress localMachine = InetAddress.getLocalHost();
-			return localMachine.getHostName();
-		} catch(UnknownHostException uhe) {
-			return null;
-		}
 	}
 
 	private String mapHeaderForLog(Entry<String, Object> entry) {
