@@ -29,6 +29,8 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.lang.NonNull;
+import org.springframework.web.multipart.MultipartFile;
 
 public abstract class RequestUtils {
 	private static final Logger LOG = LogManager.getLogger(RequestUtils.class);
@@ -126,6 +128,40 @@ public abstract class RequestUtils {
 		String value = getValue(json, key);
 		if(value != null) {
 			return Boolean.parseBoolean(value);
+		}
+		return null;
+	}
+
+	@NonNull
+	public static <T> T resolveRequiredProperty(String key, T multiFormProperty, T defaultValue) throws ApiException {
+		if (multiFormProperty != null) {
+			return multiFormProperty;
+		}
+		if(defaultValue != null) {
+			return defaultValue;
+		}
+		throw new ApiException("Key ["+key+"] not defined", 400);
+	}
+
+	public static String resolveStringWithEncoding(String key, MultipartFile message, String defaultEncoding) {
+		if(message != null) {
+			String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			if(message.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
+				String charset = message.getContentType().getParameters().get("charset");
+				if(StringUtils.isNotEmpty(charset)) {
+					encoding = charset;
+				}
+			}
+
+			try {
+				InputStream is = message.getInputStream();
+				String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
+				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
+			} catch (UnsupportedEncodingException e) {
+				throw new ApiException("unsupported file encoding ["+encoding+"]");
+			} catch (IOException e) {
+				throw new ApiException("error parsing value of key ["+key+"]", e);
+			}
 		}
 		return null;
 	}
