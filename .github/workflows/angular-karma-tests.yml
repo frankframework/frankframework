@@ -24,6 +24,8 @@ on:
       - "**.txt"
       - "**.png"
       - "**.toml"
+      - ".github/**"
+      - "!.github/workflows/*.yml"
       - "docker/**"
       - "webapp/src/main/webapp/iaf/**"
 
