@@ -13,14 +13,6 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
-import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import org.apache.commons.io.FilenameUtils;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
@@ -32,6 +24,13 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 import org.frankframework.testutil.mock.PreparedStatementMock;
 import org.frankframework.util.AppConstants;
+import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -80,10 +79,10 @@ public class ConfigurationUtilsTest extends Mockito {
 			}
 		}).when(conn).prepareStatement(anyString());
 
-		//Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass);
+		//Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
-		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class);
+		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 
 		// STUB a TransactionManager
 		PlatformTransactionManager ptm = new PlatformTransactionManager() {

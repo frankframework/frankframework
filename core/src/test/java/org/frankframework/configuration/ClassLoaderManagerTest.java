@@ -11,13 +11,6 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
-
 import org.frankframework.configuration.classloaders.ClassLoaderBase;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
@@ -26,6 +19,12 @@ import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -142,14 +141,14 @@ public class ClassLoaderManagerTest extends Mockito {
 		doReturn(StreamUtil.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 
-		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass);
+		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
 		IbisManager ibisManager = mock(IbisManager.class);
 		doReturn(ibisManager).when(ibisContext).getIbisManager();
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
 		doReturn(applicationContext).when(ibisManager).getApplicationContext();
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
-		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class);
+		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 
 	private ClassLoader getClassLoader() throws Exception {

@@ -4,16 +4,18 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Setter;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.mock.DirectQuerySenderMock;
 import org.frankframework.testutil.mock.FixedQuerySenderMock;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import lombok.Setter;
 
 /**
  * Enables the ability to provide a mockable FixedQuerySender.
@@ -52,7 +54,8 @@ public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationC
 		fixedDirectSenderMocks.put(name, resultSet);
 	}
 
+	@SuppressWarnings("unchecked")
 	private <T> T createMock(Class<T> clazz) {
-		return applicationContext.getAutowireCapableBeanFactory().createBean(clazz);
+		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(clazz, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 }
