@@ -58,8 +58,8 @@ public class Misc {
 	private static Long messageSizeWarnByDefault = null;
 	public static final String LINE_SEPARATOR = System.lineSeparator();
 
-	private static final String[] siByteUnits = new String[]{"kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
-	private static final String[] iecByteUnits = new String[]{"KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+	private static final String[] BYTE_UNITS_SI = new String[]{"kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+	private static final String[] BYTE_UNITS_IEC = new String[]{"KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
 
 	public static String insertAuthorityInUrlString(String url, String authAlias, String username, String password) {
 		if (StringUtils.isNotEmpty(authAlias) || StringUtils.isNotEmpty(username) || StringUtils.isNotEmpty(password)) {
