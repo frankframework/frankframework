@@ -1,0 +1,49 @@
+
+name: Angular Karma Tests
+
+on:
+  push:
+    branches:
+      - master
+      - '[0-9]+.[0-9]+-release'
+    paths-ignore:
+      - "**.md"
+      - "**.yml"
+      - "**.txt"
+      - "**.png"
+      - "**.toml"
+      - ".github/**"
+      - "docker/**"
+      - "webapp/src/main/webapp/iaf/**"
+  pull_request:
+    branches:
+      - master
+      - '[0-9]+.[0-9]+-release'
+    paths-ignore:
+      - "**.md"
+      - "**.yml"
+      - "**.txt"
+      - "**.png"
+      - "**.toml"
+      - ".github/**"
+      - "docker/**"
+      - "webapp/src/main/webapp/iaf/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: console/frontend/src/main/frontend/
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run Karma tests
+      run: npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
