@@ -36,7 +36,7 @@ public class FileViewer extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("logging")
 	@Description("view or download a (log)file")
-	public ResponseEntity<?> getFileContent(@RequestParam("file") String file, @RequestParam("accept") String acceptParam, @RequestHeader("Accept") String acceptHeader) {
+	public ResponseEntity<?> getFileContent(@RequestParam("file") String file, @RequestParam(value = "accept", required = false) String acceptParam, @RequestHeader("Accept") String acceptHeader) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FILE_VIEWER, BusAction.GET);
 		if (StringUtils.isEmpty(acceptHeader)) acceptHeader = "*/*";
 		String acceptType = !StringUtils.isEmpty(acceptParam) ? acceptParam : acceptHeader.split(",")[0];
