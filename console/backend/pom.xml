@@ -89,6 +89,10 @@
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>jakarta.mail</groupId>
+					<artifactId>jakarta.mail-api</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
