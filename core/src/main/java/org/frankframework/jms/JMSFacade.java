@@ -24,6 +24,10 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.naming.NamingException;
+import javax.xml.transform.TransformerException;
+
+import jakarta.annotation.Nonnull;
 import jakarta.jms.BytesMessage;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
@@ -39,10 +43,9 @@ import jakarta.jms.TextMessage;
 import jakarta.jms.Topic;
 import jakarta.jms.TopicPublisher;
 import jakarta.jms.TopicSession;
-import javax.naming.NamingException;
-import javax.xml.transform.TransformerException;
-
-import jakarta.annotation.Nonnull;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Supplier;
 import org.frankframework.configuration.ConfigurationException;
@@ -67,10 +70,6 @@ import org.frankframework.util.XmlException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 
 
 /**
@@ -122,8 +121,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	// ---------------------------------------------------------------------
 	private @Getter String topicConnectionFactoryName;
 
-	// the MessageSelector will provide filter functionality, as specified
-	// javax.jms.Message.
+	// the MessageSelector will provide filter functionality, as specified jakarta.jms.Message.
 	private @Getter String messageSelector = null;
 
 	private @Getter boolean correlationIdToHex = false;
