@@ -16,7 +16,6 @@
 package org.frankframework.jdbc;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -188,34 +187,21 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	/**
 	 * Returns the name and location of the database that this objects operates on.
+	 * If no previous connection was made or it cannot determine the destination
+	 * it returns 'unknown'
 	 *
 	 * @see HasPhysicalDestination#getPhysicalDestinationName()
 	 */
 	@Override
 	public String getPhysicalDestinationName() {
 		try {
-			DataSource dataSource;
-			try {
-				dataSource = getDatasource();
-			} catch (Exception e) {
-				return "no datasource found for datasourceName ["+getDatasourceName()+"]";
-			}
-			//Try to minimise the amount of DB connections
+			DataSource dataSource = getDatasource();
 			if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				return ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getDestinationName();
-			}
-
-			try (Connection connection = getConnection()) {
-				DatabaseMetaData metadata = connection.getMetaData();
-				String result = metadata.getURL();
-
-				String catalog=null;
-				catalog=connection.getCatalog();
-				result += catalog!=null ? ("/"+catalog):"";
-				return result;
+				String dName = ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getDestinationName();
+				if(dName != null) return dName;
 			}
 		} catch (Exception e) {
-			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);
+			return "no datasource found for datasourceName ["+getDatasourceName()+"]";
 		}
 		return "unknown";
 	}
