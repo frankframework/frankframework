@@ -136,7 +136,10 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.js",
+              "node_modules/metismenu/dist/metisMenu.js"
+            ]
           }
         }
       }

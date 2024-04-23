@@ -1,9 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Router, convertToParamMap } from '@angular/router';
+import { convertToParamMap, Router, RouterModule } from '@angular/router';
 import { MinimalizaSidebarComponent } from './minimaliza-sidebar.component';
 import { ScrollToTopComponent } from './scroll-to-top.component';
 import { CommonModule } from '@angular/common';
-import { AppRoutingModule } from 'src/app/app-routing.module';
 import { CustomViewsComponent } from '../../custom-views/custom-views.component';
 import { SideNavigationDirective } from '../side-navigation.directive';
 
@@ -14,7 +13,7 @@ import { SideNavigationDirective } from '../side-navigation.directive';
   standalone: true,
   imports: [
     CommonModule,
-    AppRoutingModule,
+    RouterModule,
     CustomViewsComponent,
     MinimalizaSidebarComponent,
     ScrollToTopComponent,

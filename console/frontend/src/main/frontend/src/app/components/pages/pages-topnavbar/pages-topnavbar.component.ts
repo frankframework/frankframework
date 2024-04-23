@@ -9,11 +9,11 @@ import {
   Renderer2,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppRoutingModule } from 'src/app/app-routing.module';
 import { NotificationService } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
 import { TimeSinceDirective } from '../../time-since.directive';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-pages-topnavbar',
@@ -22,8 +22,8 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
   standalone: true,
   imports: [
     CommonModule,
-    AppRoutingModule,
     HamburgerComponent,
+    RouterModule,
     TimeSinceDirective,
     NgbDropdownModule,
   ],

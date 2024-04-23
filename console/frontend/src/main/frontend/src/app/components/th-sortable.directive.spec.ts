@@ -11,9 +11,10 @@ import {
 } from './th-sortable.directive';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { NgForOf } from '@angular/common';
 
 @Component({
-  // standalone: true,
+  standalone: true,
   template: `
     <table>
       <thead>
@@ -30,7 +31,7 @@ import { By } from '@angular/platform-browser';
       </tbody>
     </table>
   `,
-  imports: [ThSortableDirective],
+  imports: [ThSortableDirective, NgForOf],
 })
 class TestComponent {
   items = [
@@ -50,8 +51,7 @@ describe('ThSortableDirective', () => {
   let directiveElements: DebugElement[];
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
-      imports: [],
-      declarations: [ThSortableDirective, TestComponent],
+      imports: [ThSortableDirective, TestComponent],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding

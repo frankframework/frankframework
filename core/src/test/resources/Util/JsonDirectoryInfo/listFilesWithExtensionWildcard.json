@@ -25,7 +25,7 @@
 			"lastModified": 1712751022893,
 			"type": "file",
 			"size": 37,
-			"sizeDisplay": "1 kB"
+			"sizeDisplay": "37 B"
 		},
 		{
 			"name": "Configuration.xml",
@@ -33,7 +33,7 @@
 			"lastModified": 1712751022895,
 			"type": "file",
 			"size": 29,
-			"sizeDisplay": "1 kB"
+			"sizeDisplay": "29 B"
 		},
 		{
 			"name": "fileOnlyOnDirectoryClassPath.xml",
@@ -41,7 +41,7 @@
 			"lastModified": 1712751022896,
 			"type": "file",
 			"size": 46,
-			"sizeDisplay": "1 kB"
+			"sizeDisplay": "46 B"
 		}
 	],
 	"directory": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",

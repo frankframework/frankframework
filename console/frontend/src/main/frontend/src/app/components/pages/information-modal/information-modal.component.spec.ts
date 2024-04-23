@@ -11,8 +11,7 @@ describe('InformationModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [InformationModalComponent],
+      imports: [HttpClientTestingModule, InformationModalComponent],
       providers: [
         {
           provide: NgbActiveModal,

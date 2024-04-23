@@ -1,0 +1,19 @@
+{
+    "name": "Frank!Framework",
+    "short_name": "Frank!Framework",
+    "icons": [
+        {
+            "src": "/assets/favicon/android-chrome-192x192.png?v=2",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/assets/favicon/android-chrome-512x512.png?v=2",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#1e1e1e",
+    "background_color": "#1e1e1e",
+    "display": "standalone"
+}

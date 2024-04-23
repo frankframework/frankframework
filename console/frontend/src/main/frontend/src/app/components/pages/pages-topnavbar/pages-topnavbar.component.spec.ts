@@ -10,8 +10,7 @@ describe('PagesTopnavbarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [PagesTopnavbarComponent],
+      imports: [HttpClientTestingModule, PagesTopnavbarComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
