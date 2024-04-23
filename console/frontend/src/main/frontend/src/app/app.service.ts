@@ -195,8 +195,8 @@ export type IAFRelease = {
 
 export type ServerInfo = {
   fileSystem: {
-    freeSpace: string;
-    totalSpace: string;
+    freeSpace: number;
+    totalSpace: number;
   };
   framework: {
     name: string;
@@ -212,10 +212,10 @@ export type ServerInfo = {
   'dtap.stage': string;
   'dtap.side': string;
   processMetrics: {
-    maxMemory: string;
-    freeMemory: string;
-    totalMemory: string;
-    heapSize: string;
+    maxMemory: number;
+    freeMemory: number;
+    totalMemory: number;
+    heapSize: number;
   };
   machineName: string;
   uptime: number;
@@ -231,12 +231,12 @@ export type ServerEnvironmentVariables = {
 export type AppConstants = Record<string, string | number | boolean | object>;
 
 export const appInitState = {
-  'UN_INIT': -1,
-  'PRE_INIT': 0,
-  'INIT': 1,
-  'POST_INIT': 2
- } as const;
-export type AppInitState = typeof appInitState[keyof typeof appInitState];
+  UN_INIT: -1,
+  PRE_INIT: 0,
+  INIT: 1,
+  POST_INIT: 2,
+} as const;
+export type AppInitState = (typeof appInitState)[keyof typeof appInitState];
 
 export type ConsoleState = {
   server: string;

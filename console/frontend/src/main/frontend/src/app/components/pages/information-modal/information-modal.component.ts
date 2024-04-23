@@ -6,13 +6,19 @@ import { ToastService } from '../../../services/toast.service';
 import { CommonModule } from '@angular/common';
 import { TimeSinceDirective } from '../../time-since.directive';
 import { ToDateDirective } from '../../to-date.directive';
+import { HumanFileSizePipe } from '../../../pipes/human-file-size.pipe';
 
 @Component({
   selector: 'app-information-modal',
   templateUrl: './information-modal.component.html',
   styleUrls: ['./information-modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, TimeSinceDirective, ToDateDirective],
+  imports: [
+    CommonModule,
+    TimeSinceDirective,
+    ToDateDirective,
+    HumanFileSizePipe,
+  ],
 })
 export class InformationModalComponent implements OnInit {
   @ViewChild('environmentInformation')
@@ -31,22 +37,22 @@ export class InformationModalComponent implements OnInit {
   applicationServer: string = '';
   javaVersion: string = '';
   processMetrics: {
-    maxMemory: string;
-    freeMemory: string;
-    totalMemory: string;
-    heapSize: string;
+    maxMemory: number;
+    freeMemory: number;
+    totalMemory: number;
+    heapSize: number;
   } = {
-    maxMemory: '',
-    freeMemory: '',
-    totalMemory: '',
-    heapSize: '',
+    maxMemory: -1,
+    freeMemory: -1,
+    totalMemory: -1,
+    heapSize: -1,
   };
   fileSystem: {
-    freeSpace: string;
-    totalSpace: string;
+    freeSpace: number;
+    totalSpace: number;
   } = {
-    freeSpace: '',
-    totalSpace: '',
+    freeSpace: -1,
+    totalSpace: -1,
   };
   uptime: number = 0;
 
@@ -57,6 +63,10 @@ export class InformationModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.getServerInfo();
+  }
+
+  getServerInfo(): void {
     this.appService.getServerInfo().subscribe({
       next: (data) => {
         this.applicationServer = data.applicationServer;
@@ -84,5 +94,9 @@ export class InformationModalComponent implements OnInit {
       'Copied',
       'Copied environment information to clipboard',
     );
+  }
+
+  refresh(): void {
+    this.getServerInfo();
   }
 }
