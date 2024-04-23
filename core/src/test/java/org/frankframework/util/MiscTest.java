@@ -44,7 +44,7 @@ public class MiscTest {
 	@Test
 	public void testNegativeToFileSize() {
 		String size = Misc.toFileSize(-1);
-		assertEquals("-1B", size);
+		assertEquals("-1", size);
 	}
 
 	@Test

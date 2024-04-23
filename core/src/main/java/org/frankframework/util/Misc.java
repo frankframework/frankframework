@@ -162,7 +162,7 @@ public class Misc {
 	 * 	   String gbSiUnits = Misc.toFileSize(Long.parseLong("3221225472"), true, false); 	// gives out "3GB"
 	 * </pre>
 	 *
-	 * @param bytes Number of bytes.
+	 * @param bytes Number of bytes. Should be positive, value is returned as string if negative.
 	 * @param format True to insert space between value and unit.
 	 * @param useSiUnits True to use metric (SI) units, aka powers of 1000. False to use
 	 *           binary (IEC), aka powers of 1024.
@@ -170,6 +170,10 @@ public class Misc {
 	 * @return Formatted string.
 	 */
 	public static String toFileSize(long bytes, boolean format, boolean useSiUnits) {
+		if (bytes < 0) {
+			return String.valueOf(bytes);
+		}
+
 		int threshold = useSiUnits ? 1000 : 1024;
 
 		if (Math.abs(bytes) < threshold) {
