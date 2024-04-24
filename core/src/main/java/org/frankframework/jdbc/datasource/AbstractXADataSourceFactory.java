@@ -13,19 +13,19 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jndi;
+package org.frankframework.jdbc.datasource;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-public abstract class AbstractXADataSourceFactory extends PoolingJndiDataSourceFactory {
+public abstract class AbstractXADataSourceFactory extends PoolingDataSourceFactory {
 
 	@Override
-	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if (dataSource instanceof XADataSource source) {
+	protected final DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
+		if (dataSource instanceof XADataSource xaDataSource) {
 			log.info("DataSource [{}] is XA enabled, registering with a Transaction Manager", dataSourceName);
-			return createXADataSource(source, dataSourceName);
+			return createXADataSource(xaDataSource, dataSourceName);
 		}
 
 		if (maxPoolSize > 1) {

@@ -59,8 +59,9 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 		}
 //		else {
 			ds = new NarayanaDataSource(xaDataSource, dataSourceName);
+			log.info("created non XA-enabled PoolingDataSource [{}]", ds);
 //		}
-//		log.info("registered Narayana DataSource [{}] with Transaction Manager", ds);
+		log.info("registered Narayana DataSource [{}] with Transaction Manager", ds);
 		return ds;
 	}
 }

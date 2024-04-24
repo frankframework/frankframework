@@ -41,29 +41,26 @@ import java.util.zip.ZipInputStream;
 import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
+import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Functions to manipulate the configuration.
@@ -149,7 +146,7 @@ public class ConfigurationUtils {
 	public static Map<String, Object> getConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName, String version) throws ConfigurationException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
-			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 		if (StringUtils.isEmpty(version)) {
 			version = null; //Make sure this is null when empty!
@@ -241,7 +238,7 @@ public class ConfigurationUtils {
 	public static boolean addConfigToDatabase(ApplicationContext applicationContext, String dataSourceName, boolean activateConfig, boolean automaticReload, String name, String version, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
-			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
@@ -304,7 +301,7 @@ public class ConfigurationUtils {
 	public static void removeConfigFromDatabase(ApplicationContext applicationContext, String name, String datasourceName, String version) throws ConfigurationException {
 		String workdataSourceName = datasourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
-			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
@@ -334,7 +331,7 @@ public class ConfigurationUtils {
 	public static boolean activateConfig(ApplicationContext applicationContext, String name, String version, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
-			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		Connection conn = null;
@@ -386,7 +383,7 @@ public class ConfigurationUtils {
 	public static boolean autoReloadConfig(ApplicationContext applicationContext, String name, String version, boolean booleanValue, String dataSourceName) throws SenderException, ConfigurationException, JdbcException, SQLException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
-			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
 		FixedQuerySender qs =  SpringUtils.createBean(applicationContext, FixedQuerySender.class);
@@ -526,7 +523,7 @@ public class ConfigurationUtils {
 	@Nonnull
 	public static List<String> retrieveConfigNamesFromDatabase(ApplicationContext applicationContext) throws ConfigurationException {
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {

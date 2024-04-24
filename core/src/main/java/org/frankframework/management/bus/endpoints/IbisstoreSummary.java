@@ -26,16 +26,6 @@ import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.dbms.IDbmsSupport;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.StringMessage;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonStructure;
-
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IPipe;
@@ -44,15 +34,25 @@ import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.DirectQuerySender;
+import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
-import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonStructure;
 
 @BusAware("frank-management-bus")
 public class IbisstoreSummary extends BusEndpointBase {
@@ -60,7 +60,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 	@TopicSelector(BusTopic.IBISSTORE_SUMMARY)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public StringMessage showIbisStoreSummary(Message<?> message) {
-		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String query = BusMessageUtils.getHeader(message, "query");
 
 		return execute(datasource, query);

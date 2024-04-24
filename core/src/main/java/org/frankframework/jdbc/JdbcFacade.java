@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.jdbc;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jndi.JndiBase;
-import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
@@ -84,7 +82,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(IDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
 		}
 		try {
 			if (getDatasource() == null) {
@@ -189,41 +187,28 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	/**
 	 * Returns the name and location of the database that this objects operates on.
+	 * If no previous connection was made or it cannot determine the destination
+	 * it returns 'unknown'
 	 *
 	 * @see HasPhysicalDestination#getPhysicalDestinationName()
 	 */
 	@Override
 	public String getPhysicalDestinationName() {
 		try {
-			DataSource dataSource;
-			try {
-				dataSource = getDatasource();
-			} catch (Exception e) {
-				return "no datasource found for datasourceName ["+getDatasourceName()+"]";
-			}
-			//Try to minimise the amount of DB connections
+			DataSource dataSource = getDatasource();
 			if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
-				return proxy.getDestinationName();
-			}
-
-			try (Connection connection = getConnection()) {
-				DatabaseMetaData metadata = connection.getMetaData();
-				String result = metadata.getURL();
-
-				String catalog=null;
-				catalog=connection.getCatalog();
-				result += catalog!=null ? ("/"+catalog):"";
-				return result;
+				String dName = proxy.getDestinationName();
+				if(dName != null) return dName;
 			}
 		} catch (Exception e) {
-			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);
+			return "no datasource found for datasourceName ["+getDatasourceName()+"]";
 		}
 		return "unknown";
 	}
 
 	/**
 	 * JNDI name of datasource to be used, can be configured via jmsRealm, too
-	 * @ff.default {@value JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 * @ff.default {@value IDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;

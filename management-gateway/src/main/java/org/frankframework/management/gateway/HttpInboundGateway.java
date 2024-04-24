@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package org.frankframework.management.gateway;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,8 +27,6 @@ import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -42,9 +42,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.integration.IntegrationPattern;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.integration.channel.PublishSubscribeChannel;
@@ -62,19 +65,21 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.support.HttpRequestHandlerServlet;
 import org.springframework.web.filter.RequestContextFilter;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @Order(Ordered.LOWEST_PRECEDENCE-1)
 public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, ServletContextAware, IntegrationPattern, InitializingBean, ApplicationContextAware, BeanFactoryAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
 	private static final String SERVLET_NAME = "HttpInboundGatewayServlet";
-
-	private final Logger log = LogManager.getLogger(HttpInboundGateway.class);
+	private static final byte[] NOT_AVAILABLE = "Backend not available".getBytes(StandardCharsets.UTF_8);
 
 	private HttpRequestHandlingMessagingGateway gateway;
 	private @Setter ApplicationContext applicationContext;
@@ -96,8 +101,20 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 		}
 	}
 
+	private static class HttpMessagingGateway extends HttpRequestHandlingMessagingGateway {
+		@Override
+		protected void setStatusCodeIfNeeded(ServerHttpResponse response, HttpEntity<?> httpEntity) {
+			response.setStatusCode(HttpStatus.NOT_ACCEPTABLE);
+			try {
+				StreamUtils.copy(NOT_AVAILABLE, response.getBody());
+			} catch (IOException e) {
+				log.debug("unable to copy servlet response", e);
+			}
+		}
+	}
+
 	private void createGateway() {
-		gateway = SpringUtils.createBean(applicationContext, HttpRequestHandlingMessagingGateway.class);
+		gateway = SpringUtils.createBean(applicationContext, HttpMessagingGateway.class);
 		gateway.setRequestChannel(getRequestChannel(applicationContext));
 		gateway.setErrorChannel(getErrorChannel(applicationContext));
 		gateway.setMessageConverters(getMessageConverters());
@@ -132,6 +149,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 		List<String> headers = new ArrayList<>();
 		headers.add(BusAction.ACTION_HEADER_NAME);
 		headers.add(BusTopic.TOPIC_HEADER_NAME);
+		headers.add(BusMessageUtils.HEADER_HOSTNAME_KEY);
 		headers.add(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		return headers.toArray(new String[0]);
 	}

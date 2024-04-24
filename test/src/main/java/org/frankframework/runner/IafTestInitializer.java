@@ -73,7 +73,6 @@ public class IafTestInitializer {
 		}
 	}
 
-	// requires --add-opens=java.base/java.lang=ALL-UNNAMED
 	public static void main(String[] args) throws IOException {
 		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
 		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);

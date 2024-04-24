@@ -22,8 +22,22 @@ import java.util.List;
 
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.management.bus.ActionSelector;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusAware;
+import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.EmptyMessage;
+import org.frankframework.scheduler.IbisJobDetail;
+import org.frankframework.scheduler.IbisJobDetail.JobType;
+import org.frankframework.scheduler.SchedulerHelper;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
@@ -32,22 +46,6 @@ import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.springframework.messaging.Message;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
-import org.frankframework.jdbc.FixedQuerySender;
-
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.jndi.JndiDataSourceFactory;
-import org.frankframework.management.bus.ActionSelector;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusAware;
-import org.frankframework.management.bus.BusException;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.scheduler.IbisJobDetail;
-import org.frankframework.scheduler.IbisJobDetail.JobType;
-import org.frankframework.scheduler.SchedulerHelper;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)
@@ -203,7 +201,7 @@ public class ManageScheduler extends BusEndpointBase {
 				boolean success = false;
 				// remove from database
 				FixedQuerySender qs = createBean(FixedQuerySender.class);
-				qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+				qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 				qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 				qs.configure();
 
