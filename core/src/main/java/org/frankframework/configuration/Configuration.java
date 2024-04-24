@@ -186,8 +186,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		state = RunState.STARTED;
 	}
 
-	/**
-	 * Opposed to close you do not need to reconfigure the configuration
+	/*
+	 * Opposed to close you do not need to reconfigure the configuration.
+	 * Allows you to stop and start Configurations.
 	 */
 	@Override
 	public void stop() {
