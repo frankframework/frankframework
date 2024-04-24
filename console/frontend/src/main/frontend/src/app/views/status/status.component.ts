@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { first, Subscription } from 'rxjs';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
 import {
@@ -13,10 +13,12 @@ import {
   MessageLog,
   MessageSummary,
   Receiver,
+  ServerInfo,
   Summary,
 } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
+import { round } from '@popperjs/core/lib/utils/math';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -75,8 +77,13 @@ export class StatusComponent implements OnInit, OnDestroy {
   getProcessStateIconFn = getProcessStateIcon;
   getProcessStateIconColorFn = getProcessStateIconColor;
 
+  readonly FREE_DISK_SPACE_ALERT_THRESHOLD = 5;
+
   private _subscriptions = new Subscription();
   private hasExpendedAdaptersLoaded = false;
+
+  serverInfo?: ServerInfo;
+  freeDiskSpacePercentage?: number;
 
   constructor(
     private Poller: PollerService,
@@ -127,6 +134,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     });
 
     this.check4StubbedConfigs();
+    this.getFreeDiskSpacePercentage();
     this.adapterSummary = this.appService.adapterSummary;
     this.receiverSummary = this.appService.receiverSummary;
     this.messageSummary = this.appService.messageSummary;
@@ -314,6 +322,18 @@ export class StatusComponent implements OnInit, OnDestroy {
     }
   }
 
+  private getFreeDiskSpacePercentage(): void {
+    this.appService
+      .getServerInfo()
+      .pipe(first())
+      .subscribe((serverInfo) => {
+        this.serverInfo = serverInfo;
+        this.freeDiskSpacePercentage =
+          (serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) *
+          100;
+      });
+  }
+
   // Commented out in template, so unused
   closeAlert(index: number): void {
     this.appService.alerts.splice(index, 1);
@@ -442,4 +462,6 @@ export class StatusComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+  protected readonly round = round;
 }
