@@ -15,9 +15,8 @@
 */
 package org.frankframework.lifecycle;
 
-import org.springframework.context.Lifecycle;
-
 import org.frankframework.configuration.ConfigurationException;
+import org.springframework.context.SmartLifecycle;
 
 /**
  * Interface for Spring beans that require their Lifecycle to be managed by Spring.
@@ -25,7 +24,7 @@ import org.frankframework.configuration.ConfigurationException;
  *
  * @author Niels
  */
-public interface ConfigurableLifecycle extends Lifecycle {
+public interface ConfigurableLifecycle extends SmartLifecycle {
 
 	/**
 	 * Configure this component.
@@ -34,4 +33,9 @@ public interface ConfigurableLifecycle extends Lifecycle {
 	 * @throws ConfigurationException in case it was not able to configure the component.
 	 */
 	public void configure() throws ConfigurationException;
+
+	@Override
+	default int getPhase() {
+		return Integer.MAX_VALUE; //Starts later, stops first
+	}
 }
