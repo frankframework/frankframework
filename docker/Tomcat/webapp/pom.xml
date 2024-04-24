@@ -61,20 +61,20 @@
 			<artifactId>jcc</artifactId>
 			<version>${db2.driver.version}</version>
 		</dependency>
-<!--		<dependency> DO WE NEED THIS STILL??
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
-			<version>${geronimo.j2ee.spec.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jta_1.1_spec</artifactId>
-			<version>${geronimo.jta.spec.version}</version>
+		<!--<dependency>
+			<groupId>jakarta.management.j2ee</groupId>
+			<artifactId>jakarta.management.j2ee-api</artifactId>
+			<version>1.1.4</version>
 		</dependency>-->
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>artemis-jms-client-all</artifactId>
+			<artifactId>artemis-jakarta-client</artifactId>
 			<version>${artemis.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.transaction</groupId>
+			<artifactId>jakarta.transaction-api</artifactId>
+			<version>2.0.1</version>
 		</dependency>
 		<!-- required for ActiveMQ classic-->
 		<dependency>

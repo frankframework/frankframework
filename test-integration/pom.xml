@@ -41,8 +41,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.geronimo.specs</groupId>
-			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<groupId>jakarta.management.j2ee</groupId>
+			<artifactId>jakarta.management.j2ee-api</artifactId>
+			<version>1.1.4</version>
 			<scope>test</scope>
 		</dependency>
 

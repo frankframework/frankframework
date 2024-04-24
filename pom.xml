@@ -46,8 +46,6 @@
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.2</activemq.driver.version>
 		<artemis.driver.version>2.33.0</artemis.driver.version>
-		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
-		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 
 		<aws.java.sdk.version>2.25.19</aws.java.sdk.version>
 
@@ -409,10 +407,11 @@
 				<version>6.0.0</version>
 				<scope>provided</scope>
 			</dependency>
-			<dependency><!-- scope should not be provided, because since Tomcat 10.x this is not included in the Tomcat distribution -->
+			<dependency>
 				<groupId>jakarta.jms</groupId>
 				<artifactId>jakarta.jms-api</artifactId>
 				<version>3.1.0</version>
+				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>

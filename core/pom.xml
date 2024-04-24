@@ -109,12 +109,11 @@
 			<artifactId>jakarta.xml.soap-api</artifactId>
 			<version>3.0.1</version>
 		</dependency>
-
-		<!-- perhaps it's a good idea to put all API's at the top of the POM... -->
 		<dependency>
 			<groupId>jakarta.transaction</groupId>
 			<artifactId>jakarta.transaction-api</artifactId>
 			<version>2.0.1</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.jms</groupId>
@@ -713,6 +712,12 @@
 			<artifactId>greenmail-junit5</artifactId>
 			<version>2.0.1</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>junit</groupId>
+					<artifactId>junit</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>net.oneandone.mockrunner</groupId>
