@@ -192,7 +192,11 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 						log.warn("Liquibase failed to rollback the changesets", e2);
 					}
 				}
-				liquibase.close();
+				try {
+					liquibase.close();
+				} catch (Exception e) {
+					log.warn("Liquibase failed to close", e);
+				}
 			}
 		}
 	}

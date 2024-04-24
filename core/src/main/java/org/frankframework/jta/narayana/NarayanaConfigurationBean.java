@@ -24,11 +24,11 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.JndiContextPrefixFactory;
-import org.frankframework.jndi.ObjectLocator;
 import org.frankframework.util.AppConstants;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.jndi.JndiTemplate;
 
 import com.arjuna.ats.arjuna.common.MetaObjectStoreEnvironmentBean;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
@@ -107,7 +107,8 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 		String jndiPrefix = jndiContextFactory.getContextPrefix();
 		String fullJndiName = (StringUtils.isNotEmpty(jndiPrefix)) ? jndiPrefix + objectStoreDatasource : objectStoreDatasource;
 		try {
-			DataSource dataSource = ObjectLocator.lookup(fullJndiName, null, DataSource.class);
+			JndiTemplate locator = new JndiTemplate();
+			DataSource dataSource = locator.lookup(fullJndiName, DataSource.class);
 			log.info("found Narayana ObjectStoreDatasource [{}]", dataSource);
 			return PoolingDataSourceJDBCAccess.class.getCanonicalName() + ';' + fullJndiName;
 		} catch (NamingException e) {

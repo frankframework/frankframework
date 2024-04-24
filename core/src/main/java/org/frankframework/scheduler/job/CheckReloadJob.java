@@ -22,13 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
@@ -139,6 +138,6 @@ public class CheckReloadJob extends JobDef {
 	}
 
 	protected String getDataSource() {
-		return JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+		return IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	}
 }

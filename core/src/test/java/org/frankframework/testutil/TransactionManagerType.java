@@ -13,7 +13,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
-import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.jdbc.IDataSourceFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -24,17 +24,18 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public enum TransactionManagerType {
-	DATASOURCE(URLDataSourceFactory.class, "springTOMCAT.xml"),
-	BTM(BTMXADataSourceFactory.class, "springTOMCATBTM.xml"),
-	NARAYANA(NarayanaXADataSourceFactory.class, "springTOMCATNARAYANA.xml");
+	//Apparently we want to inject some XA commit-stopper as well as wrap the DS
+	DATASOURCE(TestDataSourceFactory.class, "springTOMCAT.xml"),
+	BTM(TestBTMDataSourceFactory.class, "springTOMCATBTM.xml"),
+	NARAYANA(TestNarayanaDataSourceFactory.class, "springTOMCATNARAYANA.xml");
 
 	private static final Map<TransactionManagerType, TestConfiguration> transactionManagerConfigurations = new WeakHashMap<>();
 	private static final Map<String, TestConfiguration> datasourceConfigurations = new WeakHashMap<>();
 
-	private final Class<? extends URLDataSourceFactory> factory;
+	private final Class<? extends IDataSourceFactory> factory;
 	private final String[] springConfigurationFiles;
 
-	TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
+	TransactionManagerType(Class<? extends IDataSourceFactory> clazz, String springConfigurationFile) {
 		if(springConfigurationFile == null) {
 			springConfigurationFiles = new String[]{ TestConfiguration.TEST_CONFIGURATION_FILE };
 		} else {
@@ -43,8 +44,8 @@ public enum TransactionManagerType {
 		factory = clazz;
 	}
 
-	public URLDataSourceFactory getDataSourceFactory(ApplicationContext ac) {
-		return ac.getBean(URLDataSourceFactory.class, "dataSourceFactory");
+	public IDataSourceFactory getDataSourceFactory(ApplicationContext ac) {
+		return ac.getBean(IDataSourceFactory.class, "dataSourceFactory");
 	}
 
 	/**
@@ -68,7 +69,7 @@ public enum TransactionManagerType {
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		Properties properties = new Properties();
-		properties.setProperty("URLDataSourceFactory", factory.getCanonicalName());
+		properties.setProperty("TestDataSourceFactory", factory.getCanonicalName());
 		properties.setProperty("DataSourceName", productKey);
 		properties.setProperty("TransactionManagerType", this.name());
 		propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
@@ -139,17 +140,16 @@ public enum TransactionManagerType {
 	}
 
 	public List<String> getAvailableDataSources() {
-		URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
-		return dataSourceFactory.getDataSourceNames();
+		return FindAvailableDataSources.getAvailableDataSources();
 	}
 
 	/**
-	 * fetch the DataSource through the configured {@link JndiDataSourceFactory}.
+	 * fetch the DataSource through the configured {@link DataSourceFactory}.
 	 */
 	public DataSource getDataSource(String productKey) {
 		ApplicationContext ac = getConfigurationContext(productKey);
 		try {
-			return getDataSourceFactory(ac).get(productKey);
+			return getDataSourceFactory(ac).getDataSource(productKey);
 		} catch (NamingException e) {
 			throw new IllegalStateException("productkey not found?", e);
 		}
