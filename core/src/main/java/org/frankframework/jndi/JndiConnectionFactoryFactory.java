@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
 */
 package org.frankframework.jndi;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.NamingException;
 
+import org.frankframework.jdbc.datasource.ObjectFactoryBase;
 import org.frankframework.jms.IConnectionFactoryFactory;
 
-public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFactory,ConnectionFactory> implements IConnectionFactoryFactory {
+public class JndiConnectionFactoryFactory extends ObjectFactoryBase<ConnectionFactory> implements IConnectionFactoryFactory {
 
 	public JndiConnectionFactoryFactory() {
 		super(ConnectionFactory.class);
@@ -32,17 +32,17 @@ public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFa
 
 	@Override
 	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException {
-		return get(connectionFactoryName);
+		return getConnectionFactory(connectionFactoryName, null);
 	}
 
 	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException {
-		return get(connectionFactoryName, jndiEnvironment);
+	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties environment) throws NamingException {
+		return get(connectionFactoryName, environment);
 	}
 
 	@Override
 	public List<String> getConnectionFactoryNames() {
-		return new ArrayList<>(objects.keySet());
+		return getObjectNames();
 	}
 
 }

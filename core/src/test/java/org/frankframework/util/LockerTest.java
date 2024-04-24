@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -277,7 +278,7 @@ public class LockerTest {
 
 				try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')")) {
 
-					try {
+					SQLException e = assertThrows(SQLException.class, ()-> {
 						Timer timer = new Timer("let other thread commit after one second");
 						timer.schedule(new TimerTask() {
 											@Override
@@ -286,14 +287,11 @@ public class LockerTest {
 											}
 										}, 1000L);
 						stmt.executeUpdate();
-						log.debug("lock inserted");
-						fail("should not be possible to do a second insert");
-					} catch (SQLException e) {
-						if (locker.getDbmsSupport().isConstraintViolation(e) || e.getMessage().toLowerCase().contains("timeout")) {
-							log.debug("Caught expected UniqueConstraintViolation or Timeout ("+e.getClass().getName()+"): "+e.getMessage());
-						} else {
-							fail("Expected UniqueConstraintViolation, but was: ("+e.getClass().getName()+"): "+e.getMessage());
-						}
+					});
+					if (locker.getDbmsSupport().isConstraintViolation(e) || e.getMessage().toLowerCase().contains("timeout")) {
+						log.debug("Caught expected UniqueConstraintViolation or Timeout ("+e.getClass().getName()+"): "+e.getMessage());
+					} else {
+						fail("Expected UniqueConstraintViolation, but was: ("+e.getClass().getName()+"): "+e.getMessage());
 					}
 				}
 

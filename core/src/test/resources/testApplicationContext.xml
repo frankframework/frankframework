@@ -11,7 +11,10 @@
 
 	<bean id="MessageEventListener" class="org.frankframework.lifecycle.MessageEventListener" scope="singleton" />
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
-	<bean id="dataSourceFactory" class="org.frankframework.testutil.URLDataSourceFactory" />
+
+	<bean id="ResourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
+	<bean id="JndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
+	<bean id="dataSourceFactory" class="org.frankframework.testutil.TestDataSourceFactory" autowire="byType"/>
 
 	<bean name="meterRegistry" class="org.frankframework.metrics.MetricsRegistryFactoryBean" autowire="byName"/>
 
