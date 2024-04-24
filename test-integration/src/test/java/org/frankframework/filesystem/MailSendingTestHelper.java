@@ -3,13 +3,15 @@ package org.frankframework.filesystem;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
+import org.frankframework.filesystem.mock.MockFile;
 import org.frankframework.senders.MailSender;
 import org.frankframework.stream.Message;
-
-import org.frankframework.credentialprovider.util.StreamUtil;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
 
 public class MailSendingTestHelper implements IFileSystemTestHelper {
@@ -30,8 +32,8 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 		this.senderPassword=senderPassword;
 	}
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	public void setUp() throws ConfigurationException, SenderException {
 //		mailSender=new SendGridSender();
 		mailSender=new MailSender();
 		mailSender.setName("MailSendingTestHelper");
@@ -45,8 +47,8 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 	}
 
 
-	@After
-	public void tearDown() {
+	@AfterEach
+	public void tearDown() throws SenderException {
 		mailSender.close();
 	}
 

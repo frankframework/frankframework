@@ -1,14 +1,15 @@
 package org.frankframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Test;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
-org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.receivers.ExchangeMailListener;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.PropertyUtil;
@@ -44,7 +45,6 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 	public void fileSystemTestRandomFileShouldNotExist() throws Exception {
 		fileSystemTestRandomFileShouldNotExist(nonExistingFileName);
 	}
-
 
 	public ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) {
 		ExchangeMailListener listener = new ExchangeMailListener();
