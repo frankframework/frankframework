@@ -18,7 +18,6 @@ import {
 } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
-import { round } from '@popperjs/core/lib/utils/math';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -329,8 +328,11 @@ export class StatusComponent implements OnInit, OnDestroy {
       .subscribe((serverInfo) => {
         this.serverInfo = serverInfo;
         this.freeDiskSpacePercentage =
-          (serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) *
-          100;
+          Math.round(
+            (serverInfo.fileSystem.freeSpace /
+              serverInfo.fileSystem.totalSpace) *
+              1000,
+          ) / 10;
       });
   }
 
@@ -462,6 +464,4 @@ export class StatusComponent implements OnInit, OnDestroy {
       }
     }
   }
-
-  protected readonly round = round;
 }

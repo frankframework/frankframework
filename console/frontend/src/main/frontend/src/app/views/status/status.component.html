@@ -12,11 +12,11 @@
     >
       Disk space is running low! Only
       {{ serverInfo.fileSystem.freeSpace | humanFileSize }} available, that's
-      {{ round(freeDiskSpacePercentage) }}% of the total disk size ({{
+      {{ freeDiskSpacePercentage }}% of the total disk size ({{
         serverInfo.fileSystem.totalSpace | humanFileSize
       }})
     </li>
-    <ng-template *ngIf="alerts.length > 0">
+    <ng-container *ngIf="alerts.length > 0">
       <li
         *ngIf="messageLog[selectedConfiguration].errorStoreCount === 1"
         class="list-group-item alert-danger"
@@ -49,7 +49,7 @@
           errorStore.count.show is not set to true</span
         >
       </li>
-      <ng-template [ngForOf]="alerts" let-alert ngFor>
+      <ng-container *ngFor="let alert of alerts">
         <li
           *ngIf="
             alert.configuration === '' ||
@@ -76,8 +76,8 @@
             <span>{{ alert.message }}</span>
           </div>
         </li>
-      </ng-template>
-    </ng-template>
+      </ng-container>
+    </ng-container>
   </ul>
 
   <div class="row">
