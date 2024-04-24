@@ -309,7 +309,8 @@ public class PropertyLoader extends Properties {
 				case "properties":
 					load(reader);
 					break;
-				case "yml", "yaml":
+				case "yml":
+				case "yaml":
 					YamlParser parser = new YamlParser();
 					putAll(parser.load(reader));
 					break;
