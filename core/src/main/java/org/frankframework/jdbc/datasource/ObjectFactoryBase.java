@@ -113,7 +113,8 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 		Exception masterException=null;
 		for (Entry<String,O> entry:objects.entrySet()) {
 			final String name = entry.getKey();
-			if (entry.getValue() instanceof AutoCloseable closable) {
+			if (entry.getValue() instanceof AutoCloseable) {
+				AutoCloseable closable = (AutoCloseable) entry.getValue();
 				try {
 					log.debug("closing [{}] object [{}]", () -> ClassUtils.nameOf(closable), () -> name);
 					closable.close();
