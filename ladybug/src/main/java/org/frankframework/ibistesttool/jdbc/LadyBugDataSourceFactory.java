@@ -19,28 +19,18 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.jdbc.datasource.DataSourceFactory;
-import org.frankframework.jta.narayana.NarayanaDataSource;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
 
-public class LadyBugDataSourceFactory extends DataSourceFactory implements ApplicationContextAware {
-	private String txManagerType;
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		String txManager = applicationContext.getEnvironment().getProperty("application.server.type.custom");
-		if(StringUtils.isNotEmpty(txManager)) {
-			txManagerType = txManager.toUpperCase();
-		}
-	}
+/**
+ * The Ladybug uses it's own factory so it can be in control over it's connections.
+ * The DataSource is wrapped in a TransactionAwareDataSourceProxy.
+ */
+public class LadyBugDataSourceFactory extends PoolingDataSourceFactory {
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if("NARAYANA".equals(txManagerType) && dataSource instanceof XADataSource source) {
-			return new NarayanaDataSource(source, dataSourceName);
+		if(dataSource instanceof XADataSource) {
+			throw new IllegalStateException("The Ladybug only supports non-xa-datasources");
 		}
 
 		return super.augmentDatasource(dataSource, dataSourceName);

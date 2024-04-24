@@ -79,13 +79,25 @@ public class FrankResources {
 		Class<?> clazz = ClassUtils.loadClass(resource.getType());
 
 		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { //It's also possible to use the native drivers instead of the DataSources directy.
-			return (O) new DriverManagerDataSource(url, properties);
+			return (O) loadDataSourceThroughDriver(clazz, url, properties);
 		}
 		if(lookupClass.isAssignableFrom(clazz)) {
 			return (O) createInstance(clazz, url, properties);
 		}
 
 		throw new IllegalStateException("class is not of required type ["+resource.getType()+"]");
+	}
+
+	/**
+	 * Ensure that the driver is loaded, else the DriverManagerDataSource can't it.
+	 */
+	private DataSource loadDataSourceThroughDriver(Class<?> clazz, String url, Properties properties) {
+		try {
+			ClassUtils.newInstance(clazz);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException("unable to load database driver", e);
+		}
+		return new DriverManagerDataSource(url, properties);
 	}
 
 	private @Nullable Resource findResource(@Nonnull String name) {
@@ -117,7 +129,7 @@ public class FrankResources {
 	 */
 	private <O> O createInstance(Class<O> clazz, String url, Properties properties) {
 		try {
-			O dataSource = clazz.getDeclaredConstructor().newInstance();
+			O instance = clazz.getDeclaredConstructor().newInstance();
 
 			for(Method method: clazz.getMethods()) {
 				if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
@@ -127,15 +139,15 @@ public class FrankResources {
 				String value = properties.getProperty(fieldName);
 
 				if("url".equalsIgnoreCase(fieldName) || "brokerURL".equals(fieldName)) { // Ensures the URL is always set, some drivers use upper case, others lower...
-					ClassUtils.invokeSetter(dataSource, method, url);
+					ClassUtils.invokeSetter(instance, method, url);
 				} else if(StringUtils.isNotEmpty(value)) {
-					ClassUtils.invokeSetter(dataSource, method, value);
+					ClassUtils.invokeSetter(instance, method, value);
 				}
 			}
 
-			return dataSource;
+			return instance;
 		} catch (Exception e) {
-			throw new IllegalStateException("unable to create database driver", e);
+			throw new IllegalStateException("unable to create resource ["+clazz+"]", e);
 		}
 	}
 
