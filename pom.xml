@@ -181,11 +181,11 @@
 				<artifactId>credentialprovider</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<!--<dependency>
+			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-tibco</artifactId>
 				<version>${project.version}</version>
-			</dependency>-->
+			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-sap</artifactId>
@@ -598,7 +598,7 @@
 				<configuration>
 					<excludedModules>
 						<excludedModule>frankframework-sap</excludedModule>
-<!--						<excludedModule>frankframework-tibco</excludedModule>-->
+						<excludedModule>frankframework-tibco</excludedModule>
 						<excludedModule>frankframework-idin</excludedModule>
 					</excludedModules>
 					<noticeMessage>{0} - using: {1}</noticeMessage>
@@ -1308,7 +1308,7 @@
 			</activation>
 			<modules>
 				<module>sap</module>
-<!--				<module>tibco</module>-->
+				<module>tibco</module>
 				<module>idin</module>
 			</modules>
 			<repositories>
