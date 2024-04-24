@@ -20,11 +20,12 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import jakarta.annotation.security.RolesAllowed;
-import org.frankframework.dbms.IDbmsSupport;
-
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonStructure;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IForwardTarget;
@@ -48,11 +49,6 @@ import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonStructure;
 
 @BusAware("frank-management-bus")
 public class IbisstoreSummary extends BusEndpointBase {
