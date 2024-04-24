@@ -83,6 +83,7 @@ import { httpInterceptorProviders } from './http-interceptors';
 import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
 import { ThSortableDirective } from './components/th-sortable.directive';
 import { FileViewerComponent } from './components/file-viewer/file-viewer.component';
+import { HumanFileSizePipe } from './pipes/human-file-size.pipe';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -182,6 +183,7 @@ const windowProvider: ValueProvider = {
     PagesNavigationComponent,
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
+    HumanFileSizePipe,
   ],
   providers: [
     windowProvider,
