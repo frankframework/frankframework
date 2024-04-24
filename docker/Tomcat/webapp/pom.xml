@@ -61,7 +61,7 @@
 			<artifactId>jcc</artifactId>
 			<version>${db2.driver.version}</version>
 		</dependency>
-		<dependency>
+<!--		<dependency> DO WE NEED THIS STILL??
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
 			<version>${geronimo.j2ee.spec.version}</version>
@@ -70,7 +70,7 @@
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jta_1.1_spec</artifactId>
 			<version>${geronimo.jta.spec.version}</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>artemis-jms-client-all</artifactId>
@@ -81,6 +81,10 @@
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-client</artifactId>
 			<version>${activemq.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
