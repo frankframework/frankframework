@@ -30,19 +30,22 @@ app-pages-navigation {
   position: fixed;
   z-index: 10000;
   bottom: 20px;
-  height: 26px;
   margin-left: 15px;
   padding: 2px 10px;
   cursor: pointer;
   font-size: 13px;
   border-radius: 3px;
+  border: 1px solid #293846;
   background: #293846;
 }
 
 .scroll-to-top:hover {
-  padding: 1px 9px;
   border: 1px solid #19aa8d;
   color: white;
+}
+
+.minimalize {
+  font-size: 13px;
 }
 
 body.mini-navbar .scroll-to-top {
