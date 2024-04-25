@@ -216,6 +216,10 @@
 					<groupId>net.jcip</groupId>
 					<artifactId>jcip-annotations</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.glassfish.jaxb</groupId>
+					<artifactId>jaxb-runtime</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 

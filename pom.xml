@@ -22,6 +22,7 @@
 		<spring-security.version>6.2.3</spring-security.version>
 		<spring-integration.version>6.2.3</spring-integration.version>
 		<spring.boot.version>3.2.5</spring.boot.version>
+		<tomcat.version>10.1.23</tomcat.version>
 
 		<narayana.version>7.0.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
@@ -412,6 +413,11 @@
 				<artifactId>jakarta.jms-api</artifactId>
 				<version>3.1.0</version>
 				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jaxb</groupId>
+				<artifactId>jaxb-runtime</artifactId>
+				<version>4.0.5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -1105,11 +1111,14 @@
 									<bannedDependencies>
 										<excludes>
 											<exclude>ant:ant</exclude>
+											<exclude>jakarta.jms:jakarta.jms-api:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.javamail:geronimo-javamail_1.4_mail:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jta_1.1_spec:*:jar:compile</exclude>
 											<exclude>javax.servlet:javax.servlet-api:*:jar:compile</exclude>
+											<exclude>jakarta.servlet:jakarta.servlet-api:*:jar:compile</exclude>
+											<exclude>jakarta.transaction:jakarta.transaction-api:*:jar:compile</exclude>
 										</excludes>
 										<message>These dependencies should be provided by the Application Server!</message>
 									</bannedDependencies>

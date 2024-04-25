@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 public class JdbcPoolUtil {
@@ -32,7 +32,7 @@ public class JdbcPoolUtil {
 
 		if (datasource instanceof OpenManagedDataSource targetDataSource) {
 			addPoolMetadata(targetDataSource.getPool(), info);
-		} else if (datasource instanceof org.apache.commons.dbcp2.PoolingDataSource) {
+		} else if (datasource instanceof org.apache.tomcat.dbcp.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) datasource;
 			addPoolMetadata(dataSource.getPool(), info);
 		} else if (datasource instanceof DelegatingDataSource source) { //Perhaps it's wrapped?

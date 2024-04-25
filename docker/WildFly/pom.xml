@@ -32,6 +32,12 @@
 			<type>war</type>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-dbcp</artifactId>
+			<version>${tomcat.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
 			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
 			<version>${oracle.driver.version}</version>
