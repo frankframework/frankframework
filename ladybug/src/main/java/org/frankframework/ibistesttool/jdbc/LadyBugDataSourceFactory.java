@@ -114,4 +114,8 @@ public class LadyBugDataSourceFactory extends ObjectFactoryBase<DataSource> {
 		poolableConnectionFactory.setPool(connectionPool);
 		return connectionPool;
 	}
+
+	public DataSource getDataSource(String dataSourceName) {
+		return get(dataSourceName, null);
+	}
 }
