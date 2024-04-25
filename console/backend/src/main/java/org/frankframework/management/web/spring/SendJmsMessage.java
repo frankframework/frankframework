@@ -1,7 +1,10 @@
 package org.frankframework.management.web.spring;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -13,7 +16,11 @@ import org.frankframework.util.XmlEncodingUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,23 +28,57 @@ import javax.annotation.security.RolesAllowed;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 @RestController
 public class SendJmsMessage extends FrankApiBase {
 
+	@Getter
+	@Setter
+	public static class JmsMessageMultiPartBody {
+		private boolean persistent;
+		private boolean synchronous;
+		private boolean lookupDestination;
+		private String destination;
+		private String replyTo;
+		private String property;
+		private String type;
+		private String connectionFactory;
+		private String encoding;
+
+		private MultipartFile message;
+		private MultipartFile file;
+	}
+
+	@Getter
+	@Setter
+	public static class TestMultiPartBody {
+		private String type;
+	}
+
+
+
 	@RolesAllowed("IbisTester")
 	@PostMapping(value = "/jms/message", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Relation("jms")
 	@Description("put a JMS message on a queue")
-	public ResponseEntity<?> putJmsMessage(JmsMessageMultiPartBody multiPartData) {
+//	public ResponseEntity<?> putJmsMessage(@RequestPart String type) {
+	public ResponseEntity<?> putJmsMessage(@ModelAttribute TestMultiPartBody multiPartData) {
+		return ResponseEntity.ok("TEST");
+	}
 
+	public ResponseEntity<?> putJmsMessage2(JmsMessageMultiPartBody multiPartData, BindingResult errors) {
 		String message = null;
 		String fileName = null;
 		InputStream file = null;
 		if(multiPartData == null) {
 			throw new ApiException("Missing post parameters");
+		}
+
+		if(errors.hasErrors()) {
+			return ResponseEntity.badRequest().body("FUCK");
 		}
 
 		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", multiPartData.getEncoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
@@ -124,20 +165,4 @@ public class SendJmsMessage extends FrankApiBase {
 		archive.close();
 	}
 
-}
-
-@Getter
-class JmsMessageMultiPartBody {
-	private boolean persistent;
-	private boolean synchronous;
-	private boolean lookupDestination;
-	private String destination;
-	private String replyTo;
-	private String property;
-	private String type;
-	private String connectionFactory;
-	private String encoding;
-
-	private MultipartFile message;
-	private MultipartFile file;
 }

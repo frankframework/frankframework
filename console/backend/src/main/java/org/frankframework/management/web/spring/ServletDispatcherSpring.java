@@ -17,8 +17,11 @@ package org.frankframework.management.web.spring;
 
 import java.io.IOException;
 
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.Registration;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -36,6 +39,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+//@MultipartConfig
 public class ServletDispatcherSpring extends DispatcherServlet implements DynamicRegistration.Servlet {
 
 	private static final long serialVersionUID = 1L;
@@ -62,9 +66,9 @@ public class ServletDispatcherSpring extends DispatcherServlet implements Dynami
 		if(!isEnabled) {
 			return;
 		}
-//		Uncomment this for async support
-//		Registration.Dynamic servletRegistration = (Registration.Dynamic) servletConfig.getServletContext().getServletRegistration(getName());
-//		servletRegistration.setAsyncSupported(true);
+		ServletRegistration.Dynamic servletRegistration = (ServletRegistration.Dynamic) servletConfig.getServletContext().getServletRegistration(getName());
+		servletRegistration.setAsyncSupported(true);
+		servletRegistration.setMultipartConfig(new MultipartConfigElement(""));
 
 		log.debug("initialize {} servlet", this::getName);
 		super.init(servletConfig);

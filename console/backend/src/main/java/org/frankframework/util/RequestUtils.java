@@ -18,6 +18,7 @@ package org.frankframework.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -29,6 +30,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -140,16 +142,18 @@ public abstract class RequestUtils {
 		if(defaultValue != null) {
 			return defaultValue;
 		}
-		throw new ApiException("Key ["+key+"] not defined", 400);
+		throw new org.frankframework.management.web.spring.ApiException("Key ["+key+"] not defined", 400);
 	}
 
 	public static String resolveStringWithEncoding(String key, MultipartFile message, String defaultEncoding) {
 		if(message != null) {
 			String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			if(message.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
-				String charset = message.getContentType().getParameters().get("charset");
-				if(StringUtils.isNotEmpty(charset)) {
-					encoding = charset;
+			String messageContentType = message.getContentType();
+			if (messageContentType != null) {
+				MediaType contentType = MediaType.valueOf(message.getContentType());
+				Charset charset = contentType.getCharset();
+				if(charset != null) {
+					encoding = charset.toString();
 				}
 			}
 
@@ -158,9 +162,9 @@ public abstract class RequestUtils {
 				String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
 				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
 			} catch (UnsupportedEncodingException e) {
-				throw new ApiException("unsupported file encoding ["+encoding+"]");
+				throw new org.frankframework.management.web.spring.ApiException("unsupported file encoding ["+encoding+"]");
 			} catch (IOException e) {
-				throw new ApiException("error parsing value of key ["+key+"]", e);
+				throw new org.frankframework.management.web.spring.ApiException("error parsing value of key ["+key+"]", e);
 			}
 		}
 		return null;

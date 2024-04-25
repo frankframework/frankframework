@@ -17,6 +17,7 @@ package org.frankframework.management.web.spring;
 
 import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -38,6 +39,7 @@ public class WebConfiguration implements WebMvcConfigurer {
 		}
 
 		converters.add(new InputStreamHttpMessageConverter());
+		converters.add(new FormHttpMessageConverter());
 	}
 
 }
