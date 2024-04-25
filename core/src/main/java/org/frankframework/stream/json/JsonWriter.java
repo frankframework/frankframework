@@ -139,8 +139,8 @@ public class JsonWriter implements JsonEventHandler {
 	public void primitive(Object value) throws SaxException {
 		try {
 			writeSeparatingComma(false);
-			if (value instanceof String) {
-				writer.write("\""+StringEscapeUtils.escapeJson((String)value)+"\"");
+			if (value instanceof String string) {
+				writer.write("\""+StringEscapeUtils.escapeJson(string)+"\"");
 			} else if (value==null) {
 				writer.write("null");
 			} else {

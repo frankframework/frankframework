@@ -1,15 +1,16 @@
 package org.frankframework.http.cxf;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.ws.WebServiceContext;
 
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 
 public class SoapProviderStub extends SOAPProviderBase {
@@ -18,13 +19,13 @@ public class SoapProviderStub extends SOAPProviderBase {
 		this.webServiceContext = context;
 	}
 
-	PipeLineSession session = null;
+	@Getter PipeLineSession session = null;
 
 	final Map<String, Message> sessionCopy = new HashMap<>();
 
 	@Override
-	@SneakyThrows
-	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
+	@SneakyThrows(IOException.class)
+	Message processRequest(Message message, PipeLineSession pipelineSession) {
 		if(session != null) {
 			pipelineSession.putAll(session);
 			session.getCloseables().clear();
@@ -41,10 +42,6 @@ public class SoapProviderStub extends SOAPProviderBase {
 
 	public void setSession(PipeLineSession session) {
 		this.session = session;
-	}
-
-	public PipeLineSession getSession() {
-		return session;
 	}
 
 	public Message getMessageFromSessionCopy(String key) {

@@ -4,6 +4,7 @@ import java.util.stream.Stream;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.junit.jupiter.params.provider.Arguments;
 
@@ -21,7 +22,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 
 	@Override
 	public ValidationResult validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws Exception {
-		AbstractXmlValidator xmlValidator = implementation.getDeclaredConstructor().newInstance();
+		AbstractXmlValidator xmlValidator = ClassUtils.newInstance(implementation);
 		xmlValidator.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
 		xmlValidator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 		xmlValidator.setThrowException(true);

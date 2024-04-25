@@ -96,8 +96,8 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 		setEnabled(servlet.isEnabled());
 		setServlet(servlet);
 
-		if(servlet instanceof DynamicRegistration.ServletWithParameters) {
-			Map<String, String> initParams = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
+		if(servlet instanceof DynamicRegistration.ServletWithParameters parameters) {
+			Map<String, String> initParams = parameters.getParameters();
 			initParams.entrySet().stream().forEach(e -> addInitParameter(e.getKey(), e.getValue()));
 		}
 

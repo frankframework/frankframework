@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,36 +25,8 @@ import java.util.Map;
  */
 public class ProcessMetrics {
 
-	private static final long K_LIMIT=10*1024;
-	private static final long M_LIMIT=K_LIMIT*1024;
-	private static final long G_LIMIT=M_LIMIT*1024;
-	private static final long T_LIMIT=G_LIMIT*1024;
-
-	public static String normalizedNotation(long value) {
-		String valueString;
-
-		if (value < K_LIMIT) {
-			valueString = Long.toString(value);
-		} else {
-			if (value < M_LIMIT) {
-				valueString = Long.toString(value/1024)+"K";
-			} else {
-				if (value < G_LIMIT) {
-					valueString = Long.toString(value/(1024*1024))+"M";
-				} else {
-					if (value < T_LIMIT) {
-						valueString = Long.toString(value/(1024*1024*1024))+"G";
-					} else {
-						valueString = Long.toString(value/(1024*1024*1024*1024))+"T";
-					}
-				}
-			}
-		}
-		return valueString;
-	}
-
 	public static void addNumberProperty(XmlBuilder list, String name, long value) {
-		addProperty(list,name,normalizedNotation(value));
+		addProperty(list,name,Misc.toFileSize(value));
 	}
 
 	public static void addProperty(XmlBuilder list, String name, String value) {
@@ -88,10 +60,10 @@ public class ProcessMetrics {
 		long totalMem = Runtime.getRuntime().totalMemory();
 		long maxMemory = Runtime.getRuntime().maxMemory();
 
-		memoryStatistics.put("freeMemory", normalizedNotation(freeMem));
-		memoryStatistics.put("totalMemory", normalizedNotation(totalMem));
-		memoryStatistics.put("heapSize", normalizedNotation(totalMem-freeMem));
-		memoryStatistics.put("maxMemory", normalizedNotation(maxMemory));
+		memoryStatistics.put("freeMemory", String.valueOf(freeMem));
+		memoryStatistics.put("totalMemory", String.valueOf(totalMem));
+		memoryStatistics.put("heapSize", String.valueOf(totalMem-freeMem));
+		memoryStatistics.put("maxMemory", String.valueOf(maxMemory));
 		return memoryStatistics;
 	}
 }

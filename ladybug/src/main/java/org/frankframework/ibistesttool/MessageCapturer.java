@@ -36,8 +36,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 
 	@Override
 	public StreamingType getStreamingType(Object message) {
-		if (message instanceof Message) {
-			Message m = (Message)message;
+		if (message instanceof Message m) {
 			if (m.requiresStream() && !m.isRepeatable()) {
 				return m.isBinary() ? StreamingType.BYTE_STREAM : StreamingType.CHARACTER_STREAM;
 			}
@@ -51,9 +50,9 @@ public class MessageCapturer extends MessageCapturerImpl {
 
 	@Override
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
-		if (message instanceof Message) {
+		if (message instanceof Message message1) {
 			try {
-				((Message)message).captureCharacterStream(new WriterCaptureWrapper(writer), maxMessageLength);
+				message1.captureCharacterStream(new WriterCaptureWrapper(writer), maxMessageLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {
@@ -64,8 +63,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 			}
 			return message;
 		}
-		if (message instanceof WriterPlaceHolder) {
-			WriterPlaceHolder writerPlaceHolder = (WriterPlaceHolder)message;
+		if (message instanceof WriterPlaceHolder writerPlaceHolder) {
 			writerPlaceHolder.setWriter(writer);
 			writerPlaceHolder.setSizeLimit(maxMessageLength);
 			return message;
@@ -75,11 +73,10 @@ public class MessageCapturer extends MessageCapturerImpl {
 
 	@Override
 	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier, Consumer<Throwable> exceptionNotifier) {
-		if (message instanceof Message) {
-			Message m = (Message)message;
+		if (message instanceof Message m) {
 			charsetNotifier.accept(m.getCharset());
 			try {
-				((Message)message).captureBinaryStream(new OutputStreamCaptureWrapper(outputStream), maxMessageLength);
+				m.captureBinaryStream(new OutputStreamCaptureWrapper(outputStream), maxMessageLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {

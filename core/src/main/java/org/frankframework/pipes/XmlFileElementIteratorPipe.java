@@ -140,8 +140,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 					elementBuffer.setLength(startLength);
 					sElem = false;
 				} catch (Exception e) {
-					if (e instanceof TimeoutException) {
-						timeoutException = (TimeoutException) e;
+					if (e instanceof TimeoutException exception) {
+						timeoutException = exception;
 					}
 					rootException = e;
 					Throwable rootCause = e;

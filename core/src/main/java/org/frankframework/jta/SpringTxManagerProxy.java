@@ -83,11 +83,11 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	public IThreadConnectableTransactionManager<Object,Object> getThreadConnectableProxy() {
 		if (threadConnectableProxy==null) {
 			PlatformTransactionManager realTxManager = getRealTxManager();
-			if (realTxManager instanceof IThreadConnectableTransactionManager) {
+			if (realTxManager instanceof IThreadConnectableTransactionManager manager) {
 				//noinspection rawtypes
-				threadConnectableProxy = (IThreadConnectableTransactionManager)realTxManager;
-			} else if (realTxManager instanceof JtaTransactionManager) {
-				threadConnectableProxy = new ThreadConnectableJtaTransactionManager((JtaTransactionManager)realTxManager);
+				threadConnectableProxy = manager;
+			} else if (realTxManager instanceof JtaTransactionManager manager) {
+				threadConnectableProxy = new ThreadConnectableJtaTransactionManager(manager);
 			} else {
 				throw new IllegalStateException("Don't know how to make ["+realTxManager.getClass().getTypeName()+"] thread connectable");
 			}

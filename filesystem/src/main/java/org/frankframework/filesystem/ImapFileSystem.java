@@ -349,8 +349,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	public org.frankframework.stream.Message readFile(Message f, String charset) throws FileSystemException, IOException {
 		try {
 			Object content = f.getContent();
-			if (content instanceof MimeMultipart) {
-				MimeMultipart mimeMultipart = (MimeMultipart) content;
+			if (content instanceof MimeMultipart mimeMultipart) {
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					MimeBodyPart bodyPart = (MimeBodyPart) mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text/html")) {
@@ -464,8 +463,8 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	public Message getFileFromAttachment(MimeBodyPart a) throws FileSystemException {
 		try {
 			Object content = a.getContent();
-			if (content instanceof Message) {
-				return (Message) content;
+			if (content instanceof Message message) {
+				return message;
 			}
 			return null;
 		} catch (MessagingException | IOException e) {

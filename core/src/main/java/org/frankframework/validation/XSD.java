@@ -224,8 +224,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o instanceof XSD) {
-			XSD other = (XSD) o;
+		if (o instanceof XSD other) {
 			return compareTo(other) == 0;
 		}
 		return false;

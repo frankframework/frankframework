@@ -261,7 +261,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	private Optional<F> findFirstStableFile(Stream<F> ds) {
+	// Can throw FileSystemException from a Lambda
+	private Optional<F> findFirstStableFile(Stream<F> ds) throws FileSystemException {
 		long stabilityLimit = getMinStableTime();
 		if (stabilityLimit <= 0L) {
 			return ds.findFirst();
@@ -272,7 +273,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				.findFirst();
 	}
 
-	@SneakyThrows
+	@SneakyThrows(FileSystemException.class) // SneakyThrows because it's used in a Lambda
 	private boolean isFileOlderThan(F file, long timeInMillis) {
 		long filemodtime=fileSystem.getModificationTime(file).getTime();
 		return filemodtime <= timeInMillis;
@@ -282,9 +283,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<F> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		log.debug("After Message Processed - begin");
 		FS fileSystem=getFileSystem();
-		if (rawMessage instanceof MessageWrapper) {
-			// if it is a MessageWrapper, it comes from an errorStorage, and then the state cannot be managed using folders by the listener itself.
-			MessageWrapper<?> wrapper = (MessageWrapper<?>) rawMessage;
+		if (rawMessage instanceof MessageWrapper wrapper) {
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
 				log.warn("cannot write [{}] to logFolder, errorFolder or processedFolder after manual retry from errorStorage", wrapper.getId());
 			}

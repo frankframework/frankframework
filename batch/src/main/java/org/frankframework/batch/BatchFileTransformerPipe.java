@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeRunException;
@@ -100,18 +101,32 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		try {
 			PipeRunResult result = super.doPipe(input,session);
 			try {
-				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(),isOverwrite(), getNumberOfBackups());
+				moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(),isOverwrite(), getNumberOfBackups());
 			} catch (Exception e) {
 				log.error("Could not move file", e);
 			}
 			return result;
 		} catch (PipeRunException e) {
 			try {
-				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterError(), isDelete(), isOverwrite(), getNumberOfBackups());
+				moveFileAfterProcessing(file, getMove2dirAfterError(), isDelete(), isOverwrite(), getNumberOfBackups());
 			} catch (Exception e2) {
 				log.error("Could not move file after exception ["+e2+"]");
 			}
 			throw e;
+		}
+	}
+
+	static void moveFileAfterProcessing(File orgFile, String destDir, boolean delete, boolean overwrite, int numBackups) throws InterruptedException, IOException {
+		if (!delete) {
+			return;
+		}
+		if (orgFile.exists()) {
+			orgFile.delete();
+			return;
+		}
+		if (StringUtils.isNotEmpty(destDir)) {
+			File dstFile = new File(destDir, orgFile.getName());
+			FileUtils.moveFile(orgFile, dstFile, overwrite, numBackups, 5, 500);
 		}
 	}
 

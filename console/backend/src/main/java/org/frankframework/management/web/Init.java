@@ -122,8 +122,8 @@ public class Init extends FrankApiBase {
 						if(HALresources.containsKey(relation)) {
 							Object prevRelation = HALresources.get(relation);
 							List<Object> tmpList = null;
-							if(prevRelation instanceof List)
-								tmpList = (List) prevRelation;
+							if(prevRelation instanceof List list)
+								tmpList = list;
 							else {
 								tmpList = new ArrayList<>();
 								tmpList.add(prevRelation);

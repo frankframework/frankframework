@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,18 +34,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.core.IMessageBrowser.HideMethod;
-import org.xml.sax.InputSource;
-
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.logging.log4j.Logger;
+import org.frankframework.core.IMessageBrowser.HideMethod;
+import org.xml.sax.InputSource;
 
 
 /**
@@ -58,6 +57,9 @@ public class Misc {
 
 	private static Long messageSizeWarnByDefault = null;
 	public static final String LINE_SEPARATOR = System.lineSeparator();
+
+	private static final String[] BYTE_UNITS_SI = new String[]{"kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+	private static final String[] BYTE_UNITS_IEC = new String[]{"KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
 
 	public static String insertAuthorityInUrlString(String url, String authAlias, String username, String password) {
 		if (StringUtils.isNotEmpty(authAlias) || StringUtils.isNotEmpty(username) || StringUtils.isNotEmpty(password)) {
@@ -136,55 +138,64 @@ public class Misc {
 	/**
 	 * @see #toFileSize(long, boolean)
 	 */
-	public static String toFileSize(long value) {
-		return toFileSize(value, false);
+	public static String toFileSize(long bytes) {
+		return toFileSize(bytes, false);
 	}
 
 	/**
 	 * @see #toFileSize(long, boolean, boolean)
 	 */
-	public static String toFileSize(long value, boolean format) {
-		return toFileSize(value, format, false);
+	public static String toFileSize(long bytes, boolean format) {
+		return toFileSize(bytes, format, false);
 	}
 
 	/**
-	 * Converts the input value in bytes to the highest degree of file size, and formats and floors the value, if set to true.
+	 * Format bytes as human-readable text.
+	 *
 	 * <pre>
-	 *      String mb = Misc.toFileSize(15000000, true); // gives out "14 MB"
-	 *      String kb = Misc.toFileSize(150000, false, true); // gives out "146KB"
+	 *     String kbIecUnits = Misc.toFileSize(150000, false, false); 			// gives out "146KiB"
+	 * 	   String mbIecUnits = Misc.toFileSize(15000000, true); 				// gives out "14 MiB"
+	 *     String gbIecUnits = Misc.toFileSize(Long.parseLong("3221225472"));	// gives out "3GiB"
+	 *
+	 * 	   String kbSiUnits = Misc.toFileSize(150000, true, false); 						// gives out "150kB"
+	 * 	   String mbSiUnits = Misc.toFileSize(15000000, true, true); 						// gives out "15 MB"
+	 * 	   String gbSiUnits = Misc.toFileSize(Long.parseLong("3221225472"), true, false); 	// gives out "3GB"
 	 * </pre>
+	 *
+	 * @param bytes Number of bytes. Should be positive, value is returned as string if negative.
+	 * @param format True to insert space between value and unit.
+	 * @param useSiUnits True to use metric (SI) units, aka powers of 1000. False to use
+	 *           binary (IEC), aka powers of 1024.
+	 *
+	 * @return Formatted string.
 	 */
-	public static String toFileSize(long value, boolean format, boolean floor) {
-		long divider = 1024L * 1024 * 1024;
-		String suffix = null;
-		if (value >= divider) {
-			suffix = "GB";
-		} else {
-			divider = 1024L * 1024;
-			if (value >= divider) {
-				suffix = "MB";
-			} else {
-				divider = 1024;
-				if (value >= divider) {
-					if (format) {
-						suffix = "kB";
-					} else {
-						suffix = "KB";
-					}
-				}
-			}
+	public static String toFileSize(long bytes, boolean format, boolean useSiUnits) {
+		if (bytes < 0) {
+			return String.valueOf(bytes);
 		}
-		if (suffix == null) {
-			if (format) {
-				if (value > 0) {
-					return "1 kB";
-				}
-				return "0 kB";
-			}
-			return value + (floor ? "B" : "");
+
+		int threshold = useSiUnits ? 1000 : 1024;
+
+		if (Math.abs(bytes) < threshold) {
+			return bytes + (format ? " " : "") + "B";
 		}
-		float f = (float) value / divider;
-		return Math.round(f) + (format ? " " : "") + suffix;
+
+		String[] units = useSiUnits ? BYTE_UNITS_SI : BYTE_UNITS_IEC;
+		int index = -1;
+		double roundingPrecision = 10;
+
+		long dividedBytes = bytes;
+
+		do {
+			dividedBytes /= threshold;
+			++index;
+		} while (
+			Math.round(Math.abs(dividedBytes) * roundingPrecision) / roundingPrecision >=
+				threshold &&
+				index < units.length - 1
+		);
+
+		return dividedBytes + (format ? " " : "") + units[index];
 	}
 
 	public static synchronized long getMessageSizeWarnByDefault() {
@@ -231,41 +242,6 @@ public class Misc {
 			log.debug("adding item to "+collectionDescription+" <empty string>");
 			collection.add("");
 		}
-	}
-
-	public static String getFileSystemTotalSpace() {
-		try {
-			File systemDir = getSystemDir();
-			if (systemDir == null) return null;
-			long l = systemDir.getTotalSpace();
-			return toFileSize(l);
-		} catch ( Exception e ) {
-			log.debug("Caught Exception",e);
-			return null;
-		}
-	}
-
-	public static String getFileSystemFreeSpace() {
-		try {
-			File systemDir = getSystemDir();
-			if (systemDir == null) return null;
-			long l = systemDir.getFreeSpace();
-			return toFileSize(l);
-		} catch ( Exception e ) {
-			log.debug("Caught Exception",e);
-			return null;
-		}
-	}
-
-	private static File getSystemDir() {
-		String dirName = System.getProperty("APPSERVER_ROOT_DIR");
-		if (dirName==null) {
-			dirName = System.getProperty("user.dir");
-			if (dirName==null) {
-				return null;
-			}
-		}
-		return new File(dirName);
 	}
 
 	public static String getAge(long value) {

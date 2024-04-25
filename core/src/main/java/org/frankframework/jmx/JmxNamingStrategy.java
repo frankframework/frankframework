@@ -55,8 +55,7 @@ public class JmxNamingStrategy extends IdentityNamingStrategy implements Initial
 			throw new MalformedObjectNameException("managedBean cannot be null");
 		}
 
-		if(managedBean instanceof IAdapter) {
-			IAdapter adapter = (IAdapter) managedBean;
+		if(managedBean instanceof IAdapter adapter) {
 			Configuration config = adapter.getConfiguration();
 			if (config != null) {
 				String version = null;
@@ -65,7 +64,7 @@ public class JmxNamingStrategy extends IdentityNamingStrategy implements Initial
 				} else {
 					version = Integer.toHexString(config.hashCode()); //Give the configuration a version to differentiate when (re-/un-)loading.
 				}
-				properties.put("type", String.format("%s-%s", config.getName(), version).replaceAll(ILLEGAL_CHARACTER_REGEX, "_"));
+				properties.put("type", "%s-%s".formatted(config.getName(), version).replaceAll(ILLEGAL_CHARACTER_REGEX, "_"));
 			} else { //if configuration is null (for whatever reason) we need to be able to differentiate adapters in between reloads.
 				properties.put("identity", Integer.toHexString(adapter.hashCode()));
 			}

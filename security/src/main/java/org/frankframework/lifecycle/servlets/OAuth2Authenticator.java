@@ -156,7 +156,7 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 		}
 
 		builder.clientId(clientId).clientSecret(clientSecret);
-		builder.redirectUri(String.format("{baseUrl}/%s/oauth2/code/{registrationId}", oauthBaseUrl));
+		builder.redirectUri("{baseUrl}/%s/oauth2/code/{registrationId}".formatted(oauthBaseUrl));
 
 		return builder.build();
 	}

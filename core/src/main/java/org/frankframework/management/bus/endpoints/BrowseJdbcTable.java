@@ -29,30 +29,28 @@ import javax.annotation.security.RolesAllowed;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.jdbc.JdbcQuerySenderBase;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.springframework.messaging.Message;
-import org.xml.sax.SAXException;
-
-import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.jdbc.DirectQuerySender;
+import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.transformer.QueryOutputToListOfMaps;
-import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.DB2XMLWriter;
-
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
+import org.springframework.messaging.Message;
+import org.xml.sax.SAXException;
 
 @BusAware("frank-management-bus")
 public class BrowseJdbcTable extends BusEndpointBase {
@@ -69,7 +67,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 	@ActionSelector(BusAction.FIND)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> handleBrowseDatabase(Message<?> message) {
-		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String tableName = BusMessageUtils.getHeader(message, "table");
 		String where = BusMessageUtils.getHeader(message, "where");
 		String order = BusMessageUtils.getHeader(message, "order"); // the form field named 'order' is only used for 'group by', when number of rows only is true.

@@ -17,38 +17,44 @@ import org.frankframework.testutil.TestAssertions;
 
 public class TestBindingTypes extends CmisSenderTestBase {
 
-	private static final String INPUT = "<cmis><id>id</id><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId>"
-			+ "<fileName>fileInput.txt</fileName>" +
-			" <properties><property name=\"project:number\" type=\"integer\">123456789</property>" +
-			"<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>" +
-			"<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
-	private static final String FIND_INPUT = "<query><name>dummy</name>\n" +
-			"	<objectId>dummy</objectId>\n" +
-			"	<objectTypeId>dummy</objectTypeId>\n" +
-			"	<maxItems>15</maxItems>\n" +
-			"	<skipCount>0</skipCount>\n" +
-			"	<searchAllVersions>true</searchAllVersions>\n" +
-			"	<properties>\n" +
-			"		<property name=\"cmis:name\">dummy</property>\n" +
-			"		<property name=\"project:number\" type=\"integer\">123456789</property>\n" +
-			"		<property name=\"project:onTime\" type=\"boolean\">true</property>\n" +
-			"		<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:29:46</property>\n" +
-			"	</properties>\n" +
-			"	<statement>SELECT * from cmis:document</statement>\n" +
-			"	<filter>cmis:objectId</filter>\n" +
-			"	<includeAllowableActions>true</includeAllowableActions>\n" +
-			"	<includePolicies>true</includePolicies>\n" +
-			"	<includeAcl>true</includeAcl> </query>";
+	private static final String INPUT = """
+			<cmis><id>id</id><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId>\
+			<fileName>fileInput.txt</fileName>\
+			 <properties><property name="project:number" type="integer">123456789</property>\
+			<property name="project:lastModified" type="datetime">2019-02-26T16:31:15</property>\
+			<property name="project:onTime" type="boolean">true</property></properties></cmis>\
+			""";
+	private static final String FIND_INPUT = """
+			<query><name>dummy</name>
+				<objectId>dummy</objectId>
+				<objectTypeId>dummy</objectTypeId>
+				<maxItems>15</maxItems>
+				<skipCount>0</skipCount>
+				<searchAllVersions>true</searchAllVersions>
+				<properties>
+					<property name="cmis:name">dummy</property>
+					<property name="project:number" type="integer">123456789</property>
+					<property name="project:onTime" type="boolean">true</property>
+					<property name="project:lastModified" type="datetime">2019-02-26T16:29:46</property>
+				</properties>
+				<statement>SELECT * from cmis:document</statement>
+				<filter>cmis:objectId</filter>
+				<includeAllowableActions>true</includeAllowableActions>
+				<includePolicies>true</includePolicies>
+				<includeAcl>true</includeAcl> </query>\
+			""";
 	private static final String FIND_RESULT = "<cmis totalNumItems=\"0\">  <rowset /></cmis>";
-	private static final String FETCH_RESULT = "<cmis>  <properties>    "
-			+ "<property name=\"cmis:name\" type=\"id\">dummy</property>    "
-			+ "<property name=\"project:number\" type=\"integer\">123456789</property>    "
-			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>    "
-			+ "<property name=\"project:onTime\" type=\"boolean\">true</property>  "
-			+ "</properties>  <allowableActions>    <action>canCreateDocument</action>  </allowableActions>  <isExactAcl>false</isExactAcl>  "
-			+ "<policyIds>    <policyId>dummyObjectId</policyId>  </policyIds>  "
-			+ "<relationships>    <relation>dummy</relation>  </relationships>"
-			+ "</cmis>";
+	private static final String FETCH_RESULT = """
+			<cmis>  <properties>    \
+			<property name="cmis:name" type="id">dummy</property>    \
+			<property name="project:number" type="integer">123456789</property>    \
+			<property name="project:lastModified" type="datetime">2019-02-26T16:31:15</property>    \
+			<property name="project:onTime" type="boolean">true</property>  \
+			</properties>  <allowableActions>    <action>canCreateDocument</action>  </allowableActions>  <isExactAcl>false</isExactAcl>  \
+			<policyIds>    <policyId>dummyObjectId</policyId>  </policyIds>  \
+			<relationships>    <relation>dummy</relation>  </relationships>\
+			</cmis>\
+			""";
 
 	private static final String createActionExpectedBase64 = "ZmlsZUlucHV0LnR4dA==";
 	private static final String updateActionExpectedBase64 = "aWQ=";

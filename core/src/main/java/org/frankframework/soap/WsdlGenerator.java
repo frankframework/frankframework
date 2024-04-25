@@ -155,8 +155,7 @@ public class WsdlGenerator {
 			tns = appConstants.getProperty("wsdl.targetNamespace");
 		}
 		if (tns == null) {
-			if (inputValidator instanceof WsdlGeneratorExtension) {
-				WsdlGeneratorExtension<?> wsdlGeneratorExtension = (WsdlGeneratorExtension<?>) inputValidator;
+			if (inputValidator instanceof WsdlGeneratorExtension wsdlGeneratorExtension) {
 				extensionContext = wsdlGeneratorExtension.buildExtensionContext(pipeLine);
 
 				fileName = extensionContext.getFilename();
@@ -165,8 +164,8 @@ public class WsdlGenerator {
 			}
 			if (tns == null) {
 				for(IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
-					if (listener instanceof WebServiceListener) {
-						webServiceListenerNamespace = ((WebServiceListener)listener).getServiceNamespaceURI();
+					if (listener instanceof WebServiceListener serviceListener) {
+						webServiceListenerNamespace = serviceListener.getServiceNamespaceURI();
 						tns = webServiceListenerNamespace;
 					}
 				}
@@ -193,7 +192,7 @@ public class WsdlGenerator {
 		}
 		this.fileName = fileName;
 		this.targetNamespace = WsdlGeneratorUtils.validUri(tns);
-		if (inputValidator instanceof SoapValidator && ((SoapValidator)inputValidator).getSoapVersion()==SoapVersion.SOAP12) {
+		if (inputValidator instanceof SoapValidator validator && validator.getSoapVersion()==SoapVersion.SOAP12) {
 			wsdlSoapNamespace = WSDL_SOAP12_NAMESPACE;
 			wsdlSoapPrefix = WSDL_SOAP12_NAMESPACE_PREFIX;
 		}
@@ -305,16 +304,15 @@ public class WsdlGenerator {
 				httpActive = true;
 			} else if (listener instanceof JmsListener) {
 				jmsActive = true;
-			} else if (listener instanceof JavaListener) {
-				JavaListener<?> jl = (JavaListener<?>) listener;
+			} else if (listener instanceof JavaListener jl) {
 				if (jl.isHttpWsdl()) httpActive = true;
 			}
 		}
 	}
 
 	protected boolean isHeaderOptional(IXmlValidator xmlValidator) {
-		if (xmlValidator instanceof SoapValidator) {
-			String root = ((SoapValidator) xmlValidator).getSoapHeader();
+		if (xmlValidator instanceof SoapValidator validator) {
+			String root = validator.getSoapHeader();
 			if (StringUtils.isNotEmpty(root)) {
 				String[] roots = root.trim().split(",", -1);
 				for (String s : roots) {
@@ -665,8 +663,8 @@ public class WsdlGenerator {
 		}
 		if (jmsActive) {
 			for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
-				if (listener instanceof JmsListener) {
-					jmsService(w, (JmsListener)listener, jmsPrefix);
+				if (listener instanceof JmsListener jmsListener) {
+					jmsService(w, jmsListener, jmsPrefix);
 				}
 			}
 		}
@@ -758,9 +756,9 @@ public class WsdlGenerator {
 	}
 
 	protected QName getHeaderElement(IXmlValidator xmlValidator, Set<IXSD> xsds) {
-		if (xmlValidator instanceof SoapValidator) {
-			String root = ((SoapValidator)xmlValidator).getSoapHeader();
-			String namespace = ((SoapValidator)xmlValidator).getSoapHeaderNamespace();
+		if (xmlValidator instanceof SoapValidator validator) {
+			String root = validator.getSoapHeader();
+			String namespace = validator.getSoapHeaderNamespace();
 			if (StringUtils.isNotEmpty(root)) {
 				return getRootElement(xsds, root, namespace);
 			}

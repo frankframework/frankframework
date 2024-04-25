@@ -177,12 +177,28 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void start() {
+		log.info("starting configuration [{}]", this::getName);
 		if(!isConfigured()) {
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
 
 		super.start();
 		state = RunState.STARTED;
+	}
+
+	/*
+	 * Opposed to close you do not need to reconfigure the configuration.
+	 * Allows you to stop and start Configurations.
+	 */
+	@Override
+	public void stop() {
+		log.info("stopping configuration [{}]", this::getName);
+		state = RunState.STOPPING;
+		try {
+			super.stop();
+		} finally {
+			state = RunState.STOPPED;
+		}
 	}
 
 	/**
@@ -207,8 +223,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 			//Trigger a configure on all Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-			if(lifecycle instanceof ConfigurableLifecycle) {
-				((ConfigurableLifecycle) lifecycle).configure();
+			if(lifecycle instanceof ConfigurableLifecycle configurableLifecycle) {
+				configurableLifecycle.configure();
 			}
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;

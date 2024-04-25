@@ -228,8 +228,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 
 			try {
-				if(sender instanceof AdapterAware) {
-					((AdapterAware) sender).setAdapter(getAdapter());
+				if(sender instanceof AdapterAware aware) {
+					aware.setAdapter(getAdapter());
 				}
 				if(StringUtils.isEmpty(sender.getName())) {
 					sender.setName(ClassUtils.nameOf(sender));
@@ -313,8 +313,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				messageLog.setHideMethod(getHideMethod());
 			}
 			messageLog.configure();
-			if (messageLog instanceof HasPhysicalDestination) {
-				String msg = "has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName();
+			if (messageLog instanceof HasPhysicalDestination destination) {
+				String msg = "has messageLog in "+destination.getPhysicalDestinationName();
 				log.debug(msg);
 				if (getAdapter() != null)
 					getAdapter().getMessageKeeper().add(msg);
@@ -335,8 +335,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 		IValidator inputValidator = getInputValidator();
 		IValidator outputValidator = getOutputValidator();
-		if (outputValidator == null && inputValidator instanceof IDualModeValidator) {
-			outputValidator = ((IDualModeValidator) inputValidator).getResponseValidator();
+		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator) {
+			outputValidator = validator.getResponseValidator();
 			setOutputValidator(outputValidator);
 		}
 		if (inputValidator != null) {
@@ -346,8 +346,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			configureElement(outputValidator);
 		}
 		IWrapperPipe inputWrapper = getInputWrapper();
-		if (inputWrapper instanceof DestinationValidator) {
-			DestinationValidator destinationValidator = (DestinationValidator) inputWrapper;
+		if (inputWrapper instanceof DestinationValidator destinationValidator) {
 			destinationValidator.validateSenderDestination(getSender());
 		}
 		if (inputWrapper != null) {
@@ -639,7 +638,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				});
 	}
 
-	@SneakyThrows
+	@SneakyThrows({PipeRunException.class}) // SneakyThrows because it's used in a Lambda
 	private Message loadMessageFromClasspathResource(final String stubFileName) {
 		Message result;
 		try {

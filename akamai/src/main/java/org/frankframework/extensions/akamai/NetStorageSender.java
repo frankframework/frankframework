@@ -258,7 +258,7 @@ public class NetStorageSender extends HttpSenderBase {
 				message.setValue(responseString);
 				result.addSubElement(message);
 
-				log.warn(String.format("Unexpected Response from Server: %d %s\n%s",
+				log.warn("Unexpected Response from Server: %d %s\n%s".formatted(
 						statusCode, responseString, responseHandler.getHeaderFields()));
 			}
 		}

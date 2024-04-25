@@ -168,8 +168,7 @@ public class CmisUtils {
 	public static void closeBindingSession(CmisSpi owner, BindingSession bindingSession) {
 		log.debug("Closing {}", owner.getClass().getSimpleName());
 		Object invoker = bindingSession.get(HTTP_INVOKER_OBJECT);
-		if (invoker instanceof CmisHttpInvoker) {
-			CmisHttpInvoker cmisHttpInvoker = (CmisHttpInvoker) invoker;
+		if (invoker instanceof CmisHttpInvoker cmisHttpInvoker) {
 			log.debug("Closing CMIS Invoker {}", cmisHttpInvoker);
 			cmisHttpInvoker.close();
 		} else {
@@ -196,8 +195,8 @@ public class CmisUtils {
 		propertyXml.addAttribute("queryName", property.getQueryName());
 
 		PropertyType propertyType = PropertyType.STRING;
-		if(property instanceof Property) {
-			propertyType = ((Property<?>) property).getType();
+		if(property instanceof Property property1) {
+			propertyType = property1.getType();
 		}
 		else {
 			if(property instanceof PropertyId) {

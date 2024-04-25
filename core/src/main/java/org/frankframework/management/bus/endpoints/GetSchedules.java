@@ -193,8 +193,8 @@ public class GetSchedules extends BusEndpointBase {
 		jobData.put("durable",job.isDurable());
 		jobData.put("jobClass", job.getJobClass().getSimpleName());
 
-		if(job instanceof IbisJobDetail) {
-			jobData.put("type", ((IbisJobDetail) job).getJobType());
+		if(job instanceof IbisJobDetail detail) {
+			jobData.put("type", detail.getJobType());
 		}
 
 		TriggerState state = scheduler.getTriggerState(TriggerKey.triggerKey(jobName, jobKey.getGroup()));
@@ -208,8 +208,7 @@ public class GetSchedules extends BusEndpointBase {
 
 		if(expanded) {
 			IJob jobDef = (IJob) jobMap.get(ConfiguredJob.JOBDEF_KEY);
-			if(jobDef instanceof DatabaseJob) {
-				DatabaseJob dbJob = (DatabaseJob) jobDef;
+			if(jobDef instanceof DatabaseJob dbJob) {
 				jobData.put("adapter", dbJob.getAdapterName());
 				jobData.put("listener", dbJob.getJavaListener());
 				jobData.put("message", dbJob.getMessage());
@@ -247,12 +246,12 @@ public class GetSchedules extends BusEndpointBase {
 
 			triggerDetails.put("misfireInstruction", trigger.getMisfireInstruction());
 
-			if (trigger instanceof CronTrigger) {
+			if (trigger instanceof CronTrigger cronTrigger) {
 				triggerDetails.put("triggerType", "cron");
-				triggerDetails.put("cronExpression", ((CronTrigger) trigger).getCronExpression());
-			} else if (trigger instanceof SimpleTrigger) {
+				triggerDetails.put("cronExpression", cronTrigger.getCronExpression());
+			} else if (trigger instanceof SimpleTrigger simpleTrigger) {
 				triggerDetails.put("triggerType", "simple");
-				triggerDetails.put("repeatInterval", ((SimpleTrigger) trigger).getRepeatInterval());
+				triggerDetails.put("repeatInterval", simpleTrigger.getRepeatInterval());
 			} else {
 				triggerDetails.put("triggerType", "unknown");
 			}

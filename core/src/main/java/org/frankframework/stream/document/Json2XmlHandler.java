@@ -72,8 +72,8 @@ public class Json2XmlHandler implements JsonEventHandler {
 			stack.push(top);
 			return top;
 		}
-		if (top instanceof ArrayBuilder) {
-			top=((ArrayBuilder)top).addElement();
+		if (top instanceof ArrayBuilder builder) {
+			top=builder.addElement();
 			stack.push(top);
 			return top;
 		}
@@ -83,12 +83,12 @@ public class Json2XmlHandler implements JsonEventHandler {
 	@Override
 	public void startObject() throws SAXException {
 		Object top = checkField();
-		if (top instanceof IDocumentBuilder) {
-			stack.push(((IDocumentBuilder)top).asObjectBuilder());
+		if (top instanceof IDocumentBuilder builder) {
+			stack.push(builder.asObjectBuilder());
 			return;
 		}
-		if (top instanceof INodeBuilder) {
-			stack.push(((INodeBuilder)top).startObject());
+		if (top instanceof INodeBuilder builder) {
+			stack.push(builder.startObject());
 			return;
 		}
 		throw new SaxException("Do not expect startObject() with stack top ["+top+"]");
@@ -113,12 +113,12 @@ public class Json2XmlHandler implements JsonEventHandler {
 	@Override
 	public void startArray() throws SAXException {
 		Object top = stack.peek();
-		if (top instanceof IDocumentBuilder) {
-			stack.push(((IDocumentBuilder)top).asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME));
+		if (top instanceof IDocumentBuilder builder) {
+			stack.push(builder.asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME));
 			return;
 		}
-		if (top instanceof ArrayBuilder) {
-			stack.push(((ArrayBuilder)top).addArrayElement(DEFAULT_ARRAY_ELEMENT_NAME));
+		if (top instanceof ArrayBuilder builder) {
+			stack.push(builder.addArrayElement(DEFAULT_ARRAY_ELEMENT_NAME));
 			return;
 		}
 		if (top instanceof String) {
@@ -141,12 +141,12 @@ public class Json2XmlHandler implements JsonEventHandler {
 	public void primitive(Object value) throws SAXException {
 		INodeBuilder top = (INodeBuilder)checkField();
 		try (INodeBuilder node = top) {
-			if (value instanceof String) {
-				top.setValue((String)value);
-			} else if (value instanceof Boolean) {
-				top.setValue((Boolean)value);
-			} else if (value instanceof Number) {
-				top.setValue((Number)value);
+			if (value instanceof String string) {
+				top.setValue(string);
+			} else if (value instanceof Boolean boolean1) {
+				top.setValue(boolean1);
+			} else if (value instanceof Number number) {
+				top.setValue(number);
 			} else if (value==null) {
 				top.setValue((String)null);
 			} else {

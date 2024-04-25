@@ -80,8 +80,8 @@ public class ResultBlock2Sender extends Result2StringWriter {
 
 	@Override
 	public void openDocument(PipeLineSession session, String streamId) throws Exception {
-		counters.put(streamId,new Integer(0));
-		levels.put(streamId,new Integer(0));
+		counters.put(streamId,Integer.valueOf(0));
+		levels.put(streamId,Integer.valueOf(0));
 		super.openDocument(session, streamId);
 	}
 
@@ -106,7 +106,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 			throw new SenderException("no counter found for stream ["+streamId+"]");
 		}
 		int result=counter.intValue()+1;
-		counters.put(streamId,new Integer(result));
+		counters.put(streamId,Integer.valueOf(result));
 		return result;
 	}
 
@@ -124,7 +124,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 			throw new SenderException("no level found for stream ["+streamId+"]");
 		}
 		int result=level.intValue()+1;
-		levels.put(streamId,new Integer(result));
+		levels.put(streamId,Integer.valueOf(result));
 		return result;
 	}
 
@@ -134,7 +134,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 			throw new SenderException("no level found for stream ["+streamId+"]");
 		}
 		int result=level.intValue()-1;
-		levels.put(streamId,new Integer(result));
+		levels.put(streamId,Integer.valueOf(result));
 		return result;
 	}
 

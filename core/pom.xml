@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -650,8 +650,8 @@
 
 
 		<!--
-			Upgraded version of the Extended StAX API which does not depend on any StAX API.
-		-->
+				  Upgraded version of the Extended StAX API which does not depend on any StAX API.
+			  -->
 		<dependency>
 			<groupId>org.jvnet.staxex</groupId>
 			<artifactId>stax-ex</artifactId>
@@ -694,17 +694,17 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.78</version>
+			<version>1.78.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcutil-jdk18on</artifactId>
-			<version>1.78</version>
+			<version>1.78.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpg-jdk18on</artifactId>
-			<version>1.78</version>
+			<version>1.78.1</version>
 		</dependency>
 
 		<dependency>
@@ -881,9 +881,15 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<archive>
+						<addMavenDescriptor>true</addMavenDescriptor>
 						<manifest>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<mainClass>org.frankframework.cmdline.StartIbis</mainClass>
 						</manifest>
+						<manifestEntries>
+							<Add-Opens>java.base/java.lang java.base/java.io</Add-Opens>
+						</manifestEntries>
 					</archive>
 				</configuration>
 				<executions>

@@ -8,7 +8,7 @@ services:
         image: private.docker.nexus.frankframework.org/ff-test:${VERSION:-latest}-tomcat
         build: Tomcat/test
         ports:
-            - "80:8080"
+            - "8080:8080"
             - "8001:8001"
         entrypoint: /usr/local/tomcat/bin/catalina.sh
         command:

@@ -167,8 +167,8 @@ public class WebServices extends BusEndpointBase {
 		String endpoint = "external address of ibis";
 		for(Receiver<?> receiver : adapter.getReceivers()) {
 			IListener<?> listener = receiver.getListener();
-			if(listener instanceof WebServiceListener) {
-				String address = ((WebServiceListener) listener).getAddress();
+			if(listener instanceof WebServiceListener serviceListener) {
+				String address = serviceListener.getAddress();
 				if(StringUtils.isNotEmpty(address)) {
 					endpoint = address;
 				} else {
@@ -231,8 +231,8 @@ public class WebServices extends BusEndpointBase {
 			for (Adapter adapter : config.getRegisteredAdapters()) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					IListener<?> listener = receiver.getListener();
-					if (listener instanceof RestListener) {
-						ListenerDAO dao = new ListenerDAO((RestListener) listener);
+					if (listener instanceof RestListener restListener) {
+						ListenerDAO dao = new ListenerDAO(restListener);
 						dao.setAdapter(adapter);
 						dao.setReceiver(receiver);
 						restListeners.add(dao);

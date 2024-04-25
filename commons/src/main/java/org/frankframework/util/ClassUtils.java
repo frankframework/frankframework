@@ -124,15 +124,28 @@ public abstract class ClassUtils {
 	 *
 	 * @param className A class name
 	 * @return A new instance
-	 * @exception Exception If an instantiation error occurs
+	 * @exception ReflectiveOperationException If an instantiation error occurs
+	 * @exception SecurityException If a security violation occurs
 	 */
-	public static Object newInstance(String className) throws Exception {
-		return ClassUtils.loadClass(className).newInstance();
+	public static Object newInstance(String className) throws ReflectiveOperationException, SecurityException {
+		return newInstance(loadClass(className));
+	}
+
+	@SuppressWarnings("unchecked") // because we checked it...
+	public static <T> T newInstance(String className, Class<T> expectedType) throws ReflectiveOperationException, SecurityException {
+		Class<?> clazz = loadClass(className);
+		if(expectedType.isAssignableFrom(clazz)) {
+			return (T) newInstance(clazz);
+		}
+		throw new InstantiationException("created class ["+className+"] is not of required type ["+expectedType.getSimpleName()+"]");
+	}
+
+	public static <T> T newInstance(Class<T> clazz) throws ReflectiveOperationException, SecurityException {
+		return clazz.getDeclaredConstructor().newInstance();
 	}
 
 	/**
-	 * Load a class given its name. BL: We wan't to use a known
-	 * ClassLoader--hopefully the hierarchy is set correctly.
+	 * Load a class given its name. We want to use a known ClassLoader.
 	 *
 	 * @param className A class name
 	 * @return The class pointed to by <code>className</code>
@@ -161,8 +174,8 @@ public abstract class ClassUtils {
 	@Nonnull
 	public static String nameOf(Object o) {
 		String tail=null;
-		if (o instanceof INamedObject) {
-			String name = ((INamedObject)o).getName();
+		if (o instanceof INamedObject object) {
+			String name = object.getName();
 			if (StringUtils.isNotEmpty(name)) {
 				tail = "["+ name +"]";
 			}
@@ -180,13 +193,13 @@ public abstract class ClassUtils {
 		}
 		Class<?> clazz;
 		if(isClassPresent("org.springframework.util.ClassUtils")) {
-			if(o instanceof Class) {
-				clazz = org.springframework.util.ClassUtils.getUserClass((Class<?>)o);
+			if(o instanceof Class class1) {
+				clazz = org.springframework.util.ClassUtils.getUserClass(class1);
 			} else {
 				clazz = org.springframework.util.ClassUtils.getUserClass(o);
 			}
 		} else {
-			clazz = o instanceof Class ? (Class<?>)o : o.getClass();
+			clazz = o instanceof Class c ? c : o.getClass();
 		}
 
 		final String simpleName = clazz.getSimpleName();

@@ -28,7 +28,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TransactionConnectorTest.TEST_TABLE)
 public class TransactionConnectorTest {
-	static final String TEST_TABLE = "Temp_Table";
+	static final String TEST_TABLE = "temp_table";
 	private IThreadConnectableTransactionManager txManager;
 	private DatabaseTestEnvironment env;
 
@@ -82,7 +82,11 @@ public class TransactionConnectorTest {
 		} catch (Exception e) {
 			log.info("exception caught", e);
 		} finally {
-			txManager.commit(txStatus);
+			if (txStatus.isRollbackOnly()) {
+				fail("expected commit");
+			} else {
+				txManager.commit(txStatus);
+			}
 		}
 		assertEquals(2, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
@@ -224,8 +228,8 @@ public class TransactionConnectorTest {
 		if (txManager instanceof IThreadConnectableTransactionManager) {
 			IThreadConnectableTransactionManager tctm = txManager;
 			Object transaction = tctm.getCurrentTransaction();
-			if (transaction instanceof JtaTransactionObject) {
-				UserTransaction ut =((JtaTransactionObject)transaction).getUserTransaction();
+			if (transaction instanceof JtaTransactionObject object) {
+				UserTransaction ut =object.getUserTransaction();
 				System.out.println("-> UserTransaction status: "+ut.getStatus());
 			} else {
 				return;

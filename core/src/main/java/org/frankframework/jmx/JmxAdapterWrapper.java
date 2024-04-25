@@ -94,7 +94,7 @@ public class JmxAdapterWrapper extends AdapterLifecycleWrapperBase implements In
 	}
 
 	private Set<ObjectName> queryMBean(ObjectName name) {
-		String jmxQuery = String.format("%s,*", name.getCanonicalName());
+		String jmxQuery = "%s,*".formatted(name.getCanonicalName());
 		try {
 			ObjectName queryObject = new ObjectName(jmxQuery);
 			Set<ObjectName> result = mBeanManager.getServer().queryNames(queryObject, null);

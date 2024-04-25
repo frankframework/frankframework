@@ -203,7 +203,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				threadsRunning.incrementAndGet();
 				log.trace("ListenTask-run - increased threadsRunning - on threadsRunning[{}]", threadsRunning);
 				if (receiver.isInRunState(RunState.STARTED)) {
-					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
+					if (listener instanceof IHasProcessState<?> state && state.knownProcessStates().contains(ProcessState.INPROCESS)) {
 						inProcessStateManager = (IHasProcessState<M>)listener;
 					}
 					threadContext = listener.openThread();
@@ -216,8 +216,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						try {
 							try {
 								boolean messageAvailable = true;
-								if (isIdle() && listener instanceof IPeekableListener) {
-									IPeekableListener<?> peekableListener = (IPeekableListener<?>) listener;
+								if (isIdle() && listener instanceof IPeekableListener peekableListener) {
 									if (peekableListener.isPeekUntransacted()) {
 										messageAvailable = peekableListener.hasRawMessageAvailable();
 									}

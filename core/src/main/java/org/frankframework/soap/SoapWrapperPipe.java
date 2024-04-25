@@ -88,8 +88,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		super.configure();
 		soapWrapper = SoapWrapper.getInstance();
 		if (getDirection() == Direction.UNWRAP && soapVersion != null && soapVersion != SoapVersion.AUTO) {
-			ConfigurationWarnings.add(this, log, "SoapWrapperPipe does NOT support unwrapping with a specified SoapVersion. " +
-					"It is auto-detected: remove soapVersion property from wrapper.", SuppressKeys.CONFIGURATION_VALIDATION);
+			ConfigurationWarnings.add(this, log, """
+					SoapWrapperPipe does NOT support unwrapping with a specified SoapVersion. \
+					It is auto-detected: remove soapVersion property from wrapper.\
+					""", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 		if (getDirection() == Direction.UNWRAP && PipeLine.INPUT_WRAPPER_NAME.equals(getName())) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
@@ -105,8 +107,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			}
 		}
 		if (getDirection() == Direction.WRAP && PipeLine.INPUT_WRAPPER_NAME.equals(getName()) && soapVersion == SoapVersion.AUTO) {
-			ConfigurationWarnings.add(this, log, "SoapWrapperPipe should NOT be used to wrap a message in an InputWrapper, without a " +
-					"specified SoapVersion. Add [soapVersion] attribute to the configuration. Now defaults to v1.1 without guarantees. ", SuppressKeys.CONFIGURATION_VALIDATION);
+			ConfigurationWarnings.add(this, log, """
+					SoapWrapperPipe should NOT be used to wrap a message in an InputWrapper, without a \
+					specified SoapVersion. Add [soapVersion] attribute to the configuration. Now defaults to v1.1 without guarantees. \
+					""", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 		if (getDirection() == Direction.UNWRAP && !isOmitXmlDeclaration()) {
 			ConfigurationWarnings.add(this, log, "SoapWrapperPipe does always omit the XML declaration while UNWRAPPING. Please remove the attribute", SuppressKeys.CONFIGURATION_VALIDATION);

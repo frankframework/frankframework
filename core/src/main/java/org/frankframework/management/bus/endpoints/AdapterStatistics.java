@@ -41,11 +41,10 @@ public class AdapterStatistics extends BusEndpointBase {
 	@Override
 	protected void doAfterPropertiesSet() {
 		MeterRegistry metersRegistry = getBean("meterRegistry", MeterRegistry.class);
-		if (metersRegistry instanceof CompositeMeterRegistry) {
-			CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry) metersRegistry;
+		if (metersRegistry instanceof CompositeMeterRegistry compositeMeterRegistry) {
 			for(MeterRegistry meterRegistry: compositeMeterRegistry.getRegistries()) {
-				if (meterRegistry instanceof LocalStatisticsRegistry) {
-					localRegistry = (LocalStatisticsRegistry)meterRegistry;
+				if (meterRegistry instanceof LocalStatisticsRegistry registry) {
+					localRegistry = registry;
 				}
 			}
 		}

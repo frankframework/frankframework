@@ -54,7 +54,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 	@Override
 	public void closeDocument(PipeLineSession session, String streamId) {
-		try (Writer w = openWriters.remove(streamId)) {
+		try (Writer ignored = openWriters.remove(streamId)) {
 			// just close the writer
 		} catch (IOException e) {
 			log.error("Exception closing ["+streamId+"]",e);
@@ -75,8 +75,8 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	protected void writeNewLine(Writer w) throws IOException {
-		if (w instanceof BufferedWriter) {
-			((BufferedWriter)w).newLine();
+		if (w instanceof BufferedWriter writer) {
+			writer.newLine();
 		} else {
 			w.write("\n");
 		}
@@ -116,9 +116,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		if (StringUtils.isEmpty(getBlockNamePattern())) {
 			return target;
 		}
-		String result=target.replaceAll(getBlockNamePattern(),blockName);
-		//if (log.isDebugEnabled()) log.debug("target ["+target+"] pattern ["+getBlockNamePattern()+"] value ["+blockName+"] result ["+result+"]");
-		return result;
+		return target.replaceAll(getBlockNamePattern(),blockName);
 	}
 
 	@Override
@@ -132,9 +130,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	protected Writer getWriter(PipeLineSession session, String streamId, boolean create) throws Exception {
-		//log.debug("getWriter ["+streamId+"], create ["+create+"]");
-		Writer writer;
-		writer = openWriters.get(streamId);
+		Writer writer = openWriters.get(streamId);
 		if (writer != null) {
 			return writer;
 		}

@@ -146,8 +146,7 @@ public class XmlAligner extends XMLFilterImpl {
 			parentOfSingleMultipleOccurringChildElements.push(parentOfSingleMultipleOccurringChildElement);
 			typeContainsWildcards.push(typeContainsWildcard);
 			// call findMultipleOccurringChildElements, to obtain all child elements that could be part of an array
-			if (typeDefinition instanceof XSComplexTypeDefinition) {
-				XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition)typeDefinition;
+			if (typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition) {
 				multipleOccurringChildElements=findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
 				parentOfSingleMultipleOccurringChildElement=ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle());
 				typeContainsWildcard=typeContainsWildcard(complexTypeDefinition.getParticle());
@@ -210,8 +209,7 @@ public class XmlAligner extends XMLFilterImpl {
 			throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement particle.term is null");
 		}
 		if (log.isTraceEnabled()) log.trace("term name ["+term.getName()+"] occurring unbounded ["+particle.getMaxOccursUnbounded()+"] max occur ["+particle.getMaxOccurs()+"] term ["+ToStringBuilder.reflectionToString(term)+"]");
-		if (term instanceof XSModelGroup) {
-			XSModelGroup modelGroup = (XSModelGroup)term;
+		if (term instanceof XSModelGroup modelGroup) {
 			short compositor = modelGroup.getCompositor();
 			XSObjectList particles = modelGroup.getParticles();
 			switch (compositor) {
@@ -269,8 +267,7 @@ public class XmlAligner extends XMLFilterImpl {
 				throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement() modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
 			}
 		}
-		if (term instanceof XSElementDeclaration) {
-			XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
+		if (term instanceof XSElementDeclaration elementDeclaration) {
 			String elementName=elementDeclaration.getName();
 			if (log.isTraceEnabled()) log.trace("ElementDeclaration name ["+elementName+"] unbounded ["+particle.getMaxOccursUnbounded()+"] maxOccurs ["+particle.getMaxOccurs()+"]");
 			if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1) {
@@ -302,8 +299,7 @@ public class XmlAligner extends XMLFilterImpl {
 		if (term instanceof XSElementDeclaration) {
 			return false;
 		}
-		if (term instanceof XSModelGroup) {
-			XSModelGroup modelGroup = (XSModelGroup)term;
+		if (term instanceof XSModelGroup modelGroup) {
 			XSObjectList particles = modelGroup.getParticles();
 			for (int i=0;i<particles.getLength();i++) {
 				if (typeContainsWildcard((XSParticle)particles.item(i))) {
@@ -325,8 +321,7 @@ public class XmlAligner extends XMLFilterImpl {
 		if (term==null) {
 			throw new IllegalStateException("collectChildElements() particle.term is null");
 		}
-		if (term instanceof XSModelGroup) {
-			XSModelGroup modelGroup = (XSModelGroup)term;
+		if (term instanceof XSModelGroup modelGroup) {
 			XSObjectList particles = modelGroup.getParticles();
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
@@ -334,8 +329,7 @@ public class XmlAligner extends XMLFilterImpl {
 			}
 			return;
 		}
-		if (term instanceof XSElementDeclaration) {
-			XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
+		if (term instanceof XSElementDeclaration elementDeclaration) {
 			String elementName=elementDeclaration.getName();
 			if (log.isTraceEnabled()) log.trace("ElementDeclaration name ["+elementName+"]");
 			elementNames.add(elementName);
@@ -358,8 +352,7 @@ public class XmlAligner extends XMLFilterImpl {
 			collectChildElements(particle,result);
 			return result;
 		}
-		if (term instanceof XSModelGroup) {
-			XSModelGroup modelGroup = (XSModelGroup)term;
+		if (term instanceof XSModelGroup modelGroup) {
 			XSObjectList particles = modelGroup.getParticles();
 				if (log.isTraceEnabled()) log.trace("modelGroup particles ["+ToStringBuilder.reflectionToString(particles)+"]");
 				for (int i=0;i<particles.getLength();i++) {
@@ -379,8 +372,7 @@ public class XmlAligner extends XMLFilterImpl {
 			if (log.isTraceEnabled()) log.trace("getAttributeUses typeDefinition is null");
 			return null;
 		}
-		if (typeDefinition instanceof XSComplexTypeDefinition) {
-			XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
+		if (typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition) {
 			return complexTypeDefinition.getAttributeUses();
 		}
 		if (log.isTraceEnabled()) log.trace("typeDefinition ["+typeDefinition.getClass().getSimpleName()+"] SimpleType, no attributes");
@@ -402,8 +394,8 @@ public class XmlAligner extends XMLFilterImpl {
 
 
 	public XSSimpleType getElementType() {
-		if (typeDefinition instanceof XSSimpleType) {
-			return (XSSimpleType)typeDefinition;
+		if (typeDefinition instanceof XSSimpleType type) {
+			return type;
 		}
 		return null;
 	}

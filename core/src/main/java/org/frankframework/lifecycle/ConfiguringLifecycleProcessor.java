@@ -29,8 +29,8 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 		Map<String, Lifecycle> lifecycleBeans = getLifecycleBeans();
 		for (Map.Entry<String, ? extends Lifecycle> entry : lifecycleBeans.entrySet()) {
 			Lifecycle bean = entry.getValue();
-			if(bean instanceof ConfigurableLifecycle) {
-				((ConfigurableLifecycle) bean).configure();
+			if(bean instanceof ConfigurableLifecycle lifecycle) {
+				lifecycle.configure();
 			}
 		}
 	}

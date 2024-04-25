@@ -189,9 +189,9 @@ public class FileSystemUtils {
 
 			@Override
 			public void close() throws IOException {
-				if (iterable instanceof AutoCloseable) {
+				if (iterable instanceof AutoCloseable closeable) {
 					try {
-						((AutoCloseable)iterable).close();
+						closeable.close();
 					} catch (IOException e) {
 						throw e;
 					} catch (Exception e) {

@@ -179,7 +179,7 @@ public class MultipartForm {
 	public boolean isRepeatable() {
 		for (final FormBodyPart part: getBodyParts()) {
 			final ContentBody contentBody = part.getBody();
-			if(!(contentBody instanceof StringBody) && !(contentBody instanceof MessageContentBody && ((MessageContentBody) contentBody).isRepeatable())) {
+			if(!(contentBody instanceof StringBody) && !(contentBody instanceof MessageContentBody body && body.isRepeatable())) {
 				return false;
 			}
 		}

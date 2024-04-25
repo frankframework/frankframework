@@ -96,7 +96,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void configure() throws ConfigurationException {
 		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
-			throw new ConfigurationException("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)");
+			throw new ConfigurationException("invalid credential fields, please provide AWS credentials (accessKey and secretKey)");
 		}
 
 		CredentialFactory cf = null;

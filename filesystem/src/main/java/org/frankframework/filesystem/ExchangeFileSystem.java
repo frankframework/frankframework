@@ -801,9 +801,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 			// Multiple occurrences found of header, collate into a list
 			final Object curEntry = result.get(internetMessageHeader.getName());
 			final List<Object> values;
-			if (curEntry instanceof List) {
+			if (curEntry instanceof List list) {
 				// Already multiple values found for header
-				values = (List<Object>) curEntry;
+				values = list;
 			} else {
 				// Rewrite existing single entry to list, for now the header has multiple values
 				values = new LinkedList<>();
@@ -863,13 +863,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		} catch (Exception e) {
 			throw new FileSystemException("Cannot load attachment", e);
 		}
-		if (a instanceof ItemAttachment) {
-			final ItemAttachment itemAttachment = (ItemAttachment) a;
+		if (a instanceof ItemAttachment itemAttachment) {
 			final EmailMessage attachmentItem = (EmailMessage) itemAttachment.getItem();
 			return readFile(ExchangeMessageReference.of(ref.getMailFolder(), attachmentItem), null); // we don't know the charset here, leave it null for now
 		}
-		if (a instanceof FileAttachment) {
-			final byte[] content = ((FileAttachment) a).getContent();
+		if (a instanceof FileAttachment attachment) {
+			final byte[] content = attachment.getContent();
 			if (content == null) {
 				log.warn("content of attachment is null");
 				return Message.nullMessage();
@@ -883,10 +882,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	@Override
 	public ExchangeMessageReference getFileFromAttachment(final ExchangeAttachmentReference ref) {
 		Attachment attachment = ref.getAttachment();
-		if (attachment instanceof ItemAttachment) {
-			Item item = ((ItemAttachment) attachment).getItem();
-			if (item instanceof EmailMessage) {
-				return ExchangeMessageReference.of(ref.getMailFolder(), (EmailMessage) item);
+		if (attachment instanceof ItemAttachment itemAttachment) {
+			Item item = itemAttachment.getItem();
+			if (item instanceof EmailMessage message) {
+				return ExchangeMessageReference.of(ref.getMailFolder(), message);
 			}
 		}
 		// Attachment is not an EmailMessage itself, no need to parse further, can just return null
@@ -912,8 +911,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	@Override
 	public String getAttachmentFileName(final ExchangeAttachmentReference ref) {
 		final Attachment a = ref.getAttachment();
-		if (a instanceof FileAttachment) {
-			return ((FileAttachment) a).getFileName();
+		if (a instanceof FileAttachment attachment) {
+			return attachment.getFileName();
 		}
 		return null;
 	}

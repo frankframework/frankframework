@@ -93,6 +93,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 		List<String> headers = new ArrayList<>();
 		headers.add(BusAction.ACTION_HEADER_NAME);
 		headers.add(BusTopic.TOPIC_HEADER_NAME);
+		headers.add(BusMessageUtils.HEADER_HOSTNAME_KEY);
 		headers.add(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		return headers.toArray(new String[0]);
 	}
@@ -105,7 +106,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 
 		@Override
 		public HttpMethod getValue(EvaluationContext context, Object rootObject) throws EvaluationException {
-			if(rootObject instanceof Message<?> && "NONE".equals(((Message<?>) rootObject).getPayload())) {
+			if(rootObject instanceof Message<?> message && "NONE".equals(message.getPayload())) {
 				return HttpMethod.GET;
 			}
 			return super.getValue(context, rootObject);
@@ -128,11 +129,11 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	public Message handleRequestMessage(Message<?> requestMessage) {
 		Object response = super.handleRequestMessage(requestMessage);
 
-		if(response instanceof Message) {
-			return (Message) response;
+		if(response instanceof Message message) {
+			return message;
 		}
-		if(response instanceof MessageBuilder) {
-			return ((MessageBuilder) response).build();
+		if(response instanceof MessageBuilder builder) {
+			return builder.build();
 		}
 		throw new BusException("unknown response type ["+(response != null ? response.getClass().getCanonicalName() : "null")+"]");
 	}

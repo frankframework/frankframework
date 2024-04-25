@@ -74,8 +74,7 @@ public class JtaUtil {
 				Object key = it.next();
 				Object resource = resources.get(key);
 				result += ClassUtils.nameOf(key)+"("+key+"): "+ClassUtils.nameOf(resource)+"("+resource+")\n";
-				if (resource instanceof JmsResourceHolder) {
-					JmsResourceHolder jrh = (JmsResourceHolder)resource;
+				if (resource instanceof JmsResourceHolder jrh) {
 					result+="  connection: "+jrh.getConnection()+", session: "+jrh.getSession()+"\n";
 				}
 			}

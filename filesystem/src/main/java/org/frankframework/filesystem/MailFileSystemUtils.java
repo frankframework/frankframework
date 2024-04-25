@@ -60,15 +60,15 @@ public class MailFileSystemUtils {
 		if (property==null) {
 			return;
 		}
-		if (property instanceof Iterable) {
-			for (Object item:(Iterable<?>)property) {
+		if (property instanceof Iterable iterable) {
+			for (Object item:iterable) {
 				addPropertyAsHeader(xml, elementName, attributeName, attributeValue, item);
 			}
 			return;
 		}
 		String value;
-		if (property instanceof Date) {
-			value = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format((Date)property);
+		if (property instanceof Date date) {
+			value = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(date);
 		} else {
 			value = property.toString();
 		}
@@ -152,9 +152,9 @@ public class MailFileSystemUtils {
 		if (item == null) {
 			return null;
 		}
-		if (item instanceof List) {
+		if (item instanceof List list) {
 			String result;
-			for(Object address:(List<?>) item) {
+			for(Object address:list) {
 				if (null != (result = getValidAddress(key, address.toString()))) {
 					return result;
 				}

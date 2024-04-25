@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,10 +22,8 @@ public class CaseInsensitiveComparator implements Comparator {
 	@Override
 	public int compare(Object object1, Object object2) {
 		int result = 0;
-		if (object1 instanceof String && object2 instanceof String) {
-			String string1 = ((String)object1).toLowerCase();
-			String string2 = ((String)object2).toLowerCase();
-			result = string1.compareTo(string2);
+		if (object1 instanceof String string1 && object2 instanceof String string2) {
+			result = string1.toLowerCase().compareTo(string2.toLowerCase());
 		}
 		return result;
 	}
