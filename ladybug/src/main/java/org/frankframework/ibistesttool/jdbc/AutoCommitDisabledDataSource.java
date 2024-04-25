@@ -92,22 +92,20 @@ public class AutoCommitDisabledDataSource implements DataSource {
 
 	@Override
 	public Connection getConnection() throws SQLException {
-		try (Connection connection = dataSource.getConnection()) {
-			if (connection.getAutoCommit()) {
-				connection.setAutoCommit(false);
-			}
-			return connection;
+		Connection connection = dataSource.getConnection();
+		if (connection.getAutoCommit()) {
+			connection.setAutoCommit(false);
 		}
+		return connection;
 	}
 
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
-		try (Connection connection = dataSource.getConnection(username, password)) {
-			if (connection.getAutoCommit()) {
-				connection.setAutoCommit(false);
-			}
-			return connection;
+		Connection connection = dataSource.getConnection(username, password);
+		if (connection.getAutoCommit()) {
+			connection.setAutoCommit(false);
 		}
+		return connection;
 	}
 
 	@Override
