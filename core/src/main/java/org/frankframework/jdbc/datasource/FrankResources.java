@@ -92,12 +92,9 @@ public class FrankResources {
 	 * Ensure that the driver is loaded, else the DriverManagerDataSource can't it.
 	 */
 	private DataSource loadDataSourceThroughDriver(Class<?> clazz, String url, Properties properties) {
-		try {
-			ClassUtils.newInstance(clazz);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("unable to load database driver", e);
-		}
-		return new DriverManagerDataSource(url, properties);
+		DriverManagerDataSource dmds = new DriverManagerDataSource(url, properties);
+		dmds.setDriverClassName(clazz.getCanonicalName()); //Initialize the JDBC Driver
+		return dmds;
 	}
 
 	private @Nullable Resource findResource(@Nonnull String name) {
