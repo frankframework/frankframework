@@ -25,10 +25,11 @@ import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DataSourceConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
+import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.frankframework.jdbc.datasource.ObjectFactoryBase;
-import org.frankframework.jdbc.datasource.OpenPoolingDataSource;
 import org.frankframework.util.AppConstants;
 
 import lombok.Getter;
@@ -47,8 +48,8 @@ public class LadyBugDataSourceFactory extends ObjectFactoryBase<DataSource> {
 	@Getter @Setter protected int connectionCheckInterval = 300;
 	@Getter @Setter protected String testQuery = null;
 
-	protected LadyBugDataSourceFactory(Class<DataSource> lookupClass) {
-		super(lookupClass);
+	public LadyBugDataSourceFactory() {
+		super(DataSource.class);
 
 		AppConstants appConstants = AppConstants.getInstance();
 		minIdle = appConstants.getInt("ibistesttool.jdbc.minIdle", minIdle);
@@ -83,13 +84,13 @@ public class LadyBugDataSourceFactory extends ObjectFactoryBase<DataSource> {
 		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
 
-		GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
-		OpenPoolingDataSource<PoolableConnection> ds = new OpenPoolingDataSource<>(connectionPool);
+		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
+		PoolingDataSource<PoolableConnection> ds = new PoolingDataSource<>(connectionPool);
 		log.info("registered PoolingDataSource [{}]", ds);
 		return ds;
 	}
 
-	private GenericObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
+	private ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		if (maxLifeTime > 0) {
