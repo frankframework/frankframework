@@ -45,6 +45,6 @@ public class IbmMisc {
 	 * Should be tested in the IBM module, we just mock the result for convenience.
 	 */
 	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) {
-		return String.format("mockPoolProperties type [%s] jndi [%s]", providerType, jndiName);
+		return "mockPoolProperties type [%s] jndi [%s]".formatted(providerType, jndiName);
 	}
 }

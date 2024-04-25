@@ -70,8 +70,7 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 		if (content==null) {
 			return null;
 		}
-		if (skipRootElement && content instanceof Map) {
-			Map map=(Map)content;
+		if (skipRootElement && content instanceof Map map) {
 			content=map.values().toArray()[0];
 		}
 		StringBuilder sb = new StringBuilder();
@@ -106,10 +105,10 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			if (indentLevel>=0) indentLevel--;
 			newLine(sb, indentLevel);
 			sb.append("}");
-		} else if (item instanceof List) {
+		} else if (item instanceof List list) {
 			sb.append("[");
 			if (indentLevel>=0) indentLevel++;
-			for (Object subitem:(List)item) {
+			for (Object subitem:list) {
 				newLine(sb, indentLevel);
 				toString(sb,subitem, indentLevel);
 				sb.append(",");
@@ -118,8 +117,8 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			if (indentLevel>=0) indentLevel--;
 			newLine(sb, indentLevel);
 			sb.append("]");
-		} else if (item instanceof JsonElementContainer) {
-			toString(sb,((JsonElementContainer)item).getContent(), indentLevel);
+		} else if (item instanceof JsonElementContainer container) {
+			toString(sb,container.getContent(), indentLevel);
 		} else {
 			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
 		}
@@ -128,17 +127,17 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	protected void generate(JsonGenerator g, String key, Object item) {
 		if (item==null) {
 			if (key!=null) g.writeNull(key); else g.writeNull();
-		} else if (item instanceof String) {
-			if (key!=null) g.write(key,(String)item); else g.write((String)item);
+		} else if (item instanceof String string) {
+			if (key!=null) g.write(key,string); else g.write(string);
 		} else if (item instanceof Map) {
 			if (key!=null) g.writeStartObject(key); else g.writeStartObject();
 			for (Entry<String,Object> entry:((Map<String,Object>)item).entrySet()) {
 				generate(g, entry.getKey(), entry.getValue());
 			}
 			g.writeEnd();
-		} else if (item instanceof List) {
+		} else if (item instanceof List list) {
 			if (key!=null) g.writeStartArray(key); else g.writeStartArray();
-			for (Object subitem:(List)item) {
+			for (Object subitem:list) {
 				generate(g, null, subitem);
 			}
 			g.writeEnd();

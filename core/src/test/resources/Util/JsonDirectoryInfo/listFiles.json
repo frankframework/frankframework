@@ -7,7 +7,7 @@
 			"lastModified": 1712751022892,
 			"type": "file",
 			"size": 26,
-			"sizeDisplay": "1 kB"
+			"sizeDisplay": "26 B"
 		},
 		{
 			"name": "ClassLoaderTestFile.txt",
@@ -15,7 +15,7 @@
 			"lastModified": 1712751022893,
 			"type": "file",
 			"size": 30,
-			"sizeDisplay": "1 kB"
+			"sizeDisplay": "30 B"
 		},
 		{
 			"name": "ClassLoaderTestFile.xml",
@@ -23,7 +23,7 @@
 			"lastModified": 1712751022893,
 			"type": "file",
 			"size": 37,
-			"sizeDisplay": "1 kB"
+			"sizeDisplay": "37 B"
 		},
 		{
 			"name": "Configuration.xml",
@@ -31,7 +31,7 @@
 			"lastModified": 1712751022895,
 			"type": "file",
 			"size": 29,
-			"sizeDisplay": "1 kB"
+			"sizeDisplay": "29 B"
 		},
 		{
 			"name": "fileOnlyOnDirectoryClassPath.txt",
@@ -39,7 +39,7 @@
 			"lastModified": 1712751022895,
 			"type": "file",
 			"size": 39,
-			"sizeDisplay": "1 kB"
+			"sizeDisplay": "39 B"
 		},
 		{
 			"name": "fileOnlyOnDirectoryClassPath.xml",
@@ -47,7 +47,7 @@
 			"lastModified": 1712751022896,
 			"type": "file",
 			"size": 46,
-			"sizeDisplay": "1 kB"
+			"sizeDisplay": "46 B"
 		}
 	],
 	"directory": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",

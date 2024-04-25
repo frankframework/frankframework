@@ -44,19 +44,21 @@ public class TestAlignNamespacesXml extends AlignTestBase {
 
 	private String removeNamespacesExceptAttributes(String xmlString) throws TransformerException, IOException, SAXException {
 
-		String template = "<xsl:template match=\"*\">"
-				+ "<xsl:element name=\"{local-name()}\">"
-				+ "<xsl:for-each select=\"@*\">"
-				+ "<xsl:copy/>"
-				+ "</xsl:for-each>"
-				+ "<xsl:apply-templates/>"
-				+ "</xsl:element>"
-				+ "</xsl:template>"
-				+ "<xsl:template match=\"comment() | processing-instruction() | text()\">"
-				+ "<xsl:copy>"
-				+ "<xsl:apply-templates/>"
-				+ "</xsl:copy>"
-			+ "</xsl:template>";
+		String template = """
+			<xsl:template match="*">\
+			<xsl:element name="{local-name()}">\
+			<xsl:for-each select="@*">\
+			<xsl:copy/>\
+			</xsl:for-each>\
+			<xsl:apply-templates/>\
+			</xsl:element>\
+			</xsl:template>\
+			<xsl:template match="comment() | processing-instruction() | text()">\
+			<xsl:copy>\
+			<xsl:apply-templates/>\
+			</xsl:copy>\
+			</xsl:template>\
+			""";
 
 		String stylesheet = "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 		+ "<xsl:output method=\"xml\" />"

@@ -270,8 +270,8 @@ public class StreamPipe extends FixedForwardPipe {
 	private void addSessionKey(PipeLineSession session, String key, Object value) {
 		if (log.isDebugEnabled()) {
 			String message = "setting sessionKey [" + key + "] to ";
-			if (value instanceof PartMessage) {
-				String name = (String) ((PartMessage) value).getContext().get(MessageContext.METADATA_NAME);
+			if (value instanceof PartMessage partMessage) {
+				String name = (String) partMessage.getContext().get(MessageContext.METADATA_NAME);
 				message = message + "input stream of file [" + name + "]";
 			} else {
 				message = message + "[" + value + "]";

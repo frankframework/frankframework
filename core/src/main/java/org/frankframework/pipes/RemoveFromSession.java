@@ -92,7 +92,7 @@ public class RemoveFromSession extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	@SneakyThrows
+	@SneakyThrows(PipeRunException.class) // SneakyThrows because the method is called from a Lambda
 	private String objectToString(final Object skResult) {
 		try {
 			return Message.asString(skResult);

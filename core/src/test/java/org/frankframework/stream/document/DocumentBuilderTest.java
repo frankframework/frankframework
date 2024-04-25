@@ -155,11 +155,13 @@ public class DocumentBuilderTest {
 	@Test
 	public void Issue4106ContentAfterDuplicateArray() throws Exception {
 		String input="{ \"a\": [ 1 ], \"b\": [ 2 ], \"c\": \"cc\" }";
-		String expected = "<root>"+
-								"<a>1</a>"+
-								"<b>2</b>"+
-								"<c>cc</c>"+
-							"</root>";
+		String expected = """
+								<root>\
+								<a>1</a>\
+								<b>2</b>\
+								<c>cc</c>\
+								</root>\
+								""";
 		try(JsonReader jr = Json.createReader(new StringReader(input))) {
 			JsonValue jValue=null;
 			jValue = jr.read();

@@ -9,8 +9,7 @@ describe('FileViewerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [FileViewerComponent],
+      imports: [HttpClientTestingModule, FileViewerComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FileViewerComponent);

@@ -96,8 +96,8 @@ public class WsdlXmlValidatorMixedModeTest {
 
 	public void testPipeLineProcessorProcessOutputValidation(IPipe inputValidator, IPipe outputValidator, String msg, String failureReason) throws Exception {
 		IPipe responseValidator;
-		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
-			responseValidator=((IDualModeValidator)inputValidator).getResponseValidator();
+		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator validator) {
+			responseValidator=validator.getResponseValidator();
 		} else {
 			responseValidator=outputValidator;
 		}

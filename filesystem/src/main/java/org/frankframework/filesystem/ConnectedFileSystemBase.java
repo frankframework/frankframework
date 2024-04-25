@@ -51,9 +51,9 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * Close connection to the FileSystem, releasing all resources.
 	 */
 	protected void closeConnection(C connection) throws FileSystemException {
-		if (connection instanceof AutoCloseable) {
+		if (connection instanceof AutoCloseable closeable) {
 			try {
-				((AutoCloseable) connection).close();
+				closeable.close();
 			} catch (Exception e) {
 				throw new FileSystemException(e);
 			}

@@ -240,8 +240,7 @@ public class CleanupDatabaseJob extends JobDef {
 	}
 
 	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage<?> transactionalStorage) {
-		if (transactionalStorage instanceof JdbcTransactionalStorage) {
-			JdbcTransactionalStorage<?> messageLog = (JdbcTransactionalStorage<?>) transactionalStorage;
+		if (transactionalStorage instanceof JdbcTransactionalStorage messageLog) {
 			String datasourceName = messageLog.getDatasourceName();
 			String expiryDateField = messageLog.getExpiryDateField();
 			String tableName = messageLog.getTableName();
@@ -268,8 +267,7 @@ public class CleanupDatabaseJob extends JobDef {
 				PipeLine pipeline = adapter.getPipeLine();
 				for (int i = 0; i < pipeline.getPipes().size(); i++) {
 					IPipe pipe = pipeline.getPipe(i);
-					if (pipe instanceof MessageSendingPipe) {
-						MessageSendingPipe msp = (MessageSendingPipe) pipe;
+					if (pipe instanceof MessageSendingPipe msp) {
 						collectMessageLogs(messageLogs, msp.getMessageLog());
 					}
 				}

@@ -75,8 +75,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 	@Override
 	public void startParse(JsonValue node) throws SAXException {
-		if (node instanceof JsonObject) {
-			JsonObject root = (JsonObject)node;
+		if (node instanceof JsonObject root) {
 			List<String> potentialRootElements = new ArrayList<>(root.keySet());
 			potentialRootElements.removeIf(e-> {return e.startsWith(ATTRIBUTE_PREFIX) || e.startsWith(MIXED_CONTENT_LABEL);});
 			if(StringUtils.isEmpty(getRootElement())) {
@@ -118,8 +117,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 	@Override
 	public void handleElementContents(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
-		if (node instanceof JsonObject) {
-			JsonObject object = (JsonObject)node;
+		if (node instanceof JsonObject object) {
 			if (object.containsKey(MIXED_CONTENT_LABEL)) {
 				JsonValue labelValue = object.get(MIXED_CONTENT_LABEL);
 				super.handleElementContents(elementDeclaration, labelValue);
@@ -133,8 +131,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	@Override
 	public String getNodeText(XSElementDeclaration elementDeclaration, JsonValue node) {
 		String result;
-		if (node instanceof JsonString) {
-			result=((JsonString)node).getString();
+		if (node instanceof JsonString string) {
+			result=string.getString();
 		} else if (node instanceof JsonStructure) { // this happens when override key is present without a value
 			result=null;
 		} else {
@@ -249,7 +247,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			}
 			JsonValue child = o.get(name);
 			List<JsonValue> result = new LinkedList<>();
-			if (child instanceof JsonArray) {
+			if (child instanceof JsonArray array) {
 				if (log.isTraceEnabled()) log.trace("child named ["+name+"] is a JsonArray, current node insertElementContainerElements ["+insertElementContainerElements+"]");
 				// if it could be necessary to insert elementContainers, we cannot return them as a list of individual elements now, because then the containing element would be duplicated
 				// we also cannot use the isSingleMultipleOccurringChildElement, because it is not valid yet
@@ -262,7 +260,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 					}
 				} else {
 					if (log.isTraceEnabled()) log.trace("childname ["+name+"] returning elements of array node (insertElementContainerElements=false or not singleMultipleOccurringChildElement)");
-					result.addAll((JsonArray)child);
+					result.addAll(array);
 				}
 				return result;
 			}
@@ -284,9 +282,9 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		if (substs==null) {
 			substs="{}";
 		}
-		if (substs instanceof List) {
+		if (substs instanceof List list) {
 			JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-			for (Object item:(List)substs) {
+			for (Object item:list) {
 				arrayBuilder.add(item.toString());
 			}
 			return arrayBuilder.build();
@@ -304,8 +302,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			// Therefore now get the node text, which is here an individual element already.
 			return getNodeText(elementDeclaration, node);
 		}
-		if (text instanceof String) {
-			return (String)text;
+		if (text instanceof String string) {
+			return string;
 		}
 		return text.toString();
 	}
@@ -315,9 +313,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 		String childElementName=childElementDeclaration.getName();
 		if (log.isTraceEnabled()) log.trace("parentName ["+parentName+"] childElementName ["+childElementName+"] node ["+node+"] isParentOfSingleMultipleOccurringChildElement ["+isParentOfSingleMultipleOccurringChildElement()+"]");
 		if (isParentOfSingleMultipleOccurringChildElement()) {
-			if (node instanceof JsonArray) {
+			if (node instanceof JsonArray ja) {
 				if (log.isTraceEnabled()) log.trace("array child node is JsonArray, handling each of the elements as a ["+childElementName+"]");
-				JsonArray ja=(JsonArray)node;
 				for (JsonValue child:ja) {
 					handleElement(childElementDeclaration, child);
 				}

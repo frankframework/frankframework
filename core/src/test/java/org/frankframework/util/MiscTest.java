@@ -50,13 +50,13 @@ public class MiscTest {
 	@Test
 	public void testToFileSize1024() {
 		String size = Misc.toFileSize(1024);
-		assertEquals("1KB", size);
+		assertEquals("1KiB", size);
 	}
 
 	@Test
 	public void testNegativeToFileSize512MB() {
 		String size = Misc.toFileSize(1024*1024*5);
-		assertEquals("5MB", size);
+		assertEquals("5MiB", size);
 	}
 
 	/**
@@ -64,12 +64,21 @@ public class MiscTest {
 	 */
 	@Test
 	public void testToFileSizeValue() throws Exception {
-		String kb = Misc.toFileSize(150000, false, true);
-		String mb = Misc.toFileSize(15000000, true);
-		String gb = Misc.toFileSize(Long.parseLong("3221225472"));
-		assertEquals("3GB", gb);
-		assertEquals("14 MB", mb);
-		assertEquals("146KB", kb);
+		String kbIecUnits = Misc.toFileSize(150000, false, false);
+		String mbIecUnits = Misc.toFileSize(15000000, true);
+		String gbIecUnits = Misc.toFileSize(Long.parseLong("3221225472"));
+
+		String kbSiUnits = Misc.toFileSize(150000, false, true);
+		String mbSiUnits = Misc.toFileSize(15000000, true, true);
+		String gbSiUnits = Misc.toFileSize(Long.parseLong("3221225472"), false, true);
+
+		assertEquals("146KiB", kbIecUnits);
+		assertEquals("14 MiB", mbIecUnits);
+		assertEquals("3GiB", gbIecUnits);
+
+		assertEquals("150kB", kbSiUnits);
+		assertEquals("15 MB", mbSiUnits);
+		assertEquals("3GB", gbSiUnits);
 	}
 
 	@Test
@@ -97,22 +106,6 @@ public class MiscTest {
 		arrayList.add("c");
 		assertEquals(3, stringCollection.size());
 		assertEquals("c", stringCollection.get(stringCollection.size() - 1));
-	}
-
-	/**
-	 * Method: getFileSystemTotalSpace()
-	 */
-	@Test
-	public void testGetFileSystemTotalSpace() {
-		assertFalse(Misc.getFileSystemTotalSpace().isEmpty());
-	}
-
-	/**
-	 * Method: getFileSystemFreeSpace()
-	 */
-	@Test
-	public void testGetFileSystemFreeSpace() {
-		assertFalse(Misc.getFileSystemFreeSpace().isEmpty());
 	}
 
 	/**

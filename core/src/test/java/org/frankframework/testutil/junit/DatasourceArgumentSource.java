@@ -19,7 +19,7 @@ public class DatasourceArgumentSource implements ArgumentsProvider {
 
 	@Override
 	public final Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-		if(!context.getTestClass().isPresent()) {
+		if(context.getTestClass().isEmpty()) {
 			throw new IllegalStateException("test class not found");
 		}
 

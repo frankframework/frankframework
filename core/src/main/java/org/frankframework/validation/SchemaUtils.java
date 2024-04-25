@@ -200,7 +200,7 @@ public class SchemaUtils {
 		LOG.info(message);
 
 		// And check for duplicate XSDs included multiple times from multiple locations
-		if (scopeProvider instanceof IConfigurationAware) {
+		if (scopeProvider instanceof IConfigurationAware aware) {
 			IXSD[] xsdList = xsds.toArray(new IXSD[0]);
 			for (int i = 0; i < xsdList.length - 1; i++) {
 				IXSD xsd1 = xsdList[i];
@@ -217,7 +217,7 @@ public class SchemaUtils {
 						if (xsd2.getImportParent() != null) {
 							duplicateXsdError.append(" imported from '").append(xsd2.getImportParent().getResourceTarget()).append("'");
 						}
-						ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, duplicateXsdError.toString(), SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
+						ConfigurationWarnings.add(aware, LOG, duplicateXsdError.toString(), SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
 					}
 				}
 			}

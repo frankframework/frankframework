@@ -22,6 +22,9 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -34,10 +37,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.Setter;
-import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jndi.JndiDataSourceFactory;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 /**
  * Verifies if a (valid) connection can be made.
@@ -51,19 +50,22 @@ import org.frankframework.util.LogUtil;
 public class VerifyDatabaseConnectionBean implements ApplicationContextAware, InitializingBean {
 
 	private final Logger log = LogUtil.getLogger(this);
-	private final String defaultDatasource = AppConstants.getInstance().getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
+	private final String defaultDatasource = AppConstants.getInstance().getProperty(IDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
 	private final boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
 	private @Setter ApplicationContext applicationContext;
 
 	@Override
+	@SuppressWarnings("java:S2589") // Status CAN be null, ignore Sonar's dumbfound suggestion it's never null
 	public void afterPropertiesSet() throws Exception {
 		if(requiresDatabase) {
-			PlatformTransactionManager transactionManager = getTransactionManager();
+			DataSource dataSource = getDefaultDataSource(); //Defined before getTransactionManager to verify we at least have a 'working' DataSource.
 
 			//Try to create a new transaction to check if there is a connection to the database
+			PlatformTransactionManager transactionManager = getTransactionManager();
 			TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
-			try (Connection connection = getDefaultDataSource().getConnection()) {
+			//We have a DataSource and a TransactionManager, now lets see if we can use them :)
+			try (Connection connection = dataSource.getConnection()) {
 				if(!connection.isValid(5)) {
 					throw new CannotGetJdbcConnectionException("Database was unable to validate the connection within 5 seconds");
 				}

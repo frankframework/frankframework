@@ -131,7 +131,7 @@ public class NetStorageUtils {
 
 		try {
 			for (String entry : new TreeSet<String>(data.keySet()))
-				result.append(String.format("%s%s=%s",
+				result.append("%s%s=%s".formatted(
 						result.length() > 0 ? "&" : "",
 						URLEncoder.encode(entry, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING),
 						URLEncoder.encode(data.get(entry), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING)));

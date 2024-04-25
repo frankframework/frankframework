@@ -171,11 +171,10 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	private Adapter getAdapter(@Nonnull IConfigurationAware frankElement) {
-		if(frankElement instanceof Adapter) {
-			return (Adapter) frankElement;
+		if(frankElement instanceof Adapter adapter) {
+			return adapter;
 		}
-		if(frankElement instanceof HasStatistics) {
-			HasStatistics elm = (HasStatistics) frankElement;
+		if(frankElement instanceof HasStatistics elm) {
 			if(elm.getAdapter() != null) {
 				return elm.getAdapter();
 			}

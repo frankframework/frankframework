@@ -108,10 +108,10 @@ public class ResponseUtils {
 
 	private static EntityTag generateETagHeaderValue(Object payload, boolean isWeak) {
 		byte[] bytes;
-		if(payload instanceof String) {
-			bytes = ((String)payload).getBytes(StandardCharsets.UTF_8);
-		} else if (payload instanceof byte[]) {
-			bytes = (byte[]) payload;
+		if(payload instanceof String string) {
+			bytes = string.getBytes(StandardCharsets.UTF_8);
+		} else if (payload instanceof byte[] bytes1) {
+			bytes = bytes1;
 		} else {
 			throw new NotImplementedException("return type ["+payload.getClass()+"] not implemented");
 		}

@@ -159,8 +159,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public boolean isThreadCountReadable() {
-		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+		if (jmsConnector instanceof IThreadCountControllable tcc) {
 
 			return tcc.isThreadCountReadable();
 		}
@@ -169,8 +168,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public boolean isThreadCountControllable() {
-		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+		if (jmsConnector instanceof IThreadCountControllable tcc) {
 
 			return tcc.isThreadCountControllable();
 		}
@@ -179,8 +177,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public int getCurrentThreadCount() {
-		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+		if (jmsConnector instanceof IThreadCountControllable tcc) {
 
 			return tcc.getCurrentThreadCount();
 		}
@@ -189,8 +186,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public int getMaxThreadCount() {
-		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+		if (jmsConnector instanceof IThreadCountControllable tcc) {
 
 			return tcc.getMaxThreadCount();
 		}
@@ -199,8 +195,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public void increaseThreadCount() {
-		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+		if (jmsConnector instanceof IThreadCountControllable tcc) {
 
 			tcc.increaseThreadCount();
 		}
@@ -208,8 +203,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	@Override
 	public void decreaseThreadCount() {
-		if (jmsConnector instanceof IThreadCountControllable) {
-			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+		if (jmsConnector instanceof IThreadCountControllable tcc) {
 
 			tcc.decreaseThreadCount();
 		}

@@ -1,3 +1,3 @@
 <directory name="TESTDATA_DIR\zip" count="1">
-	<file name="simple.zip" size="11901" fSize="12 kB" directory="false" canonicalName="TESTDATA_DIR\zip\simple.zip" modificationDate="13-01-15" modificationTime="12:06:21"/>
+	<file name="simple.zip" size="11901" fSize="12 KiB" directory="false" canonicalName="TESTDATA_DIR\zip\simple.zip" modificationDate="13-01-15" modificationTime="12:06:21"/>
 </directory>

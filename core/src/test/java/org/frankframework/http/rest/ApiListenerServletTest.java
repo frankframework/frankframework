@@ -714,11 +714,13 @@ public class ApiListenerServletTest extends Mockito {
 
 		String multipartXml = (String) session.get("multipartAttachments");
 		assertNotNull(multipartXml);
-		MatchUtils.assertXmlEquals("<parts>\n"
-				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hallo&gt;? ?&lt;/hallo&gt;\" />\n"
-				+ "  <part name=\"string2\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
-				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1006\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
-				+ "</parts>", multipartXml);
+		MatchUtils.assertXmlEquals("""
+				<parts>
+				  <part name="string1" type="text" value="&lt;hallo&gt;? ?&lt;/hallo&gt;" />
+				  <part name="string2" type="text" value="&lt;hello&gt;€ è&lt;/hello&gt;" />
+				  <part name="file1" type="file" filename="file1" size="1006" sessionKey="file1" mimeType="application/xml"/>
+				</parts>\
+				""", multipartXml);
 		Message file = (Message) session.get("file1");
 		assertEquals("ISO-8859-1", file.getCharset());
 	}
@@ -746,10 +748,12 @@ public class ApiListenerServletTest extends Mockito {
 
 		String multipartXml = (String) session.get("multipartAttachments");
 		assertNotNull(multipartXml);
-		MatchUtils.assertXmlEquals("<parts>\n"
-				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
-				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1006\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
-				+ "</parts>", multipartXml);
+		MatchUtils.assertXmlEquals("""
+				<parts>
+				  <part name="string1" type="text" value="&lt;hello&gt;€ è&lt;/hello&gt;" />
+				  <part name="file1" type="file" filename="file1" size="1006" sessionKey="file1" mimeType="application/xml"/>
+				</parts>\
+				""", multipartXml);
 		Message file = (Message) session.get("file1");
 		assertEquals("ISO-8859-1", file.getCharset());
 	}
@@ -1413,9 +1417,11 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenParsingWithInterceptedPayload() throws Exception {
-		String token="eyJhbGciOiJSUzI1NiJ9."
-				+ "eyJpc3MiOiJKV1RQaXBlVGVHzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9."
-				+ "U1VsMoITf5kUEHtzfgJTyRWEDZ2gjtTuQI3DVRrJcpden2pjCsAWwl4VOr6McmQkcndZj0GPvN4w3NkJR712ltlsIXw1zMm67vuFY0_id7TP2zIJh3jMkKrTuSPE-SBXZyVnIq22Q54R1VMnOTjO6spbrbYowIzyyeAC7U1RzyB3aKxTgeYJS6auLBaiR3-SWoXs_hBnbIIgYT7AC2e76ICpMlFPQS_e2bcqe1B-yz69se8ZlJgwWK-YhqHMoOCA9oQy3t_cObQI0KSzg7cYDkkQ17cWF3SoyTSTs6Cek_Y97Z17lJX2RVBayPc2uI_oWWuaIUbukxAOIUkgpgtf6g";
+		String token="""
+				eyJhbGciOiJSUzI1NiJ9.\
+				eyJpc3MiOiJKV1RQaXBlVGVHzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9.\
+				U1VsMoITf5kUEHtzfgJTyRWEDZ2gjtTuQI3DVRrJcpden2pjCsAWwl4VOr6McmQkcndZj0GPvN4w3NkJR712ltlsIXw1zMm67vuFY0_id7TP2zIJh3jMkKrTuSPE-SBXZyVnIq22Q54R1VMnOTjO6spbrbYowIzyyeAC7U1RzyB3aKxTgeYJS6auLBaiR3-SWoXs_hBnbIIgYT7AC2e76ICpMlFPQS_e2bcqe1B-yz69se8ZlJgwWK-YhqHMoOCA9oQy3t_cObQI0KSzg7cYDkkQ17cWF3SoyTSTs6Cek_Y97Z17lJX2RVBayPc2uI_oWWuaIUbukxAOIUkgpgtf6g\
+				""";
 		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 		.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 		.setAuthenticationMethod(AuthenticationMethods.JWT)
@@ -1431,9 +1437,11 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void testJwtTokenParsingInvalidSignature() throws Exception {
-		String token="eyJhbGciOiJSUzI1NiJ9."
-				+ "eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9."
-				+ "U1VsMoITf5kUEHtzfgJTyRWKEDZ2gjtTuQI3DVRrJcpden2pjCsAWwl4VOr6McmQkcndZj0GPvN4w3NkJR712ltlsIXw1zMm67vuFY0_id7TP2zIJh3jMkKrTuSPE-SBXZyVnIq22Q54R1VMnOTjO6spbrbYowIzyyeAC7U1RzyB3aKxTgeYJS6auLBaiR3-SWoXs_hBnbIIgYT7AC2e76ICpMlFPQS_e2bcqe1B-yz69se8ZlJgwWK-YhqHMoOCA9oQy3t_cObQI0KSzg7cYDkkQ17cWF3SoyTSTs6Cek_Y97Z17lJX2RVBayPc2uI_oWWuaIUbukxAOIUkgpgtf6g";
+		String token="""
+				eyJhbGciOiJSUzI1NiJ9.\
+				eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9.\
+				U1VsMoITf5kUEHtzfgJTyRWKEDZ2gjtTuQI3DVRrJcpden2pjCsAWwl4VOr6McmQkcndZj0GPvN4w3NkJR712ltlsIXw1zMm67vuFY0_id7TP2zIJh3jMkKrTuSPE-SBXZyVnIq22Q54R1VMnOTjO6spbrbYowIzyyeAC7U1RzyB3aKxTgeYJS6auLBaiR3-SWoXs_hBnbIIgYT7AC2e76ICpMlFPQS_e2bcqe1B-yz69se8ZlJgwWK-YhqHMoOCA9oQy3t_cObQI0KSzg7cYDkkQ17cWF3SoyTSTs6Cek_Y97Z17lJX2RVBayPc2uI_oWWuaIUbukxAOIUkgpgtf6g\
+				""";
 		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(Methods.GET))
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setAuthenticationMethod(AuthenticationMethods.JWT)

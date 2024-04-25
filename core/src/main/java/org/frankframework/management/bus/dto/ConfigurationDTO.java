@@ -66,8 +66,8 @@ public class ConfigurationDTO {
 		}
 
 		ClassLoader classLoader = configuration.getClassLoader();
-		if(classLoader instanceof DatabaseClassLoader) {
-			setDatabaseAttributes((DatabaseClassLoader) classLoader);
+		if(classLoader instanceof DatabaseClassLoader loader) {
+			setDatabaseAttributes(loader);
 		}
 
 		if(configuration.isActive()) {

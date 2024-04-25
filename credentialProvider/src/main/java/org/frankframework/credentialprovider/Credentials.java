@@ -68,7 +68,7 @@ public class Credentials implements ICredentials {
 
 	protected void getCredentialsFromAlias() {
 		if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
-			log.warning(String.format("no credential factory for alias [%s], and no default credentials, username [%s]", alias, username));
+			log.warning("no credential factory for alias [%s], and no default credentials, username [%s]".formatted(alias, username));
 		}
 	}
 

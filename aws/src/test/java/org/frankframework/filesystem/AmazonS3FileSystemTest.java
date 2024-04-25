@@ -19,11 +19,7 @@ import com.amazonaws.services.s3.model.S3Object;
 
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 
-	private final int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
-
-	{
-		setWaitMillis(waitMilis);
-	}
+	private static final int WAIT_TIMEOUT_MILLIS = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	@TempDir
 	private Path tempdir;
@@ -35,6 +31,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 
 	@Override
 	public AmazonS3FileSystem createFileSystem() {
+		setWaitMillis(WAIT_TIMEOUT_MILLIS);
 		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) this.helper;
 		AmazonS3FileSystem s3 = new AmazonS3FileSystem() {
 			@Override
@@ -54,7 +51,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setSecretKey(null);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
-		assertEquals("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)", e.getMessage());
+		assertEquals("invalid credential fields, please provide AWS credentials (accessKey and secretKey)", e.getMessage());
 	}
 
 	@Test
@@ -64,7 +61,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setSecretKey("123");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
-		assertEquals("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)", e.getMessage());
+		assertEquals("invalid credential fields, please provide AWS credentials (accessKey and secretKey)", e.getMessage());
 	}
 
 	@Test
@@ -133,7 +130,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	}
 
 	@Test
-	public void testToFileWithBucketnameInFilename() throws FileSystemException {
+	public void testToFileWithBucketnameInFilename() {
 		// arrange
 		String filename="fakeFile";
 		String bucketname="fakeBucket";
@@ -149,7 +146,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	}
 
 	@Test
-	public void testToFileWithBucketnameInFilenameWithFolder() throws FileSystemException {
+	public void testToFileWithBucketnameInFilenameWithFolder() {
 		// arrange
 		String foldername="fakeFolder";
 		String filename="fakeFile";

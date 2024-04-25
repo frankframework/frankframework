@@ -73,8 +73,7 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 		if (!super.equals(obj)) {
 			return false;
 		}
-		if (obj instanceof JwtAuthenticationToken) {
-			JwtAuthenticationToken other = (JwtAuthenticationToken) obj;
+		if (obj instanceof JwtAuthenticationToken other) {
 			return this.key == other.key;
 		}
 		return false;

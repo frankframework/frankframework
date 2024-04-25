@@ -19,11 +19,12 @@ import java.util.HashMap;
 
 import javax.servlet.ServletContext;
 
-import org.apache.chemistry.opencmis.commons.impl.ClassLoaderUtil;
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.extensions.cmis.server.RepositoryConnectorFactory;
 import org.frankframework.lifecycle.IbisInitializer;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -38,7 +39,7 @@ import org.springframework.web.context.ServletContextAware;
 @IbisInitializer
 public class CmisLifecycleBean implements ServletContextAware, InitializingBean, DisposableBean {
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private ServletContext servletContext;
 	private CmisServiceFactory factory;
 
@@ -48,7 +49,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		if (factory != null) {
 			factory.destroy();
 		}
@@ -73,21 +74,12 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 	 * Creates a service factory.
 	 */
 	private CmisServiceFactory createServiceFactory() {
-		String className = "org.frankframework.extensions.cmis.server.RepositoryConnectorFactory";
-
 		// create a factory instance
-		Object object = null;
 		try {
-			object = ClassLoaderUtil.loadClass(className).newInstance();
+			return ClassUtils.newInstance(RepositoryConnectorFactory.class);
 		} catch (Exception e) {
 			log.warn("Could not create a services factory instance", e);
 			return null;
 		}
-
-		if (!(object instanceof CmisServiceFactory)) {
-			log.warn("The provided class is not an instance of CmisServiceFactory!");
-		}
-
-		return (CmisServiceFactory) object;
 	}
 }

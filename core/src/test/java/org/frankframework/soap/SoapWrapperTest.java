@@ -71,8 +71,10 @@ import org.xml.sax.SAXException;
  */
 public class SoapWrapperTest {
 
-	private final String xmlMessage = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
-			+ "<Status>OK</Status></Result></FindDocuments_Response>";
+	private final String xmlMessage = """
+			<FindDocuments_Response xmlns="http://api.nn.nl/FindDocuments"><Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">\
+			<Status>OK</Status></Result></FindDocuments_Response>\
+			""";
 
 	private final String soapMessageSoap11 = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
 			+ "<soapenv:Header><MessageHeader xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\"><HeaderFields><MessageId>messageId</MessageId></HeaderFields></MessageHeader></soapenv:Header>"
@@ -96,10 +98,14 @@ public class SoapWrapperTest {
 			"<soapenv:Detail>Quantity element does not have a value</soapenv:Detail>" +
 			"</soapenv:Fault></soapenv:Body></soapenv:Envelope>";
 
-	private final String expectedSoapBody11 = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
-			+ "<Status>OK</Status></Result></FindDocuments_Response>";
-	private final String expectedSoapBody12 = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\" xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
-			+ "<Status>OK</Status></Result></FindDocuments_Response>";
+	private final String expectedSoapBody11 = """
+			<FindDocuments_Response xmlns="http://api.nn.nl/FindDocuments" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">\
+			<Status>OK</Status></Result></FindDocuments_Response>\
+			""";
+	private final String expectedSoapBody12 = """
+			<FindDocuments_Response xmlns="http://api.nn.nl/FindDocuments" xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"><Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">\
+			<Status>OK</Status></Result></FindDocuments_Response>\
+			""";
 
 	private final SoapWrapper soapWrapper = SoapWrapper.getInstance();
 
@@ -384,8 +390,7 @@ public class SoapWrapperTest {
 
 			for (int i = 0; i < list.size(); i++) {
 				XMLStructure xmlStructure = list.get(i);
-				if (xmlStructure instanceof DOMStructure && purpose.equals(KeySelector.Purpose.VERIFY)) {
-					DOMStructure dom = (DOMStructure) xmlStructure;
+				if (xmlStructure instanceof DOMStructure dom && purpose.equals(KeySelector.Purpose.VERIFY)) {
 					Node wsse = dom.getNode();
 					XmlUtils.getFirstChildTag((Element) wsse, "wsse:Reference");
 

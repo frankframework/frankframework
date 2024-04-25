@@ -35,12 +35,9 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 	@Override
 	public CmisObject answer(InvocationOnMock invocation) throws Throwable {
 		Object obj = invocation.getArguments()[0];
-		if(obj instanceof ObjectId) {
-			ObjectId id = (ObjectId) obj;
+		if(obj instanceof ObjectId id) {
 			objectId = id.getId();
-		} else if(obj instanceof Map) {
-			@SuppressWarnings({"unchecked", "rawtypes"})
-			Map<String, Object> properties = (Map) obj;
+		} else if(obj instanceof Map properties) {
 			objectId = (String) properties.get(PropertyIds.NAME);
 		}
 

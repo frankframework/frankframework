@@ -175,8 +175,7 @@ public class EsbSoapValidator extends SoapValidator implements WsdlGeneratorExte
 		} else {
 			context.warn("Namespace '" + schemaLocation + "' invalid according to ESB SOAP standard");
 			IPipe outputWrapper = pipeLine.getOutputWrapper();
-			if (outputWrapper instanceof EsbSoapWrapperPipe) {
-				EsbSoapWrapperPipe esbSoapWrapper = (EsbSoapWrapperPipe)outputWrapper;
+			if (outputWrapper instanceof EsbSoapWrapperPipe esbSoapWrapper) {
 				context.esbSoapBusinessDomain = esbSoapWrapper.getBusinessDomain();
 				context.esbSoapServiceName = esbSoapWrapper.getServiceName();
 				context.esbSoapServiceContext = esbSoapWrapper.getServiceContext();

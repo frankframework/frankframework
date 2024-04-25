@@ -20,36 +20,33 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.EmptyMessage;
-import org.springframework.messaging.Message;
+import javax.annotation.security.RolesAllowed;
 
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.SenderException;
-import org.frankframework.jdbc.FixedQuerySender;
-
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.scheduler.job.DatabaseJob;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
-
 import org.frankframework.util.SpringUtils;
-
-import javax.annotation.security.RolesAllowed;
+import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class CreateScheduledJob extends BusEndpointBase {
@@ -130,7 +127,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 			Locker locker = SpringUtils.createBean(applicationContext, Locker.class);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
-			locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+			locker.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			jobdef.setLocker(locker);
 		}
 
@@ -145,7 +142,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		if(AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
 			boolean success = false;
 			FixedQuerySender qs = createBean(FixedQuerySender.class);
-			qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+			qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 			try {
 				qs.configure();
@@ -166,8 +163,10 @@ public class CreateScheduledJob extends BusEndpointBase {
 						}
 					}
 
-					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME, JOBGROUP, ADAPTER, RECEIVER, CRON, EXECUTIONINTERVAL, MESSAGE, DESCRIPTION, LOCKER, LOCK_KEY, CREATED_ON, BY_USER) "
-							+ "VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
+					String insertQuery = """
+							INSERT INTO IBISSCHEDULES (JOBNAME, JOBGROUP, ADAPTER, RECEIVER, CRON, EXECUTIONINTERVAL, MESSAGE, DESCRIPTION, LOCKER, LOCK_KEY, CREATED_ON, BY_USER) \
+							VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)\
+							""";
 					try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
 						stmt.setString(1, name);
 						stmt.setString(2, jobGroup);

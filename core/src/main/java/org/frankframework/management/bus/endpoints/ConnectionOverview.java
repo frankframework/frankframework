@@ -60,18 +60,17 @@ public class ConnectionOverview extends BusEndpointBase {
 
 				PipeLine pipeline = adapter.getPipeLine();
 				for (IPipe pipe : pipeline.getPipes()) {
-					if (pipe instanceof MessageSendingPipe) {
-						MessageSendingPipe msp=(MessageSendingPipe)pipe;
+					if (pipe instanceof MessageSendingPipe msp) {
 						ISender sender = msp.getSender();
-						if (sender instanceof HasPhysicalDestination) {
-							String destination = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
-							String domain = ((HasPhysicalDestination)sender).getDomain();
+						if (sender instanceof HasPhysicalDestination physicalDestination) {
+							String destination = physicalDestination.getPhysicalDestinationName();
+							String domain = physicalDestination.getDomain();
 							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", domain));
 						}
 						IListener<?> listener = msp.getListener();
-						if (listener instanceof HasPhysicalDestination) {
-							String destination = ((HasPhysicalDestination)listener).getPhysicalDestinationName();
-							String domain = ((HasPhysicalDestination)listener).getDomain();
+						if (listener instanceof HasPhysicalDestination physicalDestination) {
+							String destination = physicalDestination.getPhysicalDestinationName();
+							String domain = physicalDestination.getDomain();
 							connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
 						}
 					}

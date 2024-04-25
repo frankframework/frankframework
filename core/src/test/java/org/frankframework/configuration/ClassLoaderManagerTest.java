@@ -157,8 +157,8 @@ public class ClassLoaderManagerTest extends Mockito {
 
 	private ClassLoader getClassLoader(String testConfiguration) throws Exception {
 		ClassLoader config = manager.get(testConfiguration);
-		if(config instanceof ClassLoaderBase) {
-			((ClassLoaderBase)config).setBasePath(".");
+		if(config instanceof ClassLoaderBase base) {
+			base.setBasePath(".");
 		}
 		return config;
 	}

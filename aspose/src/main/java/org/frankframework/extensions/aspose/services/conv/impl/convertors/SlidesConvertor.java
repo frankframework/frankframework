@@ -32,6 +32,7 @@ import com.aspose.slides.SaveFormat;
 
 import lombok.extern.log4j.Log4j2;
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 
 /**
  * Converts the files which are required and supported by the aspose slides
@@ -76,7 +77,7 @@ public class SlidesConvertor extends AbstractConvertor {
 	}
 
 	private static LoadOptions getLoadOptions(final MediaType mediaType) throws Exception {
-		return MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).newInstance();
+		return ClassUtils.newInstance(MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 	}
 
 	@Override

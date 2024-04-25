@@ -40,7 +40,7 @@ import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.compo
 import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 import { LoginComponent } from './views/login/login.component';
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,

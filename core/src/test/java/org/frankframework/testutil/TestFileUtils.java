@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 
@@ -59,11 +60,10 @@ public class TestFileUtils {
 		return string.toString();
 	}
 
-	@SneakyThrows
+	@SneakyThrows(URISyntaxException.class)
 	public static String getTestFilePath(String string) {
 		URL url = getTestFileURL(string);
 		assertNotNull(url);
 		return Paths.get(url.toURI()).toString();
 	}
-
 }

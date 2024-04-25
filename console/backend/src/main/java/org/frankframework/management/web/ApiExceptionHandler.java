@@ -34,13 +34,13 @@ import org.apache.logging.log4j.Logger;
 @Provider
 public class ApiExceptionHandler implements ExceptionMapper<WebApplicationException> {
 
-	private Logger log = LogManager.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 
 	@Override
 	public Response toResponse(WebApplicationException exception) {
 		//If the message has already been wrapped in an exception we don't need to `convert` it!
-		if(exception instanceof ApiException) {
-			return ((ApiException) exception).getResponse();
+		if(exception instanceof ApiException apiException) {
+			return apiException.getResponse();
 		}
 
 		log.warn("Caught unhandled WebApplicationException while executing FF!API call", exception);

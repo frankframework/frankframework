@@ -37,18 +37,19 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 	public void testBasicUnwrap() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
-		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"<SOAP-ENV:Body>\n" +
-				"<ns0:OnCompletedTransferNotify_Action xmlns:ns0=\"http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1\">\n" +
-				"<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>\n" +
-				"<ns0:UserData>FlowId-Instance</ns0:UserData>\n" +
-				"<ns0:ClientFilename>/filename.xml.zip</ns0:ClientFilename>\n" +
-				"<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/filename.xml.zip</ns0:ServerFilename>\n" +
-				"<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>\n" +
-				"</ns0:OnCompletedTransferNotify_Action>\n" +
-				"</SOAP-ENV:Body>\n" +
-				"</SOAP-ENV:Envelope>\n" +
-				""));
+		PipeRunResult pipeRunResult = doPipe(new Message("""
+				<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+				<SOAP-ENV:Body>
+				<ns0:OnCompletedTransferNotify_Action xmlns:ns0="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1">
+				<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>
+				<ns0:UserData>FlowId-Instance</ns0:UserData>
+				<ns0:ClientFilename>/filename.xml.zip</ns0:ClientFilename>
+				<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/filename.xml.zip</ns0:ServerFilename>
+				<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>
+				</ns0:OnCompletedTransferNotify_Action>
+				</SOAP-ENV:Body>
+				</SOAP-ENV:Envelope>
+				"""));
 
 		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator +"filename.xml.zip";
 		assertEquals(expected, pipeRunResult.getResult().asString());
@@ -61,18 +62,19 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 	public void testUnwrapClientFilenameWithoutSlash() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
-		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"<SOAP-ENV:Body>\n" +
-				"<ns0:OnCompletedTransferNotify_Action xmlns:ns0=\"http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1\">\n" +
-				"<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>\n" +
-				"<ns0:UserData>FlowId-Instance</ns0:UserData>\n" +
-				"<ns0:ClientFilename>filename.xml.zip</ns0:ClientFilename>\n" +
-				"<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/filename.xml.zip</ns0:ServerFilename>\n" +
-				"<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>\n" +
-				"</ns0:OnCompletedTransferNotify_Action>\n" +
-				"</SOAP-ENV:Body>\n" +
-				"</SOAP-ENV:Envelope>\n" +
-				""));
+		PipeRunResult pipeRunResult = doPipe(new Message("""
+				<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+				<SOAP-ENV:Body>
+				<ns0:OnCompletedTransferNotify_Action xmlns:ns0="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1">
+				<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>
+				<ns0:UserData>FlowId-Instance</ns0:UserData>
+				<ns0:ClientFilename>filename.xml.zip</ns0:ClientFilename>
+				<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/filename.xml.zip</ns0:ServerFilename>
+				<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>
+				</ns0:OnCompletedTransferNotify_Action>
+				</SOAP-ENV:Body>
+				</SOAP-ENV:Envelope>
+				"""));
 
 		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator +"filename.xml.zip";
 		assertEquals(expected, pipeRunResult.getResult().asString());
@@ -85,18 +87,19 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 	public void testClientFileNameContainsPath() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
-		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"<SOAP-ENV:Body>\n" +
-				"<ns0:OnCompletedTransferNotify_Action xmlns:ns0=\"http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1\">\n" +
-				"<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>\n" +
-				"<ns0:UserData>FlowId-Instance</ns0:UserData>\n" +
-				"<ns0:ClientFilename>/opt/data/FXF/instancename/flowid/in/ClientFilename.xml.zip</ns0:ClientFilename>\n" +
-				"<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/ServerFilename.xml.zip</ns0:ServerFilename>\n" +
-				"<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>\n" +
-				"</ns0:OnCompletedTransferNotify_Action>\n" +
-				"</SOAP-ENV:Body>\n" +
-				"</SOAP-ENV:Envelope>\n" +
-				""));
+		PipeRunResult pipeRunResult = doPipe(new Message("""
+				<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+				<SOAP-ENV:Body>
+				<ns0:OnCompletedTransferNotify_Action xmlns:ns0="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1">
+				<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>
+				<ns0:UserData>FlowId-Instance</ns0:UserData>
+				<ns0:ClientFilename>/opt/data/FXF/instancename/flowid/in/ClientFilename.xml.zip</ns0:ClientFilename>
+				<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/ServerFilename.xml.zip</ns0:ServerFilename>
+				<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>
+				</ns0:OnCompletedTransferNotify_Action>
+				</SOAP-ENV:Body>
+				</SOAP-ENV:Envelope>
+				"""));
 		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator +"ClientFilename.xml.zip";
 		assertEquals(expected,pipeRunResult.getResult().asString());
 	}
@@ -106,18 +109,19 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.setUseServerFilename(true);
 		pipe.configure();
-		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"<SOAP-ENV:Body>\n" +
-				"<ns0:OnCompletedTransferNotify_Action xmlns:ns0=\"http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1\">\n" +
-				"<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>\n" +
-				"<ns0:UserData>FlowId-Instance</ns0:UserData>\n" +
-				"<ns0:ClientFilename>/opt/data/FXF/instancename/flowid/in/ClientFilename.xml.zip</ns0:ClientFilename>\n" +
-				"<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/ServerFilename.xml.zip</ns0:ServerFilename>\n" +
-				"<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>\n" +
-				"</ns0:OnCompletedTransferNotify_Action>\n" +
-				"</SOAP-ENV:Body>\n" +
-				"</SOAP-ENV:Envelope>\n" +
-				""));
+		PipeRunResult pipeRunResult = doPipe(new Message("""
+				<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+				<SOAP-ENV:Body>
+				<ns0:OnCompletedTransferNotify_Action xmlns:ns0="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1">
+				<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>
+				<ns0:UserData>FlowId-Instance</ns0:UserData>
+				<ns0:ClientFilename>/opt/data/FXF/instancename/flowid/in/ClientFilename.xml.zip</ns0:ClientFilename>
+				<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/ServerFilename.xml.zip</ns0:ServerFilename>
+				<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>
+				</ns0:OnCompletedTransferNotify_Action>
+				</SOAP-ENV:Body>
+				</SOAP-ENV:Envelope>
+				"""));
 		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator +"ServerFilename.xml.zip";
 		assertEquals(expected,pipeRunResult.getResult().asString());
 	}
@@ -127,18 +131,19 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
 
-		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-				"<SOAP-ENV:Body>\n" +
-				"<ns0:OnCompletedTransferNotify_Action xmlns:ns0=\"http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1\">\n" +
-				"<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>\n" +
-				"<ns0:UserData>FlowId-Instance</ns0:UserData>\n" +
-				"<ns0:ClientFilename>C:\\data\\test\\ClientFilename.xml.zip</ns0:ClientFilename>\n" +
-				"<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/ServerFilename.xml.zip</ns0:ServerFilename>\n" +
-				"<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>\n" +
-				"</ns0:OnCompletedTransferNotify_Action>\n" +
-				"</SOAP-ENV:Body>\n" +
-				"</SOAP-ENV:Envelope>\n" +
-				""));
+		PipeRunResult pipeRunResult = doPipe(new Message("""
+				<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+				<SOAP-ENV:Body>
+				<ns0:OnCompletedTransferNotify_Action xmlns:ns0="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1">
+				<ns0:TransferFlowId>FlowId</ns0:TransferFlowId>
+				<ns0:UserData>FlowId-Instance</ns0:UserData>
+				<ns0:ClientFilename>C:\\data\\test\\ClientFilename.xml.zip</ns0:ClientFilename>
+				<ns0:ServerFilename>/opt/data/FXF/instancename/flowid/in/ServerFilename.xml.zip</ns0:ServerFilename>
+				<ns0:LocalTransactionID>R629100615</ns0:LocalTransactionID>
+				</ns0:OnCompletedTransferNotify_Action>
+				</SOAP-ENV:Body>
+				</SOAP-ENV:Envelope>
+				"""));
 		String expected = fxfDirectory+File.separator +"FlXwId"+File.separator +"in"+File.separator + "ClientFilename.xml.zip";
 		assertEquals(expected, pipeRunResult.getResult().asString());
 	}

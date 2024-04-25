@@ -57,13 +57,13 @@ public class QueueUtils {
 			Constructor<?> con = ClassUtils.getConstructorOnType(clazz, new Class[] {});
 			Object obj = con.newInstance();
 
-			if(obj instanceof INamedObject) { //Set the name
-				((INamedObject) obj).setName("Test Tool "+clazz.getSimpleName());
+			if(obj instanceof INamedObject object) { //Set the name
+				object.setName("Test Tool "+clazz.getSimpleName());
 			}
 
-			if(obj instanceof HttpSenderBase) { //Disable SSL capabilities
-				((HttpSenderBase) obj).setAllowSelfSignedCertificates(true);
-				((HttpSenderBase) obj).setVerifyHostname(false);
+			if(obj instanceof HttpSenderBase base) { //Disable SSL capabilities
+				base.setAllowSelfSignedCertificates(true);
+				base.setVerifyHostname(false);
 			}
 
 			return (IConfigurable) obj;

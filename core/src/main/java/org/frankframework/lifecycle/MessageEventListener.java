@@ -69,8 +69,8 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 
 	@Override
 	public void onApplicationEvent(ApplicationMessageEvent event) {
-		if(event instanceof ConfigurationMessageEvent) {
-			String configurationName = ((ConfigurationMessageEvent) event).getSource().getName();
+		if(event instanceof ConfigurationMessageEvent messageEvent) {
+			String configurationName = messageEvent.getSource().getName();
 			configLog(configurationName).add(event.getMessageKeeperMessage());
 		}
 		globalLog().add(event.getMessageKeeperMessage());

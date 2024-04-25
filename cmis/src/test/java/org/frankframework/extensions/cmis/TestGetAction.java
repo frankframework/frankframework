@@ -20,19 +20,23 @@ import org.frankframework.testutil.TestAssertions;
 
 public class TestGetAction extends CmisSenderTestBase {
 
-	private static final Message INPUT_WITH_PROPERTIES = new Message("<cmis><id>id</id><objectId>dummy</objectId>"
-			+ "<objectTypeId>cmis:document</objectTypeId><fileName>fileInput.txt</fileName>"
-			+ "<properties><property name=\"cmis:description\" type=\"string\">123456789</property>"
-			+ "<property name=\"cmis:lastModificationDate\" type=\"datetime\">2019-02-26T16:31:15</property>"
-			+ "<property name=\"cmis:creationDate\" type=\"boolean\">true</property></properties></cmis>");
+	private static final Message INPUT_WITH_PROPERTIES = new Message("""
+			<cmis><id>id</id><objectId>dummy</objectId>\
+			<objectTypeId>cmis:document</objectTypeId><fileName>fileInput.txt</fileName>\
+			<properties><property name="cmis:description" type="string">123456789</property>\
+			<property name="cmis:lastModificationDate" type="datetime">2019-02-26T16:31:15</property>\
+			<property name="cmis:creationDate" type="boolean">true</property></properties></cmis>\
+			""");
 
 	private static final String GET_RESULT_FOR_INPUT = "dummy_stream";
 
-	private static final String GET_RESULT_FOR_GET_PROPERTIES = "<cmis><properties>"
-			+ "<property name=\"cmis:name\" type=\"id\">dummy</property>"
-			+ "<property name=\"project:number\" type=\"integer\">123456789</property>"
-			+ "<property name=\"project:lastModified\" type=\"datetime\">2019-02-26T16:31:15</property>"
-			+ "<property name=\"project:onTime\" type=\"boolean\">true</property></properties></cmis>";
+	private static final String GET_RESULT_FOR_GET_PROPERTIES = """
+			<cmis><properties>\
+			<property name="cmis:name" type="id">dummy</property>\
+			<property name="project:number" type="integer">123456789</property>\
+			<property name="project:lastModified" type="datetime">2019-02-26T16:31:15</property>\
+			<property name="project:onTime" type="boolean">true</property></properties></cmis>\
+			""";
 
 	public static Stream<Arguments> allImplementations() {
 		return Stream.of(

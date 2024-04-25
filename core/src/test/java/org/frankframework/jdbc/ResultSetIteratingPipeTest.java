@@ -62,7 +62,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 	private void insert(int key, String value) throws JdbcException, SQLException {
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(connection, String.format("INSERT INTO "+TEST_TABLE+" (TKEY, TVARCHAR, TINT) VALUES ('%d', '%s', '0')", key, value));
+			JdbcTestUtil.executeStatement(connection, ("INSERT INTO " + TEST_TABLE + " (TKEY, TVARCHAR, TINT) VALUES ('%d', '%s', '0')").formatted(key, value));
 		}
 	}
 
@@ -219,7 +219,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 			try {
 				return message.asString();
 			} catch (IOException e) {
-				return String.format("<exception>%s</exception>", e.getMessage());
+				return "<exception>%s</exception>".formatted(e.getMessage());
 			}
 		}
 	}

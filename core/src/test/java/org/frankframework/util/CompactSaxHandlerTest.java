@@ -192,9 +192,11 @@ class CompactSaxHandlerTest {
 		handler.setChompLength(200_000);
 		handler.setRemoveCompactMsgNamespaces(true);
 		handler.setElementToMove("message");
-		String expectedOutput = "<event timestamp=\"0\" level=\"DEBUG\">\n" +
-				"  <message>{sessionKey:ref_message}</message>\n" +
-				"</event>";
+		String expectedOutput = """
+				<event timestamp="0" level="DEBUG">
+				  <message>{sessionKey:ref_message}</message>
+				</event>\
+				""";
 
 		// Act
 		Message bigInputMessage = MessageTestUtils.getMessage("/Logging/xml-of-pdf-file.log");

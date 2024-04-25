@@ -69,8 +69,8 @@ public class MapContentContainer<V> implements DocumentContainer {
 		currentName=localName;
 		currentValue=null;
 		currentIsNull=false;
-		if (typeDefinition instanceof XSSimpleType) {
-			type=ScalarType.findType(((XSSimpleType)typeDefinition));
+		if (typeDefinition instanceof XSSimpleType simpleType) {
+			type=ScalarType.findType(simpleType);
 		}
 	}
 

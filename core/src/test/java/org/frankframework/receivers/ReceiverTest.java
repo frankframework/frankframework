@@ -58,6 +58,16 @@ import java.util.stream.Stream;
 import javax.jms.Destination;
 import javax.jms.TextMessage;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.stubbing.Answer;
+
+import lombok.SneakyThrows;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
@@ -68,6 +78,7 @@ import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.jdbc.MessageStoreListener;
@@ -86,22 +97,12 @@ import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-
-import lombok.SneakyThrows;
 
 public class ReceiverTest {
 	public static final DefaultTransactionDefinition TRANSACTION_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -314,7 +315,7 @@ public class ReceiverTest {
 
 		final Semaphore semaphore = new Semaphore(0);
 		Thread mockListenerThread = new Thread("mock-listener-thread") {
-			@SneakyThrows
+			@SneakyThrows({SenderException.class, IllegalAccessException.class, IllegalArgumentException.class})
 			@Override
 			public void run() {
 				try {
@@ -451,7 +452,7 @@ public class ReceiverTest {
 
 		final Semaphore semaphore = new Semaphore(0);
 		Thread mockListenerThread = new Thread("mock-listener-thread") {
-			@SneakyThrows
+			@SneakyThrows({SenderException.class, IllegalArgumentException.class, IllegalAccessException.class})
 			@Override
 			public void run() {
 				try {
@@ -1009,7 +1010,7 @@ public class ReceiverTest {
 
 		List<String> warnings = adapter.getMessageKeeper()
 				.stream()
-				.filter(msg -> msg instanceof MessageKeeperMessage && "WARN".equals(((MessageKeeperMessage)msg).getMessageLevel()))
+				.filter(msg -> msg instanceof MessageKeeperMessage && "WARN".equals(msg.getMessageLevel()))
 				.map(Object::toString)
 				.collect(Collectors.toList());
 		assertThat(warnings, everyItem(containsString("JMS poll timeout")));

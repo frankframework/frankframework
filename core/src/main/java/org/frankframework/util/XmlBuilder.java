@@ -164,12 +164,12 @@ public class XmlBuilder {
 				}
 				if (cdata!=null) {
 					for(String part:cdata) {
-						if (handler instanceof LexicalHandler) {
-							((LexicalHandler)handler).startCDATA();
+						if (handler instanceof LexicalHandler lexicalHandler) {
+							lexicalHandler.startCDATA();
 						}
 						handler.characters(part.toCharArray(), 0, part.length());
-						if (handler instanceof LexicalHandler) {
-							((LexicalHandler)handler).endCDATA();
+						if (handler instanceof LexicalHandler lexicalHandler) {
+							lexicalHandler.endCDATA();
 						}
 					}
 				}

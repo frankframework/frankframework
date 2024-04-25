@@ -157,8 +157,8 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			}
 		}
 
-		if (top instanceof IAdapter) {
-			currentAdapter = (IAdapter) top;
+		if (top instanceof IAdapter adapter) {
+			currentAdapter = adapter;
 		}
 
 		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.

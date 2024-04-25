@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,16 +21,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.frankframework.dbms.JdbcException;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.util.LogUtil;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.jndi.JndiDataSourceFactory;
-import org.frankframework.util.LogUtil;
 
 /**
  * See Spring's native PropertySourceFactory
@@ -42,7 +41,7 @@ public class JdbcPropertySourceFactory implements ApplicationContextAware {
 	private final Logger log = LogUtil.getLogger(this);
 
 	public Properties createPropertySource(String name) {
-		return createPropertySource(name, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		return createPropertySource(name, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 	}
 
 	public Properties createPropertySource(String name, String datasourceName) {

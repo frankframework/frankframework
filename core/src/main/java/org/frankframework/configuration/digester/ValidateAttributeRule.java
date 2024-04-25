@@ -119,8 +119,8 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		try {
 			Object bean = getBean();
 			Object defaultValue = readMethod.invoke(bean);
-			if (bean instanceof HasSpecialDefaultValues) {
-				defaultValue = ((HasSpecialDefaultValues)bean).getSpecialDefaultValue(name, defaultValue, attrs);
+			if (bean instanceof HasSpecialDefaultValues values) {
+				defaultValue = values.getSpecialDefaultValue(name, defaultValue, attrs);
 			}
 			if (equals(defaultValue, value)) {
 				addSuppressableWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);

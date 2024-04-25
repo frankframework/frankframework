@@ -9,8 +9,7 @@ describe('CustomViewsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [CustomViewsComponent],
+      imports: [HttpClientTestingModule, CustomViewsComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CustomViewsComponent);

@@ -522,16 +522,22 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		if (integerColumns.contains(column)) {
 			return "Search all rows which are less than or equal to the search value";
 		} else if (timestampColumns.contains(column)) {
-			return "Search all rows which are less than or equal to the search value."
-					+ " When the search value only complies with the beginning of pattern yyyy-MM-dd'T'HH:mm:ss.SSS, it will be internally completed according to the value 9999-12-31T23:59:59.999";
+			return """
+					Search all rows which are less than or equal to the search value.\
+					 When the search value only complies with the beginning of pattern yyyy-MM-dd'T'HH:mm:ss.SSS, it will be internally completed according to the value 9999-12-31T23:59:59.999\
+					""";
 		} else if (fixedStringColumns != null
 				&& fixedStringColumns.contains(column)) {
-			return "Search all rows which completely equal the search value (case sensitive)."
-					+ " Select one or more values from the drop-down list which is activated by clicking on the gray button directly above this field";
+			return """
+					Search all rows which completely equal the search value (case sensitive).\
+					 Select one or more values from the drop-down list which is activated by clicking on the gray button directly above this field\
+					""";
 		} else {
-			return "Search all rows which completely equal the search value (case sensitive)."
-					+ " The wilcard character '*' is supported."
-					+ " When the search value start with the character '~', the search is performed case insensitive";
+			return """
+					Search all rows which completely equal the search value (case sensitive).\
+					 The wilcard character '*' is supported.\
+					 When the search value start with the character '~', the search is performed case insensitive\
+					""";
 		}
 	}
 

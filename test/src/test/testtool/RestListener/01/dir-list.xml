@@ -1,4 +1,4 @@
 <directory name="TESTDATA_DIR\rest" count="2">
-	<file name="id.xml" size="12" fSize="1 kB" directory="false" canonicalName="TESTDATA_DIR\rest\id.xml" modificationDate="30-09-15" modificationTime="17:02:00"/>
-	<file name="result.pdf" size="324338" fSize="317 kB" directory="false" canonicalName="TESTDATA_DIR\rest\result.pdf" modificationDate="30-09-15" modificationTime="17:02:01"/>
+	<file name="id.xml" size="14" fSize="14 B" directory="false" canonicalName="TESTDATA_DIR\rest\id.xml" modificationDate="30-09-15" modificationTime="17:02:00"/>
+	<file name="result.pdf" size="324338" fSize="316 KiB" directory="false" canonicalName="TESTDATA_DIR\rest\result.pdf" modificationDate="30-09-15" modificationTime="17:02:01"/>
 </directory>

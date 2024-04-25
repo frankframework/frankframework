@@ -259,11 +259,9 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				if (rawReplyMsg == null) {
 					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeout_work + "] ms");
 				}
-				if (rawReplyMsg instanceof TextMessage) {
-					TextMessage replyMsg = (TextMessage) rawReplyMsg;
+				if (rawReplyMsg instanceof TextMessage replyMsg) {
 					result = replyMsg.getText();
-				} else if (rawReplyMsg instanceof BytesMessage) {
-					BytesMessage bytesMessage = (BytesMessage) rawReplyMsg;
+				} else if (rawReplyMsg instanceof BytesMessage bytesMessage) {
 					InputStream inputStream = new BytesMessageInputStream(bytesMessage);
 					result = StreamUtil.streamToString(inputStream);
 				} else {
