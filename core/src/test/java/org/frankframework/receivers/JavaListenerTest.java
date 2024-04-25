@@ -19,11 +19,6 @@ import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import org.frankframework.configuration.AdapterManager;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
@@ -33,7 +28,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
-import org.frankframework.management.IbisAction;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
@@ -41,6 +35,9 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class JavaListenerTest {
 	private TestConfiguration configuration;
@@ -51,9 +48,7 @@ public class JavaListenerTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		configuration = new TestConfiguration();
-		configuration.stop();
-		configuration.getBean("adapterManager", AdapterManager.class).close();
+		configuration = new TestConfiguration(false);
 
 		listener = setupJavaListener();
 		receiver = setupReceiver(listener);
@@ -64,10 +59,8 @@ public class JavaListenerTest {
 	@AfterEach
 	public void tearDown() throws Exception {
 		session.close();
-		configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		configuration.stop();
-		configuration.getBean("adapterManager", AdapterManager.class).close();
 	}
 
 
