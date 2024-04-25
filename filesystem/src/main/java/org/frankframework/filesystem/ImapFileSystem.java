@@ -27,10 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.sun.mail.imap.AppendUID;
-import com.sun.mail.imap.IMAPFolder;
-import com.sun.mail.imap.IMAPMessage;
-
 import jakarta.mail.BodyPart;
 import jakarta.mail.Flags;
 import jakarta.mail.Folder;
@@ -51,6 +47,9 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.angus.mail.imap.AppendUID;
+import org.eclipse.angus.mail.imap.IMAPFolder;
+import org.eclipse.angus.mail.imap.IMAPMessage;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.PartMessage;
 import org.frankframework.util.CredentialFactory;
@@ -72,7 +71,6 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			throw new ConfigurationException("attribute host needs to be specified");
 		}
 	}
-
 
 	@Override
 	protected IMAPFolder createConnection() throws FileSystemException {

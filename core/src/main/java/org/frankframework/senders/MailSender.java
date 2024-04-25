@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import com.sun.mail.smtp.SMTPMessage;
-
 import jakarta.activation.DataHandler;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Message;
@@ -40,6 +38,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ISender;
