@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.frankframework.lifecycle;
 import java.sql.Connection;
 
 import javax.annotation.Nonnull;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
@@ -99,8 +98,6 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 			return dsf.getDataSource(defaultDatasource);
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			throw new IllegalStateException("no DataSourceFactory found or configured", e);
-		} catch (NamingException e) {
-			throw new IllegalStateException("no default datasource found", e);
 		}
 	}
 }
