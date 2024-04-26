@@ -19,16 +19,15 @@ import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.jndi.AbstractXADataSourceFactory;
+import org.frankframework.jdbc.datasource.AbstractXADataSourceFactory;
 import org.frankframework.util.AppConstants;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.Getter;
 import lombok.Setter;
 
-public class BtmDataSourceFactory extends AbstractXADataSourceFactory implements DisposableBean {
+public class BtmDataSourceFactory extends AbstractXADataSourceFactory {
 
 	private @Getter @Setter int minPoolSize = 0;
 	private @Getter @Setter int maxIdleTime = 60;
@@ -69,12 +68,14 @@ public class BtmDataSourceFactory extends AbstractXADataSourceFactory implements
 	@Override
 	// implementation is necessary, because PoolingDataSource does not implement AutoCloseable
 	public synchronized void destroy() throws Exception {
-		for (DataSource dataSource : objects.values()) {
-			DataSource originalDataSource = getOriginalDataSource(dataSource);
-			if(originalDataSource instanceof PoolingDataSource) {
-				((PoolingDataSource) originalDataSource).close();
-			}
-		}
+		objects.values().stream()
+				.filter(DataSource.class::isInstance)
+				.map(DataSource.class::cast)
+				.map(this::getOriginalDataSource)
+				.filter(PoolingDataSource.class::isInstance)
+				.map(PoolingDataSource.class::cast)
+				.forEach(PoolingDataSource::close);
+
 		super.destroy();
 	}
 

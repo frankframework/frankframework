@@ -23,17 +23,16 @@
 		autowire="byName"
 	/>
 
-	<bean
-		id="jndiContextPrefix"
-		factory-bean="jndiContextPrefixFactory"
-		factory-method="getContextPrefix"
-	/>
-
+	<bean id="jndiContextPrefix" factory-bean="jndiContextPrefixFactory" factory-method="getContextPrefix" />
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 
-	<bean id="dataSourceFactory" class="org.frankframework.jndi.JndiDataSourceFactory" />
-	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JndiConnectionFactoryFactory" />
-	<bean id="mongoClientFactory" class="org.frankframework.mongodb.JndiMongoClientFactory" />
+	<!-- Find DataSources in resources.yml and JNDI -->
+	<bean id="ResourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
+	<bean id="JndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
+
+	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType"/>
+	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JndiConnectionFactoryFactory" autowire="byType" />
+	<bean id="mongoClientFactory" class="org.frankframework.mongodb.JndiMongoClientFactory" autowire="byType" />
 
 	<bean id="jdbcPropertySourceFactory" class="org.frankframework.jdbc.JdbcPropertySourceFactory" />
 

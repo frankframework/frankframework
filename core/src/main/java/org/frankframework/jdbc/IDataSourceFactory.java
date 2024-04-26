@@ -18,24 +18,27 @@ package org.frankframework.jdbc;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.frankframework.util.AppConstants;
 import org.springframework.jndi.JndiLocatorSupport;
 
 public interface IDataSourceFactory {
 
+	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
+	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
+
 	/**
 	 * Look up a DataSource from the JNDI
 	 */
-	public DataSource getDataSource(String dataSourceName) throws NamingException;
+	public DataSource getDataSource(String dataSourceName) throws IllegalStateException;
 
 	/**
 	 * Set the JNDI environment to use for JNDI lookups.
 	 * <p>Uses a Spring JndiTemplate with the given environment settings.
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 */
-	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException;
+	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException;
 
 	/**
 	 * Return all known/registered DataSources

@@ -1,0 +1,112 @@
+jdbc:
+  - name: "ibis4test-h2"
+    type: "org.h2.jdbcx.JdbcDataSource"
+    url: "jdbc:h2:mem:ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;"
+
+
+  - name: "ibis4test-oracle"
+    type: "oracle.jdbc.pool.OracleDataSource"
+    url: "jdbc:oracle:thin:@${jdbc.hostname:-localhost}:1521:XE"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+#  - name: "ibis4test-oracle-xa"
+#    type: "oracle.jdbc.xa.client.OracleXADataSource"
+#    url: "jdbc:oracle:thin:@${jdbc.hostname:-localhost}:1521:XE"
+#    authalias: "${db.authalias}"
+#    username: "testiaf_user"
+#    password: "testiaf_user00"
+
+
+#  - name: "ibis4test-mssql"
+#    type: "com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
+#    url: "jdbc:sqlserver://${jdbc.hostname:-localhost}:1433;database=testiaf"
+#    authalias: "${db.authalias}"
+#    username: "testiaf_user"
+#    password: "testiaf_user00"
+#    properties:
+#      sendStringParametersAsUnicode: "false"
+#      sendTimeAsDatetime: "true"
+#      selectMethod: "direct"
+#      responseBuffering: "adaptive"
+#      packetSize: "4096"
+#      loginTimeout: "10"
+#      lockTimeout: "2000"
+#      lastUpdateCount: "false"
+#      encrypt: "false"
+#      disableStatementPooling: "true"
+#      applicationName: "iaf-test on TomCat"
+#      applicationIntent: "readwrite"
+
+#  - name: "ibis4test-mysql"
+#    type: "com.mysql.cj.jdbc.MysqlXADataSource"
+#    url: "jdbc:mysql://${jdbc.hostname:-localhost}:3307/testiaf"
+#    authalias: "${db.authalias}"
+#    username: "testiaf_user"
+#    password: "testiaf_user00"
+#    properties:
+#      sslMode: "DISABLED"
+#      serverTimezone: "Europe/Amsterdam"
+#      allowPublicKeyRetrieval: "true"
+#      pinGlobalTxToPhysicalConnection: "true"
+#      socketTimeout: "5000"
+
+
+#  - name: "ibis4test-mariadb"
+#    type: "org.mariadb.jdbc.MariaDbDataSource"
+#    url: "jdbc:mariadb://${jdbc.hostname:-localhost}:3306/testiaf"
+#    authalias: "${db.authalias}"
+#    username: "testiaf_user"
+#    password: "testiaf_user00"
+
+    # Postgres XA does not work without Narayana, gives ClassCastException casting the XA datasource to Java datasource, so add non-XA for those cases
+  - name: "ibis4test-postgres"
+    type: "org.postgresql.Driver"
+    url: "jdbc:postgresql://${jdbc.hostname:-localhost}:5432/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+#  - name: "ibis4test-postgres-xa"
+#    type: "org.postgresql.xa.PGXADataSource"
+#    url: "jdbc:postgresql://${jdbc.hostname:-localhost}:5432/testiaf"
+#    authalias: "${db.authalias}"
+#    username: "testiaf_user"
+#    password: "testiaf_user00"
+
+  - name: "ibis4test-db2"
+    type: "com.ibm.db2.jcc.DB2SimpleDataSource"
+    url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+#  - name: "ibis4test-db2-xa"
+#    type: "com.ibm.db2.jcc.DB2XADataSource"
+#    url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+#    authalias: "${db.authalias}"
+#    username: "testiaf_user"
+#    password: "testiaf_user00"
+
+# Mockup for future implementation
+#mongodb:
+#  - name: "ibis4test"
+#    type: "com.mongodb.MongoClient"
+#    url: "mongodb://${jdbc.hostname:-localhost}"
+#    authalias: "${db.authalias}"
+#    username: "testiaf_user"
+#    password: "testiaf_user00"
+
+# Disabled here because in iaf-test we want to test our resources via the JBOSS TX Manager.
+#jms:
+#  - name: "qcf-activemq"
+#    type: "org.apache.activemq.ActiveMQXAConnectionFactory"
+#    url: "tcp://${jms.hostname:-localhost}:61616"
+#    properties:
+#      jms.xaAckMode: "1"
+
+#  - name: "qcf-artemis"
+#    type: "org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory"
+#    url: "tcp://${jms.hostname:-localhost}:61615"
+

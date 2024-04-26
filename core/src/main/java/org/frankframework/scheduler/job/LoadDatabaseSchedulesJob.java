@@ -24,22 +24,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.scheduler.IbisJobDetail;
 import org.frankframework.scheduler.IbisJobDetail.JobType;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.GroupMatcher;
 
 /**
  * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
@@ -76,7 +75,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 		// Get all IbisSchedules that have been stored in the database
 		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
-		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 
 		try {
@@ -121,7 +120,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 								locker.setName(lockKey);
 								locker.setObjectId(lockKey);
-								locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+								locker.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 								jobdef.setLocker(locker);
 							}
 

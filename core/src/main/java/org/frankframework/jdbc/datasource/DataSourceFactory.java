@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,37 +13,35 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jndi;
+package org.frankframework.jdbc.datasource;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
-
-import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.util.AppConstants;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 /**
  * Factory through which (TX-enabled) DataSources can be retrieved.
+ * Default implementation, does not use pooling, wraps the DataSource in a TransactionAwareDataSourceProxy.
  *
- * Already created DataSources are stored in a ConcurrentHashMap.
- * Every DataSource can be augmented before it is added.
  */
-public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDataSource> implements IDataSourceFactory {
+public class DataSourceFactory extends ObjectFactoryBase<CommonDataSource> implements IDataSourceFactory {
 
-	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
-	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
-
-	public JndiDataSourceFactory() {
+	public DataSourceFactory() {
 		super(CommonDataSource.class);
 	}
 
+	/**
+	 * Allow implementing classes to augment the DataSource.
+	 * See {@link #augment(CommonDataSource, String)}.
+	 */
+	@SuppressWarnings("java:S1172")
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		return (DataSource) dataSource;
 	}
@@ -58,19 +56,17 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName) throws NamingException {
-		return get(dataSourceName);
+	public DataSource getDataSource(String dataSourceName) {
+		return getDataSource(dataSourceName, null);
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException {
-		return get(dataSourceName, jndiEnvironment);
+	public DataSource getDataSource(@Nonnull String dataSourceName, @Nullable Properties environment) {
+		return (DataSource) get(dataSourceName, environment);
 	}
-
 
 	@Override
 	public List<String> getDataSourceNames() {
-		return new ArrayList<>(objects.keySet());
+		return getObjectNames();
 	}
-
 }

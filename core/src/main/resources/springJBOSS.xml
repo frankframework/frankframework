@@ -10,16 +10,7 @@
 		"
 	>
 
-	<!-- SpringDataSourceFactory augments the datasource with LazyConnectionDataSourceProxy.
-		This will cause Jboss server to throw an exception with the following message: 'You cannot set autocommit during a managed transaction!'.
-		To avoid jboss server to throw an exception use JndiDataSourceFactory -->
-	<bean id="dataSourceFactory" class="org.frankframework.jndi.JndiDataSourceFactory" />
-
-	<!--
-	An open source transaction manager.
-	In order to properly handle 'Propagation: Supports', set property
-	'transactionSynchronization' to 'Synchronize on actual transaction'.
-	-->
+	<!-- Uses the default JTA provider. Typically stored in the JNDI -->
 	<bean
 		id="txManagerReal"
 		class="org.springframework.transaction.jta.JtaTransactionManager"

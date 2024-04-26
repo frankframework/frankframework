@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jndi.JndiBase;
-import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
@@ -84,7 +83,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(IDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
 		}
 		try {
 			if (getDatasource() == null) {
@@ -103,7 +102,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			String dsName = getDatasourceName();
 			try {
 				datasource = getDataSourceFactory().getDataSource(dsName, getJndiEnv());
-			} catch (NamingException e) {
+			} catch (NamingException | IllegalStateException e) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]", e);
 			}
 			if (datasource==null) {
@@ -223,7 +222,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	/**
 	 * JNDI name of datasource to be used, can be configured via jmsRealm, too
-	 * @ff.default {@value JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 * @ff.default {@value IDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
