@@ -122,12 +122,22 @@ public abstract class ClassUtils {
 	/**
 	 * Create a new instance given a class name. The constructor of the class does NOT have parameters.
 	 *
-	 * @param className A class name
+	 * @param className The class name to load
+	 * @param expectedType The class type to expect
 	 * @return A new instance
 	 * @exception Exception If an instantiation error occurs
 	 */
-	public static Object newInstance(String className) throws Exception {
-		return ClassUtils.loadClass(className).newInstance();
+	@SuppressWarnings("unchecked") // because we checked it...
+	public static <T> T newInstance(String className, Class<T> expectedType) throws ReflectiveOperationException, SecurityException {
+		Class<?> clazz = loadClass(className);
+		if(expectedType.isAssignableFrom(clazz)) {
+			return (T) newInstance(clazz);
+		}
+		throw new InstantiationException("created class ["+className+"] is not of required type ["+expectedType.getSimpleName()+"]");
+	}
+
+	public static <T> T newInstance(Class<T> clazz) throws ReflectiveOperationException, SecurityException {
+		return clazz.getDeclaredConstructor().newInstance();
 	}
 
 	/**
