@@ -18,6 +18,7 @@ package org.frankframework.jta.narayana;
 
 import java.sql.SQLException;
 
+import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -25,8 +26,6 @@ import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
-import jakarta.jms.JMSException;
-import jakarta.jms.XAConnection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.Assert;
@@ -93,9 +92,9 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 		if (delegate == null) {
 			try {
 				xaConnection = getXaConnection();
-				delegate = xaConnection.createXASession().getXAResource();
+				delegate = xaConnection.getXAResource();
 			}
-			catch (JMSException | SQLException ex) {
+			catch (SQLException ex) {
 				logger.warn("Failed to create connection", ex);
 				return false;
 			}
@@ -103,11 +102,11 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 		return true;
 	}
 
-	private XAConnection getXaConnection() throws SQLException, JMSException {
+	private XAConnection getXaConnection() throws SQLException {
 		if (user == null && password == null) {
-			return xaConnection;
+			return xaDataSource.getXAConnection(user, password);
 		}
-		return (XAConnection) xaDataSource.getXAConnection(user, password);
+		return xaDataSource.getXAConnection(user, password);
 	}
 
 	@Override
@@ -126,7 +125,7 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 		try {
 			xaConnection.close();
 		}
-		catch (JMSException e) {
+		catch (SQLException e) {
 			logger.warn("Failed to close connection", e);
 		} finally {
 			xaConnection = null;
