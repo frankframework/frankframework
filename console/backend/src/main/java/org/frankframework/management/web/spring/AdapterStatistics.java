@@ -20,15 +20,6 @@ public class AdapterStatistics extends FrankApiBase {
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("statistics")
-	@GetMapping(value = "/adapters/{adapter}/statistics", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Deprecated
-	public ResponseEntity<?> getAdapterStatisticsOld(@PathVariable("adapter") String adapter, @RequestParam(value = "configuration", required = false) String configuration) {
-		final String config = StringUtils.isNotEmpty(configuration) ? configuration : null;
-		return getAdapterStatistics(config, adapter);
-	}
-
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Relation("statistics")
 	@Description("view adapter processing statistics")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/statistics", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapterStatistics(@PathVariable("configuration") String configuration, @PathVariable("adapter") String adapter) {
