@@ -2,7 +2,6 @@ package org.frankframework.testutil;
 
 import java.util.Properties;
 
-import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
@@ -20,7 +19,7 @@ public class TestDataSourceFactory extends DataSourceFactory {
 	}
 
 	@Override
-	public DataSource getDataSource(String jndiName, Properties jndiEnvironment) throws NamingException {
+	public DataSource getDataSource(String jndiName, Properties jndiEnvironment) {
 		return super.getDataSource("jdbc/"+jndiName, jndiEnvironment);
 	}
 }
