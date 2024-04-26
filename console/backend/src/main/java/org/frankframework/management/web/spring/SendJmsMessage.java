@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.security.RolesAllowed;
+import javax.servlet.http.Part;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -55,7 +57,7 @@ public class SendJmsMessage extends FrankApiBase {
 	@Getter
 	@Setter
 	public static class TestMultiPartBody {
-		private String type;
+		private Part type;
 	}
 
 
@@ -66,7 +68,7 @@ public class SendJmsMessage extends FrankApiBase {
 	@Description("put a JMS message on a queue")
 //	public ResponseEntity<?> putJmsMessage(@RequestPart String type) {
 	public ResponseEntity<?> putJmsMessage(@ModelAttribute TestMultiPartBody multiPartData) {
-		return ResponseEntity.ok("TEST");
+		return ResponseEntity.ok("TEST" + multiPartData.getType().getName());
 	}
 
 	public ResponseEntity<?> putJmsMessage2(JmsMessageMultiPartBody multiPartData, BindingResult errors) {
