@@ -2,7 +2,6 @@ package org.frankframework.testutil;
 
 import java.util.Properties;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -13,7 +12,7 @@ import bitronix.tm.resource.jdbc.PoolingDataSource;
 public class TestBTMDataSourceFactory extends BtmDataSourceFactory {
 
 	@Override
-	public DataSource getDataSource(String jndiName, Properties jndiEnvironment) throws NamingException {
+	public DataSource getDataSource(String jndiName, Properties jndiEnvironment) {
 		return super.getDataSource("jdbc/" + jndiName, jndiEnvironment);
 	}
 
