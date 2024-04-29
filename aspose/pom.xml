@@ -31,11 +31,6 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
 
 		<!-- Tika library -->
 		<dependency>
@@ -278,6 +273,11 @@
 		</dependency>
 
 		<!-- test scoped dependencies -->
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-core</artifactId>

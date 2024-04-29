@@ -1,5 +1,5 @@
 /*
-   Copyright 2014 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2014 Nationale-Nederlanden, 2020, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@ package org.frankframework.extensions.ibm;
 
 import java.io.IOException;
 
+import org.frankframework.core.SenderException;
+import org.frankframework.jms.JmsSender;
+import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
+
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageProducer;
@@ -25,9 +30,6 @@ import jakarta.jms.QueueSession;
 import jakarta.jms.Session;
 import jakarta.jms.Topic;
 import jakarta.jms.TopicSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.jms.JmsSender;
-import org.frankframework.stream.Message;
 
 /**
  * JMS sender which will call IBM WebSphere MQ specific
@@ -78,7 +80,11 @@ public class MQSender extends JmsSender {
 
 	private void setTargetClientMQ(Destination destination) throws JMSException {
 		log.debug("[" + getName() + "] set target client for queue [" + destination.toString() + "] to NONJMS_MQ");
-//		((MQDestination)destination).setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ); //TODO uncomment when IBM MQ is used
+		try {
+			ClassUtils.invokeSetter(destination, "setTargetClient", 1); //JMSC.MQJMS_CLIENT_NONJMS_MQ
+		} catch (Exception e) {
+			throw new JMSException("unable to set TargetClient", "0", e);
+		}
 	}
 
 }

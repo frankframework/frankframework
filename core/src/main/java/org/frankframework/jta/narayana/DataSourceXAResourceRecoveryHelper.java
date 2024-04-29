@@ -104,7 +104,7 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 
 	private XAConnection getXaConnection() throws SQLException {
 		if (user == null && password == null) {
-			return xaDataSource.getXAConnection(user, password);
+			return xaDataSource.getXAConnection();
 		}
 		return xaDataSource.getXAConnection(user, password);
 	}

@@ -24,8 +24,6 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -57,6 +55,9 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
