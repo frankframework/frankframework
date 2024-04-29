@@ -117,7 +117,7 @@ public class ReceiverTest {
 	}
 
 	@AfterEach
-	@Timeout(value = 10, unit = TimeUnit.SECONDS)
+	@Timeout(value = 10, unit = TimeUnit.SECONDS) //Unfortunately this doesn't work on other threads
 	void tearDown() {
 		if (configuration != null) {
 			configuration.stop();

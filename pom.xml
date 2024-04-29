@@ -1080,9 +1080,10 @@
 										<excludes>
 											<exclude>javax.activation:javax.activation-api</exclude>
 											<exclude>com.sun.activation:javax.activation</exclude>
+											<exclude>com.sun.activation:jakarta.activation</exclude>
 											<exclude>javax.activation:activation</exclude>
 										</excludes>
-										<message>Don't though versions, we should use javax.activation:1.2.2 and jakarta.activation:2.0.1</message>
+										<message>Don't though versions, we should use jakarta.activation-api:2.1.3</message>
 									</bannedDependencies>
 									<bannedDependencies>
 										<excludes>

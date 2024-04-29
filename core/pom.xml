@@ -453,6 +453,7 @@
 			<artifactId>narayana-jta</artifactId>
 			<version>${narayana.version}</version>
 			<exclusions>
+				<!-- this should be a provided scoped dependendency -->
 				<exclusion>
 					<groupId>jakarta.transaction</groupId>
 					<artifactId>jakarta.transaction-api</artifactId>
