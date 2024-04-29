@@ -258,11 +258,11 @@
 				<artifactId>frankframework-idin</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<!--<dependency>
+			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-ladybug</artifactId>
 				<version>${project.version}</version>
-			</dependency>-->
+			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-aspose</artifactId>
@@ -513,6 +513,18 @@
 			</dependency>
 
 			<!-- contains Tomcat for executable WAR archives -->
+			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-core</artifactId>
+				<version>${tomcat.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-el</artifactId>
+				<version>${tomcat.version}</version>
+				<scope>provided</scope>
+			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-tomcat</artifactId>
@@ -1062,7 +1074,7 @@
 										<!-- the jms api now finally officially exists, no need to use geronimo anymore -->
 										<!-- also excludes version 2 which uses the old javax namespaces -->
 										<excludes>
-											<exclude>jakarta.jms:jakarta.jms-api:[2.0.2],[2.0.3]</exclude>
+											<exclude>jakarta.jms:jakarta.jms-api:2.*</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec</exclude>
 										</excludes>

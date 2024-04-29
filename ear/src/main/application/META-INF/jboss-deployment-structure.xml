@@ -3,7 +3,8 @@
 	<deployment/>
 	<sub-deployment name="adapterframework.war">
 		<dependencies>
-			<module name="jakarta.jms-api" export="true"/>
+			<module name="javax.jws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: javax/jws/WebService -->
+			<module name="javax.jms.api" export="true"/>
 			<module name="module.frankframework.resources" />
 		</dependencies>
 		<exclude-subsystems>
