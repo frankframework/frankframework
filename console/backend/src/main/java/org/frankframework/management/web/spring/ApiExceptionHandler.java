@@ -2,7 +2,6 @@ package org.frankframework.management.web.spring;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.BusException;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
@@ -104,6 +103,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return handleSpringException(ex, status, null);
 	}
 
+	@Override
 	protected ResponseEntity<Object> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, HttpHeaders headers, HttpStatus status, WebRequest webRequest) {
 		super.handleAsyncRequestTimeoutException(ex, headers, status, webRequest);
 		return handleSpringException(ex, status, null);
@@ -115,20 +115,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	private ResponseEntity<?> handleApiException(ApiException exception, WebRequest request) {
 		return exception.getResponse();
 	}
-
-	@ExceptionHandler({
-			BusException.class
-	})
-	private ResponseEntity<?> handleBusException(BusException exception, WebRequest request) {
-		return handleSpringException(exception, HttpStatus.INTERNAL_SERVER_ERROR, null);
-	}
-
-	/*@ExceptionHandler({
-		Exception.class
-	})
-	private ResponseEntity<?> handleOtherException(Exception exception, WebRequest request) {
-		return handleSpringException(exception, HttpStatus.INTERNAL_SERVER_ERROR, null);
-	}*/
 
 	private ResponseEntity<Object> handleSpringException(Exception exception, HttpStatus status, @Nullable HttpHeaders headers) {
 		log.warn("Caught unhandled exception while executing FF!API call", exception);
