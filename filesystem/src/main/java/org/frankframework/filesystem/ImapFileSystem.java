@@ -27,13 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.http.PartMessage;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StringUtil;
-import org.frankframework.xml.SaxElementBuilder;
-import org.xml.sax.SAXException;
+import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.AppendUID;
 import com.sun.mail.imap.IMAPFolder;
@@ -58,6 +52,13 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.http.PartMessage;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StringUtil;
+import org.frankframework.xml.SaxElementBuilder;
+import org.xml.sax.SAXException;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter String domain = "IMAP";
@@ -154,12 +155,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Message toFile(String filename) throws FileSystemException {
+	public Message toFile(@Nonnull String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public Message toFile(String defaultFolder, String filename) throws FileSystemException {
+	public Message toFile(String defaultFolder, @Nonnull String filename) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {

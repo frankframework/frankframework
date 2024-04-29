@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import javax.annotation.Nonnull;
+
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
@@ -38,6 +40,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderAlreadyExistsException;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
@@ -82,12 +86,12 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public SftpFileRef toFile(String filename) throws FileSystemException {
+	public SftpFileRef toFile(@Nonnull String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public SftpFileRef toFile(String folder, String filename) throws FileSystemException {
+	public SftpFileRef toFile(String folder, @Nonnull String filename) throws FileSystemException {
 		return new SftpFileRef(filename, folder);
 	}
 
@@ -213,7 +217,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		if(folderExists(folder)) {
-			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
+			throw new FolderAlreadyExistsException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 
 		try {
@@ -235,7 +239,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if(!folderExists(folder)) {
-			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+			throw new FolderNotFoundException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 		try {
 			if(removeNonEmptyFolder) {

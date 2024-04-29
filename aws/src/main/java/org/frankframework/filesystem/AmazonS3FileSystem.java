@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2023 WeAreFrank!
+   Copyright 2018-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,18 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.input.NullInputStream;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.aws.AwsUtil;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.doc.Mandatory;
-import org.frankframework.stream.Message;
-import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.FileUtils;
-import org.frankframework.util.StreamUtil;
-import org.frankframework.util.StringUtil;
+import javax.annotation.Nonnull;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
@@ -64,6 +53,18 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.aws.AwsUtil;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.Mandatory;
+import org.frankframework.stream.Message;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.FileUtils;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
 
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
@@ -158,7 +159,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	 * This method may be used to upload a file to S3.
 	 */
 	@Override
-	public S3Object toFile(String filename) {
+	public S3Object toFile(@Nonnull String filename) {
 		S3Object object = new S3Object();
 		int separatorPos = filename.indexOf(BUCKET_OBJECT_SEPARATOR);
 		if (separatorPos<0) {
@@ -172,7 +173,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public S3Object toFile(String folder, String filename) {
+	public S3Object toFile(String folder, @Nonnull String filename) {
 		return toFile(StringUtil.concatStrings(folder, FILE_DELIMITER, filename));
 	}
 
@@ -382,31 +383,29 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		String folderName = folder.endsWith("/") ? folder : folder + "/";
-		if(!folderExists(folder)) {
-			ObjectMetadata metadata = new ObjectMetadata();
-			metadata.setContentLength(0);
-			metadata.setContentType("binary/octet-stream");
-			InputStream emptyContent = NullInputStream.nullInputStream();
-
-			PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, folderName, emptyContent, metadata);
-			s3Client.putObject(putObjectRequest);
-		} else {
-			throw new FileSystemException("Create directory for [" + folderName + "] has failed. Directory already exists.");
+		if (folderExists(folder)) {
+			throw new FolderAlreadyExistsException("Create directory for [" + folderName + "] has failed. Directory already exists.");
 		}
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setContentLength(0);
+		metadata.setContentType("binary/octet-stream");
+		InputStream emptyContent = NullInputStream.nullInputStream();
+
+		PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, folderName, emptyContent, metadata);
+		s3Client.putObject(putObjectRequest);
 	}
 
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
-		if (folderExists(folder)) {
-			if(!removeNonEmptyFolder && listFiles(folder, true).iterator().hasNext()) { //Check if there are files or folders
-				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
-			}
-
-			final String absFolder = folder.endsWith("/") ? folder : folder + "/"; //Ensure it's a folder that's being removed
-			s3Client.deleteObject(bucketName, absFolder);
-		} else {
-			throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory does not exist.");
+		if (!folderExists(folder)) {
+			throw new FolderNotFoundException("Cannot remove folder [" + folder + "]. Directory does not exist.");
 		}
+		if(!removeNonEmptyFolder && listFiles(folder, true).iterator().hasNext()) { //Check if there are files or folders
+			throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
+		}
+
+		final String absFolder = folder.endsWith("/") ? folder : folder + "/"; //Ensure it's a folder that's being removed
+		s3Client.deleteObject(bucketName, absFolder);
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,8 +22,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
+import javax.annotation.Nonnull;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -32,10 +31,14 @@ import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.filesystem.FileSystemBase;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderAlreadyExistsException;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -89,7 +92,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile toFile(String filename) throws FileSystemException {
+	public SmbFile toFile(@Nonnull String filename) throws FileSystemException {
 		try {
 			return new SmbFile(smbContext, filename);
 		} catch (IOException e) {
@@ -98,7 +101,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile toFile(String folder, String filename) throws FileSystemException {
+	public SmbFile toFile(String folder, @Nonnull String filename) throws FileSystemException {
 		return toFile(folder+"/"+filename);
 	}
 
@@ -177,7 +180,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void createFolder(String folder) throws FileSystemException {
 		try {
 			if(folderExists(folder)) {
-				throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
+				throw new FolderAlreadyExistsException("Create directory for [" + folder + "] has failed. Directory already exists.");
 			}
 			if (isForce) {
 				toFile(folder).mkdirs();
@@ -193,15 +196,14 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		String normalized = FilenameUtils.normalizeNoEndSeparator(folder, true) + "/";
 		try {
-			if (folderExists(normalized)) {
-				if(!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
-					throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
-				}
-
-				toFile(normalized).delete();
-			} else {
-				throw new FileSystemException("Cannot remove folder [" + normalized + "]. Directory does not exist.");
+			if (!folderExists(normalized)) {
+				throw new FolderNotFoundException("Cannot remove folder [" + normalized + "]. Directory does not exist.");
 			}
+			if(!removeNonEmptyFolder && listFiles(folder).iterator().hasNext()) {
+				throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory not empty.");
+			}
+
+			toFile(normalized).delete();
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,20 +28,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import lombok.Getter;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderAlreadyExistsException;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.LogUtil;
-
-import lombok.Getter;
 
 /**
  * Implementation of FTP and FTPs FileSystem
@@ -76,12 +78,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 
 	@Override
-	public FTPFileRef toFile(String filename) throws FileSystemException {
+	public FTPFileRef toFile(@Nonnull String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public FTPFileRef toFile(String folder, String filename) throws FileSystemException {
+	public FTPFileRef toFile(String folder, @Nonnull String filename) throws FileSystemException {
 		return new FTPFileRef(filename, folder);
 	}
 
@@ -180,7 +182,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		if (folderExists(folder)) {
-			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
+			throw new FolderAlreadyExistsException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 		try {
 			String[] folders = folder.split("/");
@@ -204,7 +206,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if(!folderExists(folder)) {
-			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+			throw new FolderNotFoundException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		}
 		try {
 			if(removeNonEmptyFolder) {

@@ -13,18 +13,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderAlreadyExistsException;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ApplicationContextAware {
 	private final @Getter String domain = "MockFilesystem";
@@ -105,7 +108,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M toFile(String filename) throws FileSystemException {
+	public M toFile(@Nonnull String filename) throws FileSystemException {
 		checkOpen();
 		int slashPos = filename.lastIndexOf('/');
 		if (slashPos>=0) {
@@ -119,7 +122,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M toFile(String folderName, String filename) throws FileSystemException {
+	public M toFile(String folderName, @Nonnull String filename) throws FileSystemException {
 		checkOpen();
 		MockFolder destFolder= folderName==null || "MOCKFILESYSTEM".equals(folderName)?this:getFolders().get(folderName);
 		if (destFolder==null) {
@@ -299,7 +302,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		MockFolder cur = getFolders().get(folder);
 		if (cur!=null) {
 			if (cur instanceof MockFolder) {
-				throw new FileSystemException("Directory already exists.");
+				throw new FolderAlreadyExistsException("Directory already exists.");
 			}
 			throw new FileSystemException("Entry already exists.");
 		}
@@ -312,7 +315,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		checkOpen();
 		MockFolder cur = getFolders().get(folder);
 		if (cur==null) {
-			throw new FileSystemException("Directory does not exist.");
+			throw new FolderNotFoundException("Directory does not exist.");
 		}
 		if (!(cur instanceof MockFolder)) {
 				throw new FileSystemException("Entry is not a directory");

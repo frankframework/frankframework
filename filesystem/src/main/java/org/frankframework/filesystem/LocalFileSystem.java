@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,9 +29,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
+import javax.annotation.Nonnull;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
@@ -53,12 +54,12 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public Path toFile(String filename) {
+	public Path toFile(@Nonnull String filename) {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public Path toFile(String folder, String filename) {
+	public Path toFile(String folder, @Nonnull String filename) {
 		if (filename==null) {
 			filename="";
 		}
@@ -132,35 +133,33 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
-		if (!folderExists(folder)) {
-			try {
-				Files.createDirectories(toFile(folder));
-			} catch (IOException e) {
-				throw new FileSystemException("Cannot create folder ["+ folder +"]", e);
-			}
-		} else {
-			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
+		if (folderExists(folder)) {
+			throw new FolderAlreadyExistsException("Create directory for [" + folder + "] has failed. Directory already exists.");
+		}
+		try {
+			Files.createDirectories(toFile(folder));
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot create folder ["+ folder +"]", e);
 		}
 	}
 
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
-		if (folderExists(folder)) {
-			try {
-				if(removeNonEmptyFolder) {
-					try (Stream<Path> directoryStream = Files.walk(toFile(folder))) {
-						directoryStream.sorted(Comparator.reverseOrder())
-						.map(Path::toFile)
-						.forEach(File::delete);
-					}
-				} else {
-					Files.delete(toFile(folder));
+		if (!folderExists(folder)) {
+			throw new FolderNotFoundException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+		}
+		try {
+			if(removeNonEmptyFolder) {
+				try (Stream<Path> directoryStream = Files.walk(toFile(folder))) {
+					directoryStream.sorted(Comparator.reverseOrder())
+					.map(Path::toFile)
+					.forEach(File::delete);
 				}
-			} catch (IOException e) {
-				throw new FileSystemException("Cannot remove folder ["+ folder +"]",e);
+			} else {
+				Files.delete(toFile(folder));
 			}
-		}else {
-			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot remove folder ["+ folder +"]",e);
 		}
 	}
 

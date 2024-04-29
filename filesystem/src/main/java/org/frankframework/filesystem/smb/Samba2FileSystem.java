@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,16 +36,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.filesystem.FileSystemBase;
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.filesystem.FileSystemUtils;
-import org.frankframework.filesystem.IWritableFileSystem;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageContext;
-import org.frankframework.util.CredentialFactory;
-
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.FileAttributes;
@@ -73,6 +63,17 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.FileSystemBase;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.FileSystemUtils;
+import org.frankframework.filesystem.FolderAlreadyExistsException;
+import org.frankframework.filesystem.FolderNotFoundException;
+import org.frankframework.filesystem.IWritableFileSystem;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
+import org.frankframework.util.CredentialFactory;
 
 /**
  *
@@ -213,12 +214,12 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public SmbFileRef toFile(String filename) throws FileSystemException {
+	public SmbFileRef toFile(@Nonnull String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public SmbFileRef toFile(String folder, String filename) throws FileSystemException {
+	public SmbFileRef toFile(String folder, @Nonnull String filename) throws FileSystemException {
 		return new SmbFileRef(filename, folder);
 	}
 
@@ -363,7 +364,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	@Override
 	public void createFolder(String folder) throws FileSystemException {
 		if (folderExists(folder)) {
-			throw new FileSystemException("Create directory for [" + folder + "] has failed. Directory already exists.");
+			throw new FolderAlreadyExistsException("Create directory for [" + folder + "] has failed. Directory already exists.");
 		}
 		diskShare.mkdir(folder);
 	}
@@ -371,7 +372,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (!folderExists(folder)) {
-			throw new FileSystemException("Cannot remove folder [" + folder + "]. Directory does not exist.");
+			throw new FolderNotFoundException("Cannot remove folder [" + folder + "]. Directory does not exist.");
 		}
 		try {
 			diskShare.rmdir(folder, removeNonEmptyFolder);

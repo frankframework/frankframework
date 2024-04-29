@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.frankframework.core.PipeStartException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
-
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -109,8 +108,17 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		try {
 			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException e) {
+			String forwardName;
+			if (e instanceof FileNotFoundException) forwardName = "fileNotFound";
+			else if (e instanceof FolderNotFoundException) forwardName = "folderNotFound";
+			else if (e instanceof FileAlreadyExistsException) forwardName = "fileAlreadyExists";
+			else if (e instanceof FolderAlreadyExistsException) forwardName = "folderAlreadyExists";
+			else forwardName = PipeForward.EXCEPTION_FORWARD_NAME;
+
 			Map<String, PipeForward> forwards = getForwards();
-			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
+			if (forwards.containsKey(forwardName)) {
+				return new PipeRunResult(getForwards().get(forwardName), e.getMessage());
+			} else if (forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
 				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
