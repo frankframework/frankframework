@@ -14,6 +14,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.PipeLineSession;
@@ -25,11 +31,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer.MethodName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
 @TestMethodOrder(MethodName.class)
 public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -167,7 +168,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
 
-		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		FolderNotFoundException e = assertThrows(FolderNotFoundException.class, actor::open);
 		assertThat(e.getMessage(), containsString("inputFolder [xxx], canonical name ["));
 		assertThat(e.getMessage(), containsString("does not exist"));
 	}
@@ -206,7 +207,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(new Parameter("inputFolder", "folder2"));
 		actor.configure(fileSystem,params,owner);
 
-		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		FolderNotFoundException e = assertThrows(FolderNotFoundException.class, actor::open);
 		assertThat(e.getMessage(), containsString("inputFolder [folder1], canonical name ["));
 		assertThat(e.getMessage(), containsString("does not exist"));
 	}

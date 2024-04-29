@@ -368,8 +368,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				case LIST: {
 					String folder = arrangeFolder(determineInputFoldername(input, pvl));
 
-					try (ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file");
-						Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
+					ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file");
+					try (directoryBuilder; Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
 
 						Iterator<F> it = stream.iterator();
 						while (it.hasNext()) {
@@ -378,8 +378,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 								FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
 							}
 						}
-						return Message.asMessage(directoryBuilder.toString());
 					}
+					return Message.asMessage(directoryBuilder.toString());
 				}
 				case WRITE: {
 					F file = getFileAndCreateFolder(input, pvl);
