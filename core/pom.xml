@@ -122,7 +122,7 @@
 		<dependency>
 			<groupId>org.messaginghub</groupId>
 			<artifactId>pooled-jms</artifactId>
-			<version>3.1.5</version>
+			<version>3.1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
