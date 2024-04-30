@@ -17,6 +17,7 @@ package org.frankframework.unmanaged;
 
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
@@ -26,7 +27,6 @@ import jakarta.jms.Message;
 import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Supplier;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.JtaUtil;
 import org.springframework.beans.BeansException;

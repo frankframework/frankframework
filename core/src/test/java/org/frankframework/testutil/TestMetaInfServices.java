@@ -27,7 +27,7 @@ public class TestMetaInfServices {
 
 	@Test //Original sun.com MessageFactory used for creating SOAP messages
 	public void testMessageFactory() throws SOAPException {
-		Class<?> messageFactory = com.sun.xml.messaging.saaj.soap.ver1_1.SOAPMessageFactory1_1Impl.class;
+		Class<?> messageFactory = com.sun.xml.messaging.saaj.soap.dynamic.SOAPMessageFactoryDynamicImpl.class;
 		assertEquals(messageFactory, MessageFactory.newInstance().getClass());
 	}
 

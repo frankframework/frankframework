@@ -55,19 +55,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.stubbing.Answer;
-
-import jakarta.jms.Destination;
-import jakarta.jms.TextMessage;
-import lombok.SneakyThrows;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
@@ -97,6 +84,17 @@ import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
@@ -104,11 +102,16 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import jakarta.jms.Destination;
+import jakarta.jms.TextMessage;
+import lombok.Lombok;
+
 public class ReceiverTest {
 	public static final DefaultTransactionDefinition TRANSACTION_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	protected static final Logger LOG = LogUtil.getLogger(ReceiverTest.class);
 	private TestConfiguration configuration;
 	private TestAppender appender;
+	private String adapterName;
 
 	@BeforeAll
 	static void beforeAll() {
@@ -116,11 +119,15 @@ public class ReceiverTest {
 		TransactionManagerType.closeAllConfigurationContexts();
 	}
 
+	@BeforeEach
+	public void beforeEach(TestInfo testInfo) {
+		adapterName = testInfo.getDisplayName().replace('/', '_');
+	}
+
 	@AfterEach
 	@Timeout(value = 10, unit = TimeUnit.SECONDS) //Unfortunately this doesn't work on other threads
 	void tearDown() {
 		if (configuration != null) {
-			configuration.stop();
 			configuration.close();
 			configuration = null;
 		}
@@ -173,7 +180,7 @@ public class ReceiverTest {
 	public <M> Adapter setupAdapter(Receiver<M> receiver, ExitState exitState) throws Exception {
 
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
-		adapter.setName("ReceiverTestAdapterName");
+		adapter.setName(adapterName);
 
 		PipeLine pl = spy(configuration.createBean(PipeLine.class));
 		doAnswer(p -> {
@@ -316,7 +323,6 @@ public class ReceiverTest {
 
 		final Semaphore semaphore = new Semaphore(0);
 		Thread mockListenerThread = new Thread("mock-listener-thread") {
-			@SneakyThrows({SenderException.class, IllegalAccessException.class, IllegalArgumentException.class})
 			@Override
 			public void run() {
 				try {
@@ -354,6 +360,8 @@ public class ReceiverTest {
 							retryIntervalField.set(receiver, 2); // To avoid test taking too long.
 						}
 					}
+				} catch (SenderException | IllegalAccessException| IllegalArgumentException e) {
+					throw Lombok.sneakyThrow(e);
 				} finally {
 					semaphore.release();
 				}
@@ -453,7 +461,6 @@ public class ReceiverTest {
 
 		final Semaphore semaphore = new Semaphore(0);
 		Thread mockListenerThread = new Thread("mock-listener-thread") {
-			@SneakyThrows({SenderException.class, IllegalArgumentException.class, IllegalAccessException.class})
 			@Override
 			public void run() {
 				try {
@@ -491,6 +498,8 @@ public class ReceiverTest {
 							retryIntervalField.set(receiver, 2); // To avoid test taking too long.
 						}
 					}
+				} catch (SenderException | IllegalAccessException| IllegalArgumentException e) {
+					throw Lombok.sneakyThrow(e);
 				} finally {
 					semaphore.release();
 				}

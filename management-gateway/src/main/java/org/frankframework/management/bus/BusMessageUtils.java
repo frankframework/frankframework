@@ -45,7 +45,7 @@ public class BusMessageUtils {
 	public static final String HEADER_PREFIX_PATTERN = "meta-*";
 
 	@SuppressWarnings("unchecked")
-	private static <T> @Nullable T getHeader(Message<?> message, String headerName, Class<T> type) {
+	private static @Nullable <T> T getHeader(Message<?> message, String headerName, Class<T> type) {
 		MessageHeaders headers = message.getHeaders();
 		if(contains(headers, headerName)) {
 			Object rawValue = headers.get(HEADER_PREFIX + headerName);

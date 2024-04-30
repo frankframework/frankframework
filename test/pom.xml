@@ -18,12 +18,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
-		<dependency>
-			<groupId>jakarta.jms</groupId>
-			<artifactId>jakarta.jms-api</artifactId>
-		</dependency>
-
 		<!-- This dependency is here because of the IbisMetricsPipe -->
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -43,6 +37,14 @@
 <!--			<artifactId>frankframework-ladybug</artifactId>-->
 <!--			<scope>provided</scope>-->
 <!--		</dependency>-->
+
+		<!-- provided scoped -->
+		<!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
+		<dependency>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -50,14 +52,12 @@
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
 		</dependency>
 
-		<!-- provided dependencies will be added to the executable (Spring) WAR -->
+		<!-- these provided dependencies will be added to the executable (Spring) WAR -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
