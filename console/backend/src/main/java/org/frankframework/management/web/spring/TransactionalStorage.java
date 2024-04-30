@@ -1,0 +1,382 @@
+package org.frankframework.management.web.spring;
+
+import org.apache.commons.lang3.StringUtils;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.web.Relation;
+import org.frankframework.util.HttpUtils;
+import org.frankframework.util.RequestUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import javax.annotation.security.RolesAllowed;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+public class TransactionalStorage extends FrankApiBase {
+	
+	public enum StorageSource {
+		RECEIVERS, PIPES;
+
+		public static StorageSource fromString(String value) {
+			if(StringUtils.isNotBlank(value)) {
+				try {
+					return StorageSource.valueOf(value.toUpperCase());
+				} catch (IllegalArgumentException e) {
+					throw new IllegalArgumentException("invalid StorageSource option");
+				}
+			}
+			throw new IllegalArgumentException("no StorageSource option supplied");
+		}
+	}
+
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> browseMessage(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("adapterName") String adapterName,
+			@PathVariable("storageSource") StorageSource storageSource,
+			@PathVariable("storageSourceName") String storageSourceName,
+			@PathVariable("processState") String processState,
+			@PathVariable("messageId") String messageId
+	) {
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = HttpUtils.urlDecode(messageId);
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.GET);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
+		if(storageSource == StorageSource.PIPES) {
+			builder.addHeader("pipe", storageSourceName);
+		} else {
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader("processState", processState);
+		}
+
+		builder.addHeader("messageId", messageId);
+		return callSyncGateway(builder);
+	}
+
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	public ResponseEntity<?> downloadMessage(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("adapterName") String adapterName,
+			@PathVariable("storageSource") StorageSource storageSource,
+			@PathVariable("storageSourceName") String storageSourceName,
+			@PathVariable("processState") String processState,
+			@PathVariable("messageId") String messageId
+	) {
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = HttpUtils.urlDecode(messageId);
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
+		if(storageSource == StorageSource.PIPES) {
+			builder.addHeader("pipe", storageSourceName);
+		} else {
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader("processState", processState);
+		}
+
+		builder.addHeader("messageId", messageId);
+		return callSyncGateway(builder);
+	}
+
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	public ResponseEntity<StreamingResponseBody> downloadMessages(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("adapterName") String adapterName,
+			@PathVariable("storageSource") StorageSource storageSource,
+			@PathVariable("storageSourceName") String storageSourceName,
+			@PathVariable("processState") String processState,
+			MultipartBody input
+	) {
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
+		if(storageSource == StorageSource.PIPES) {
+			builder.addHeader("pipe", storageSourceName);
+		} else {
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader("processState", processState);
+		}
+
+		String[] messageIdArray = getMessageIds(input);
+
+		StreamingResponseBody stream = new StreamingResponseBody() {
+			@Override
+			public void writeTo(OutputStream out) throws IOException {
+				try (ZipOutputStream zos = new ZipOutputStream(out)) {
+					for (String messageId : messageIdArray) {
+						// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+						String decodedMessageId = HttpUtils.urlDecode(messageId);
+
+						builder.addHeader("messageId", decodedMessageId);
+						Message<?> message = sendSyncMessage(builder);
+						String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY);
+
+						String filenameExtension = ".txt";
+						if(MediaType.APPLICATION_JSON_VALUE.equals(mimeType)) {
+							filenameExtension = ".json";
+						} else if(MediaType.APPLICATION_XML_VALUE.equals(mimeType)) {
+							filenameExtension = ".xml";
+						}
+
+						String payload = (String) message.getPayload();
+						ZipEntry entry = new ZipEntry("msg-"+decodedMessageId+filenameExtension);
+						zos.putNextEntry(entry);
+						zos.write(payload.getBytes(StandardCharsets.UTF_8));
+						zos.closeEntry();
+					}
+				} catch (IOException e) {
+					throw new ApiException("Failed to create zip file with messages.", e);
+				}
+			}
+		};
+
+		ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
+		responseBuilder.contentType(MediaType.APPLICATION_OCTET_STREAM);
+		responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"messages.zip\"");
+		return responseBuilder.body(stream);
+	}
+
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> browseMessages(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("adapterName") String adapterName,
+			@PathVariable("storageSource") StorageSource storageSource,
+			@PathVariable("storageSourceName") String storageSourceName,
+			@PathVariable("processState") String processState,
+
+			@RequestParam(value = "type", required = false) String type,
+			@RequestParam(value = "host", required = false) String host,
+			@RequestParam(value = "id", required = false) String id,
+			@RequestParam(value = "messageId", required = false) String messageId,
+			@RequestParam(value = "correlationId", required = false) String correlationId,
+			@RequestParam(value = "comment", required = false) String comment,
+			@RequestParam(value = "message", required = false) String message,
+			@RequestParam(value = "label", required = false) String label,
+			@RequestParam(value = "startDate", required = false) String startDateStr,
+			@RequestParam(value = "endDate", required = false) String endDateStr,
+			@RequestParam(value = "sort", required = false) String sort,
+			@RequestParam(value = "skip", required = false) int skipMessages,
+			@RequestParam(value = "max", required = false) int maxMessages
+	) {
+
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
+		if(storageSource == StorageSource.PIPES) {
+			builder.addHeader("pipe", storageSourceName);
+		} else {
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader("processState", processState);
+		}
+
+		builder.addHeader("type", type);
+		builder.addHeader("host", host);
+		builder.addHeader("idMask", id);
+		builder.addHeader("messageId", messageId);
+		builder.addHeader("correlationId", correlationId);
+		builder.addHeader("comment", comment);
+		builder.addHeader("message", message);
+		builder.addHeader("label", label);
+		builder.addHeader("startDate", startDateStr);
+		builder.addHeader("endDate", endDateStr);
+		builder.addHeader("sort", sort);
+		builder.addHeader("skip", skipMessages);
+		builder.addHeader("max", maxMessages);
+		return callSyncGateway(builder);
+	}
+
+
+
+
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Relation("pipeline")
+	@PutMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> resendReceiverMessage(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("adapterName") String adapter,
+			@PathVariable("receiverName") String receiver,
+			@PathVariable("messageId") String messageId
+	) {
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = HttpUtils.urlDecode(messageId);
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader("messageId", messageId);
+		return callAsyncGateway(builder);
+	}
+
+	@POST
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response resendReceiverMessages(@PathParam("configuration") String configuration, @PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, MultipartBody input) {
+
+		org.frankframework.management.web.RequestMessageBuilder builder = org.frankframework.management.web.RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+
+		String[] messageIds = getMessageIds(input);
+
+		List<String> errorMessages = new ArrayList<>();
+		for(int i=0; i < messageIds.length; i++) {
+			try {
+				builder.addHeader("messageId", messageIds[i]);
+				callAsyncGateway(builder);
+			}
+			catch(org.frankframework.management.web.ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+				errorMessages.add(e.getCause().getMessage());
+			}
+			catch(Exception e) {
+				errorMessages.add(e.getMessage());
+			}
+		}
+
+		if(errorMessages.isEmpty()) {
+			return Response.status(Response.Status.OK).build();
+		}
+
+		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+	}
+
+	@POST
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response changeProcessState(
+			@PathParam("configuration") String configuration,
+			@PathParam("adapterName") String adapter,
+			@PathParam("receiverName") String receiver,
+			@PathParam("processState") String processState,
+			@PathParam("targetState") String targetState,
+			MultipartBody input) {
+
+		org.frankframework.management.web.RequestMessageBuilder builder = org.frankframework.management.web.RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader("processState", processState);
+		builder.addHeader("targetState", targetState);
+
+		String[] messageIds = getMessageIds(input);
+
+		List<String> errorMessages = new ArrayList<>();
+		for(int i=0; i < messageIds.length; i++) {
+			try {
+				builder.addHeader("messageId", messageIds[i]);
+				callAsyncGateway(builder);
+			} catch(org.frankframework.management.web.ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+				errorMessages.add(e.getCause().getMessage());
+			} catch(Exception e) {
+				errorMessages.add(e.getMessage());
+			}
+		}
+
+		if(errorMessages.isEmpty()) {
+			return Response.status(Response.Status.OK).build();
+		}
+
+		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+	}
+
+	@DELETE
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response deleteReceiverMessage(
+			@PathParam("configuration") String configuration,
+			@PathParam("adapterName") String adapter,
+			@PathParam("receiverName") String receiver,
+			@PathParam("messageId") String messageId) {
+
+		org.frankframework.management.web.RequestMessageBuilder builder = org.frankframework.management.web.RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = HttpUtils.urlDecode(messageId);
+
+		builder.addHeader("messageId", messageId);
+		return callAsyncGateway(builder);
+	}
+
+	@DELETE
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error")
+	@Relation("pipeline")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response deleteReceiverMessages(
+			@PathParam("configuration") String configuration,
+			@PathParam("adapterName") String adapter,
+			@PathParam("receiverName") String receiver,
+			MultipartBody input) {
+
+		org.frankframework.management.web.RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
+
+		String[] messageIds = getMessageIds(input);
+
+		List<String> errorMessages = new ArrayList<>();
+		for(int i=0; i < messageIds.length; i++) {
+			try {
+				builder.addHeader("messageId", messageIds[i]);
+				callAsyncGateway(builder);
+			} catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+				errorMessages.add(e.getCause().getMessage());
+			} catch(Exception e) {
+				errorMessages.add(e.getMessage());
+			}
+		}
+
+		if(errorMessages.isEmpty()) {
+			return Response.status(Response.Status.OK).build();
+		}
+
+		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+	}
+
+	private String[] getMessageIds(MultipartBody inputDataMap) {
+		String messageIds = RequestUtils.resolveStringFromMap(inputDataMap, "messageIds");
+		return messageIds.split(",");
+	}
+
+}
