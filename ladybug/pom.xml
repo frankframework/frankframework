@@ -83,6 +83,13 @@
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Used to make properties for convert2larva button-->
+		<dependency>
+			<groupId>nu.studer</groupId>
+			<artifactId>java-ordered-properties</artifactId>
+			<version>1.0.4</version>
+		</dependency>
 	</dependencies>
 
 	<profiles>

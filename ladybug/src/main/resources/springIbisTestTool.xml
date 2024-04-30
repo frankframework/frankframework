@@ -249,4 +249,8 @@
 		<property name="dataSource" ref="defaultDataSource"/>
 	</bean>
 
+	<bean name="customReportAction" class="org.frankframework.ibistesttool.larva.ConvertToLarvaAction">
+		<property name="reportsFolder" value="${ibistesttool.directory}"/>
+	</bean>
+
 </beans>
