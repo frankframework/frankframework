@@ -84,6 +84,7 @@ import { ToastsContainerComponent } from './components/toasts-container/toasts-c
 import { ThSortableDirective } from './components/th-sortable.directive';
 import { FileViewerComponent } from './components/file-viewer/file-viewer.component';
 import { HumanFileSizePipe } from './pipes/human-file-size.pipe';
+import { MonacoEditorComponent } from './components/monaco-editor/monaco-editor.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -184,6 +185,7 @@ const windowProvider: ValueProvider = {
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
     HumanFileSizePipe,
+    MonacoEditorComponent,
   ],
   providers: [
     windowProvider,

@@ -11,6 +11,7 @@ declare global {
   let ff_version: string;
   interface Window {
     server: string;
+    require: any;
   }
   // var jQuery: jQuery; already defined in @types/jquery (type import solves this for us?)
   // var $: jQuery;

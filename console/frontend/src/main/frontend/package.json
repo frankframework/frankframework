@@ -38,6 +38,7 @@
     "mermaid": "^10.8.0",
     "metismenu": "2.0.2",
     "moment": "2.8.1",
+    "monaco-editor": "^0.48.0",
     "ng2-charts": "^3.1.2",
     "pace-js": "1.2.4",
     "prismjs": "1.25.0",
