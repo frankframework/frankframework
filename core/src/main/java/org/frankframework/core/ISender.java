@@ -33,7 +33,7 @@ import org.frankframework.stream.Message;
  */
 @FrankDocGroup(FrankDocGroupValue.SENDER)
 @ElementType(ElementTypes.ENDPOINT)
-public interface ISender extends IConfigurable {
+public interface ISender extends IConfigurable, AutoCloseable {
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this sender.
@@ -52,6 +52,7 @@ public interface ISender extends IConfigurable {
 	/**
 	 * Stop/close the sender and deallocate resources.
 	 */
+	@Override
 	void close() throws SenderException;
 
 	/**

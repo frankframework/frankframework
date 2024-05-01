@@ -39,7 +39,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if (pipe!=null) {
 			pipe.stop();
 		}

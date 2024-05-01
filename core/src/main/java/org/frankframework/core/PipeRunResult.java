@@ -15,12 +15,11 @@
 */
 package org.frankframework.core;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.stream.Message;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.frankframework.pipes.AbstractPipe;
+import org.frankframework.stream.Message;
 
 /**
  * The PipeRunResult is a type to store both the result of the processing of a message
@@ -38,7 +37,7 @@ import org.frankframework.pipes.AbstractPipe;
  * @see AbstractPipe#doPipe
  * @see AbstractPipe#findForward
  */
-public class PipeRunResult {
+public class PipeRunResult implements AutoCloseable {
 
 	private @Getter @Setter PipeForward pipeForward;
 	private Message result;
@@ -70,5 +69,12 @@ public class PipeRunResult {
 
 	public boolean isSuccessful() {
 		return PipeForward.SUCCESS_FORWARD_NAME.equalsIgnoreCase(getPipeForward().getName());
+	}
+
+	@Override
+	public void close() throws Exception {
+		if (result != null) {
+			result.close();
+		}
 	}
 }

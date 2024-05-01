@@ -20,6 +20,7 @@ import java.util.List;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -27,7 +28,6 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.ReferTo;
-
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.SenderWithParametersBase;
 import org.frankframework.stream.Message;
@@ -103,7 +103,15 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 			Message result = actor.doAction(message, pvl, session);
 			return new SenderResult(result);
 		} catch (FileSystemException e) {
-			throw new SenderException(e);
+			String forwardName;
+			if (e instanceof FileNotFoundException) forwardName = "fileNotFound";
+			else if (e instanceof FolderNotFoundException) forwardName = "folderNotFound";
+			else if (e instanceof FileAlreadyExistsException) forwardName = "fileAlreadyExists";
+			else if (e instanceof FolderAlreadyExistsException) forwardName = "folderAlreadyExists";
+			else forwardName = PipeForward.EXCEPTION_FORWARD_NAME;
+
+			log.error("Error from FileSystemActor, will return forward name [{}]",forwardName,e);
+			return new SenderResult(false, Message.nullMessage(), e.getMessage(), forwardName);
 		}
 	}
 

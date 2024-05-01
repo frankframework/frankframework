@@ -12,21 +12,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.ParameterBuilder;
-import org.frankframework.util.StreamUtil;
-import org.frankframework.util.UUIDUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.util.CloseUtils;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.UUIDUtil;
+
 public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	protected FSS fileSystemSender;
+	private SenderResult senderResult;
 
 	public abstract FSS createFileSystemSender();
 
@@ -41,10 +45,8 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
-		if (fileSystemSender!=null) {
-			fileSystemSender.close();
-		}
+	public void tearDown() {
+		CloseUtils.close(senderResult, fileSystemSender);
 
 		super.tearDown();
 	}
@@ -493,7 +495,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSenderCreateFile("folder", false, true);
 	}
 
-	public void fileSystemSenderWriteFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
+	public SenderResult fileSystemSenderWriteFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "write" + FILE1;
 
 		if(_folderExists(folder)) {
@@ -506,16 +508,17 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		}
 
 		fileSystemSender.setAction(FileSystemAction.WRITE);
-		if (setCreateFolderAttribute) {
-			fileSystemSender.setCreateFolder(true);
-		}
+		fileSystemSender.setCreateFolder(setCreateFolderAttribute);
 		fileSystemSender.addParameter(ParameterBuilder.create("filename", folder + "/" + filename));
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
 		Message message = new Message("dummyText");
-		Message resultMessage = fileSystemSender.sendMessageOrThrow(message, session);
-		String result = resultMessage.asString();
+		senderResult = fileSystemSender.sendMessage(message, session);
+		if (!senderResult.isSuccess()) {
+			return senderResult;
+		}
+		String result = senderResult.getResult().asString();
 
 		// test
 		// result should be name of the moved file
@@ -526,12 +529,14 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		assertTrue(_fileExists(folder, filename), "file should exist in destination folder ["+folder+"]");
 		assertEquals("dummyText", StreamUtil.streamToString(_readFile(folder, filename)));
+		return senderResult;
 	}
+
 	@Test
 	public void fileSystemSenderWriteNewFileInFolder() throws Exception {
-		SenderException e = assertThrows(SenderException.class, () -> fileSystemSenderWriteFile("folder1", false, false));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
-		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
+		SenderResult result = fileSystemSenderWriteFile("folder1", false, false);
+		assertEquals("folderNotFound", result.getForwardName());
+		assertThat(result.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
 	}
 
 	@Test

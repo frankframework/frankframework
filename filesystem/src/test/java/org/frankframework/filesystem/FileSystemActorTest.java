@@ -31,6 +31,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
+import org.frankframework.util.CloseUtils;
 
 @TestMethodOrder(MethodName.class)
 public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -61,13 +62,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
-		if (result != null) {
-			result.close();
-		}
-		if (fileSystem != null) {
-			fileSystem.close();
-		}
+	public void tearDown()  {
+		CloseUtils.close(result, fileSystem);
 
 		super.tearDown();
 	}

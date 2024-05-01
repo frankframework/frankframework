@@ -30,6 +30,8 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
@@ -60,9 +62,6 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
@@ -338,13 +337,15 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		ParameterValueList pvl = null;
-		try {
-			if (paramList !=null) {
-				pvl=paramList.getValues(message, session);
+		ParameterValueList pvl;
+		if (paramList == null) {
+			pvl = new ParameterValueList();
+		} else {
+			try {
+				pvl = paramList.getValues(message, session);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
 
 		URI targetUri;
@@ -359,8 +360,8 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<>();
-			if (!headerParamsSet.isEmpty() && pvl!=null) {
-				log.debug("appending header parameters "+headersParams);
+			if (!headerParamsSet.isEmpty()) {
+				log.debug("appending header parameters {}", headersParams);
 				for (String paramName:headerParamsSet) {
 					ParameterValue paramValue = pvl.get(paramName);
 					if(paramValue != null) {
@@ -385,8 +386,8 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 					httpRequestBase.setHeader(CORRELATION_ID_HEADER, session.getCorrelationId());
 				}
 			}
-			for (String param: headersParamsMap.keySet()) {
-				httpRequestBase.setHeader(param, headersParamsMap.get(param));
+			for (Map.Entry<String, String> param: headersParamsMap.entrySet()) {
+				httpRequestBase.setHeader(param.getKey(), param.getValue());
 			}
 
 			log.info("configured httpclient for host [{}]", targetUri::getHost);

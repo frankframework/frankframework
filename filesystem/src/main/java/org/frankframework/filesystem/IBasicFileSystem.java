@@ -41,10 +41,11 @@ import org.frankframework.stream.Message;
  *
  * @param <F> Representation of file and folder.
  */
-public interface IBasicFileSystem<F> extends HasPhysicalDestination{
+public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseable {
 
 	void configure() throws ConfigurationException;
 	void open() throws FileSystemException;
+	@Override
 	void close() throws FileSystemException;
 
 	boolean isOpen();

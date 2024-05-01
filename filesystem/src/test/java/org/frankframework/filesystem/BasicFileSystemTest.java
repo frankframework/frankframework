@@ -15,13 +15,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.commons.io.FilenameUtils;
-import org.frankframework.stream.Message;
-import org.frankframework.util.StreamUtil;
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.apache.commons.io.FilenameUtils;
+import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
+import org.frankframework.util.StreamUtil;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
@@ -39,8 +41,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
-		if (fileSystem!=null) fileSystem.close();
+	public void tearDown() {
+		CloseUtils.close(fileSystem);
 	}
 
 	@Test

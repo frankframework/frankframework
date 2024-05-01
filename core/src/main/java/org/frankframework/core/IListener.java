@@ -21,9 +21,9 @@ import javax.annotation.Nonnull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.ElementType;
+import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -36,7 +36,7 @@ import org.frankframework.stream.Message;
  */
 @FrankDocGroup(FrankDocGroupValue.LISTENER)
 @ElementType(ElementTypes.LISTENER)
-public interface IListener<M> extends IConfigurable {
+public interface IListener<M> extends IConfigurable, AutoCloseable {
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method
