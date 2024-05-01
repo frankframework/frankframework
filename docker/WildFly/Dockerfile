@@ -1,11 +1,6 @@
 ARG WILDFLY_VERSION=32.0.0.Final-1-jdk21
 FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION}
 
-USER root
-RUN mkdir /opt/jboss/wildfly/standalone/data/
-RUN chown -R jboss:jboss /opt/jboss/wildfly/standalone/data/
-USER jboss
-
 COPY target/dependencies/secrets/ /opt/frank/secrets/
 # use * when copying into existing folders
 COPY target/dependencies/*.jar /opt/jboss/wildfly/standalone/lib/ext/
