@@ -150,10 +150,7 @@
 				<datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true" statistics-enabled="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}">
 					<connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
 					<driver>h2</driver>
-					<security>
-						<user-name>sa</user-name>
-						<password>sa</password>
-					</security>
+					<security user-name="sa" password="sa"/>
 				</datasource>
 				<!-- Framework datasources -->
 				<datasource jndi-name="java:/jdbc/ibis4test-h2" pool-name="h2-datasource" enabled="true" use-java-context="true">
@@ -164,7 +161,6 @@
 					<driver>oracle</driver>
 					<xa-datasource-property name="URL">jdbc:oracle:thin:@${env.jdbc.hostname:localhost}:1521:XE</xa-datasource-property>
 					<security>
-						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 					<xa-pool>
@@ -189,7 +185,6 @@
 						<wrap-xa-resource>true</wrap-xa-resource>
 					</xa-pool>
 					<security>
-						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 					<timeout>
@@ -205,24 +200,21 @@
 					<xa-datasource-property name="URL">jdbc:mysql://${env.jdbc.hostname:localhost}:3307/testiaf</xa-datasource-property>
 					<xa-datasource-property name="pinGlobalTxToPhysicalConnection">true</xa-datasource-property>
 					<xa-datasource-property name="serverTimezone">Europe/Amsterdam</xa-datasource-property>
-					<security>
-						<user-name>testiaf_user</user-name>
+					<security user-name="testiaf_user">
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mariadb" pool-name="ibis4test-mariadb">
 					<driver>mariadb</driver>
 					<xa-datasource-property name="Url">jdbc:mariadb://${env.jdbc.hostname:localhost}:3306/testiaf</xa-datasource-property>
-					<security>
-						<user-name>testiaf_user</user-name>
+					<security user-name="testiaf_user">
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-postgres-xa" pool-name="ibis4test-postgres">
 					<driver>postgresql</driver>
 					<xa-datasource-property name="URL">jdbc:postgresql://${env.jdbc.hostname:localhost}:5432/testiaf</xa-datasource-property>
-					<security>
-						<user-name>testiaf_user</user-name>
+					<security user-name="testiaf_user">
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
@@ -232,8 +224,7 @@
 					<xa-datasource-property name="serverName">${env.jdbc.hostname:localhost}</xa-datasource-property>
 					<xa-datasource-property name="portNumber">50000</xa-datasource-property>
 					<xa-datasource-property name="driverType">4</xa-datasource-property>
-					<security>
-						<user-name>testiaf_user</user-name>
+					<security user-name="testiaf_user">
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
@@ -451,6 +442,11 @@
 				</mechanism-provider-filtering-sasl-server-factory>
 				<provider-sasl-server-factory name="global"/>
 			</sasl>
+			<credential-stores>
+				<credential-store name="CS" relative-to="jboss.server.data.dir" location="CS.jceks">
+					<credential-reference clear-text="secret"/>
+				</credential-store>
+			</credential-stores>
 			<tls>
 				<key-stores>
 					<key-store name="applicationKS">
