@@ -20,7 +20,6 @@ import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.web.ApiException;
 import org.frankframework.util.ResponseUtils;
 import org.frankframework.web.filters.DeprecationFilter;
 import org.springframework.beans.BeansException;

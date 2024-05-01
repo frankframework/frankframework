@@ -18,7 +18,6 @@ package org.frankframework.management.web.spring;
 import java.io.IOException;
 
 import javax.servlet.MultipartConfigElement;
-import javax.servlet.Registration;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
