@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.mockito.Mockito;
@@ -27,12 +26,12 @@ public class DataSourceFactoryMock implements IDataSourceFactory {
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName) throws NamingException {
+	public DataSource getDataSource(String dataSourceName) {
 		return getDataSource(dataSourceName, null);
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException {
+	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) {
 		return objects.get(dataSourceName);
 	}
 

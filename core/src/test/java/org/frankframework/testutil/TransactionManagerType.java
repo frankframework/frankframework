@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.io.FileUtils;
@@ -143,10 +142,6 @@ public enum TransactionManagerType {
 	 */
 	public DataSource getDataSource(String productKey) {
 		ApplicationContext ac = getConfigurationContext(productKey);
-		try {
-			return getDataSourceFactory(ac).getDataSource(productKey);
-		} catch (NamingException e) {
-			throw new IllegalStateException("productkey not found?", e);
-		}
+		return getDataSourceFactory(ac).getDataSource(productKey);
 	}
 }
