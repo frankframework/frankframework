@@ -23,6 +23,7 @@
 		<spring-integration.version>6.2.3</spring-integration.version>
 		<spring.boot.version>3.2.5</spring.boot.version>
 		<tomcat.version>10.1.23</tomcat.version>
+		<bouncycastle.version>1.78.1</bouncycastle.version>
 
 		<narayana.version>7.0.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
@@ -392,6 +393,23 @@
 				<version>${aws.java.sdk.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+
+			<!-- the bcpg depends on the other two modules, however to ensure we're using the latest version, explicitly define them here, dependabot will take care of the rest -->
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcprov-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcutil-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpg-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
 			</dependency>
 
 			<!-- Jackson dependencies -->

@@ -73,7 +73,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>artemis-jakarta-client</artifactId>
+			<artifactId>artemis-jakarta-client-all</artifactId>
 			<version>${artemis.driver.version}</version>
 		</dependency>
 		<!-- required for ActiveMQ classic-->
