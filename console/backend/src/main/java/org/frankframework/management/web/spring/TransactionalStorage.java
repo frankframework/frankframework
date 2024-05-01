@@ -1,5 +1,7 @@
 package org.frankframework.management.web.spring;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -9,9 +11,11 @@ import org.frankframework.management.web.Relation;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.RequestUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.annotation.security.RolesAllowed;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -29,12 +34,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class TransactionalStorage extends FrankApiBase {
-	
+
 	public enum StorageSource {
 		RECEIVERS, PIPES;
 
 		public static StorageSource fromString(String value) {
-			if(StringUtils.isNotBlank(value)) {
+			if (StringUtils.isNotBlank(value)) {
 				try {
 					return StorageSource.valueOf(value.toUpperCase());
 				} catch (IllegalArgumentException e) {
@@ -61,7 +66,7 @@ public class TransactionalStorage extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		if(storageSource == StorageSource.PIPES) {
+		if (storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
 			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
@@ -89,7 +94,7 @@ public class TransactionalStorage extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		if(storageSource == StorageSource.PIPES) {
+		if (storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
 			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
@@ -108,13 +113,13 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathVariable("storageSource") StorageSource storageSource,
 			@PathVariable("storageSourceName") String storageSourceName,
 			@PathVariable("processState") String processState,
-			MultipartBody input
+			StorageMessagesMultipartBody input
 	) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		if(storageSource == StorageSource.PIPES) {
+		if (storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
 			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
@@ -136,14 +141,14 @@ public class TransactionalStorage extends FrankApiBase {
 						String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY);
 
 						String filenameExtension = ".txt";
-						if(MediaType.APPLICATION_JSON_VALUE.equals(mimeType)) {
+						if (MediaType.APPLICATION_JSON_VALUE.equals(mimeType)) {
 							filenameExtension = ".json";
-						} else if(MediaType.APPLICATION_XML_VALUE.equals(mimeType)) {
+						} else if (MediaType.APPLICATION_XML_VALUE.equals(mimeType)) {
 							filenameExtension = ".xml";
 						}
 
 						String payload = (String) message.getPayload();
-						ZipEntry entry = new ZipEntry("msg-"+decodedMessageId+filenameExtension);
+						ZipEntry entry = new ZipEntry("msg-" + decodedMessageId + filenameExtension);
 						zos.putNextEntry(entry);
 						zos.write(payload.getBytes(StandardCharsets.UTF_8));
 						zos.closeEntry();
@@ -188,7 +193,7 @@ public class TransactionalStorage extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		if(storageSource == StorageSource.PIPES) {
+		if (storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
 			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
@@ -212,8 +217,6 @@ public class TransactionalStorage extends FrankApiBase {
 	}
 
 
-
-
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -235,15 +238,12 @@ public class TransactionalStorage extends FrankApiBase {
 		return callAsyncGateway(builder);
 	}
 
-	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error")
 	@Relation("pipeline")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response resendReceiverMessages(@PathParam("configuration") String configuration, @PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, MultipartBody input) {
+	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> resendReceiverMessages(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter, @PathVariable("receiverName") String receiver, StorageMessagesMultipartBody input) {
 
-		org.frankframework.management.web.RequestMessageBuilder builder = org.frankframework.management.web.RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
@@ -251,41 +251,36 @@ public class TransactionalStorage extends FrankApiBase {
 		String[] messageIds = getMessageIds(input);
 
 		List<String> errorMessages = new ArrayList<>();
-		for(int i=0; i < messageIds.length; i++) {
+		for (int i = 0; i < messageIds.length; i++) {
 			try {
 				builder.addHeader("messageId", messageIds[i]);
 				callAsyncGateway(builder);
-			}
-			catch(org.frankframework.management.web.ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+			} catch (org.frankframework.management.web.ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
-			}
-			catch(Exception e) {
+			} catch (Exception e) {
 				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.isEmpty()) {
-			return Response.status(Response.Status.OK).build();
+		if (errorMessages.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.OK).build();
 		}
 
-		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(errorMessages);
 	}
 
-	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}")
 	@Relation("pipeline")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response changeProcessState(
-			@PathParam("configuration") String configuration,
-			@PathParam("adapterName") String adapter,
-			@PathParam("receiverName") String receiver,
-			@PathParam("processState") String processState,
-			@PathParam("targetState") String targetState,
-			MultipartBody input) {
+	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> changeProcessState(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("adapterName") String adapter,
+			@PathVariable("receiverName") String receiver,
+			@PathVariable("processState") String processState,
+			@PathVariable("targetState") String targetState,
+			StorageMessagesMultipartBody input) {
 
-		org.frankframework.management.web.RequestMessageBuilder builder = org.frankframework.management.web.RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
@@ -295,36 +290,34 @@ public class TransactionalStorage extends FrankApiBase {
 		String[] messageIds = getMessageIds(input);
 
 		List<String> errorMessages = new ArrayList<>();
-		for(int i=0; i < messageIds.length; i++) {
+		for (int i = 0; i < messageIds.length; i++) {
 			try {
 				builder.addHeader("messageId", messageIds[i]);
 				callAsyncGateway(builder);
-			} catch(org.frankframework.management.web.ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+			} catch (ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
-			} catch(Exception e) {
+			} catch (Exception e) {
 				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.isEmpty()) {
-			return Response.status(Response.Status.OK).build();
+		if (errorMessages.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.OK).build();
 		}
 
-		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(errorMessages);
 	}
 
-	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}")
 	@Relation("pipeline")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteReceiverMessage(
-			@PathParam("configuration") String configuration,
-			@PathParam("adapterName") String adapter,
-			@PathParam("receiverName") String receiver,
-			@PathParam("messageId") String messageId) {
+	@DeleteMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> deleteReceiverMessage(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("adapterName") String adapter,
+			@PathVariable("receiverName") String receiver,
+			@PathVariable("messageId") String messageId) {
 
-		org.frankframework.management.web.RequestMessageBuilder builder = org.frankframework.management.web.RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
@@ -336,19 +329,16 @@ public class TransactionalStorage extends FrankApiBase {
 		return callAsyncGateway(builder);
 	}
 
-	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error")
 	@Relation("pipeline")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response deleteReceiverMessages(
-			@PathParam("configuration") String configuration,
-			@PathParam("adapterName") String adapter,
-			@PathParam("receiverName") String receiver,
-			MultipartBody input) {
+	@DeleteMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> deleteReceiverMessages(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("adapterName") String adapter,
+			@PathVariable("receiverName") String receiver,
+			StorageMessagesMultipartBody input) {
 
-		org.frankframework.management.web.RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
@@ -356,27 +346,33 @@ public class TransactionalStorage extends FrankApiBase {
 		String[] messageIds = getMessageIds(input);
 
 		List<String> errorMessages = new ArrayList<>();
-		for(int i=0; i < messageIds.length; i++) {
+		for (int i = 0; i < messageIds.length; i++) {
 			try {
 				builder.addHeader("messageId", messageIds[i]);
 				callAsyncGateway(builder);
-			} catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+			} catch (ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
-			} catch(Exception e) {
+			} catch (Exception e) {
 				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.isEmpty()) {
-			return Response.status(Response.Status.OK).build();
+		if (errorMessages.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.OK).build();
 		}
 
-		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(errorMessages);
 	}
 
-	private String[] getMessageIds(MultipartBody inputDataMap) {
-		String messageIds = RequestUtils.resolveStringFromMap(inputDataMap, "messageIds");
+	private String[] getMessageIds(StorageMessagesMultipartBody multipartBody) {
+		String messageIds = RequestUtils.resolveRequiredProperty("messageIds", multipartBody.getMessageIds(), null);
 		return messageIds.split(",");
+	}
+
+	@Getter
+	@Setter
+	public static class StorageMessagesMultipartBody {
+		private String messageIds;
 	}
 
 }
