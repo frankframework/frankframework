@@ -141,7 +141,7 @@
 		<subsystem xmlns="urn:jboss:domain:bean-validation:1.0"/>
 		<subsystem xmlns="urn:jboss:domain:datasources:7.0">
 			<datasources>
-				<datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true"
+				<datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="false"
 							use-java-context="true"
 							statistics-enabled="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}">
 					<connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
@@ -651,7 +651,7 @@
 			<server name="default">
 				<security elytron-domain="ApplicationDomain"/>
 				<journal pool-files="10"/>
-				<statistics enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+				<statistics enabled="false"/>
 				<security-setting name="#">
 					<role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
 				</security-setting>
@@ -659,8 +659,7 @@
 				<jms-queue name="dynamicQueues/Q.TEST.OUT" entries="jms/i4testiaf_out-artemis"/>
 				<jms-queue name="dynamicQueues/Q.TEST.FF" entries="jms/i4testiaf_ff-artemis"/>
 				<remote-connector name="netty-remote-throughput" socket-binding="artemis"/>
-				<pooled-connection-factory name="artemis" entries="jms/qcf-artemis java:jboss/DefaultJMSConnectionFactory"
-										   connectors="netty-remote-throughput" transaction="xa"/>
+				<pooled-connection-factory name="artemis" entries="jms/qcf-artemis java:jboss/DefaultJMSConnectionFactory" connectors="netty-remote-throughput" transaction="xa"/>
 			</server>
 		</subsystem>
 		<subsystem xmlns="urn:wildfly:metrics:1.0" security-enabled="false" exposed-subsystems="*" prefix="${wildfly.metrics.prefix:jboss}"/>
