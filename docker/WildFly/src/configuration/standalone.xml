@@ -23,7 +23,7 @@
 		<extension module="org.jboss.as.weld"/>
 		<extension module="org.wildfly.extension.batch.jberet"/>
 		<extension module="org.wildfly.extension.bean-validation"/>
-        <extension module="org.wildfly.extension.clustering.ejb"/>
+		<extension module="org.wildfly.extension.clustering.ejb"/>
 		<extension module="org.wildfly.extension.clustering.web"/>
 		<extension module="org.wildfly.extension.core-management"/>
 		<extension module="org.wildfly.extension.discovery"/>
@@ -104,9 +104,9 @@
 				<append value="true"/>
 			</periodic-rotating-file-handler>
 			<logger category="com.arjuna">
-                <level name="WARN"/>
-            </logger>
-            <logger category="com.networknt.schema">
+				<level name="WARN" />
+			</logger>
+			<logger category="com.networknt.schema">
 				<level name="WARN"/>
 			</logger>
 			<logger category="io.jaegertracing.Configuration">
@@ -160,7 +160,7 @@
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle-xa" pool-name="ibis4test-oracle">
 					<driver>oracle</driver>
 					<xa-datasource-property name="URL">jdbc:oracle:thin:@${env.jdbc.hostname:localhost}:1521:XE</xa-datasource-property>
-					<security>
+					<security user-name="testiaf_user">
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 					<xa-pool>
@@ -184,7 +184,7 @@
 						<pad-xid>false</pad-xid>
 						<wrap-xa-resource>true</wrap-xa-resource>
 					</xa-pool>
-					<security>
+					<security user-name="testiaf_user">
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 					<timeout>
