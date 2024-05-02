@@ -149,7 +149,6 @@ public class SecurityItems extends BusEndpointBase {
 	private ArrayList<DataSourceDTO> addDataSources() {
 		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
-		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 
 		ArrayList<DataSourceDTO> dsList = new ArrayList<>();
 		for(String datasourceName : dataSourceNames) {
