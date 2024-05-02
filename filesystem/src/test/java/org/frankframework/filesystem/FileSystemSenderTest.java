@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -454,13 +455,19 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSenderListActionTest("folder",2);
 	}
 
-	public void fileSystemSenderCreateFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
+	public SenderResult fileSystemSenderCreateFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "create" + FILE1;
 
 		if(_folderExists(folder)) {
 			_deleteFolder(folder);
 		}
 		waitForActionToFinish();
+
+		if (fileAlreadyExists) {
+			OutputStream outputStream = _createFile(folder, filename);
+			outputStream.write("dummy-contents\n".getBytes());
+			outputStream.close();
+		}
 
 		fileSystemSender.setAction(FileSystemAction.CREATE); //TODO WRITE
 		if (setCreateFolderAttribute) {
@@ -469,9 +476,13 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		Message message = new Message(folder + "/" + filename);
-		Message rs = fileSystemSender.sendMessageOrThrow(message, session);
-		String result = rs.asString();
+		Message input = new Message(folder + "/" + filename);
+		senderResult = fileSystemSender.sendMessage(input, session);
+		CloseUtils.close(input);
+		if (!senderResult.isSuccess()) {
+			return senderResult;
+		}
+		String result = senderResult.getResult().asString();
 
 		// test
 		// result should be name of the moved file
@@ -481,13 +492,23 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		// TODO: contents of result should be contents of original file
 
 		assertTrue(_fileExists(folder, filename), "file should exist in destination folder ["+folder+"]");
+		return senderResult;
 	}
 
 	@Test
 	public void fileSystemSenderCreateFile() throws Exception {
-		SenderException e = assertThrows(SenderException.class, () -> fileSystemSenderCreateFile("folder", false, false));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
-		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+		SenderResult result = fileSystemSenderCreateFile("folder", false, false);
+		assertEquals("folderNotFound", result.getForwardName());
+		assertThat(result.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+		assertThat(result.getErrorMessage(), containsString("folder [folder] does not exist"));
+	}
+
+	@Test
+	public void fileSystemSenderCreateFileAlreadyExists() throws Exception {
+		SenderResult result = fileSystemSenderCreateFile("folder", true, false);
+		assertEquals("fileAlreadyExists", result.getForwardName());
+		assertThat(result.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+		assertThat(result.getErrorMessage(), containsString("createfile1.txt] already exists"));
 	}
 
 	@Test
@@ -513,8 +534,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		Message message = new Message("dummyText");
-		senderResult = fileSystemSender.sendMessage(message, session);
+		Message input = new Message("dummyText");
+		senderResult = fileSystemSender.sendMessage(input, session);
+		CloseUtils.close(input);
 		if (!senderResult.isSuccess()) {
 			return senderResult;
 		}

@@ -63,7 +63,7 @@ public class FileSystemUtils {
 	public static <F> void prepareDestination(IWritableFileSystem<F> fileSystem, F destination, boolean overwrite, int numOfBackups, FileSystemAction action) throws FileSystemException {
 		if (fileSystem.exists(destination)) {
 			if (overwrite) {
-				log.debug("removing current destination file ["+fileSystem.getCanonicalName(destination)+"]");
+				log.debug("removing current destination file [{}]", fileSystem.getCanonicalName(destination));
 				fileSystem.deleteFile(destination);
 			} else {
 				if (numOfBackups>0) {
@@ -81,7 +81,7 @@ public class FileSystemUtils {
 	public static <F> void prepareDestination(IBasicFileSystem<F> fileSystem, F source, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, FileSystemAction action) throws FileSystemException {
 		if (!fileSystem.folderExists(destinationFolder)) {
 			if (fileSystem.exists(fileSystem.toFile(destinationFolder))) {
-				throw new FileSystemException("destination ["+destinationFolder+"] exists but is not a folder");
+				throw new FileAlreadyExistsException("destination ["+destinationFolder+"] exists but is not a folder");
 			}
 			if (createFolders) {
 				fileSystem.createFolder(destinationFolder);
@@ -147,10 +147,10 @@ public class FileSystemUtils {
 		F tmpFile = fileSystem.toFile(tmpFilename);
 		tmpFile = fileSystem.renameFile(file, tmpFile);
 
-		if (log.isDebugEnabled()) log.debug("Rotating files with a name starting with ["+filename+"] and keeping ["+numberOfBackups+"] backups");
+		log.debug("Rotating files with a name starting with [{}] and keeping [{}] backups", filename, numberOfBackups);
 		F lastFile=fileSystem.toFile(filename+"."+numberOfBackups);
 		if (fileSystem.exists(lastFile)) {
-			if (log.isDebugEnabled()) log.debug("deleting file ["+filename+"."+numberOfBackups+"]");
+			log.debug("deleting file [{}.{}]", filename, numberOfBackups);
 			fileSystem.deleteFile(lastFile);
 		}
 
@@ -161,16 +161,16 @@ public class FileSystemUtils {
 			F destination=fileSystem.toFile(destinationFilename);
 
 			if (fileSystem.exists(source)) {
-				if (log.isDebugEnabled()) log.debug("moving file ["+sourceFilename+"] to file ["+destinationFilename+"]");
-				destination = fileSystem.renameFile(source, destination);
+				log.debug("moving file [{}] to file [{}]", sourceFilename, destinationFilename);
+				fileSystem.renameFile(source, destination);
 			} else {
-				if (log.isDebugEnabled()) log.debug("file ["+sourceFilename+"] does not exist, no need to move");
+				log.debug("file [{}] does not exist, no need to move", sourceFilename);
 			}
 		}
 		String destinationFilename=filename+".1";
 		F destination=fileSystem.toFile(destinationFilename);
-		if (log.isDebugEnabled()) log.debug("moving file ["+tmpFilename+"] to file ["+destinationFilename+"]");
-		destination = fileSystem.renameFile(tmpFile, destination);
+		log.debug("moving file [{}] to file [{}]", tmpFilename, destinationFilename);
+		fileSystem.renameFile(tmpFile, destination);
 	}
 
 
@@ -213,25 +213,9 @@ public class FileSystemUtils {
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, Runnable onClose) {
-		return getDirectoryStream(iterator, (Supplier<IOException>)() -> {
+		return getDirectoryStream(iterator, () -> {
 			if (onClose!=null) {
 				onClose.run();
-			}
-			return null;
-		});
-	}
-
-	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, AutoCloseable resourceToCloseOnClose){
-		return getDirectoryStream(iterator, (Supplier<IOException>)() -> {
-			if (resourceToCloseOnClose!=null) {
-				try {
-					resourceToCloseOnClose.close();
-					return null;
-				} catch (IOException e) {
-					return e;
-				} catch (Exception e) {
-					return new IOException(e);
-				}
 			}
 			return null;
 		});
@@ -271,13 +255,13 @@ public class FileSystemUtils {
 		F tgtFilename = fileSystem.toFile(srcFilename+"."+ DateFormatUtils.format(lastModified, DateFormatUtils.ISO_DATE_FORMATTER));
 		fileSystem.renameFile(file, tgtFilename);
 
-		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
+		log.debug("Deleting files in folder [{}] that have a name starting with [{}] and are older than [{}] days", folder, srcFilename, rotateDays);
 		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			for (F f : ds) {
 				String filename = fileSystem.getName(f);
 				if (filename != null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime() < threshold) {
-					if (log.isDebugEnabled()) log.debug("deleting file [" + filename + "]");
+					log.debug("deleting file [{}]", filename);
 					fileSystem.deleteFile(f);
 				}
 			}
@@ -287,7 +271,7 @@ public class FileSystemUtils {
 	}
 
 	@Nonnull
-	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException, IOException {
+	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException {
 		DirectoryStream<F> ds = fileSystem.listFiles(folder);
 		if (ds==null) {
 			return Stream.empty();
@@ -313,10 +297,8 @@ public class FileSystemUtils {
 	public static <F, FS extends IBasicFileSystem<F>> String getFileInfo(FS fileSystem, F f, DocumentFormat format) throws FileSystemException {
 		try {
 			INodeBuilder builder = DocumentBuilderFactory.startDocument(format, "file");
-			try {
+			try(builder) {
 				getFileInfo(fileSystem, f, builder);
-			} finally {
-				builder.close();
 			}
 			return builder.toString();
 		} catch (SAXException e) {
@@ -332,11 +314,11 @@ public class FileSystemUtils {
 			if (!".".equals(name) && !"..".equals(name)) {
 				long fileSize = fileSystem.getFileSize(f);
 				file.addAttribute("size", "" + fileSize);
-				file.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
+				file.addAttribute("fSize", Misc.toFileSize(fileSize, true));
 				try {
 					file.addAttribute("canonicalName", fileSystem.getCanonicalName(f));
 				} catch (Exception e) {
-					log.warn("cannot get canonicalName for file [" + name + "]", e);
+					log.warn("cannot get canonicalName for file [{}]", name, e);
 					file.addAttribute("canonicalName", name);
 				}
 				// Get the modification date of the file
