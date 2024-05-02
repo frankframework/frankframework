@@ -15,8 +15,6 @@
 */
 package org.frankframework.management.web.spring;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.IbisAction;
 import org.frankframework.management.bus.BusAction;
@@ -35,6 +33,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -171,28 +170,32 @@ public class Configuration extends FrankApiBase {
 	@Relation("configuration")
 	@Description("upload a new configuration versions")
 	@PostMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> uploadConfiguration(ConfigurationMultipartBody multipartBody, Principal principal) throws ApiException {
-		if(multipartBody == null) {
-			throw new ApiException("Missing post parameters");
-		}
-
-		String datasource = RequestUtils.resolveRequiredProperty( "datasource", multipartBody.getDatasource(), "");
-		boolean multipleConfigs = RequestUtils.resolveRequiredProperty("multiple_configs", multipartBody.isMultiple_configs(), false);
-		boolean activateConfig  = RequestUtils.resolveRequiredProperty("activate_config", multipartBody.isActivate_config(), true);
-		boolean automaticReload = RequestUtils.resolveRequiredProperty("automatic_reload", multipartBody.isAutomatic_reload(), false);
+	public ResponseEntity<?> uploadConfiguration(
+			Principal principal,
+			@RequestPart("datasource") String datasourcePart,
+			@RequestPart("user") String userPart,
+			@RequestPart("multiple_configs") boolean multiple_configsPart,
+			@RequestPart("activate_config") boolean activate_configPart,
+			@RequestPart("automatic_reload") boolean automatic_reloadPart,
+			@RequestPart("file") MultipartFile filePart
+	) throws ApiException {
+		String datasource = RequestUtils.resolveRequiredProperty( "datasource", datasourcePart, "");
+		boolean multipleConfigs = RequestUtils.resolveRequiredProperty("multiple_configs", multiple_configsPart, false);
+		boolean activateConfig  = RequestUtils.resolveRequiredProperty("activate_config", activate_configPart, true);
+		boolean automaticReload = RequestUtils.resolveRequiredProperty("automatic_reload", automatic_reloadPart, false);
 		InputStream file = null;
 		try {
-			file = multipartBody.getFile().getInputStream();
+			file = filePart.getInputStream();
 		} catch (IOException e) {
 			throw new ApiException(e);
 		}
 
-		String user = RequestUtils.resolveRequiredProperty("user", multipartBody.getUser(), "");
+		String user = RequestUtils.resolveRequiredProperty("user", userPart, "");
 		if(StringUtils.isEmpty(user)) {
 			user = principal.getName();
 		}
 
-		String fileNameOrPath = multipartBody.getFile().getOriginalFilename();
+		String fileNameOrPath = filePart.getOriginalFilename();
 		String fileName = Paths.get(fileNameOrPath).getFileName().toString();
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.UPLOAD);
@@ -232,7 +235,8 @@ public class Configuration extends FrankApiBase {
 		return callAsyncGateway(builder);
 	}
 
-	@Getter
+	// Won't work Spring 5.3 without SpringBoot
+	/*@Getter
 	@Setter
 	public static class ConfigurationMultipartBody {
 		private String datasource;
@@ -241,6 +245,6 @@ public class Configuration extends FrankApiBase {
 		private boolean activate_config;
 		private boolean automatic_reload;
 		private MultipartFile file;
-	}
+	}*/
 
 }

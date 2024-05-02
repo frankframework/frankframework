@@ -15,8 +15,6 @@
 */
 package org.frankframework.management.web.spring;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -31,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,25 +51,31 @@ public class TestPipeline extends FrankApiBase {
 	@Relation("testing")
 	@Description("send a message to an Adapters pipeline, bypassing the receiver")
 	@PostMapping(value = "/test-pipeline", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> testPipeLine(PipelineMultipartBody multipartBody) throws ApiException {
+	public ResponseEntity<?> testPipeLine(
+			@RequestPart("configuration") String configurationPart,
+			@RequestPart("adapter") String adapterPart,
+			@RequestPart("sessionKeys") String sessionKeysPart,
+			@RequestPart("encoding") String encodingPart,
+			@RequestPart("message") MultipartFile messagePart,
+			@RequestPart("file") MultipartFile filePart
+	) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
-		String configuration = RequestUtils.resolveRequiredProperty("configuration", multipartBody.getConfiguration(), null);
+		String configuration = RequestUtils.resolveRequiredProperty("configuration", configurationPart, null);
 		builder.addHeader("configuration", configuration);
-		String adapterName = RequestUtils.resolveRequiredProperty("adapter", multipartBody.getAdapter(), null);
+		String adapterName = RequestUtils.resolveRequiredProperty("adapter", adapterPart, null);
 		builder.addHeader("adapter", adapterName);
 
 		// resolve session keys
-		String sessionKeys = RequestUtils.resolveRequiredProperty("sessionKeys", multipartBody.getSessionKeys(), "");
+		String sessionKeys = RequestUtils.resolveRequiredProperty("sessionKeys", sessionKeysPart, "");
 		if(StringUtils.isNotEmpty(sessionKeys)) { //format: [{"index":1,"key":"test","value":"123"}]
 			builder.addHeader("sessionKeys", sessionKeys);
 		}
 
-		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", multipartBody.getEncoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", encodingPart, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
 		String message;
-		MultipartFile filePart = multipartBody.getFile();
 		if(filePart != null) {
-			String fileNameOrPath = multipartBody.getFile().getOriginalFilename();
+			String fileNameOrPath = filePart.getOriginalFilename();
 			String fileName = Paths.get(fileNameOrPath).getFileName().toString();
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
@@ -93,7 +98,7 @@ public class TestPipeline extends FrankApiBase {
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", multipartBody.getMessage(), fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", messagePart, fileEncoding);
 		}
 
 		if(StringUtils.isEmpty(message)) {
@@ -106,7 +111,8 @@ public class TestPipeline extends FrankApiBase {
 		return testPipelineResponse(getPayload(response), state, message);
 	}
 
-	@Getter
+	// Won't work Spring 5.3 without SpringBoot
+	/*@Getter
 	@Setter
 	public static class PipelineMultipartBody {
 		private String configuration;
@@ -115,7 +121,7 @@ public class TestPipeline extends FrankApiBase {
 		private String encoding;
 		private MultipartFile message;
 		private MultipartFile file;
-	}
+	}*/
 
 	private String getPayload(Message<?> response) {
 		Object payload = response.getPayload();

@@ -43,6 +43,14 @@ export function basicTableSort<T extends Record<string, string | number>>(
   });
 }
 
+export function test(): string {
+  try {
+    return JSON.stringify({});
+  } catch (error) {
+    return "";
+  }
+}
+
 @Directive({
   selector: 'th[sortable]',
   standalone: true,

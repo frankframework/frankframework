@@ -15,8 +15,6 @@
 */
 package org.frankframework.management.web.spring;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
@@ -29,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,17 +53,18 @@ public class TestServiceListener extends FrankApiBase {
 	@Relation("testing")
 	@Description("send a message to a service listeners, triggering an adapter to process the message")
 	@PostMapping(value = "/test-servicelistener", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> postServiceListener(ServiceListenerMultipartBody multipartBody) throws ApiException {
-		if(multipartBody == null) {
-			throw new ApiException("Missing post parameters");
-		}
-
+	public ResponseEntity<?> postServiceListener(
+			@RequestPart("service") String servicePart,
+			@RequestPart("encoding") String encodingPart,
+			@RequestPart("file") MultipartFile filePart,
+			@RequestPart("message") MultipartFile messagePart
+	) throws ApiException {
 		String message = null;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SERVICE_LISTENER, BusAction.UPLOAD);
-		builder.addHeader("service", RequestUtils.resolveRequiredProperty("service", multipartBody.getService(), null));
-		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", multipartBody.getEncoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		MultipartFile filePart = multipartBody.getFile();
+		builder.addHeader("service", RequestUtils.resolveRequiredProperty("service", servicePart, null));
+		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", encodingPart, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+
 		if(filePart != null) {
 			try {
 				InputStream file = filePart.getInputStream();
@@ -75,7 +75,7 @@ public class TestServiceListener extends FrankApiBase {
 				throw new ApiException("error reading file", e);
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", multipartBody.getMessage(), fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", messagePart, fileEncoding);
 		}
 
 		if(StringUtils.isEmpty(message)) {
@@ -86,13 +86,14 @@ public class TestServiceListener extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
-	@Getter
+	// Won't work Spring 5.3 without SpringBoot
+	/*@Getter
 	@Setter
 	public static class ServiceListenerMultipartBody {
 		private String service;
 		private String encoding;
 		private MultipartFile file;
 		private MultipartFile message;
-	}
+	}*/
 
 }

@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
@@ -80,21 +81,102 @@ public class Scheduler extends FrankApiBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PostMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createSchedule(ScheduleMultipartBody input) {
-		String jobGroupName = RequestUtils.resolveRequiredProperty("group", input.getGroup(), null);
+	public ResponseEntity<?> createSchedule(
+			@RequestPart("group") String groupPart,
+			@RequestPart("name") String namePart,
+			@RequestPart("cron") String cronPart,
+			@RequestPart("interval") Integer intervalPart,
+			@RequestPart("adapter") String adapterPart,
+			@RequestPart("receiver") String receiverPart,
+			@RequestPart("configuration") String configurationPart,
+			@RequestPart("listener") String listenerPart,
+			@RequestPart("lockkey") String lockkeyPart,
+			@RequestPart("message") String messagePart,
+			@RequestPart("description") String descriptionPart,
+			@RequestPart("persistent") boolean persistentPart,
+			@RequestPart("locker") boolean lockerPart
+	) {
+		String jobGroupName = RequestUtils.resolveRequiredProperty("group", groupPart, null);
+		ScheduleMultipartBody input = new ScheduleMultipartBody();
+		input.setGroup(jobGroupName);
+		input.setName(namePart);
+		input.setCron(cronPart);
+		input.setInterval(intervalPart);
+		input.setAdapter(adapterPart);
+		input.setReceiver(receiverPart);
+		input.setConfiguration(configurationPart);
+		input.setListener(listenerPart);
+		input.setLockkey(lockkeyPart);
+		input.setMessage(messagePart);
+		input.setDescription(descriptionPart);
+		input.setPersistent(persistentPart);
+		input.setLocker(lockerPart);
 		return createSchedule(jobGroupName, input);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> updateSchedule(@PathVariable("groupName") String groupName, @PathVariable("jobName") String jobName, ScheduleMultipartBody input) {
+	public ResponseEntity<?> updateSchedule(
+			@PathVariable("groupName") String groupName,
+			@PathVariable("jobName") String jobName,
+			@RequestPart("cron") String cronPart,
+			@RequestPart("interval") Integer intervalPart,
+			@RequestPart("adapter") String adapterPart,
+			@RequestPart("receiver") String receiverPart,
+			@RequestPart("configuration") String configurationPart,
+			@RequestPart("listener") String listenerPart,
+			@RequestPart("lockkey") String lockkeyPart,
+			@RequestPart("message") String messagePart,
+			@RequestPart("description") String descriptionPart,
+			@RequestPart("persistent") boolean persistentPart,
+			@RequestPart("locker") boolean lockerPart
+	) {
+		ScheduleMultipartBody input = new ScheduleMultipartBody();
+		input.setCron(cronPart);
+		input.setInterval(intervalPart);
+		input.setAdapter(adapterPart);
+		input.setReceiver(receiverPart);
+		input.setConfiguration(configurationPart);
+		input.setListener(listenerPart);
+		input.setLockkey(lockkeyPart);
+		input.setMessage(messagePart);
+		input.setDescription(descriptionPart);
+		input.setPersistent(persistentPart);
+		input.setLocker(lockerPart);
 		return createSchedule(this, groupName, jobName, input, true);
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
 	@PostMapping(value = "/schedules/{groupName}/jobs", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createScheduleInJobGroup(@PathVariable("groupName") String groupName, ScheduleMultipartBody input) {
+	public ResponseEntity<?> createScheduleInJobGroup(
+			@PathVariable("groupName") String groupName,
+			@RequestPart("name") String namePart,
+			@RequestPart("cron") String cronPart,
+			@RequestPart("interval") Integer intervalPart,
+			@RequestPart("adapter") String adapterPart,
+			@RequestPart("receiver") String receiverPart,
+			@RequestPart("configuration") String configurationPart,
+			@RequestPart("listener") String listenerPart,
+			@RequestPart("lockkey") String lockkeyPart,
+			@RequestPart("message") String messagePart,
+			@RequestPart("description") String descriptionPart,
+			@RequestPart("persistent") boolean persistentPart,
+			@RequestPart("locker") boolean lockerPart
+	) {
+		ScheduleMultipartBody input = new ScheduleMultipartBody();
+		input.setName(namePart);
+		input.setCron(cronPart);
+		input.setInterval(intervalPart);
+		input.setAdapter(adapterPart);
+		input.setReceiver(receiverPart);
+		input.setConfiguration(configurationPart);
+		input.setListener(listenerPart);
+		input.setLockkey(lockkeyPart);
+		input.setMessage(messagePart);
+		input.setDescription(descriptionPart);
+		input.setPersistent(persistentPart);
+		input.setLocker(lockerPart);
 		return createSchedule(groupName, input);
 	}
 
@@ -103,7 +185,13 @@ public class Scheduler extends FrankApiBase {
 		return createSchedule(this, groupName, jobName, input, false);
 	}
 
-	protected static ResponseEntity<?> createSchedule(FrankApiBase base, String groupName, String jobName, ScheduleMultipartBody multipartBody, boolean overwrite) {
+	protected static ResponseEntity<?> createSchedule(
+			FrankApiBase base,
+			String groupName,
+			String jobName,
+			ScheduleMultipartBody multipartBody,
+			boolean overwrite
+	) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(base, BusTopic.SCHEDULER, BusAction.UPLOAD);
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
@@ -116,14 +204,14 @@ public class Scheduler extends FrankApiBase {
 		builder.addHeader("configuration", RequestUtils.resolveRequiredProperty(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, multipartBody.getConfiguration(), ""));
 		builder.addHeader("listener", RequestUtils.resolveRequiredProperty("listener", multipartBody.getListener(), ""));
 
-		builder.addHeader("persistent", RequestUtils.resolveRequiredProperty("persistent", multipartBody.isPersistent() , false));
+		builder.addHeader("persistent", RequestUtils.resolveRequiredProperty("persistent", multipartBody.isPersistent(), false));
 		builder.addHeader("locker", RequestUtils.resolveRequiredProperty("locker", multipartBody.isLocker(), false));
-		builder.addHeader("lockkey", RequestUtils.resolveRequiredProperty("lockkey", multipartBody.getLockkey(), "lock4["+jobName+"]"));
+		builder.addHeader("lockkey", RequestUtils.resolveRequiredProperty("lockkey", multipartBody.getLockkey(), "lock4[" + jobName + "]"));
 
 		builder.addHeader("message", RequestUtils.resolveRequiredProperty("message", multipartBody.getMessage(), null));
 
 		builder.addHeader("description", RequestUtils.resolveRequiredProperty("description", multipartBody.getDescription(), null));
-		if(overwrite) {
+		if (overwrite) {
 			builder.addHeader("overwrite", overwrite);
 		}
 
@@ -140,6 +228,7 @@ public class Scheduler extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
+	// Won't work with object binding in Spring 5.3 without SpringBoot
 	@Getter
 	@Setter
 	public static class ScheduleMultipartBody {

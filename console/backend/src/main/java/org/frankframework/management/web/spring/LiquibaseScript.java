@@ -15,8 +15,6 @@
 */
 package org.frankframework.management.web.spring;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -30,6 +28,7 @@ import org.springframework.messaging.Message;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,19 +52,18 @@ public class LiquibaseScript extends FrankApiBase {
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PostMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> generateSQL(LiquibaseMultipartBody multipartBody) throws ApiException {
+	public ResponseEntity<?> generateSQL(@RequestPart("configuration") String configurationPart, @RequestPart("file") MultipartFile filePart) throws ApiException {
 
-		String configuration = RequestUtils.resolveRequiredProperty("configuration", multipartBody.getConfiguration(), null);
+		String configuration = RequestUtils.resolveRequiredProperty("configuration", configurationPart, null);
 
-		MultipartFile filePart = multipartBody.getFile();
-		if(configuration == null || filePart == null) {
+		if(filePart == null) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 
-		String filenameOrPath = multipartBody.getFile().getOriginalFilename();
+		String filenameOrPath = filePart.getOriginalFilename();
 		String filename = Paths.get(filenameOrPath).getFileName().toString();
 		try {
 			InputStream file = filePart.getInputStream();
@@ -92,11 +90,12 @@ public class LiquibaseScript extends FrankApiBase {
 		return ResponseEntity.status(HttpStatus.CREATED).body(resultMap);
 	}
 
-	@Getter
+	// Won't work Spring 5.3 without SpringBoot
+	/*@Getter
 	@Setter
 	public static class LiquibaseMultipartBody {
 		private String configuration;
 		private MultipartFile file;
-	}
+	}*/
 
 }

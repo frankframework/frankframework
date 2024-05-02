@@ -15,8 +15,6 @@
 */
 package org.frankframework.management.web.spring;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -36,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.annotation.security.RolesAllowed;
@@ -128,7 +127,7 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathVariable("storageSource") StorageSource storageSource,
 			@PathVariable("storageSourceName") String storageSourceName,
 			@PathVariable("processState") String processState,
-			StorageMessagesMultipartBody input
+			@RequestPart("messageIds") String messageIdsPart
 	) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
@@ -141,7 +140,7 @@ public class TransactionalStorage extends FrankApiBase {
 			builder.addHeader("processState", processState);
 		}
 
-		String[] messageIdArray = getMessageIds(input);
+		String[] messageIdArray = getMessageIds(messageIdsPart);
 
 		StreamingResponseBody stream = new StreamingResponseBody() {
 			@Override
@@ -256,14 +255,19 @@ public class TransactionalStorage extends FrankApiBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> resendReceiverMessages(@PathVariable("configuration") String configuration, @PathVariable("adapterName") String adapter, @PathVariable("receiverName") String receiver, StorageMessagesMultipartBody input) {
+	public ResponseEntity<?> resendReceiverMessages(
+			@PathVariable("configuration") String configuration,
+			@PathVariable("adapterName") String adapter,
+			@PathVariable("receiverName") String receiver,
+			@RequestPart("messageIds") String messageIdsPart
+	) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 
-		String[] messageIds = getMessageIds(input);
+		String[] messageIds = getMessageIds(messageIdsPart);
 
 		List<String> errorMessages = new ArrayList<>();
 		for (int i = 0; i < messageIds.length; i++) {
@@ -293,7 +297,7 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathVariable("receiverName") String receiver,
 			@PathVariable("processState") String processState,
 			@PathVariable("targetState") String targetState,
-			StorageMessagesMultipartBody input) {
+			@RequestPart("messageIds") String messageIdsPart) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
@@ -302,7 +306,7 @@ public class TransactionalStorage extends FrankApiBase {
 		builder.addHeader("processState", processState);
 		builder.addHeader("targetState", targetState);
 
-		String[] messageIds = getMessageIds(input);
+		String[] messageIds = getMessageIds(messageIdsPart);
 
 		List<String> errorMessages = new ArrayList<>();
 		for (int i = 0; i < messageIds.length; i++) {
@@ -351,14 +355,14 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathVariable("configuration") String configuration,
 			@PathVariable("adapterName") String adapter,
 			@PathVariable("receiverName") String receiver,
-			StorageMessagesMultipartBody input) {
+			@RequestPart("messageIds") String messageIdsPart) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 
-		String[] messageIds = getMessageIds(input);
+		String[] messageIds = getMessageIds(messageIdsPart);
 
 		List<String> errorMessages = new ArrayList<>();
 		for (int i = 0; i < messageIds.length; i++) {
@@ -379,15 +383,16 @@ public class TransactionalStorage extends FrankApiBase {
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(errorMessages);
 	}
 
-	private String[] getMessageIds(StorageMessagesMultipartBody multipartBody) {
-		String messageIds = RequestUtils.resolveRequiredProperty("messageIds", multipartBody.getMessageIds(), null);
+	private String[] getMessageIds(String messageIdsPart) {
+		String messageIds = RequestUtils.resolveRequiredProperty("messageIds", messageIdsPart, null);
 		return messageIds.split(",");
 	}
 
-	@Getter
+	// Won't work Spring 5.3 without SpringBoot
+	/*@Getter
 	@Setter
 	public static class StorageMessagesMultipartBody {
 		private String messageIds;
-	}
+	}*/
 
 }
