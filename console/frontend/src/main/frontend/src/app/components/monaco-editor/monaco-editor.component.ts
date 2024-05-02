@@ -105,8 +105,8 @@ export class MonacoEditorComponent
   }
 
   private initializeMouseEvents(): void {
-    this.codeEditorInstance?.onMouseDown((e) => {
-      const element = e.target.element;
+    this.codeEditorInstance?.onMouseDown((event) => {
+      const element = event.target.element;
       if (element?.className === 'line-numbers') {
         const lineNumber = element.textContent;
         if (lineNumber) {
