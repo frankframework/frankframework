@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MonacoEditorComponent } from './monaco-editor.component';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('MonacoEditorComponent', () => {
   let component: MonacoEditorComponent;
@@ -8,7 +9,8 @@ describe('MonacoEditorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MonacoEditorComponent],
+      imports: [MonacoEditorComponent, RouterTestingModule],
+      providers: [],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MonacoEditorComponent);

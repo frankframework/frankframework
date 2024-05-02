@@ -62,7 +62,7 @@ export class MonacoEditorComponent
       return;
     }
 
-    if (window.require) {
+    if ((window as any).require) {
       this.onAmdLoader();
     } else {
       const loaderScript: HTMLScriptElement = document.createElement('script');
@@ -74,8 +74,8 @@ export class MonacoEditorComponent
   }
 
   onAmdLoader(): void {
-    window.require.config({ paths: { vs: 'assets/monaco/vs' } });
-    window.require(['vs/editor/editor.main'], () => {
+    (window as any).require.config({ paths: { vs: 'assets/monaco/vs' } });
+    (window as any).require(['vs/editor/editor.main'], () => {
       this.initializeMonaco();
     });
   }
