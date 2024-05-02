@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ViewportScroller } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
 import { copyToClipboard } from 'src/app/utils';
+import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 
 type TransitionObject = {
   name?: string;
@@ -17,6 +18,8 @@ type TransitionObject = {
   styleUrls: ['./configurations-show.component.scss'],
 })
 export class ConfigurationsShowComponent implements OnInit {
+  @ViewChild('editor') editor!: MonacoEditorComponent;
+
   configurations: Configuration[] = [];
   configuration: string = '';
   selectedConfiguration: string = 'All';
@@ -28,7 +31,6 @@ export class ConfigurationsShowComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private viewportScroller: ViewportScroller,
     private configurationsService: ConfigurationsService,
     private appService: AppService,
   ) {}
@@ -102,10 +104,7 @@ export class ConfigurationsShowComponent implements OnInit {
       .getConfiguration(this.selectedConfiguration, this.loadedConfiguration)
       .subscribe((data) => {
         this.configuration = data;
-
-        if (this.anchor) {
-          document.querySelector(`#${this.anchor}`)?.scrollIntoView();
-        }
+        this.editor.setContent(data);
       });
   }
 }

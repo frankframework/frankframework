@@ -10,6 +10,8 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
+import { first, ReplaySubject } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-monaco-editor',
@@ -28,18 +30,30 @@ export class MonacoEditorComponent
   @Input()
   options?: monaco.editor.IEditorOptions;
 
-  private codeEditorInstance!: monaco.editor.IStandaloneCodeEditor;
+  private codeEditorInstance?: monaco.editor.IStandaloneCodeEditor;
+  private codeEditorInstanceSubject =
+    new ReplaySubject<monaco.editor.IStandaloneCodeEditor>();
+
+  codeEditorInstance$ = this.codeEditorInstanceSubject.asObservable();
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {}
 
   ngAfterViewInit(): void {
     this.loadMonaco();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.setContent(changes['content'].currentValue);
+    const contentChanges = changes['content'];
+    if (contentChanges && !contentChanges.isFirstChange()) {
+      this.setContent(changes['content'].currentValue);
+    }
   }
 
   ngOnDestroy(): void {
-    this.codeEditorInstance.dispose();
+    this.codeEditorInstance?.dispose();
   }
 
   private loadMonaco(): void {
@@ -68,6 +82,8 @@ export class MonacoEditorComponent
 
   private initializeMonaco(): void {
     this.initializeEditor();
+    this.initializeMouseEvents();
+    this.selectLineNumberInRoute();
   }
 
   private initializeEditor(): void {
@@ -85,9 +101,41 @@ export class MonacoEditorComponent
         ...this.options,
       },
     );
+    this.codeEditorInstanceSubject.next(this.codeEditorInstance);
   }
 
-  private setContent(content: string): void {
-    this.codeEditorInstance?.getModel()?.setValue(content);
+  private initializeMouseEvents(): void {
+    this.codeEditorInstance?.onMouseDown((e) => {
+      const element = e.target.element;
+      if (element?.className === 'line-numbers') {
+        const lineNumber = element.textContent;
+        if (lineNumber) {
+          this.router.navigate([], { fragment: `L${lineNumber}` });
+          this.revealLine(+lineNumber);
+        }
+      }
+    });
+  }
+
+  private selectLineNumberInRoute(): void {
+    this.route.fragment.subscribe((hash) => {
+      if (hash) {
+        const lineNumber = hash.replace('L', '');
+        this.revealLine(+lineNumber);
+      }
+    });
+  }
+
+  setContent(content: string): void {
+    this.codeEditorInstance$.pipe(first()).subscribe((editor) => {
+      editor.getModel()?.setValue(content);
+    });
+  }
+
+  revealLine(lineNumber: number): void {
+    this.codeEditorInstance$.pipe(first()).subscribe((editor) => {
+      editor.revealLineNearTop(lineNumber);
+      editor.setPosition({ lineNumber: lineNumber, column: 0 });
+    });
   }
 }
