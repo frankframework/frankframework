@@ -73,20 +73,6 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public enum MediaTypes {
 		XML, JSON, TEXT;
 	}
-	/**
-	 * initialize listener and register <code>this</code> to the JNDI
-	 */
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		if (view==null) {
-			if (StringUtils.isEmpty(getMethod()) || "GET".equalsIgnoreCase(getMethod())) {
-				setView(true);
-			} else {
-				setView(false);
-			}
-		}
-	}
 
 	@Override
 	public void open() throws ListenerException {
@@ -104,7 +90,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		Message response;
-		String contentType = (String) session.get("contentType");
+		String acceptHeaderThatIsSomeHowStoredUnderThisKey = (String) session.get("contentType");
 
 		//Check if valid path
 		String requestRestPath = (String) session.get("restPath");
@@ -123,7 +109,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		int eTag = 0;
 
 		//Check if contentType is not overwritten which disabled auto-converting and mediatype headers
-		if(contentType == null || StringUtils.isEmpty(contentType) || "*/*".equalsIgnoreCase(contentType)) {
+		if(StringUtils.isEmpty(acceptHeaderThatIsSomeHowStoredUnderThisKey) || "*/*".equalsIgnoreCase(acceptHeaderThatIsSomeHowStoredUnderThisKey)) {
 			switch(getProduces()) {
 				case XML:
 					session.put("contentType", "application/xml");
@@ -228,21 +214,6 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	/**
-	 * Indicates whether this listener supports a view (and a link should be put in the ibis console)
-	 * @ff.default if <code>method=get</code> then <code>true</code>, else <code>false</code>
-	 */
-	public void setView(boolean b) {
-		view = b;
-	}
-	public boolean isView() {
-		if (view==null ) {
-			log.warn("RestListener ["+getName()+"] appears to be not configured");
-			return false;
-		}
-		return view;
-	}
-
-	/**
 	 * Comma separated list of authorization roles which are granted for this rest service
 	 * @ff.default IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService
 	 */
@@ -301,6 +272,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	/**
 	 * Uses an JsonPipe to convert the json-input to xml, and xml-output to json.
 	 * Use with caution, a properly configured Input/Output-wrapper can do much more and is more robust!
+	 * @ff.default true
 	 */
 	public void setAutomaticallyTransformToAndFromJson(boolean b) {
 		automaticallyTransformToAndFromJson = b;
