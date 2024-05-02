@@ -63,7 +63,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Override
 	@AfterEach
 	public void tearDown()  {
-		CloseUtils.close(result, fileSystem);
+		CloseUtils.closeSilently(result, fileSystem);
 
 		super.tearDown();
 	}

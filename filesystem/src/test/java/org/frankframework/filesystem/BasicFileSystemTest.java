@@ -42,7 +42,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	@AfterEach
 	@Override
 	public void tearDown() {
-		CloseUtils.close(fileSystem);
+		CloseUtils.closeSilently(fileSystem);
 	}
 
 	@Test

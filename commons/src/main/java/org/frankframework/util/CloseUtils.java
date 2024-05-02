@@ -30,7 +30,7 @@ public class CloseUtils {
 	 *
 	 * @param closeable AutoCloseable to close. It is safe to pass {@code null}.
 	 */
-	public static void close(@Nullable AutoCloseable closeable) {
+	public static void closeSilently(@Nullable AutoCloseable closeable) {
 		if (closeable != null) {
 			try {
 				closeable.close();
@@ -45,9 +45,9 @@ public class CloseUtils {
 	 *
 	 * @param closeables AutoCloseables to close. It is safe to pass {@code null} values.
 	 */
-	public static void close(AutoCloseable... closeables) {
+	public static void closeSilently(AutoCloseable... closeables) {
 		for (AutoCloseable closeable : closeables) {
-			close(closeable);
+			closeSilently(closeable);
 		}
 	}
 
@@ -56,9 +56,9 @@ public class CloseUtils {
 	 *
 	 * @param closeables AutoCloseables to close. It is safe to pass {@code null}, or for the collection to contain {@code null} values.
 	 */
-	public static void close(@Nullable Collection<AutoCloseable> closeables) {
+	public static void closeSilently(@Nullable Collection<AutoCloseable> closeables) {
 		if (closeables != null) {
-			closeables.forEach(CloseUtils::close);
+			closeables.forEach(CloseUtils::closeSilently);
 		}
 	}
 }

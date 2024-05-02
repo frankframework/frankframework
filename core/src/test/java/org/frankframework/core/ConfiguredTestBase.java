@@ -44,7 +44,7 @@ public abstract class ConfiguredTestBase {
 		getConfigurationWarnings().afterPropertiesSet();
 		pipeline = null;
 		adapter = null;
-		CloseUtils.close(session);
+		CloseUtils.closeSilently(session);
 		session = null;
 	}
 

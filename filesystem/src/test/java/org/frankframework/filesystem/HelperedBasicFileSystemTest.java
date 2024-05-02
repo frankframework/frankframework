@@ -84,7 +84,7 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	@AfterEach
 	@Override
 	public void tearDown() {
-		CloseUtils.close(helper);
+		CloseUtils.closeSilently(helper);
 		super.tearDown();
 	}
 

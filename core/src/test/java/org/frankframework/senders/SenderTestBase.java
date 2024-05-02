@@ -56,7 +56,7 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 	@AfterEach
 	@Override
 	public void tearDown() {
-		CloseUtils.close(sender);
+		CloseUtils.closeSilently(sender);
 		sender = null;
 		super.tearDown();
 	}

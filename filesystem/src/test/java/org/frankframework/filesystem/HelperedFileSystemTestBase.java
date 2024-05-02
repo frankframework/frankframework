@@ -84,7 +84,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	@AfterEach
 	@Override
 	public void tearDown() {
-		CloseUtils.close(helper);
+		CloseUtils.closeSilently(helper);
 		super.tearDown();
 	}
 

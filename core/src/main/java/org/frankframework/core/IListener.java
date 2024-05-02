@@ -36,7 +36,7 @@ import org.frankframework.stream.Message;
  */
 @FrankDocGroup(FrankDocGroupValue.LISTENER)
 @ElementType(ElementTypes.LISTENER)
-public interface IListener<M> extends IConfigurable, AutoCloseable {
+public interface IListener<M> extends IConfigurable {
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method

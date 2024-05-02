@@ -42,7 +42,6 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.ProcessState;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
-import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 
 public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -67,7 +66,11 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	@Override
 	@AfterEach
 	public void tearDown() {
-		CloseUtils.close(fileSystemListener);
+		try {
+			fileSystemListener.close();
+		} catch (ListenerException e) {
+			log.warn("Error closing filesystem listener", e);
+		}
 		super.tearDown();
 	}
 

@@ -47,7 +47,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	@Override
 	@AfterEach
 	public void tearDown() {
-		CloseUtils.close(senderResult, fileSystemSender);
+		CloseUtils.closeSilently(senderResult, fileSystemSender);
 
 		super.tearDown();
 	}
@@ -478,7 +478,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		Message input = new Message(folder + "/" + filename);
 		senderResult = fileSystemSender.sendMessage(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		if (!senderResult.isSuccess()) {
 			return senderResult;
 		}
@@ -540,7 +540,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		Message input = new Message("dummyText");
 		senderResult = fileSystemSender.sendMessage(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		if (!senderResult.isSuccess()) {
 			return senderResult;
 		}

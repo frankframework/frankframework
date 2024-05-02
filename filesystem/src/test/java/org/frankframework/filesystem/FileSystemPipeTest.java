@@ -59,7 +59,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		if (fileSystemPipe!=null) {
 			fileSystemPipe.stop();
 		}
-		CloseUtils.close(prr);
+		CloseUtils.closeSilently(prr);
 
 		super.tearDown();
 	}
@@ -96,7 +96,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(filename);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 		waitForActionToFinish();
@@ -128,7 +128,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(filename);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 		TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
@@ -162,7 +162,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(filename);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 		TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
@@ -189,7 +189,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(filename);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 
@@ -221,7 +221,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input = new Message(filename);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		if (prr == null || !prr.isSuccessful()) {
 			return prr;
 		}
@@ -286,7 +286,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input = new Message(folder + "/" + filename);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		if (prr == null || !prr.isSuccessful()) {
 			return prr;
 		}
@@ -354,7 +354,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input = new Message("dummyText");
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		if (prr == null || !prr.isSuccessful()) {
 			return prr;
 		}
@@ -422,7 +422,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(folder);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 		waitForActionToFinish();
@@ -449,7 +449,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(folder);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 
@@ -486,7 +486,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(folder);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 
@@ -513,7 +513,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(filename);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 
@@ -543,7 +543,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(filename);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 
@@ -579,7 +579,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message("");
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 
@@ -678,7 +678,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		Message input= new Message(filename);
 		prr = fileSystemPipe.doPipe(input, session);
-		CloseUtils.close(input);
+		CloseUtils.closeSilently(input);
 		assertNotNull(prr);
 		String result=prr.getResult().asString();
 		waitForActionToFinish();

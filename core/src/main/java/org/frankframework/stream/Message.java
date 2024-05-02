@@ -384,10 +384,10 @@ public class Message implements Serializable, Closeable {
 			cleanable.clean();
 		}
 		if (request instanceof AutoCloseable closeable) {
-			CloseUtils.close(closeable);
+			CloseUtils.closeSilently(closeable);
 		}
 		request = null;
-		CloseUtils.close(resourcesToClose);
+		CloseUtils.closeSilently(resourcesToClose);
 	}
 
 	private void closeOnClose(@Nonnull AutoCloseable resource) {

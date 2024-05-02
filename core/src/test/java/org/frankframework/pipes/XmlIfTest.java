@@ -28,7 +28,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 
 	@AfterEach
 	public void tearDown() {
-		CloseUtils.close(pipeRunResult);
+		CloseUtils.closeSilently(pipeRunResult);
 	}
 
 	@Override
