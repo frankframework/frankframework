@@ -307,8 +307,8 @@
 														keepalive-time="3000"/>
 				</managed-scheduled-executor-services>
 			</concurrent>
+			<!-- no need to define some default jms factory here, the ff can handle that -->
 			<default-bindings context-service="java:jboss/ee/concurrency/context/default"
-							  jms-connection-factory="java:jboss/DefaultJMSConnectionFactory"
 							  managed-executor-service="java:jboss/ee/concurrency/executor/default"
 							  managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default"
 							  managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
@@ -336,7 +336,7 @@
 			</pools>
 			<caches>
 				<simple-cache name="simple"/>
-				<distributable-cache name="distributable"/>
+<!-- disable this, requires EJB <distributable-cache name="distributable"/> -->
 			</caches>
 			<async thread-pool-name="default"/>
 			<remote cluster="ejb" connectors="http-remoting-connector" thread-pool-name="default">
@@ -659,7 +659,10 @@
 				<jms-queue name="dynamicQueues/Q.TEST.OUT" entries="jms/i4testiaf_out-artemis"/>
 				<jms-queue name="dynamicQueues/Q.TEST.FF" entries="jms/i4testiaf_ff-artemis"/>
 				<remote-connector name="netty-remote-throughput" socket-binding="artemis"/>
-				<pooled-connection-factory name="artemis" entries="jms/qcf-artemis java:jboss/DefaultJMSConnectionFactory" connectors="netty-remote-throughput" transaction="xa"/>
+				<pooled-connection-factory name="artemis"
+				entries="java:/jms/qcf-artemis" connectors="netty-remote-throughput" transaction="xa"
+				min-pool-size="1" max-pool-size="20"
+				/>
 			</server>
 		</subsystem>
 		<subsystem xmlns="urn:wildfly:metrics:1.0" security-enabled="false" exposed-subsystems="*" prefix="${wildfly.metrics.prefix:jboss}"/>
