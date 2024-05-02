@@ -464,9 +464,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		waitForActionToFinish();
 
 		if (fileAlreadyExists) {
-			OutputStream outputStream = _createFile(folder, filename);
-			outputStream.write("dummy-contents\n".getBytes());
-			outputStream.close();
+			try (OutputStream outputStream = _createFile(folder, filename)) {
+				outputStream.write("dummy-contents\n".getBytes());
+			}
 		}
 
 		fileSystemSender.setAction(FileSystemAction.CREATE); //TODO WRITE

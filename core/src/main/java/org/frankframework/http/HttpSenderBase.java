@@ -338,20 +338,20 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl;
-		if (paramList == null) {
-			pvl = new ParameterValueList();
-		} else {
+		if (paramList != null) {
 			try {
 				pvl = paramList.getValues(message, session);
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 			}
+		} else {
+			pvl = null;
 		}
 
 		URI targetUri;
 		final HttpRequestBase httpRequestBase;
 		try {
-			if (urlParameter != null) {
+			if (urlParameter != null && pvl != null) {
 				String url = pvl.get(getUrlParam()).asStringValue();
 				targetUri = getURI(url);
 			} else {
@@ -360,7 +360,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<>();
-			if (!headerParamsSet.isEmpty()) {
+			if (!headerParamsSet.isEmpty() && pvl != null) {
 				log.debug("appending header parameters {}", headersParams);
 				for (String paramName:headerParamsSet) {
 					ParameterValue paramValue = pvl.get(paramName);

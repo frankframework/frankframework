@@ -15,7 +15,6 @@
 */
 package org.frankframework.pipes;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -262,8 +261,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	public Map<String, PipeForward> getForwards() {
 		Map<String, PipeForward> forwards = new HashMap<>(pipeForwards);
 		PipeLine pipeline = getPipeLine();
-		if (pipeline==null) {
-			return Collections.emptyMap();
+		if (pipeline == null) {
+			return forwards;
 		}
 
 		//Omit global pipeline-forwards and only return local pipe-forwards
