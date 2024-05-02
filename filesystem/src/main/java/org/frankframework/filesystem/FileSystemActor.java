@@ -290,8 +290,9 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private F getFileAndCreateFolder(@Nonnull Message input, ParameterValueList pvl) throws FileSystemException {
 		String filenameWithFolder = determineFilename(input, pvl);
 		String folder = FilenameUtils.getFullPathNoEndSeparator(filenameWithFolder);
-		if(StringUtils.isNotBlank(folder) && isCreateFolder() && !fileSystem.folderExists(folder)) {
-			fileSystem.createFolder(folder);
+		if(StringUtils.isNotBlank(folder) && !fileSystem.folderExists(folder)) {
+			if (isCreateFolder() ) fileSystem.createFolder(folder);
+			else throw new FolderNotFoundException("folder ["+folder+"] does not exist");
 		}
 		return fileSystem.toFile(filenameWithFolder);
 	}
@@ -494,7 +495,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				if (file!=null && fileSystem.exists(file)) {
 					throw new FileNotFoundException("folder ["+determinedFolderName+"], does not exist as a folder, but is a file");
 				}
-				throw new FileNotFoundException("folder ["+determinedFolderName+"], does not exist");
+				throw new FolderNotFoundException("folder ["+determinedFolderName+"], does not exist");
 			}
 		}
 		return determinedFolderName;

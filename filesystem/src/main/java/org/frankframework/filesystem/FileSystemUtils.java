@@ -27,6 +27,7 @@ import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
 
+import lombok.Lombok;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
@@ -42,8 +43,6 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.WildCardFilter;
 import org.xml.sax.SAXException;
-
-import lombok.Lombok;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
@@ -70,7 +69,7 @@ public class FileSystemUtils {
 				if (numOfBackups>0) {
 					FileSystemUtils.rolloverByNumber(fileSystem, destination, numOfBackups);
 				} else {
-					throw new FileSystemException("Cannot "+action.getLabel()+" file to ["+fileSystem.getName(destination)+"]. Destination file ["+fileSystem.getCanonicalName(destination)+"] already exists.");
+					throw new FileAlreadyExistsException("Cannot "+action.getLabel()+" file to ["+fileSystem.getName(destination)+"]. Destination file ["+fileSystem.getCanonicalName(destination)+"] already exists.");
 				}
 			}
 		}
@@ -87,7 +86,7 @@ public class FileSystemUtils {
 			if (createFolders) {
 				fileSystem.createFolder(destinationFolder);
 			} else {
-				throw new FileSystemException("destination folder ["+destinationFolder+"] does not exist");
+				throw new FolderNotFoundException("destination folder ["+destinationFolder+"] does not exist");
 			}
 		}
 		if (fileSystem instanceof IWritableFileSystem) {
@@ -185,7 +184,8 @@ public class FileSystemUtils {
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterable<F> iterable){
-		final DirectoryStream<F> ds = new DirectoryStream<>() {
+
+		return new DirectoryStream<>() {
 
 			@Override
 			public void close() throws IOException {
@@ -206,8 +206,6 @@ public class FileSystemUtils {
 			}
 
 		};
-
-		return ds;
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator){
@@ -240,7 +238,8 @@ public class FileSystemUtils {
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, Supplier<IOException> onClose){
-		final DirectoryStream<F> ds = new DirectoryStream<>() {
+
+		return new DirectoryStream<>() {
 
 			@Override
 			public void close() throws IOException {
@@ -258,8 +257,6 @@ public class FileSystemUtils {
 			}
 
 		};
-
-		return ds;
 	}
 
 	public static <F> void rolloverByDay(IWritableFileSystem<F> fileSystem, F file, String folder, int rotateDays) throws FileSystemException {

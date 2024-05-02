@@ -108,11 +108,12 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		try {
 			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException e) {
+			Throwable cause = e.getCause();
 			String forwardName;
-			if (e instanceof FileNotFoundException) forwardName = "fileNotFound";
-			else if (e instanceof FolderNotFoundException) forwardName = "folderNotFound";
-			else if (e instanceof FileAlreadyExistsException) forwardName = "fileAlreadyExists";
-			else if (e instanceof FolderAlreadyExistsException) forwardName = "folderAlreadyExists";
+			if (cause instanceof FileNotFoundException) forwardName = "fileNotFound";
+			else if (cause instanceof FolderNotFoundException) forwardName = "folderNotFound";
+			else if (cause instanceof FileAlreadyExistsException) forwardName = "fileAlreadyExists";
+			else if (cause instanceof FolderAlreadyExistsException) forwardName = "folderAlreadyExists";
 			else forwardName = PipeForward.EXCEPTION_FORWARD_NAME;
 
 			Map<String, PipeForward> forwards = getForwards();

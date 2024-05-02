@@ -103,14 +103,15 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 			Message result = actor.doAction(message, pvl, session);
 			return new SenderResult(result);
 		} catch (FileSystemException e) {
+			Throwable cause = e.getCause();
 			String forwardName;
-			if (e instanceof FileNotFoundException) forwardName = "fileNotFound";
-			else if (e instanceof FolderNotFoundException) forwardName = "folderNotFound";
-			else if (e instanceof FileAlreadyExistsException) forwardName = "fileAlreadyExists";
-			else if (e instanceof FolderAlreadyExistsException) forwardName = "folderAlreadyExists";
+			if (cause instanceof FileNotFoundException) forwardName = "fileNotFound";
+			else if (cause instanceof FolderNotFoundException) forwardName = "folderNotFound";
+			else if (cause instanceof FileAlreadyExistsException) forwardName = "fileAlreadyExists";
+			else if (cause instanceof FolderAlreadyExistsException) forwardName = "folderAlreadyExists";
 			else forwardName = PipeForward.EXCEPTION_FORWARD_NAME;
 
-			log.error("Error from FileSystemActor, will return forward name [{}]",forwardName,e);
+			log.error("Error from FileSystemActor, will return forward name [{}]",forwardName,cause);
 			return new SenderResult(false, Message.nullMessage(), e.getMessage(), forwardName);
 		}
 	}

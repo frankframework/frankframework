@@ -168,7 +168,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		try {
 			return Files.move(source, destination);
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot rename file ["+ source.toString() +"] to ["+ destination.toString() +"]", e);
+			throw new FileSystemException("Cannot rename file ["+ source +"] to ["+ destination +"]", e);
 		}
 	}
 

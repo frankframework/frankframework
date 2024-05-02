@@ -537,6 +537,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		SenderResult result = fileSystemSenderWriteFile("folder1", false, false);
 		assertEquals("folderNotFound", result.getForwardName());
 		assertThat(result.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
+		assertThat(result.getErrorMessage(), containsString("folder [folder1] does not exist"));
 	}
 
 	@Test
@@ -546,16 +547,18 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderWritingFileThatAlreadyExists() throws Exception {
-		SenderException e = assertThrows(SenderException.class, () -> fileSystemSenderWriteFile("folder3", true, false));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
-		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
+		SenderResult result = fileSystemSenderWriteFile("folder3", true, false);
+		assertEquals("fileAlreadyExists", result.getForwardName());
+		assertThat(result.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
+		assertThat(result.getErrorMessage(), containsString("writefile1.txt] already exists"));
 	}
 
 	@Test
 	public void fileSystemSenderWritingFileThatAlreadyExistsAndCreateFolderAttributeEnabled() throws Exception {
-		SenderException e = assertThrows(SenderException.class, () -> fileSystemSenderWriteFile("folder3", true, false));
-		assertEquals(e.getCause().getClass(), FileSystemException.class);
-		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
+		SenderResult result = fileSystemSenderWriteFile("folder3", true, true);
+		assertEquals("fileAlreadyExists", result.getForwardName());
+		assertThat(result.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
+		assertThat(result.getErrorMessage(), containsString("writefile1.txt] already exists"));
 	}
 
 	@Test
