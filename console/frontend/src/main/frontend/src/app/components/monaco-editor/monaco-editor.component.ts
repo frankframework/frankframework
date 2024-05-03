@@ -30,18 +30,19 @@ interface AMDRequire {
 export class MonacoEditorComponent
   implements AfterViewInit, OnChanges, OnDestroy
 {
-  @ViewChild('editor')
-  editorContainer!: ElementRef;
-  @Input()
-  content?: string;
-  @Input()
-  options?: monaco.editor.IEditorOptions;
-
-  private codeEditorInstance?: monaco.editor.IStandaloneCodeEditor;
   private codeEditorInstanceSubject =
-    new ReplaySubject<monaco.editor.IStandaloneCodeEditor>();
+    new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
 
   codeEditorInstance$ = this.codeEditorInstanceSubject.asObservable();
+
+  @ViewChild('editor')
+  protected editorContainer!: ElementRef;
+  @Input()
+  protected content?: string;
+  @Input()
+  protected options?: monaco.editor.IEditorOptions;
+
+  private codeEditorInstance?: monaco.editor.IStandaloneCodeEditor;
 
   constructor(
     private router: Router,
