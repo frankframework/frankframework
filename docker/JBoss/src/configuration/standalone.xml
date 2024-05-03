@@ -142,8 +142,7 @@
 		<subsystem xmlns="urn:jboss:domain:datasources:7.0">
 			<datasources>
 				<!-- Framework datasources -->
-				<datasource jndi-name="java:/jdbc/ibis4test-h2" pool-name="h2-datasource" enabled="false"
-							use-java-context="true">
+				<datasource jndi-name="java:/jdbc/ibis4test-h2" pool-name="h2-datasource" enabled="false" use-java-context="true">
 					<connection-url>jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
 					<driver>h2</driver>
 				</datasource>
@@ -161,7 +160,7 @@
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
-				<xa-datasource jndi-name="java:/jdbc/ibis4test-mssql" pool-name="ibis4test-mssql" enabled="false"
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-mssql" pool-name="ibis4test-mssql" enabled="true"
 							   use-java-context="true" spy="false" use-ccm="true" statistics-enabled="false">
 					<xa-datasource-property name="SelectMethod">direct</xa-datasource-property>
 					<xa-datasource-property name="URL">jdbc:sqlserver://${env.jdbc.hostname:localhost}:1433;database=testiaf</xa-datasource-property>
@@ -190,7 +189,7 @@
 						<share-prepared-statements>false</share-prepared-statements>
 					</statement>
 				</xa-datasource>
-				<xa-datasource jndi-name="java:/jdbc/ibis4test-mysql" pool-name="ibis4test-mysql" enabled="false">
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-mysql" pool-name="ibis4test-mysql" enabled="true">
 					<driver>mysql</driver>
 					<xa-datasource-property name="URL">jdbc:mysql://${env.jdbc.hostname:localhost}:3307/testiaf</xa-datasource-property>
 					<xa-datasource-property name="pinGlobalTxToPhysicalConnection">true</xa-datasource-property>
@@ -200,7 +199,7 @@
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
-				<xa-datasource jndi-name="java:/jdbc/ibis4test-mariadb" pool-name="ibis4test-mariadb" enabled="false">
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-mariadb" pool-name="ibis4test-mariadb" enabled="true">
 					<driver>mariadb</driver>
 					<xa-datasource-property name="Url">jdbc:mariadb://${env.jdbc.hostname:localhost}:3306/testiaf</xa-datasource-property>
 					<security>
@@ -208,7 +207,7 @@
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
-				<xa-datasource jndi-name="java:/jdbc/ibis4test-postgres-xa" pool-name="ibis4test-postgres" enabled="false">
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-postgres-xa" pool-name="ibis4test-postgres" enabled="true">
 					<driver>postgresql</driver>
 					<xa-datasource-property name="URL">jdbc:postgresql://${env.jdbc.hostname:localhost}:5432/testiaf</xa-datasource-property>
 					<security>
@@ -216,7 +215,7 @@
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
-				<xa-datasource jndi-name="java:/jdbc/ibis4test-db2-xa" pool-name="ibis4test-db2" enabled="false">
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-db2-xa" pool-name="ibis4test-db2" enabled="true">
 					<driver>db2</driver>
 					<xa-datasource-property name="databaseName">testiaf</xa-datasource-property>
 					<xa-datasource-property name="serverName">${env.jdbc.hostname:localhost}</xa-datasource-property>
