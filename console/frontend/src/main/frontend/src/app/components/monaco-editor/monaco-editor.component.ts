@@ -13,6 +13,13 @@ import {
 import { first, ReplaySubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
+interface AMDRequire {
+  require: {
+    (imports: string[], callback: () => void): void;
+    config(config: { paths: Record<string, string> }): void;
+  };
+}
+
 @Component({
   selector: 'app-monaco-editor',
   standalone: true,
@@ -62,7 +69,7 @@ export class MonacoEditorComponent
       return;
     }
 
-    if ((window as any).require) {
+    if ((window as unknown as AMDRequire).require) {
       this.onAmdLoader();
     } else {
       const loaderScript: HTMLScriptElement = document.createElement('script');
@@ -74,8 +81,9 @@ export class MonacoEditorComponent
   }
 
   onAmdLoader(): void {
-    (window as any).require.config({ paths: { vs: 'assets/monaco/vs' } });
-    (window as any).require(['vs/editor/editor.main'], () => {
+    const windowRequire = (window as unknown as AMDRequire).require;
+    windowRequire.config({ paths: { vs: 'assets/monaco/vs' } });
+    windowRequire(['vs/editor/editor.main'], () => {
       this.initializeMonaco();
     });
   }
