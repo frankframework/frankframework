@@ -16,18 +16,16 @@
 package org.frankframework.filesystem;
 
 public class FolderAlreadyExistsException extends FileSystemException {
-	public FolderAlreadyExistsException() {
-	}
 
 	public FolderAlreadyExistsException(String message, Throwable cause) {
-		super(message, cause);
+		super(Forward.FOLDER_ALREADY_EXISTS, message, cause);
 	}
 
 	public FolderAlreadyExistsException(String message) {
-		super(message);
+		super(Forward.FOLDER_ALREADY_EXISTS, message);
 	}
 
 	public FolderAlreadyExistsException(Throwable cause) {
-		super(cause);
+		super(Forward.FOLDER_ALREADY_EXISTS, cause);
 	}
 }

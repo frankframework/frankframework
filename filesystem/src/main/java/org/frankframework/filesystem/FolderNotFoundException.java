@@ -16,18 +16,16 @@
 package org.frankframework.filesystem;
 
 public class FolderNotFoundException extends FileSystemException {
-	public FolderNotFoundException() {
-	}
 
 	public FolderNotFoundException(String message, Throwable cause) {
-		super(message, cause);
+		super(Forward.FOLDER_NOT_FOUND, message, cause);
 	}
 
 	public FolderNotFoundException(String message) {
-		super(message);
+		super(Forward.FOLDER_NOT_FOUND, message);
 	}
 
 	public FolderNotFoundException(Throwable cause) {
-		super(cause);
+		super(Forward.FOLDER_NOT_FOUND, cause);
 	}
 }

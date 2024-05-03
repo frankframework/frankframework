@@ -15,24 +15,62 @@
 */
 package org.frankframework.filesystem;
 
+import lombok.Getter;
 import org.frankframework.core.IbisException;
+import org.frankframework.core.PipeForward;
 
 public class FileSystemException extends IbisException {
 
-	public FileSystemException() {
-		super();
+	public enum Forward {
+		DEFAULT(PipeForward.EXCEPTION_FORWARD_NAME),
+		FILE_NOT_FOUND("fileNotFound"),
+		FOLDER_NOT_FOUND("folderNotFound"),
+		FILE_ALREADY_EXISTS("fileAlreadyExists"),
+		FOLDER_ALREADY_EXISTS("folderAlreadyExists"),
+		;
+
+		Forward(String name) {
+			this.forwardName = name;
+		}
+
+		@Getter
+		private final String forwardName;
 	}
+
+	@Getter
+	private final Forward forward;
 
 	public FileSystemException(String message, Throwable cause) {
 		super(message, cause);
+		this.forward = getForwardFromCause(cause);
+	}
+
+	public FileSystemException(Forward forward, String message, Throwable cause) {
+		super(message, cause);
+		this.forward = forward;
 	}
 
 	public FileSystemException(String message) {
 		super(message);
+		this.forward = Forward.DEFAULT;
+	}
+
+	public FileSystemException(Forward forward, String message) {
+		super(message);
+		this.forward = forward;
 	}
 
 	public FileSystemException(Throwable cause) {
 		super(cause);
+		this.forward = getForwardFromCause(cause);
 	}
 
+	public FileSystemException(Forward forward, Throwable cause) {
+		super(cause);
+		this.forward = forward;
+	}
+
+	private static Forward getForwardFromCause(Throwable cause) {
+		return cause instanceof FileSystemException fse ? fse.getForward() : Forward.DEFAULT;
+	}
 }

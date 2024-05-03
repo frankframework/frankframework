@@ -20,7 +20,6 @@ import java.util.List;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
-import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -103,15 +102,9 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 			Message result = actor.doAction(message, pvl, session);
 			return new SenderResult(result);
 		} catch (FileSystemException e) {
-			Throwable cause = e.getCause();
-			String forwardName;
-			if (cause instanceof FileNotFoundException) forwardName = "fileNotFound";
-			else if (cause instanceof FolderNotFoundException) forwardName = "folderNotFound";
-			else if (cause instanceof FileAlreadyExistsException) forwardName = "fileAlreadyExists";
-			else if (cause instanceof FolderAlreadyExistsException) forwardName = "folderAlreadyExists";
-			else forwardName = PipeForward.EXCEPTION_FORWARD_NAME;
+			String forwardName = e.getForward().getForwardName();
 
-			log.error("Error from FileSystemActor, will return forward name [{}]",forwardName,cause);
+			log.error("Error from FileSystemActor, will return forward name [{}]",forwardName, e);
 			return new SenderResult(false, Message.nullMessage(), e.getMessage(), forwardName);
 		}
 	}
