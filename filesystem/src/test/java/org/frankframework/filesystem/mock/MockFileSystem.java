@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.FileAlreadyExistsException;
+import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
@@ -97,13 +99,13 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		checkOpen();
 		MockFolder folder=folderName==null?this:getFolders().get(folderName);
 		if (folder==null) {
-			throw new FileSystemException("folder ["+folderName+"] does not exist");
+			throw new FolderNotFoundException("folder ["+folderName+"] does not exist");
 		}
 		if (f.getOwner()==null) {
 			throw new FileSystemException("file ["+f.getName()+"] has no owner");
 		}
 		if (!folder.getFiles().containsKey(f.getName())) {
-			throw new FileSystemException("file ["+f.getName()+"] does not exist in folder ["+folderName+"]");
+			throw new FileNotFoundException("file ["+f.getName()+"] does not exist in folder ["+folderName+"]");
 		}
 	}
 
@@ -126,7 +128,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		checkOpen();
 		MockFolder destFolder= folderName==null || "MOCKFILESYSTEM".equals(folderName)?this:getFolders().get(folderName);
 		if (destFolder==null) {
-			throw new FileSystemException("folder ["+folderName+"] does not exist");
+			throw new FolderNotFoundException("folder ["+folderName+"] does not exist");
 		}
 		M result = (M)destFolder.getFiles().get(filename);
 		if (result!=null) {
@@ -153,7 +155,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		checkOpen();
 		MockFolder folder = folderName==null ? this : getFolders().get(folderName);
 		if (folder==null) {
-			throw new FileSystemException("folder ["+folderName+"] is null");
+			throw new FolderNotFoundException("folder ["+folderName+"] is does not exist");
 		}
 		Map<String,MockFile> files = folder.getFiles();
 		if (files==null) {
@@ -220,14 +222,14 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
 		if (destFolder==null) {
 			if (!createFolder) {
-				throw new FileSystemException("destination folder ["+destinationFolderName+"] does not exist");
+				throw new FolderNotFoundException("destination folder ["+destinationFolderName+"] does not exist");
 			}
 			destFolder = new MockFolder(destinationFolderName,this);
 			getFolders().put(destinationFolderName,destFolder);
 		}
 		M destFile = (M)new MockFile(f.getName(),destFolder);
 		if (destFolder.getFiles().containsKey(f.getName())) {
-			throw new FileSystemException("file ["+f.getName()+"] does already exist in folder ["+destFolder+"]");
+			throw new FileAlreadyExistsException("file ["+f.getName()+"] does already exist in folder ["+destFolder+"]");
 		}
 		destFile.setAdditionalProperties(f.getAdditionalProperties());
 		destFile.setContents(f.getContents());
@@ -243,7 +245,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		MockFolder destFolder= destinationFolderName==null?this:getFolders().get(destinationFolderName);
 		if (destFolder==null) {
 			if (!createFolder) {
-				throw new FileSystemException("folder ["+destinationFolderName+"] does not exist");
+				throw new FolderNotFoundException("folder ["+destinationFolderName+"] does not exist");
 			}
 			destFolder = new MockFolder(destinationFolderName,this);
 			getFolders().put(destinationFolderName,destFolder);
@@ -301,10 +303,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		checkOpen();
 		MockFolder cur = getFolders().get(folder);
 		if (cur!=null) {
-			if (cur instanceof MockFolder) {
-				throw new FolderAlreadyExistsException("Directory already exists.");
-			}
-			throw new FileSystemException("Entry already exists.");
+			throw new FolderAlreadyExistsException("Directory already exists.");
 		}
 		MockFolder d = new MockFolder(folder,this);
 		getFolders().put(folder, d);
@@ -316,9 +315,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		MockFolder cur = getFolders().get(folder);
 		if (cur==null) {
 			throw new FolderNotFoundException("Directory does not exist.");
-		}
-		if (!(cur instanceof MockFolder)) {
-				throw new FileSystemException("Entry is not a directory");
 		}
 		if(!removeNonEmptyFolder && !cur.getFiles().isEmpty() || !cur.getFolders().isEmpty()) {
 			throw new FileSystemException("Cannot remove folder");

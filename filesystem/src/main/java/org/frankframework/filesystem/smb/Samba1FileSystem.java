@@ -34,6 +34,7 @@ import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemBase;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
@@ -150,7 +151,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	public void deleteFile(SmbFile f) throws FileSystemException {
 		try {
 			if (!f.exists()) {
-				throw new FileSystemException("File ["+f.getName()+"] not found");
+				throw new FileNotFoundException("File ["+f.getName()+"] not found");
 			}
 			if (f.isFile()) {
 				f.delete();
@@ -236,7 +237,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 			if(createFolder) {
 				createFolder(destinationFolder);
 			} else {
-				throw new FileSystemException("destination does not exist");
+				throw new FolderNotFoundException("destination does not exist");
 			}
 		}
 

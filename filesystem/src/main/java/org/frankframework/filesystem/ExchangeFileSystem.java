@@ -283,21 +283,21 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		} else {
 			inboxId = new FolderId(WellKnownFolderName.Inbox);
 		}
-		log.debug("determined inbox [" + inboxId + "] foldername [" + inboxId.getFolderName() + "]");
+		log.debug("determined inbox [{}] foldername [{}]", ()->inboxId, inboxId::getFolderName);
 
 		FolderId basefolderId;
 		if (StringUtils.isNotEmpty(baseFolderName)) {
 			try {
 				basefolderId = findFolder(inboxId, baseFolderName);
 			} catch (Exception e) {
-				throw new FileSystemException("Could not find baseFolder [" + baseFolderName + "] as subfolder of [" + inboxId.getFolderName() + "]", e);
+				throw new FolderNotFoundException("Could not find baseFolder [" + baseFolderName + "] as subfolder of [" + inboxId.getFolderName() + "]", e);
 			}
 			if (basefolderId == null) {
-				log.debug("Could not get baseFolder [" + baseFolderName + "] as subfolder of [" + inboxId.getFolderName() + "]");
+				log.debug("Could not get baseFolder [{}] as subfolder of [{}]", ()->baseFolderName, inboxId::getFolderName);
 				basefolderId = findFolder(null, baseFolderName);
 			}
 			if (basefolderId == null) {
-				throw new FileSystemException("Could not find baseFolder [" + baseFolderName + "]");
+				throw new FolderNotFoundException("Could not find baseFolder [" + baseFolderName + "]");
 			}
 		} else {
 			basefolderId = inboxId;
@@ -430,7 +430,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 				findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
 			}
 		} catch (Exception e) {
-			throw new FileSystemException("Cannot find folder [" + targetFolder.getObjectName() + "]", e);
+			throw new FolderNotFoundException("Cannot find folder [" + targetFolder.getObjectName() + "]", e);
 		}
 		if (findFoldersResultsIn.getTotalCount() == 0) {
 			log.debug("no folder found with name [{}] in basefolder [{}]", targetFolder::getObjectName, targetFolder::getBaseFolderId);
@@ -524,7 +524,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		try {
 			FolderId folderId = findFolder(reference);
 			if (folderId == null) {
-				throw new FileSystemException("Cannot find folder [" + folder + "]");
+				throw new FolderNotFoundException("Cannot find folder [" + folder + "]");
 			}
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList() < 0 ? 100 : getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
@@ -573,7 +573,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		ExchangeService exchangeService = getConnection(reference);
 		FolderId folderId = findFolder(exchangeService, reference);
 		if (folderId == null) {
-			throw new FileSystemException("Cannot find folder [" + foldername + "]");
+			throw new FolderNotFoundException("Cannot find folder [" + foldername + "]");
 		}
 		boolean invalidateConnectionOnRelease = false;
 		try {

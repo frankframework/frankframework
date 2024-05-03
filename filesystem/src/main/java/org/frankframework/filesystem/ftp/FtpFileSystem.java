@@ -36,6 +36,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.filesystem.FileAlreadyExistsException;
+import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
@@ -269,7 +271,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		FTPFileRef destination = new FTPFileRef(getName(f), destinationFolder);
 		try {
 			if(exists(destination)) {
-				throw new FileSystemException("target already exists");
+				throw new FileAlreadyExistsException("target already exists");
 			}
 			if(ftpClient.rename(getCanonicalName(f), destination.getName())) {
 				return destination;
@@ -334,7 +336,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		if(file.getTimestamp() == null) {
 			FTPFile fetch = findFile(file);
 			if(fetch == null) {
-				throw new FileSystemException("file does not exist on remote server");
+				throw new FileNotFoundException("file does not exist on remote server");
 			}
 			file.updateFTPFile(fetch);
 		}

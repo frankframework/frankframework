@@ -50,6 +50,7 @@ import com.hierynomus.smbj.share.File;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
@@ -226,7 +227,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public void _deleteFolder(String folderName) throws Exception {
 		if (folderName != null) {
 			if (!folderExists(folderName)) {
-				throw new FileSystemException("Remove directory for [" + folderName + "] has failed. Directory does not exist.");
+				throw new FolderNotFoundException("Remove directory for [" + folderName + "] has failed. Directory does not exist.");
 			} else {
 				diskShare.rmdir(folderName, true);
 			}

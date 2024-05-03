@@ -274,7 +274,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	public void createFile(S3Object f, InputStream content) throws FileSystemException, IOException {
 		String folder = getParentFolder(f);
 		if (folder != null && !folderExists(folder)) { //AWS Supports the creation of folders, this check is purely here so all FileSystems have the same behavior
-			throw new FileSystemException("folder ["+folder+"] does not exist");
+			throw new FolderNotFoundException("folder ["+folder+"] does not exist");
 		}
 
 		final File file = FileUtils.createTempFile(".s3-upload"); //The lesser evil to allow streaming uploads
@@ -421,7 +421,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public S3Object copyFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		if (!createFolder && !folderExists(destinationFolder)) {
-			throw new FileSystemException("folder ["+destinationFolder+"] does not exist");
+			throw new FolderNotFoundException("folder ["+destinationFolder+"] does not exist");
 		}
 		String destinationFile = destinationFolder+"/"+getName(f);
 		CopyObjectRequest cor = new CopyObjectRequest(bucketName, f.getKey(), bucketName,destinationFile);

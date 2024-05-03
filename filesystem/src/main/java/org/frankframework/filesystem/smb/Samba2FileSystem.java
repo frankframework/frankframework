@@ -65,6 +65,7 @@ import com.hierynomus.smbj.share.File;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileSystemBase;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
@@ -308,7 +309,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			SmbFileRef destination = toFile(destinationFolder, f.getName());
 			if(exists(destination)) {
-				throw new FileSystemException("target already exists");
+				throw new FileAlreadyExistsException("target already exists");
 			}
 
 			file.rename(destination.getName(), false);

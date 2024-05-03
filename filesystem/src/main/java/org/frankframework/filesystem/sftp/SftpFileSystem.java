@@ -38,6 +38,7 @@ import com.jcraft.jsch.SftpException;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
@@ -311,7 +312,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	public SftpFileRef moveFile(SftpFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		SftpFileRef destination = new SftpFileRef(getName(f), destinationFolder);
 		if(exists(destination)) {
-			throw new FileSystemException("target already exists");
+			throw new FileAlreadyExistsException("target already exists");
 		}
 
 		try {

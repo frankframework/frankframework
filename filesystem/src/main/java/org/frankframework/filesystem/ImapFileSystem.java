@@ -99,12 +99,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 					folder = (IMAPFolder)store.getFolder(baseFolder);
 				}
 				if (!folder.exists()) {
-					throw new FileSystemException("Could not find baseFolder ["+baseFolder+"]");
+					throw new FolderNotFoundException("Could not find baseFolder ["+baseFolder+"]");
 				}
 			} else {
 				folder = inbox;
 				if (!folder.exists()) {
-					throw new FileSystemException("Could not find baseFolder ["+folder+"]");
+					throw new FolderNotFoundException("Could not find baseFolder ["+folder+"]");
 				}
 			}
 			return folder;
@@ -333,7 +333,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		try {
 			IMAPFolder folder = getFolder(baseFolder, folderName);
 			if (folder == null) {
-				throw new FileSystemException("Could not find folder object [" + folderName + "]");
+				throw new FolderNotFoundException("Could not find folder object [" + folderName + "]");
 			}
 			if (!folder.delete(removeNonEmptyFolder)) {
 				throw new FileSystemException("Could not delete folder [" + folderName + "]");
