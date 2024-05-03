@@ -25,15 +25,27 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.BoundedReader;
 import org.frankframework.stream.Message;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.SneakyThrows;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.MessageEncoderImpl;
 
-public class MessageEncoder extends MessageEncoderImpl {
+public class MessageEncoder extends MessageEncoderImpl implements InitializingBean {
 
 	private @Autowired int maxMessageLength;
+
+	// Both Ladybug and the present class in the Frank!Framework
+	// truncate messages as configured through maxMessageLength.
+	// In this class we keep one character more such that
+	// Ladybug can detect when a message is being truncated.
+	private int truncateMessageToLength = -1;
+
+	@Override
+	public void afterPropertiesSet() {
+		truncateMessageToLength = maxMessageLength + 1;
+	}
 
 	@Override
 	public ToStringResult toString(Object message, String charset) {
@@ -46,7 +58,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 					if (m.isBinary()) {
 						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 						try (InputStream inputStream = m.asInputStream()) {
-							IOUtils.copy(new BoundedInputStream(inputStream, maxMessageLength), baos, maxMessageLength);
+							IOUtils.copy(new BoundedInputStream(inputStream, truncateMessageToLength), baos, truncateMessageToLength);
 							ToStringResult result = super.toString(baos.toByteArray(), charset);
 							result.setMessageClassName(m.getObjectId());
 							return result;
@@ -56,7 +68,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 					}
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
-						IOUtils.copy(new BoundedReader(reader, maxMessageLength), writer);
+						IOUtils.copy(new BoundedReader(reader, truncateMessageToLength), writer);
 					} catch (IOException e) {
 						return super.toString(e, null);
 					}

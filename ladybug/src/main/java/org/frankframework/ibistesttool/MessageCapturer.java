@@ -25,14 +25,26 @@ import org.frankframework.ibistesttool.capture.OutputStreamCaptureWrapper;
 import org.frankframework.ibistesttool.capture.WriterCaptureWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.testtool.MessageCapturerImpl;
 
-public class MessageCapturer extends MessageCapturerImpl {
+public class MessageCapturer extends MessageCapturerImpl implements InitializingBean {
 	private final Logger log = LogUtil.getLogger(this);
 
 	private @Autowired int maxMessageLength;
+
+	// Both Ladybug and the present class in the Frank!Framework
+	// truncate messages as configured through maxMessageLength.
+	// In this class we keep one character more such that
+	// Ladybug can detect when a message is being truncated.
+	private int truncateMessageToLength = -1;
+
+	@Override
+	public void afterPropertiesSet() {
+		truncateMessageToLength = maxMessageLength + 1;
+	}
 
 	@Override
 	public StreamingType getStreamingType(Object message) {
@@ -52,7 +64,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message message1) {
 			try {
-				message1.captureCharacterStream(new WriterCaptureWrapper(writer), maxMessageLength);
+				message1.captureCharacterStream(new WriterCaptureWrapper(writer), truncateMessageToLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {
@@ -65,7 +77,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 		}
 		if (message instanceof WriterPlaceHolder writerPlaceHolder) {
 			writerPlaceHolder.setWriter(writer);
-			writerPlaceHolder.setSizeLimit(maxMessageLength);
+			writerPlaceHolder.setSizeLimit(truncateMessageToLength);
 			return message;
 		}
 		return super.toWriter(message, writer, exceptionNotifier);
@@ -76,7 +88,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 		if (message instanceof Message m) {
 			charsetNotifier.accept(m.getCharset());
 			try {
-				m.captureBinaryStream(new OutputStreamCaptureWrapper(outputStream), maxMessageLength);
+				m.captureBinaryStream(new OutputStreamCaptureWrapper(outputStream), truncateMessageToLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {
