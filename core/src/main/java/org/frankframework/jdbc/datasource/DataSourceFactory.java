@@ -20,7 +20,6 @@ import java.util.Properties;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
@@ -57,12 +56,12 @@ public class DataSourceFactory extends ObjectFactoryBase<CommonDataSource> imple
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName) throws NamingException {
+	public DataSource getDataSource(String dataSourceName) {
 		return getDataSource(dataSourceName, null);
 	}
 
 	@Override
-	public DataSource getDataSource(@Nonnull String dataSourceName, @Nullable Properties environment) throws NamingException {
+	public DataSource getDataSource(@Nonnull String dataSourceName, @Nullable Properties environment) {
 		return (DataSource) get(dataSourceName, environment);
 	}
 
