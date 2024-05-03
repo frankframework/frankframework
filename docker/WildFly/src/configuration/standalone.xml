@@ -153,7 +153,7 @@
 					<connection-url>jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
 					<driver>h2</driver>
 				</datasource>
-				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle-xa" pool-name="ibis4test-oracle">
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle-xa" pool-name="ibis4test-oracle" use-java-context="true">
 					<driver>oracle</driver>
 					<xa-datasource-property name="URL">jdbc:oracle:thin:@${env.jdbc.hostname:localhost}:1521:XE</xa-datasource-property>
 					<security user-name="testiaf_user">
@@ -549,16 +549,20 @@
 				<smtp-server outbound-socket-binding-ref="mail-smtp"/>
 			</mail-session>
 		</subsystem>
-		<subsystem xmlns="urn:jboss:domain:messaging-activemq:13.1">
+		<subsystem xmlns="urn:jboss:domain:messaging-activemq:16.0">
 			<server name="default">
 				<security elytron-domain="ApplicationDomain"/>
 				<statistics enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
 				<security-setting name="#">
 					<role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
 				</security-setting>
-				<jms-queue name="dynamicQueues/Q.TEST.IN" entries="jms/i4testiaf_in-artemis" />
-				<jms-queue name="dynamicQueues/Q.TEST.OUT" entries="jms/i4testiaf_out-artemis" />
-				<jms-queue name="dynamicQueues/Q.TEST.FF" entries="jms/i4testiaf_ff-artemis" />
+				<address-setting name="#" dead-letter-address="jms.queue.DLQ" expiry-address="jms.queue.ExpiryQueue" max-size-bytes="10485760" page-size-bytes="2097152" message-counter-history-day-limit="10"/>
+				<jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
+				<jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
+
+				<jms-queue name="dynamicQueues/Q.TEST.IN" entries="java:/jms/i4testiaf_in-artemis" />
+				<jms-queue name="dynamicQueues/Q.TEST.OUT" entries="java:/jms/i4testiaf_out-artemis" />
+				<jms-queue name="dynamicQueues/Q.TEST.FF" entries="java:/jms/i4testiaf_ff-artemis" />
 				<remote-connector name="netty-remote-throughput" socket-binding="artemis" />
 				<pooled-connection-factory name="artemis"
 					entries="java:/jms/qcf-artemis" connectors="netty-remote-throughput" transaction="xa"
