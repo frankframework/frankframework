@@ -17,6 +17,7 @@ package org.frankframework.jdbc.datasource;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -105,6 +106,7 @@ public abstract class ObjectFactoryBase<O> implements InitializingBean, Disposab
 
 	protected List<String> getObjectNames() {
 		List<String> names = new ArrayList<>(objects.keySet());
+		names.sort(Comparator.naturalOrder()); //AlphaNumeric order
 		return Collections.unmodifiableList(names);
 	}
 
