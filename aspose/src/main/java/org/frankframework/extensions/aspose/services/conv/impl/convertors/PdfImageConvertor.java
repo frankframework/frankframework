@@ -101,6 +101,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			// Temporary file (because first we need to get image information (the size) and than load it into
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
+			message.preserve(); // message is read twice
 			try(InputStream is = message.asInputStream()){
 				image = com.aspose.imaging.Image.load(is);
 			}
