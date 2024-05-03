@@ -55,6 +55,7 @@ class CellsConvertor extends AbstractConvertor {
 
 	@Override
 	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+		message.preserve(); // required for attaching the original Excel to produced PDF
 		// Convert Excel to pdf and store in result
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			Workbook workbook = new Workbook(inputStream, defaultLoadOptions);
