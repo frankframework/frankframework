@@ -53,8 +53,9 @@ public class ResponseUtils {
 		if (status == 200 || status > 204) {
 			if(response != null) {
 				builder.entity(response);
+			} else {
+				builder.entity(message.getPayload());
 			}
-			builder.entity(message.getPayload());
 		}
 
 		String contentDisposition = BusMessageUtils.getHeader(message, MessageBase.CONTENT_DISPOSITION_KEY, null);
