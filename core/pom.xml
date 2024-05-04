@@ -444,6 +444,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- jboss-logging is required for Narayana -->
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>${jboss-logging.version}</version>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>joda-time</groupId>
