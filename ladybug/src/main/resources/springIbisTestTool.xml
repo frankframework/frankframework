@@ -13,7 +13,10 @@
 	"
 	default-lazy-init="true"
 	>
-	<!-- don't init database related beans when database storage not used / ladybug.jdbc.datasource empty -->
+	<!--
+	default-lazy-init="true" will prevent init of database related beans when ladybug.jdbc.datasource is empty (in which
+	case file storage will be used instead of database storage)
+	-->
 
 	<!-- enable (AppConstants) properties -->
 	<context:property-placeholder/>
@@ -213,19 +216,20 @@
 
 	<bean name="messageTransformer" class="org.frankframework.ibistesttool.transform.HideRegexMessageTransformer"/>
 
-	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
-
 	<!-- Find DataSources in resources.yml and JNDI -->
-	<bean id="ResourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
-	<bean id="JndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
-	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.LadyBugDataSourceFactory" autowire="byType" />
-
-	<bean name="defaultDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
+	<bean name="resourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator"/>
+	<bean name="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator"/>
+	<!-- JndiObjectLocator requires JndiContextPrefixFactory -->
+	<bean name="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
+	<!-- Both locators will be wired to LadyBugDataSourceFactory -->
+	<bean
+		name="dataSourceFactory"
+		class="org.frankframework.ibistesttool.jdbc.LadyBugDataSourceFactory"
+		autowire="byType"
+	/>
+	<!-- Bean jdbcTemplate (see Config class of Ladybug) requires bean dataSource -->
+	<bean name="dataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>
-	</bean>
-
-	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-		<property name="dataSource" ref="defaultDataSource"/>
 	</bean>
 
 	<bean
@@ -233,7 +237,7 @@
 		class="liquibase.integration.spring.SpringLiquibase"
 		depends-on="databaseStartupValidator"
 		>
-		<property name="dataSource" ref="defaultDataSource"/>
+		<property name="dataSource" ref="dataSource"/>
 		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
 		<property name="uiService">
 			<!-- Show "Running Changeset: ..." in System.out -->
@@ -246,7 +250,7 @@
 	</bean>
 
 	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
-		<property name="dataSource" ref="defaultDataSource"/>
+		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
 </beans>

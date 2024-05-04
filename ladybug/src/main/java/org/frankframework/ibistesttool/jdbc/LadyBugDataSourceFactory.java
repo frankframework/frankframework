@@ -38,6 +38,9 @@ import lombok.Setter;
 /**
  * The Ladybug uses it's own factory so it can be in control over it's connections.
  * Is only capable of non-xa DataSources.
+ * It will retrieve the DataSource from JNDI or using Frank!Framework's resources.yml (because it is configured with
+ * JndiObjectLocator and ResourceObjectLocator in springIbisTestTool.xml).
+ * A pool will be created only when the DataSource retrieved from JNDI is not already a pooled DataSource.
  */
 public class LadyBugDataSourceFactory extends ObjectFactoryBase<DataSource> {
 
@@ -117,6 +120,13 @@ public class LadyBugDataSourceFactory extends ObjectFactoryBase<DataSource> {
 	}
 
 	public DataSource getDataSource(String dataSourceName) {
+		// File storage will be used instead of database storage when dataSourceName is empty (see
+		// springIbisTestTool.xml) but Spring will still wire bean dataSource (calling this method) to bean scheduler
+		// (which will ignore it, see SchedulerFactoryBean.setDataSource()). Prevent parent class from throwing an
+		// exception when dataSourceName is empty
+		if (StringUtils.isEmpty(dataSourceName)) {
+			return null;
+		}
 		return get(dataSourceName, null);
 	}
 }
