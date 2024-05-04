@@ -302,7 +302,7 @@
 				<singleton default-access-timeout="5000"/>
 			</session-bean>
 			<mdb>
-				<resource-adapter-ref resource-adapter-name="${ejb.resource-adapter-name:activemq-ra.rar}"/>
+				<resource-adapter-ref resource-adapter-name="${ejb.resource-adapter-name:activemq-rar.rar}"/>
 				<bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
 			</mdb>
 			<pools>
@@ -641,6 +641,10 @@
 				<security-setting name="#">
 					<role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
 				</security-setting>
+				<address-setting name="#" dead-letter-address="jms.queue.DLQ" expiry-address="jms.queue.ExpiryQueue" max-size-bytes="10485760" page-size-bytes="2097152" message-counter-history-day-limit="10"/>
+				<jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
+				<jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
+
 				<remote-connector name="netty-remote-throughput" socket-binding="artemis" />
 				<jms-queue name="dynamicQueues/Q.TEST.IN" entries="jms/i4testiaf_in-artemis" />
 				<jms-queue name="dynamicQueues/Q.TEST.OUT" entries="jms/i4testiaf_out-artemis" />

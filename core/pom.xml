@@ -179,19 +179,6 @@
 			<version>1.10.0</version>
 		</dependency>
 
-		<!-- Requirement for Jboss 7.5 -->
-		<dependency>
-			<groupId>commons-validator</groupId>
-			<artifactId>commons-validator</artifactId>
-			<version>1.8.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-collections</groupId>
-					<artifactId>commons-collections</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<dependency>
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>Saxon-HE</artifactId>
@@ -456,13 +443,6 @@
 					<artifactId>jakarta.transaction-api</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<!-- jboss-logging is required for Narayana -->
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>${jboss-logging.version}</version>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>
