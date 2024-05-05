@@ -99,11 +99,12 @@
 
 	<bean
 		name="debugStorageDatabase"
-		class="nl.nn.testtool.storage.database.DatabaseStorage"
+		class="org.frankframework.ibistesttool.storage.database.DatabaseStorage"
 		autowire="byName"
 		depends-on="ladybugDatabaseChangelog"
 		>
 		<property name="name" value="DatabaseDebugStorage"/>
+		<property name="datasourceName" value="#{dataSourceName}"/>
 	</bean>
 
 	<bean name="debugStorageFile" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
@@ -221,13 +222,11 @@
 	<bean name="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator"/>
 	<!-- JndiObjectLocator requires JndiContextPrefixFactory -->
 	<bean name="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
-	<!-- Both locators will be wired to LadyBugDataSourceFactory -->
-	<bean
-		name="dataSourceFactory"
-		class="org.frankframework.ibistesttool.jdbc.LadyBugDataSourceFactory"
-		autowire="byType"
-	/>
-	<!-- Bean jdbcTemplate (see Config class of Ladybug) requires bean dataSource -->
+	<!-- Both locators will be wired to JndiContextPrefixFactory -->
+	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType"/>
+
+	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory"/>
+
 	<bean name="dataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
