@@ -17,11 +17,6 @@ package org.frankframework.jta.narayana;
 
 import java.io.IOException;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-
-import org.springframework.transaction.TransactionSystemException;
-
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
@@ -32,8 +27,11 @@ import com.arjuna.ats.arjuna.state.InputObjectState;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.UserTransaction;
 import lombok.Getter;
 import org.frankframework.jta.StatusRecordingTransactionManager;
+import org.springframework.transaction.TransactionSystemException;
 
 public class NarayanaJtaTransactionManager extends StatusRecordingTransactionManager {
 
@@ -95,7 +93,7 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 			}
 			return recoveryStoreEmpty();
 		} catch (Exception e) {
-			log.warn("could not shut down transaction manager", e);
+			log.warn("could not shutdown transaction manager", e);
 			return false;
 		}
 	}

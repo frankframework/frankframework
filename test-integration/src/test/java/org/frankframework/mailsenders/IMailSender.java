@@ -1,5 +1,7 @@
 package org.frankframework.mailsenders;
 
+import org.frankframework.core.ISenderWithParameters;
+
 org.frankframework.core.ISenderWithParameters;
 
 public interface IMailSender extends ISenderWithParameters {

@@ -17,7 +17,7 @@ package org.frankframework.jms;
 
 import java.util.Map;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 import javax.naming.Context;
 import javax.naming.NamingException;
 

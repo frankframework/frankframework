@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.springframework.http.MediaType;
 
 import lombok.Getter;
@@ -29,6 +28,7 @@ import lombok.Setter;
 
 import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.util.XmlBuilder;
+
 /**
  * @author
  * 	Gerard van der Hoorn

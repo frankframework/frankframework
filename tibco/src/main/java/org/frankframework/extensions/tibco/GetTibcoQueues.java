@@ -27,16 +27,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueBrowser;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.tibco.tibjms.admin.ACLEntry;
 import com.tibco.tibjms.admin.BridgeTarget;
 import com.tibco.tibjms.admin.ConnectionInfo;
@@ -48,6 +38,14 @@ import com.tibco.tibjms.admin.TibjmsAdminException;
 import com.tibco.tibjms.admin.TibjmsAdminInvalidNameException;
 import com.tibco.tibjms.admin.UserInfo;
 
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
@@ -269,7 +267,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				if (count == queueItem) {
 					qNameXml.addAttribute("item", count);
 					Object o = enm.nextElement();
-					if (o instanceof javax.jms.Message msg) {
+					if (o instanceof jakarta.jms.Message msg) {
 						XmlBuilder qMessageId = new XmlBuilder("qMessageId");
 						qMessageId.setCdataValue(msg.getJMSMessageID());
 						qMessageXml.addSubElement(qMessageId);

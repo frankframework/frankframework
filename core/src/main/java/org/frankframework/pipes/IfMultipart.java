@@ -15,7 +15,7 @@
 */
 package org.frankframework.pipes;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.PipeForward;

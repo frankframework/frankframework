@@ -22,11 +22,11 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
@@ -182,7 +182,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			messageProducer = getMessageProducer(jmsSession, getDestination(pipeLineSession, pvl));
 
 			// create message to send
-			javax.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, getMessageClass());
+			jakarta.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, getMessageClass());
 			enhanceMessage(messageToSend, messageProducer, pvl, jmsSession);
 			Destination replyQueue = messageToSend.getJMSReplyTo();
 
@@ -206,7 +206,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 	}
 
-	private void enhanceMessage(javax.jms.Message msg, MessageProducer messageProducer, ParameterValueList pvl, Session s) throws JMSException, JmsException {
+	private void enhanceMessage(jakarta.jms.Message msg, MessageProducer messageProducer, ParameterValueList pvl, Session s) throws JMSException, JmsException {
 		if (getMessageType() != null) {
 			msg.setJMSType(getMessageType());
 		}
@@ -237,7 +237,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 	}
 
-	private Message waitAndHandleResponseMessage(javax.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException, XmlException {
+	private Message waitAndHandleResponseMessage(jakarta.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException, XmlException {
 		String jmsMessageID = msg.getJMSMessageID();
 		String replyCorrelationId;
 		if (getReplyToName() == null) {
@@ -261,7 +261,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
 		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
 		try {
-			javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
+			jakarta.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
 			if (rawReplyMsg == null) {
 				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + jmsMessageID + "] replyCorrelationId [" + replyCorrelationId + "] within [" + getReplyTimeout() + "] ms");
 			}
@@ -305,7 +305,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	/**
 	 * Sets the JMS message properties as described in the msgProperties arraylist
 	 */
-	private void setProperties(javax.jms.Message msg, ParameterValueList pvl) throws JMSException {
+	private void setProperties(jakarta.jms.Message msg, ParameterValueList pvl) throws JMSException {
 		for(ParameterValue property : pvl) {
 			ParameterType type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();

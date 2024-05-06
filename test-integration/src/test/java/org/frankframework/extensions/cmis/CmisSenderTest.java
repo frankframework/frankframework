@@ -1,20 +1,21 @@
 package org.frankframework.extensions.cmis;
 
-import static org.junit.Assert.assertNotNull;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.cmis.CmisSender.CmisAction;
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.http.HttpSender;
 import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.stream.Message;
-
 import org.frankframework.util.ClassLoaderUtils;
 
 public class CmisSenderTest {
@@ -51,7 +52,7 @@ public class CmisSenderTest {
 	private CmisSender cmisSenders[];
 	private HttpSender httpSenders[];
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		properties=new Properties();
 		properties.load(ClassLoaderUtils.getResourceURL(testProperties).openStream());
@@ -76,12 +77,12 @@ public class CmisSenderTest {
 		}
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() {
 		// nothing
 	}
 
-	public CmisSender createCmisSender(int i) {
+	public CmisSender createCmisSender(int i) throws Exception {
 		CmisSender sender = new CmisSender();
 		sender.setName("CmisSender "+i);
 		sender.setUrl(url);
@@ -96,7 +97,7 @@ public class CmisSenderTest {
 		return sender;
 	}
 
-	public HttpSender createHttpSender(int i) {
+	public HttpSender createHttpSender(int i) throws Exception {
 		HttpSender sender = new HttpSender();
 		sender.setName("HttpSender "+i);
 		String fullUrl=url+"/"+repo+"/root?objectId="+id1+"&cmisselector=content";
@@ -119,7 +120,7 @@ public class CmisSenderTest {
 		testGet(0);
 	}
 
-	public void testGet(int i) {
+	public void testGet(int i) throws Exception {
 		String id=id1;
 //		int expectedLength=length1;
 		String result;
@@ -143,7 +144,6 @@ public class CmisSenderTest {
 
 	@Test
 	public void testGetMultipleTimes() throws Exception {
-
 		long t0=System.currentTimeMillis();
 		for (int i=0;i<numCycles;i++) {
 			testGet();

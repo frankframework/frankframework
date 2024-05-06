@@ -17,7 +17,7 @@ package org.frankframework.listeners;
 
 import java.lang.reflect.Field;
 
-import javax.jms.Message;
+import jakarta.jms.Message;
 
 import org.frankframework.configuration.ConfigurationException;
 

@@ -5,18 +5,22 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
 import org.junit.jupiter.api.Test;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTestBase<F, FS>{
 
 //	private String testFolderPrefix = "fs_test_"+DateUtils.format(new Date(),"yyyy-MM-dd_HHmmss.SSS");
 	private final String testFolderPrefix = "fs_test";
 	private final String sourceOfMessages_folder = null;
 
-	public void testFolders(){
+	public void testFolders() throws FileSystemException {
 		String folderName = testFolderPrefix+"_testFolders";
 
 		try {
@@ -43,7 +47,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 //		}
 //	}
 
-	public void testFiles(){
+	public void testFiles() throws FileSystemException, IOException {
 		String folderName = testFolderPrefix+"_testFiles";
 		String folderName2 = folderName+"-2";
 
@@ -105,7 +109,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		assertFalse(fileSystem.folderExists(folderName), "folder ["+folderName+"] should not exist anymore after being deleted");
 	}
 
-	public void testFileSystemUtils(){
+	public void testFileSystemUtils() throws Exception {
 		String folderName = testFolderPrefix+"_testFileSystemUtils";
 		String folderName2 = folderName+"-2";
 

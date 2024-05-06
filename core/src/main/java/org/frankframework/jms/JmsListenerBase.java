@@ -23,11 +23,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Session;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
 
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -59,7 +59,7 @@ import org.frankframework.util.DateFormatUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<javax.jms.Message> {
+public abstract class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<jakarta.jms.Message> {
 
 	private @Getter long timeout = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
 	private @Getter boolean useReplyTo = true;
@@ -134,9 +134,9 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	 * externally.
 	 *
 	 * @param rawMessage - Original message received, can not be <code>null</code>
-	 * @return A {@link Map} with the properties of the JMS {@link javax.jms.Message}.
+	 * @return A {@link Map} with the properties of the JMS {@link jakarta.jms.Message}.
 	 */
-	public Map<String, Object> extractMessageProperties(javax.jms.Message rawMessage) {
+	public Map<String, Object> extractMessageProperties(jakarta.jms.Message rawMessage) {
 		Map<String, Object> messageProperties = new HashMap<>();
 		String id = "unset";
 		String cid = "unset";
@@ -208,7 +208,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map<String,Object>} threadContext depending on caller.
 	 * @return String  input {@link Message} for adapter.
 	 */
-	public Message extractMessage(@Nonnull RawMessageWrapper<javax.jms.Message> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<jakarta.jms.Message> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		try {
 			return extractMessage(rawMessage.getRawMessage(), context, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
 		} catch (Exception e) {
@@ -239,7 +239,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		return replyMessage;
 	}
 
-	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<javax.jms.Message> rawMessageWrapper, PipeLineSession session) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<jakarta.jms.Message> rawMessageWrapper, PipeLineSession session) throws ListenerException {
 		String replyCid = null;
 
 		if (Boolean.FALSE.equals(forceMessageIdAsCorrelationId)) {
@@ -264,8 +264,8 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
 					//noinspection DataFlowIssue
-					if (rawMessageWrapper.getRawMessage() instanceof javax.jms.Message) {
-						javax.jms.Message messageReceived = rawMessageWrapper.getRawMessage();
+					if (rawMessageWrapper.getRawMessage() instanceof jakarta.jms.Message) {
+						jakarta.jms.Message messageReceived = rawMessageWrapper.getRawMessage();
 						long expiration = messageReceived.getJMSExpiration();
 						if (expiration != 0) {
 							timeToLive = expiration - new Date().getTime();

@@ -17,7 +17,7 @@ package org.frankframework.lifecycle.servlets;
 
 import java.util.Map;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.frankframework.lifecycle.ServletManager;
 import org.springframework.beans.factory.BeanFactory;

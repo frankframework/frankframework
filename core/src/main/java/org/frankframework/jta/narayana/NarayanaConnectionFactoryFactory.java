@@ -15,22 +15,20 @@
 */
 package org.frankframework.jta.narayana;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.XAConnectionFactory;
-
-import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
-import org.jboss.narayana.jta.jms.JmsXAResourceRecoveryHelper;
-import org.jboss.narayana.jta.jms.TransactionHelper;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
-import org.messaginghub.pooled.jms.JmsPoolXAConnectionFactory;
-
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.XAConnectionFactory;
 import lombok.Getter;
 import lombok.Setter;
 import org.frankframework.jndi.JndiConnectionFactoryFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
+import org.jboss.narayana.jta.jms.JmsXAResourceRecoveryHelper;
+import org.jboss.narayana.jta.jms.TransactionHelper;
+import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
+import org.messaginghub.pooled.jms.JmsPoolXAConnectionFactory;
 
 public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFactory {
 

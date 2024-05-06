@@ -20,8 +20,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;

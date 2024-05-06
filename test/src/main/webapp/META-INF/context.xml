@@ -197,7 +197,7 @@
 	<!-- The queues configured in the queues attribute will be created if they do not exist -->
 	<Resource name="jms/qcf-aws_sqs"
 		factory="org.frankframework.jms.AmazonSqsFactory"
-		type="javax.jms.ConnectionFactory"
+		type="jakarta.jms.ConnectionFactory"
 
 		region="eu-west-1"
 		authAlias="aws"

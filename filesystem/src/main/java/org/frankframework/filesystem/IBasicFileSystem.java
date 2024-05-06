@@ -20,8 +20,7 @@ import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.stream.Message;

@@ -24,9 +24,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;

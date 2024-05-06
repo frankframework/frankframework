@@ -99,15 +99,14 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		configure();
 
-		http.oauth2Login()
-			.clientRegistrationRepository(clientRepository) //explicitly set, but can also be implicitly implied.
-			.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
-			.failureUrl(oauthBaseUrl + "/oauth2/failure/")
-			.authorizationEndpoint()
-				.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI).and()
-			.userInfoEndpoint()
-				.userAuthoritiesMapper(new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties())).and()
-			.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*");
+		AuthorityMapper authorityMapper = new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties());
+		http.oauth2Login(login -> login
+				.clientRegistrationRepository(clientRepository) //explicitly set, but can also be implicitly implied.
+				.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
+				.failureUrl(oauthBaseUrl + "/oauth2/failure/")
+				.authorizationEndpoint(endpoint -> endpoint.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI))
+				.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(authorityMapper))
+				.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*"));
 
 		return http.build();
 	}

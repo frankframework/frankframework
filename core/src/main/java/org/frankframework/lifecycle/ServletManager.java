@@ -24,15 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.HttpConstraintElement;
-import javax.servlet.HttpMethodConstraintElement;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRegistration.Dynamic;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.HttpConstraintElement;
+import jakarta.servlet.HttpMethodConstraintElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.annotation.ServletSecurity;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -62,9 +62,9 @@ import org.frankframework.util.StringUtil;
 /**
  * <p>
  * Enables the use of programmatically adding servlets to the given ServletContext.<br/>
- * Run during the ApplicationServers {@link ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent) contextInitialized} phase, before starting servlets.
+ * Run during the ApplicationServers {@link ServletContextListener#contextInitialized(jakarta.servlet.ServletContextEvent) contextInitialized} phase, before starting servlets.
  * This ensures that all (dynamic) {@link DynamicRegistration.Servlet servlets} are created, before servlets are being created.
- * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link javax.servlet.http.HttpServlet servlet} initialization phase.
+ * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link jakarta.servlet.http.HttpServlet servlet} initialization phase.
  * </p>
  * <p>
  * When <code>dtap.stage</code> is set to LOC, the default behavior of each servlet is not-secured (no authentication) on HTTP.<br/>

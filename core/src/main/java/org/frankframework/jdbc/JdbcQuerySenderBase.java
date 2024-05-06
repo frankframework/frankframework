@@ -35,11 +35,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.jms.JMSException;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.jms.JMSException;
+import jakarta.servlet.http.HttpServletResponse;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;

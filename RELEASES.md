@@ -8,11 +8,13 @@ Upcoming (8.2)
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/8.1-release...HEAD)
 
+Moved to Spring 6 and Spring Boot 3. Requires Jakarta package names.
 Requires JDK 17 or later, tested on JDK 17 and 21.
 Changed default log level from DEBUG to INFO, for environments that are not configured with `dtap.stage` at value: `ACC` or `PRD`. These are by default on WARN level.
 
 ### Non backwards compatible changes
 - Transaction Manager BTM is removed. Switch over to Narayana Transaction Manager.
+- Only supports Tomcat 10.x or later. Tomcat 9.x or lower version, are no longer supported.
 
 Upcoming (8.1.0) - April 2024
 --------------

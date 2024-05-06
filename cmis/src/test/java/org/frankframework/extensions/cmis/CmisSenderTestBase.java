@@ -17,8 +17,8 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.List;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.client.api.ItemIterable;
@@ -35,6 +35,7 @@ import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -122,6 +123,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 	@Override
 	@Disabled
+	@Test
 	public void testIfToStringWorks() {
 		// Disable this test, the CmisSender is tested in other classes.
 	}

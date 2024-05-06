@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.stream.Stream;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 

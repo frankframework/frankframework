@@ -76,7 +76,7 @@
         "XMLEventFactory-class": "org.apache.xerces.stax.XMLEventFactoryImpl",
         "XMLInputFactory-class": "org.frankframework.xml.StaxParserFactory",
         "XMLOutputFactory-class": "com.sun.xml.stream.ZephyrWriterFactory",
-        "MessageFactory-class": "com.sun.xml.messaging.saaj.soap.MessageFactoryImpl",
+        "MessageFactory-class": "com.sun.xml.messaging.saaj.soap.dynamic.SOAPMessageFactoryDynamicImpl",
         "Xerces-Version": "Xerces-J 2.12.2-xml-schema-1.1",
         "Xalan-Version": "Xalan Java 2.7.3",
         "Saxon-Version": "SAXON-HE 10.9J from Saxonica",

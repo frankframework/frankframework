@@ -38,7 +38,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.springframework.util.MimeType;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

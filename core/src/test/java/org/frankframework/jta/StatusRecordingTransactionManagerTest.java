@@ -3,7 +3,7 @@ package org.frankframework.jta;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
