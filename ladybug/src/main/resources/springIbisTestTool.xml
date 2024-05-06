@@ -226,16 +226,16 @@
 
 	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory"/>
 
-	<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
+	<bean name="dataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
 
 	<bean name="ladybugTransactionManager" class="org.frankframework.ibistesttool.jdbc.OptionalJtaTransactionManager">
-		<property name="dataSource" ref="ladybugDataSource"/>
+		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
 	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-		<property name="dataSource" ref="ladybugDataSource"/>
+		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
 	<bean
@@ -243,7 +243,7 @@
 		class="liquibase.integration.spring.SpringLiquibase"
 		depends-on="databaseStartupValidator"
 		>
-		<property name="dataSource" ref="ladybugDataSource"/>
+		<property name="dataSource" ref="dataSource"/>
 		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
 		<property name="uiService">
 			<!-- Show "Running Changeset: ..." in System.out -->
@@ -256,7 +256,7 @@
 	</bean>
 
 	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
-		<property name="dataSource" ref="ladybugDataSource"/>
+		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
 </beans>
