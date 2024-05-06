@@ -99,12 +99,11 @@
 
 	<bean
 		name="debugStorageDatabase"
-		class="org.frankframework.ibistesttool.storage.database.DatabaseStorage"
+		class="nl.nn.testtool.storage.database.DatabaseStorage"
 		autowire="byName"
 		depends-on="ladybugDatabaseChangelog"
 		>
 		<property name="name" value="DatabaseDebugStorage"/>
-		<property name="datasourceName" value="#{dataSourceName}"/>
 	</bean>
 
 	<bean name="debugStorageFile" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
