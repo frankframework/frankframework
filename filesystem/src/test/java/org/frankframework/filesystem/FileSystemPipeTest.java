@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -324,7 +325,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 
 	@Test
-	public void fileSystemPipeCreatingFileThatAlreadyExistsAndCreateFolderAttributeEnabled() throws Exception {
+	public void fileSystemPipeCreatingFileThatAlreadyExistsAndCreateFolderAttributeEnabled() {
 		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeCreateFile("folder4", true, true));
 		assertEquals(e.getCause().getClass(), FileSystemException.class);
 		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder4/createfile1.txt]"));
@@ -374,7 +375,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 
 	@Test
-	public void fileSystemPipeWriteNewFileInFolder() throws Exception {
+	public void fileSystemPipeWriteNewFileInFolder() {
 		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeWriteFile("folder1", false, false));
 		assertEquals(e.getCause().getClass(), FileSystemException.class);
 		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
@@ -436,6 +437,79 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 
 	@Test
+	public void fileSystemPipeMkdirActionFolderAlreadyExistsForwardConfiguredTest() throws Exception {
+		// Arrange
+		String folder = "mkdir" + DIR1;
+
+		if (!_folderExists(folder)) {
+			_createFolder(folder);
+		}
+
+		fileSystemPipe.setAction(FileSystemAction.MKDIR);
+		fileSystemPipe.registerForward(new PipeForward(FileSystemException.Forward.FOLDER_ALREADY_EXISTS.getForwardName(), "x"));
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		// Act
+		Message input= new Message(folder);
+		prr = fileSystemPipe.doPipe(input, session);
+		CloseUtils.closeSilently(input);
+
+		// Assert
+		assertNotNull(prr);
+		assertFalse(prr.isSuccessful());
+		assertEquals(FileSystemException.Forward.FOLDER_ALREADY_EXISTS.getForwardName(), prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void fileSystemPipeMkdirActionFolderAlreadyExistsSpecificForwardNotConfiguredTest() throws Exception {
+		// Arrange
+		String folder = "mkdir" + DIR1;
+
+		if (!_folderExists(folder)) {
+			_createFolder(folder);
+		}
+
+		fileSystemPipe.setAction(FileSystemAction.MKDIR);
+		fileSystemPipe.registerForward(new PipeForward(FileSystemException.Forward.EXCEPTION.getForwardName(), "x"));
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		// Act
+		Message input= new Message(folder);
+		prr = fileSystemPipe.doPipe(input, session);
+		CloseUtils.closeSilently(input);
+
+		// Assert
+		assertNotNull(prr);
+		assertFalse(prr.isSuccessful());
+		assertEquals(FileSystemException.Forward.EXCEPTION.getForwardName(), prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void fileSystemPipeMkdirActionFolderAlreadyExistsNoForwardsConfiguredTest() throws Exception {
+		// Arrange
+		String folder = "mkdir" + DIR1;
+
+		if (!_folderExists(folder)) {
+			_createFolder(folder);
+		}
+
+		fileSystemPipe.setAction(FileSystemAction.MKDIR);
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		// Act
+		Message input= new Message(folder);
+		PipeRunException pre = assertThrows(PipeRunException.class, ()->fileSystemPipe.doPipe(input, session));
+		CloseUtils.closeSilently(input);
+
+		// Assert
+		assertInstanceOf(FileSystemException.class, pre.getCause());
+		assertEquals(FileSystemException.Forward.FOLDER_ALREADY_EXISTS.getForwardName(), ((FileSystemException) pre.getCause()).getForward().getForwardName());
+	}
+
+	@Test
 	public void fileSystemPipeRmdirActionTest() throws Exception {
 		String folder = DIR1;
 
@@ -460,6 +534,73 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		boolean actual = _fileExists(folder);
 		// test
 		assertFalse(actual, "Expected file [" + folder + "] " + "not to be present");
+	}
+
+	@Test
+	public void fileSystemPipeRmdirActionFolderDoesNotExistForwardConfiguredTest() throws Exception {
+		String folder = DIR1;
+
+		if (_folderExists(DIR1)) {
+			_deleteFolder(folder);
+		}
+
+		fileSystemPipe.setAction(FileSystemAction.RMDIR);
+		fileSystemPipe.registerForward(new PipeForward(FileSystemException.Forward.FOLDER_NOT_FOUND.getForwardName(), "x"));
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		Message input= new Message(folder);
+		prr = fileSystemPipe.doPipe(input, session);
+		CloseUtils.closeSilently(input);
+
+		// Assert
+		assertNotNull(prr);
+		assertFalse(prr.isSuccessful());
+		assertEquals(FileSystemException.Forward.FOLDER_NOT_FOUND.getForwardName(), prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void fileSystemPipeRmdirActionFolderDoesNotExistSpecificForwardNotConfiguredTest() throws Exception {
+		String folder = DIR1;
+
+		if (_folderExists(DIR1)) {
+			_deleteFolder(folder);
+		}
+
+		fileSystemPipe.setAction(FileSystemAction.RMDIR);
+		fileSystemPipe.registerForward(new PipeForward(FileSystemException.Forward.EXCEPTION.getForwardName(), "x"));
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		Message input= new Message(folder);
+		prr = fileSystemPipe.doPipe(input, session);
+		CloseUtils.closeSilently(input);
+
+		// Assert
+		assertNotNull(prr);
+		assertFalse(prr.isSuccessful());
+		assertEquals(FileSystemException.Forward.EXCEPTION.getForwardName(), prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void fileSystemPipeRmdirActionFolderDoesNotExistNoForwardsConfiguredTest() throws Exception {
+		String folder = DIR1;
+
+		if (_folderExists(DIR1)) {
+			_deleteFolder(folder);
+		}
+
+		fileSystemPipe.setAction(FileSystemAction.RMDIR);
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		Message input= new Message(folder);
+		PipeRunException pre = assertThrows(PipeRunException.class, ()->fileSystemPipe.doPipe(input, session));
+		CloseUtils.closeSilently(input);
+
+		// Assert
+		assertInstanceOf(FileSystemException.class, pre.getCause());
+		assertEquals(FileSystemException.Forward.FOLDER_NOT_FOUND.getForwardName(), ((FileSystemException) pre.getCause()).getForward().getForwardName());
 	}
 
 	@Test

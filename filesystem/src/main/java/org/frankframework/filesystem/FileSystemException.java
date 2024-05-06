@@ -21,8 +21,13 @@ import org.frankframework.core.PipeForward;
 
 public class FileSystemException extends IbisException {
 
+	/**
+	 * Forwards for FileSystemException. Defining this as enum restricts values to known values.
+	 * The main reason for not using a simple String however is that this makes it possible for the
+	 * compiler to disambiguate constructor overloads.
+	 */
 	public enum Forward {
-		DEFAULT(PipeForward.EXCEPTION_FORWARD_NAME),
+		EXCEPTION(PipeForward.EXCEPTION_FORWARD_NAME),
 		FILE_NOT_FOUND("fileNotFound"),
 		FOLDER_NOT_FOUND("folderNotFound"),
 		FILE_ALREADY_EXISTS("fileAlreadyExists"),
@@ -52,7 +57,7 @@ public class FileSystemException extends IbisException {
 
 	public FileSystemException(String message) {
 		super(message);
-		this.forward = Forward.DEFAULT;
+		this.forward = Forward.EXCEPTION;
 	}
 
 	public FileSystemException(Forward forward, String message) {
@@ -71,6 +76,6 @@ public class FileSystemException extends IbisException {
 	}
 
 	private static Forward getForwardFromCause(Throwable cause) {
-		return cause instanceof FileSystemException fse ? fse.getForward() : Forward.DEFAULT;
+		return cause instanceof FileSystemException fse ? fse.getForward() : Forward.EXCEPTION;
 	}
 }
