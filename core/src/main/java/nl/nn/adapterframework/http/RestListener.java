@@ -73,6 +73,20 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public enum MediaTypes {
 		XML, JSON, TEXT;
 	}
+	/**
+	 * initialize listener and register <code>this</code> to the JNDI
+	 */
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (view==null) {
+			if (StringUtils.isEmpty(getMethod()) || "GET".equalsIgnoreCase(getMethod())) {
+				setView(true);
+			} else {
+				setView(false);
+			}
+		}
+	}
 
 	@Override
 	public void open() throws ListenerException {
@@ -211,6 +225,21 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	/** Can be either <code>/rest</code> or <code>/rest-public</code> and must correspond with the available RestListenerServlet path(s). */
 	public void setRestPath(String restPath) {
 		this.restPath = restPath;
+	}
+
+	/**
+	 * Indicates whether this listener supports a view (and a link should be put in the ibis console)
+	 * @ff.default if <code>method=get</code> then <code>true</code>, else <code>false</code>
+	 */
+	public void setView(boolean b) {
+		view = b;
+	}
+	public boolean isView() {
+		if (view==null ) {
+			log.warn("RestListener ["+getName()+"] appears to be not configured");
+			return false;
+		}
+		return view;
 	}
 
 	/**
