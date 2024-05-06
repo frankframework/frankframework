@@ -230,14 +230,6 @@
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
 
-	<bean name="ladybugTransactionManager" class="org.frankframework.ibistesttool.jdbc.OptionalJtaTransactionManager">
-		<property name="dataSource" ref="dataSource"/>
-	</bean>
-
-	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-		<property name="dataSource" ref="dataSource"/>
-	</bean>
-
 	<bean
 		name="ladybugDatabaseChangelog"
 		class="liquibase.integration.spring.SpringLiquibase"
