@@ -231,6 +231,10 @@
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
 
+	<bean name="ladybugTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
 	<bean
 		name="ladybugDatabaseChangelog"
 		class="liquibase.integration.spring.SpringLiquibase"
