@@ -25,14 +25,17 @@ import org.frankframework.ibistesttool.capture.OutputStreamCaptureWrapper;
 import org.frankframework.ibistesttool.capture.WriterCaptureWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.testtool.MessageCapturerImpl;
 
 public class MessageCapturer extends MessageCapturerImpl {
-	private final Logger log = LogUtil.getLogger(this);
+	// This class should not truncate the message because Ladybug
+	// already does so. This class delegates capturing the message
+	// to logic that expects a max message length. The solution
+	// is to provide a dummy value.
+	private static final int DUMMY_MAX_MESSAGE_LENGTH = Integer.MAX_VALUE;
 
-	private @Autowired int maxMessageLength;
+	private final Logger log = LogUtil.getLogger(this);
 
 	@Override
 	public StreamingType getStreamingType(Object message) {
@@ -52,7 +55,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message message1) {
 			try {
-				message1.captureCharacterStream(new WriterCaptureWrapper(writer), maxMessageLength);
+				message1.captureCharacterStream(new WriterCaptureWrapper(writer), DUMMY_MAX_MESSAGE_LENGTH);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {
@@ -65,7 +68,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 		}
 		if (message instanceof WriterPlaceHolder writerPlaceHolder) {
 			writerPlaceHolder.setWriter(writer);
-			writerPlaceHolder.setSizeLimit(maxMessageLength);
+			writerPlaceHolder.setSizeLimit(DUMMY_MAX_MESSAGE_LENGTH);
 			return message;
 		}
 		return super.toWriter(message, writer, exceptionNotifier);
@@ -76,7 +79,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 		if (message instanceof Message m) {
 			charsetNotifier.accept(m.getCharset());
 			try {
-				m.captureBinaryStream(new OutputStreamCaptureWrapper(outputStream), maxMessageLength);
+				m.captureBinaryStream(new OutputStreamCaptureWrapper(outputStream), DUMMY_MAX_MESSAGE_LENGTH);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				try {
