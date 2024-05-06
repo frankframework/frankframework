@@ -16,7 +16,6 @@
 package org.frankframework.management.bus.endpoints;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +59,6 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 
 		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
-		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 		result.put("datasources", dataSourceNames);
 
 		List<String> resultTypes = new ArrayList<>();
