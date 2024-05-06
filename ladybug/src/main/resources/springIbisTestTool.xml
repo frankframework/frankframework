@@ -231,7 +231,9 @@
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
 
-	<import resource="classpath:springIbisTestTool${application.server.type}.xml" />
+	<bean name="ladybugTransactionManager" class="org.frankframework.ibistesttool.jdbc.OptionalJtaTransactionManager">
+		<property name="dataSource" ref="ladybugDataSource"/>
+	</bean>
 
 	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<property name="dataSource" ref="ladybugDataSource"/>
