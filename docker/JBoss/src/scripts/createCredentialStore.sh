@@ -1,5 +1,5 @@
-# createCS.sh
-#
+#!/bin/bash
+
 # converts filesystem credentials into WildFly credentials
 
 SECRETS_TOOL=$JBOSS_HOME/bin/elytron-tool.sh

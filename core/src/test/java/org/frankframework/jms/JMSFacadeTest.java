@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import javax.jms.BytesMessage;
-import javax.jms.TextMessage;
-import javax.xml.soap.SOAPConstants;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.TextMessage;
+import jakarta.xml.soap.SOAPConstants;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;

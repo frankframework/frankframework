@@ -26,8 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

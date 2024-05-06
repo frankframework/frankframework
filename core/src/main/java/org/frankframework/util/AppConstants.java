@@ -20,8 +20,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;

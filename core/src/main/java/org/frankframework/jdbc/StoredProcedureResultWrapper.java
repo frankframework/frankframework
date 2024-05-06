@@ -42,8 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.util.JdbcUtil;

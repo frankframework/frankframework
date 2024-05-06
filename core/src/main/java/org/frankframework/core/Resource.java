@@ -19,10 +19,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;

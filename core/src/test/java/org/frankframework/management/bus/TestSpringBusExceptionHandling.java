@@ -73,9 +73,8 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 
 		// Assert
 		assertInstanceOf(StreamingException.class, e.getCause());
-		String message = e.getMessage();
-		assertThat(message, Matchers.startsWith("error occurred during processing message in 'MethodInvokingMessageProcessor'"));
-		assertThat(message, Matchers.endsWith("nested exception is org.frankframework.stream.StreamingException: cannot stream: cannot configure: (IllegalStateException) something is wrong"));
+		assertThat(e.getMessage(), Matchers.startsWith("error occurred during processing message in 'MethodInvokingMessageProcessor'"));
+		assertThat(e.getCause().getMessage(), Matchers.endsWith("cannot stream: cannot configure: (IllegalStateException) something is wrong"));
 	}
 
 	@Test

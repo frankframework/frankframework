@@ -20,8 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
-
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;

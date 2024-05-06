@@ -32,6 +32,8 @@
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
 
+	<bean id="NoopSecurityFilterChain" class="org.frankframework.lifecycle.servlets.NoopSecurityFilterChain" />
+
 	<bean id="httpFirewall" class="org.springframework.security.web.firewall.StrictHttpFirewall">
 		<property name="allowSemicolon" value="true"/>
 		<property name="allowUrlEncodedPercent" value="true"/>

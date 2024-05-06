@@ -36,16 +36,8 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.testautomationguru.utility.CompareMode;
-import com.testautomationguru.utility.ImageUtil;
-import com.testautomationguru.utility.PDFUtil;
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.io.FileUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -63,6 +55,14 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.springframework.util.MimeType;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.testautomationguru.utility.CompareMode;
+import com.testautomationguru.utility.ImageUtil;
+import com.testautomationguru.utility.PDFUtil;
 
 /**
  * Executes defined tests against the PdfPipe to ensure the correct working of this pipe.

@@ -19,8 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.IListener;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;

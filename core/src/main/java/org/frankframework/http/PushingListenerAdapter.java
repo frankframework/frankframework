@@ -17,8 +17,7 @@ package org.frankframework.http;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;

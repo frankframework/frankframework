@@ -17,10 +17,10 @@ package org.frankframework.util;
 
 import java.nio.charset.StandardCharsets;
 
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.EntityTag;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.MediaType;

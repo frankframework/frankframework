@@ -17,8 +17,8 @@ package org.frankframework.jms;
 
 import java.util.Map;
 
-import javax.jms.Destination;
-import javax.jms.Message;
+import jakarta.jms.Destination;
+import jakarta.jms.Message;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -79,7 +79,7 @@ import org.frankframework.util.CredentialFactory;
  * whatever it is configured to.</p>
  *
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}<br/><br/>
+ * {@link jakarta.jms.TextMessage}s and {@link jakarta.jms.BytesMessage}<br/><br/>
  * </p>
  *
  * @author  Tim van der Leeuw

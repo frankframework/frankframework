@@ -1,11 +1,14 @@
 package org.frankframework.mailsenders;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-org.frankframework.core.PipeLineSession;
-		org.frankframework.core.SenderException;
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
@@ -181,7 +184,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 	}
 
 	@Test
-	public void testAttachmentsFromSessionKey() {
+	public void testAttachmentsFromSessionKey() throws SenderException, ConfigurationException {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -238,7 +241,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 	}
 
 	@Test
-	public void testAttachmentsContentBase64() {
+	public void testAttachmentsContentBase64() throws ConfigurationException, SenderException {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");

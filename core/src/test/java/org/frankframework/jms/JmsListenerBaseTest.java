@@ -3,7 +3,7 @@ package org.frankframework.jms;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;

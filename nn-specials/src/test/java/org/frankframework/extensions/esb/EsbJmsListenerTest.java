@@ -9,10 +9,10 @@ import static org.mockito.Mockito.mock;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.TextMessage;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.TextMessage;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListenerConnector;

@@ -15,10 +15,10 @@
 */
 package org.frankframework.jta.narayana;
 
-import javax.jms.JMSException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
+import jakarta.jms.JMSException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.narayana.jta.jms.ConnectionProxy;
 import org.jboss.narayana.jta.jms.SessionProxy;

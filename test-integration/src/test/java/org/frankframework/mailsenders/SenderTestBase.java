@@ -1,14 +1,13 @@
 package org.frankframework.mailsenders;
 
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 
-org.frankframework.core.ISender;
-		org.frankframework.core.PipeLineSession;
-		org.frankframework.core.SenderException;
-
+import org.apache.logging.log4j.Logger;
+import org.frankframework.core.ISender;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
 import org.frankframework.util.LogUtil;
 
 public abstract class SenderTestBase<S extends ISender> {
@@ -21,13 +20,13 @@ public abstract class SenderTestBase<S extends ISender> {
 
 	public abstract S createSender() throws Exception;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		sender = createSender();
 		//		sender.open();
 	}
 
-	@After
+	@AfterEach
 	public void setdown() throws SenderException {
 		if (sender != null) {
 			sender.close();

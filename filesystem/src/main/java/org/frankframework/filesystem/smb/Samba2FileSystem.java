@@ -34,8 +34,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;

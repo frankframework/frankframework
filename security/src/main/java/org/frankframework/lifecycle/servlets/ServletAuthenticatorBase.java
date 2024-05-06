@@ -15,14 +15,14 @@
 */
 package org.frankframework.lifecycle.servlets;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,11 +35,20 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AnonymousConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 
 public abstract class ServletAuthenticatorBase implements IAuthenticator, ApplicationContextAware {
@@ -155,24 +164,24 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
-			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
-			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
+			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
+			http.csrf(CsrfConfigurer::disable); //Disable because the front-end doesn't support CSFR tokens (yet!)
 			RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
 			http.securityMatcher(securityRequestMatcher); //Triggers the SecurityFilterChain, also for OPTIONS requests!
-			http.formLogin().disable(); //Disable the form login filter
-			http.logout().disable(); //Disable the logout endpoint on every filter
+			http.formLogin(FormLoginConfigurer::disable); //Disable the form login filter
+			http.logout(LogoutConfigurer::disable); //Disable the logout endpoint on every filter
 //			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Disables cookies
 
 			if(!publicEndpoints.isEmpty()) { //Enable anonymous access on public endpoints
-				http.authorizeHttpRequests().requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll();
-				http.anonymous();
+				http.authorizeHttpRequests(requests -> requests.requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll());
+				http.anonymous(withDefaults());
 			} else {
-				http.anonymous().disable(); //Disable the default anonymous filter and thus disallow all anonymous access
+				http.anonymous(AnonymousConfigurer::disable); //Disable the default anonymous filter and thus disallow all anonymous access
 			}
 
 			// Enables security for all servlet endpoints
 			RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
-			http.authorizeHttpRequests().requestMatchers(authorizationRequestMatcher).authenticated();
+			http.authorizeHttpRequests(requests -> requests.requestMatchers(authorizationRequestMatcher).access(getAuthorizationManager()));
 
 			return configure(http);
 		} catch (Exception e) {
@@ -181,10 +190,17 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	}
 
 	/**
+	 * AuthorizationManager to use for the {@link IAuthenticator}.
+	 */
+	protected AuthorizationManager<RequestAuthorizationContext> getAuthorizationManager() {
+		return AuthenticatedAuthorizationManager.authenticated();
+	}
+
+	/**
 	 * RequestMatcher which determines when a client has to log in.
 	 * @return when !(property {@value #ALLOW_OPTIONS_REQUESTS_KEY} == true, and request == OPTIONS).
 	 */
-	protected boolean authorizationRequestMatcher(HttpServletRequest request) {
+	private boolean authorizationRequestMatcher(HttpServletRequest request) {
 		return !(allowUnsecureOptionsRequest && "OPTIONS".equals(request.getMethod()));
 	}
 

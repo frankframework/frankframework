@@ -18,10 +18,10 @@ package org.frankframework.filesystem;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import lombok.Getter;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;

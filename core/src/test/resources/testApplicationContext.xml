@@ -22,6 +22,9 @@
 	<bean name="listenerContainer" class="org.frankframework.receivers.PullingListenerContainer" scope="prototype" />
 	<bean name="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor" scope="singleton">
 		<property name="queueCapacity" value="0"/>
+		<property name="phase" value="-2147483648"/>
+		<property name="acceptTasksAfterContextClose" value="true"/>
+		<property name="waitForTasksToCompleteOnShutdown" value="true"/>
 	</bean>
 
 </beans>

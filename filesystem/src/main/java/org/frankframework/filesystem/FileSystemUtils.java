@@ -25,9 +25,10 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import lombok.Lombok;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;

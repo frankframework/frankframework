@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,9 +24,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;

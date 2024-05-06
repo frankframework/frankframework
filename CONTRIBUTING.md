@@ -127,7 +127,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 - Start Eclipse and close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
-- We prefer to run the Frank!Framework on Java 11. Please install a Java 11 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
+- We prefer to run the Frank!Framework on Java 17. Please install a Java 17 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
 
 *Note: the Frank!Console is an NPM project, if you choose to import this module (in a later step) you will need to run 'Run as -> Maven install'*
 
@@ -153,21 +153,21 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 ### Set up a Tomcat server in Eclipse
 
-- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v9.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) version 9.0.59 or a later version of Tomcat 9), OK, Finish.
-- Double click Tomcat v9.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
-- Right click Tomcat v9.0 Server at localhost, Start.
+- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v10.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) version 10.1.20 or a later version of Tomcat 10), OK, Finish.
+- Double click Tomcat v10.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
+- Right click Tomcat v10.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
 
 ### In some cases you might want/need to:
 
 - Right click iaf, Maven, Update Project..., OK.
-- Delete .setting folder(s) in broken iaf module(s), followed by rightclick iaf, Maven, Update Project..., OK.
+- Delete .setting folder(s) in broken iaf module(s), followed by right click iaf, Maven, Update Project..., OK.
 - Enable Project, Build Automatically
 - Right click Tomcat Server at localhost, Clean...
 - Change newlines in .classpath and org.eclipse.wst.common.component files back to Unix newlines.
 - Right click pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK (not a JRE) is used, Refresh, Refresh resources upon completion, Specific resources, Specify Resources..., iaf (Using "The project containing the selected resource" doesn't seem to work), Finish, Run.
 - The local Maven repository might contain corrupt jar files which for example will result in java.lang.NoClassDefFoundError: org/aspectj/lang/ProceedingJoinPoint when starting Tomcat. Remove the jar file from the repository to make Maven download the file again.
-- When changing IAF versions Eclipse doesn't always automatically clean the  tomcat deploy folder (wtpwebapps). Rightclick project, Run As, Maven Clean, followed by  Right click Tomcat v7.0 Server at localhost, Clean...
+- When changing IAF versions Eclipse doesn't always automatically clean the  tomcat deploy folder (wtpwebapps). Right click project, Run As, Maven Clean, followed by  Right click Tomcat v7.0 Server at localhost, Clean...
 - Check the deployment assemblies:
   - Right-click iaf-webapp and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
     - `src/main/webapp` to `/`
@@ -188,7 +188,8 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
     - `iaf-webapp` to -
     - `Maven Dependencies` to `WEB-INF/lib`
   - Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
-- When running Tomcat v8.5, you can disable its pluggability scans to prevent unnecessarily long startup times. To do this, add the following element within the Context element of your Tomcat server's _context.xml_ file:
+- When running Tomcat v8.5 or higher, you can disable its pluggability scans to prevent unnecessarily long startup times. Background info: https://tomcat.apache.org/tomcat-10.0-doc/config/jar-scan-filter.html 
+  To do this, add the following element within the Context element of your Tomcat server's _context.xml_ file:
 ######
     <JarScanner>
         <JarScanFilter defaultPluggabilityScan="false" />
@@ -214,12 +215,12 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 - Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:frankframework/frankframework.git`
 - If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
 - When asked to open the Eclipse project or the Maven project, choose opening the Maven project.
-- Make sure to select Java 11 as a default JDK.
+- Make sure to select Java 17 as a default JDK.
 - In the Maven tool window, open the "Profiles" section and make sure to select the profile `database-drivers` amongst other profiles that are selected by default.
   After doing this, make sure to reload the Maven project to add the extra dependencies from this profile to your project classpath.
 - You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it. 
   If the plugin is installed you may get a notification from IntelliJ when the project is built that annotation processing needs to be enabled in the project for Lombok to work, enable this.
-- Download Tomcat 9 from https://tomcat.apache.org/download-90.cgi and unzip it anywhere you like. (On windows make sure to extract it on a folder which can be edited by non-admin users.), 
+- Download Tomcat 10 from https://tomcat.apache.org/download-10.cgi and unzip it anywhere you like. (On Windows, make sure to extract it on a folder which can be edited by non-admin users), 
   or install it via `brew` (on macOS) or `sdkman`.
   Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`
 - Open Settings | Application Servers, add the Tomcat installation you just did.

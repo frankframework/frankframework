@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.security.RolesAllowed;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.sql.DataSource;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -149,7 +149,6 @@ public class SecurityItems extends BusEndpointBase {
 	private ArrayList<DataSourceDTO> addDataSources() {
 		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
-		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 
 		ArrayList<DataSourceDTO> dsList = new ArrayList<>();
 		for(String datasourceName : dataSourceNames) {

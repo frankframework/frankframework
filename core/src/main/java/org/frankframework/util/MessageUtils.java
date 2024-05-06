@@ -24,10 +24,10 @@ import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.soap.AttachmentPart;
-import javax.xml.soap.MimeHeader;
-import javax.xml.soap.SOAPException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.soap.AttachmentPart;
+import jakarta.xml.soap.MimeHeader;
+import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;

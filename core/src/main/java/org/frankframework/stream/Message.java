@@ -43,14 +43,16 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.Lombok;
+
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;

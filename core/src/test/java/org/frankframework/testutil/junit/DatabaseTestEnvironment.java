@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.JdbcFacade;

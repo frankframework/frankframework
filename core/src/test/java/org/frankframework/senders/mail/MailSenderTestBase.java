@@ -19,6 +19,11 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.Test;
+
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -30,12 +35,6 @@ import org.frankframework.senders.MailSenderBase.MailSessionBase;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
-import org.junit.jupiter.api.Test;
-
-import com.sun.mail.smtp.SMTPMessage;
-
-import jakarta.mail.Session;
-import jakarta.mail.internet.MimeMessage;
 
 public abstract class MailSenderTestBase<S extends MailSenderBase> extends SenderTestBase<S> {
 

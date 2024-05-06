@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
 
 import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.JMSFacade.DestinationType;
@@ -90,9 +90,9 @@ public class TestSendJmsMessage extends BusTestBase {
 
 		assertNotNull(callSyncGateway(request).getPayload());
 
-		javax.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
+		jakarta.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
-		assertTrue(jmsResponse instanceof javax.jms.BytesMessage);
+		assertTrue(jmsResponse instanceof jakarta.jms.BytesMessage);
 		String responseMessage = readBytesMessageToString((BytesMessage) jmsResponse);
 		assertEquals(payload.asString(), responseMessage);
 	}
@@ -110,9 +110,9 @@ public class TestSendJmsMessage extends BusTestBase {
 
 		assertEquals(payload.asString(), callSyncGateway(request).getPayload());
 
-		javax.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
+		jakarta.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
-		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
+		assertTrue(jmsResponse instanceof jakarta.jms.TextMessage);
 		String responseMessage = ((TextMessage) jmsResponse).getText();
 		assertEquals(payload.asString(), responseMessage);
 	}
@@ -135,10 +135,10 @@ public class TestSendJmsMessage extends BusTestBase {
 
 		assertEquals(payload, callSyncGateway(request).getPayload());
 
-		javax.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
+		jakarta.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
-		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
-		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();
+		assertTrue(jmsResponse instanceof jakarta.jms.TextMessage);
+		String responseMessage = ((jakarta.jms.TextMessage) jmsResponse).getText();
 		assertEquals(payload, responseMessage);
 	}
 
@@ -152,10 +152,10 @@ public class TestSendJmsMessage extends BusTestBase {
 
 		callAsyncGateway(request);
 
-		javax.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
+		jakarta.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
-		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
-		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();
+		assertTrue(jmsResponse instanceof jakarta.jms.TextMessage);
+		String responseMessage = ((jakarta.jms.TextMessage) jmsResponse).getText();
 		assertEquals(payload, responseMessage);
 	}
 }

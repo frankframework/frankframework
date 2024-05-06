@@ -17,14 +17,15 @@ package org.frankframework.management.web;
 
 import java.util.function.Function;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Response.Status.Family;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status.Family;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.lang.Nullable;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -109,6 +110,18 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 		}
 
 		log.warn("unhandled exception while sending/receiving information from the Application Bus", mhe);
-		return ApiException.formatExceptionResponse(mhe.getMessage(), Status.INTERNAL_SERVER_ERROR);
+		return ApiException.formatExceptionResponse(buildMessage(mhe.getMessage(), mhe.getCause()), Status.INTERNAL_SERVER_ERROR);
+	}
+
+	private static String buildMessage(@Nullable String message, @Nullable Throwable cause) {
+		if (cause == null) {
+			return message;
+		}
+		StringBuilder sb = new StringBuilder(64);
+		if (message != null) {
+			sb.append(message).append("; ");
+		}
+		sb.append("nested exception is ").append(cause);
+		return sb.toString();
 	}
 }

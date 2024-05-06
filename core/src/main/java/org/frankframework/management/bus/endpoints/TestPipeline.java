@@ -21,10 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nonnull;
-import javax.annotation.security.RolesAllowed;
 import javax.xml.transform.Transformer;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.management.bus.TopicSelector;

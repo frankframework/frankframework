@@ -17,8 +17,7 @@ package org.frankframework.receivers;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
@@ -31,7 +30,7 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class SlowListenerBase implements IListener<javax.jms.Message> {
+public abstract class SlowListenerBase implements IListener<jakarta.jms.Message> {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -46,12 +45,12 @@ public abstract class SlowListenerBase implements IListener<javax.jms.Message> {
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<javax.jms.Message> rawMessage, PipeLineSession pipeLineSession) {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<jakarta.jms.Message> rawMessage, PipeLineSession pipeLineSession) {
 		// No-op
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<javax.jms.Message> rawMessage, @Nonnull Map<String, Object> context) {
+	public Message extractMessage(@Nonnull RawMessageWrapper<jakarta.jms.Message> rawMessage, @Nonnull Map<String, Object> context) {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

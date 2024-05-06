@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IAdapter;
 import org.frankframework.core.IPipe;
@@ -51,6 +49,7 @@ import io.micrometer.core.instrument.distribution.ValueAtPercentile;
 import io.micrometer.core.instrument.search.Search;
 import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
