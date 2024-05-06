@@ -36,15 +36,11 @@ public class MessageEncoder extends MessageEncoderImpl implements InitializingBe
 
 	private @Autowired int maxMessageLength;
 
-	// Both Ladybug and the present class in the Frank!Framework
-	// truncate messages as configured through maxMessageLength.
-	// In this class we keep one character more such that
-	// Ladybug can detect when a message is being truncated.
 	private int truncateMessageToLength = -1;
 
 	@Override
 	public void afterPropertiesSet() {
-		truncateMessageToLength = maxMessageLength + 1;
+		truncateMessageToLength = maxMessageLength + Constants.MAX_MESSAGE_LENGTH_ADJUSTMENT;
 	}
 
 	@Override
