@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
@@ -457,7 +458,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	@Override
-	public ExchangeMessageReference toFile(@Nonnull String filename) throws FileSystemException {
+	public ExchangeMessageReference toFile(@Nullable String filename) throws FileSystemException {
 		log.debug("Get EmailMessage for reference [{}]", filename);
 		ExchangeObjectReference reference = asObjectReference(filename);
 		ExchangeService exchangeService = getConnection(reference);
@@ -475,7 +476,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	@Override
-	public ExchangeMessageReference toFile(String folder, @Nonnull String filename) throws FileSystemException {
+	public ExchangeMessageReference toFile(@Nullable String folder, @Nonnull @Nullable String filename) throws FileSystemException {
 		return toFile(filename);
 	}
 

@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -250,7 +249,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipeMoveActionTest(null,"folder",false,true);
 	}
 	@Test
-	public void fileSystemPipeMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
+	public void fileSystemPipeMoveActionTestRootToFolderFailIfolderDoesNotExist() {
 		Exception e = assertThrows(Exception.class, () -> fileSystemPipeMoveActionTest(null,"folder",false,false));
 		assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
 	}
@@ -273,9 +272,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		waitForActionToFinish();
 
 		if(fileAlreadyExists && !_fileExists(folder, filename)) {
-			try (OutputStream outputStream = _createFile(folder, filename)) {
-				outputStream.write("dummy-contents\n".getBytes());
-			}
+			createFile(folder, filename, "dummy-contents\n");
 		}
 
 		fileSystemPipe.setAction(FileSystemAction.CREATE);
@@ -340,9 +337,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		waitForActionToFinish();
 
 		if(fileAlreadyExists && !_fileExists(folder, filename)) {
-			try(OutputStream outputStream = _createFile(folder, filename)) {
-				outputStream.write("dummy-contents\n".getBytes());
-			}
+			createFile(folder, filename, "dummy-contents\n");
 		}
 
 		fileSystemPipe.setAction(FileSystemAction.WRITE);
@@ -805,15 +800,11 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		OutputStream out = _createFile(inputFolder, filename);
-		out.write("some content".getBytes());
-		out.close();
+		createFile(inputFolder, filename, "some content");
 		waitForActionToFinish();
 		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"]expected to be present");
 
-		OutputStream out2 = _createFile(inputFolder, filename2);
-		out2.write("some content of second file".getBytes());
-		out2.close();
+		createFile(inputFolder, filename2, "some content of second file");
 		waitForActionToFinish();
 		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"]expected to be present");
 

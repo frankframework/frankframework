@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -215,12 +216,12 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public SmbFileRef toFile(@Nonnull String filename) throws FileSystemException {
+	public SmbFileRef toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public SmbFileRef toFile(String folder, @Nonnull String filename) throws FileSystemException {
+	public SmbFileRef toFile(@Nullable String folder, @Nonnull @Nullable String filename) throws FileSystemException {
 		return new SmbFileRef(filename, folder);
 	}
 

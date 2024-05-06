@@ -282,8 +282,8 @@ public class FileSystemUtils {
 		WildCardFilter excludeFilter =  StringUtils.isEmpty(excludeWildCard) ? null : new WildCardFilter(excludeWildCard);
 
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0),false)
-				.filter(F -> (wildcardfilter==null || wildcardfilter.accept(null, fileSystem.getName(F)))
-						&& (excludeFilter==null || !excludeFilter.accept(null, fileSystem.getName(F))))
+				.filter(f -> (wildcardfilter==null || wildcardfilter.accept(null, fileSystem.getName(f)))
+						&& (excludeFilter==null || !excludeFilter.accept(null, fileSystem.getName(f))))
 				.onClose(() -> {
 					try {
 						ds.close();

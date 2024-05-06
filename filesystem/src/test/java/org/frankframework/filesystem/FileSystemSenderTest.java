@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -464,9 +463,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		waitForActionToFinish();
 
 		if (fileAlreadyExists) {
-			try (OutputStream outputStream = _createFile(folder, filename)) {
-				outputStream.write("dummy-contents\n".getBytes());
-			}
+			createFile(folder, filename, "dummy-contents\n");
 		}
 
 		fileSystemSender.setAction(FileSystemAction.CREATE); //TODO WRITE
@@ -527,9 +524,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		waitForActionToFinish();
 
 		if(fileAlreadyExists && !_fileExists(folder, filename)) {
-			try (OutputStream outputStream = _createFile(folder, filename)) {
-				outputStream.write("dummy-contents\n".getBytes());
-			}
+			createFile(folder, filename, "dummy-contents\n");
 		}
 
 		fileSystemSender.setAction(FileSystemAction.WRITE);

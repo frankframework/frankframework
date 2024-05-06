@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 
 import org.junit.jupiter.api.AfterEach;
@@ -396,15 +395,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		_createFolder(inputFolder);
-		OutputStream out = _createFile(inputFolder, filename);
-		out.write("some content".getBytes());
-		out.close();
+		createFile(inputFolder, filename, "some content");
 		waitForActionToFinish();
 		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
 
-		OutputStream out2 = _createFile(inputFolder, filename2);
-		out2.write("some content of second file".getBytes());
-		out2.close();
+		createFile(inputFolder, filename2, "some content of second file");
 		waitForActionToFinish();
 		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"] expected to be present");
 

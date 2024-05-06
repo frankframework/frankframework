@@ -15,6 +15,7 @@
 */
 package org.frankframework.filesystem.ftp;
 
+import java.io.BufferedOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,12 +81,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 
 	@Override
-	public FTPFileRef toFile(@Nonnull String filename) throws FileSystemException {
+	public FTPFileRef toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public FTPFileRef toFile(String folder, @Nonnull String filename) throws FileSystemException {
+	public FTPFileRef toFile(@Nullable String folder, @Nonnull @Nullable String filename) throws FileSystemException {
 		return new FTPFileRef(filename, folder);
 	}
 
@@ -126,7 +127,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	private FilterOutputStream completePendingCommand(OutputStream os) {
-		return new FilterOutputStream(os) {
+		return new FilterOutputStream(new BufferedOutputStream(os)) {
 			@Override
 			public void close() throws IOException {
 				super.close();

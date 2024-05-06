@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -93,7 +94,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile toFile(@Nonnull String filename) throws FileSystemException {
+	public SmbFile toFile(@Nullable String filename) throws FileSystemException {
 		try {
 			return new SmbFile(smbContext, filename);
 		} catch (IOException e) {
@@ -102,7 +103,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public SmbFile toFile(String folder, @Nonnull String filename) throws FileSystemException {
+	public SmbFile toFile(@Nullable String folder, @Nonnull @Nullable String filename) throws FileSystemException {
 		return toFile(folder+"/"+filename);
 	}
 

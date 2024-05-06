@@ -20,7 +20,7 @@ import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
@@ -67,11 +67,11 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	 * Get a file 'F' representation of an identification of a file.
 	 * Must pair up with the implementation of {@link #getName(Object)}.
 	 */
-	F toFile(@Nonnull String filename) throws FileSystemException;
+	F toFile(@Nullable String filename) throws FileSystemException;
 	/**
 	 * Creates a reference to a file. If filename is not absolute, it will be created in 'defaultFolder'.
 	 */
-	F toFile(String defaultFolder, @Nonnull String filename) throws FileSystemException;
+	F toFile(@Nullable String defaultFolder, @Nullable String filename) throws FileSystemException;
 	boolean exists(F f) throws FileSystemException;
 
 	boolean folderExists(String folder) throws FileSystemException;

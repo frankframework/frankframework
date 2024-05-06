@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -110,7 +111,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M toFile(@Nonnull String filename) throws FileSystemException {
+	public M toFile(@Nullable String filename) throws FileSystemException {
 		checkOpen();
 		int slashPos = filename.lastIndexOf('/');
 		if (slashPos>=0) {
@@ -124,7 +125,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M toFile(String folderName, @Nonnull String filename) throws FileSystemException {
+	public M toFile(@Nullable String folderName, @Nonnull @Nullable String filename) throws FileSystemException {
 		checkOpen();
 		MockFolder destFolder= folderName==null || "MOCKFILESYSTEM".equals(folderName)?this:getFolders().get(folderName);
 		if (destFolder==null) {

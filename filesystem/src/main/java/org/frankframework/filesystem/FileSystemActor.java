@@ -242,7 +242,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	public void open() throws FileSystemException {
 		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && getAction() != FileSystemAction.MKDIR && getAction() != FileSystemAction.RMDIR) {
 			if (isCreateFolder()) {
-				log.debug("creating inputFolder ["+getInputFolder()+"]");
+				log.debug("creating inputFolder [{}]", this::getInputFolder);
 				fileSystem.createFolder(getInputFolder());
 			} else {
 				F file = fileSystem.toFile(getInputFolder());
@@ -460,10 +460,9 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	/**
 	 * Helper method to process delete, move and copy actions.
 	 * @throws FileSystemException
-	 * @throws IOException
 	 * @throws SAXException
 	 */
-	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException, SAXException {
+	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, SAXException {
 		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFoldername(input, pvl));
 			ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file");

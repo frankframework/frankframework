@@ -15,7 +15,9 @@
 */
 package org.frankframework.filesystem;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
@@ -29,7 +31,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -54,24 +56,24 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public Path toFile(@Nonnull String filename) {
+	public Path toFile(@Nullable String filename) {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public Path toFile(String folder, @Nonnull String filename) {
+	public Path toFile(@Nullable String folder, @Nullable String filename) {
 		if (filename==null) {
 			filename="";
 		}
 		if (StringUtils.isNotEmpty(folder) && !(filename.contains("/") || filename.contains("\\"))) {
-			filename = folder +"/" + filename;
+			filename = folder + "/" + filename;
 		}
 		if (StringUtils.isNotEmpty(getRoot())) {
 			Path result = Paths.get(filename);
 			if (result.isAbsolute()) {
 				return result;
 			}
-			filename = getRoot()+"/"+ filename;
+			filename = getRoot()+ "/" + filename;
 		}
 		return Paths.get(filename);
 	}
@@ -80,12 +82,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public DirectoryStream<Path> listFiles(String folder) throws FileSystemException {
 		final Path dir = toFile(folder);
 
-		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<>() {
-			@Override
-			public boolean accept(Path file) throws IOException {
-				return !Files.isDirectory(file);
-			}
-		};
+		DirectoryStream.Filter<Path> filter = file -> !Files.isDirectory(file);
 		try {
 			return Files.newDirectoryStream(dir, filter);
 		} catch (IOException e) {
@@ -100,16 +97,19 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public OutputStream createFile(Path f) throws IOException {
-		return Files.newOutputStream(f);
+		return new BufferedOutputStream(Files.newOutputStream(f));
 	}
 
 	@Override
 	public OutputStream appendFile(Path f) throws IOException {
-		return Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		return new BufferedOutputStream(Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
 	}
 
 	@Override
 	public Message readFile(Path f, String charset) throws FileSystemException {
+		if (!f.toFile().exists()) {
+			throw new org.frankframework.filesystem.FileNotFoundException("Cannot find file ["+f+"].");
+		}
 		return new PathMessage(f, FileSystemUtils.getContext(this, f, charset));
 	}
 
@@ -117,6 +117,8 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public void deleteFile(Path f) throws FileSystemException {
 		try {
 			Files.delete(f);
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException("Cannot find file [" + f + "] to delete", e);
 		} catch (IOException e) {
 			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
 		}
@@ -167,6 +169,8 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public Path renameFile(Path source, Path destination) throws FileSystemException {
 		try {
 			return Files.move(source, destination);
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot rename file ["+ source +"] to ["+ destination +"]", e);
 		}
@@ -183,8 +187,10 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		}
 		try {
 			return Files.move(f, toFile(destinationFolder, getName(f)));
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot move file ["+ f.toString() +"] to ["+ destinationFolder+"]", e);
+			throw new FileSystemException("Cannot move file ["+ f +"] to ["+ destinationFolder+"]", e);
 		}
 	}
 	@Override
@@ -199,8 +205,10 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		Path target = toFile(destinationFolder, getName(f));
 		try {
 			Files.copy(f, target);
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
-			throw new FileSystemException("Cannot copy file ["+ f.toString()+"] to ["+ destinationFolder+"]", e);
+			throw new FileSystemException("Cannot copy file ["+ f +"] to ["+ destinationFolder+"]", e);
 		}
 		return target;
 	}
@@ -209,6 +217,8 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public long getFileSize(Path f) throws FileSystemException {
 		try {
 			return Files.size(f);
+		} catch (FileNotFoundException e) {
+			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}

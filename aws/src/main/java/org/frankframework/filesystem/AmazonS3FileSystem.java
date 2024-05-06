@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
@@ -159,7 +160,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	 * This method may be used to upload a file to S3.
 	 */
 	@Override
-	public S3Object toFile(@Nonnull String filename) {
+	public S3Object toFile(@Nullable String filename) {
 		S3Object object = new S3Object();
 		int separatorPos = filename.indexOf(BUCKET_OBJECT_SEPARATOR);
 		if (separatorPos<0) {
@@ -173,7 +174,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public S3Object toFile(String folder, @Nonnull String filename) {
+	public S3Object toFile(@Nullable String folder, @Nonnull @Nullable String filename) {
 		return toFile(StringUtil.concatStrings(folder, FILE_DELIMITER, filename));
 	}
 
