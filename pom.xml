@@ -543,7 +543,7 @@
 			</dependency>
 
 			<!-- contains Tomcat for executable WAR archives -->
-			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
+			<dependency>
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-core</artifactId>
 				<version>${tomcat.version}</version>

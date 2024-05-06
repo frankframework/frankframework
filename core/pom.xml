@@ -123,6 +123,8 @@
 			<artifactId>pooled-jms</artifactId>
 			<version>3.1.6</version>
 		</dependency>
+
+		<!-- Because https://github.com/apache/commons-dbcp has not upgraded to Jakarta yet, we're using the shaded version from Tomcat 10.1 -->
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-dbcp</artifactId>
