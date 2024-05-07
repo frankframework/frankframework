@@ -89,10 +89,6 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		startAdapterThreads.remove(runnable);
 	}
 
-	public List<Runnable> getStartAdapterThreads() {
-		return startAdapterThreads;
-	}
-
 	public void addStopAdapterThread(Runnable runnable) {
 		stopAdapterThreads.add(runnable);
 	}
@@ -101,15 +97,8 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		stopAdapterThreads.remove(runnable);
 	}
 
-	public List<Runnable> getStopAdapterThreads() {
-		return stopAdapterThreads;
-	}
-
 	public Adapter getAdapter(String name) {
 		return getAdapters().get(name);
-	}
-	public Adapter getAdapter(int i) {
-		return getAdapterList().get(i);
 	}
 
 	public final Map<String, Adapter> getAdapters() {
@@ -211,8 +200,9 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	 * - unregister all adapters from this manager
 	 */
 	private void doClose() {
-		while (!getStartAdapterThreads().isEmpty()) {
-			log.debug("waiting for start threads to end: {}", ()-> StringUtil.safeCollectionToString(getStartAdapterThreads()));
+		while (!startAdapterThreads.isEmpty()) {
+			log.debug("waiting for start threads to end: {}", ()-> StringUtil.safeCollectionToString(startAdapterThreads));
+
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -224,8 +214,9 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 			stop(); //Call this just in case...
 		}
 
-		while (!getStopAdapterThreads().isEmpty()) {
-			log.debug("waiting for stop threads to end: {}", () -> StringUtil.safeCollectionToString(getStopAdapterThreads()));
+		while (!stopAdapterThreads.isEmpty()) {
+			log.debug("waiting for stop threads to end: {}", () -> StringUtil.safeCollectionToString(stopAdapterThreads));
+
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -233,9 +224,10 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 			}
 		}
 
-		while (!getAdapterList().isEmpty()) {
-			Adapter adapter = getAdapter(0);
-			unRegisterAdapter(adapter);
+		List<Adapter> adapterList = getAdapterList();
+		while (!adapterList.isEmpty()) {
+			Adapter adapter = adapterList.get(0);
+			removeAdapter(adapter);
 		}
 	}
 
