@@ -26,9 +26,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import jakarta.annotation.Nonnull;
-
 import lombok.Lombok;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
@@ -109,7 +107,7 @@ public class FileSystemUtils {
 	public static <F> F moveFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, boolean destinationMustBeReturned) throws FileSystemException {
 		checkSource(fileSystem, file, FileSystemAction.MOVE);
 		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, FileSystemAction.MOVE);
-		F newFile = fileSystem.moveFile(file, destinationFolder, createFolders, destinationMustBeReturned);
+		F newFile = fileSystem.moveFile(file, destinationFolder, createFolders);
 		if (newFile == null && destinationMustBeReturned) {
 			throw new FileSystemException("cannot move file [" + fileSystem.getName(file) + "] to [" + destinationFolder + "]");
 		}
@@ -119,7 +117,7 @@ public class FileSystemUtils {
 	public static <F> F copyFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, boolean destinationMustBeReturned) throws FileSystemException {
 		checkSource(fileSystem, file, FileSystemAction.COPY);
 		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, FileSystemAction.COPY);
-		F newFile = fileSystem.copyFile(file, destinationFolder, createFolders, destinationMustBeReturned);
+		F newFile = fileSystem.copyFile(file, destinationFolder, createFolders);
 		if (newFile == null && destinationMustBeReturned) {
 			throw new FileSystemException("cannot copy file [" + fileSystem.getName(file) + "] to [" + destinationFolder + "]");
 		}

@@ -17,10 +17,11 @@ import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 
 public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends HelperedBasicFileSystemTest<F,FS> {
 
@@ -557,7 +558,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		createFile(folderName, filename, "dummy");
 		waitForActionToFinish();
 		F file = fileSystem.toFile(folderName, filename);
-		assertThrows(FileSystemException.class, () -> fileSystem.copyFile(file, "folder", false, false), "Expected that file could not be copied, because folder should not be created");
+		assertThrows(FileSystemException.class, () -> fileSystem.copyFile(file, "folder", false), "Expected that file could not be copied, because folder should not be created");
 	}
 
 	@Test
@@ -570,7 +571,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		createFolderIfNotExists(folderName);
 		createFile(folderName, filename, "dummy");
 		waitForActionToFinish();
-		F f = fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", true, true);
+		F f = fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", true);
 
 		assertNotNull(f, "Copied file cannot be null");
 	}

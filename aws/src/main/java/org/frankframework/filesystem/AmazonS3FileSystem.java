@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.amazonaws.AmazonServiceException;
@@ -174,7 +173,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public S3Object toFile(@Nullable String folder, @Nonnull @Nullable String filename) {
+	public S3Object toFile(@Nullable String folder, @Nullable String filename) {
 		return toFile(StringUtil.concatStrings(folder, FILE_DELIMITER, filename));
 	}
 
@@ -420,7 +419,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public S3Object copyFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public S3Object copyFile(S3Object f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if (!createFolder && !folderExists(destinationFolder)) {
 			throw new FolderNotFoundException("folder ["+destinationFolder+"] does not exist");
 		}
@@ -433,7 +432,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	// move is actually implemented via copy and delete
-	public S3Object moveFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public S3Object moveFile(S3Object f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		return renameFile(f,toFile(destinationFolder,getName(f)));
 	}
 

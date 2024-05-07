@@ -37,7 +37,7 @@ import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
-import jakarta.annotation.Nonnull;
+
 import jakarta.annotation.Nullable;
 import jakarta.mail.internet.InternetAddress;
 import lombok.Getter;
@@ -474,7 +474,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	@Override
-	public ExchangeMessageReference toFile(@Nullable String folder, @Nonnull @Nullable String filename) throws FileSystemException {
+	public ExchangeMessageReference toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return toFile(filename);
 	}
 
@@ -636,7 +636,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	@Override
-	public ExchangeMessageReference moveFile(ExchangeMessageReference f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public ExchangeMessageReference moveFile(ExchangeMessageReference f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		ExchangeObjectReference reference = asObjectReference(destinationFolder);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
@@ -652,7 +652,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	@Override
-	public ExchangeMessageReference copyFile(ExchangeMessageReference f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public ExchangeMessageReference copyFile(ExchangeMessageReference f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		ExchangeObjectReference reference = asObjectReference(destinationFolder);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;

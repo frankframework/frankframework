@@ -15,7 +15,6 @@
 */
 package org.frankframework.filesystem.ftp;
 
-import java.io.BufferedOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,9 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
 import lombok.Getter;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -86,7 +83,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFileRef toFile(@Nullable String folder, @Nonnull @Nullable String filename) throws FileSystemException {
+	public FTPFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return new FTPFileRef(filename, folder);
 	}
 
@@ -127,7 +124,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	private FilterOutputStream completePendingCommand(OutputStream os) {
-		return new FilterOutputStream(new BufferedOutputStream(os)) {
+		return new FilterOutputStream(os) {
 			@Override
 			public void close() throws IOException {
 				super.close();
@@ -268,7 +265,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFileRef moveFile(FTPFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public FTPFileRef moveFile(FTPFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		FTPFileRef destination = new FTPFileRef(getName(f), destinationFolder);
 		try {
 			if(exists(destination)) {
@@ -284,7 +281,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFileRef copyFile(FTPFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public FTPFileRef copyFile(FTPFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			createFolder(destinationFolder);
 		}

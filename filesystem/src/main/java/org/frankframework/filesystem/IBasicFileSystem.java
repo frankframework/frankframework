@@ -81,23 +81,15 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	 * Moves the file to another folder.
 	 * Does not need to check for existence of the source or non-existence of the destination.
 	 * Returns the moved file, or null if no file was moved or there is no reference to the moved file.<br/>
-	 * If the reference to the moved file is unknown after the move, then:<br/>
-	 *   if <code>resultantMustBeReturned</code> is set, then an Exception must be thrown, preferably before the file is moved;<br/>
-	 *   if <code>resultantMustBeReturned</code> is not set, then a null result returned might also mean the file was moved successfully, but with unknown destination;<br/>
-	 * @param resultantMustBeReturned TODO
 	 */
-	F moveFile(F f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException;
+	F moveFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
 	/**
 	 * Copies the file to another folder.
 	 * Does not need to check for existence of the source or non-existence of the destination.
 	 * Returns the copied file, or null if no file was copied or there is no reference to the copied file.
-	 * If the reference to the copied file is unknown after the copy, then:<br/>
-	 *   if <code>resultantMustBeReturned</code> is set, then an Exception must be thrown, preferably before the file is copied;<br/>
-	 *   if <code>resultantMustBeReturned</code> is not set, then a null result returned might also mean the file was copied successfully, but with unknown destination;<br/>
-	 * @param resultantMustBeReturned TODO
 	 */
-	F copyFile(F f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException;
+	F copyFile(F f, String destinationFolder, boolean createFolder) throws FileSystemException;
 
 	void createFolder(String folder) throws FileSystemException;
 	void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException;

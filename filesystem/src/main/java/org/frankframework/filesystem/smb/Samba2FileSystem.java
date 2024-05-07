@@ -34,9 +34,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.FileAttributes;
@@ -63,6 +60,8 @@ import com.hierynomus.smbj.share.DiskEntry;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -75,6 +74,7 @@ import org.frankframework.filesystem.FolderNotFoundException;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.CredentialFactory;
 
 /**
@@ -150,7 +150,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 			connection = client.connect(hostname, port);
 			if(connection.isConnected()) {
-				log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
+				log.debug("successfully created connection to [{}]", connection::getRemoteHostname);
 			}
 
 			AuthenticationContext authContext = createAuthenticationContext();
@@ -172,17 +172,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	@Override
 	public void close() throws FileSystemException {
-		if (diskShare != null) {
-			try {
-				diskShare.close();
-			} catch (IOException e) { //Also catches TransportException which inherits from IOException
-				//SMBJ natively logs errors (see log4j4ibis.xml)
-				log.info("error closing diskShare [{}] message: {}", diskShare, e.getMessage()); // Attempts to send a 'close' request to the server which is not always possible (connection might be gone).
-			}
-		}
-		if (client != null) {
-			client.close();
-		}
+		CloseUtils.closeSilently(diskShare, client);
 
 		diskShare = null;
 		session = null;
@@ -221,8 +211,8 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public SmbFileRef toFile(@Nullable String folder, @Nonnull @Nullable String filename) throws FileSystemException {
-		return new SmbFileRef(filename, folder);
+	public SmbFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
+		return new SmbFileRef(filename != null ? filename : "", folder);
 	}
 
 	@Override
@@ -306,7 +296,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public SmbFileRef moveFile(SmbFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SmbFileRef moveFile(SmbFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			SmbFileRef destination = toFile(destinationFolder, f.getName());
 			if(exists(destination)) {
@@ -321,7 +311,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public SmbFileRef copyFile(SmbFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SmbFileRef copyFile(SmbFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			createFolder(destinationFolder);
 		}

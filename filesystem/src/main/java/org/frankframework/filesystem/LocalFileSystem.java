@@ -15,7 +15,6 @@
 */
 package org.frankframework.filesystem;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -80,6 +79,9 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public DirectoryStream<Path> listFiles(String folder) throws FileSystemException {
+		if (!folderExists(folder)) {
+			throw new FolderNotFoundException("Cannot list files in ["+folder+"], no such folder found");
+		}
 		final Path dir = toFile(folder);
 
 		DirectoryStream.Filter<Path> filter = file -> !Files.isDirectory(file);
@@ -97,12 +99,12 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public OutputStream createFile(Path f) throws IOException {
-		return new BufferedOutputStream(Files.newOutputStream(f));
+		return Files.newOutputStream(f);
 	}
 
 	@Override
 	public OutputStream appendFile(Path f) throws IOException {
-		return new BufferedOutputStream(Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
+		return Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 	}
 
 	@Override
@@ -177,7 +179,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public Path moveFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -194,7 +196,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		}
 	}
 	@Override
-	public Path copyFile(Path f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));

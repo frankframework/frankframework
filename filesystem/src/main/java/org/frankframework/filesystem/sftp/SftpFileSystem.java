@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -93,7 +92,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public SftpFileRef toFile(@Nullable String folder, @Nonnull @Nullable String filename) throws FileSystemException {
+	public SftpFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return new SftpFileRef(filename, folder);
 	}
 
@@ -313,10 +312,12 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public SftpFileRef moveFile(SftpFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SftpFileRef moveFile(SftpFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		SftpFileRef destination = new SftpFileRef(getName(f), destinationFolder);
 		if(exists(destination)) {
 			throw new FileAlreadyExistsException("target already exists");
+		} else if(createFolder && !folderExists(destinationFolder)) {
+			createFolder(destinationFolder);
 		}
 
 		try {
@@ -328,7 +329,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public SftpFileRef copyFile(SftpFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SftpFileRef copyFile(SftpFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			createFolder(destinationFolder);
 		}
