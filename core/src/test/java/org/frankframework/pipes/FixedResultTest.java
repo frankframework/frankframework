@@ -193,6 +193,21 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
+	public void substitudeVarsOld() throws Exception{
+		Parameter param = ParameterBuilder.create().withName("param");
+		param.setDefaultValue("DefaultValue");
+		pipe.addParameter(param);
+
+		pipe.setReturnString("This is ${param}");
+		pipe.setUseOldSubstitutionStartDelimiter(true);
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "propValueFromInput", session);
+		assertEquals("success", res.getPipeForward().getName());
+		assertEquals("This is propValueFromInput", res.getResult().asString());
+	}
+
+	@Test
 	public void substitudeVarsInCombinationOfReplacePairWithReplaceFixedParams() throws Exception{
 		Parameter param = ParameterBuilder.create().withName("param");
 		param.setDefaultValue("DefaultValue");

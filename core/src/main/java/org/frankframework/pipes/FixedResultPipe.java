@@ -22,6 +22,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -93,6 +94,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private @Getter String replaceTo;
 	private @Getter String styleSheetName;
 	private @Getter boolean replaceFixedParams;
+	private @Getter String substitutionStartDelimiter = "?";
 
 	private TransformerPool transformerPool;
 
@@ -156,8 +158,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 				}
 				throw new PipeRunException(this,"cannot find resource ["+filename+"]");
 			}
-			try {
-				Message msg = new UrlMessage(resource);
+			try (Message msg = new UrlMessage(resource)) {
 				result = msg.asString();
 			} catch (Throwable e) {
 				throw new PipeRunException(this,"got exception loading ["+filename+"]", e);
@@ -170,11 +171,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				for(ParameterValue pv : pvl) {
-					String replaceFrom;
+					final String replaceFrom;
 					if (isReplaceFixedParams()) {
 						replaceFrom=pv.getName();
 					} else {
-						replaceFrom="?{"+pv.getName()+"}";
+						replaceFrom=substitutionStartDelimiter+"{"+pv.getName()+"}";
 					}
 					String to = pv.asStringValue("");
 					result= result.replace(replaceFrom, to);
@@ -264,4 +265,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 		replaceFixedParams=b;
 	}
 
+	@Deprecated(since = "8.1")
+	@ConfigurationWarning("please use ?{key} instead where possible so it's clear when to use properties and when to use session variables")
+	public void setUseOldSubstitutionStartDelimiter(boolean old) {
+		if(old) {
+			substitutionStartDelimiter = "$";
+		}
+	}
 }
