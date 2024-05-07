@@ -248,3 +248,7 @@ div.dataTables_wrapper div.dataTables_paginate {
   background-color: #fff;
   border-color: #ddd;
 }
+
+.monaco-editor__line--highlighted {
+  background: #fdc300;
+}

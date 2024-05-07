@@ -5,6 +5,7 @@ import {
   Component,
   ElementRef,
   Input,
+  NgZone,
   OnChanges,
   OnDestroy,
   SimpleChanges,
@@ -12,6 +13,7 @@ import {
 } from '@angular/core';
 import { first, ReplaySubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
+import { line } from 'd3';
 
 interface AMDRequire {
   require: {
@@ -32,21 +34,23 @@ export class MonacoEditorComponent
 {
   private codeEditorInstanceSubject =
     new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
-
   codeEditorInstance$ = this.codeEditorInstanceSubject.asObservable();
+
+  @Input()
+  content?: string;
+  @Input()
+  options?: monaco.editor.IEditorOptions;
 
   @ViewChild('editor')
   protected editorContainer!: ElementRef;
-  @Input()
-  protected content?: string;
-  @Input()
-  protected options?: monaco.editor.IEditorOptions;
 
   private codeEditorInstance?: monaco.editor.IStandaloneCodeEditor;
+  private decorationsDelta: string[] = [];
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private zone: NgZone,
   ) {}
 
   ngAfterViewInit(): void {
@@ -117,20 +121,31 @@ export class MonacoEditorComponent
     this.codeEditorInstance?.onMouseDown((event) => {
       const element = event.target.element;
       if (element?.className === 'line-numbers') {
-        const lineNumber = element.textContent;
+        const lineNumber = +(element.textContent || 0);
         if (lineNumber) {
-          this.router.navigate([], { fragment: `L${lineNumber}` });
-          this.revealLine(+lineNumber);
+          this.zone.run(() => {
+            this.router
+              .navigate([], {
+                fragment: `L${lineNumber}`,
+                queryParamsHandling: 'preserve',
+              })
+              .then(() => {
+                this.highlightWholeLine(lineNumber);
+                this.setPosition(lineNumber);
+              });
+          });
         }
       }
     });
   }
 
   private selectLineNumberInRoute(): void {
-    this.route.fragment.subscribe((hash) => {
+    this.route.fragment.pipe(first()).subscribe((hash) => {
       if (hash) {
-        const lineNumber = hash.replace('L', '');
-        this.revealLine(+lineNumber);
+        const lineNumber = +hash.replace('L', '');
+        this.revealLineNearTop(lineNumber);
+        this.highlightWholeLine(lineNumber);
+        this.setPosition(lineNumber);
       }
     });
   }
@@ -141,10 +156,34 @@ export class MonacoEditorComponent
     });
   }
 
-  revealLine(lineNumber: number): void {
+  private revealLineNearTop(lineNumber: number): void {
     this.codeEditorInstance$.pipe(first()).subscribe((editor) => {
       editor.revealLineNearTop(lineNumber);
-      editor.setPosition({ lineNumber: lineNumber, column: 0 });
+    });
+  }
+
+  private setPosition(lineNumber: number, columnNumber: number = 0): void {
+    this.codeEditorInstance$.pipe(first()).subscribe((editor) => {
+      editor.setPosition({ lineNumber: lineNumber, column: columnNumber });
+    });
+  }
+
+  private highlightWholeLine(lineNumber: number): void {
+    this.codeEditorInstance$.pipe(first()).subscribe((editor) => {
+      this.decorationsDelta = editor.deltaDecorations(this.decorationsDelta, [
+        {
+          range: {
+            startLineNumber: lineNumber,
+            startColumn: 0,
+            endLineNumber: lineNumber,
+            endColumn: 0,
+          },
+          options: {
+            isWholeLine: true,
+            className: 'monaco-editor__line--highlighted',
+          },
+        },
+      ]);
     });
   }
 }
