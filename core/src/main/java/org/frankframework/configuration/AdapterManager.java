@@ -65,7 +65,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		adapters.put(adapter.getName(), adapter);
 	}
 
-	public void unRegisterAdapter(Adapter adapter) {
+	public void removeAdapter(Adapter adapter) {
 		String name = adapter.getName();
 		if(adapterLifecycleWrappers != null) {
 			for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
