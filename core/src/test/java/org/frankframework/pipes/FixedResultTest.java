@@ -40,7 +40,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		pipe.setFilename(sourceFolderPath);
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
-		pipe.setReturnString("${param1}andandandparam2");
+		pipe.setReturnString("?{param1}andandandparam2");
 		pipe.configure();
 		PipeRunResult res = doPipe(pipe, "whatisthis", session);
 		assertEquals("inside the file", res.getResult().asString());
@@ -53,7 +53,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		pipe.setFilename(sourceFolderPath + "/something");
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
-		pipe.setReturnString("${param1}andandandparam2");
+		pipe.setReturnString("?{param1}andandandparam2");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertThat(e.getMessage(), Matchers.endsWith("cannot find resource [/Pipes/2.txt/something]"));
@@ -73,7 +73,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		pipe.setStyleSheetName("/Xslt/importNotFound/name.xsl");
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
-		pipe.setReturnString("${param1}andandandparam2");
+		pipe.setReturnString("?{param1}andandandparam2");
 		pipe.configure();
 		PipeRunResult res = doPipe(pipe, "whatisthis", session);
 		assertEquals("success", res.getPipeForward().getName());
@@ -86,7 +86,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		pipe.setStyleSheetName("/Xslt/importNotFound/name2.xsl");
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
-		pipe.setReturnString("${param1}andandandparam2");
+		pipe.setReturnString("?{param1}andandandparam2");
 		pipe.configure();
 
 		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "whatisthis", session));
@@ -101,7 +101,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		pipe.setStyleSheetName("/Xslt/extract.xslt");
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("param");
-		pipe.setReturnString("${param1}");
+		pipe.setReturnString("?{param1}");
 		pipe.configure();
 
 		PipeRunResult res = doPipe(pipe, "dummy", session);
@@ -182,7 +182,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);
 
-		pipe.setReturnString("This is replaceFrom ${param}");
+		pipe.setReturnString("This is replaceFrom ?{param}");
 		pipe.setReplaceFrom("replaceFrom");
 		pipe.setReplaceTo("replaceTo");
 		pipe.configure();
