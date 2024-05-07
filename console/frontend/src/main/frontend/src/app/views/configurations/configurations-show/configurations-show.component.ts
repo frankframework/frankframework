@@ -23,7 +23,7 @@ export class ConfigurationsShowComponent implements OnInit {
   configuration: string = '';
   selectedConfiguration: string = 'All';
   loadedConfiguration: boolean = false;
-  anchor = '';
+  anchor?: string;
 
   private selectedAdapter?: string;
 
@@ -41,19 +41,13 @@ export class ConfigurationsShowComponent implements OnInit {
     });
 
     this.route.fragment.subscribe((hash) => {
-      this.anchor = hash ?? '';
+      this.anchor = hash ?? undefined;
     });
 
     this.route.queryParamMap.subscribe((parameters) => {
-      this.selectedConfiguration =
-        parameters.has('name') && parameters.get('name') != ''
-          ? parameters.get('name')!
-          : 'All';
-      this.loadedConfiguration = !(
-        parameters.has('loaded') && parameters.get('loaded') == 'false'
-      );
-      if (parameters.has('adapter'))
-        this.selectedAdapter = parameters.get('adapter')!;
+      this.selectedConfiguration = parameters.get('name') || 'All';
+      this.loadedConfiguration = parameters.get('loaded') !== 'false';
+      this.selectedAdapter = parameters.get('adapter') ?? undefined;
 
       this.getConfiguration();
     });
@@ -61,7 +55,7 @@ export class ConfigurationsShowComponent implements OnInit {
 
   update(loaded: boolean): void {
     this.loadedConfiguration = loaded;
-    this.anchor = '';
+    this.anchor = undefined;
     this.getConfiguration();
   }
 
@@ -69,24 +63,22 @@ export class ConfigurationsShowComponent implements OnInit {
     this.selectedConfiguration = name;
     this.selectedAdapter = undefined;
     this.router.navigate([], { relativeTo: this.route, fragment: '' });
-    this.anchor = ''; //unset hash anchor
+    this.anchor = undefined; //unset hash anchor
     this.getConfiguration();
   }
 
   updateQueryParams(): void {
     const transitionObject: TransitionObject = {};
-    if (this.selectedConfiguration != 'All')
+    if (this.selectedConfiguration !== 'All')
       transitionObject.name = this.selectedConfiguration;
     if (!this.loadedConfiguration)
       transitionObject.loaded = this.loadedConfiguration;
-    if (this.selectedAdapter) transitionObject.adapter = this.selectedAdapter;
-
-    const fragment = this.anchor == '' ? undefined : this.anchor;
+    transitionObject.adapter ??= this.selectedAdapter;
 
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: transitionObject,
-      fragment,
+      fragment: this.anchor,
     });
   }
 

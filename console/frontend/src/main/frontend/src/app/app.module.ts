@@ -63,7 +63,6 @@ import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { PagesTitleStrategy } from './pages-title-strategy';
 import { WithJavaListenerPipe } from './pipes/with-java-listener.pipe';
-import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
@@ -151,7 +150,6 @@ const windowProvider: ValueProvider = {
     MarkDownPipe,
 
     // directives
-    FormatCodeDirective,
     QuickSubmitFormDirective,
   ],
   imports: [

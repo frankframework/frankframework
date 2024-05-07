@@ -41,9 +41,6 @@
               "node_modules/bootstrap/dist/css/bootstrap.css",
               "node_modules/font-awesome/css/font-awesome.css",
               "node_modules/ladda/dist/ladda-themeless.min.css",
-              "node_modules/prismjs/themes/prism.css",
-              "node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css",
-              "node_modules/prismjs/plugins/line-highlight/prism-line-highlight.css",
               "src/styles.scss"
             ],
             "scripts": [
@@ -56,8 +53,7 @@
               "sweetalert2",
               "angular-datatables/dist/angular-datatables",
               "angular-datatables/dist/plugins/buttons/angular-datatables.buttons",
-              "pace-js",
-              "prismjs"
+              "pace-js"
             ]
           },
           "configurations": {
