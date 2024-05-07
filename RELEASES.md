@@ -12,6 +12,9 @@ Requires JDK 11 or later, tested on JDK 11, 17 and 21.
 Package `nl.nn.adapterframework` is renamed to `org.frankframework`.
 Removed many deprecated features.
 
+### Known Issues
+- Tomcat with BTM Transaction Manager does not work in combination with MariaDB. Fixed in v8.0.2 or later. This issue does not appear with other supported databases.
+
 ### Non backwards compatible changes
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
 - IBulkDataListener has been removed. This feature was only supported through custom listeners and not tested.
