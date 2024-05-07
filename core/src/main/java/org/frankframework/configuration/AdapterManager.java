@@ -86,7 +86,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 
 		String name = adapter.getName();
 		adapters.remove(name);
-		log.debug("unregistered adapter [{}] from AdapterManager [{}]", name, this);
+		log.debug("removed adapter [{}] from AdapterManager [{}]", name, this);
 	}
 
 	public void setAdapterLifecycleWrappers(List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers) {
@@ -245,11 +245,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 			}
 		}
 
-		List<Adapter> adapterList = getAdapterList();
-		while (!adapterList.isEmpty()) {
-			Adapter adapter = adapterList.get(0);
-			removeAdapter(adapter);
-		}
+		adapters.values().stream().forEach(this::removeAdapter);
 	}
 
 	@Override
