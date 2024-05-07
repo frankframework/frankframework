@@ -47,7 +47,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 
 	private final List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 	private final List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
-	private final AtomicBoolean active = new AtomicBoolean(false); // Flag that indicates whether this manager is active and can accept new Adapters.
+	private final AtomicBoolean active = new AtomicBoolean(true); // Flag that indicates whether this manager is active and can accept new Adapters.
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
