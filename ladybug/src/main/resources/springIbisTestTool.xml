@@ -223,9 +223,13 @@
 	<bean name="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 	<!-- Both locators will be wired to PoolingDataSourceFactory -->
 	<bean name="dataSourceFactory" class="org.frankframework.jdbc.datasource.PoolingDataSourceFactory" autowire="byType"/>
-	<!-- Bean dataSource will be wired to jdbcTemplate (see Config class of Ladybug) -->
-	<bean name="dataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
+	<!-- Don't use dataSource as name to prevent scheduler from using it (error when ladybug.jdbc.datasource empty) -->
+	<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>
+	</bean>
+	<!-- Override jdbcTemplate in Config class of Ladybug that expects bean dataSource instead of ladybugDataSource -->
+	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="ladybugDataSource"/>
 	</bean>
 
 	<bean
@@ -233,7 +237,7 @@
 		class="liquibase.integration.spring.SpringLiquibase"
 		depends-on="databaseStartupValidator"
 		>
-		<property name="dataSource" ref="dataSource"/>
+		<property name="dataSource" ref="ladybugDataSource"/>
 		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
 		<property name="uiService">
 			<!-- Show "Running Changeset: ..." in System.out -->
@@ -246,7 +250,7 @@
 	</bean>
 
 	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
-		<property name="dataSource" ref="dataSource"/>
+		<property name="dataSource" ref="ladybugDataSource"/>
 	</bean>
 
 </beans>
