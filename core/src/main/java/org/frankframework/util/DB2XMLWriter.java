@@ -24,18 +24,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.StoredProcedureResultWrapper;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 /**
  * Transforms a java.sql.Resultset to a XML stream.
@@ -198,7 +200,7 @@ public class DB2XMLWriter {
 				callableStatement.getObject(position);
 				if (callableStatement.wasNull()) {
 					resultElement.addAttribute("null", "true");
-				} else if (param.getType() == Parameter.ParameterType.LIST) {
+				} else if (param.getType() == ParameterType.LIST) {
 					ResultSet resultSet = callableStatement.getObject(position, ResultSet.class);
 					processResultSet(dbmsSupport, resultSet, maxRows, includeFieldDefinition, resultElement);
 				} else {

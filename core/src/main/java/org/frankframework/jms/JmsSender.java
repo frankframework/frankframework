@@ -22,19 +22,11 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import jakarta.jms.Destination;
-import jakarta.jms.JMSException;
-import jakarta.jms.MessageConsumer;
-import jakarta.jms.MessageProducer;
-import jakarta.jms.Session;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.xml.sax.SAXException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ParameterException;
@@ -43,8 +35,8 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.soap.SoapWrapper;
@@ -52,6 +44,14 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlException;
+import org.xml.sax.SAXException;
+
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
+import lombok.Getter;
 
 /**
  * This class sends messages with JMS.

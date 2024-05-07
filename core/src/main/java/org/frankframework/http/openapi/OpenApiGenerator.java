@@ -33,6 +33,7 @@ import org.frankframework.http.rest.ApiListener;
 import org.frankframework.http.rest.ApiServiceDispatcher;
 import org.frankframework.http.rest.MediaTypes;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -126,7 +127,7 @@ public class OpenApiGenerator {
 			for (Parameter parameter : inputValidator.getParameterList()) {
 				String parameterSessionKey = parameter.getSessionKey();
 				if (StringUtils.isNotEmpty(parameterSessionKey) && !"headers".equals(parameterSessionKey) && !paramsFromHeaderAndCookie.contains(parameterSessionKey)) {
-					Parameter.ParameterType parameterType = parameter.getType() != null ? parameter.getType() : Parameter.ParameterType.STRING;
+					ParameterType parameterType = parameter.getType() != null ? parameter.getType() : ParameterType.STRING;
 					paramBuilder.add(addParameterToSchema(parameterSessionKey, "query", false, Json.createObjectBuilder()
 							.add("type", parameterType.toString().toLowerCase())));
 				}

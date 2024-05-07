@@ -12,7 +12,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
