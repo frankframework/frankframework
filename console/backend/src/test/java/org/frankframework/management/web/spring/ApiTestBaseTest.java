@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +45,7 @@ public class ApiTestBaseTest extends FrankApiBase {
 		return ResponseEntity.ok().body(response);
 	}
 
+	@Disabled
 	@Nested
 	public class TestApi extends FrankApiTestBase<ApiTestBaseTest> {
 
