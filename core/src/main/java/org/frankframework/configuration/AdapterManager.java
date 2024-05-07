@@ -201,7 +201,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	 */
 	@Override
 	public void close() {
-		active.set(true);
+		active.set(false);
 		log.info("destroying AdapterManager [{}]", this);
 
 		try {
