@@ -107,6 +107,7 @@ export class MonacoEditorComponent
       automaticLayout: true,
       scrollBeyondLastLine: false,
       wordWrap: 'on',
+      minimap: { enabled: false },
       ...this.options,
     });
     this.editorSubject.next(this.editor);
@@ -161,13 +162,16 @@ export class MonacoEditorComponent
 
   private highlightRange(range: monaco.IRange): void {
     this.editor$.pipe(first()).subscribe((editor) => {
-      console.log(editor.getModel()?.getAllDecorations());
       this.decorationsDelta =
         editor.getModel()?.deltaDecorations(this.decorationsDelta, [
           {
             range: range,
             options: {
               isWholeLine: true,
+              overviewRuler: {
+                position: monaco.editor.OverviewRulerLane.Full,
+                color: '#fdc300',
+              },
               className: 'monaco-editor__line--highlighted',
             },
           },
