@@ -18,7 +18,7 @@ package org.frankframework.pipes;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -29,10 +29,20 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 
 /**
- * Selects an exitState, based on the content-type of a httpServletRequest
- * object as input.
+ * Selects an exitState, based on the content-type of a httpServletRequest object as input.
+ * 
+ * @deprecated The below code block may be used to replace this pipe
+ * <pre><code>
+ * &lt;XmlIfPipe name="xyz" xpathExpression="contains($my-param, 'multipart')"&gt;
+ * 	&lt;param name="my-param" sessionKey="originalMessage" contextKey="Header.content-type" /&gt;
+ * 	&lt;forward name="true" path="a" /&gt;
+ * 	&lt;forward name="false" path="b" /&gt;
+ * &lt;/XmlIfPipe&gt;
+ * </code></pre>
  */
 @ElementType(ElementTypes.ROUTER)
+@Deprecated(forRemoval = true, since = "8.0")
+@ConfigurationWarning("The content-type header can be retreived from the MessageContext")
 public class IfMultipart extends AbstractPipe {
 	private String thenForwardName = "then";
 	private String elseForwardName = "else";
