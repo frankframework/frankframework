@@ -29,7 +29,7 @@ import org.springframework.context.LifecycleProcessor;
 import lombok.Getter;
 import lombok.Setter;
 import org.frankframework.core.Adapter;
-import org.frankframework.lifecycle.ConfigurableLifecyleBase;
+import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
@@ -38,7 +38,7 @@ import org.frankframework.util.StringUtil;
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
  *
  */
-public class AdapterManager extends ConfigurableLifecyleBase implements ApplicationContextAware, AutoCloseable {
+public class AdapterManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
