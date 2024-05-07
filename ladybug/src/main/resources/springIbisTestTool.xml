@@ -221,11 +221,9 @@
 	<bean name="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator"/>
 	<!-- JndiObjectLocator requires JndiContextPrefixFactory -->
 	<bean name="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
-	<!-- Both locators will be wired to JndiContextPrefixFactory -->
-	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType"/>
-
-	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory"/>
-
+	<!-- Both locators will be wired to PoolingDataSourceFactory -->
+	<bean name="dataSourceFactory" class="org.frankframework.jdbc.datasource.PoolingDataSourceFactory" autowire="byType"/>
+	<!-- Bean dataSource will be wired to jdbcTemplate (see Config class of Ladybug) -->
 	<bean name="dataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
