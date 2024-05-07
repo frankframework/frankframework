@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -28,6 +29,7 @@ import org.springframework.context.LifecycleProcessor;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
@@ -45,10 +47,15 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 
 	private final List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 	private final List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
+	private final AtomicBoolean active = new AtomicBoolean(false); // Flag that indicates whether this manager is active and can accept new Adapters.
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
 	public void registerAdapter(Adapter adapter) {
+		if(!active.get()) {
+			throw new IllegalStateException("AdapterManager in state [closed] unable to register Adapter ["+adapter.getName()+"]");
+		}
+
 		if(!inState(RunState.STOPPED)) {
 			log.warn("cannot add adapter, manager in state [{}]", this::getState);
 		}
@@ -66,13 +73,18 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 	}
 
 	public void removeAdapter(Adapter adapter) {
-		String name = adapter.getName();
+		if(!adapter.getRunState().isStopped()) {
+			log.warn("unable to remove adapter [{}] while in state [{}]", adapter::getName, adapter::getRunState);
+			return;
+		}
+
 		if(adapterLifecycleWrappers != null) {
 			for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
 				adapterProcessor.removeAdapter(adapter);
 			}
 		}
 
+		String name = adapter.getName();
 		adapters.remove(name);
 		log.debug("unregistered adapter [{}] from AdapterManager [{}]", name, this);
 	}
@@ -172,15 +184,24 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		List<Adapter> adapters = getAdapterList();
 		Collections.reverse(adapters);
 		for (Adapter adapter : adapters) {
-			log.info("stopping adapter [{}]", adapter::getName);
-			adapter.stopRunning();
+			stopAdapter(adapter);
 		}
 
 		updateState(RunState.STOPPED);
 	}
 
+	private void stopAdapter(Adapter adapter) {
+		log.info("stopping adapter [{}]", adapter::getName);
+		adapter.stopRunning();
+	}
+
+	/**
+	 * Closes this AdapterManager.
+	 * All adapters are removed from the Manager and you're unable to (re-)start after it's been closed!
+	 */
 	@Override
 	public void close() {
+		active.set(true);
 		log.info("destroying AdapterManager [{}]", this);
 
 		try {

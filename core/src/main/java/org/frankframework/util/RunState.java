@@ -29,4 +29,19 @@ public enum RunState {
 	EXCEPTION_STOPPING,
 	STOPPED;
 
+	public synchronized boolean isStopped() {
+		switch (this) {
+			case STARTING:
+			case EXCEPTION_STARTING:
+			case STARTED:
+			case STOPPING:
+				return false;
+			case STOPPED:
+			case EXCEPTION_STOPPING:
+			case ERROR:
+				return true;
+			default:
+				throw new IllegalStateException("Unhandled receiver run-state [" + this + "]");
+		}
+	}
 }
