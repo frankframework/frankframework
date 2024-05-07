@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -100,7 +101,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 			// Temporary file (because first we need to get image information (the size) and than load it into
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
-			image = com.aspose.imaging.Image.load(message.asInputStream());
+			try(InputStream is = message.asInputStream()){
+				image = com.aspose.imaging.Image.load(is);
+			}
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				TiffFrame[] frames = ((TiffImage)image).getFrames();
 				PngOptions pngOptions = new PngOptions();
@@ -111,7 +114,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 					page.getParagraphs().add(pdfImage);
 				}
 			} else {
-				Files.copy(message.asInputStream(), tmpImageFile.toPath());
+				try(InputStream is = message.asInputStream()){
+					Files.copy(is, tmpImageFile.toPath());
+				}
 				BufferedImage bufferedImage = ImageExtensions.toJava(image);
 				LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
 
