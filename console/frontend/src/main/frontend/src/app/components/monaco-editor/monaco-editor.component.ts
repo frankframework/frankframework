@@ -161,15 +161,17 @@ export class MonacoEditorComponent
 
   private highlightRange(range: monaco.IRange): void {
     this.editor$.pipe(first()).subscribe((editor) => {
-      this.decorationsDelta = editor.deltaDecorations(this.decorationsDelta, [
-        {
-          range: range,
-          options: {
-            isWholeLine: true,
-            className: 'monaco-editor__line--highlighted',
+      console.log(editor.getModel()?.getAllDecorations());
+      this.decorationsDelta =
+        editor.getModel()?.deltaDecorations(this.decorationsDelta, [
+          {
+            range: range,
+            options: {
+              isWholeLine: true,
+              className: 'monaco-editor__line--highlighted',
+            },
           },
-        },
-      ]);
+        ]) ?? [];
     });
   }
 

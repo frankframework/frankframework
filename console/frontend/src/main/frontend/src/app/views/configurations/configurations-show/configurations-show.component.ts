@@ -106,7 +106,7 @@ export class ConfigurationsShowComponent implements OnInit {
       return;
     }
     const match = this.editor.findMatchForRegex(
-      `<adapter.*? name="${this.selectedAdapter}".*?>(?:.|\\n)*?<\\/adapter>`,
+      `<[aA]dapter.*? name="${this.selectedAdapter}".*?>(?:.|\\n)*?<\\/[aA]dapter>`,
     )?.[0];
     if (match) {
       this.editor.setLineNumberInRoute(
