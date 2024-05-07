@@ -21,9 +21,9 @@ import java.rmi.server.UID;
 import java.security.SecureRandom;
 import java.util.List;
 
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.annotation.ServletSecurity;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;

@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import com.sun.mail.smtp.SMTPMessage;
-
 import jakarta.activation.DataHandler;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Message;
@@ -40,6 +38,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ISender;
@@ -287,7 +286,9 @@ public class MailSender extends MailSenderBase implements HasPhysicalDestination
 			}
 		}
 
+		//Even though this is called EnvelopeFrom/mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if (StringUtils.isNotEmpty(mailSession.getBounceAddress())) {
+			//TODO: use session.setProperty("mail.smtp.from", mailSession.getBounceAddress()); here, or do not globally share the session...
 			msg.setEnvelopeFrom(mailSession.getBounceAddress());
 		}
 

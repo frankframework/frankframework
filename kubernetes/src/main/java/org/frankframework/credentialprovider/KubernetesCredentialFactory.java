@@ -91,8 +91,7 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		if (StringUtils.isNotEmpty(alias)) {
 			return getCredentials().stream()
-					.filter(credential -> credential.getAlias() != null)
-					.filter(credential -> credential.getAlias().equalsIgnoreCase(alias))
+					.filter(credential -> alias.equalsIgnoreCase(credential.getAlias()))
 					.findFirst()
 					.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
 		}

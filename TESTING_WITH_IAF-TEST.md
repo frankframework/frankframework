@@ -8,9 +8,9 @@ This guide was written with the assertion that you are A) using Eclipse, and B) 
 
 Download the following JAR files. We advise you to place them in the Servers\lib folder of your Eclipse workspace. If you don't have this folder, you can create it.
 If you use IntelliJ, open "Settings | Build, Execution, Deployment | Application Servers", locate your Tomcat application server, and add these libraries:
-* [geronimo-j2ee-management\_1.1_spec-1.0.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-j2ee-management_1.1_spec/1.0.1)
-* [geronimo-jms\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jms_1.1_spec/1.1.1)
-* [geronimo-jta\_1.1_spec-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jta_1.1_spec/1.1.1)
+* [jakarta.management.j2ee-api-1.1.4](https://mvnrepository.com/artifact/jakarta.management.j2ee/jakarta.management.j2ee-api/1.1.4)
+* [jakarta.jms-api-3.1.0](https://mvnrepository.com/artifact/jakarta.jms/jakarta.jms-api/3.1.0)
+* [jakarta.transaction-api-2.0.1](https://mvnrepository.com/artifact/jakarta.transaction/jakarta.transaction-api/2.0.1)
 
 If you want to use Queuing or a DBMS other than H2, you need to ensure the corresponding JDBC drivers are in place:
 * For MariaDB or MySQL: [mysql-connector-java-8.0.20.jar](https://dev.mysql.com/downloads/connector/j/) (N.B. for proper XA support, the MySQL driver is used for MariaDB DBMS too)

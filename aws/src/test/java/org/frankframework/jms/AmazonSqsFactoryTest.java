@@ -2,10 +2,10 @@ package org.frankframework.jms;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Session;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
 
 import org.frankframework.testutil.PropertyUtil;
 import org.apache.logging.log4j.Logger;

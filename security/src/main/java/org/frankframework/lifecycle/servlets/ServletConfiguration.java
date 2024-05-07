@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.EnvironmentAware;
@@ -60,7 +60,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 	private @Getter @Setter boolean enabled = true;
 	private @Getter TransportGuarantee transportGuarantee;
 	private @Getter String authenticatorName = null;
-	private @Getter javax.servlet.Servlet servlet;
+	private @Getter jakarta.servlet.Servlet servlet;
 	private @Setter Environment environment;
 	private @Getter Map<String, String> initParameters = new LinkedHashMap<>();
 
@@ -104,7 +104,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 		loadProperties();
 	}
 
-	public void setServlet(javax.servlet.Servlet servlet) {
+	public void setServlet(jakarta.servlet.Servlet servlet) {
 		this.servlet = servlet;
 	}
 

@@ -13,8 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.ClassUtils;
 import org.frankframework.configuration.IbisManager;
 import org.junit.jupiter.api.Test;

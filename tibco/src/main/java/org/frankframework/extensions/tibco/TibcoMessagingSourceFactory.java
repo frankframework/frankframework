@@ -18,7 +18,7 @@ package org.frankframework.extensions.tibco;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 import javax.naming.Context;
 
 import com.tibco.tibjms.TibjmsQueueConnectionFactory;

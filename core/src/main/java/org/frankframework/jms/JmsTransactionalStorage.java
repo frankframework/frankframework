@@ -18,9 +18,9 @@ package org.frankframework.jms;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-import javax.jms.Session;
+import jakarta.jms.JMSException;
+import jakarta.jms.ObjectMessage;
+import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 

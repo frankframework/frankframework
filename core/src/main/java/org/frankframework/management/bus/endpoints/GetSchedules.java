@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
@@ -52,8 +53,6 @@ import org.frankframework.scheduler.job.DatabaseJob;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeperMessage;
-
-import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)

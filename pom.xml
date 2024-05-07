@@ -16,15 +16,17 @@
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
-		<jackson.version>2.17.0</jackson.version>
-		<cxf.version>3.6.3</cxf.version>
-		<spring.version>5.3.34</spring.version>
-		<spring-security.version>5.8.12</spring-security.version>
-		<spring-integration.version>5.5.20</spring-integration.version>
-		<spring.boot.version>2.7.18</spring.boot.version>
+		<jackson.version>2.17.1</jackson.version>
+		<cxf.version>4.0.4</cxf.version>
+		<spring.version>6.1.6</spring.version>
+		<spring-security.version>6.2.4</spring-security.version>
+		<spring-integration.version>6.2.4</spring-integration.version>
+		<spring.boot.version>3.2.5</spring.boot.version>
+		<tomcat.version>10.1.23</tomcat.version>
+		<bouncycastle.version>1.78.1</bouncycastle.version>
 
-		<narayana.version>5.13.1.Final</narayana.version>
-		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
+		<narayana.version>7.0.1.Final</narayana.version>
+		<jboss-logging.version>3.6.0.Final</jboss-logging.version>
 		<micrometer.version>1.12.5</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
@@ -34,20 +36,18 @@
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.2.224</h2.driver.version>
 		<db2.driver.version>11.5.9.0</db2.driver.version>
-		<oracle.driver.version>23.3.0.23.09</oracle.driver.version>
+		<oracle.driver.version>23.4.0.24.05</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>12.6.1.jre11</mssql.driver.version>
-		<mysql.driver.version>8.3.0</mysql.driver.version>
+		<mysql.driver.version>8.4.0</mysql.driver.version>
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
 		<mariadb.driver.version>3.3.3</mariadb.driver.version>
 		<postgresql.driver.version>42.7.3</postgresql.driver.version>
 		<mongodb.driver.version>4.11.2</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>5.18.3</activemq.driver.version> <!-- this minor version is the last using the javax api -->
-		<artemis.driver.version>2.32.0</artemis.driver.version>
-		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
-		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
+		<activemq.driver.version>6.1.2</activemq.driver.version>
+		<artemis.driver.version>2.33.0</artemis.driver.version>
 
 		<aws.java.sdk.version>2.25.19</aws.java.sdk.version>
 
@@ -142,7 +142,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.1.0-jre</version>
+				<version>33.2.0-jre</version>
 			</dependency>
 			<dependency><!-- needed for io.fabric8:kubernetes-client transitive deps -->
 				<groupId>com.squareup.okhttp3</groupId>
@@ -313,15 +313,34 @@
 				<type>pom</type>
 			</dependency>
 
-			<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+			<!-- API's are to compile, implementations should be provided by the application server -->
+			<dependency>
 				<groupId>jakarta.activation</groupId>
 				<artifactId>jakarta.activation-api</artifactId>
-				<version>1.2.2</version>
+				<version>2.1.3</version>
 			</dependency>
-			<dependency><!-- this dependency handles jakarta.activation.* imports -->
-				<groupId>com.sun.activation</groupId>
-				<artifactId>jakarta.activation</artifactId>
+			<dependency>
+				<groupId>jakarta.transaction</groupId>
+				<artifactId>jakarta.transaction-api</artifactId>
 				<version>2.0.1</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.servlet</groupId>
+				<artifactId>jakarta.servlet-api</artifactId>
+				<version>6.0.0</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.jms</groupId>
+				<artifactId>jakarta.jms-api</artifactId>
+				<version>3.1.0</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.annotation</groupId>
+				<artifactId>jakarta.annotation-api</artifactId>
+				<version>3.0.0</version>
 			</dependency>
 
 			<!-- SPRING to force versions -->
@@ -381,6 +400,23 @@
 				<scope>import</scope>
 			</dependency>
 
+			<!-- the bcpg depends on the other two modules, however to ensure we're using the latest version, explicitly define them here, dependabot will take care of the rest -->
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcprov-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcutil-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpg-jdk18on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+
 			<!-- Jackson dependencies -->
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
@@ -388,15 +424,9 @@
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.fasterxml.jackson.jaxrs</groupId>
-				<artifactId>jackson-jaxrs-json-provider</artifactId>
+				<groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+				<artifactId>jackson-jakarta-rs-json-provider</artifactId>
 				<version>${jackson.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>jakarta.activation</groupId>
-						<artifactId>jakarta.activation-api</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -415,16 +445,9 @@
 			</dependency>
 
 			<dependency>
-				<groupId>javax.servlet</groupId>
-				<artifactId>javax.servlet-api</artifactId>
-				<version>3.1.0</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>jakarta.jms</groupId>
-				<artifactId>jakarta.jms-api</artifactId>
-				<version>2.0.3</version>
-				<scope>provided</scope>
+				<groupId>org.glassfish.jaxb</groupId>
+				<artifactId>jaxb-runtime</artifactId>
+				<version>4.0.5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -477,9 +500,14 @@
 				<version>2.16.1</version>
 			</dependency>
 			<dependency>
-				<groupId>com.sun.mail</groupId>
-				<artifactId>jakarta.mail</artifactId>
-				<version>2.0.1</version>
+				<groupId>jakarta.mail</groupId>
+				<artifactId>jakarta.mail-api</artifactId>
+				<version>2.1.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.angus</groupId>
+				<artifactId>angus-mail</artifactId>
+				<version>2.0.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.projectlombok</groupId>
@@ -515,16 +543,16 @@
 			</dependency>
 
 			<!-- contains Tomcat for executable WAR archives -->
-			<dependency><!-- fixes a CVE, must be defined before the spring boot dependency -->
+			<dependency>
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-core</artifactId>
-				<version>9.0.88</version>
+				<version>${tomcat.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-el</artifactId>
-				<version>9.0.88</version>
+				<version>${tomcat.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -532,13 +560,6 @@
 				<artifactId>spring-boot-starter-tomcat</artifactId>
 				<version>${spring.boot.version}</version>
 				<scope>provided</scope>
-				<exclusions>
-					<!-- contains a CVE and we don't use websockets anyways -->
-					<exclusion>
-						<groupId>org.apache.tomcat.embed</groupId>
-						<artifactId>tomcat-embed-websocket</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 
 			<!-- contains the class and application 'loaders' for executable archives -->
@@ -600,9 +621,9 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.mockrunner</groupId>
+				<groupId>net.oneandone.mockrunner</groupId>
 				<artifactId>mockrunner-jms</artifactId>
-				<version>2.0.7</version>
+				<version>3.0.1</version>
 				<scope>test</scope>
 				<exclusions>
 					<exclusion>
@@ -691,7 +712,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.1.2</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -1063,6 +1084,7 @@
 									<bannedDependencies>
 										<excludes>
 											<exclude>com.sun.mail:javax.mail</exclude><!-- Java Mail was renamed to the Jakarta Mail -->
+											<exclude>org.eclipse.angus:angus-mail:[1.0.0]</exclude><!-- don't use com.sun.mail packages anymore -->
 											<exclude>javax.transaction:javax.transaction-api</exclude><!-- javax.transaction-api was renamed to the jakarta.transaction-api -->
 											<exclude>org.glassfish:javax.json</exclude>
 										</excludes>
@@ -1080,9 +1102,9 @@
 									</bannedDependencies>
 									<bannedDependencies>
 										<!-- the jms api now finally officially exists, no need to use geronimo anymore -->
-										<!-- also excludes version 3 which uses the jakarta namespaces -->
+										<!-- also excludes version 2 which uses the old javax namespaces -->
 										<excludes>
-											<exclude>jakarta.jms:jakarta.jms-api:3.*</exclude>
+											<exclude>jakarta.jms:jakarta.jms-api:[2.0.2],[2.0.3]</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec</exclude>
 										</excludes>
@@ -1100,9 +1122,10 @@
 										<excludes>
 											<exclude>javax.activation:javax.activation-api</exclude>
 											<exclude>com.sun.activation:javax.activation</exclude>
+											<exclude>com.sun.activation:jakarta.activation</exclude>
 											<exclude>javax.activation:activation</exclude>
 										</excludes>
-										<message>Don't though versions, we should use javax.activation:1.2.2 and jakarta.activation:2.0.1</message>
+										<message>Don't though versions, we should use jakarta.activation-api:2.1.3</message>
 									</bannedDependencies>
 									<bannedDependencies>
 										<excludes>
@@ -1303,7 +1326,7 @@
 				<module>filesystem</module>
 				<module>console</module>
 				<module>larva</module>
-				<module>ladybug</module>
+<!--				<module>ladybug</module>-->
 				<module>dbms</module>
 				<module>bundle-minimal</module>
 
