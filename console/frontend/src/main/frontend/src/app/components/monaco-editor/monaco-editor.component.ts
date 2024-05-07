@@ -13,7 +13,6 @@ import {
 } from '@angular/core';
 import { first, ReplaySubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { line } from 'd3';
 
 interface AMDRequire {
   require: {
@@ -32,20 +31,21 @@ interface AMDRequire {
 export class MonacoEditorComponent
   implements AfterViewInit, OnChanges, OnDestroy
 {
-  private codeEditorInstanceSubject =
+  private editorSubject =
     new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
-  codeEditorInstance$ = this.codeEditorInstanceSubject.asObservable();
+  editor$ = this.editorSubject.asObservable();
 
   @Input()
-  content?: string;
+  value?: string;
   @Input()
   options?: monaco.editor.IEditorOptions;
 
   @ViewChild('editor')
   protected editorContainer!: ElementRef;
 
-  private codeEditorInstance?: monaco.editor.IStandaloneCodeEditor;
+  private editor?: monaco.editor.IStandaloneCodeEditor;
   private decorationsDelta: string[] = [];
+  private skipFragmentUpdate: boolean = false;
 
   constructor(
     private router: Router,
@@ -60,12 +60,12 @@ export class MonacoEditorComponent
   ngOnChanges(changes: SimpleChanges): void {
     const contentChanges = changes['content'];
     if (contentChanges && !contentChanges.isFirstChange()) {
-      this.setContent(changes['content'].currentValue);
+      this.setValue(changes['content'].currentValue);
     }
   }
 
   ngOnDestroy(): void {
-    this.codeEditorInstance?.dispose();
+    this.editor?.dispose();
   }
 
   private loadMonaco(): void {
@@ -96,88 +96,74 @@ export class MonacoEditorComponent
   private initializeMonaco(): void {
     this.initializeEditor();
     this.initializeMouseEvents();
-    this.selectLineNumberInRoute();
+    this.highlightTheLineNumberInRoute();
   }
 
   private initializeEditor(): void {
-    this.codeEditorInstance = monaco.editor.create(
-      this.editorContainer.nativeElement,
-      {
-        value: this.content,
-        theme: 'vs-light',
-        language: 'xml',
-        inlineCompletionsAccessibilityVerbose: true,
-        automaticLayout: true,
-        selectOnLineNumbers: true,
-        scrollBeyondLastLine: false,
-        wordWrap: 'on',
-        ...this.options,
-      },
-    );
-    this.codeEditorInstanceSubject.next(this.codeEditorInstance);
+    this.editor = monaco.editor.create(this.editorContainer.nativeElement, {
+      value: this.value,
+      theme: 'vs-light',
+      language: 'xml',
+      automaticLayout: true,
+      scrollBeyondLastLine: false,
+      wordWrap: 'on',
+      ...this.options,
+    });
+    this.editorSubject.next(this.editor);
   }
 
   private initializeMouseEvents(): void {
-    this.codeEditorInstance?.onMouseDown((event) => {
+    this.editor?.onMouseDown((event) => {
       const element = event.target.element;
-      if (element?.className === 'line-numbers') {
-        const lineNumber = +(element.textContent || 0);
-        if (lineNumber) {
-          this.zone.run(() => {
-            this.router
-              .navigate([], {
-                fragment: `L${lineNumber}`,
-                queryParamsHandling: 'preserve',
-              })
-              .then(() => {
-                this.highlightWholeLine(lineNumber);
-                this.setPosition(lineNumber);
-              });
-          });
+      switch (element?.className) {
+        case 'line-numbers': {
+          this.handleLineNumberClick(+(element.textContent || 0));
+          break;
+        }
+        default: {
+          return;
         }
       }
     });
   }
 
-  private selectLineNumberInRoute(): void {
-    this.route.fragment.pipe(first()).subscribe((hash) => {
-      if (hash) {
-        const lineNumber = +hash.replace('L', '');
-        this.revealLineNearTop(lineNumber);
-        this.highlightWholeLine(lineNumber);
-        this.setPosition(lineNumber);
-      }
+  private handleLineNumberClick(lineNumber: number): void {
+    if (lineNumber) {
+      this.skipFragmentUpdate = true;
+      this.setLineNumberInRoute(lineNumber);
+      this.highlightLine(lineNumber);
+      this.setPosition(lineNumber);
+    }
+  }
+
+  setLineNumberInRoute(
+    startLineNumber: number,
+    endLineNumber: number | undefined = undefined,
+  ): void {
+    let fragment = `L${startLineNumber}`;
+    if (endLineNumber) fragment += `-${endLineNumber}`;
+    this.zone.run(() => {
+      this.router.navigate([], {
+        fragment: fragment,
+        queryParamsHandling: 'preserve',
+      });
     });
   }
 
-  setContent(content: string): void {
-    this.codeEditorInstance$.pipe(first()).subscribe((editor) => {
-      editor.getModel()?.setValue(content);
+  private highlightLine(lineNumber: number): void {
+    this.highlightRange({
+      startLineNumber: lineNumber,
+      startColumn: 0,
+      endLineNumber: lineNumber,
+      endColumn: 0,
     });
   }
 
-  private revealLineNearTop(lineNumber: number): void {
-    this.codeEditorInstance$.pipe(first()).subscribe((editor) => {
-      editor.revealLineNearTop(lineNumber);
-    });
-  }
-
-  private setPosition(lineNumber: number, columnNumber: number = 0): void {
-    this.codeEditorInstance$.pipe(first()).subscribe((editor) => {
-      editor.setPosition({ lineNumber: lineNumber, column: columnNumber });
-    });
-  }
-
-  private highlightWholeLine(lineNumber: number): void {
-    this.codeEditorInstance$.pipe(first()).subscribe((editor) => {
+  private highlightRange(range: monaco.IRange): void {
+    this.editor$.pipe(first()).subscribe((editor) => {
       this.decorationsDelta = editor.deltaDecorations(this.decorationsDelta, [
         {
-          range: {
-            startLineNumber: lineNumber,
-            startColumn: 0,
-            endLineNumber: lineNumber,
-            endColumn: 0,
-          },
+          range: range,
           options: {
             isWholeLine: true,
             className: 'monaco-editor__line--highlighted',
@@ -185,5 +171,59 @@ export class MonacoEditorComponent
         },
       ]);
     });
+  }
+
+  private setPosition(lineNumber: number, column: number = 0): void {
+    this.editor$.pipe(first()).subscribe((editor) => {
+      editor.setPosition({ lineNumber: lineNumber, column: column });
+    });
+  }
+
+  private highlightTheLineNumberInRoute(): void {
+    this.route.fragment.subscribe((fragment) => {
+      if (!fragment || this.skipFragmentUpdate) {
+        this.skipFragmentUpdate = false;
+        return;
+      }
+      const range = fragment.replace('L', '');
+      const [startLineNumber, endLineNumber]: string[] = range.split('-');
+      this.revealLineNearTop(+startLineNumber);
+      this.setPosition(+startLineNumber);
+      if (endLineNumber) {
+        this.highlightRange({
+          startLineNumber: +startLineNumber,
+          startColumn: 0,
+          endLineNumber: +endLineNumber,
+          endColumn: 0,
+        });
+      } else {
+        this.highlightLine(+startLineNumber);
+      }
+    });
+  }
+
+  private revealLineNearTop(lineNumber: number): void {
+    this.editor$.pipe(first()).subscribe((editor) => {
+      editor.revealLineNearTop(lineNumber);
+    });
+  }
+
+  async setValue(content: string): Promise<void> {
+    return new Promise<void>((resolve) => {
+      this.editor$.pipe(first()).subscribe((editor) => {
+        editor.getModel()?.setValue(content);
+        resolve();
+      });
+    });
+  }
+
+  findMatchForRegex(regexp: string): monaco.editor.FindMatch[] | undefined {
+    let matches: monaco.editor.FindMatch[] | undefined;
+    this.editor$.pipe(first()).subscribe((editor) => {
+      matches = editor
+        .getModel()
+        ?.findMatches(regexp, false, true, true, null, false);
+    });
+    return matches;
   }
 }

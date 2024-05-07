@@ -103,7 +103,24 @@ export class ConfigurationsShowComponent implements OnInit {
       .getConfiguration(this.selectedConfiguration, this.loadedConfiguration)
       .subscribe((data) => {
         this.configuration = data;
-        this.editor.setContent(data);
+        this.editor.setValue(data).then(() => {
+          this.highlightAdapter();
+        });
       });
+  }
+
+  private highlightAdapter(): void {
+    if (!this.selectedAdapter) {
+      return;
+    }
+    const match = this.editor.findMatchForRegex(
+      `<adapter.*? name="${this.selectedAdapter}".*?>(?:.|\\n)*?<\\/adapter>`,
+    )?.[0];
+    if (match) {
+      this.editor.setLineNumberInRoute(
+        match.range.startLineNumber,
+        match.range.endLineNumber,
+      );
+    }
   }
 }
