@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -84,7 +85,7 @@ public class ApiException extends RuntimeException implements Serializable {
 		return response;
 	}
 
-	protected static ResponseEntity<Object> formatExceptionResponse(String message, HttpStatus status, @Nullable HttpHeaders headers) {
+	protected static ResponseEntity<Object> formatExceptionResponse(String message, HttpStatusCode status, @Nullable HttpHeaders headers) {
 		ResponseEntity.BodyBuilder builder = ResponseEntity.status(status).contentType(MediaType.TEXT_PLAIN);
 
 		if(headers != null) {
@@ -93,7 +94,7 @@ public class ApiException extends RuntimeException implements Serializable {
 
 		if(message != null) {
 			Map<String,String> json = new HashMap<>();
-			json.put("status", status.getReasonPhrase());
+			json.put("status", HttpStatus.valueOf(status.value()).getReasonPhrase());
 			//Replace non ASCII characters, tabs, spaces and newlines.
 			json.put("error", message.replace("\n", " ").replace(System.lineSeparator(), " "));
 
