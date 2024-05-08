@@ -22,6 +22,7 @@ Requires JDK 17 or later, tested on JDK 17 and 21.
 
 ### Non backwards compatible changes
 - Larva package is renamed from `testtool` to `larva`. References inside the Larva property files to the `testtool` package should be updated to larva. Such as: `org.frankframework.testtool.FileSender` -> `org.frankframework.larva.FileSender`. It still works with the old package name in 8.1, as a compatibility feature.
+- By default the PipelineSession substitution delimiter has been changed from `${` to `?{` so it's consistent with the `FixedQuerySender`. Backwards compatibility key `useOldSubstitutionStartDelimiter` has been added so minimal change is required during upgrades. Note that when using caches in combination with `diskPersistent="true"` you may need to purge your cache!
 
 8.0.0 - December 23rd, 2023
 --------------
