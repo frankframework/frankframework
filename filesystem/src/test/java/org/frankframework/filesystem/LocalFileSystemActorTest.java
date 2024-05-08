@@ -100,7 +100,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	@DisplayName("The folder is created correctly based on root of the LocalFileSystem")
 	public void testCreateFolderWithRoot() throws Exception {
 		// explicitly use the tmpdir to avoid creating a folder `filesystem/testCreateFolder` which will fail consecutive builds
-		String tmpDir = System.getProperty("java.io.tmpdir") + "testCreateFolder";
+		String tmpDir = System.getProperty("java.io.tmpdir") + "/testCreateFolder";
 		fileSystem.setRoot(tmpDir);
 
 		String fileName = "b52cc8d5-ee39-4a8f-84b8-f91b72b1c8b7";
