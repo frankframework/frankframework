@@ -1760,24 +1760,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IM
 		return currentRunState==someRunState;
 	}
 
-	//TODO move this to RunState
-	public boolean isStopped() {
-		RunState currentRunState = runState.getRunState();
-		switch (currentRunState) {
-			case STARTING:
-			case EXCEPTION_STARTING:
-			case STARTED:
-			case STOPPING:
-				return false;
-			case STOPPED:
-			case EXCEPTION_STOPPING:
-			case ERROR:
-				return true;
-			default:
-				throw new IllegalStateException("Unhandled receiver run-state [" + currentRunState + "]");
-		}
-	}
-
 	private String sendResultToSender(Message result) {
 		String errorMessage = null;
 		try(PipeLineSession session = new PipeLineSession()) {

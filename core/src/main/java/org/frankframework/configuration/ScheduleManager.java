@@ -27,7 +27,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.lifecycle.ConfigurableLifecyleBase;
+import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.scheduler.SchedulerHelper;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.RunState;
@@ -41,7 +41,7 @@ import org.frankframework.util.RunState;
 /*
  * Configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
  */
-public class ScheduleManager extends ConfigurableLifecyleBase implements ApplicationContextAware, AutoCloseable {
+public class ScheduleManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter SchedulerHelper schedulerHelper;
