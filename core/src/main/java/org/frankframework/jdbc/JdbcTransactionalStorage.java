@@ -532,7 +532,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		log.debug("preparing insert statement [{}]", insertQuery);
 		int updateCount;
-		try (PreparedStatement stmt = dbmsSupport.mustInsertEmptyBlobBeforeData() ? conn.prepareStatement(insertQuery) : conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);) {
+		try (PreparedStatement stmt = dbmsSupport.mustInsertEmptyBlobBeforeData() ? conn.prepareStatement(insertQuery) : conn.prepareStatement(insertQuery, new String[]{ getKeyField() });) {
 			stmt.clearParameters();
 			int parPos = 0;
 

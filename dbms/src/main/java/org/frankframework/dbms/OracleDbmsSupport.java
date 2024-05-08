@@ -77,11 +77,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean mustInsertEmptyBlobBeforeData() {
-		return true;
-	}
-
-	@Override
 	public String getUpdateBlobQuery(String table, String blobField, String keyField) {
 		return "SELECT " + blobField + " FROM " + table + " WHERE " + keyField + "=?" + " FOR UPDATE";
 	}
