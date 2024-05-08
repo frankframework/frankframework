@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021,2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public enum RunState {
 	EXCEPTION_STOPPING,
 	STOPPED;
 
-	public synchronized boolean isStopped() {
+	public boolean isStopped() {
 		switch (this) {
 			case STARTING:
 			case EXCEPTION_STARTING:

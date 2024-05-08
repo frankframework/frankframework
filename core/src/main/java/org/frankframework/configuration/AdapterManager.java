@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
@@ -117,7 +119,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 		return Collections.unmodifiableMap(adapters);
 	}
 
-	public List<Adapter> getAdapterList() {
+	public @Nonnull List<Adapter> getAdapterList() {
 		return new ArrayList<>(getAdapters().values());
 	}
 
@@ -245,7 +247,7 @@ public class AdapterManager extends AbstractConfigurableLifecyle implements Appl
 			}
 		}
 
-		adapters.values().stream().forEach(this::removeAdapter);
+		getAdapterList().stream().forEach(this::removeAdapter);
 	}
 
 	@Override
