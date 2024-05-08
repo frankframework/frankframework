@@ -15,6 +15,8 @@
 */
 package org.frankframework.management.web.spring;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -44,7 +46,7 @@ import java.util.zip.ZipInputStream;
 public class SendJmsMessage extends FrankApiBase {
 
 	// Won't work Spring 5.3 without SpringBoot
-	/*@Getter
+	@Getter
 	@Setter
 	public static class JmsMessageMultiPartBody {
 		private boolean persistent;
@@ -59,7 +61,12 @@ public class SendJmsMessage extends FrankApiBase {
 
 		private MultipartFile message;
 		private MultipartFile file;
-	}*/
+	}
+
+	@PostMapping(value = "/test", produces = MediaType.TEXT_PLAIN_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public String test(JmsMessageMultiPartBody body) {
+		return "Type gotten is: " + body.type;
+	}
 
 	@RolesAllowed("IbisTester")
 	@PostMapping(value = "/jms/message", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

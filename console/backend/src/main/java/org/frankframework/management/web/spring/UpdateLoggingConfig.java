@@ -28,9 +28,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.annotation.security.RolesAllowed;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+@RestController
 public class UpdateLoggingConfig extends FrankApiBase {
 
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })

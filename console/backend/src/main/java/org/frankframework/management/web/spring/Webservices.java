@@ -28,7 +28,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.annotation.security.RolesAllowed;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
 public class Webservices extends FrankApiBase {
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})

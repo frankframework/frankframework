@@ -30,6 +30,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+import org.springframework.web.util.pattern.PathPattern;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -79,7 +80,11 @@ public class Init extends FrankApiBase {
 				continue;
 			}
 
-			Set<String> paths = mappingInfo.getDirectPaths();
+			if(method.getName().equalsIgnoreCase("browseMessages")){
+				var x = 0;
+			}
+
+			PathPattern[] paths = mappingInfo.getPathPatternsCondition().getPatterns().toArray(new PathPattern[0]);
 			RequestMethod methodType = mappingInfo.getMethodsCondition().getMethods().toArray(new RequestMethod[0])[0];
 			RolesAllowed rolesAllowed = method.getAnnotation(RolesAllowed.class);
 			Description description = method.getAnnotation(Description.class);
@@ -90,10 +95,10 @@ public class Init extends FrankApiBase {
 			boolean hasRelation = method.isAnnotationPresent(Relation.class);
 			String rel = !hal && hasRelation ? method.getAnnotation(Relation.class).value() : null;
 
-			for (String path : paths.toArray(new String[0])) {
+			for (PathPattern path : paths) {
 				Map<String, Object> resource = new HashMap<>(6);
 				resource.put("name", method.getName());
-				resource.put("href", requestPath + path);
+				resource.put("href", requestPath + path.getPatternString());
 				resource.put("type", methodType.name());
 				if (deprecated)
 					resource.put("deprecated", deprecated);
