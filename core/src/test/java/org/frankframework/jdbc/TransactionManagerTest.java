@@ -12,7 +12,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
 public class TransactionManagerTest {
-	private static final String TEST_TABLE = "Tralala";
+	private static final String TEST_TABLE = "tralala";
 
 	protected void checkNumberOfLines(DatabaseTestEnvironment env, int expected) throws Exception {
 		checkNumberOfLines(env, expected, "select count(*) from " + TEST_TABLE + " where TKEY = 1");
