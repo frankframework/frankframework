@@ -97,6 +97,10 @@
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>jakarta.mail</groupId>
+					<artifactId>jakarta.mail-api</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -132,29 +136,13 @@
 
 		<!-- Jackson dependencies -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+			<artifactId>jackson-jakarta-rs-json-provider</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish</groupId>
 			<artifactId>jakarta.json</artifactId>
 			<version>2.0.1</version>
-		</dependency>
-
-		<!-- because 'jakarta.activation' is managed explicitly add javax.activation -->
-		<dependency><!-- Version is managed, CXF uses a younger version -->
-			<groupId>com.sun.activation</groupId>
-			<artifactId>jakarta.activation</artifactId>
-		</dependency>
-		<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
-			<groupId>jakarta.activation</groupId>
-			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->
@@ -180,8 +168,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

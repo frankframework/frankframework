@@ -29,7 +29,6 @@ import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.TimeUnit;
 
-import org.frankframework.configuration.AdapterManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -46,7 +45,9 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.RunState;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -57,6 +58,12 @@ import lombok.extern.log4j.Log4j2;
 public class TestReceiverOnError {
 	private static final TestConfiguration configuration = TransactionManagerType.DATASOURCE.create(false);
 	private TestAppender appender;
+	private String adapterName;
+
+	@BeforeEach
+	public void beforeEach(TestInfo testInfo) {
+		adapterName = testInfo.getDisplayName().replace('/', '_');
+	}
 
 	@AfterEach
 	void tearDown() throws Exception {
@@ -66,7 +73,6 @@ public class TestReceiverOnError {
 			appender = null;
 		}
 		configuration.stop();
-		configuration.getBean("adapterManager", AdapterManager.class).close();
 		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); //Meters are cached...
 		log.info("!> Configuration Context for [{}] has been cleaned up.", TransactionManagerType.DATASOURCE);
 	}
@@ -90,7 +96,7 @@ public class TestReceiverOnError {
 
 	private <M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
-		adapter.setName("ReceiverTestAdapterName");
+		adapter.setName(adapterName);
 
 		doAnswer(invocation -> {
 			Message m = invocation.getArgument(1);
@@ -170,7 +176,7 @@ public class TestReceiverOnError {
 		assertTrue(System.currentTimeMillis() + 200 > receiver.getLastMessageDate());
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{index} - {0}")
 	@CsvSource({
 		"getRawMessageException, Receiver [receiver] caught Exception retrieving message, will continue retrieving messages",
 		"extractMessageException, Receiver [receiver] caught Exception processing message, will continue processing next message",

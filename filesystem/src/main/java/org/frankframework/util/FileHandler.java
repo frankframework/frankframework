@@ -32,7 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.Getter;
 import lombok.Setter;

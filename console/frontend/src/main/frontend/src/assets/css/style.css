@@ -1305,24 +1305,6 @@ span.line-selected::before {
   color: #333;
 }
 
-/* SCROLL TO TOP BUTTON */
-.scroll-to-top {
-  opacity: 0;
-  position: fixed;
-  z-index: 10000;
-  bottom: 24px;
-  cursor: pointer;
-  font-size: 13px;
-}
-body.mini-navbar .scroll-to-top {
-  font-size: 22px;
-  bottom: 56px;
-}
-.scroll-to-top a {
-  font-weight: 600;
-  padding: 14px 0px 14px 25px;
-}
-
 /* CHOSEN PLUGIN */
 .chosen-container-single .chosen-single {
   background: #ffffff;

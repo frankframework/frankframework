@@ -6,15 +6,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.mockito.Mockito;
+
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
+import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.datasource.OpenPoolingDataSource;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
-import org.mockito.Mockito;
 
 public class DataSourceFactoryMock implements IDataSourceFactory {
 	private final Map<String, DataSource> objects = new ConcurrentHashMap<>();
@@ -26,12 +26,12 @@ public class DataSourceFactoryMock implements IDataSourceFactory {
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName) throws NamingException {
+	public DataSource getDataSource(String dataSourceName) {
 		return getDataSource(dataSourceName, null);
 	}
 
 	@Override
-	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws NamingException {
+	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) {
 		return objects.get(dataSourceName);
 	}
 

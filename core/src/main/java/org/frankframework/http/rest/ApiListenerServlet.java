@@ -26,14 +26,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
-
+import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;

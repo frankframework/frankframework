@@ -15,7 +15,7 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.PropertyResolver;

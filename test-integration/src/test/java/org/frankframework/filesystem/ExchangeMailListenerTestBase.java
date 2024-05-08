@@ -2,33 +2,36 @@ package org.frankframework.filesystem;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
+import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
-org.frankframework.core.IMessageBrowser;
-		org.frankframework.core.IMessageBrowsingIterator;
-		org.frankframework.core.IMessageBrowsingIteratorItem;
-		org.frankframework.core.ListenerException;
-		org.frankframework.core.ProcessState;
+import org.frankframework.core.IMessageBrowser;
+import org.frankframework.core.IMessageBrowsingIterator;
+import org.frankframework.core.IMessageBrowsingIteratorItem;
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.ProcessState;
 import org.frankframework.receivers.ExchangeMailListener;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.testutil.TestAssertions;
-
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.MessageBrowsingFilter;
 
-public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase {
+@Log4j2
+public abstract class ExchangeMailListenerTestBase extends ExchangeFileSystemTest {
 	private final String PROPERTY_FILE = "ExchangeMailListener.properties";
 
 	private final String ndrMessageId = PropertyUtil.getProperty(PROPERTY_FILE, "ndrMessageId");
@@ -65,7 +68,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Override
-	public void setUp() throws Exception {
+	public void setUp() throws FileSystemException, ConfigurationException, IOException {
 		Properties properties=new Properties();
 		properties.load(ClassLoaderUtils.getResourceURL(testProperties).openStream());
 		mailaddress = properties.getProperty("mailaddress");
@@ -91,7 +94,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Override
-	public void tearDown() {
+	public void tearDown() throws Exception {
 		if (mailListener!=null) {
 			mailListener.close();
 		}
@@ -254,8 +257,8 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //
 
 	@Test
-	@Ignore("skip NDR filter for now")
-	public void readFileBounce1() {
+	@Disabled("skip NDR filter for now")
+	public void readFileBounce1() throws Exception {
 		String targetFolder="Onbestelbaar 1";
 		String originalRecipient="onbestelbaar@weetikwaarwelniet.nl";
 		String originalFrom="";
@@ -297,7 +300,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test
-	@Ignore("skip NDR filter for now")
+	@Disabled("skip NDR filter for now")
 	public void readFileBounce2() {
 		String targetFolder="Bounce 2";
 		String originalRecipient="";
@@ -348,7 +351,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test
-	@Ignore("skip NDR filter for now")
+	@Disabled("skip NDR filter for now")
 	public void readFileBounce3WithAttachmentInOriginalMail() {
 		String targetFolder="Bounce 3";
 		String originalRecipient="";
@@ -400,7 +403,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test
-	@Ignore("skip NDR filter for now")
+	@Disabled("skip NDR filter for now")
 	public void readFileBounce4() {
 		String targetFolder="Bounce 4";
 		String originalRecipient="";
@@ -589,7 +592,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test // this happens when the receiver/listener is closed, but its storages are browsed
-	public void testMessageBrowserClosed() {
+	public void testMessageBrowserClosed() throws ListenerException {
 		mailListener.setProcessedFolder("Done");
 		mailListener.configure();
 		mailListener.open();
@@ -620,7 +623,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test
-	public void testMessageBrowserFilterTest() {
+	public void testMessageBrowserFilterTest() throws ConfigurationException {
 		mailListener.setProcessedFolder("Done");
 		mailListener.configure();
 		mailListener.open();

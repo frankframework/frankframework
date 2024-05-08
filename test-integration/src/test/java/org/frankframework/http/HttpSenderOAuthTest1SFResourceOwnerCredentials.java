@@ -2,24 +2,24 @@ package org.frankframework.http;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URLEncoder;
+
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.hamcrest.core.StringContains;
-import org.junit.Ignore;
-
-org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.HttpSender.PostType;
 import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.PropertyUtil;
-
 import org.frankframework.util.LogUtil;
 
 public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
@@ -95,7 +95,7 @@ public class HttpSenderOAuthTest1SFResourceOwnerCredentials {
 	}
 
 	@Test
-	@Ignore("This does not work for this provider")
+	@Disabled("This does not work for this provider")
 	public void testSendResourceOwnerCredentialsRequestWithClientCredentialsAsBasicAuthentication() throws Exception {
 
 		String tokenUrl = tokenEndpoint

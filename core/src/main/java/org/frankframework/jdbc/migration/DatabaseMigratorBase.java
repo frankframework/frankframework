@@ -19,7 +19,6 @@ import java.io.Writer;
 import java.net.URL;
 import java.sql.SQLException;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
@@ -83,7 +82,7 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 		try {
 			log.debug("looking up Datasource ["+getDatasourceName()+"] for JdbcMigrator ["+getName()+"]");
 			return dataSourceFactory.getDataSource(getDatasourceName());
-		} catch (NamingException e) {
+		} catch (IllegalStateException e) {
 			throw new SQLException("cannot connect to datasource ["+getDatasourceName()+"]", e);
 		}
 	}

@@ -21,9 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.springframework.http.MediaType;

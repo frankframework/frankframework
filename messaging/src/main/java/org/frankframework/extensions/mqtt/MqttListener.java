@@ -17,8 +17,7 @@ package org.frankframework.extensions.mqtt;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;

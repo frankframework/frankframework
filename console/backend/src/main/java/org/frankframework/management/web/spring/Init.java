@@ -28,8 +28,8 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

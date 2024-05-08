@@ -26,9 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.annotation.security.RolesAllowed;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;

@@ -1,14 +1,19 @@
 package org.frankframework.pipes;
 
-org.frankframework.core.PipeLineSession;
-		org.frankframework.core.PipeRunResult;
+import java.io.IOException;
+
+import javax.xml.transform.TransformerException;
+
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunResult;
 import org.frankframework.extensions.esb.EsbSoapWrapperPipe;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
-
 import org.frankframework.util.XmlEncodingUtils;
-import org.frankframework.util.XmlUtils;
+import org.xml.sax.SAXException;
 
 public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPipe> {
 	@Override
@@ -24,7 +29,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		pipe.addParameter(param);
 	}
 	@Test
-	public void testWrapCMH2() {
+	public void testWrapCMH2() throws Exception {
 		pipe.setOutputNamespace("http://nn.nl/XSD/Archiving/Document/3/GetDocumentAndAttributes/1");
 		pipe.setCmhVersion(2);
 		addParam("destination","destination-value");
@@ -49,7 +54,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		TestAssertions.assertXpathValueEquals("OK", 					result, "/Envelope/Body/MessageHeader/Result/Status");
 	}
 	@Test
-	public void testWrapFindDocumentsOK() {
+	public void testWrapFindDocumentsOK() throws IOException, TransformerException, SAXException {
 
 		String outputNamespace="http://nn.nl/XSD/Archiving/Document/3/GetDocumentAndAttributes/1";
 		String rootElement="GetDocumentAndAttributes_Response";
@@ -103,7 +108,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 	}
 
 	@Test
-	public void testWrapFindDocumentsWithError() {
+	public void testWrapFindDocumentsWithError() throws IOException, TransformerException, SAXException {
 
 		String outputNamespace="http://nn.nl/XSD/Archiving/Document/3/GetDocumentAndAttributes/1";
 		String rootElement="GetDocumentAndAttributes_Response";

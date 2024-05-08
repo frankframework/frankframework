@@ -21,8 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.core.MediaType;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.core.MediaType;
 
 @RestController
 public class SecurityItems extends FrankApiBase {

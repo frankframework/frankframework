@@ -21,9 +21,8 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.bindings.CmisBindingFactory;

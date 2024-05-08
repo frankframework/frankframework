@@ -28,8 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;

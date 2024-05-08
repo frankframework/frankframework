@@ -392,7 +392,7 @@ public class PipeLineSessionTest {
 	@Test
 	public void testNotCloseSystemCloseables() throws Exception {
 		// Arrange
-		javax.jms.Session jmsSession = mock(AutoCloseableJmsSession.class);
+		jakarta.jms.Session jmsSession = mock(AutoCloseableJmsSession.class);
 		session.put("__JmsSession", jmsSession);
 		doAnswer(params -> fail("Should not close JMS Session")).when(jmsSession).close();
 
@@ -406,7 +406,7 @@ public class PipeLineSessionTest {
 		verify(jdbcConnection, times(1)).close();
 	}
 
-	private interface AutoCloseableJmsSession extends javax.jms.Session, AutoCloseable {
+	private interface AutoCloseableJmsSession extends jakarta.jms.Session, AutoCloseable {
 		// No methods added
 	}
 }

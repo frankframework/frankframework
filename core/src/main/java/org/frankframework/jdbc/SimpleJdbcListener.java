@@ -23,8 +23,7 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.frankframework.dbms.JdbcException;
 import org.apache.commons.lang3.StringUtils;
 

@@ -8,8 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.jupiter.api.Test;

@@ -27,7 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;

@@ -2,7 +2,7 @@ package org.frankframework.management.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.frankframework.core.IbisException;
 import org.frankframework.management.bus.BusException;

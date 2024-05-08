@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.io.IOException;
 import java.io.OutputStream;

@@ -33,13 +33,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
-
+import jakarta.annotation.Nonnull;
 import jakarta.mail.internet.InternetAddress;
 import lombok.Getter;
 import lombok.Setter;

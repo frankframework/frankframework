@@ -1,8 +1,10 @@
 package org.frankframework.ldap;
 
-import org.frankframework.configuration.ConfigurationException;
+import org.junit.jupiter.api.Test;
 
-org.frankframework.core.SenderException;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
+
 
 public class LdapClientTest {
 

@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Properties;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 import org.frankframework.management.web.FrankApiTestBase;
 import org.junit.jupiter.params.ParameterizedTest;

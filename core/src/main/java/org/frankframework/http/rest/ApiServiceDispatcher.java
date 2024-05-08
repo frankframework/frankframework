@@ -23,9 +23,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.json.JsonObject;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;

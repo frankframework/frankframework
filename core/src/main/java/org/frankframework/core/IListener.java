@@ -17,8 +17,7 @@ package org.frankframework.core;
 
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.FrankDocGroup;

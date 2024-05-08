@@ -21,8 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.frankframework.management.web.ApiException;
 
 import org.apache.commons.lang3.StringUtils;

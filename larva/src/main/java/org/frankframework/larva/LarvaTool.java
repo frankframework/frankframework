@@ -54,13 +54,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
-import javax.annotation.Nullable;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import jakarta.annotation.Nullable;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1169,7 +1169,7 @@ public class LarvaTool {
 		pullingJmsListener.setTimeout(10);
 		boolean empty = false;
 		while (!empty) {
-			RawMessageWrapper<javax.jms.Message> rawMessage = null;
+			RawMessageWrapper<jakarta.jms.Message> rawMessage = null;
 			Message message;
 			Map<String, Object> threadContext = null;
 			try {
@@ -1277,7 +1277,7 @@ public class LarvaTool {
 		Message message = null;
 		try {
 			threadContext = pullingJmsListener.openThread();
-			RawMessageWrapper<javax.jms.Message> rawMessage = pullingJmsListener.getRawMessage(threadContext);
+			RawMessageWrapper<jakarta.jms.Message> rawMessage = pullingJmsListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
 				message = pullingJmsListener.extractMessage(rawMessage, threadContext);
 				String correlationId = rawMessage.getId(); // NB: Historically this code extracted message-ID then used that as correlation-ID.

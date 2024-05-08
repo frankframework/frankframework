@@ -11,7 +11,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.parameters.Parameter.ParameterType;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;

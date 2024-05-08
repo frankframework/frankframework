@@ -21,10 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.springframework.messaging.Message;
-
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
@@ -34,10 +31,11 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
-
-import javax.annotation.security.RolesAllowed;
+import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class ConnectionOverview extends BusEndpointBase {

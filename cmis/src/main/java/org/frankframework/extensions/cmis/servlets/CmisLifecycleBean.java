@@ -17,7 +17,7 @@ package org.frankframework.extensions.cmis.servlets;
 
 import java.util.HashMap;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;

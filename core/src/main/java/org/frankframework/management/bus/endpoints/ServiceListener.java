@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
@@ -35,8 +36,6 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.receivers.ServiceDispatcher;
-
-import javax.annotation.security.RolesAllowed;
 
 @BusAware("frank-management-bus")
 public class ServiceListener extends BusEndpointBase {
