@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -27,6 +28,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.logging.log4j.LogManager;
 
 public class StringUtil {
 
@@ -282,5 +286,37 @@ public class StringUtil {
 		Pattern splitPattern = Pattern.compile("\\s*[" + delim + "]+\\s*");
 		return splitPattern.splitAsStream(input.trim())
 				.filter(StringUtils::isNotBlank);
+	}
+
+	/**
+	 * toStrings and concatenates all fields of the given object, except fields containing the word 'password'
+	 * Uses the {@link ToStringStyle#DEFAULT_STYLE DEFAULT_STYLE} by default.
+	 * 
+	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
+	 */
+	@Nonnull
+	public static String reflectionToString(Object object) {
+		return reflectionToString(object, ToStringStyle.DEFAULT_STYLE);
+	}
+
+	/**
+	 * toStrings and concatenates all fields of the given object, except fields containing the word 'password'
+	 * @param style the ToStringStyle to use.
+	 * 
+	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
+	 */
+	@Nonnull
+	public static String reflectionToString(Object object, ToStringStyle style) {
+		try {
+			return (new ReflectionToStringBuilder(object, style) {
+				@Override
+				protected boolean accept(Field f) {
+					return super.accept(f) && !f.getName().contains("password");
+				}
+			}).toString();
+		} catch (Exception e) {
+			LogManager.getLogger(object).warn("exception getting string representation of object", e);
+			return object.toString();
+		}
 	}
 }
