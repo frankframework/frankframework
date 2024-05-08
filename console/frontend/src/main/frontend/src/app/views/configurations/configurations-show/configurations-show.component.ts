@@ -23,9 +23,10 @@ export class ConfigurationsShowComponent implements OnInit {
   configuration: string = '';
   selectedConfiguration: string = 'All';
   loadedConfiguration: boolean = false;
-  anchor?: string;
+  fragment?: string;
 
   private selectedAdapter?: string;
+  private skipParamsUpdate: boolean = false;
 
   constructor(
     private router: Router,
@@ -40,11 +41,16 @@ export class ConfigurationsShowComponent implements OnInit {
       this.configurations = this.appService.configurations;
     });
 
-    this.route.fragment.subscribe((hash) => {
-      this.anchor = hash ?? undefined;
+    this.route.fragment.subscribe((fragment) => {
+      this.fragment = fragment ?? undefined;
+      this.removeAdapterAfterLineSelection(fragment);
     });
 
     this.route.queryParamMap.subscribe((parameters) => {
+      if (this.skipParamsUpdate) {
+        this.skipParamsUpdate = false;
+        return;
+      }
       this.selectedConfiguration = parameters.get('name') || 'All';
       this.loadedConfiguration = parameters.get('loaded') !== 'false';
       this.selectedAdapter = parameters.get('adapter') ?? undefined;
@@ -55,16 +61,15 @@ export class ConfigurationsShowComponent implements OnInit {
 
   update(loaded: boolean): void {
     this.loadedConfiguration = loaded;
-    this.anchor = undefined;
-    this.getConfiguration();
+    this.fragment = undefined;
+    this.updateQueryParams();
   }
 
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
     this.selectedAdapter = undefined;
-    this.router.navigate([], { relativeTo: this.route, fragment: '' });
-    this.anchor = undefined; //unset hash anchor
-    this.getConfiguration();
+    this.fragment = undefined; //unset hash anchor
+    this.updateQueryParams();
   }
 
   updateQueryParams(): void {
@@ -78,7 +83,7 @@ export class ConfigurationsShowComponent implements OnInit {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: transitionObject,
-      fragment: this.anchor,
+      fragment: this.fragment,
     });
   }
 
@@ -89,8 +94,6 @@ export class ConfigurationsShowComponent implements OnInit {
   }
 
   getConfiguration(): void {
-    this.updateQueryParams();
-
     this.configurationsService
       .getConfiguration(this.selectedConfiguration, this.loadedConfiguration)
       .subscribe((data) => {
@@ -113,6 +116,18 @@ export class ConfigurationsShowComponent implements OnInit {
         match.range.startLineNumber,
         match.range.endLineNumber,
       );
+    }
+  }
+
+  private removeAdapterAfterLineSelection(fragment: string | null): void {
+    if (
+      this.selectedAdapter &&
+      fragment?.includes('L') &&
+      !fragment?.includes('-')
+    ) {
+      this.selectedAdapter = undefined;
+      this.skipParamsUpdate = true;
+      this.updateQueryParams();
     }
   }
 }
