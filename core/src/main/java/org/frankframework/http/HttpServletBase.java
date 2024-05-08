@@ -15,7 +15,7 @@
 */
 package org.frankframework.http;
 
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServlet;
 
 import org.frankframework.lifecycle.DynamicRegistration;
 

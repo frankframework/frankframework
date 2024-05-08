@@ -17,7 +17,7 @@ package org.frankframework.extensions.fxf;
 
 import java.io.File;
 
-import javax.jms.Message;
+import jakarta.jms.Message;
 
 import org.apache.commons.lang3.StringUtils;
 

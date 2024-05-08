@@ -22,10 +22,10 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Locale;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class HttpServletResponseMock implements HttpServletResponse {
 	String outputFile;
@@ -168,19 +168,7 @@ public class HttpServletResponseMock implements HttpServletResponse {
 	}
 
 	@Override
-	public String encodeRedirectUrl(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public String encodeURL(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String encodeUrl(String arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -251,12 +239,6 @@ public class HttpServletResponseMock implements HttpServletResponse {
 
 	@Override
 	public void setStatus(int arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setStatus(int arg0, String arg1) {
 		// TODO Auto-generated method stub
 
 	}

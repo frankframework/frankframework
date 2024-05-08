@@ -15,10 +15,10 @@
 */
 package org.frankframework.core;
 
-import javax.annotation.Nonnull;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import jakarta.annotation.Nonnull;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.stream.Message;
 

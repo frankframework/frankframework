@@ -24,10 +24,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
+import jakarta.activation.DataSource;
+
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 
-public class MessageDataSource implements javax.activation.DataSource, jakarta.activation.DataSource, Closeable {
+public class MessageDataSource implements DataSource, Closeable {
 	private final Message message;
 	private final String name;
 	private String contentType;

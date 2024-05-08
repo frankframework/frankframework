@@ -15,16 +15,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.frankframework.configuration.ConfigurationException;
-org.frankframework.core.ConfiguredTestBase;
+import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.stream.Message;
-
-import org.frankframework.util.DateUtils;
+import org.frankframework.util.DateFormatUtils;
 
 public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> extends ConfiguredTestBase {
 
@@ -51,7 +50,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	}
 
 	@AfterEach
-	public void tearDown() {
+	public void tearDown() throws Exception {
 		log.debug("tearDown start");
 		fileSystem.close();
 		log.debug("tearDown finished");
@@ -62,7 +61,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		// just perform the setup()
 	}
 
-	protected F getFirstFileFromFolder(String folder) {
+	protected F getFirstFileFromFolder(String folder) throws Exception {
 		try (DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			Iterator<F> it = ds.iterator();
 			if (it == null) {
@@ -78,7 +77,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	/**
 	 * asserts a number of files to be present in folder.
 	 */
-	public void fileSystemTestListFile(int numFilesExpected, String folder) {
+	public void fileSystemTestListFile(int numFilesExpected, String folder) throws Exception {
 		Set<F> files = new HashSet<>();
 		Set<String> filenames = new HashSet<>();
 		int count = 0;
@@ -115,7 +114,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 				String canonicalname=fileSystem.getCanonicalName(f);
 				log.debug("canonicalname ["+canonicalname+"]");
 				Date modificationTime=fileSystem.getModificationTime(f);
-				log.debug("modificationTime ["+(modificationTime==null?null:DateUtils.format(modificationTime))+"]");
+				log.debug("modificationTime ["+(modificationTime==null?null: DateFormatUtils.format(modificationTime))+"]");
 
 				Map<String,Object> properties=fileSystem.getAdditionalFileProperties(f);
 				for (Entry<String,Object>entry:properties.entrySet()) {
@@ -156,7 +155,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 
 	}
 
-	public void fileSystemTestRandomFileShouldNotExist(String randomFileName) {
+	public void fileSystemTestRandomFileShouldNotExist(String randomFileName) throws Exception {
 		F f=fileSystem.toFile(randomFileName);
 		assertFalse(fileSystem.exists(f), "RandomFileShouldNotExist");
 	}

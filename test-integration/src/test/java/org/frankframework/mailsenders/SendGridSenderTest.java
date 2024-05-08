@@ -1,7 +1,11 @@
 package org.frankframework.mailsenders;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.SenderException;
 
 org.frankframework.core.SenderException;
 

@@ -66,14 +66,14 @@
 			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency><!-- prevent compile error on TibetView: cannot access javax.enterprise.context.Dependent -->
 			<groupId>jakarta.enterprise</groupId>
 			<artifactId>jakarta.enterprise.cdi-api</artifactId>
-			<version>2.0.2</version>
+			<version>4.0.1</version>
 			<scope>provided</scope>
 		</dependency>
 

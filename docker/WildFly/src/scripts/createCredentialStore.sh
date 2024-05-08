@@ -1,5 +1,5 @@
-# createCS.sh
-#
+#!/bin/bash
+
 # converts filesystem credentials into WildFly credentials
 
 SERVER_DIR=/opt/jboss/wildfly

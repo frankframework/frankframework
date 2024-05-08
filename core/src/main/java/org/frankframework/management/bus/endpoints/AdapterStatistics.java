@@ -14,9 +14,7 @@
    limitations under the License.
 */
 package org.frankframework.management.bus.endpoints;
-
-import javax.annotation.security.RolesAllowed;
-
+import jakarta.annotation.security.RolesAllowed;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.management.bus.ActionSelector;

@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.soap.SOAPConstants;
-import javax.xml.ws.soap.SOAPBinding;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.ws.soap.SOAPBinding;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;

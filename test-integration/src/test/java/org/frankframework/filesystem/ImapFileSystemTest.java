@@ -2,7 +2,6 @@ package org.frankframework.filesystem;
 
 import jakarta.mail.Message;
 import jakarta.mail.internet.MimeBodyPart;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.testutil.PropertyUtil;
 

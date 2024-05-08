@@ -27,12 +27,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 
-import javax.annotation.security.RolesAllowed;
 import javax.xml.stream.XMLStreamException;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;

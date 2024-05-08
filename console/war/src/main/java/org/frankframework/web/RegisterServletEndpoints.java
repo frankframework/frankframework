@@ -15,7 +15,7 @@
 */
 package org.frankframework.web;
 
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 
 import org.frankframework.console.ConsoleFrontend;
 import org.frankframework.management.web.ServletDispatcher;

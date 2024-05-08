@@ -18,12 +18,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
-		<dependency>
-			<groupId>jakarta.jms</groupId>
-			<artifactId>jakarta.jms-api</artifactId>
-		</dependency>
-
 		<!-- This dependency is here because of the IbisMetricsPipe -->
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -38,26 +32,30 @@
 			<artifactId>frankframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-ladybug</artifactId>
-			<scope>provided</scope>
+
+		<!-- provided scoped dependencies -->
+<!--		<dependency>-->
+<!--			<groupId>org.frankframework</groupId>-->
+<!--			<artifactId>frankframework-ladybug</artifactId>-->
+<!--			<scope>provided</scope>-->
+<!--		</dependency>-->
+		<dependency><!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 		</dependency>
 
-		<!-- provided dependencies will be added to the executable (Spring) WAR -->
+		<!-- these provided dependencies will be added to the executable (Spring) WAR -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -260,10 +258,10 @@
 					<artifactId>frankframework-larva</artifactId>
 					<scope>runtime</scope>
 				</dependency>
-				<dependency>
-					<groupId>org.frankframework</groupId>
-					<artifactId>frankframework-ladybug</artifactId>
-				</dependency>
+<!--				<dependency>-->
+<!--					<groupId>org.frankframework</groupId>-->
+<!--					<artifactId>frankframework-ladybug</artifactId>-->
+<!--				</dependency>-->
 				<dependency>
 					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-console-frontend</artifactId>
@@ -352,20 +350,19 @@
 					<scope>runtime</scope>
 				</dependency>
 				<dependency>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
-					<version>${geronimo.j2ee.spec.version}</version>
+					<groupId>jakarta.management.j2ee</groupId>
+					<artifactId>jakarta.management.j2ee-api</artifactId>
+					<version>1.1.4</version>
 					<scope>runtime</scope>
 				</dependency>
 				<dependency>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jta_1.1_spec</artifactId>
-					<version>${geronimo.jta.spec.version}</version>
+					<groupId>jakarta.transaction</groupId>
+					<artifactId>jakarta.transaction-api</artifactId>
 					<scope>runtime</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.activemq</groupId>
-					<artifactId>artemis-jms-client-all</artifactId>
+					<artifactId>artemis-jakarta-client</artifactId>
 					<version>${artemis.driver.version}</version>
 					<scope>runtime</scope>
 				</dependency>

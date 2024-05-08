@@ -16,13 +16,11 @@
 package org.frankframework.management.bus.endpoints;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.security.RolesAllowed;
-
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jdbc.DirectQuerySender;
@@ -40,6 +38,7 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.util.LogUtil;
+
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.util.MimeType;
@@ -60,7 +59,6 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 
 		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
-		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 		result.put("datasources", dataSourceNames);
 
 		List<String> resultTypes = new ArrayList<>();
