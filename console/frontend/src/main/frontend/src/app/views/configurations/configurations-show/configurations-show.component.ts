@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { ViewportScroller } from '@angular/common';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
 import { copyToClipboard } from 'src/app/utils';
+import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 
 type TransitionObject = {
   name?: string;
@@ -17,18 +17,20 @@ type TransitionObject = {
   styleUrls: ['./configurations-show.component.scss'],
 })
 export class ConfigurationsShowComponent implements OnInit {
+  @ViewChild('editor') editor!: MonacoEditorComponent;
+
   configurations: Configuration[] = [];
   configuration: string = '';
   selectedConfiguration: string = 'All';
   loadedConfiguration: boolean = false;
-  anchor = '';
+  fragment?: string;
 
   private selectedAdapter?: string;
+  private skipParamsUpdate: boolean = false;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private viewportScroller: ViewportScroller,
     private configurationsService: ConfigurationsService,
     private appService: AppService,
   ) {}
@@ -39,20 +41,19 @@ export class ConfigurationsShowComponent implements OnInit {
       this.configurations = this.appService.configurations;
     });
 
-    this.route.fragment.subscribe((hash) => {
-      this.anchor = hash ?? '';
+    this.route.fragment.subscribe((fragment) => {
+      this.fragment = fragment ?? undefined;
+      this.removeAdapterAfterLineSelection(fragment);
     });
 
     this.route.queryParamMap.subscribe((parameters) => {
-      this.selectedConfiguration =
-        parameters.has('name') && parameters.get('name') != ''
-          ? parameters.get('name')!
-          : 'All';
-      this.loadedConfiguration = !(
-        parameters.has('loaded') && parameters.get('loaded') == 'false'
-      );
-      if (parameters.has('adapter'))
-        this.selectedAdapter = parameters.get('adapter')!;
+      if (this.skipParamsUpdate) {
+        this.skipParamsUpdate = false;
+        return;
+      }
+      this.selectedConfiguration = parameters.get('name') || 'All';
+      this.loadedConfiguration = parameters.get('loaded') !== 'false';
+      this.selectedAdapter = parameters.get('adapter') ?? undefined;
 
       this.getConfiguration();
     });
@@ -60,32 +61,29 @@ export class ConfigurationsShowComponent implements OnInit {
 
   update(loaded: boolean): void {
     this.loadedConfiguration = loaded;
-    this.anchor = '';
-    this.getConfiguration();
+    this.fragment = undefined;
+    this.updateQueryParams();
   }
 
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
     this.selectedAdapter = undefined;
-    this.router.navigate([], { relativeTo: this.route, fragment: '' });
-    this.anchor = ''; //unset hash anchor
-    this.getConfiguration();
+    this.fragment = undefined; //unset hash anchor
+    this.updateQueryParams();
   }
 
   updateQueryParams(): void {
     const transitionObject: TransitionObject = {};
-    if (this.selectedConfiguration != 'All')
+    if (this.selectedConfiguration !== 'All')
       transitionObject.name = this.selectedConfiguration;
     if (!this.loadedConfiguration)
       transitionObject.loaded = this.loadedConfiguration;
-    if (this.selectedAdapter) transitionObject.adapter = this.selectedAdapter;
-
-    const fragment = this.anchor == '' ? undefined : this.anchor;
+    transitionObject.adapter ??= this.selectedAdapter;
 
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: transitionObject,
-      fragment,
+      fragment: this.fragment,
     });
   }
 
@@ -96,16 +94,40 @@ export class ConfigurationsShowComponent implements OnInit {
   }
 
   getConfiguration(): void {
-    this.updateQueryParams();
-
     this.configurationsService
       .getConfiguration(this.selectedConfiguration, this.loadedConfiguration)
       .subscribe((data) => {
         this.configuration = data;
-
-        if (this.anchor) {
-          document.querySelector(`#${this.anchor}`)?.scrollIntoView();
-        }
+        this.editor.setValue(data).then(() => {
+          this.highlightAdapter();
+        });
       });
+  }
+
+  private highlightAdapter(): void {
+    if (!this.selectedAdapter) {
+      return;
+    }
+    const match = this.editor.findMatchForRegex(
+      `<[aA]dapter.*? name="${this.selectedAdapter}".*?>(?:.|\\n)*?<\\/[aA]dapter>`,
+    )?.[0];
+    if (match) {
+      this.editor.setLineNumberInRoute(
+        match.range.startLineNumber,
+        match.range.endLineNumber,
+      );
+    }
+  }
+
+  private removeAdapterAfterLineSelection(fragment: string | null): void {
+    if (
+      this.selectedAdapter &&
+      fragment?.includes('L') &&
+      !fragment?.includes('-')
+    ) {
+      this.selectedAdapter = undefined;
+      this.skipParamsUpdate = true;
+      this.updateQueryParams();
+    }
   }
 }
