@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -233,5 +234,33 @@ class StringUtilTest {
 			default:
 				return Character.toString((char)chr);
 		}
+	}
+
+	private static class ToStringTestClass {
+		private String field1 = "tralala";
+		private String field2 = "lalala";
+		private boolean field3 = false;
+		private String password = "top-secret";
+		private String hoofdletterPassword = "bottom-secret";
+		private Properties props = new Properties();
+
+		public ToStringTestClass() {
+			props.setProperty("com.tibco.tibjms.factory.username", "tipko");
+			props.setProperty("com.tibco.tibjms.factory.password", "not-so-secret");
+			props.put("no-string-password", Collections.singletonList("something"));
+		}
+	}
+
+	@Test
+	public void testReflectionToString() {
+		String expected = "StringUtilTest.ToStringTestClass[field1=tralala,field2=lalala,field3=false,"
+				+ "hoofdletterPassword=*************,password=**********,"
+				+ "props={no-string-password=***hidden***, com.tibco.tibjms.factory.username=tipko, com.tibco.tibjms.factory.password=*************}]";
+
+		ToStringTestClass testClass = new ToStringTestClass();
+		int hashcode = testClass.props.hashCode();
+		String toStringResult = StringUtil.reflectionToString(testClass, StringUtil.OMIT_PASSWORD_FIELDS_STYLE);
+		assertEquals(expected, toStringResult);
+		assertEquals(hashcode, testClass.props.hashCode());
 	}
 }

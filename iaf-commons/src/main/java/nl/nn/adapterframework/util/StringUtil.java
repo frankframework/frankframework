@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -35,6 +34,7 @@ import org.apache.logging.log4j.LogManager;
 public class StringUtil {
 
 	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*,+\\s*");
+	public static final ToStringStyle OMIT_PASSWORD_FIELDS_STYLE = new FieldNameSensitiveToStringStyle();
 
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings.
@@ -289,10 +289,9 @@ public class StringUtil {
 	}
 
 	/**
-	 * toStrings and concatenates all fields of the given object, except fields containing the word 'password'
+	 * toStrings and concatenates all fields of the given object, except fields containing the word 'password' or 'secret'.
+	 * 'fail-safe' method, returns toString if it is unable to use reflection.
 	 * Uses the {@link ToStringStyle#DEFAULT_STYLE DEFAULT_STYLE} by default.
-	 * 
-	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
 	 */
 	@Nonnull
 	public static String reflectionToString(Object object) {
@@ -300,21 +299,17 @@ public class StringUtil {
 	}
 
 	/**
-	 * toStrings and concatenates all fields of the given object, except fields containing the word 'password'
-	 * @param style the ToStringStyle to use.
+	 * toStrings and concatenates all fields of the given object, except fields containing the word 'password' or 'secret'.
+	 * 'fail-safe' method, returns toString if it is unable to use reflection.
 	 * 
+	 * @param style the ToStringStyle to use.
 	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
 	 */
 	@Nonnull
 	public static String reflectionToString(Object object, ToStringStyle style) {
 		try {
-			return (new ReflectionToStringBuilder(object, style) {
-				@Override
-				protected boolean accept(Field f) {
-					return super.accept(f) && !f.getName().contains("password");
-				}
-			}).toString();
-		} catch (Exception e) {
+			return new ReflectionToStringBuilder(object, style).toString();
+		} catch (Exception e) { //amongst others, IllegalAccess-, ConcurrentModification- and Security-Exceptions
 			LogManager.getLogger(object).warn("exception getting string representation of object", e);
 			return object.toString();
 		}
