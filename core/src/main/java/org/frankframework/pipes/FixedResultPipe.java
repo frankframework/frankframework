@@ -22,6 +22,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -57,14 +58,16 @@ import lombok.Getter;
  * <li>During execution, this pipe first obtains a string based on attributes <code>returnString</code>, <code>filename</code> or <code>filenameSessionKey</code>.</li>
  * <li>The resulting string is transformed according to attributes <code>replaceFrom</code> and <code>replaceTo</code> if set.
  * Please note that the plain value of attribute <code>replaceFrom</code> is matched, no <code>?{...}</code> here.</li>
+ * 
  * <li>The resulting string is substituted based on the parameters of this pipe. This step depends on attribute <code>replaceFixedParams</code>.
  * Assume that there is a parameter with name <code>xyz</code>. If <code>replaceFixedParams</code> is <code>false</code>, then
  * each occurrence of <code>?{xyz}</code> is replaced by the parameter's value. Otherwise, the text <code>xyz</code>
  * is substituted. See {@link Parameter} to see how parameter values are determined.</li>
- * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>?{...}</code> are substituted using
+ * 
+ * <li>If attribute <code>substituteVars</code> is <code>true</code>, then expressions <code>${...}</code> are substituted using
  * system properties, pipelinesession variables and application properties. Please note that
- * no <code>?{...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
- * any <code>?{...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
+ * no <code>${...}</code> patterns are left if the initial string came from attribute <code>returnString</code>, because
+ * any <code>${...}</code> pattern in attribute <code>returnString</code> is substituted when the configuration is loaded.</li>
  * <li>If attribute <code>styleSheetName</code> is set, then the referenced XSLT stylesheet is applied to the resulting string.</li>
  * </ol>
  * <br/>
@@ -93,6 +96,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	private @Getter String replaceTo;
 	private @Getter String styleSheetName;
 	private @Getter boolean replaceFixedParams;
+	private @Getter String substitutionStartDelimiter = "?";
 
 	private TransformerPool transformerPool;
 
@@ -156,8 +160,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 				}
 				throw new PipeRunException(this,"cannot find resource ["+filename+"]");
 			}
-			try {
-				Message msg = new UrlMessage(resource);
+			try (Message msg = new UrlMessage(resource)) {
 				result = msg.asString();
 			} catch (Throwable e) {
 				throw new PipeRunException(this,"got exception loading ["+filename+"]", e);
@@ -170,11 +173,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				for(ParameterValue pv : pvl) {
-					String replaceFrom;
+					final String replaceFrom;
 					if (isReplaceFixedParams()) {
 						replaceFrom=pv.getName();
 					} else {
-						replaceFrom="?{"+pv.getName()+"}";
+						replaceFrom=substitutionStartDelimiter+"{"+pv.getName()+"}";
 					}
 					String to = pv.asStringValue("");
 					result= result.replace(replaceFrom, to);
@@ -204,8 +207,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Should values between ?{ and } be resolved. If true, the search order of replacement values is:
-	 * system properties (1), pipelinesession variables (2), application properties (3).
+	 * Should values between ${ and } be resolved. If true, the search order of replacement values is:
+	 * system properties (1), PipelineSession variables (2), application properties (3).
 	 *
 	 * @ff.default false
 	 */
@@ -264,4 +267,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 		replaceFixedParams=b;
 	}
 
+	@Deprecated(since = "8.1")
+	@ConfigurationWarning("please use ?{key} instead where possible so it's clear when to use properties and when to use session variables")
+	public void setUseOldSubstitutionStartDelimiter(boolean old) {
+		if(old) {
+			substitutionStartDelimiter = "$";
+		}
+	}
 }
