@@ -48,6 +48,7 @@ import org.springframework.messaging.SubscribableChannel;
 
 import lombok.Setter;
 
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 
 import org.frankframework.util.SpringUtils;
@@ -116,7 +117,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	}
 
 	private void registerServiceActivator(Object bean, Method method, SubscribableChannel channel, BusTopic topic) {
-		String componentName = bean.getClass().getSimpleName()+"."+method.getName();
+		String componentName = ClassUtils.classNameOf(bean)+"."+method.getName();
 		ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(bean, method);
 //		serviceActivator.setRequiresReply(method.getReturnType() != void.class); //forces methods to return something, but this might not be required
 		serviceActivator.setComponentName(componentName);
