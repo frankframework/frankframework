@@ -31,7 +31,6 @@ import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
@@ -188,7 +187,7 @@ public class MessagingSource  {
 		try {
 			managedConnectionFactory = getManagedConnectionFactory();
 			if (managedConnectionFactory != null) {
-				result.append(StringUtil.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE));
+				result.append(StringUtil.reflectionToString(managedConnectionFactory));
 			}
 		} catch (Exception | NoClassDefFoundError e) {
 			result.append(" ").append(ClassUtils.nameOf(connectionFactory)).append(".getManagedConnectionFactory() (").append(ClassUtils.nameOf(e)).append("): ").append(e.getMessage());

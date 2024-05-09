@@ -259,8 +259,13 @@ class StringUtilTest {
 
 		ToStringTestClass testClass = new ToStringTestClass();
 		int hashcode = testClass.props.hashCode();
-		String toStringResult = StringUtil.reflectionToString(testClass, StringUtil.OMIT_PASSWORD_FIELDS_STYLE);
+		String toStringResult = StringUtil.reflectionToString(testClass);
 		assertEquals(expected, toStringResult);
 		assertEquals(hashcode, testClass.props.hashCode());
+	}
+
+	@Test
+	public void testReflectionToStringNull() {
+		assertEquals("<null>", StringUtil.reflectionToString(null));
 	}
 }

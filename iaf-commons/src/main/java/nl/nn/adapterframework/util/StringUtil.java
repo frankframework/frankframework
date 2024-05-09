@@ -291,24 +291,18 @@ public class StringUtil {
 	/**
 	 * toStrings and concatenates all fields of the given object, except fields containing the word 'password' or 'secret'.
 	 * 'fail-safe' method, returns toString if it is unable to use reflection.
-	 * Uses the {@link ToStringStyle#DEFAULT_STYLE DEFAULT_STYLE} by default.
-	 */
-	@Nonnull
-	public static String reflectionToString(Object object) {
-		return reflectionToString(object, ToStringStyle.DEFAULT_STYLE);
-	}
-
-	/**
-	 * toStrings and concatenates all fields of the given object, except fields containing the word 'password' or 'secret'.
-	 * 'fail-safe' method, returns toString if it is unable to use reflection.
+	 * Uses the {@link #OMIT_PASSWORD_FIELDS_STYLE OMIT_PASSWORD_FIELDS_STYLE}.
 	 * 
-	 * @param style the ToStringStyle to use.
 	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
 	 */
 	@Nonnull
-	public static String reflectionToString(Object object, ToStringStyle style) {
+	public static String reflectionToString(@Nullable Object object) {
+		if(object == null) {
+			return "<null>";
+		}
+
 		try {
-			return new ReflectionToStringBuilder(object, style).toString();
+			return new ReflectionToStringBuilder(object, OMIT_PASSWORD_FIELDS_STYLE).toString();
 		} catch (Exception e) { //amongst others, IllegalAccess-, ConcurrentModification- and Security-Exceptions
 			LogManager.getLogger(object).warn("exception getting string representation of object", e);
 			return object.toString();
