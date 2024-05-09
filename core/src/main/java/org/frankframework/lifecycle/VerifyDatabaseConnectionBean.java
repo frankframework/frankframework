@@ -89,7 +89,12 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 			final PlatformTransactionManager txManager = applicationContext.getBean("txManager", PlatformTransactionManager.class);
 
 			if(log.isInfoEnabled()) {
-				final PlatformTransactionManager actualTxMgr = (txManager instanceof SpringTxManagerProxy proxy) ? proxy.getRealTxManager() : txManager;
+				final PlatformTransactionManager actualTxMgr;
+				if(txManager instanceof SpringTxManagerProxy) {
+					actualTxMgr = ((SpringTxManagerProxy) txManager).getRealTxManager();
+				} else {
+					actualTxMgr = txManager;
+				}
 				log.info("found transaction manager to [{}]", actualTxMgr);
 			}
 			return txManager;

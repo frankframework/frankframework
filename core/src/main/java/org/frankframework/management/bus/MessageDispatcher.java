@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -47,11 +50,6 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
 
 import lombok.Setter;
-
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
-
-import org.frankframework.util.SpringUtils;
 
 public class MessageDispatcher implements InitializingBean, ApplicationContextAware {
 	private final Logger log = LogUtil.getLogger(this);
