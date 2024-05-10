@@ -102,11 +102,13 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 			log.warn("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
 			return dataSource;
 		}
+		ConnectionFactory cf;
 		if (dataSource instanceof XADataSource) {
 			// See Javadoc of XADataSourceWrapper
-			dataSource = new XADataSourceWrapper((XADataSource)dataSource);
+			cf = new DataSourceConnectionFactory(new XADataSourceWrapper((XADataSource)dataSource));
+		} else {
+			cf = new DataSourceConnectionFactory(dataSource);
 		}
-		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
 
 		GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
