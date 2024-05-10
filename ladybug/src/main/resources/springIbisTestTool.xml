@@ -18,10 +18,10 @@
 	case file storage will be used instead of database storage)
 	-->
 
-	<!-- enable (AppConstants) properties -->
+	<!-- Enable (AppConstants) properties -->
 	<context:property-placeholder/>
 
-	<!-- scan both the original and overridden configuration -->
+	<!-- Scan both the original and overridden configuration -->
 	<context:component-scan base-package="org.frankframework.ibistesttool"/>
 	<context:component-scan base-package="nl.nn.testtool"/>
 
@@ -114,11 +114,11 @@
 
 	<bean name="testStoragePreferred" class="java.lang.String">
 		<constructor-arg value="#{
-				'${dtap.stage}' == 'LOC' ||
-				'${dtap.stage}' == 'xxx' ||
-				'${dtap.stage}' == ''
+				'${dtap.stage}' == 'LOC' || '${dtap.stage}' == 'xxx' || '${dtap.stage}' == ''
 				?
-				'testStorageXml' : (dataSourceName != '' ? 'testStorageDatabase' : 'testStorageFile')
+				'testStorageXml'
+				:
+				(dataSourceName != '' ? 'testStorageDatabase' : 'testStorageFile')
 				}"
 		/>
 	</bean>
@@ -221,13 +221,23 @@
 	<bean name="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator"/>
 	<!-- JndiObjectLocator requires JndiContextPrefixFactory -->
 	<bean name="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
-	<!-- Both locators will be wired to PoolingDataSourceFactory -->
-	<bean name="dataSourceFactory" class="org.frankframework.jdbc.datasource.PoolingDataSourceFactory" autowire="byType"/>
+	<!--
+	Both locators are wired to dataSourceFactory
+	Property poolXA is configured by DeploymentSpecificsBeanPostProcessor based on isJtaAvailable()
+	-->
+	<bean
+		name="dataSourceFactory"
+		class="org.frankframework.jdbc.datasource.PoolingDataSourceFactory"
+		autowire="byType"
+	/>
 	<!-- Bean will be wired to ladybugJdbcTemplate (see Config class of Ladybug) -->
 	<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
 
+	<!--
+	Property shouldRun is configured by DeploymentSpecificsBeanPostProcessor based on ladybug.jdbc.migrator.active
+	-->
 	<bean
 		name="ladybugDatabaseChangelog"
 		class="liquibase.integration.spring.SpringLiquibase"

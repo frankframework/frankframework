@@ -29,7 +29,8 @@ import javax.sql.XADataSource;
  * <p>
  * Wrap {@link XADataSource} and expose it as a {@link DataSource} allowing it to get a {@link Connection} from the
  * {@link XAConnection}. This should only be done after careful consideration as an {@link XAConnection} is supposed to
- * be manages by an XA trasnaction manager and corresponding connection pool. See also {@link PoolingDataSourceFactory}.
+ * be managed by an XA transaction manager with corresponding connection pool. See also
+ * {@link PoolingDataSourceFactory}.
  * </p>
  * 
  * <p>
