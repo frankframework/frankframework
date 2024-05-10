@@ -1,0 +1,13 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="FrankConfig.xsd"
+	>
+	<Adapter name="readFile">
+		<Receiver>
+			<JavaListener name="input" />
+		</Receiver>
+		<Pipeline>
+			<LocalFileSystemPipe name="readFile" action="read"></LocalFileSystemPipe>
+		</Pipeline>
+	</Adapter>
+</Configuration>
