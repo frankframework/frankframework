@@ -19,8 +19,8 @@ import java.sql.Connection;
 import java.time.Duration;
 
 import javax.sql.CommonDataSource;
-import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DataSourceConnectionFactory;
@@ -28,16 +28,40 @@ import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.frankframework.jta.narayana.NarayanaDataSourceFactory;
 import org.frankframework.util.AppConstants;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Factory through which (TX-enabled) Pooling DataSources can be retrieved.
- *
+ * <p>
+ * Factory through which Pooling DataSources can be retrieved. This Fractory should basically only be used on
+ * application servers like Tomcat that do not provide a JTA environment (resources with an XA transaction manager and
+ * corresponding connection pool). This class should not be used directly when an XA transaction manager is required but
+ * can be extended for this purpuse (see {@link NarayanaDataSourceFactory}).
+ * </p>
+ * 
+ * <p>
+ * For Tomcat a connection pool will be created only when the DataSource retrieved from JNDI is not already wrapped by
+ * a connection pool by Tomcat. Whether this is the case depends on how the Resource is configured in the context.xml.
+ * In Tomcat the Resource can also be configured to return an {@link XADataSource} instead of a {@link DataaSource}. An
+ * {@link XADataSource} should normally be configured with a transaction manager and a corresponding connection pool by
+ * the application server. For Tomcat this is not the case but {@link NarayanaDataSourceFactory}, that extends this
+ * class, can be used in that case. When this class is used directly with an {@link XADataSource} it will create
+ * a connection pool anyway allowing it to be used in a non-XA way. This will make it possible to have only one Resource
+ * configured which can be used by both XA transaction managers (e.g. Narayana, see {@link NarayanaDataSourceFactory})
+ * and non-XA transaction managers (e.g. {@link DataSourceTransactionManager} that can be configures with this class as
+ * pooling DataSource factory on an {@link XADataSource}).
+ * </p>
+ * 
+ * <p>
  * Already created DataSources are stored in a ConcurrentHashMap.
  * Every DataSource can be augmented before it is added.
+ * </p>
+ * 
+ * @see XADataSourceWrapper
  */
 public class PoolingDataSourceFactory extends DataSourceFactory {
 
@@ -70,15 +94,17 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 	}
 
 	private static boolean isPooledDataSource(CommonDataSource dataSource) {
-		return dataSource instanceof ConnectionPoolDataSource
-				|| dataSource.getClass().getName().startsWith("org.apache.tomcat")
-				;
+		return dataSource.getClass().getName().startsWith("org.apache.tomcat");
 	}
 
 	protected DataSource createPool(DataSource dataSource, String dataSourceName) {
 		if (isPooledDataSource(dataSource)) {
 			log.warn("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
 			return dataSource;
+		}
+		if (dataSource instanceof XADataSource) {
+			// See Javadoc of XADataSourceWrapper
+			dataSource = new XADataSourceWrapper((XADataSource)dataSource);
 		}
 		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
