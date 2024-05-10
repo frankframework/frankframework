@@ -198,10 +198,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (StringUtils.isNotEmpty(getSessionKey()) && StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			throw new ConfigurationException("Parameter ["+getName()+"] cannot have both sessionKey and sessionKeyXPath specified");
 		}
+		if (paramList!=null) {
+			paramList.configure();
+		}
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(styleSheetName)) {
-			if (paramList!=null) {
-				paramList.configure();
-			}
 			OutputType outputType = getType() == ParameterType.XML || getType() == ParameterType.NODE || getType() == ParameterType.DOMDOC ? OutputType.XML : OutputType.TEXT;
 			boolean includeXmlDeclaration = false;
 
