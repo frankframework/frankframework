@@ -102,11 +102,9 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 				}
 			}
 		}
-		if (bean instanceof PoolingDataSourceFactory) {
-			if (!OptionalJtaTransactionManager.isJtaAvailable()) {
-				PoolingDataSourceFactory poolingDataSourceFactory = (PoolingDataSourceFactory)bean;
-				poolingDataSourceFactory.setPoolXA(true);
-			}
+		if (bean instanceof PoolingDataSourceFactory && !OptionalJtaTransactionManager.isJtaAvailable()) {
+			PoolingDataSourceFactory poolingDataSourceFactory = (PoolingDataSourceFactory)bean;
+			poolingDataSourceFactory.setPoolXA(true);
 		}
 		if (bean instanceof SpringLiquibase springLiquibase) {
 			boolean active = APP_CONSTANTS.getBoolean("ladybug.jdbc.migrator.active",
