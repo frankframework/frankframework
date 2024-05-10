@@ -7,28 +7,28 @@ import {
   Renderer2,
 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
-import { Observable, Subscription, filter, first } from 'rxjs';
+import { filter, first, Observable, Subscription } from 'rxjs';
 import {
   Adapter,
   AdapterMessage,
   AppConstants,
+  appInitState,
   AppService,
   ConsoleState,
   MessageLog,
   ServerInfo,
-  appInitState,
 } from './app.service';
 import {
   ActivatedRoute,
+  convertToParamMap,
   Data,
   NavigationEnd,
   NavigationSkipped,
   NavigationStart,
   ParamMap,
   Router,
-  convertToParamMap,
 } from '@angular/router';
-import { ViewportScroller, formatDate } from '@angular/common';
+import { formatDate, ViewportScroller } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 // @ts-expect-error pace-js does not have types
 import * as Pace from 'pace-js';
@@ -128,7 +128,7 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         const childRoute = this.route.children.at(-1);
         if (childRoute) {
-          this.routeQueryParams = childRoute.snapshot.queryParamMap;
+          this.handleQueryParams(childRoute.snapshot.queryParamMap);
           this.routeData = childRoute.snapshot.data;
           if (this.router.url === '/login') {
             this.isLoginView = true;
@@ -202,6 +202,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  handleQueryParams(parameters: ParamMap): void {
+    this.routeQueryParams = parameters;
+    const uwu = parameters.get('uwu');
+    if (uwu === 'true') {
+      localStorage.setItem('uwu', uwu);
+    } else if (uwu === 'false') {
+      localStorage.removeItem('uwu');
+    }
   }
 
   initializeFrankConsole(): void {
