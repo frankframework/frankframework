@@ -208,32 +208,26 @@
 	</util:list>
 
 	<bean name="messageEncoder" class="org.frankframework.ibistesttool.MessageEncoder" autowire="byName"/>
-
 	<bean name="messageCapturer" class="org.frankframework.ibistesttool.MessageCapturer" autowire="byName"/>
-
 	<bean name="messageTransformer" class="org.frankframework.ibistesttool.transform.HideRegexMessageTransformer"/>
 
-	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
+	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.ProxyDataSourceFactory" />
 
-	<!-- Find DataSources in resources.yml and JNDI -->
-	<bean id="ResourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
-	<bean id="JndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
-	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.LadyBugDataSourceFactory" autowire="byType" />
-
-	<bean name="defaultDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
+	<!-- Bean will be wired to ladybugJdbcTemplate (see Config class of Ladybug) -->
+	<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 		<constructor-arg value="#{dataSourceName}"/>
 	</bean>
 
 	<bean name="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-		<property name="dataSource" ref="defaultDataSource"/>
+		<property name="dataSource" ref="ladybugDataSource"/>
 	</bean>
 
 	<bean
 		name="ladybugDatabaseChangelog"
 		class="liquibase.integration.spring.SpringLiquibase"
-		depends-on="databaseStartupValidator"
+		depends-on="dataSourceFactory"
 		>
-		<property name="dataSource" ref="defaultDataSource"/>
+		<property name="dataSource" ref="ladybugDataSource"/>
 		<property name="changeLog" value="classpath:ladybug/DatabaseChangelog.xml"/>
 		<property name="uiService">
 			<!-- Show "Running Changeset: ..." in System.out -->
@@ -243,10 +237,6 @@
 			<!-- Don't show "UPDATE SUMMARY" in System.out -->
 			<value type="liquibase.UpdateSummaryOutputEnum">LOG</value>
 		</property>
-	</bean>
-
-	<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
-		<property name="dataSource" ref="defaultDataSource"/>
 	</bean>
 
 </beans>
