@@ -24,6 +24,7 @@ Requires JDK 17 or later, tested on JDK 17 and 21.
 
 ### Non backwards compatible changes
 - Larva package is renamed from `testtool` to `larva`. References inside the Larva property files to the `testtool` package should be updated to larva. Such as: `org.frankframework.testtool.FileSender` -> `org.frankframework.larva.FileSender`. It still works with the old package name in 8.1, as a compatibility feature.
+- CompressPipe pattern attributes have been deprecated, please use the appropriate parameters and resolve the pattern in there instead. The result has now also by default been changed to the file/zip-entry instead of a file location.
 
 8.0.0 - December 23rd, 2023
 --------------
