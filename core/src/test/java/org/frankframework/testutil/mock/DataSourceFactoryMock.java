@@ -1,10 +1,10 @@
 package org.frankframework.testutil.mock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
@@ -16,7 +16,7 @@ import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourc
 import org.mockito.Mockito;
 
 public class DataSourceFactoryMock implements IDataSourceFactory {
-	private final Map<String, DataSource> objects = new ConcurrentHashMap<>();
+	private final Map<String, DataSource> objects = new HashMap<>();
 
 	public DataSourceFactoryMock() {
 		// Create a pooled datasource for the TestSecurityItems test, and wrap it in a delegating datasource to test it's recursive-ness.
