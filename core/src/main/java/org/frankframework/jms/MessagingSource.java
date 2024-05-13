@@ -27,8 +27,6 @@ import javax.jms.TemporaryQueue;
 import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IbisException;
 import org.frankframework.util.AppConstants;
@@ -36,6 +34,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Counter;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.StringUtil;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
@@ -181,7 +180,7 @@ public class MessagingSource  {
 		try {
 			managedConnectionFactory = getManagedConnectionFactory();
 			if (managedConnectionFactory != null) {
-				result.append(ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE));
+				result.append(StringUtil.reflectionToString(managedConnectionFactory));
 			}
 		} catch (Exception | NoClassDefFoundError e) {
 			result.append(" ").append(ClassUtils.nameOf(connectionFactory)).append(".getManagedConnectionFactory() (").append(ClassUtils.nameOf(e)).append("): ").append(e.getMessage());
@@ -208,7 +207,7 @@ public class MessagingSource  {
 			result.append("min poolsize [").append(poolcf.getMinPoolSize()).append(CLOSE);
 			result.append("max poolsize [").append(poolcf.getMaxPoolSize()).append(CLOSE);
 			result.append("max idle time [").append(poolcf.getMaxIdleTime()).append(CLOSE);
-			result.append("max life time [").append(poolcf.getMaxLifeTime()).append(CLOSE);
+			result.append("max life time [").append(poolcf.getMaxLifeTime()).append("]");
 		}
 		if (qcfd instanceof JmsPoolConnectionFactory) {
 			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
@@ -218,7 +217,7 @@ public class MessagingSource  {
 			result.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append(CLOSE);
 			result.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append(CLOSE);
 			result.append("connection check interval (ms) [").append(poolcf.getConnectionCheckInterval()).append(CLOSE);
-			result.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append(CLOSE);
+			result.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append("]");
 		}
 		return result;
 	}
