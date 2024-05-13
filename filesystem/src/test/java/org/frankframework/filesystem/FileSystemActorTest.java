@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -907,6 +908,41 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message result2 = actor.doAction(new Message(folderName), null, session);
 		TestAssertions.assertXpathValueEquals(filename, result2.asString(), "directory/file/@name");
 		result2.close();
+	}
+
+	@Test
+	public void fileSystemActorWriteActionTestWithCreateFolderButNoFolderInFilename() throws Exception {
+		String filename = UUID.randomUUID().toString();
+		String contents = "Some text content to test upload action\n";
+
+		if (_fileExists(filename)) {
+			_deleteFile(null, filename);
+		}
+
+
+		ParameterList params = new ParameterList();
+		params.add(ParameterBuilder.create().withName("filename").withValue(filename));
+		params.configure();
+
+		actor.setCreateFolder(true);
+		actor.setAction(FileSystemAction.WRITE);
+		actor.configure(fileSystem,params,owner);
+		actor.open();
+
+		Message message = new Message(contents);
+		ParameterValueList pvl = params.getValues(message, session);
+		result = actor.doAction(message, pvl, session);
+
+		String stringResult = result.asString();
+		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+
+		waitForActionToFinish();
+
+		String actual = readFile(null, filename);
+		// test
+		// TODO: evaluate 'result'
+		//assertEquals("result of sender should be input message",result,message);
+		assertEquals(contents.trim(), actual.trim());
 	}
 
 	@Test
