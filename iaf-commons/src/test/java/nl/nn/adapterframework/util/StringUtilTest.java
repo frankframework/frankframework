@@ -254,8 +254,8 @@ class StringUtilTest {
 	@Test
 	public void testReflectionToString() {
 		String expected = "StringUtilTest.ToStringTestClass[field1=tralala,field2=lalala,field3=false,"
-				+ "hoofdletterPassword=b***********t,password=t********t,"
-				+ "props={no-string-password=***hidden***, com.tibco.tibjms.factory.username=tipko, com.tibco.tibjms.factory.password=n***********t}]";
+				+ "hoofdletterPassword=*************,password=**********,"
+				+ "props={no-string-password=***hidden***, com.tibco.tibjms.factory.username=tipko, com.tibco.tibjms.factory.password=*************}]";
 
 		ToStringTestClass testClass = new ToStringTestClass();
 		int hashcode = testClass.props.hashCode();

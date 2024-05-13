@@ -68,7 +68,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 
 	private String hideValue(Object value) {
 		if(value instanceof String) {
-			return StringUtil.hide((String) value, 1);
+			return StringUtil.hide((String) value);
 		} else {
 			return "***hidden***";
 		}
