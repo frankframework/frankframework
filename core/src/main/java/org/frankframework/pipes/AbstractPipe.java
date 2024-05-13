@@ -16,17 +16,13 @@
 package org.frankframework.pipes;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
 import lombok.Getter;
 import lombok.Setter;
-
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -268,11 +264,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 
 		//Omit global pipeline-forwards and only return local pipe-forwards
-		List<IPipe> pipes = pipeline.getPipes();
-		for (IPipe pipe : pipes) {
-			String pipeName = pipe.getName();
-			forwards.remove(pipeName);
-		}
+		pipeline.getPipes()
+				.forEach(pipe -> forwards.remove(pipe.getName()));
 		return forwards;
 	}
 
