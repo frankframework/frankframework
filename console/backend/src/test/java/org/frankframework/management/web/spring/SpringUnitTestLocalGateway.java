@@ -1,12 +1,12 @@
 package org.frankframework.management.web.spring;
 
-import java.lang.String;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.frankframework.management.bus.OutboundGateway;
-
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -15,7 +15,7 @@ import org.springframework.messaging.MessageHeaders;
 /**
  * Used in the unit tests to just return the input in the correct format to be able to test only the controllers
  *
- * @see "src/test/stubbedBusApplicationContext.xml" for bean definition
+ * @see WebTestConfig
  * @param <T>
  */
 public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport implements OutboundGateway<T> {
@@ -28,9 +28,9 @@ public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport imple
 		return new Message<>() {
 			@Override
 			public T getPayload() {
-				TestGatewayMessageResponse.MessageResult messageResult = new TestGatewayMessageResponse.MessageResult(
-						getHeaders().get("topic", String.class), getHeaders().get("action", String.class));
-				TestGatewayMessageResponse messageResponse = new TestGatewayMessageResponse(messageResult, "SUCCESS", (String) in.getPayload());
+				TestGatewayMessageResponse messageResponse = new TestGatewayMessageResponse(
+						getHeaders().get("topic", String.class), getHeaders().get("action", String.class)
+				);
 
 				ObjectMapper mapper = new ObjectMapper();
 				try {
@@ -42,7 +42,11 @@ public class SpringUnitTestLocalGateway<T> extends MessagingGatewaySupport imple
 
 			@Override
 			public MessageHeaders getHeaders() {
-				return in.getHeaders();
+				Map<String, Object> headers = new HashMap<>(in.getHeaders());
+				headers.put("state", "SUCCESS");
+				headers.put("meta-state", "SUCCESS");
+
+				return new MessageHeaders(headers);
 			}
 		};
 	}

@@ -15,6 +15,17 @@
 */
 package org.frankframework.management.web.spring;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -33,18 +44,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.security.RolesAllowed;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 @RestController
 public class TestPipeline extends FrankApiBase {
 
@@ -57,11 +56,14 @@ public class TestPipeline extends FrankApiBase {
 		MultipartFile file){
 	}
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public record TestPipeLineResponse (String result, String state, String message) { }
+
 	@RolesAllowed("IbisTester")
 	@Relation("testing")
 	@Description("send a message to an Adapters pipeline, bypassing the receiver")
 	@PostMapping(value = "/test-pipeline", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<Map<String, String>> testPipeLine(@ModelAttribute TestPipeLineModel model) throws ApiException {
+	public ResponseEntity<TestPipeLineResponse> testPipeLine(@ModelAttribute TestPipeLineModel model) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 
 		builder.addHeader("configuration", model.configuration);
@@ -127,18 +129,13 @@ public class TestPipeline extends FrankApiBase {
 		throw new ApiException("unexpected response payload type ["+payload.getClass().getCanonicalName()+"]");
 	}
 
-	private ResponseEntity<Map<String, String>> testPipelineResponse(String payload) {
+	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload) {
 		return testPipelineResponse(payload, "SUCCESS", null);
 	}
 
-	private ResponseEntity<Map<String, String>> testPipelineResponse(String payload, String state, String message) {
-		Map<String, String> result = new HashMap<>();
-		result.put("state", state);
-		result.put("result", payload);
-		if(message != null) {
-			result.put("message", message);
-		}
-		return ResponseEntity.status(200).body(result);
+	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload, String state, String message) {
+			return ResponseEntity.status(200)
+					.body(new TestPipeLineResponse(payload, state, message));
 	}
 
 	// cannot call callAsyncGateway, backend calls are not synchronous
