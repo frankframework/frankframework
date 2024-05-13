@@ -29,7 +29,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author Niels Meijer
  */
 class FieldNameSensitiveToStringStyle extends ToStringStyle {
-	private static final List<String> PROTECTED_FIELDS = Arrays.asList("password", "secret");
+	private static final List<String> PROTECTED_FIELDS = Arrays.asList("password", "secret", "token");
 
 	private static final long serialVersionUID = 1L;
 
