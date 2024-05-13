@@ -28,7 +28,7 @@ import org.springframework.web.context.WebApplicationContext;
 @ExtendWith(SpringExtension.class)
 public class TestPipeLineTest {
 
-	private static final String TEST_PIPELINE_ENDPOINT = "/";
+	private static final String TEST_PIPELINE_ENDPOINT = "/test-pipeline";
 
 	private MockMvc mockMvc;
 
@@ -51,39 +51,39 @@ public class TestPipeLineTest {
 	@Test
 	public void testPipeLine() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
-						.multipart(TEST_PIPELINE_ENDPOINT + "test-pipeline")
-						.file(createMockMultipartFile("message", null, MediaType.MULTIPART_FORM_DATA_VALUE, ("<dummy-message" + TEST_PIPELINE_ENDPOINT + ">").getBytes()))
+						.multipart(TEST_PIPELINE_ENDPOINT)
+						.file(createMockMultipartFile("message", null, MediaType.MULTIPART_FORM_DATA_VALUE, ("<dummy-message />").getBytes()))
 						.content(asJsonString(new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null)))
 						.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
-				.andExpect(MockMvcResultMatchers.jsonPath("message").value("<dummy-message" + TEST_PIPELINE_ENDPOINT + ">"))
+				.andExpect(MockMvcResultMatchers.jsonPath("message").value("<dummy-message />"))
 				.andReturn();
 	}
 
 	@Test
 	public void testFileMessage() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
-						.multipart(TEST_PIPELINE_ENDPOINT + "test-pipeline")
-						.file(createMockMultipartFile("file", "my-file.xml", MediaType.MULTIPART_FORM_DATA_VALUE, ("<dummy-message" + TEST_PIPELINE_ENDPOINT + ">").getBytes()))
+						.multipart(TEST_PIPELINE_ENDPOINT)
+						.file(createMockMultipartFile("file", "my-file.xml", MediaType.MULTIPART_FORM_DATA_VALUE, ("<dummy-message />").getBytes()))
 						.content(asJsonString(new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null)))
 						.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
-				.andExpect(MockMvcResultMatchers.jsonPath("message").value("<dummy-message" + TEST_PIPELINE_ENDPOINT + ">"))
+				.andExpect(MockMvcResultMatchers.jsonPath("message").value("<dummy-message />"))
 				.andReturn();
 	}
 
 	@Test
 	public void testStoredZipMessage() throws Exception {
-		URL zip = TestPipelineTest.class.getResource(TEST_PIPELINE_ENDPOINT + "TestPipeline/stored.zip");
+		URL zip = TestPipelineTest.class.getResource("/TestPipeline/stored.zip");
 
 		mockMvc.perform(MockMvcRequestBuilders
-						.multipart(TEST_PIPELINE_ENDPOINT + "test-pipeline")
+						.multipart(TEST_PIPELINE_ENDPOINT)
 						.file(createMockMultipartFile("file", "archive2.zip", MediaType.MULTIPART_FORM_DATA_VALUE, zip.openStream().readAllBytes()))
 						.content(asJsonString(new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null)))
 						.accept(MediaType.APPLICATION_JSON))
@@ -96,10 +96,10 @@ public class TestPipeLineTest {
 
 	@Test
 	public void testDeflatedZipMessage() throws Exception {
-		URL zip = TestPipelineTest.class.getResource(TEST_PIPELINE_ENDPOINT + "TestPipeline/deflated.zip");
+		URL zip = TestPipelineTest.class.getResource("/TestPipeline/deflated.zip");
 
 		mockMvc.perform(MockMvcRequestBuilders
-						.multipart(TEST_PIPELINE_ENDPOINT + "test-pipeline")
+						.multipart(TEST_PIPELINE_ENDPOINT)
 						.file(createMockMultipartFile("file", "archive3.zip", MediaType.MULTIPART_FORM_DATA_VALUE, zip.openStream().readAllBytes()))
 						.content(asJsonString(new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null)))
 						.accept(MediaType.APPLICATION_JSON))

@@ -15,16 +15,18 @@
 */
 package org.frankframework.management.web.spring;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.List;
-import java.util.Optional;
 
 @Configuration
 @EnableWebMvc
@@ -42,4 +44,8 @@ public class WebConfiguration implements WebMvcConfigurer {
 		converters.add(new FormHttpMessageConverter());
 	}
 
+	@Bean
+	StandardServletMultipartResolver multipartResolver() {
+		return new StandardServletMultipartResolver();
+	}
 }
