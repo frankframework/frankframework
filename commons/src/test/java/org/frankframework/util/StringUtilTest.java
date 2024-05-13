@@ -3,6 +3,7 @@ package org.frankframework.util;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.ArrayList;
@@ -245,22 +246,25 @@ class StringUtilTest {
 		private Properties props = new Properties();
 
 		public ToStringTestClass() {
+			props.put("no-string-password", Collections.singletonList("something"));
 			props.setProperty("com.tibco.tibjms.factory.username", "tipko");
 			props.setProperty("com.tibco.tibjms.factory.password", "not-so-secret");
-			props.put("no-string-password", Collections.singletonList("something"));
 		}
 	}
 
 	@Test
 	public void testReflectionToString() {
-		String expected = "StringUtilTest.ToStringTestClass[field1=tralala,field2=lalala,field3=false,"
-				+ "hoofdletterPassword=*************,password=**********,"
-				+ "props={no-string-password=***hidden***, com.tibco.tibjms.factory.username=tipko, com.tibco.tibjms.factory.password=*************}]";
+		String startsWithStr = "StringUtilTest.ToStringTestClass[field1=tralala,field2=lalala,field3=false,"
+				+ "hoofdletterPassword=*************,password=**********,props={";
 
 		ToStringTestClass testClass = new ToStringTestClass();
 		int hashcode = testClass.props.hashCode();
 		String toStringResult = StringUtil.reflectionToString(testClass);
-		assertEquals(expected, toStringResult);
+		assertTrue(toStringResult.startsWith(startsWithStr));
+		assertTrue(toStringResult.contains("no-string-password=***hidden***"));
+		assertTrue(toStringResult.contains("com.tibco.tibjms.factory.username=tipko"));
+		assertTrue(toStringResult.contains("com.tibco.tibjms.factory.password=*************"));
+		assertTrue(toStringResult.endsWith("}]"));
 		assertEquals(hashcode, testClass.props.hashCode());
 	}
 
