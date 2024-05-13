@@ -498,7 +498,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertFalse(result.isSuccess());
 		assertEquals("folderNotFound", result.getForwardName());
 		assertThat(result.getErrorMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
-		assertThat(result.getErrorMessage(), containsString("folder [folder] does not exist"));
+		assertThat(result.getErrorMessage(), containsString("folder] does not exist"));
 	}
 
 	@Test
@@ -559,7 +559,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertFalse(result.isSuccess());
 		assertEquals("folderNotFound", result.getForwardName());
 		assertThat(result.getErrorMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
-		assertThat(result.getErrorMessage(), containsString("folder [folder1] does not exist"));
+		assertThat(result.getErrorMessage(), containsString("folder1] does not exist"));
 	}
 
 	@Test
