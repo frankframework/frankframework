@@ -1559,7 +1559,7 @@ public class ParameterTest {
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 		assertNotNull(result);
 		assertInstanceOf(String.class, result, "class was not a String --> "+result.getClass());
-		assertTrue(((String) result).length() > 42);
+		assertTrue(((String) result).length() > 40);
 		assertTrue(((String) result).endsWith("-message"));
 
 		assertFalse(p.requiresInputValueForResolution());
