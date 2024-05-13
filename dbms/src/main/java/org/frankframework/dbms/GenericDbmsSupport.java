@@ -87,11 +87,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public String getNumericKeyFieldType() {
-		return "INT";
-	}
-
-	@Override
 	public String getFromForTablelessSelect() {
 		return "";
 	}
@@ -141,11 +136,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public String getClobFieldType() {
-		return "CLOB";
-	}
-
-	@Override
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
 		switch (rsmeta.getColumnType(colNum)) {
 			case Types.LONGVARCHAR:
@@ -163,11 +153,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public String getUpdateClobQuery(String table, String clobField, String keyField) {
-		return null;
-	}
-
-	@Override
 	public String emptyClobValue() {
 		return "''";
 	}
@@ -178,17 +163,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
-		return rs.getClob(column);
-	}
-
-	@Override
 	public Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, DbmsException {
-		return ((Clob) clobHandle).setCharacterStream(1L);
-	}
-
-	@Override
-	public Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, DbmsException {
 		return ((Clob) clobHandle).setCharacterStream(1L);
 	}
 
@@ -275,22 +250,12 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return rs.getBlob(column);
 	}
 
-	@Override
-	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
-		return rs.getBlob(column);
-	}
-
 	protected OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException {
 		return ((Blob) blobUpdateHandle).setBinaryStream(1L);
 	}
 
 	@Override
 	public OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, DbmsException {
-		return getBlobOutputStream(rs, blobUpdateHandle);
-	}
-
-	@Override
-	public OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, DbmsException {
 		return getBlobOutputStream(rs, blobUpdateHandle);
 	}
 
@@ -365,12 +330,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
 		return selectQuery;
-	}
-
-	@Override
-	public String getFirstRecordQuery(String tableName) throws DbmsException {
-		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
-		return "select * from " + tableName + " where ROWNUM=1";
 	}
 
 	@Override
@@ -524,12 +483,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
-		log.warn("could not determine presence of index [{}] on table [{}]", indexName, tableName);
-		return true;
-	}
-
-	@Override
 	public boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName) {
 		log.warn("could not determine presence of sequence [{}]", sequenceName);
 		return true;
@@ -542,35 +495,14 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public String getSchemaOwner(Connection conn) {
-		log.warn("could not determine current schema");
-		return "";
-	}
-
-	@Override
 	public boolean isConstraintViolation(SQLException e) {
 		String sqlState = e.getSQLState();
 		return sqlState != null && sqlState.startsWith("23");
 	}
 
 	@Override
-	public String getRowNumber(String order, String sort) {
-		return "";
-	}
-
-	@Override
-	public String getRowNumberShortName() {
-		return "";
-	}
-
-	@Override
 	public String getLength(String column) {
 		return "LENGTH(" + column + ")";
-	}
-
-	@Override
-	public String getBooleanFieldType() {
-		return "BOOLEAN";
 	}
 
 	@Override

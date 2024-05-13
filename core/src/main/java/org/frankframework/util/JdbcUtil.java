@@ -44,11 +44,6 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
-import jakarta.jms.BytesMessage;
-import jakarta.jms.JMSException;
-import jakarta.jms.TextMessage;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.core.ParameterException;
@@ -58,8 +53,8 @@ import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jms.BytesMessageInputStream;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.Base64Pipe.Direction;
@@ -71,6 +66,10 @@ import org.frankframework.stream.document.ObjectBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 import org.xml.sax.SAXException;
 
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 
 /**

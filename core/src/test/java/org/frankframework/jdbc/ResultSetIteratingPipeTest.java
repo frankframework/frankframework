@@ -38,7 +38,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = ResultSetIteratingPipeTest.TEST_TABLE)
 public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSetIteratingPipe> {
-	static final String TEST_TABLE = "TEMP";
+	static final String TEST_TABLE = "temp";
 	private static final int PARALLEL_DELAY = 200;
 
 	@Override

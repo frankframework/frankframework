@@ -35,11 +35,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 
-import jakarta.jms.JMSException;
-import jakarta.servlet.http.HttpServletResponse;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
@@ -54,8 +49,8 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.pipes.Base64Pipe.Direction;
@@ -72,6 +67,10 @@ import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 import org.xml.sax.ContentHandler;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.jms.JMSException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 
 /**

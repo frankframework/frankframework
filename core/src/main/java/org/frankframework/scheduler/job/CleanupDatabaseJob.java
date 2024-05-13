@@ -24,8 +24,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.IAdapter;
@@ -35,23 +33,22 @@ import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.Dbms;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.JdbcQuerySenderBase;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.JobDef;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-
 import org.frankframework.util.SpringUtils;
+
+import lombok.Getter;
 
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;

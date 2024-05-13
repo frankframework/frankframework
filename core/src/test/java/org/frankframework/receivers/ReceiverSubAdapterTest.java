@@ -54,9 +54,7 @@ public class ReceiverSubAdapterTest {
 	@BeforeEach
 	void setup() {
 		// Create a TestConfiguration and stop it so that we can configure new adapters in it
-		configuration = new TestConfiguration();
-		configuration.stop();
-		configuration.getAdapterManager().close();
+		configuration = new TestConfiguration(false);
 	}
 
 	@AfterEach

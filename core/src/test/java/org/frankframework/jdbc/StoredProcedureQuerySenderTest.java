@@ -36,6 +36,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.junit.DatabaseTest;
@@ -168,11 +169,11 @@ public class StoredProcedureQuerySenderTest {
 		sender.setScalar(true);
 
 		Parameter p1 = new Parameter("id", String.valueOf(id));
-		p1.setType(Parameter.ParameterType.NUMBER);
+		p1.setType(ParameterType.NUMBER);
 		sender.addParameter(p1);
 		Parameter p2 = new Parameter("data", null);
 		p2.setSessionKey("data");
-		p2.setType(Parameter.ParameterType.BINARY);
+		p2.setType(ParameterType.BINARY);
 		sender.addParameter(p2);
 		session.put("data", new ByteArrayInputStream(TEST_DATA_STRING.getBytes(StandardCharsets.UTF_8)));
 
@@ -202,11 +203,11 @@ public class StoredProcedureQuerySenderTest {
 		sender.setScalar(true);
 
 		Parameter p1 = new Parameter("id", String.valueOf(id));
-		p1.setType(Parameter.ParameterType.NUMBER);
+		p1.setType(ParameterType.NUMBER);
 		sender.addParameter(p1);
 		Parameter p2 = new Parameter("data", null);
 		p2.setSessionKey("data");
-		p2.setType(Parameter.ParameterType.CHARACTER);
+		p2.setType(ParameterType.CHARACTER);
 		sender.addParameter(p2);
 		session.put("data", new StringReader(TEST_DATA_STRING));
 
@@ -236,11 +237,11 @@ public class StoredProcedureQuerySenderTest {
 		sender.setScalar(true);
 
 		Parameter p1 = new Parameter("id", String.valueOf(id));
-		p1.setType(Parameter.ParameterType.NUMBER);
+		p1.setType(ParameterType.NUMBER);
 		sender.addParameter(p1);
 		Parameter p2 = new Parameter("data", null);
 		p2.setSessionKey("data");
-		p2.setType(Parameter.ParameterType.CHARACTER);
+		p2.setType(ParameterType.CHARACTER);
 		sender.addParameter(p2);
 		Message message1 = Message.asMessage(new StringReader(TEST_DATA_STRING));
 		message1.getContext().withSize(TEST_DATA_STRING.getBytes().length);
@@ -278,7 +279,7 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter outParam1 = new Parameter("r1", null);
 		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam1.setType(Parameter.ParameterType.STRING);
+		outParam1.setType(ParameterType.STRING);
 		sender.addParameter(outParam1);
 
 		sender.configure();
@@ -311,7 +312,7 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter outParam1 = new Parameter("r1", null);
 		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam1.setType(Parameter.ParameterType.STRING);
+		outParam1.setType(ParameterType.STRING);
 		sender.addParameter(outParam1);
 
 		sender.configure();
@@ -367,7 +368,7 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter outParam1 = new Parameter("r1", null);
 		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam1.setType(Parameter.ParameterType.BINARY);
+		outParam1.setType(ParameterType.BINARY);
 		sender.addParameter(outParam1);
 
 		sender.configure();
@@ -401,7 +402,7 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter outParam1 = new Parameter("r1", null);
 		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam1.setType(Parameter.ParameterType.CHARACTER);
+		outParam1.setType(ParameterType.CHARACTER);
 		sender.addParameter(outParam1);
 
 		sender.configure();
@@ -435,7 +436,7 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter outParam1 = new Parameter("r1", null);
 		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam1.setType(Parameter.ParameterType.BINARY);
+		outParam1.setType(ParameterType.BINARY);
 		sender.addParameter(outParam1);
 
 		sender.configure();
@@ -473,7 +474,7 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter outParam1 = new Parameter("r1", null);
 		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam1.setType(Parameter.ParameterType.CHARACTER);
+		outParam1.setType(ParameterType.CHARACTER);
 		sender.addParameter(outParam1);
 
 		sender.configure();
@@ -506,12 +507,12 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter outParam1 = new Parameter("r1", null);
 		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam1.setType(Parameter.ParameterType.STRING);
+		outParam1.setType(ParameterType.STRING);
 		sender.addParameter(outParam1);
 
 		Parameter outParam2 = new Parameter("r2", null);
 		outParam2.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam2.setType(Parameter.ParameterType.STRING);
+		outParam2.setType(ParameterType.STRING);
 		sender.addParameter(outParam2);
 
 		sender.configure();
@@ -549,17 +550,17 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter outParam1 = new Parameter("r1", null);
 		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam1.setType(Parameter.ParameterType.INTEGER);
+		outParam1.setType(ParameterType.INTEGER);
 		sender.addParameter(outParam1);
 
 		Parameter outParam2 = new Parameter("r2", null);
 		outParam2.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam2.setType(Parameter.ParameterType.INTEGER);
+		outParam2.setType(ParameterType.INTEGER);
 		sender.addParameter(outParam2);
 
 		Parameter outParam3 = new Parameter("r3", null);
 		outParam3.setMode(Parameter.ParameterMode.OUTPUT);
-		outParam3.setType(Parameter.ParameterType.NUMBER);
+		outParam3.setType(ParameterType.NUMBER);
 		sender.addParameter(outParam3);
 
 		sender.configure();
@@ -666,7 +667,7 @@ public class StoredProcedureQuerySenderTest {
 		Parameter count = new Parameter();
 		count.setName("count");
 		count.setMode(Parameter.ParameterMode.OUTPUT);
-		count.setType(Parameter.ParameterType.INTEGER);
+		count.setType(ParameterType.INTEGER);
 		sender.addParameter(count);
 
 		sender.configure();
@@ -706,7 +707,7 @@ public class StoredProcedureQuerySenderTest {
 
 		Parameter cursorParam = new Parameter();
 		cursorParam.setName("cursor1");
-		cursorParam.setType(Parameter.ParameterType.LIST);
+		cursorParam.setType(ParameterType.LIST);
 		cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
 		sender.addParameter(cursorParam);
 
@@ -745,12 +746,12 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(parameter);
 		Parameter countParam = new Parameter();
 		countParam.setName("count");
-		countParam.setType(Parameter.ParameterType.INTEGER);
+		countParam.setType(ParameterType.INTEGER);
 		countParam.setMode(Parameter.ParameterMode.OUTPUT);
 		sender.addParameter(countParam);
 		Parameter cursorParam = new Parameter();
     	cursorParam.setName("cursor1");
-    	cursorParam.setType(Parameter.ParameterType.LIST);
+    	cursorParam.setType(ParameterType.LIST);
     	cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
     	sender.addParameter(cursorParam);
 
@@ -784,12 +785,12 @@ public class StoredProcedureQuerySenderTest {
 		sender.addParameter(parameter);
 		Parameter countParam = new Parameter();
 		countParam.setName("count");
-		countParam.setType(Parameter.ParameterType.INTEGER);
+		countParam.setType(ParameterType.INTEGER);
 		countParam.setMode(Parameter.ParameterMode.OUTPUT);
 		sender.addParameter(countParam);
 		Parameter cursorParam = new Parameter();
     	cursorParam.setName("cursor1");
-    	cursorParam.setType(Parameter.ParameterType.LIST);
+    	cursorParam.setType(ParameterType.LIST);
     	cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
     	sender.addParameter(cursorParam);
 
@@ -814,14 +815,14 @@ public class StoredProcedureQuerySenderTest {
 		sender.setScalar(true);
 
 		Parameter resultParam = new Parameter("result", "0");
-		resultParam.setType(Parameter.ParameterType.INTEGER);
+		resultParam.setType(ParameterType.INTEGER);
 		resultParam.setMode(Parameter.ParameterMode.OUTPUT);
 		sender.addParameter(resultParam);
 		Parameter p1 = new Parameter("one", "1");
-		p1.setType(Parameter.ParameterType.INTEGER);
+		p1.setType(ParameterType.INTEGER);
 		sender.addParameter(p1);
 		Parameter p2 = new Parameter("two", "2");
-		p2.setType(Parameter.ParameterType.INTEGER);
+		p2.setType(ParameterType.INTEGER);
 		sender.addParameter(p2);
 
 		sender.configure();

@@ -23,6 +23,11 @@
 			junit.framework,
 			org.apache.commons.lang,
 			software.amazon.awssdk.utils,
+			javax.activation
+			javax.annotation,
+			javax.jms,
+			javax.servlet,
+			javax.ws,
 			" />
 			<property name="illegalClasses" value="
 			org.apache.commons.codec.Charsets,
