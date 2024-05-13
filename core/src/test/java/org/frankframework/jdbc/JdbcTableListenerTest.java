@@ -56,7 +56,7 @@ import org.frankframework.testutil.junit.WithLiquibase;
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = JdbcTableListenerTest.TEST_TABLE)
 public class JdbcTableListenerTest {
 
-	static final String TEST_TABLE = "Temp";
+	static final String TEST_TABLE = "temp";
 
 	private JdbcTableListener listener;
 	private DatabaseTestEnvironment env;

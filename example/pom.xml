@@ -23,7 +23,7 @@
 			<artifactId>h2</artifactId>
 			<version>${h2.driver.version}</version>
 		</dependency>
-		<!-- Includes missing javax.jms.JMSExceptions class -->
+		<!-- Includes missing jakarta.jms.JMSExceptions class -->
 		<dependency>
 			<groupId>jakarta.jms</groupId>
 			<artifactId>jakarta.jms-api</artifactId>
@@ -37,8 +37,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

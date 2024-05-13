@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.security.PermitAll;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
+import jakarta.annotation.security.PermitAll;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.Configuration;

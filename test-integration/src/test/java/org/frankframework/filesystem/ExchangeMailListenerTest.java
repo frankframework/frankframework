@@ -1,19 +1,20 @@
 package org.frankframework.filesystem;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-org.frankframework.core.PipeLine.ExitState;
-		org.frankframework.core.PipeLineResult;
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLineResult;
 import org.frankframework.receivers.ExchangeMailListener;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
-
 import org.frankframework.util.XmlUtils;
 
 public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
@@ -24,7 +25,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 	}
 
 	@Test
-	public void testExtractMessageWithAttachments() {
+	public void testExtractMessageWithAttachments() throws Exception {
 		String targetFolder="MessageWithAttachments";
 		String recipient=mailaddress_fancy;
 		String from=recipient;
@@ -47,7 +48,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 	}
 
 	@Test
-	public void testExtractMessageWithNestedAttachments() {
+	public void testExtractMessageWithNestedAttachments() throws ListenerException {
 		String targetFolder="MessageWithNestedAttachments";
 		String recipient=mailaddress_fancy;
 		String from=recipient;
@@ -69,7 +70,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 		//TestAssertions.assertXpathValueEquals(subject, message, "/email/subject");
 	}
 	@Test
-	@Ignore
+	@Disabled
 	public void moveAndCopyToFolders() {
 		String baseFolder=basefolder2;
 		String targetFolder="FileWithAttachments";

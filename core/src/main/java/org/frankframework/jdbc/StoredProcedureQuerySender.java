@@ -30,8 +30,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.jms.JMSException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -41,10 +39,13 @@ import org.frankframework.core.SenderException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.JdbcUtil;
+
+import jakarta.jms.JMSException;
 
 /**
  * StoredProcedureQuerySender is used to send stored procedure queries and retrieve the result.
@@ -237,7 +238,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			// Parameter metadata are more accurate than our parameter type mapping and
 			// for some databases, this can cause exceptions.
 			// But for Oracle we do need our own mapping.
-			if (getDbmsSupport().canFetchStatementParameterMetaData() && param.getType() != Parameter.ParameterType.LIST) {
+			if (getDbmsSupport().canFetchStatementParameterMetaData() && param.getType() != ParameterType.LIST) {
 				typeNr = parameterMetaData.getParameterType(position);
 			} else {
 				typeNr = JdbcUtil.mapParameterTypeToSqlType(getDbmsSupport(), param.getType()).getVendorTypeNumber();

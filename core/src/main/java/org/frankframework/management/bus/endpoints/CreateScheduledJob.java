@@ -19,9 +19,7 @@ import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
-import javax.annotation.security.RolesAllowed;
-
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -47,6 +45,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
 import org.springframework.messaging.Message;
+
 
 @BusAware("frank-management-bus")
 public class CreateScheduledJob extends BusEndpointBase {

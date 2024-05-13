@@ -19,8 +19,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.frankframework.configuration.Configuration;

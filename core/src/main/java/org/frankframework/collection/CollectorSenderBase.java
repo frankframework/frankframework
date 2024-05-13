@@ -15,8 +15,7 @@
 */
 package org.frankframework.collection;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;

@@ -17,8 +17,7 @@ package org.frankframework.configuration;
 
 import java.util.List;
 
-import javax.annotation.Priority;
-
+import jakarta.annotation.Priority;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;

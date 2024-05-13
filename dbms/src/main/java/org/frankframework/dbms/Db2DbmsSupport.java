@@ -71,11 +71,6 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getFirstRecordQuery(String tableName) throws DbmsException {
-		return "select * from " + tableName + " fetch first 1 rows only";
-	}
-
-	@Override
 	public String getSchema(Connection conn) throws DbmsException {
 		return DbmsUtil.executeStringQuery(conn, "SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1");
 	}

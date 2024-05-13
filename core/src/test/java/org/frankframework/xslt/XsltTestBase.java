@@ -11,7 +11,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.parameters.Parameter.ParameterType;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;

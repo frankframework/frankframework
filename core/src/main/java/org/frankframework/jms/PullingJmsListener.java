@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.Session;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.Session;
 
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.core.HasSender;
@@ -81,7 +81,7 @@ import org.frankframework.util.RunStateEnquiring;
  * whatever it is configured to.</p>
  * </p>
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * <code>javax.jms.TextMessage</code>s <br/><br/>
+ * <code>jakarta.jms.TextMessage</code>s <br/><br/>
  * </p>
  * @author Gerrit van Brakel
  * @since 4.0.1

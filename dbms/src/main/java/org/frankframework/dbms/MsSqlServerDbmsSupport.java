@@ -101,11 +101,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getClobFieldType() {
-		return "VARCHAR(MAX)";
-	}
-
-	@Override
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
 		return (rsmeta.getColumnType(colNum) == Types.VARCHAR || rsmeta.getColumnType(colNum) == Types.NVARCHAR) && rsmeta.getPrecision(colNum) > CLOB_SIZE_TRESHOLD;
 	}
@@ -144,11 +139,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getFirstRecordQuery(String tableName) {
-		return "select top(1) * from " + tableName;
-	}
-
-	@Override
 	public String prepareQueryTextForNonLockingRead(String selectQuery) throws DbmsException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
@@ -174,29 +164,8 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getRowNumber(String order, String sort) {
-		return "row_number() over (order by " + order + (sort == null ? "" : " " + sort) + ") " + getRowNumberShortName();
-	}
-
-	@Override
-	public String getRowNumberShortName() {
-		return "rn";
-	}
-
-	@Override
 	public String getLength(String column) {
 		return "LEN(" + column + ")";
-	}
-
-	@Override
-	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
-		String query = "select * from sys.indexes where name = '" + indexName + "' and object_id = object_id('" + tableName + "')";
-		try {
-			return DbmsUtil.executeIntQuery(conn, query) >= 1;
-		} catch (Exception e) {
-			log.warn("could not determine presence of identity on table [{}]", tableName, e);
-			return false;
-		}
 	}
 
 	@Override
@@ -229,11 +198,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			log.warn("could not determine presence of index columns on table [{}] using query [{}]", tableName, query, e);
 			return false;
 		}
-	}
-
-	@Override
-	public String getBooleanFieldType() {
-		return "BIT";
 	}
 
 	@Override

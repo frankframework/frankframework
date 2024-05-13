@@ -24,10 +24,26 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.collections.map.LRUMap;
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.jta.IThreadConnectableTransactionManager;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterType;
+import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.stream.IThreadCreator;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.PathMessage;
+import org.frankframework.stream.StreamingException;
+import org.frankframework.stream.ThreadConnector;
+import org.frankframework.stream.ThreadLifeCycleEventListener;
 import org.frankframework.stream.xml.XmlTap;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.EnumUtils;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
@@ -42,22 +58,6 @@ import org.xml.sax.XMLReader;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
-import org.frankframework.jta.IThreadConnectableTransactionManager;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.Parameter.ParameterType;
-import org.frankframework.parameters.ParameterList;
-import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.IThreadCreator;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.stream.StreamingException;
-import org.frankframework.stream.ThreadConnector;
-import org.frankframework.stream.ThreadLifeCycleEventListener;
-import org.frankframework.util.EnumUtils;
 
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.

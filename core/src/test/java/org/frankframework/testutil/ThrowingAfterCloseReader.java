@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.CharBuffer;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * For some readers, "close()" is a no-op (for instance, StringReader, which a lot of tests use). We want to

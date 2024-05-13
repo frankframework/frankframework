@@ -98,7 +98,7 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
 
 		http.authenticationProvider(provider);
 		String realmName = StringUtils.isNotEmpty(domainName) ? domainName : url;
-		http.httpBasic().realmName(realmName);
+		http.httpBasic(basic -> basic.realmName(realmName));
 		return http.build();
 	}
 }

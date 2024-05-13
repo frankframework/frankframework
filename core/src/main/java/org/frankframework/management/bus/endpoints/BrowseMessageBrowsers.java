@@ -21,9 +21,8 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
-import javax.annotation.security.RolesAllowed;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.TopicSelector;
 import org.springframework.http.MediaType;

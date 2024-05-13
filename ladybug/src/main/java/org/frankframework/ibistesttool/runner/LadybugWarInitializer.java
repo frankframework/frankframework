@@ -19,8 +19,8 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import org.apache.logging.log4j.Logger;
 import org.frankframework.util.AppConstants;

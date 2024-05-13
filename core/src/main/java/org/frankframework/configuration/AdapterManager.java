@@ -20,6 +20,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.Nonnull;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -28,8 +31,9 @@ import org.springframework.context.LifecycleProcessor;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.frankframework.core.Adapter;
-import org.frankframework.lifecycle.ConfigurableLifecyleBase;
+import org.frankframework.lifecycle.AbstractConfigurableLifecyle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
@@ -38,17 +42,22 @@ import org.frankframework.util.StringUtil;
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
  *
  */
-public class AdapterManager extends ConfigurableLifecyleBase implements ApplicationContextAware, AutoCloseable {
+public class AdapterManager extends AbstractConfigurableLifecyle implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
 
 	private final List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 	private final List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
+	private final AtomicBoolean active = new AtomicBoolean(true); // Flag that indicates whether this manager is active and can accept new Adapters.
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
 	public void registerAdapter(Adapter adapter) {
+		if(!active.get()) {
+			throw new IllegalStateException("AdapterManager in state [closed] unable to register Adapter ["+adapter.getName()+"]");
+		}
+
 		if(!inState(RunState.STOPPED)) {
 			log.warn("cannot add adapter, manager in state [{}]", this::getState);
 		}
@@ -65,16 +74,21 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 		adapters.put(adapter.getName(), adapter);
 	}
 
-	public void unRegisterAdapter(Adapter adapter) {
-		String name = adapter.getName();
+	public void removeAdapter(Adapter adapter) {
+		if(!adapter.getRunState().isStopped()) {
+			log.warn("unable to remove adapter [{}] while in state [{}]", adapter::getName, adapter::getRunState);
+			return;
+		}
+
 		if(adapterLifecycleWrappers != null) {
 			for (AdapterLifecycleWrapperBase adapterProcessor : adapterLifecycleWrappers) {
 				adapterProcessor.removeAdapter(adapter);
 			}
 		}
 
+		String name = adapter.getName();
 		adapters.remove(name);
-		log.debug("unregistered adapter [{}] from AdapterManager [{}]", name, this);
+		log.debug("removed adapter [{}] from AdapterManager [{}]", name, this);
 	}
 
 	public void setAdapterLifecycleWrappers(List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers) {
@@ -89,10 +103,6 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 		startAdapterThreads.remove(runnable);
 	}
 
-	public List<Runnable> getStartAdapterThreads() {
-		return startAdapterThreads;
-	}
-
 	public void addStopAdapterThread(Runnable runnable) {
 		stopAdapterThreads.add(runnable);
 	}
@@ -101,22 +111,15 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 		stopAdapterThreads.remove(runnable);
 	}
 
-	public List<Runnable> getStopAdapterThreads() {
-		return stopAdapterThreads;
-	}
-
 	public Adapter getAdapter(String name) {
 		return getAdapters().get(name);
-	}
-	public Adapter getAdapter(int i) {
-		return getAdapterList().get(i);
 	}
 
 	public final Map<String, Adapter> getAdapters() {
 		return Collections.unmodifiableMap(adapters);
 	}
 
-	public List<Adapter> getAdapterList() {
+	public @Nonnull List<Adapter> getAdapterList() {
 		return new ArrayList<>(getAdapters().values());
 	}
 
@@ -183,15 +186,24 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 		List<Adapter> adapters = getAdapterList();
 		Collections.reverse(adapters);
 		for (Adapter adapter : adapters) {
-			log.info("stopping adapter [{}]", adapter::getName);
-			adapter.stopRunning();
+			stopAdapter(adapter);
 		}
 
 		updateState(RunState.STOPPED);
 	}
 
+	private void stopAdapter(Adapter adapter) {
+		log.info("stopping adapter [{}]", adapter::getName);
+		adapter.stopRunning();
+	}
+
+	/**
+	 * Closes this AdapterManager.
+	 * All adapters are removed from the Manager and you're unable to (re-)start after it's been closed!
+	 */
 	@Override
 	public void close() {
+		active.set(false);
 		log.info("destroying AdapterManager [{}]", this);
 
 		try {
@@ -211,8 +223,9 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 * - unregister all adapters from this manager
 	 */
 	private void doClose() {
-		while (!getStartAdapterThreads().isEmpty()) {
-			log.debug("waiting for start threads to end: {}", ()-> StringUtil.safeCollectionToString(getStartAdapterThreads()));
+		while (!startAdapterThreads.isEmpty()) {
+			log.debug("waiting for start threads to end: {}", ()-> StringUtil.safeCollectionToString(startAdapterThreads));
+
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -224,8 +237,9 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			stop(); //Call this just in case...
 		}
 
-		while (!getStopAdapterThreads().isEmpty()) {
-			log.debug("waiting for stop threads to end: {}", () -> StringUtil.safeCollectionToString(getStopAdapterThreads()));
+		while (!stopAdapterThreads.isEmpty()) {
+			log.debug("waiting for stop threads to end: {}", () -> StringUtil.safeCollectionToString(stopAdapterThreads));
+
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -233,10 +247,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			}
 		}
 
-		while (!getAdapterList().isEmpty()) {
-			Adapter adapter = getAdapter(0);
-			unRegisterAdapter(adapter);
-		}
+		getAdapterList().stream().forEach(this::removeAdapter);
 	}
 
 	@Override

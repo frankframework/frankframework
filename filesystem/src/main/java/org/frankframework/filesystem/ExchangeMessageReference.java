@@ -15,9 +15,9 @@
 */
 package org.frankframework.filesystem;
 
-import javax.annotation.Nonnull;
-
 import lombok.Getter;
+
+import jakarta.annotation.Nonnull;
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 
 /**

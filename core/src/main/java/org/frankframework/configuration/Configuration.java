@@ -234,7 +234,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		configured = true;
 
 		String msg;
-		if (isAutoStart()) {
+		if (isAutoStartup()) {
 			start();
 			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 		}
@@ -335,7 +335,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		this.autoStart = autoStart;
 	}
 
-	public boolean isAutoStart() {
+	@Override
+	public boolean isAutoStartup() {
 		if(autoStart == null && getClassLoader() != null) {
 			autoStart = AppConstants.getInstance(getClassLoader()).getBoolean("configurations.autoStart", true);
 		}

@@ -46,7 +46,7 @@ public class TestPipelineTest extends BusTestBase {
 	public void tearDown() {
 		if(adapter != null) {
 			adapter.stopRunning();
-			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
+			getConfiguration().getAdapterManager().removeAdapter(adapter);
 		}
 		super.tearDown();
 	}
