@@ -23,12 +23,12 @@ import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.apache.commons.dbcp2.ConnectionFactory;
-import org.apache.commons.dbcp2.DataSourceConnectionFactory;
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.tomcat.dbcp.dbcp2.ConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.DataSourceConnectionFactory;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
+import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
+import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
 import org.frankframework.jta.narayana.NarayanaDataSourceFactory;
 import org.frankframework.util.AppConstants;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -38,7 +38,7 @@ import lombok.Setter;
 
 /**
  * <p>
- * Factory through which Pooling DataSources can be retrieved. This Fractory should basically only be used on
+ * Factory through which Pooling DataSources can be retrieved. This Factory should basically only be used on
  * application servers like Tomcat that do not provide a JTA environment (resources with an XA transaction manager and
  * corresponding connection pool). This class should not be used directly when an XA transaction manager is required but
  * can be extended for this purpose (see {@link NarayanaDataSourceFactory}).
