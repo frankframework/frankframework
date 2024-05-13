@@ -305,6 +305,8 @@ public class StringUtil {
 			return new ReflectionToStringBuilder(object, OMIT_PASSWORD_FIELDS_STYLE).toString();
 		} catch (Exception e) { //amongst others, IllegalAccess-, ConcurrentModification- and Security-Exceptions
 			LogManager.getLogger(object).warn("exception getting string representation of object", e);
+
+			// In case this method is called from the objects toString method, we cannot call toString here!
 			return "cannot get toString(): " + e.getMessage();
 		}
 	}
