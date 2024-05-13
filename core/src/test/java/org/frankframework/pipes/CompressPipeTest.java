@@ -24,6 +24,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.CompressPipe.FileFormat;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
@@ -48,6 +49,28 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	public void testUnzippingAndCollectingResult() throws Exception {
 		pipe.setResultIsContent(true);
 		pipe.setZipEntryPattern("filebb.log");
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
+		assertTrue(prr.getResult().isBinary());
+		assertEquals("bbb", prr.getResult().asString());
+	}
+
+	@Test
+	public void testUnzippingAndCollectingResultWithPatternFromSession() throws Exception {
+		pipe.setResultIsContent(true);
+		session.put("file", "filebb");
+		session.put("ext", "log");
+		pipe.setZipEntryPattern("{file}.{ext}");
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
+		assertTrue(prr.getResult().isBinary());
+		assertEquals("bbb", prr.getResult().asString());
+	}
+
+	@Test
+	public void testUnzippingAndCollectingResultWithPattermFromParameter() throws Exception {
+		pipe.setResultIsContent(true);
+		pipe.addParameter(new Parameter("zipEntryPattern", "filebb.log"));
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		assertTrue(prr.getResult().isBinary());
@@ -238,7 +261,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testCaptureFakeFilePath() {
-		pipe.setMessageIsContent(false);
+		pipe.setResultIsContent(false);
 		pipe.setCompress(true);
 
 		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
@@ -246,7 +269,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testCaptureUncompressedLegitimateFilePath() {
-		pipe.setMessageIsContent(false);
+		pipe.setResultIsContent(false);
 		pipe.setCompress(false);
 		pipe.setFileFormat(FileFormat.GZ);
 
@@ -339,7 +362,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testCaptureIllegitimateFilePath() {
-		pipe.setMessageIsContent(false);
+		pipe.setResultIsContent(false);
 		pipe.setCompress(true);
 
 		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
