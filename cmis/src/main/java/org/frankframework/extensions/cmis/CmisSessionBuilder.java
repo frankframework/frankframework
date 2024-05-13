@@ -39,6 +39,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
 
 
 public class CmisSessionBuilder {
