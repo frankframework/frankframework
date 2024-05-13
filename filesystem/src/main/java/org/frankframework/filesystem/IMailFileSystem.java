@@ -31,17 +31,17 @@ public interface IMailFileSystem<M,A> extends IBasicFileSystem<M> {
 	/*
 	 * IMailFileSystems should make sure the additionalProperties contain also the following keys:
 	 */
-	String TO_RECEPIENTS_KEY = "to";
-	String CC_RECEPIENTS_KEY = "cc";
-	String BCC_RECEPIENTS_KEY = "bcc";
+	String TO_RECIPIENTS_KEY = "to";
+	String CC_RECIPIENTS_KEY = "cc";
+	String BCC_RECIPIENTS_KEY = "bcc";
 	String FROM_ADDRESS_KEY = "from";     // originator of the message
 	String SENDER_ADDRESS_KEY = "sender"; // identifies who submitted the messages, probably on behalf of the 'From'
-	String REPLY_TO_RECEPIENTS_KEY = "replyTo";
+	String REPLY_TO_RECIPIENTS_KEY = "replyTo";
 	String DATETIME_SENT_KEY = "DateTimeSent";         // as Date, or in XML format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
 	String DATETIME_RECEIVED_KEY = "DateTimeReceived";
 
 	String BEST_REPLY_ADDRESS_KEY = "bestReplyAddress";
-	String REPLY_ADDRESS_FIELDS_DEFAULT=REPLY_TO_RECEPIENTS_KEY+','+FROM_ADDRESS_KEY+','+SENDER_ADDRESS_KEY+','+RETURN_PATH_HEADER;
+	String REPLY_ADDRESS_FIELDS_DEFAULT= REPLY_TO_RECIPIENTS_KEY +','+FROM_ADDRESS_KEY+','+SENDER_ADDRESS_KEY+','+RETURN_PATH_HEADER;
 
 
 	String getSubject(M emailMessage) throws FileSystemException;
