@@ -157,10 +157,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public void deleteFile(FTPFileRef f) throws FileSystemException {
+		final String canonicalName = getCanonicalName(f);
 		try {
-			ftpClient.deleteFile(getCanonicalName(f));
+			ftpClient.deleteFile(canonicalName);
 		} catch (IOException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + canonicalName + "]: " + e.getMessage());
 		}
 	}
 
@@ -342,6 +343,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(FTPFileRef f) {
 		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("user", f.getUser());
@@ -403,7 +405,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to remove file [{}]: {}", getCanonicalName(file), e.getMessage());
+				log.warn("unable to remove file [{}]: {}", ()-> getCanonicalNameOrError(file), e::getMessage);
 			}
 		}
 	}

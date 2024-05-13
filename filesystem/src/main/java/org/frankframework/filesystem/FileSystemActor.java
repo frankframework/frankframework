@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
-
 import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -247,9 +246,9 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			} else {
 				F file = fileSystem.toFile(getInputFolder());
 				if (file != null && fileSystem.exists(file)) {
-					throw new FileAlreadyExistsException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], does not exist as a folder, but is a file");
+					throw new FileAlreadyExistsException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrError(fileSystem.toFile(getInputFolder()))+"], does not exist as a folder, but is a file");
 				}
-				throw new FolderNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder()))+"], does not exist");
+				throw new FolderNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrError(fileSystem.toFile(getInputFolder()))+"], does not exist");
 			}
 		}
 	}
@@ -306,8 +305,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 	private void createFolder(String folder) throws FileSystemException {
 		if (!fileSystem.folderExists(folder)) {
-			if (isCreateFolder() ) fileSystem.createFolder(folder);
-			else throw new FolderNotFoundException("folder ["+folder+"] does not exist");
+			if (isCreateFolder() ) {
+				fileSystem.createFolder(folder);
+			} else {
+				throw new FolderNotFoundException("folder ["+folder+"] does not exist");
+			}
 		}
 	}
 

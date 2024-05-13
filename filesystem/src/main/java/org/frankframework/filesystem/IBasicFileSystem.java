@@ -98,7 +98,25 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	long getFileSize(F f) throws FileSystemException;
 	String getCanonicalName(F f) throws FileSystemException;
 	Date getModificationTime(F f) throws FileSystemException;
-
+	@Nullable
 	Map<String, Object> getAdditionalFileProperties(F f) throws FileSystemException;
+
+	/**
+	 * Safe method to get a string representing the canonical name of a file, or an error message
+	 * if the canonical name could not be established.
+	 *
+	 * Because this method is not guaranteed to return the actual canonical name, it should be used
+	 * only for error messages and logging.
+	 *
+	 * @param f File for which to try to get canonical name
+	 * @return Either the canonical name of the file, or an error.
+	 */
+	default String getCanonicalNameOrError(F f) {
+		try {
+			return getCanonicalName(f);
+		} catch (FileSystemException e) {
+			return "<Cannot get true canonical name, error: [" + e.getMessage() + "]>";
+		}
+	}
 
 }

@@ -246,7 +246,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		try {
 			f.setFlag(Flags.Flag.DELETED, true);
 		} catch (MessagingException e) {
-			throw new FileSystemException("Could not delete message [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrError(f) + "]: " + e.getMessage());
 		}
 	}
 
@@ -520,15 +520,16 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(Message f) throws FileSystemException {
 		try {
 			Map<String, Object> result = new LinkedHashMap<>();
-			result.put(TO_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.TO));
-			result.put(CC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.CC));
-			result.put(BCC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.BCC));
+			result.put(TO_RECIPIENTS_KEY, getRecipientsOfType(f, RecipientType.TO));
+			result.put(CC_RECIPIENTS_KEY, getRecipientsOfType(f, RecipientType.CC));
+			result.put(BCC_RECIPIENTS_KEY, getRecipientsOfType(f, RecipientType.BCC));
 			result.put(FROM_ADDRESS_KEY, InternetAddress.toUnicodeString(f.getFrom()));
 			// result.put(IMailFileSystem.SENDER_ADDRESS_KEY, f.getS);
-			result.put(REPLY_TO_RECEPIENTS_KEY, getReplyTo(f));
+			result.put(REPLY_TO_RECIPIENTS_KEY, getReplyTo(f));
 			result.put(DATETIME_SENT_KEY, f.getSentDate());
 			result.put(DATETIME_RECEIVED_KEY, f.getReceivedDate());
 			for (Enumeration<Header> headerEnum = f.getAllHeaders(); headerEnum.hasMoreElements();) {

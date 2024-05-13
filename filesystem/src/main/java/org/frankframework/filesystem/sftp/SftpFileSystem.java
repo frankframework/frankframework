@@ -173,13 +173,14 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public void deleteFile(SftpFileRef f) throws FileSystemException {
+		final String canonicalName = getCanonicalName(f);
 		if (!exists(f)) {
-			throw new FileNotFoundException("Cannot delete file [" + getCanonicalName(f) + "] from SFTP filesystem because it does not exist");
+			throw new FileNotFoundException("Cannot delete file [" + canonicalName + "] from SFTP filesystem because it does not exist");
 		}
 		try {
-			ftpClient.rm(getCanonicalName(f));
+			ftpClient.rm(canonicalName);
 		} catch (SftpException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + canonicalName + "]: " + e.getMessage());
 		}
 	}
 
@@ -388,6 +389,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(SftpFileRef f) {
 		Map<String, Object> attributes = new HashMap<>();
 		SftpATTRS attrs = getFileAttributes(f);
@@ -450,7 +452,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to remove file [{}]", getCanonicalName(file), e);
+				log.warn("unable to remove file [{}]", getCanonicalNameOrError(file), e);
 			}
 		}
 	}

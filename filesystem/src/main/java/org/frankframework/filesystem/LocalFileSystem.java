@@ -108,7 +108,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public Message readFile(Path f, String charset) throws FileSystemException {
-		if (!f.toFile().exists()) {
+		if (!Files.exists(f)) {
 			throw new org.frankframework.filesystem.FileNotFoundException("Cannot find file ["+f+"].");
 		}
 		return new PathMessage(f, FileSystemUtils.getContext(this, f, charset));
@@ -121,7 +121,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		} catch (FileNotFoundException e) {
 			throw new org.frankframework.filesystem.FileNotFoundException("Cannot find file [" + f + "] to delete", e);
 		} catch (IOException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + getCanonicalNameOrError(f) + "]: " + e.getMessage());
 		}
 	}
 
@@ -257,6 +257,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(Path f) {
 		return null;
 	}

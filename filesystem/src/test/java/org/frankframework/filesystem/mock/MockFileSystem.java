@@ -322,6 +322,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(M f) {
 		checkOpen();
 		return f.getAdditionalProperties();

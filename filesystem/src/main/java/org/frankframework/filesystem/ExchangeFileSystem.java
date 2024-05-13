@@ -631,7 +631,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		try {
 			f.getMessage().delete(DeleteMode.MoveToDeletedItems);
 		} catch (Exception e) {
-			throw new FileSystemException("Could not delete Exchange Message [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete Exchange Message [" + getCanonicalNameOrError(f) + "]: " + e.getMessage());
 		}
 	}
 
@@ -753,6 +753,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(ExchangeMessageReference f) throws FileSystemException {
 		final EmailMessage emailMessage = f.getMessage();
 		try {
@@ -762,12 +763,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 			}
 
 			final Map<String, Object> result = new LinkedHashMap<>();
-			result.put(TO_RECEPIENTS_KEY, asList(emailMessage.getToRecipients()));
-			result.put(CC_RECEPIENTS_KEY, asList(emailMessage.getCcRecipients()));
-			result.put(BCC_RECEPIENTS_KEY, asList(emailMessage.getBccRecipients()));
+			result.put(TO_RECIPIENTS_KEY, asList(emailMessage.getToRecipients()));
+			result.put(CC_RECIPIENTS_KEY, asList(emailMessage.getCcRecipients()));
+			result.put(BCC_RECIPIENTS_KEY, asList(emailMessage.getBccRecipients()));
 			result.put(FROM_ADDRESS_KEY, getFrom(emailMessage));
 			result.put(SENDER_ADDRESS_KEY, getSender(emailMessage));
-			result.put(REPLY_TO_RECEPIENTS_KEY, getReplyTo(emailMessage));
+			result.put(REPLY_TO_RECIPIENTS_KEY, getReplyTo(emailMessage));
 			result.put(DATETIME_SENT_KEY, getDateTimeSent(emailMessage));
 			result.put(DATETIME_RECEIVED_KEY, getDateTimeReceived(emailMessage));
 

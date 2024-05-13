@@ -162,7 +162,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 						"Trying to remove [" + f.getName() + "] which is a directory instead of a file");
 			}
 		} catch (SmbException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalName(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + getCanonicalNameOrError(f) + "]: " + e.getMessage(), e);
 		}
 	}
 
@@ -312,7 +312,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to delete file [{}]", (Supplier<?>) ()->getCanonicalName(file), e);
+				log.warn("unable to delete file [{}]", (Supplier<?>) ()-> getCanonicalNameOrError(file), e);
 			}
 		}
 	}
@@ -347,6 +347,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(SmbFile file) {
 		return null;
 	}
