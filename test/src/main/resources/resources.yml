@@ -89,14 +89,10 @@ jdbc:
 #    username: "testiaf_user"
 #    password: "testiaf_user00"
 
-# Mockup for future implementation
-#mongodb:
-#  - name: "ibis4test"
+#other:
+#  - name: "ibis4test-mongodb"
 #    type: "com.mongodb.MongoClient"
-#    url: "mongodb://${jdbc.hostname:-localhost}"
-#    authalias: "${db.authalias}"
-#    username: "testiaf_user"
-#    password: "testiaf_user00"
+#    url: "mongodb://mongodb:27017"
 
 # Disabled here because in iaf-test we want to test our resources via the JBOSS TX Manager.
 #jms:
