@@ -19,12 +19,12 @@ import java.util.Iterator;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.BeanMap;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 /**
  * A JmsRealm is a definition of a JMS provider, and is kind of a utility
  * class to prevent the tedeous work of repeatedly defining all parameters
@@ -122,18 +122,10 @@ public class JmsRealm {
 
 	/**
 	 * The <code>toString()</code> method retrieves its value by reflection.
-	 * 
-	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
-	 *
 	 **/
 	@Override
 	public String toString() {
-		try {
-			return ToStringBuilder.reflectionToString(this);
-		} catch (Throwable t) {
-			log.warn("exception getting string representation of jmsRealm [" + getRealmName() + "]", t);
-		}
-		return super.toString();
+		return StringUtil.reflectionToString(this);
 	}
 
 	/**
