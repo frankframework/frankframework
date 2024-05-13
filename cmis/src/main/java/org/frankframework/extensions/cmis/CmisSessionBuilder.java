@@ -35,8 +35,10 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
+import org.frankframework.util.StreamUtil;
 
 
 public class CmisSessionBuilder {
