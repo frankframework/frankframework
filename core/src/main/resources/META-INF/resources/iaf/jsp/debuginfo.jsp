@@ -1,5 +1,5 @@
-<%@ page import="javax.servlet.*" %>
-<%@ page import="javax.servlet.http.*" %>
+<%@ page import="jakarta.servlet.*" %>
+<%@ page import="jakarta.servlet.http.*" %>
 <%@ page import="java.util.*" %>
 <%@ page import="javax.naming.*" %>
 
