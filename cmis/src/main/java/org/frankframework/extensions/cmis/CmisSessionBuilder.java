@@ -16,7 +16,6 @@
 package org.frankframework.extensions.cmis;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
@@ -32,15 +31,13 @@ import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.StreamUtil;
+import org.frankframework.util.Misc;
+
 
 public class CmisSessionBuilder {
 	private final Logger log = LogUtil.getLogger(this);
@@ -463,12 +460,7 @@ public class CmisSessionBuilder {
 
 	@Override
 	public String toString() {
-		return (new ReflectionToStringBuilder(this) {
-			@Override
-			protected boolean accept(Field f) {
-				return super.accept(f) && !f.getName().contains("password") && !f.getName().contains("classLoader");
-			}
-		}).toString();
+		return StringUtil.reflectionToString(this);
 	}
 
 	public String getKeystore() {
