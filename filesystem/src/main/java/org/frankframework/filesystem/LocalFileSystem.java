@@ -30,8 +30,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
