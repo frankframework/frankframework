@@ -22,8 +22,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
