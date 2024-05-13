@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
@@ -44,8 +45,8 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	public Map<String, String> getMetaData() throws SQLException {
 		if (metadata == null) {
-			log.debug("populating metadata from getMetaData");
-			try (Connection connection = getConnection()) {
+			try (Connection connection = super.getConnection()) {
+				log.trace("populating metadata from getMetaData");
 				populateMetadata(connection);
 			}
 		}
@@ -70,12 +71,16 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		metadata = databaseMetadata;
 	}
 
-	public String getDestinationName() throws SQLException {
-		if (destinationName == null) {
+	/**
+	 * LazyLoaded method. Only populate destinationName if a connection has
+	 * previously been established and the metadata has been populated.
+	 */
+	public @Nullable String getDestinationName() {
+		if(destinationName == null && metadata != null) {
 			StringBuilder builder = new StringBuilder();
-			builder.append(getMetaData().get("url"));
+			builder.append(metadata.get("url"));
 
-			String catalog = getMetaData().get("catalog");
+			String catalog = metadata.get("catalog");
 			if (catalog != null) builder.append("/").append(catalog);
 
 			destinationName = builder.toString();
@@ -87,7 +92,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	public Connection getConnection() throws SQLException {
 		Connection conn = super.getConnection();
 		if (metadata == null) {
-			log.debug("populating metadata from getConnection");
+			log.trace("populating metadata from getConnection");
 			populateMetadata(conn);
 		}
 		return conn;
