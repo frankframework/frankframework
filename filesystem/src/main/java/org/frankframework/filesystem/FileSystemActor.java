@@ -291,10 +291,24 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private F getFileAndCreateFolder(@Nonnull Message input, ParameterValueList pvl) throws FileSystemException {
 		String filenameWithFolder = determineFilename(input, pvl);
 		String folder = FilenameUtils.getFullPathNoEndSeparator(filenameWithFolder);
-		if(StringUtils.isNotBlank(folder) && isCreateFolder() && !fileSystem.folderExists(folder)) {
+
+		if (StringUtils.isNotBlank(folder)) {
+			createFolder(folder);
+
+			return fileSystem.toFile(filenameWithFolder);
+		}
+
+		// If the folder could not be determined on the filename, let the filesystem implementation determine (and create, if needed) the folder
+		F file = fileSystem.toFile(filenameWithFolder);
+		createFolder(fileSystem.getParentFolder(file));
+
+		return file;
+	}
+
+	private void createFolder(String folder) throws FileSystemException {
+		if (isCreateFolder() && !fileSystem.folderExists(folder)) {
 			fileSystem.createFolder(folder);
 		}
-		return fileSystem.toFile(filenameWithFolder);
 	}
 
 	private String determineInputFoldername(Message input, ParameterValueList pvl) throws FileSystemException {
