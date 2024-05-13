@@ -46,6 +46,7 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -81,6 +82,7 @@ import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.mock.DataSourceFactoryMock;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
@@ -220,6 +222,7 @@ public class ReceiverTest {
 	public MessageStoreListener<String> setupMessageStoreListener() throws Exception {
 		Connection connection = mock(Connection.class);
 		MessageStoreListener<String> listener = spy(new MessageStoreListener<>());
+		listener.setDataSourceFactory(new DataSourceFactoryMock());
 		listener.setConnectionsArePooled(true);
 		doReturn(connection).when(listener).getConnection();
 		listener.setSessionKeys("ANY-KEY");
@@ -233,7 +236,9 @@ public class ReceiverTest {
 	}
 
 	public ITransactionalStorage<Serializable> setupErrorStorage() {
-		return mock(JdbcTransactionalStorage.class);
+		JdbcTransactionalStorage txStorage = mock(JdbcTransactionalStorage.class);
+		txStorage.setDataSourceFactory(new DataSourceFactoryMock());
+		return txStorage;
 	}
 
 	public static Stream<Arguments> transactionManagers() {
@@ -955,7 +960,7 @@ public class ReceiverTest {
 		// Assert
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
-		List<String> errors = adapter.getMessageKeeper()
+		List<String> errors = new ArrayList<>(adapter.getMessageKeeper())
 				.stream()
 				.filter(msg -> msg != null && "ERROR".equals(msg.getMessageLevel()))
 				.map(Object::toString)
@@ -1018,7 +1023,7 @@ public class ReceiverTest {
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 
-		List<String> warnings = adapter.getMessageKeeper()
+		List<String> warnings = new ArrayList<>(adapter.getMessageKeeper())
 				.stream()
 				.filter(msg -> msg instanceof MessageKeeperMessage && "WARN".equals(msg.getMessageLevel()))
 				.map(Object::toString)
