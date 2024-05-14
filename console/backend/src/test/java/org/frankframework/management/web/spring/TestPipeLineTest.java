@@ -4,45 +4,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 
 import java.net.URL;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.frankframework.management.web.TestPipelineTest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-@WebAppConfiguration
 @ContextConfiguration(classes = {WebTestConfig.class, TestPipeline.class})
-@ExtendWith(SpringExtension.class)
-public class TestPipeLineTest {
+public class TestPipeLineTest extends FrankApiTestBase {
 
 	private static final String DUMMY_MESSAGE = "<dummy-message />";
 
 	private static final String RESULT_EXPRESSION = "result";
 
 	private static final String TEST_PIPELINE_ENDPOINT = "/test-pipeline";
-
-	private MockMvc mockMvc;
-
-	@Autowired
-	private WebApplicationContext webApplicationContext;
-
-	@BeforeEach
-	public void setUp() {
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-	}
 
 	@Test
 	public void testPipeLine() throws Exception {
@@ -104,18 +81,6 @@ public class TestPipeLineTest {
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath(RESULT_EXPRESSION).value("msg-2.xml: SUCCESS\n"))
 				.andReturn();
-	}
-
-	private String asJsonString(final Object obj) {
-		try {
-			return new ObjectMapper().writeValueAsString(obj);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private MockMultipartFile createMockMultipartFile(final String name, final String originalFilename, final byte[] content) {
-		return new MockMultipartFile(name, originalFilename, MediaType.MULTIPART_FORM_DATA_VALUE, content);
 	}
 
 	private static TestPipeline.TestPipeLineModel getTestPipeLineModel() {

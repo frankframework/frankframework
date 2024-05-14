@@ -2,38 +2,45 @@ package org.frankframework.management.web.spring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.util.ClassUtils;
-
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ValueConstants;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+@WebAppConfiguration
+@ExtendWith(SpringExtension.class)
+public abstract class FrankApiTestBase {
+	protected MockMvc mockMvc;
 
-import static org.junit.jupiter.api.Assertions.fail;
+	@Autowired
+	private WebApplicationContext webApplicationContext;
 
-public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
+	@BeforeEach
+	public void setUp() {
+		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+	}
+
+	protected String asJsonString(final Object obj) {
+		try {
+			return new ObjectMapper().writeValueAsString(obj);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected MockMultipartFile createMockMultipartFile(final String name, final String originalFilename, final byte[] content) {
+		return new MockMultipartFile(name, originalFilename, MediaType.MULTIPART_FORM_DATA_VALUE, content);
+	}
+}
+
+/*public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 	public static final String STUBBED_SPRING_BUS_CONFIGURATION = "stubbedBusApplicationContext.xml";
 
@@ -74,9 +81,9 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 	public class MockDispatcher {
 		public Map<String, Method> mvcRequests = new HashMap<>();
 
-		/**
+		*//**
 		 * scan all methods in the Spring MVC class
-		 */
+		 *//*
 		public void register(M springMvcResource) {
 			Method[] classMethods = springMvcResource.getClass().getDeclaredMethods();
 			RequestMapping requestMappingAnnotation = AnnotationUtils.findAnnotation(springMvcResource.getClass(), RequestMapping.class);
@@ -109,17 +116,17 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			return pathToUse.toString();
 		}
 
-		/**
+		*//**
 		 * uppercase the HTTP method and combine with the resource path
-		 */
+		 *//*
 		public String compileKey(String method, String path) {
 			String url = getPath(path);
 			return "%S:%s".formatted(method, url);
 		}
 
-		/**
+		*//**
 		 * Makes sure the url begins with a slash and strips all QueryParams off the URL
-		 */
+		 *//*
 		private String getPath(String path) {
 			String url = path;
 			if(!url.startsWith("/")) {
@@ -132,11 +139,11 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			return url;
 		}
 
-		/**
+		*//**
 		 * Tries to find the correct Spring MVC method (with optional path parameter)
 		 * @param mvcResourceKey unique key to identify all Spring MVC resources in the given resource class
 		 * @return Spring MVC method or `null` when no resource is found
-		 */
+		 *//*
 		private Method findRequest(String mvcResourceKey) {
 			String[] uriSegments = mvcResourceKey.split("/");
 
@@ -175,14 +182,14 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			return dispatchRequest(httpMethod, url, jsonOrFormdata, role, null);
 		}
 
-		/**
+		*//**
 		 * Dispatches the mocked request.
 		 * @param httpMethod GET PUT POST DELETE
 		 * @param url the relative path of the FF! API
 		 * @param jsonOrFormdata when using PUT/POST requests, a json string of formdata object
 		 * @param role IbisRole if you want to test authorization as well
 		 * @param headers Map of header parameters where the key is the header name and the value is the header value
-		 */
+		 *//*
 		public ResponseEntity<?> dispatchRequest(String httpMethod, String url, Object jsonOrFormdata, FrankApiTestBase.IbisRole role, Map<String, String> headers) {
 
 			String mvcResourceKey = compileKey(httpMethod, url);
@@ -252,12 +259,12 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 							log.debug("setting method argument [{}] to value [{}] with type [{}]", i, value, value.getClass().getSimpleName());
 							methodArguments[i] = value;
-						/*} else if(mediaType.equals(MediaType.MULTIPART_FORM_DATA_VALUE)){
+						*//*} else if(mediaType.equals(MediaType.MULTIPART_FORM_DATA_VALUE)){
 							if(jsonOrFormdata instanceof List<?>) {
 								@SuppressWarnings("unchecked")
 								MultipartBody multipartBody = new MultipartBody((List<Attachment>) jsonOrFormdata);
 								methodArguments[i] = multipartBody;
-							}*/
+							}*//*
 						} else {
 							fail("mediaType ["+mediaType+"] not yet implemented");
 						}
@@ -299,18 +306,18 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			}
 		}
 
-		/**
+		*//**
 		 * If set, apply the IbisRole to the mocked request.
-		 */
+		 *//*
 		protected void applyIbisRole(FrankApiTestBase.IbisRole role) {
 			if(role != null) {
 				doReturn(true).when(springMvcResource.servletRequest).isUserInRole(role.name());
 			}
 		}
 
-		/**
+		*//**
 		 * Convert the json input to the parameters class type
-		 */
+		 *//*
 		private Object convertInputToParameterType(Parameter parameter, Object jsonOrFormdata) {
 			ObjectMapper objectMapper = new ObjectMapper();
 			try {
@@ -321,10 +328,10 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			}
 		}
 
-		/**
+		*//**
 		 * If a path parameter is used, try to find it
 		 * @return the resolved path parameter value
-		 */
+		 *//*
 		private String findPathParameter(Parameter parameter, String methodPath, String url) {
 			PathVariable pathParameter = parameter.getAnnotation(PathVariable.class);
 			String path = "{%s}".formatted(pathParameter.value());
@@ -346,10 +353,10 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			return pathValue;
 		}
 
-		/**
+		*//**
 		 * If a query parameter is used, try to find it
 		 * @return the resolved query parameter value
-		 */
+		 *//*
 		private Object findQueryParameter(Parameter parameter, String url) {
 			RequestParam queryParameter = parameter.getAnnotation(RequestParam.class);
 			int questionMark = url.indexOf("?");
@@ -380,10 +387,10 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			return value;
 		}
 
-		/**
+		*//**
 		 * If a header parameter is used, try to find it
 		 * @return the resolved header parameter value
-		 */
+		 *//*
 		private Object findHeaderParameter(Parameter parameter, Map<String, String> headers) {
 			RequestHeader headerParameter = parameter.getAnnotation(RequestHeader.class);
 			String headerValue = headers.get(headerParameter.value());
@@ -412,9 +419,9 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			return ((Map<String, Object>)formDataMap).get(formDataName);
 		}
 
-		/**
+		*//**
 		 * Validate that all arguments are correctly set on the (Spring MVC resource) method
-		 */
+		 *//*
 		private void validateIfAllArgumentsArePresent(Object[] methodArguments, Parameter[] parameters) {
 			for (int j = 0; j < methodArguments.length; j++) {
 				Object object = methodArguments[j];
@@ -425,4 +432,4 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		}
 	}
 
-}
+}*/

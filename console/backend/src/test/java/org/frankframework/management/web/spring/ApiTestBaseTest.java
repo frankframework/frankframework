@@ -2,35 +2,42 @@ package org.frankframework.management.web.spring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * This is a test class to test the {@link FrankApiBase} class.
  * It tests path parameters, query parameters and json convertions
  */
+@Controller
 public class ApiTestBaseTest extends FrankApiBase {
 
 	@GetMapping(value = "/test/{path}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getWithPathAndQueryParam(@PathVariable("path") String path, @RequestParam(value = "bool", required = false) boolean bool) throws ApiException {
-		return ResponseEntity.ok().body(new String[] { path, String.valueOf(bool)});
+		return ResponseEntity.ok().body(new String[]{path, String.valueOf(bool)});
 	}
 
-	@PutMapping(value = "/test/put/json", produces = MediaType.APPLICATION_JSON_VALUE , consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> simplePut(LinkedHashMap<String, Object> json) throws ApiException {
+	@PutMapping(value = "/test/put/json", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> simplePut(@RequestBody LinkedHashMap<String, Object> json) throws ApiException {
 		assertTrue(json.containsKey("two"), "key [two] must be present!");
 		assertEquals("dos", json.get("two"));
 		return ResponseEntity.ok().body(json);
@@ -45,34 +52,53 @@ public class ApiTestBaseTest extends FrankApiBase {
 		return ResponseEntity.ok().body(response);
 	}
 
-	@Disabled
 	@Nested
-	public class TestApi extends FrankApiTestBase<ApiTestBaseTest> {
+	@ContextConfiguration(classes = {WebTestConfig.class, ApiTestBaseTest.class})
+	public class TestApi extends FrankApiTestBase {
 
-		@Override
-		public ApiTestBaseTest createSpringMvcResource() {
-			return new ApiTestBaseTest();
+		@Test
+		public void testGetWithPathAndQueryParam() throws Exception {
+			MvcResult result = mockMvc.perform(
+							MockMvcRequestBuilders
+									.get("/test/dummy")
+									.param("bool", "false")
+									.accept(MediaType.APPLICATION_JSON)
+					)
+//					.andDo(print())
+					.andExpect(MockMvcResultMatchers.status().isOk())
+					.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+					.andReturn();
+
+			String response = result.getResponse().getContentAsString();
+			assertEquals("[ \"dummy\", \"false\" ]", response);
 		}
 
 		@Test
-		public void testGetWithPathAndQueryParam() {
-			ResponseEntity<?> response = dispatcher.dispatchRequest("GET", "/test/dummy?bool=false");
-			String entity = (String) response.getBody();
-			assertEquals("[\"dummy\",\"false\"]", entity);
+		public void testGetWithJson() throws Exception {
+			mockMvc.perform(MockMvcRequestBuilders.get("/test/json").accept(MediaType.APPLICATION_JSON))
+//					.andDo(print())
+					.andExpect(MockMvcResultMatchers.status().isOk())
+					.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+					.andExpect(MockMvcResultMatchers.jsonPath("one").value("uno"))
+					.andExpect(MockMvcResultMatchers.jsonPath("two").value("dos"))
+					.andExpect(MockMvcResultMatchers.jsonPath("three").value("tres"));
 		}
 
 		@Test
-		public void testGetWithJson() {
-			ResponseEntity<?> response = dispatcher.dispatchRequest("GET", "/test/json");
-			String entity = (String) response.getBody();
-			assertEquals("{\"one\":\"uno\",\"two\":\"dos\",\"three\":\"tres\"}", entity);
-		}
-
-		@Test
-		public void testPutJson() {
-			ResponseEntity<?> response = dispatcher.dispatchRequest("PUT", "/test/put/json", "{\"one\":\"uno\",\"two\":\"dos\",\"three\":\"tres\"}");
-			String entity = (String) response.getBody();
-			assertEquals("{\"one\":\"uno\",\"two\":\"dos\",\"three\":\"tres\"}", entity);
+		public void testPutJson() throws Exception {
+			mockMvc.perform(
+					MockMvcRequestBuilders
+							.put("/test/put/json")
+							.content("{\"one\":\"uno\",\"two\":\"dos\",\"three\":\"tres\"}")
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON)
+					)
+//					.andDo(print())
+					.andExpect(MockMvcResultMatchers.status().isOk())
+					.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+					.andExpect(MockMvcResultMatchers.jsonPath("one").value("uno"))
+					.andExpect(MockMvcResultMatchers.jsonPath("two").value("dos"))
+					.andExpect(MockMvcResultMatchers.jsonPath("three").value("tres"));
 		}
 	}
 }
