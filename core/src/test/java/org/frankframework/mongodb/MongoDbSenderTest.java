@@ -38,7 +38,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Log4j2
 @Testcontainers(disabledWithoutDocker = true)
-@Tag("integration") //Excluded by a default test run, since it requires Docker
+@Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
 public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	private static final String MONGO_DOCKER_TAG = "mongo:7.0.9";
