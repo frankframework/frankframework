@@ -21,6 +21,7 @@ import java.time.Duration;
 import javax.sql.CommonDataSource;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DataSourceConnectionFactory;
@@ -44,6 +45,7 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
+	@Getter @Setter protected boolean poolXA = false;
 	@Getter @Setter protected int minIdle = 0;
 	@Getter @Setter protected int maxPoolSize = 20;
 	@Getter @Setter protected int maxIdle = 2;
@@ -66,24 +68,33 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if(maxPoolSize > 1) {
 			log.info("Creating connection pool for datasource [{}]", dataSourceName);
-			return createPool((DataSource)dataSource, dataSourceName);
+			return createPool(dataSource, dataSourceName);
 		}
 		log.info("Pooling not configured, using datasource [{}] without augmentation", dataSourceName);
 		return (DataSource) dataSource;
 	}
 
 	private static boolean isPooledDataSource(CommonDataSource dataSource) {
-		return dataSource instanceof ConnectionPoolDataSource
+		return dataSource instanceof ConnectionPoolDataSource && !isPoolXA()
 				|| dataSource.getClass().getName().startsWith("org.apache.tomcat")
 				;
 	}
 
-	protected DataSource createPool(DataSource dataSource, String dataSourceName) {
+	protected DataSource createPool(CommonDataSource dataSource, String dataSourceName) {
 		if (isPooledDataSource(dataSource)) {
-			log.warn("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
-			return dataSource;
+			log.debug("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
+			if (dataSource instanceof XADataSource xadatasource) {
+				return new XADataSourceWrapper(xadatasource);
+			} else {
+				return (DataSource)dataSource;
+			}
 		}
-		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
+		ConnectionFactory cf = null;
+		if (dataSource instanceof XADataSource xadatasource) {
+			cf = new DataSourceConnectionFactory(new XADataSourceWrapper(xadatasource));
+		} else {
+			cf = new DataSourceConnectionFactory((DataSource)dataSource);
+		}
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
 
 		GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
