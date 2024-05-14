@@ -38,7 +38,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-//@MultipartConfig
 public class ServletDispatcherSpring extends DispatcherServlet implements DynamicRegistration.Servlet {
 
 	private static final long serialVersionUID = 1L;

@@ -15,6 +15,8 @@
 */
 package org.frankframework.management.web.spring;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -52,9 +54,9 @@ public class LiquibaseScript extends FrankApiBase {
 
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PostMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> generateSQL(@RequestPart("configuration") String configurationPart, @RequestPart("file") MultipartFile filePart) throws ApiException {
-
-		String configuration = RequestUtils.resolveRequiredProperty("configuration", configurationPart, null);
+	public ResponseEntity<?> generateSQL(LiquibaseMultipartBody multipartBody) throws ApiException {
+		String configuration = RequestUtils.resolveRequiredProperty("configuration", multipartBody.getConfiguration(), null);
+		MultipartFile filePart = multipartBody.getFile();
 
 		if(filePart == null) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -90,12 +92,11 @@ public class LiquibaseScript extends FrankApiBase {
 		return ResponseEntity.status(HttpStatus.CREATED).body(resultMap);
 	}
 
-	// Won't work Spring 5.3 without SpringBoot
-	/*@Getter
+	@Getter
 	@Setter
 	public static class LiquibaseMultipartBody {
 		private String configuration;
 		private MultipartFile file;
-	}*/
+	}
 
 }

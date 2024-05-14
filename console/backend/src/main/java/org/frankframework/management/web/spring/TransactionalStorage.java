@@ -15,6 +15,8 @@
 */
 package org.frankframework.management.web.spring;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -299,7 +301,8 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathVariable("receiverName") String receiver,
 			@PathVariable("processState") String processState,
 			@PathVariable("targetState") String targetState,
-			@RequestPart("messageIds") String messageIdsPart) {
+			@RequestPart("messageIds") String messageIdsPart
+	) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
@@ -357,7 +360,8 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathVariable("configuration") String configuration,
 			@PathVariable("adapterName") String adapter,
 			@PathVariable("receiverName") String receiver,
-			@RequestPart("messageIds") String messageIdsPart) {
+			@RequestPart("messageIds") String messageIdsPart
+	) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
@@ -389,12 +393,5 @@ public class TransactionalStorage extends FrankApiBase {
 		String messageIds = RequestUtils.resolveRequiredProperty("messageIds", messageIdsPart, null);
 		return messageIds.split(",");
 	}
-
-	// Won't work Spring 5.3 without SpringBoot
-	/*@Getter
-	@Setter
-	public static class StorageMessagesMultipartBody {
-		private String messageIds;
-	}*/
 
 }
