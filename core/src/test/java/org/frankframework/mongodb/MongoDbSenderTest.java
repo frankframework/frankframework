@@ -11,6 +11,7 @@ import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.mongodb.MongoClientSettings;
@@ -36,7 +37,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Log4j2
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
+@Tag("integration") //Excluded by a default test run, since it requires Docker
 public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	private static final String MONGO_DOCKER_TAG = "mongo:7.0.9";

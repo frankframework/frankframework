@@ -710,9 +710,7 @@
 					<includes>
 						<include>**/*.java</include>
 					</includes>
-					<excludes>
-						<exclude>it.**</exclude>
-					</excludes>
+					<excludedGroups>integration</excludedGroups>
 					<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED</argLine>
 				</configuration>
 			</plugin>
