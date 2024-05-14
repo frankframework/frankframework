@@ -11,7 +11,7 @@
 	<name>Frank!Framework core</name>
 
 	<properties>
-		<j2v8.version>6.2.1</j2v8.version>
+		<j2v8.version>4.8.0</j2v8.version><!-- higher versions don't have all the required binaries in maven central -->
 		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
 	</properties>
 
