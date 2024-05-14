@@ -55,10 +55,10 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public void open() throws FileSystemException {
-		super.open();
 		if (root != null && !Files.exists(Paths.get(root))) {
 			createFolder(root);
 		}
+		super.open();
 	}
 
 	@Override
