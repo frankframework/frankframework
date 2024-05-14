@@ -29,9 +29,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
@@ -50,6 +49,14 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	@Override
 	public void configure() throws ConfigurationException {
 		// No Action is required
+	}
+
+	@Override
+	public void open() throws FileSystemException {
+		super.open();
+		if (root != null && !Files.exists(Paths.get(root))) {
+			createFolder(root);
+		}
 	}
 
 	@Override
