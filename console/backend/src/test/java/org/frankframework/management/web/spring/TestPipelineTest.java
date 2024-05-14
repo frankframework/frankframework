@@ -1,23 +1,18 @@
 package org.frankframework.management.web.spring;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.management.web.TestPipelineTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ContextConfiguration(classes = {WebTestConfig.class, TestPipeline.class})
-public class TestPipeLineTest extends FrankApiTestBase {
+public class TestPipelineTest extends FrankApiTestBase {
 
 	private static final String DUMMY_MESSAGE = "<dummy-message />";
-
-	private static final String RESULT_EXPRESSION = "result";
 
 	private static final String TEST_PIPELINE_ENDPOINT = "/test-pipeline";
 
@@ -28,12 +23,10 @@ public class TestPipeLineTest extends FrankApiTestBase {
 						.file(createMockMultipartFile("message", null, DUMMY_MESSAGE.getBytes()))
 						.content(asJsonString(getTestPipeLineModel()))
 						.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath(RESULT_EXPRESSION).value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
-				.andExpect(MockMvcResultMatchers.jsonPath("message").value(DUMMY_MESSAGE))
-				.andReturn();
+				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
+				.andExpect(MockMvcResultMatchers.jsonPath("message").value(DUMMY_MESSAGE));
 	}
 
 	@Test
@@ -43,44 +36,38 @@ public class TestPipeLineTest extends FrankApiTestBase {
 						.file(createMockMultipartFile("file", "my-file.xml", DUMMY_MESSAGE.getBytes()))
 						.content(asJsonString(getTestPipeLineModel()))
 						.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath(RESULT_EXPRESSION).value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
-				.andExpect(MockMvcResultMatchers.jsonPath("message").value(DUMMY_MESSAGE))
-				.andReturn();
+				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
+				.andExpect(MockMvcResultMatchers.jsonPath("message").value(DUMMY_MESSAGE));
 	}
 
 	@Test
 	public void testStoredZipMessage() throws Exception {
-		URL zip = TestPipelineTest.class.getResource("/TestPipeline/stored.zip");
+		URL zip = org.frankframework.management.web.TestPipelineTest.class.getResource("/TestPipeline/stored.zip");
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
 						.file(createMockMultipartFile("file", "archive2.zip", zip.openStream().readAllBytes()))
 						.content(asJsonString(getTestPipeLineModel()))
 						.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath(RESULT_EXPRESSION).value("msg-7.xml: SUCCESS\n"))
-				.andReturn();
+				.andExpect(MockMvcResultMatchers.jsonPath("result").value("msg-7.xml: SUCCESS\n"));
 	}
 
 	@Test
 	public void testDeflatedZipMessage() throws Exception {
-		URL zip = TestPipelineTest.class.getResource("/TestPipeline/deflated.zip");
+		URL zip = org.frankframework.management.web.TestPipelineTest.class.getResource("/TestPipeline/deflated.zip");
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
 						.file(createMockMultipartFile("file", "archive3.zip", zip.openStream().readAllBytes()))
 						.content(asJsonString(getTestPipeLineModel()))
 						.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath(RESULT_EXPRESSION).value("msg-2.xml: SUCCESS\n"))
-				.andReturn();
+				.andExpect(MockMvcResultMatchers.jsonPath("result").value("msg-2.xml: SUCCESS\n"));
 	}
 
 	private static TestPipeline.TestPipeLineModel getTestPipeLineModel() {

@@ -2,7 +2,6 @@ package org.frankframework.management.web.spring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
