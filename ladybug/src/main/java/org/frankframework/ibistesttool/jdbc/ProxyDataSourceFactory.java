@@ -70,7 +70,7 @@ public class ProxyDataSourceFactory implements IDataSourceFactory, ApplicationCo
 			delegate = ac.getBean("dataSourceFactory", IDataSourceFactory.class);
 
 			PlatformTransactionManager txManager = ac.getBean("txManager", PlatformTransactionManager.class);
-			SpringUtils.registerSingleton(applicationContext, "ladybugTransactionManager", txManager);
+			SpringUtils.registerSingleton(applicationContext, "ladybugTransactionManager", txManager); //Should use this instead of the Ladybug's OptionalJtaTransactionManager
 		}
 	}
 
