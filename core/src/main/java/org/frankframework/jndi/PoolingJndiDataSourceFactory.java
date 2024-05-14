@@ -83,15 +83,15 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 	protected DataSource createPool(CommonDataSource dataSource, String dataSourceName) {
 		if (isPooledDataSource(dataSource)) {
 			log.debug("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
-			if (dataSource instanceof XADataSource xadatasource) {
-				return new XADataSourceWrapper(xadatasource);
+			if (dataSource instanceof XADataSource) {
+				return new XADataSourceWrapper((XADataSource)dataSource);
 			} else {
 				return (DataSource)dataSource;
 			}
 		}
 		ConnectionFactory cf = null;
-		if (dataSource instanceof XADataSource xadatasource) {
-			cf = new DataSourceConnectionFactory(new XADataSourceWrapper(xadatasource));
+		if (dataSource instanceof XADataSource) {
+			cf = new DataSourceConnectionFactory(new XADataSourceWrapper((XADataSource)dataSource));
 		} else {
 			cf = new DataSourceConnectionFactory((DataSource)dataSource);
 		}
