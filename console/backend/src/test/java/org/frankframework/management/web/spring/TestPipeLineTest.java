@@ -28,20 +28,16 @@ import org.springframework.web.context.WebApplicationContext;
 @ExtendWith(SpringExtension.class)
 public class TestPipeLineTest {
 
+	private static final String DUMMY_MESSAGE = "<dummy-message />";
+
+	private static final String RESULT_EXPRESSION = "result";
+
 	private static final String TEST_PIPELINE_ENDPOINT = "/test-pipeline";
 
 	private MockMvc mockMvc;
 
 	@Autowired
 	private WebApplicationContext webApplicationContext;
-
-	private String asJsonString(final Object obj) {
-		try {
-			return new ObjectMapper().writeValueAsString(obj);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
 
 	@BeforeEach
 	public void setUp() {
@@ -52,14 +48,14 @@ public class TestPipeLineTest {
 	public void testPipeLine() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
-						.file(createMockMultipartFile("message", null, MediaType.MULTIPART_FORM_DATA_VALUE, ("<dummy-message />").getBytes()))
-						.content(asJsonString(new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null)))
+						.file(createMockMultipartFile("message", null, DUMMY_MESSAGE.getBytes()))
+						.content(asJsonString(getTestPipeLineModel()))
 						.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
-				.andExpect(MockMvcResultMatchers.jsonPath("message").value("<dummy-message />"))
+				.andExpect(MockMvcResultMatchers.jsonPath(RESULT_EXPRESSION).value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
+				.andExpect(MockMvcResultMatchers.jsonPath("message").value(DUMMY_MESSAGE))
 				.andReturn();
 	}
 
@@ -67,14 +63,14 @@ public class TestPipeLineTest {
 	public void testFileMessage() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
-						.file(createMockMultipartFile("file", "my-file.xml", MediaType.MULTIPART_FORM_DATA_VALUE, ("<dummy-message />").getBytes()))
-						.content(asJsonString(new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null)))
+						.file(createMockMultipartFile("file", "my-file.xml", DUMMY_MESSAGE.getBytes()))
+						.content(asJsonString(getTestPipeLineModel()))
 						.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
-				.andExpect(MockMvcResultMatchers.jsonPath("message").value("<dummy-message />"))
+				.andExpect(MockMvcResultMatchers.jsonPath(RESULT_EXPRESSION).value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))
+				.andExpect(MockMvcResultMatchers.jsonPath("message").value(DUMMY_MESSAGE))
 				.andReturn();
 	}
 
@@ -84,13 +80,13 @@ public class TestPipeLineTest {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
-						.file(createMockMultipartFile("file", "archive2.zip", MediaType.MULTIPART_FORM_DATA_VALUE, zip.openStream().readAllBytes()))
-						.content(asJsonString(new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null)))
+						.file(createMockMultipartFile("file", "archive2.zip", zip.openStream().readAllBytes()))
+						.content(asJsonString(getTestPipeLineModel()))
 						.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath("result").value("msg-7.xml: SUCCESS\n"))
+				.andExpect(MockMvcResultMatchers.jsonPath(RESULT_EXPRESSION).value("msg-7.xml: SUCCESS\n"))
 				.andReturn();
 	}
 
@@ -100,18 +96,29 @@ public class TestPipeLineTest {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
-						.file(createMockMultipartFile("file", "archive3.zip", MediaType.MULTIPART_FORM_DATA_VALUE, zip.openStream().readAllBytes()))
-						.content(asJsonString(new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null)))
+						.file(createMockMultipartFile("file", "archive3.zip", zip.openStream().readAllBytes()))
+						.content(asJsonString(getTestPipeLineModel()))
 						.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath("result").value("msg-2.xml: SUCCESS\n"))
+				.andExpect(MockMvcResultMatchers.jsonPath(RESULT_EXPRESSION).value("msg-2.xml: SUCCESS\n"))
 				.andReturn();
-
 	}
 
-	private MockMultipartFile createMockMultipartFile(final String name, final String originalFilename, final String contentType, final byte[] content) {
-		return new MockMultipartFile(name, originalFilename, contentType, content);
+	private String asJsonString(final Object obj) {
+		try {
+			return new ObjectMapper().writeValueAsString(obj);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private MockMultipartFile createMockMultipartFile(final String name, final String originalFilename, final byte[] content) {
+		return new MockMultipartFile(name, originalFilename, MediaType.MULTIPART_FORM_DATA_VALUE, content);
+	}
+
+	private static TestPipeline.TestPipeLineModel getTestPipeLineModel() {
+		return new TestPipeline.TestPipeLineModel("TestConfiguration", "HelloWorld", null, null, null, null);
 	}
 }
