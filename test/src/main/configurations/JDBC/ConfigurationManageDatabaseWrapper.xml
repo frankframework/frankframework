@@ -2,7 +2,7 @@
 	<adapter name="ManageDatabaseWrapper"
 		description="Wrapper for ManageDatabase to retry until a specific number of results is returned to dynamically solve timing issues"
 		active="${manageDatabase.active}">
-		<receiver name="ManageDatabaseWrapper" transactionAttribute="NotSupported">
+		<receiver name="ManageDatabaseWrapper">
 			<listener name="ManageDatabaseWrapper"
 				serviceName="${manageDatabaseWrapper.serviceName}"
 				className="org.frankframework.receivers.JavaListener"/>
