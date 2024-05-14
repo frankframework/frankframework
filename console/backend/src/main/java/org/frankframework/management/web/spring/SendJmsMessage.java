@@ -44,22 +44,20 @@ import java.util.zip.ZipInputStream;
 @RestController
 public class SendJmsMessage extends FrankApiBase {
 
-	@Getter
-	@Setter
-	public static class JmsMessageMultiPartBody {
-		private boolean persistent;
-		private boolean synchronous;
-		private boolean lookupDestination;
-		private String destination;
-		private String replyTo;
-		private String property;
-		private String type;
-		private String connectionFactory;
-		private String encoding;
+	public static record JmsMessageMultiPartBody(
+		boolean persistent,
+		boolean synchronous,
+		boolean lookupDestination,
+		String destination,
+		String replyTo,
+		String property,
+		String type,
+		String connectionFactory,
+		String encoding,
 
-		private MultipartFile message;
-		private MultipartFile file;
-	}
+		MultipartFile message,
+		MultipartFile file
+	) {}
 
 	@RolesAllowed("IbisTester")
 	@PostMapping(value = "/jms/message", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -70,15 +68,15 @@ public class SendJmsMessage extends FrankApiBase {
 		String fileName = null;
 		InputStream file = null;
 
-		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", multiPartBody.getEncoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		String connectionFactory = RequestUtils.resolveRequiredProperty("connectionFactory", multiPartBody.getConnectionFactory(), null);
-		String destinationName = RequestUtils.resolveRequiredProperty("destination", multiPartBody.getDestination(), null);
-		String destinationType = RequestUtils.resolveRequiredProperty("type", multiPartBody.getType(), null);
-		String replyTo = RequestUtils.resolveRequiredProperty( "replyTo", multiPartBody.getReplyTo(), "");
-		boolean persistent = RequestUtils.resolveRequiredProperty("persistent", multiPartBody.isPersistent(), false);
-		boolean synchronous = RequestUtils.resolveRequiredProperty("synchronous", multiPartBody.isSynchronous(), false);
-		boolean lookupDestination = RequestUtils.resolveRequiredProperty("lookupDestination", multiPartBody.isLookupDestination(), false);
-		String messageProperty = RequestUtils.resolveRequiredProperty("property", multiPartBody.getProperty(), "");
+		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", multiPartBody.encoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String connectionFactory = RequestUtils.resolveRequiredProperty("connectionFactory", multiPartBody.connectionFactory(), null);
+		String destinationName = RequestUtils.resolveRequiredProperty("destination", multiPartBody.destination(), null);
+		String destinationType = RequestUtils.resolveRequiredProperty("type", multiPartBody.type(), null);
+		String replyTo = RequestUtils.resolveRequiredProperty( "replyTo", multiPartBody.replyTo(), "");
+		boolean persistent = RequestUtils.resolveRequiredProperty("persistent", multiPartBody.persistent(), false);
+		boolean synchronous = RequestUtils.resolveRequiredProperty("synchronous", multiPartBody.synchronous(), false);
+		boolean lookupDestination = RequestUtils.resolveRequiredProperty("lookupDestination", multiPartBody.lookupDestination(), false);
+		String messageProperty = RequestUtils.resolveRequiredProperty("property", multiPartBody.property(), "");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
@@ -90,8 +88,8 @@ public class SendJmsMessage extends FrankApiBase {
 		builder.addHeader("lookupDestination", lookupDestination);
 		builder.addHeader("messageProperty", messageProperty);
 
-		MultipartFile filePart = multiPartBody.getFile();
-		if(multiPartBody.getFile() != null) {
+		MultipartFile filePart = multiPartBody.file();
+		if(filePart != null) {
 			fileName = filePart.getOriginalFilename();
 			try {
 				file = filePart.getInputStream();
@@ -117,7 +115,7 @@ public class SendJmsMessage extends FrankApiBase {
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", multiPartBody.getMessage(), fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", multiPartBody.message(), fileEncoding);
 		}
 
 		if(StringUtils.isEmpty(message)) {
