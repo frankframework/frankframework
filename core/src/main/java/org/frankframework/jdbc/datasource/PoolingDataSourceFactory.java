@@ -115,14 +115,14 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 	protected DataSource createPool(CommonDataSource dataSource, String dataSourceName) {
 		if (isPooledDataSource(dataSource)) {
 			log.debug("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
-			if (dataSource instanceof XADataSource xadatasource) {
+			if (dataSource instanceof XADataSource xaDataSource) {
 				// Should only be the case in a JTA environment, hence pooling should be done by the application
 				// server. This DataSource should be used in combination with JtaTransactionManager and not with
 				// DataSourceTransactionManager which doesn't make use of the JTA environment. PoolingDataSourceFactory
 				// would not even need to play a role in this setup, as the pooled DataSource can be retrieved from JNDI
 				// directly, but as it is wired the same in all environments it can be part of it, hence only proxy the
 				// DataSource
-				return new XADataSourceWrapper(xadatasource);
+				return new XADataSourceWrapper(xaDataSource);
 			} else {
 				// This is typically the case when the Resource in Tomcat is configured in a way that Tomcat provides
 				// a connection pool
@@ -130,12 +130,12 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 			}
 		}
 		ConnectionFactory cf = null;
-		if (dataSource instanceof XADataSource xadatasource) {
+		if (dataSource instanceof XADataSource xaDataSource) {
 			// Should only be the case in a non-JTA environment where poolXA is explicitly set to true making it
 			// possible to use a Resource in Tomcat that will return an XADataSource with for example
 			// DataSourceTransactionManager (which should only be used in a non-JTA environment). See also the Javadoc
 			// on setPoolXA() and XADataSourceWrapper
-			cf = new DataSourceConnectionFactory(new XADataSourceWrapper(xadatasource));
+			cf = new DataSourceConnectionFactory(new XADataSourceWrapper(xaDataSource));
 		} else {
 			// This is typically the case when the Resource in Tomcat is not configured in a way that Tomcat provides
 			// a connection pool
