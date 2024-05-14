@@ -15,6 +15,17 @@
 */
 package org.frankframework.management.web.spring;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -28,59 +39,49 @@ import org.frankframework.util.XmlEncodingUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.security.RolesAllowed;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 @RestController
 public class TestPipeline extends FrankApiBase {
+
+	public record TestPipeLineModel (
+		String configuration,
+		String adapter,
+		String sessionKeys,
+		String encoding,
+		MultipartFile message,
+		MultipartFile file){
+	}
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public record TestPipeLineResponse (String result, String state, String message) { }
 
 	@RolesAllowed("IbisTester")
 	@Relation("testing")
 	@Description("send a message to an Adapters pipeline, bypassing the receiver")
 	@PostMapping(value = "/test-pipeline", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> testPipeLine(
-			@RequestPart("configuration") String configurationPart,
-			@RequestPart("adapter") String adapterPart,
-			@RequestPart("sessionKeys") String sessionKeysPart,
-			@RequestPart("encoding") String encodingPart,
-			@RequestPart("message") MultipartFile messagePart,
-			@RequestPart("file") MultipartFile filePart
-	) throws ApiException {
+	public ResponseEntity<TestPipeLineResponse> testPipeLine(@ModelAttribute TestPipeLineModel model) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
-		String configuration = RequestUtils.resolveRequiredProperty("configuration", configurationPart, null);
-		builder.addHeader("configuration", configuration);
-		String adapterName = RequestUtils.resolveRequiredProperty("adapter", adapterPart, null);
-		builder.addHeader("adapter", adapterName);
 
-		// resolve session keys
-		String sessionKeys = RequestUtils.resolveRequiredProperty("sessionKeys", sessionKeysPart, "");
-		if(StringUtils.isNotEmpty(sessionKeys)) { //format: [{"index":1,"key":"test","value":"123"}]
-			builder.addHeader("sessionKeys", sessionKeys);
-		}
+		builder.addHeader("configuration", model.configuration);
+		builder.addHeader("adapter", model.adapter);
 
-		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", encodingPart, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		Optional.ofNullable(model.sessionKeys)
+				.ifPresent(sessionKeys -> builder.addHeader("sessionKeys", sessionKeys));
+
+		String fileEncoding = Optional.ofNullable(model.encoding).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
 		String message;
-		if(filePart != null) {
-			String fileNameOrPath = filePart.getOriginalFilename();
+		if (model.file != null) {
+			String fileNameOrPath = model.file.getOriginalFilename();
 			String fileName = Paths.get(fileNameOrPath).getFileName().toString();
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
-					InputStream file = filePart.getInputStream();
+					InputStream file = model.file.getInputStream();
 					String zipResults = processZipFile(file, builder);
 					return testPipelineResponse(zipResults);
 				} catch (Exception e) {
@@ -89,7 +90,7 @@ public class TestPipeline extends FrankApiBase {
 			}
 			else {
 				try {
-					InputStream file = filePart.getInputStream();
+					InputStream file = model.file.getInputStream();
 					message = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
 					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
@@ -98,10 +99,10 @@ public class TestPipeline extends FrankApiBase {
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", messagePart, fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding("message", model.message, fileEncoding);
 		}
 
-		if(StringUtils.isEmpty(message)) {
+		if (StringUtils.isEmpty(message)) {
 			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 
@@ -110,18 +111,6 @@ public class TestPipeline extends FrankApiBase {
 		String state = BusMessageUtils.getHeader(response, MessageBase.STATE_KEY);
 		return testPipelineResponse(getPayload(response), state, message);
 	}
-
-	// Won't work Spring 5.3 without SpringBoot
-	/*@Getter
-	@Setter
-	public static class PipelineMultipartBody {
-		private String configuration;
-		private String adapter;
-		private String sessionKeys;
-		private String encoding;
-		private MultipartFile message;
-		private MultipartFile file;
-	}*/
 
 	private String getPayload(Message<?> response) {
 		Object payload = response.getPayload();
@@ -140,17 +129,13 @@ public class TestPipeline extends FrankApiBase {
 		throw new ApiException("unexpected response payload type ["+payload.getClass().getCanonicalName()+"]");
 	}
 
-	private ResponseEntity<?> testPipelineResponse(String payload) {
+	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload) {
 		return testPipelineResponse(payload, "SUCCESS", null);
 	}
-	private ResponseEntity<?> testPipelineResponse(String payload, String state, String message) {
-		Map<String, Object> result = new HashMap<>();
-		result.put("state", state);
-		result.put("result", payload);
-		if(message != null) {
-			result.put("message", message);
-		}
-		return ResponseEntity.status(200).body(result);
+
+	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload, String state, String message) {
+			return ResponseEntity.status(200)
+					.body(new TestPipeLineResponse(payload, state, message));
 	}
 
 	// cannot call callAsyncGateway, backend calls are not synchronous

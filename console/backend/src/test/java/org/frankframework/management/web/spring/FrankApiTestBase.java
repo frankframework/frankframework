@@ -56,7 +56,6 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		springMvcResource.setApplicationContext(getApplicationContext());
 		springMvcResource.servletRequest = new MockHttpServletRequest();
 
-		dispatcher.register(springMvcResource);
 	}
 
 	private final ApplicationContext getApplicationContext() {
@@ -64,7 +63,6 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
 			applicationContext.setConfigLocation(STUBBED_SPRING_BUS_CONFIGURATION);
 			applicationContext.setDisplayName("STUB [stubbed-frank-management-bus]");
-
 			applicationContext.refresh();
 
 			FrankApiTestBase.applicationContext = applicationContext;
