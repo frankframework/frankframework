@@ -21,7 +21,9 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void setUp() throws Exception {
-		FileUtils.cleanDirectory(folder.toFile());
+		if (Files.exists(folder)) {
+			FileUtils.cleanDirectory(folder.toFile());
+		}
 	}
 
 	@Override
