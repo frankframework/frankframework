@@ -341,7 +341,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(bucketName, f.getKey());
 			s3Client.deleteObject(deleteObjectRequest);
 		} catch (AmazonServiceException e) {
-			throw new FileSystemException("Could not delete object [" + getCanonicalNameOrError(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete object [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage());
 		}
 	}
 

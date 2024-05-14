@@ -405,7 +405,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to remove file [{}]: {}", ()-> getCanonicalNameOrError(file), e::getMessage);
+				log.warn("unable to remove file [{}]: {}", ()-> getCanonicalNameOrErrorMessage(file), e::getMessage);
 			}
 		}
 	}

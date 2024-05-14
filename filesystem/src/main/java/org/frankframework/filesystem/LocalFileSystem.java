@@ -129,7 +129,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		} catch (FileNotFoundException e) {
 			throw new org.frankframework.filesystem.FileNotFoundException("Cannot find file [" + f + "] to delete", e);
 		} catch (IOException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalNameOrError(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage());
 		}
 	}
 

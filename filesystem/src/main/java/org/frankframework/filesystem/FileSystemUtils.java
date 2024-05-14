@@ -51,7 +51,7 @@ public class FileSystemUtils {
 	 */
 	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, FileSystemAction action) throws FileNotFoundException, FileSystemException {
 		if (!fileSystem.exists(source)) {
-			throw new FileNotFoundException("file to "+action.getLabel()+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalNameOrError(source)+"], does not exist");
+			throw new FileNotFoundException("file to "+action.getLabel()+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(source)+"], does not exist");
 		}
 	}
 
@@ -62,13 +62,13 @@ public class FileSystemUtils {
 	public static <F> void prepareDestination(IWritableFileSystem<F> fileSystem, F destination, boolean overwrite, int numOfBackups, FileSystemAction action) throws FileSystemException {
 		if (fileSystem.exists(destination)) {
 			if (overwrite) {
-				log.debug("removing current destination file [{}]", ()-> fileSystem.getCanonicalNameOrError(destination));
+				log.debug("removing current destination file [{}]", ()-> fileSystem.getCanonicalNameOrErrorMessage(destination));
 				fileSystem.deleteFile(destination);
 			} else {
 				if (numOfBackups>0) {
 					FileSystemUtils.rolloverByNumber(fileSystem, destination, numOfBackups);
 				} else {
-					throw new FileAlreadyExistsException("Cannot "+action.getLabel()+" file to ["+fileSystem.getName(destination)+"]. Destination file ["+fileSystem.getCanonicalNameOrError(destination)+"] already exists.");
+					throw new FileAlreadyExistsException("Cannot "+action.getLabel()+" file to ["+fileSystem.getName(destination)+"]. Destination file ["+fileSystem.getCanonicalNameOrErrorMessage(destination)+"] already exists.");
 				}
 			}
 		}

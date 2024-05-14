@@ -452,7 +452,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to remove file [{}]", getCanonicalNameOrError(file), e);
+				log.warn("unable to remove file [{}]", getCanonicalNameOrErrorMessage(file), e);
 			}
 		}
 	}

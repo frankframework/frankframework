@@ -283,7 +283,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		try {
 			diskShare.rm(f.getName());
 		} catch (SMBApiException e) {
-			throw new FileSystemException("Could not delete file [" + getCanonicalNameOrError(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete file [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage());
 		}
 	}
 
@@ -574,7 +574,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 			try {
 				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn("unable to remove file [{}]: {}", getCanonicalNameOrError(file), e.getMessage());
+				log.warn("unable to remove file [{}]: {}", getCanonicalNameOrErrorMessage(file), e.getMessage());
 			}
 		}
 	}

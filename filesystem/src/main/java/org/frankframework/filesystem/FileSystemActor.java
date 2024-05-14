@@ -246,9 +246,9 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			} else {
 				F file = fileSystem.toFile(getInputFolder());
 				if (file != null && fileSystem.exists(file)) {
-					throw new FileAlreadyExistsException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrError(fileSystem.toFile(getInputFolder()))+"], does not exist as a folder, but is a file");
+					throw new FileAlreadyExistsException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(fileSystem.toFile(getInputFolder()))+"], does not exist as a folder, but is a file");
 				}
-				throw new FolderNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrError(fileSystem.toFile(getInputFolder()))+"], does not exist");
+				throw new FolderNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(fileSystem.toFile(getInputFolder()))+"], does not exist");
 			}
 		}
 	}

@@ -111,7 +111,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	 * @param f File for which to try to get canonical name
 	 * @return Either the canonical name of the file, or an error.
 	 */
-	default String getCanonicalNameOrError(F f) {
+	default String getCanonicalNameOrErrorMessage(F f) {
 		try {
 			return getCanonicalName(f);
 		} catch (FileSystemException e) {

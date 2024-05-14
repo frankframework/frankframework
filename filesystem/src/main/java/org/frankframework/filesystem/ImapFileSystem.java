@@ -246,7 +246,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		try {
 			f.setFlag(Flags.Flag.DELETED, true);
 		} catch (MessagingException e) {
-			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrError(f) + "]: " + e.getMessage());
+			throw new FileSystemException("Could not delete message [" + getCanonicalNameOrErrorMessage(f) + "]: " + e.getMessage());
 		}
 	}
 
