@@ -74,7 +74,7 @@ public class PoolingJndiDataSourceFactory extends JndiDataSourceFactory {
 		return (DataSource) dataSource;
 	}
 
-	private static boolean isPooledDataSource(CommonDataSource dataSource) {
+	private boolean isPooledDataSource(CommonDataSource dataSource) {
 		return dataSource instanceof ConnectionPoolDataSource && !isPoolXA()
 				|| dataSource.getClass().getName().startsWith("org.apache.tomcat")
 				;
