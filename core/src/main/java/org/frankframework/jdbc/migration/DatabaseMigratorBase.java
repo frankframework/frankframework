@@ -1,5 +1,5 @@
 /*
-Copyright 2017, 2020-2022 WeAreFrank!
+Copyright 2017, 2020-2024 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,26 +19,23 @@ import java.io.Writer;
 import java.net.URL;
 import java.sql.SQLException;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationMessageEvent;
 import org.frankframework.configuration.classloaders.ClassLoaderBase;
 import org.frankframework.core.IConfigurationAware;
 import org.frankframework.core.Resource;
-import org.frankframework.jdbc.IDataSourceFactory;
-
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jndi.JndiDataSourceFactory;
+import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * DatabaseMigration implementation for IAF.
@@ -52,7 +49,7 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter IDataSourceFactory dataSourceFactory = null;
 	private @Getter Configuration configuration;
-	private @Setter String defaultDatasourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+	private @Setter String defaultDatasourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	private @Getter String name;
 	private @Getter ClassLoader configurationClassLoader = null;
 	private @Setter String datasourceName;
@@ -72,7 +69,7 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	public String getDatasourceName() {
 		if(datasourceName == null) {
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-			datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME));
+			datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME));
 		}
 		return datasourceName;
 	}
@@ -85,7 +82,7 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 		try {
 			log.debug("looking up Datasource ["+getDatasourceName()+"] for JdbcMigrator ["+getName()+"]");
 			return dataSourceFactory.getDataSource(getDatasourceName());
-		} catch (NamingException e) {
+		} catch (IllegalStateException e) {
 			throw new SQLException("cannot connect to datasource ["+getDatasourceName()+"]", e);
 		}
 	}

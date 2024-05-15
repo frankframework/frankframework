@@ -14,7 +14,7 @@ Changed default log level from DEBUG to INFO, for environments that are not conf
 ### Non backwards compatible changes
 - Transaction Manager BTM is removed. Switch over to Narayana Transaction Manager.
 
-Upcoming (8.1.0) - April 2024
+Upcoming (8.1.0) - May 2024
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/v8.0.0...8.1-release)
 
@@ -22,6 +22,8 @@ Requires JDK 17 or later, tested on JDK 17 and 21.
 
 ### Non backwards compatible changes
 - Larva package is renamed from `testtool` to `larva`. References inside the Larva property files to the `testtool` package should be updated to larva. Such as: `org.frankframework.testtool.FileSender` -> `org.frankframework.larva.FileSender`. It still works with the old package name in 8.1, as a compatibility feature.
+- By default the PipelineSession substitution delimiter has been changed from `${` to `?{` so it's consistent with the `FixedQuerySender`. Backwards compatibility key `useOldSubstitutionStartDelimiter` has been added so minimal change is required during upgrades. Note that when using caches in combination with `diskPersistent="true"` you may need to purge your cache!
+- CompressPipe pattern attributes have been deprecated, please use the appropriate parameters and resolve the pattern in there instead. The result has now also by default been changed to the file/zip-entry instead of a file location.
 
 8.0.0 - December 23rd, 2023
 --------------
@@ -30,6 +32,9 @@ Requires JDK 17 or later, tested on JDK 17 and 21.
 Requires JDK 11 or later, tested on JDK 11, 17 and 21.
 Package `nl.nn.adapterframework` is renamed to `org.frankframework`.
 Removed many deprecated features.
+
+### Known Issues
+- Tomcat with BTM Transaction Manager does not work in combination with MariaDB. Fixed in v8.0.2 or later. This issue does not appear with other supported databases.
 
 ### Non backwards compatible changes
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.

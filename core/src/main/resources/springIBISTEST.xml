@@ -22,14 +22,8 @@
 	<bean
 		id="defaultDataSource"
 		factory-bean="dataSourceFactory"
-		factory-method="add"
+		factory-method="getDataSource"
 		>
-		<constructor-arg ref="h2DataSource" />
 		<constructor-arg value="${jdbc.datasource.default}" />
-	</bean>
-
-	<bean id="h2DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-		<property name="driverClassName" value="org.h2.Driver"/>
-		<property name="url" value="jdbc:h2:mem:ibisTestDataSource;DB_CLOSE_DELAY=-1"/>
 	</bean>
 </beans>

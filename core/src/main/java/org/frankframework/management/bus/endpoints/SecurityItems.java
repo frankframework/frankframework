@@ -29,21 +29,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.RolesAllowed;
-import javax.naming.NamingException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.springframework.messaging.Message;
-
-import lombok.Getter;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
-
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
@@ -58,9 +50,14 @@ import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.XmlUtils;
+import org.springframework.messaging.Message;
+
+import lombok.Getter;
 
 @BusAware("frank-management-bus")
 public class SecurityItems extends BusEndpointBase {
@@ -152,14 +149,13 @@ public class SecurityItems extends BusEndpointBase {
 	private ArrayList<DataSourceDTO> addDataSources() {
 		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
-		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 
 		ArrayList<DataSourceDTO> dsList = new ArrayList<>();
 		for(String datasourceName : dataSourceNames) {
 			DataSource ds = null;
 			try {
 				ds = dataSourceFactory.getDataSource(datasourceName);
-			} catch (NamingException e) {
+			} catch (IllegalStateException e) {
 				log.debug("unable to retrieve datasource info for name [{}]", datasourceName);
 			}
 

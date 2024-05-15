@@ -33,7 +33,7 @@
 			<property name="journal" value="org.frankframework.jta.btm.BtmDiskJournal" />
 	</bean>
 
-	<bean id="dataSourceFactory" class="org.frankframework.jta.btm.BtmDataSourceFactory" />
-	<bean id="connectionFactoryFactory" class="org.frankframework.jta.btm.BtmConnectionFactoryFactory" />
+	<bean id="dataSourceFactory" class="org.frankframework.jta.btm.BtmDataSourceFactory" autowire="byType" />
+	<bean id="connectionFactoryFactory" class="org.frankframework.jta.btm.BtmConnectionFactoryFactory" autowire="byType" />
 
 </beans>

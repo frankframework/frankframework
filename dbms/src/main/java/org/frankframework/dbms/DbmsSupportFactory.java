@@ -83,7 +83,7 @@ public class DbmsSupportFactory {
 						try {
 							if (log.isDebugEnabled())
 								log.debug("creating dbmsSupportClass [{}] for product [{}] productVersion [{}]", dbmsSupportClass, product, productVersion);
-							return (IDbmsSupport) ClassUtils.newInstance(dbmsSupportClass);
+							return ClassUtils.newInstance(dbmsSupportClass, IDbmsSupport.class);
 						} catch (Exception e) {
 							throw new DbmsException("Cannot create dbmsSupportClass [" + dbmsSupportClass + "] for product [" + product + "] productVersion [" + productVersion + "]", e);
 						}

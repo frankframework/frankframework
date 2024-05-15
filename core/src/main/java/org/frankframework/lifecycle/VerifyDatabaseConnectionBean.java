@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023 - 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package org.frankframework.lifecycle;
 import java.sql.Connection;
 
 import javax.annotation.Nonnull;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -34,10 +37,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.Setter;
-import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jndi.JndiDataSourceFactory;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 /**
  * Verifies if a (valid) connection can be made.
@@ -51,26 +50,31 @@ import org.frankframework.util.LogUtil;
 public class VerifyDatabaseConnectionBean implements ApplicationContextAware, InitializingBean {
 
 	private final Logger log = LogUtil.getLogger(this);
-	private final String defaultDatasource = AppConstants.getInstance().getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
+	private final String defaultDatasource = AppConstants.getInstance().getProperty(IDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
 	private final boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
 	private @Setter ApplicationContext applicationContext;
 
 	@Override
+	@SuppressWarnings("java:S2589") // Status CAN be null, ignore Sonar's dumbfound suggestion it's never null
 	public void afterPropertiesSet() throws Exception {
 		if(requiresDatabase) {
-			PlatformTransactionManager transactionManager = getTransactionManager();
+			DataSource dataSource = getDefaultDataSource(); //Defined before getTransactionManager to verify we at least have a 'working' DataSource.
 
 			//Try to create a new transaction to check if there is a connection to the database
+			PlatformTransactionManager transactionManager = getTransactionManager();
 			TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
-			try (Connection connection = getDefaultDataSource().getConnection()) {
+			//We have a DataSource and a TransactionManager, now lets see if we can use them :)
+			try (Connection connection = dataSource.getConnection()) {
 				if(!connection.isValid(5)) {
 					throw new CannotGetJdbcConnectionException("Database was unable to validate the connection within 5 seconds");
 				}
 
-				int isolationLevel = connection.getTransactionIsolation();
+				final int isolationLevel = connection.getTransactionIsolation();
+				log.info("was successfully able to get a connection with default isolation level [{}]", isolationLevel);
+
 				if(isolationLevel == Connection.TRANSACTION_NONE) {
-					log.info("expected a transacted connection got isolation level [{}]", isolationLevel);
+					log.warn("expected a transacted connection but got isolation level [{}]", isolationLevel);
 				}
 			}
 
@@ -82,9 +86,17 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 
 	private @Nonnull PlatformTransactionManager getTransactionManager() {
 		try {
-			PlatformTransactionManager txManager;
-			txManager = applicationContext.getBean("txManager", PlatformTransactionManager.class);
-			log.info("found transaction manager to [{}]", txManager);
+			final PlatformTransactionManager txManager = applicationContext.getBean("txManager", PlatformTransactionManager.class);
+
+			if(log.isInfoEnabled()) {
+				final PlatformTransactionManager actualTxMgr;
+				if(txManager instanceof SpringTxManagerProxy) {
+					actualTxMgr = ((SpringTxManagerProxy) txManager).getRealTxManager();
+				} else {
+					actualTxMgr = txManager;
+				}
+				log.info("found transaction manager to [{}]", actualTxMgr);
+			}
 			return txManager;
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			throw new IllegalStateException("no TransactionManager found or configured", e);
@@ -94,11 +106,11 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 	private @Nonnull DataSource getDefaultDataSource() {
 		try {
 			IDataSourceFactory dsf = applicationContext.getBean(IDataSourceFactory.class);
-			return dsf.getDataSource(defaultDatasource);
+			DataSource dataSource = dsf.getDataSource(defaultDatasource);
+			log.info("found default datasource [{}]", dataSource);
+			return dataSource;
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			throw new IllegalStateException("no DataSourceFactory found or configured", e);
-		} catch (NamingException e) {
-			throw new IllegalStateException("no default datasource found", e);
 		}
 	}
 }

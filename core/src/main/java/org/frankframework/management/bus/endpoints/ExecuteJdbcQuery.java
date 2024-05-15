@@ -16,34 +16,32 @@
 package org.frankframework.management.bus.endpoints;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
+
 import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.management.bus.message.StringMessage;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.Message;
-import org.springframework.util.MimeType;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
 import org.frankframework.jdbc.transformer.QueryOutputToCSV;
 import org.frankframework.jdbc.transformer.QueryOutputToJson;
-import org.frankframework.jndi.JndiDataSourceFactory;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.TopicSelector;
+import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.util.LogUtil;
-
-import javax.annotation.security.RolesAllowed;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.util.MimeType;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.JDBC)
@@ -61,7 +59,6 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 
 		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
-		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
 		result.put("datasources", dataSourceNames);
 
 		List<String> resultTypes = new ArrayList<>();
@@ -82,7 +79,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 	@ActionSelector(BusAction.MANAGE)
 	@RolesAllowed({"IbisTester"})
 	public StringMessage executeJdbcQuery(Message<?> message) {
-		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		QueryType queryType = BusMessageUtils.getEnumHeader(message, "queryType", QueryType.class, QueryType.SELECT);
 		String query = BusMessageUtils.getHeader(message, "query");
 		boolean trimSpaces = BusMessageUtils.getBooleanHeader(message, "trimSpaces", false);

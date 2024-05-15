@@ -75,7 +75,7 @@ public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRe
 			securityContextHolderStrategy.setContext(newContext);
 		} catch (IOException e) {
 			this.securityContextHolderStrategy.clearContext();
-			log.debug("Failed to process authentication request", e);
+			log.warn("failed to process authentication request", e);
 			throw e;
 		}
 

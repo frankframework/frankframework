@@ -117,6 +117,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 
 		log.info("created management service endpoint [{}]", httpPath);
 
+		servletContext.log("enabling management endpoint ["+httpPath+"]");
 		ServletRegistration.Dynamic serv = servletContext.addServlet(SERVLET_NAME, servlet);
 		serv.setLoadOnStartup(-1);
 		serv.addMapping(httpPath);
@@ -174,8 +175,10 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 	}
 
 	@Override
-	public void configure(WebSecurity builder) {
-		builder.addSecurityFilterChainBuilder(this::createSecurityFilterChain);
+	public void configure(WebSecurity webSecurity) {
+		SecurityFilterChain chain = createSecurityFilterChain(); //Create
+		SpringUtils.registerSingleton(applicationContext, "HttpInboundGateway-SecurityFilter", chain); //Register
+		webSecurity.addSecurityFilterChainBuilder(() -> chain); //Configure
 	}
 
 	private SecurityFilterChain createSecurityFilterChain() {
