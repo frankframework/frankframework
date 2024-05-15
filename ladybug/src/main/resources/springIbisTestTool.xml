@@ -214,13 +214,12 @@
 	<bean name="messageCapturer" class="org.frankframework.ibistesttool.MessageCapturer" autowire="byName"/>
 	<bean name="messageTransformer" class="org.frankframework.ibistesttool.transform.HideRegexMessageTransformer"/>
 
+	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
+
 	<!-- Find DataSources in resources.yml and JNDI -->
 	<bean id="resourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator"/>
 	<bean id="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator"/>
-	<!-- JndiObjectLocator requires JndiContextPrefixFactory -->
-	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
-
-	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.LadybugDataSourceFactory" autowire="byType" />
+	<bean name="dataSourceFactory" class="org.frankframework.ibistesttool.jdbc.LadyBugDataSourceFactory" autowire="byType" />
 
 	<!-- Bean will be wired to ladybugJdbcTemplate (see Config class of Ladybug) -->
 	<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">

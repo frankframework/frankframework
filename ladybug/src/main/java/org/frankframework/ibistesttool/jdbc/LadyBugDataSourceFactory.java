@@ -20,9 +20,9 @@ import javax.sql.DataSource;
 
 import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
 
-public class LadybugDataSourceFactory extends PoolingDataSourceFactory {
+public class LadyBugDataSourceFactory extends PoolingDataSourceFactory {
 
-	public LadybugDataSourceFactory() {
+	public LadyBugDataSourceFactory() {
 		super();
 	}
 

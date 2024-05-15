@@ -10,7 +10,7 @@
 		"
 	>
 
-	<bean name="ibisDebugger" class="org.frankframework.ibistesttool.Debugger" autowire="byName" />
+	<bean name="ibisDebugger" class="org.frankframework.ibistesttool.Debugger" autowire="byName"/>
 
 	<bean
 		name="ibisDebuggerAdvice,threadLifeCycleEventListener,xmlDebugger"
