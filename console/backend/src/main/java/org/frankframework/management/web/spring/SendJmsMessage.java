@@ -15,8 +15,6 @@
 */
 package org.frankframework.management.web.spring;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -29,6 +27,7 @@ import org.frankframework.util.XmlEncodingUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,7 +43,7 @@ import java.util.zip.ZipInputStream;
 @RestController
 public class SendJmsMessage extends FrankApiBase {
 
-	public static record JmsMessageMultiPartBody(
+	public record JmsMessageMultiPartBody(
 		boolean persistent,
 		boolean synchronous,
 		boolean lookupDestination,
@@ -63,7 +62,7 @@ public class SendJmsMessage extends FrankApiBase {
 	@PostMapping(value = "/jms/message", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Relation("jms")
 	@Description("put a JMS message on a queue")
-	public ResponseEntity<?> putJmsMessage(JmsMessageMultiPartBody multiPartBody) {
+	public ResponseEntity<?> putJmsMessage(@ModelAttribute JmsMessageMultiPartBody multiPartBody) {
 		String message = null;
 		String fileName = null;
 		InputStream file = null;

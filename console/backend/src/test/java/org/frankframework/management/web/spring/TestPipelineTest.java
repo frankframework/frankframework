@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ContextConfiguration(classes = {WebTestConfig.class, TestPipeline.class})
@@ -22,7 +23,9 @@ public class TestPipelineTest extends FrankApiTestBase {
 						.multipart(TEST_PIPELINE_ENDPOINT)
 						.file(createMockMultipartFile("message", null, DUMMY_MESSAGE.getBytes()))
 						.content(asJsonString(getTestPipeLineModel()))
+						.characterEncoding("UTF-8")
 						.accept(MediaType.APPLICATION_JSON))
+				.andDo(MockMvcResultHandlers.print())
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("{\"topic\":\"TEST_PIPELINE\",\"action\":\"UPLOAD\"}"))

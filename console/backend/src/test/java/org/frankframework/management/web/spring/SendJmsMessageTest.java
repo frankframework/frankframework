@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -33,23 +34,29 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 //		attachments.add(new org.frankframework.management.web.FrankApiTestBase.StringAttachment("message", "inputMessage"));
 
 //		ApiException e = assertThrows(ApiException.class, ()->dispatcher.dispatchRequest(HttpMethod.POST, "/jms/message", attachments));
+		String content = asJsonString(new SendJmsMessage.JmsMessageMultiPartBody(
+				false,
+				true,
+				false,
+				"some-queue",
+				null,
+				null,
+				"type",
+				"qcf/connectionFactory",
+				"fakeEncoding",
+				null,
+				null
+		));
 		mockMvc.perform(
 				MockMvcRequestBuilders
 						.multipart("/jms/message")
-						.file(createMockMultipartFile("message", null, "inputMessage".getBytes()))
-						.content(asJsonString(new SendJmsMessage.JmsMessageMultiPartBody(
-								false,
-								true,
-								false,
-								"some-queue",
-								null,
-								null,
-								"type",
-								"qcf/connectionFactory",
-								"fakeEncoding",
-								null,
-								null
-						)))).andDo(print());
+						.file(new MockMultipartFile("message", null, MediaType.TEXT_PLAIN_VALUE, "inputMessage".getBytes()))
+						.content("{\"persistent\":false,\"synchronous\":true,\"lookupDestination\":false,\"destination\":\"some-queue\",\"type\":\"type\",\"connectionFactory\":\"qcf/connectionFactory\",\"encoding\":\"fakeEncoding\"}")
+						.accept(MediaType.APPLICATION_JSON)
+						.characterEncoding("UTF-8")
+				).andDo(print())
+				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 		/*ApiException e = assertThrows(ApiException.class, () -> mockMvc.perform(
 				MockMvcRequestBuilders
 						.multipart("/jms/message")
