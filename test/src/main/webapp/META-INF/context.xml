@@ -89,6 +89,7 @@
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 		url="jdbc:mariadb://${jdbc.hostname:-localhost}:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
+		maxPoolSize="20"
 	/>
 
 	<Resource
