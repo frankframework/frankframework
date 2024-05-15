@@ -16,13 +16,18 @@
 package org.frankframework.util;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Year;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalField;
 import java.time.temporal.TemporalQueries;
 import java.util.Date;
 import java.util.Map;
@@ -153,8 +158,13 @@ public class DateFormatUtils {
 		return parser.parse(s, Instant::from);
 	}
 
-	public static java.time.LocalDate parseToLocalDate(String s, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
-		return parser.parse(s, TemporalQueries.localDate());
+	public static java.time.LocalDate parseToLocalDate(String dateString) throws DateTimeParseException {
+		DateTimeFormatter parser = determineDateFormat(dateString);
+		return parser.parse(dateString, TemporalQueries.localDate());
+	}
+
+	public static java.time.LocalDate parseToLocalDate(String dateString, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
+		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 
 	/**
@@ -175,7 +185,13 @@ public class DateFormatUtils {
 		if (parser == null) {
 			throw new IllegalArgumentException("Cannot determine date-format for input [" + dateString + "]");
 		}
-		return parser.parse(dateString, Instant::from);
+		TemporalAccessor temporalAccessor = parser.parse(dateString);
+		if (temporalAccessor.isSupported(ChronoField.INSTANT_SECONDS)) {
+			return Instant.from(temporalAccessor);
+		} else {
+			LocalDate localDate = temporalAccessor.query(TemporalQueries.localDate());
+			return Instant.ofEpochSecond(localDate.toEpochSecond(LocalTime.MIN, ZoneOffset.UTC));
+		}
 	}
 
 	@Nullable
