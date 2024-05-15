@@ -23,8 +23,8 @@ import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-
 import { OrderByPipe } from './pipes/orderby.pipe';
 import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
 import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
+import { IframeLadybugLegacyComponent } from './views/iframe/iframe-ladybug-legacy/iframe-ladybug-legacy.component';
 import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
-import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
 import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
 import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 import { StatusComponent } from './views/status/status.component';
@@ -101,8 +101,8 @@ const windowProvider: ValueProvider = {
     FlowComponent,
     IbisstoreSummaryComponent,
     IframeCustomViewComponent,
+    IframeLadybugLegacyComponent,
     IframeLadybugComponent,
-    IframeLadybugBetaComponent,
     IframeLarvaComponent,
     InlinestoreComponent,
     JdbcBrowseTablesComponent,
