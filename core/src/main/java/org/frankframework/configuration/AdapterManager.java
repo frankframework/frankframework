@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

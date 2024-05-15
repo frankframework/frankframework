@@ -22,7 +22,7 @@
 		<spring-security.version>6.2.4</spring-security.version>
 		<spring-integration.version>6.2.4</spring-integration.version>
 		<spring.boot.version>3.2.5</spring.boot.version>
-		<tomcat.version>10.1.23</tomcat.version>
+		<tomcat.version>10.1.24</tomcat.version>
 		<bouncycastle.version>1.78.1</bouncycastle.version>
 
 		<narayana.version>7.0.1.Final</narayana.version>
@@ -52,7 +52,7 @@
 		<aws.java.sdk.version>2.25.19</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.11.0</mockito.version>
+		<mockito.version>5.12.0</mockito.version>
 		<junit.version>5.10.2</junit.version>
 	</properties>
 
@@ -152,7 +152,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.37.3</version>
+				<version>9.39</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 

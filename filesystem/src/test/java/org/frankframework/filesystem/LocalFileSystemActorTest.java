@@ -9,13 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem> {
 
@@ -24,7 +26,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 
 	@Override
 	protected LocalFileSystem createFileSystem() {
-		LocalFileSystem result=new LocalFileSystem();
+		LocalFileSystem result = new LocalFileSystem();
 		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
 	}
@@ -34,16 +36,14 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 		return new LocalFileSystemTestHelper(folder);
 	}
 
-
 	public void fileSystemActorMoveActionTestNoRoot(String destFolder, boolean createDestFolder, boolean setCreateFolderAttribute) throws Exception {
-
-		LocalFileSystem localFileSystemNoRoot=new LocalFileSystem();
-		String srcFolder=folder.toAbsolutePath().toString();
+		LocalFileSystem localFileSystemNoRoot = new LocalFileSystem();
+		String srcFolder = folder.toAbsolutePath().toString();
 
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 
-		if (createDestFolder && destFolder!=null) {
+		if (createDestFolder && destFolder != null) {
 			_createFolder(destFolder);
 		}
 		createFile(null, filename, contents);
@@ -52,15 +52,15 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 
 		actor.setAction(FileSystemAction.MOVE);
 		ParameterList params = new ParameterList();
-		params.add(new Parameter("destination", srcFolder+"/"+destFolder));
+		params.add(new Parameter("destination", srcFolder + "/" + destFolder));
 		if (setCreateFolderAttribute) {
 			actor.setCreateFolder(true);
 		}
 		params.configure();
-		actor.configure(localFileSystemNoRoot,params,owner);
+		actor.configure(localFileSystemNoRoot, params, owner);
 		actor.open();
 
-		Message message = new Message(srcFolder+"/"+filename);
+		Message message = new Message(srcFolder + "/" + filename);
 		ParameterValueList pvl = params.getValues(message, session);
 		Object result = actor.doAction(message, pvl, session);
 
@@ -71,28 +71,79 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 		// TODO: result should point to new location of file
 		// TODO: contents of result should be contents of original file
 
-		assertTrue(_fileExists(destFolder, filename), "file should exist in destination folder ["+destFolder+"]");
-		assertFalse(_fileExists(null, filename), "file should not exist anymore in original folder ["+srcFolder+"]");
+		assertTrue(_fileExists(destFolder, filename), "file should exist in destination folder [" + destFolder + "]");
+		assertFalse(_fileExists(null, filename), "file should not exist anymore in original folder [" + srcFolder + "]");
 	}
-
 
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderNoRoot() throws Exception {
-		fileSystemActorMoveActionTestNoRoot("folder",true,false);
+		fileSystemActorMoveActionTestNoRoot("folder", true, false);
 	}
+
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderCreateFolderNoRoot() throws Exception {
-		fileSystemActorMoveActionTestNoRoot("folder",false,true);
+		fileSystemActorMoveActionTestNoRoot("folder", false, true);
 	}
+
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExistNoRoot() throws Exception {
-		Exception e = assertThrows(Exception.class, () -> fileSystemActorMoveActionTestNoRoot("folder",false,false));
-		assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File ["+folder.toAbsolutePath()+"/sendermovefile1.txt]: destination folder ["+folder.toAbsolutePath()+"/folder] does not exist"));
+		Exception e = assertThrows(Exception.class, () -> fileSystemActorMoveActionTestNoRoot("folder", false, false));
+		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File [" + folder.toAbsolutePath() + "/sendermovefile1.txt]: destination folder [" + folder.toAbsolutePath() + "/folder] does not exist"));
 	}
 
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderExistsAndAllowToCreateNoRoot() throws Exception {
-		fileSystemActorMoveActionTestNoRoot("folder",true,true);
+		fileSystemActorMoveActionTestNoRoot("folder", true, true);
 	}
 
+	@Test
+	@DisplayName("The folder is created correctly based on root of the LocalFileSystem")
+	public void testCreateFolderWithRoot() throws Exception {
+		// explicitly use the tmpdir to avoid creating a folder `filesystem/testCreateFolder` which will fail consecutive builds
+		String tmpDir = System.getProperty("java.io.tmpdir") + "/testCreateFolder";
+		fileSystem.setRoot(tmpDir);
+
+		String fileName = "b52cc8d5-ee39-4a8f-84b8-f91b72b1c8b7";
+
+		ParameterList params = new ParameterList();
+		params.add(new Parameter("filename", fileName));
+		params.configure();
+
+		actor.setAction(FileSystemAction.WRITE);
+		actor.setCreateFolder(true);
+		actor.setOverwrite(true);
+		actor.configure(fileSystem, params, owner);
+		actor.open();
+
+		Message message = new Message(tmpDir + "/" + fileName);
+		ParameterValueList pvl = params.getValues(message, session);
+
+		Object result = actor.doAction(message, pvl, session);
+
+		assertNotNull(result, "Could not create new file in " + tmpDir);
+	}
+
+	@Test
+	@DisplayName("The folder is created correctly based on absolute path in the given filename")
+	public void createTestFolderForAbsolutePath() throws Exception {
+		String tmpDir = "testCreateFolderByPath";
+		String fileName = tmpDir + "/b52cc8d5-ee39-4a8f-84b8-f91b72b1c8b8";
+
+		ParameterList params = new ParameterList();
+		params.add(new Parameter("filename", fileName));
+		params.configure();
+
+		actor.setAction(FileSystemAction.WRITE);
+		actor.setCreateFolder(true);
+		actor.setOverwrite(true);
+		actor.configure(fileSystem, params, owner);
+		actor.open();
+
+		Message message = new Message(tmpDir + "/" + fileName);
+		ParameterValueList pvl = params.getValues(message, session);
+
+		Object result = actor.doAction(message, pvl, session);
+
+		assertNotNull(result, "Could not create new file in " + tmpDir);
+	}
 }

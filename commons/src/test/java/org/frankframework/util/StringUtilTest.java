@@ -3,6 +3,7 @@ package org.frankframework.util;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -232,5 +234,41 @@ class StringUtilTest {
 			default:
 				return Character.toString((char)chr);
 		}
+	}
+
+	private static class ToStringTestClass {
+		private String field1 = "tralala";
+		private String field2 = "lalala";
+		private boolean field3 = false;
+		private String password = "top-secret";
+		private String hoofdletterPassword = "bottom-secret";
+		private Properties props = new Properties();
+
+		public ToStringTestClass() {
+			props.put("no-string-password", Collections.singletonList("something"));
+			props.setProperty("com.tibco.tibjms.factory.username", "tipko");
+			props.setProperty("com.tibco.tibjms.factory.password", "not-so-secret");
+		}
+	}
+
+	@Test
+	public void testReflectionToString() {
+		String startsWithStr = "StringUtilTest.ToStringTestClass[field1=tralala,field2=lalala,field3=false,"
+				+ "hoofdletterPassword=*************,password=**********,props={";
+
+		ToStringTestClass testClass = new ToStringTestClass();
+		int hashcode = testClass.props.hashCode();
+		String toStringResult = StringUtil.reflectionToString(testClass);
+		assertTrue(toStringResult.startsWith(startsWithStr));
+		assertTrue(toStringResult.contains("no-string-password=***hidden***"));
+		assertTrue(toStringResult.contains("com.tibco.tibjms.factory.username=tipko"));
+		assertTrue(toStringResult.contains("com.tibco.tibjms.factory.password=*************"));
+		assertTrue(toStringResult.endsWith("}]"));
+		assertEquals(hashcode, testClass.props.hashCode());
+	}
+
+	@Test
+	public void testReflectionToStringNull() {
+		assertEquals("<null>", StringUtil.reflectionToString(null));
 	}
 }
